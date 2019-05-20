@@ -24,8 +24,7 @@ namespace ScreenStreamer
             int Height = 720;
             int Fps = 30;
 
-            var frameInterval = (1000.0 / Fps);
-            Stopwatch sw = new Stopwatch();
+
             double sec = 0;
 
             Task.Run(() =>
@@ -34,6 +33,7 @@ namespace ScreenStreamer
                 FFmpegVideoEncoder encoder = null;
                 try
                 {
+
                     streamer = new RtpStreamer();
                     streamer.Open("239.0.0.1", 1234);
 
@@ -50,12 +50,16 @@ namespace ScreenStreamer
 
                     };
 
+                    var frameInterval = (1000.0 / Fps);
+                    Stopwatch sw = Stopwatch.StartNew();
+
                     var hWnd = NativeMethods.GetDesktopWindow();
                     var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
 
                     logger.Info("Streaming started...");
                     while (true)
                     {
+                        sw.Restart();
                         Bitmap screen = null;
                         try
                         {
@@ -83,7 +87,7 @@ namespace ScreenStreamer
                             Thread.Sleep(delay);
                         }
 
-                        rtpTimestamp += (uint)(sw.ElapsedMilliseconds / 90.0);
+                        rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
 
                         sec += sw.ElapsedMilliseconds / 1000.0;
                     }
@@ -99,7 +103,7 @@ namespace ScreenStreamer
                 finally
                 {
                     streamer?.Close();
-                    encoder?.Close();
+                    //encoder?.Close();
                 }
 
             });

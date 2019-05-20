@@ -25,6 +25,12 @@ namespace ScreenStreamer
             AppDomain.CurrentDomain.UnhandledException += (o, a) => 
             {
                 //...
+                var obj = a.ExceptionObject;
+                if (obj != null)
+                {
+                    
+                }
+                logger.Fatal("FATAL ERROR!!!");
             };
 
             logger.Info("========== START ============");

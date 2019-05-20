@@ -153,4 +153,17 @@ namespace ScreenStreamer
         }
 
     }
+
+    public class RngProvider
+    {
+        private static System.Security.Cryptography.RNGCryptoServiceProvider provider =
+            new System.Security.Cryptography.RNGCryptoServiceProvider();
+
+        public static uint GetRandomNumber()
+        {
+            byte[] bytes = new byte[sizeof(UInt32)];
+            provider.GetNonZeroBytes(bytes);
+            return BitConverter.ToUInt32(bytes, 0);
+        }
+    }
 }

@@ -19,8 +19,13 @@ namespace ScreenStreamer
         private Socket socket;
         private IPEndPoint endpoint;
 
+        private uint SSRC = 0;
+        private ushort sequence = 0;
+
         public void Open(string address, int port, int ttl =10)
         {
+
+            SSRC = RngProvider.GetRandomNumber();
             logger.Debug("Open(...)");
             IPAddress addr = IPAddress.Parse(address);
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -169,7 +174,7 @@ namespace ScreenStreamer
 
         }
 
-        public const int MTU = 1466;
+        public const int MTU = 1400;
 
 
         public List<byte[]> GetRtpPackets(List<byte[]> nal_array , uint timestamp)
@@ -226,18 +231,22 @@ namespace ScreenStreamer
 
                     RTPPacketUtil.WriteHeader(rtp_packet, version, padding, extension, csrc, marker, payloadType);
 
-                    UInt32 empty_sequence_id = 0;
-                    RTPPacketUtil.WriteSequenceNumber(rtp_packet, empty_sequence_id);
+
+                    RTPPacketUtil.WriteSequenceNumber(rtp_packet, sequence);
 
                     RTPPacketUtil.WriteTS(rtp_packet, timestamp);
 
-                    UInt32 empty_ssrc = 0;
-                    RTPPacketUtil.WriteSSRC(rtp_packet, empty_ssrc);
+                    //UInt32 empty_ssrc = 0;
+                    RTPPacketUtil.WriteSSRC(rtp_packet, SSRC);
 
                     // Now append the raw NAL
                     System.Array.Copy(raw_nal, 0, rtp_packet, 12, raw_nal.Length);
 
                     rtp_packets.Add(rtp_packet);
+
+                    sequence++;
+
+
                 }
                 else
                 {
@@ -275,13 +284,12 @@ namespace ScreenStreamer
 
                         RTPPacketUtil.WriteHeader(rtp_packet, rtp_version, rtp_padding, rtp_extension, rtp_csrc_count, rtp_marker, rtp_payload_type);
 
-                        UInt32 empty_sequence_id = 0;
-                        RTPPacketUtil.WriteSequenceNumber(rtp_packet, empty_sequence_id);
+                        RTPPacketUtil.WriteSequenceNumber(rtp_packet, sequence);
 
                         RTPPacketUtil.WriteTS(rtp_packet, timestamp);
 
-                        UInt32 empty_ssrc = 0;
-                        RTPPacketUtil.WriteSSRC(rtp_packet, empty_ssrc);
+                       // UInt32 empty_ssrc = 0;
+                        RTPPacketUtil.WriteSSRC(rtp_packet, SSRC);
 
                         // Now append the Fragmentation Header (with Start and End marker) and part of the raw_nal
                         byte f_bit = 0;
@@ -296,6 +304,8 @@ namespace ScreenStreamer
                         data_remaining = data_remaining - payload_size;
 
                         rtp_packets.Add(rtp_packet);
+
+                        sequence++;
 
                         start_bit = 0;
                     }

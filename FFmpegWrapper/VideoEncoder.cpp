@@ -65,6 +65,9 @@ namespace FFmpegWrapper {
 				encoder_ctx->height = Height;
 				encoder_ctx->gop_size = 30;
 				encoder_ctx->max_b_frames = 0;
+
+				//encoder_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
 				//encoder_ctx->rtp_payload_size = 1470;
 
 				if (encoder->pix_fmts) {
@@ -112,6 +115,16 @@ namespace FFmpegWrapper {
 				if (avcodec_open2(encoder_ctx, encoder, &param) < 0) {
 					throw gcnew Exception("Unable to open video codec");
 				}
+
+				//int extaSize = encoder_ctx->extradata_size;
+
+				//array<Byte>^ extraData = gcnew array<Byte>(extaSize);
+				//Marshal::Copy((IntPtr)encoder_ctx->extradata, extraData, 0, extaSize);
+				//System::IO::File::WriteAllBytes("d:\\extadata.txt", extraData);
+
+				//byte[] extraData = gcnew byte[encoder_ctx->]
+				//encoder_ctx->extradata
+
 
 				frame = av_frame_alloc();
 				frame->width = encoder_ctx->width;
@@ -279,7 +292,7 @@ namespace FFmpegWrapper {
 			}
 			finally{
 
-				av_free_packet(&packet);
+				//av_free_packet(&packet);
 
 			}
 
