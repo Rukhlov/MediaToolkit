@@ -41,7 +41,8 @@ namespace FFmpegWrapper {
 			try {
 
 				cleanedup = false;
-				AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // Работает быстрее всего ...
+				AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
+				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // Работает быстрее всего ...
 
 				if (!encoder) {
 					// Если нету энкодера Nvidia берем любой
@@ -93,7 +94,7 @@ namespace FFmpegWrapper {
 				if (encoder->id == AV_CODEC_ID_H264) {
 
 
-					if (encoder->name = "h264_nvenc") {
+					if (encoder->name == "h264_nvenc") {
 
 						av_dict_set(&param, "preset", "llhq", 0); //lowlatency HQ 
 						//av_dict_set(&param, "rc", "ll_2pass_size", 1478); 

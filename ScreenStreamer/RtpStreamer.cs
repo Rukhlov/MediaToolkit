@@ -38,10 +38,12 @@ namespace ScreenStreamer
         public void Send(byte[] bytes, uint timestamp)
         { // получаем от поток который нужно порезать на NALUnit-ы
 
-            var nalUnit = HandleH264AnnexbFrames(bytes);
-            if (nalUnit != null)
+            var nals = HandleH264AnnexbFrames(bytes);
+
+            if (nals.Count > 0)
             {
-                var packets = GetRtpPackets(bytes, timestamp);
+                var packets = GetRtpPackets(nals, timestamp);
+
                 foreach (byte[] rtp in packets)
                 {
                     try
@@ -50,11 +52,77 @@ namespace ScreenStreamer
                     }
                     catch (ObjectDisposedException) { }
                 }
+
             }
+
+            //var nalUnit = HandleH264AnnexbFrames(bytes);
+            //if (nalUnit != null)
+            //{
+            //    var packets = GetRtpPackets(bytes, timestamp);
+            //    foreach (byte[] rtp in packets)
+            //    {
+            //        try
+            //        {
+            //            socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
+            //        }
+            //        catch (ObjectDisposedException) { }
+            //    }
+            //}
 
         }
 
-        private byte[] HandleH264AnnexbFrames(byte[]frame)
+        private List<byte[]> HandleH264AnnexbFrames(byte[] frame)
+        {
+            List<byte[]> nals = new List<byte[]>();
+
+            int offset = 0;
+            int pos1 = -1;
+            int pos2 = -1;
+
+            while (offset < frame.Length)
+            {
+                if (frame[offset] == 0 &&
+                    frame[offset + 1] == 0 &&
+                    frame[offset + 2] == 0 &&
+                    frame[offset + 3] == 1)
+                {
+
+                    if (pos1 > 0)
+                    {
+                        pos2 = offset;
+                        int nalSize = pos2 - pos1;
+                        var nal = new byte[nalSize];
+                        Array.Copy(frame, pos1, nal, 0, nal.Length);
+
+                        nals.Add(nal);
+                        pos2 = -1;
+                    }
+
+                    offset += 4;
+                    pos1 = offset;
+                }
+                else
+                {
+                    offset += 4;
+                }
+            }
+
+            if (pos1 > 0 && pos2 == -1)
+            {
+                pos2 = frame.Length;
+                int nalSize = pos2 - pos1;
+
+                var nal = new byte[nalSize];
+                Array.Copy(frame, pos1, nal, 0, nal.Length);
+
+                nals.Add(nal);
+            }
+
+            return nals;
+        }
+
+
+        private byte[] _HandleH264AnnexbFrames(byte[]frame)
         {// ищем стартовые коды NAL-ов и делим на пакеты
             byte[] nal = null;
 
@@ -103,12 +171,13 @@ namespace ScreenStreamer
 
         public const int MTU = 1466;
 
-        public List<byte[]> GetRtpPackets( byte[] nal, uint timestamp)
+
+        public List<byte[]> GetRtpPackets(List<byte[]> nal_array , uint timestamp)
         {
     
-            List<byte[]> nal_array = new List<byte[]>();
+            //List<byte[]> nal_array = new List<byte[]>();
 
-            nal_array.Add(nal);
+            //nal_array.Add(nal);
 
   
             List<byte[]> rtp_packets = new List<byte[]>();
