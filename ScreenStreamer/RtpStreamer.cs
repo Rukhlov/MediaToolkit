@@ -53,7 +53,8 @@ namespace ScreenStreamer
                 {
                     try
                     {
-                        socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
+                       // socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
+                        socket?.BeginSendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint, null, null);
                     }
                     catch (ObjectDisposedException) { }
                 }

@@ -1,4 +1,6 @@
-﻿using FFmpegWrapper;
+﻿using CommandLine;
+using CommonData;
+using FFmpegWrapper;
 
 using NLog;
 using System;
@@ -24,27 +26,102 @@ namespace ScreenStreamer
 
             AppDomain.CurrentDomain.UnhandledException += (o, a) => 
             {
-                //...
+                Exception ex = null;
+
                 var obj = a.ExceptionObject;
                 if (obj != null)
                 {
-                    
+                    ex = obj as Exception;
+                    logger.Fatal(ex);
+
                 }
-                logger.Fatal("FATAL ERROR!!!");
+                if (ex != null)
+                {
+                    logger.Fatal(ex);
+                }
+                else
+                {
+                    logger.Fatal("FATAL ERROR!!!");
+                }
+    
+
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
             };
 
             logger.Info("========== START ============");
 
-            ScreenStreamer screenStreamer = new ScreenStreamer();
+            CommandLineOptions options = null;
+            if (args != null)
+            {
+                logger.Info("Command Line String: " + string.Join(" ", args));
 
-            screenStreamer.Run();
+                options = new CommandLineOptions();
+                var res = Parser.Default.ParseArguments(args, options);
+                if (!res)
+                {
+                    //...
+                }
+            }
 
+
+            VideoBuffer buffer = new VideoBuffer(options.Width, options.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            ScreenSource source = new ScreenSource();
+            source.Start(buffer);
+
+            VideoEncodingParams encodingParams = new VideoEncodingParams
+            {
+                Width = options.Width,
+                Height = options.Height,
+                FrameRate = options.FrameRate,
+                EncoderName = "",
+            };
+
+            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            {
+                MulitcastAddres = options.ServerAddr,
+                Port = options.Port,
+            };
+
+            ScreenStreamer streamer = new ScreenStreamer(source);
+            streamer.Start(encodingParams, networkParams);
+
+            Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
+
+            streamer?.Close();
+            source?.Close();
 
             logger.Info("========== THE END ============");
 
 
         }
+
+    }
+
+
+    public class CommandLineOptions
+    {
+        [Option("addr")]
+        public string ServerAddr { get; set; } = "239.0.0.1";
+
+        [Option("port")]
+        public int Port { get; set; } = 1234;
+
+        [Option("width")]
+        public int Width { get; set; } = 1920;
+
+        [Option("height")]
+        public int Height { get; set; } = 1080;
+
+        [Option("fps")]
+        public int FrameRate { get; set; } = 30;
+
+        [Option("encoder")]
+        public string EncoderName { get; set; } = "";
+
+        //...
 
     }
 }

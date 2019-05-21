@@ -5,8 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CommonData;
 using SlimDX.Direct3D9;
 
 namespace ScreenStreamer
@@ -96,23 +98,23 @@ namespace ScreenStreamer
             Bitmap bmp;
 
             Graphics g = null;
-            IntPtr dc1 = IntPtr.Zero;
-            IntPtr dc2 = IntPtr.Zero;
+            IntPtr dest = IntPtr.Zero;
+            IntPtr src = IntPtr.Zero;
             try
             {
                 bmp = new Bitmap(rect.Width, rect.Height);
                 g = System.Drawing.Graphics.FromImage(bmp);
 
-                dc1 = g.GetHdc();
-                dc2 = NativeMethods.GetDC(handle);
+                dest = g.GetHdc();
+                src = NativeMethods.GetDC(handle);
 
-                NativeMethods.BitBlt(dc1, rect.Left, rect.Top, rect.Width, rect.Height, dc2, 0, 0, (NativeMethods.TernaryRasterOperations)13369376);
+                NativeMethods.BitBlt(dest, rect.Left, rect.Top, rect.Width, rect.Height, src, 0, 0, (NativeMethods.TernaryRasterOperations)13369376);
 
             }
             finally
             {
 
-                g.ReleaseHdc(dc1);
+                g.ReleaseHdc(dest);
                 //g.ReleaseHdc(dc2);
 
                 g.Dispose();
@@ -127,6 +129,44 @@ namespace ScreenStreamer
             return GetWindow(IntPtr.Zero, rect);
 
         }
+
+        public unsafe static bool GetScreen(Rectangle rect, ref VideoBuffer videoBuffer)
+        {
+            bool success = false;
+
+            var syncRoot = videoBuffer.syncRoot;
+            bool lockTaken = false;
+            Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+            IntPtr dest = IntPtr.Zero;
+            Graphics g = null;
+            try
+            {
+                var bmp = videoBuffer.bitmap;
+                g = System.Drawing.Graphics.FromImage(bmp);
+                dest = g.GetHdc();
+
+                IntPtr src = NativeMethods.GetDC(IntPtr.Zero);
+
+                success = NativeMethods.BitBlt(dest, rect.Left, rect.Top, rect.Width, rect.Height, src, 0, 0,
+                    (NativeMethods.TernaryRasterOperations)13369376);
+                
+            }
+            finally
+            {
+                g?.ReleaseHdc(dest);
+                g?.Dispose();
+
+                if (lockTaken)
+                {
+                    Monitor.Exit(syncRoot);
+                }
+            }
+
+
+
+            return success;
+        }
+
     }
     class GDIPlusCapture
     {

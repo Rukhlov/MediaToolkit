@@ -1,4 +1,5 @@
-﻿using FFmpegWrapper;
+﻿using CommonData;
+using FFmpegWrapper;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -12,37 +13,42 @@ using System.Threading.Tasks;
 
 namespace ScreenStreamer
 {
+
     class ScreenStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public void Run()
+        private readonly ScreenSource screenSource = null;
+        public ScreenStreamer(ScreenSource source)
         {
-            logger.Debug("Start()");
+            this.screenSource = source;
+        }
 
-            int Width = 1280;
-            int Height = 720;
-            int Fps = 30;
-
-
-            double sec = 0;
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        public void Start(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
+        {
+            logger.Debug("ScreenStreamer::Start()");
 
             Task.Run(() =>
             {
+                logger.Info("Streaming thread started...");
+                screenSource.BufferUpdated += () => syncEvent.Set();
+
                 RtpStreamer streamer = null;
                 FFmpegVideoEncoder encoder = null;
                 try
                 {
-
                     streamer = new RtpStreamer();
-                    streamer.Open("239.0.0.1", 1234);
+                    streamer.Open(networkParams.MulitcastAddres, networkParams.Port);
 
                     encoder = new FFmpegVideoEncoder();
-                    encoder.Open(Width, Height, Fps);
+                    encoder.Open(encodingParams);
 
                     uint rtpTimestamp = 0;
+
                     encoder.DataEncoded += (ptr, len) =>
-                    {
+                    {// получили данные от энкодера 
+
                         byte[] frame = new byte[len];
                         Marshal.Copy(ptr, frame, 0, len);
 
@@ -50,35 +56,129 @@ namespace ScreenStreamer
 
                     };
 
-                    var frameInterval = (1000.0 / Fps);
+
+ 
                     Stopwatch sw = Stopwatch.StartNew();
-
-                    var hWnd = NativeMethods.GetDesktopWindow();
-                    var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
-
-                    logger.Info("Streaming started...");
-                    while (true)
+                    while (!closing)
                     {
                         sw.Restart();
-                        Bitmap screen = null;
+  
                         try
                         {
-                            // screen = GDICapture.GetScreen(rect);
-                            //screen = Direct3DCapture.CaptureRegionDirect3D(hWnd, rect);
-                            screen = GDIPlusCapture.GetScreen(rect);
-                            encoder.Encode(screen, 0);
+                            syncEvent.WaitOne();
+
+                            if (closing)
+                            {
+                                break;
+                            }
+
+                            var buffer = screenSource.Buffer;
+                            encoder.Encode(buffer, 0);
+                           
+   
                         }
                         catch (Exception ex)
                         {
                             logger.Error(ex);
                             Thread.Sleep(1000);
                         }
-                        finally
+
+                        rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
+
+                        var mSec = sw.ElapsedMilliseconds;
+  
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+
+                }
+                finally
+                {
+                    streamer?.Close();
+                    encoder?.Close();
+                }
+
+                logger.Info("Streaming thread ended...");
+            });
+
+        }
+
+        private bool closing = false;
+
+        public void Close()
+        {
+            closing = false;
+            syncEvent.Set();
+        }
+
+    }
+
+    class ScreenSource
+    {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+ 
+        public ScreenSource() { }
+
+        public VideoBuffer Buffer { get; private set; }
+
+        public event Action BufferUpdated;
+        private void OnBufferUpdated()
+        {
+            BufferUpdated?.Invoke();
+        }
+
+        public void Start(VideoBuffer videoBuffer, int frameRate = 30)
+        {
+            logger.Debug("ScreenSource::Start()");
+
+            this.Buffer = videoBuffer;
+
+            int Width = videoBuffer.bitmap.Width;
+            int Height = videoBuffer.bitmap.Height;
+
+
+            double sec = 0;
+            Task.Run(() =>
+            {
+                logger.Info("Capturing thread started...");
+
+                try
+                {
+                    var frameInterval = (1000.0 / frameRate);
+                    Stopwatch sw = Stopwatch.StartNew();
+
+                    var hWnd = NativeMethods.GetDesktopWindow();
+                    var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
+
+                    uint rtpTimestamp = 0;
+                    while (!closing)
+                    {
+                        sw.Restart();
+    
+                        try
                         {
-                            screen?.Dispose();
+                            var res = GDICapture.GetScreen(rect, ref videoBuffer);
+
+                            if (closing)
+                            {
+                                break;
+                            }
+
+                            if (res)
+                            {
+                                videoBuffer.time = sec;
+                            }
+                            OnBufferUpdated();
+
                         }
-
-
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex);
+                            Thread.Sleep(1000);
+                        }
+  
                         var mSec = sw.ElapsedMilliseconds;
                         var delay = (int)(frameInterval - mSec);
 
@@ -94,21 +194,24 @@ namespace ScreenStreamer
                 }
                 catch (Exception ex)
                 {
-
-                    logger.Fatal(ex);
-
-                    Console.WriteLine("Press any key to exit...");
-
+                    logger.Error(ex); ;
                 }
-                finally
-                {
-                    streamer?.Close();
-                    //encoder?.Close();
-                }
+
+                logger.Info("Capturing thread stopped...");
 
             });
 
         }
+
+        private bool closing = false;
+
+        public void Close()
+        {
+            closing = false;
+        }
+
+
     }
+
 
 }

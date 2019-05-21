@@ -158,6 +158,11 @@
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonData\CommonData.csproj">
+      <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

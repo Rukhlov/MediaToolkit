@@ -20,6 +20,8 @@ using namespace System::Diagnostics;
 using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
+using namespace CommonData;
+using namespace System::Threading;
 
 namespace FFmpegWrapper {
 
@@ -34,13 +36,15 @@ namespace FFmpegWrapper {
 
 		event Action<IntPtr, int>^ DataEncoded;
 
-		void Open(int Width, int Height, int FrameRate) {
+		void Open(VideoEncodingParams^ encodingParams) {
 
 			//logger->Debug("FFmpegVideoEncoder::Open(...) " + Width + " " + Height + " " + FrameRate);
 
 			try {
 
 				cleanedup = false;
+				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
+
 				AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // –аботает быстрее всего ...
 
@@ -58,13 +62,14 @@ namespace FFmpegWrapper {
 
 				encoder_ctx = avcodec_alloc_context3(encoder); 
 
-				int den = (FrameRate > 0 && FrameRate <= 60) ? FrameRate : 30;
+				int den = (encodingParams->FrameRate > 0 && encodingParams->FrameRate <= 60) ? encodingParams->FrameRate : 30;
 				encoder_ctx->time_base = { 1, den };
 
-				encoder_ctx->width = Width;
-				encoder_ctx->height = Height;
+				encoder_ctx->width = encodingParams->Width;
+				encoder_ctx->height = encodingParams->Height;
 				encoder_ctx->gop_size = 30;
 				encoder_ctx->max_b_frames = 0;
+				
 
 				//encoder_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
@@ -104,7 +109,8 @@ namespace FFmpegWrapper {
 					}
 					else
 					{
-						 av_dict_set(&param, "preset", "medium", 0);
+						//av_dict_set(&param, "preset", "medium", 0);
+						av_dict_set(&param, "preset", "ultrafast", 0);
 
 					}
 
@@ -145,8 +151,7 @@ namespace FFmpegWrapper {
 			}
 		}
 
-
-		void Encode(Bitmap^ bmp, double sec) {
+		void Encode(VideoBuffer^ videoBuffer, double sec) {
 
 			if (cleanedup) {
 
@@ -159,60 +164,74 @@ namespace FFmpegWrapper {
 
 			}
 
+			Bitmap^ bmp = videoBuffer->bitmap;
+
 			try {
 
-				int width = bmp->Width;
-				int height = bmp->Height;
-				PixelFormat bmpFmt = bmp->PixelFormat;
-				System::Drawing::Rectangle bmpRect = System::Drawing::Rectangle(0, 0, width, height);
+				Object^ syncRoot = videoBuffer->syncRoot;
+				bool lockTaken = false;
 
-				AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-
-				if (bmpFmt == PixelFormat::Format24bppRgb) {
-
-					pix_fmt = AV_PIX_FMT_BGR24;
-
-				}
-				else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
-
-					pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
-
-				}
-				else {
-
-					throw gcnew Exception("Unsupported pixel format " + bmpFmt.ToString());
-				}
-
-				BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
+				Monitor::Enter(syncRoot);
 				try {
 
-					sws_ctx = sws_getCachedContext(sws_ctx,
-						width, height, pix_fmt, // input
-						frame->width, frame->height, (AVPixelFormat)frame->format,  // output
-						SWS_BICUBIC,
-						NULL, NULL, NULL);
+					int width = bmp->Width;
+					int height = bmp->Height;
+					PixelFormat bmpFmt = bmp->PixelFormat;
+					System::Drawing::Rectangle bmpRect = System::Drawing::Rectangle(0, 0, width, height);
 
-					if (sws_ctx == NULL) {
+					AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
 
-						throw gcnew Exception("Could not allocate convert context");
+					if (bmpFmt == PixelFormat::Format24bppRgb) {
+
+						pix_fmt = AV_PIX_FMT_BGR24;
+
+					}
+					else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
+
+						pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
+
+					}
+					else {
+
+						throw gcnew Exception("Unsupported pixel format " + bmpFmt.ToString());
 					}
 
-					const uint8_t* src_data[1] =
-					{
-						reinterpret_cast<uint8_t*>(bmpData->Scan0.ToPointer())
-					};
+					BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
+					try {
 
-					const int scr_size[1] =
-					{
-						bmpData->Stride
-					};
+						sws_ctx = sws_getCachedContext(sws_ctx,
+							width, height, pix_fmt, // input
+							frame->width, frame->height, (AVPixelFormat)frame->format,  // output
+							SWS_BICUBIC,
+							NULL, NULL, NULL);
 
-					//  конвертируем в новый формат
-					sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
+						if (sws_ctx == NULL) {
+
+							throw gcnew Exception("Could not allocate convert context");
+						}
+
+						const uint8_t* src_data[1] =
+						{
+							reinterpret_cast<uint8_t*>(bmpData->Scan0.ToPointer())
+						};
+
+						const int scr_size[1] =
+						{
+							bmpData->Stride
+						};
+
+						//  конвертируем в новый формат
+						sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
+					}
+					finally{
+
+						bmp->UnlockBits(bmpData);
+					}
+
 				}
 				finally{
 
-					bmp->UnlockBits(bmpData);
+					Monitor::Exit(syncRoot);
 				}
 
 				__int64 pts = sec * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а

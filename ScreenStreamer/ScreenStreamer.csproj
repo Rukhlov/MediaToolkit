@@ -36,6 +36,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
+      <HintPath>..\packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.3\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -71,6 +74,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonData\CommonData.csproj">
+      <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
+      <Name>CommonData</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.vcxproj">
       <Project>{f83157fd-4e1f-4f55-bed8-f4f138824ffd}</Project>
       <Name>FFmpegWrapper</Name>

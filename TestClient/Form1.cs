@@ -26,7 +26,7 @@ namespace TestClient
             {
              // "--extraintf=logger",
              //"--verbose=0",
-               "--network-caching=300"
+               //"--network-caching=300"
              };
 
             mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
@@ -79,7 +79,7 @@ namespace TestClient
             {
                     // "--extraintf=logger",
                     //"--verbose=0",
-                    "--network-caching=100",
+                   // "--network-caching=100",
             };
 
             mediaPlayer?.Play(new FileInfo(file), opts);
