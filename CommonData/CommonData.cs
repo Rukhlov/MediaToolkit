@@ -28,6 +28,15 @@ namespace CommonData
 
     }
 
+    public class AudioEncodingParams
+    {
+        public int SampleRate = 0;
+        public int Channels = 0;
+        public int BitsPerSample = 0;
+        public int BlockAlign = 0;
+        public string Encoding = "";
+    }
+
     public class NetworkStreamingParams
     {
         public string MulitcastAddres = "";

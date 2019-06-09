@@ -176,6 +176,45 @@ namespace ScreenStreamer
             return GetScreen(rect);
         }
 
+
+        public unsafe static bool GetScreen(Rectangle rect, ref VideoBuffer videoBuffer)
+        {
+            bool success = false;
+
+            var syncRoot = videoBuffer.syncRoot;
+
+            bool lockTaken = false;
+            Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+            try
+            {
+                var bmp = videoBuffer.bitmap;
+                Size size = new Size(rect.Width, rect.Height);
+                Graphics g = Graphics.FromImage(bmp);
+                try
+                {
+                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, size, CopyPixelOperation.SourceCopy);
+                }
+                finally
+                {
+                    g.Dispose();
+                    g = null;
+                }
+
+
+            }
+            finally
+            {
+                if (lockTaken)
+                {
+                    Monitor.Exit(syncRoot);
+                }
+            }
+
+
+
+            return success;
+        }
+
         public static Bitmap GetScreen(Rectangle rect)
         {
             Size size = new Size(rect.Width, rect.Height);
@@ -195,4 +234,8 @@ namespace ScreenStreamer
             return bmp;
         }
     }
+
+
+
+
 }

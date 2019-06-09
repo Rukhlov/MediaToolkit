@@ -49,6 +49,45 @@ namespace ScreenStreamer
                 Console.ReadKey();
             };
 
+
+
+
+
+            //AudioLoopbackSource audioCapture = new AudioLoopbackSource();
+
+            //var outputParams = new AudioEncodingParams
+            //{
+            //    SampleRate = 8000,
+            //    Channels = 1,
+            //    Encoding = "PCMU"
+
+            //};
+
+            //audioCapture.Start(outputParams);
+            //Console.ReadKey();
+            //return;
+
+
+            //AudioResampler audioResampler = new AudioResampler();
+
+            //audioResampler.Open();
+
+            //audioResampler.Test();
+
+            //Console.ReadKey();
+
+            //return;
+
+            //AudioLoopbackCapture audioCapture = new AudioLoopbackCapture();
+            //audioCapture.Start();
+
+
+
+
+
+            //return;
+
+
             logger.Info("========== START ============");
 
             CommandLineOptions options = null;
@@ -63,6 +102,10 @@ namespace ScreenStreamer
                     //...
                 }
             }
+
+
+
+
 
 
             VideoBuffer buffer = new VideoBuffer(options.Width, options.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -84,13 +127,25 @@ namespace ScreenStreamer
                 Port = options.Port,
             };
 
-            ScreenStreamer streamer = new ScreenStreamer(source);
-            streamer.Start(encodingParams, networkParams);
+            VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
+            videoStreamer.Start(encodingParams, networkParams);
+
+            AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
+
+            var audioParams = new AudioEncodingParams
+            {
+                SampleRate = 8000,
+                Channels = 1,
+                Encoding = "PCMU"
+            };
+
+            audioStreamer.Start(audioParams);
 
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
-            streamer?.Close();
+            audioStreamer?.Close();
+            videoStreamer?.Close();
             source?.Close();
 
             logger.Info("========== THE END ============");

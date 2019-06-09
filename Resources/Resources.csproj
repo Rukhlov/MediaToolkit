@@ -269,6 +269,8 @@
     <None Include="FFmpeg4\presets\libvpx-360p.ffpreset" />
     <None Include="FFmpeg4\presets\libvpx-720p.ffpreset" />
     <None Include="FFmpeg4\presets\libvpx-720p50_60.ffpreset" />
+    <None Include="Files\AV_10Sec_30Fps_Click_Sin.mkv" />
+    <None Include="Files\AV_60Sec_30Fps_Click_Sin.mkv" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

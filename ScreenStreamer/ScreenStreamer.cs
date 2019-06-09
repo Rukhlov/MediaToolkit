@@ -14,12 +14,12 @@ using System.Threading.Tasks;
 namespace ScreenStreamer
 {
 
-    class ScreenStreamer
+    class VideoMulticastStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly ScreenSource screenSource = null;
-        public ScreenStreamer(ScreenSource source)
+        public VideoMulticastStreamer(ScreenSource source)
         {
             this.screenSource = source;
         }
@@ -38,7 +38,9 @@ namespace ScreenStreamer
                 FFmpegVideoEncoder encoder = null;
                 try
                 {
-                    streamer = new RtpStreamer();
+                    RtpSession h264Session = new H264Session();
+
+                    streamer = new RtpStreamer(h264Session);
                     streamer.Open(networkParams.MulitcastAddres, networkParams.Port);
 
                     encoder = new FFmpegVideoEncoder();
@@ -52,7 +54,12 @@ namespace ScreenStreamer
                         byte[] frame = new byte[len];
                         Marshal.Copy(ptr, frame, 0, len);
 
-                        streamer.Send(frame, rtpTimestamp);
+                        double ralativeTime = MediaTimer.GetRelativeTime();
+                        uint rtpTime =(uint)(ralativeTime * 90000);
+
+                        streamer.Send(frame, rtpTime);
+
+                        // streamer.Send(frame, rtpTimestamp);
 
                     };
 
@@ -159,8 +166,8 @@ namespace ScreenStreamer
     
                         try
                         {
-                            var res = GDICapture.GetScreen(rect, ref videoBuffer);
-
+                            //var res = GDICapture.GetScreen(rect, ref videoBuffer);
+                            var res = GDIPlusCapture.GetScreen(rect, ref videoBuffer);
                             if (closing)
                             {
                                 break;

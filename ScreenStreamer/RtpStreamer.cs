@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -13,20 +14,26 @@ namespace ScreenStreamer
     public class RtpStreamer
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        public RtpStreamer()
-        { }
+        public RtpStreamer(RtpSession session)
+        {
+            this.session = session;
 
+        }
+
+        private RtpSession session;
         private Socket socket;
         private IPEndPoint endpoint;
 
-        private uint SSRC = 0;
+        private uint ssrc = 0;
         private ushort sequence = 0;
 
-        public void Open(string address, int port, int ttl =10)
+        public void Open(string address, int port, int ttl = 10)
         {
-
-            SSRC = RngProvider.GetRandomNumber();
             logger.Debug("Open(...)");
+
+            sequence = 0;
+            ssrc = RngProvider.GetRandomNumber();
+
             IPAddress addr = IPAddress.Parse(address);
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
@@ -41,44 +48,153 @@ namespace ScreenStreamer
         }
 
         public void Send(byte[] bytes, uint timestamp)
-        { // получаем от поток который нужно порезать на NALUnit-ы
+        { 
 
-            var nals = HandleH264AnnexbFrames(bytes);
+            var packets = session.Packetize(bytes, timestamp);
 
-            if (nals.Count > 0)
+            if (packets != null && packets.Count > 0)
             {
-                var packets = GetRtpPackets(nals, timestamp);
-
                 foreach (byte[] rtp in packets)
                 {
                     try
                     {
-                       // socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
+                        // socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
                         socket?.BeginSendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint, null, null);
                     }
                     catch (ObjectDisposedException) { }
                 }
-
             }
-
-            //var nalUnit = HandleH264AnnexbFrames(bytes);
-            //if (nalUnit != null)
-            //{
-            //    var packets = GetRtpPackets(bytes, timestamp);
-            //    foreach (byte[] rtp in packets)
-            //    {
-            //        try
-            //        {
-            //            socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
-            //        }
-            //        catch (ObjectDisposedException) { }
-            //    }
-            //}
 
         }
 
-        private List<byte[]> HandleH264AnnexbFrames(byte[] frame)
+
+        public void Close()
         {
+
+            logger.Debug("Close()");
+
+            socket?.Close();
+
+        }
+
+
+    }
+
+    public abstract class RtpSession
+    {
+
+        public const int MTU = 1400;
+
+        public uint SSRC { get; protected set; } = 0;
+        public int CSRC { get; protected set; } = 0;
+
+        public ushort Sequence { get; protected set; } = 0;
+        public int PayloadType { get; protected set; } = 0;
+
+
+        public abstract List<byte[]> Packetize(byte[] data, uint timestamp);
+    }
+
+    public class PCMUSession : RtpSession
+    {
+        public PCMUSession()
+        {
+            SSRC = RngProvider.GetRandomNumber();
+            Sequence = 0;
+            PayloadType = 0;
+        }
+
+
+        public override List<byte[]> Packetize(byte[] data, uint timestamp)
+        {
+            List<byte[]> packets = new List<byte[]>();
+
+            if (data !=null && data.Length > 0)
+            {
+                packets = CratePackets(data, timestamp);
+            }
+
+            return packets;
+        }
+
+        public List<byte[]> CratePackets(byte[] data, uint timestamp)
+        {
+            //Debug.WriteLine("CratePackets(...) " + data.Length + " " + timestamp);
+
+            List<byte[]> rtpPackets = new List<byte[]>();
+
+            int MaxPacketSize = 160;
+
+            int offset = 0;
+            int dataSize = data.Length;
+            while (dataSize > 0)
+            {
+                int packetSize = dataSize;
+                if (dataSize > MaxPacketSize)
+                {
+                    packetSize = MaxPacketSize;
+                }
+
+                byte[] rtpPacket = new byte[12 + packetSize];
+
+                int version = 2;
+                int padding = 0;
+                int extension = 0;
+
+                int marker = 0;
+
+                RTPPacketUtil.WriteHeader(rtpPacket, version, padding, extension, CSRC, marker, PayloadType);
+                RTPPacketUtil.WriteSequenceNumber(rtpPacket, Sequence);
+                RTPPacketUtil.WriteTS(rtpPacket, timestamp);
+                RTPPacketUtil.WriteSSRC(rtpPacket, SSRC);
+
+
+
+                System.Array.Copy(data, offset, rtpPacket, 12, packetSize);
+                offset += packetSize;
+                dataSize -= packetSize;
+
+                Debug.WriteLine("offset " + offset + " " + timestamp);
+                timestamp += (uint)packetSize; //40 * 8;
+
+
+                rtpPackets.Add(rtpPacket);
+
+                Sequence++;
+
+            }
+
+
+
+            return rtpPackets;
+
+        }
+
+
+    }
+    public class H264Session : RtpSession
+    {
+        public H264Session()
+        {
+            SSRC = RngProvider.GetRandomNumber();
+            Sequence = 0;
+            PayloadType = 96;
+        }
+
+        public override List<byte[]> Packetize(byte[] data, uint timestamp)
+        {
+            List<byte[]> packets = new List<byte[]>();
+            var nals = HandleH264AnnexbFrames(data);
+            if (nals.Count > 0)
+            {
+                packets = CratePackets(nals, timestamp);
+            }
+
+            return packets;
+        }
+
+        private List<byte[]> HandleH264AnnexbFrames(byte[] frame)
+        {// получаем буфер который нужно порезать на NALUnit-ы
             List<byte[]> nals = new List<byte[]>();
 
             int offset = 0;
@@ -128,64 +244,9 @@ namespace ScreenStreamer
         }
 
 
-        private byte[] _HandleH264AnnexbFrames(byte[]frame)
-        {// ищем стартовые коды NAL-ов и делим на пакеты
-            byte[] nal = null;
-
-            int offset = 0;
-            int pos1 = -1;
-            int pos2 = -1;
-
-            while (offset < frame.Length)
-            {
-                if (frame[offset] == 0 &&
-                    frame[offset + 1] == 0 &&
-                    frame[offset + 2] == 0 &&
-                    frame[offset + 3] == 1)
-                {
-
-                    if (pos1 > 0)
-                    {
-                        pos2 = offset;
-                        int nalSize = pos2 - pos1;
-                        nal = new byte[nalSize];
-                        Array.Copy(frame, pos1, nal, 0, nal.Length);
-                        pos2 = -1;
-                    }
-
-                    offset += 4;
-                    pos1 = offset;
-                }
-                else
-                {
-                    offset += 4;
-                }
-            }
-
-            if (pos1 > 0 && pos2 == -1)
-            {
-                pos2 = frame.Length;
-                int nalSize = pos2 - pos1;
-
-                nal = new byte[nalSize];
-                Array.Copy(frame, pos1, nal, 0, nal.Length);
-            }
-
-            return nal;
-
-        }
-
-        public const int MTU = 1400;
-
-
-        public List<byte[]> GetRtpPackets(List<byte[]> nal_array , uint timestamp)
+        public List<byte[]> CratePackets(List<byte[]> nal_array, uint timestamp)
         {
-    
-            //List<byte[]> nal_array = new List<byte[]>();
 
-            //nal_array.Add(nal);
-
-  
             List<byte[]> rtp_packets = new List<byte[]>();
 
             for (int x = 0; x < nal_array.Count; x++)
@@ -211,7 +272,7 @@ namespace ScreenStreamer
                     // Note some receivers will have maximum buffers and be unable to handle large RTP packets.
                     // Also with RTP over RTSP there is a limit of 65535 bytes for the RTP packet.
 
-   
+
                     byte[] rtp_packet = new byte[12 + raw_nal.Length]; // 12 is header size when there are no CSRCs or extensions
                                                                        // Create an single RTP fragment
 
@@ -226,14 +287,14 @@ namespace ScreenStreamer
                     int version = 2;
                     int padding = 0;
                     int extension = 0;
-                    int csrc = 0;
+
                     int marker = (last_nal == true ? 1 : 0); // set to 1 if the last NAL in the array
-                    int payloadType = 96;
-
-                    RTPPacketUtil.WriteHeader(rtp_packet, version, padding, extension, csrc, marker, payloadType);
 
 
-                    RTPPacketUtil.WriteSequenceNumber(rtp_packet, sequence);
+                    RTPPacketUtil.WriteHeader(rtp_packet, version, padding, extension, CSRC, marker, PayloadType);
+
+
+                    RTPPacketUtil.WriteSequenceNumber(rtp_packet, Sequence);
 
                     RTPPacketUtil.WriteTS(rtp_packet, timestamp);
 
@@ -245,7 +306,7 @@ namespace ScreenStreamer
 
                     rtp_packets.Add(rtp_packet);
 
-                    sequence++;
+                    Sequence++;
 
 
                 }
@@ -281,15 +342,15 @@ namespace ScreenStreamer
                         int rtp_extension = 0;
                         int rtp_csrc_count = 0;
                         int rtp_marker = (last_nal == true ? 1 : 0); // Marker set to 1 on last packet
-                        int rtp_payload_type = 96;
 
-                        RTPPacketUtil.WriteHeader(rtp_packet, rtp_version, rtp_padding, rtp_extension, rtp_csrc_count, rtp_marker, rtp_payload_type);
 
-                        RTPPacketUtil.WriteSequenceNumber(rtp_packet, sequence);
+                        RTPPacketUtil.WriteHeader(rtp_packet, rtp_version, rtp_padding, rtp_extension, rtp_csrc_count, rtp_marker, PayloadType);
+
+                        RTPPacketUtil.WriteSequenceNumber(rtp_packet, Sequence);
 
                         RTPPacketUtil.WriteTS(rtp_packet, timestamp);
 
-                       // UInt32 empty_ssrc = 0;
+                        // UInt32 empty_ssrc = 0;
                         RTPPacketUtil.WriteSSRC(rtp_packet, SSRC);
 
                         // Now append the Fragmentation Header (with Start and End marker) and part of the raw_nal
@@ -306,7 +367,7 @@ namespace ScreenStreamer
 
                         rtp_packets.Add(rtp_packet);
 
-                        sequence++;
+                        Sequence++;
 
                         start_bit = 0;
                     }
@@ -316,20 +377,7 @@ namespace ScreenStreamer
             return rtp_packets;
 
         }
-
-
-
-        public void Close()
-        {
-
-            logger.Debug("Close()");
-            socket?.Close();
-            
-        }
-
-
     }
-
 
     public static class RTPPacketUtil
     {

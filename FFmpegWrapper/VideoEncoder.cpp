@@ -11,6 +11,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 #include <libswresample/swresample.h>
 
+
 #include <libavutil/hwcontext_dxva2.h>
 
 }
@@ -379,6 +380,7 @@ namespace FFmpegWrapper {
 		AVCodecContext* encoder_ctx;
 		struct SwsContext* sws_ctx;
 		AVFrame* frame;
+
 
 
 		//static NLog::Logger^ logger = NLog::LogManager::GetCurrentClassLogger();
