@@ -146,6 +146,21 @@ namespace ScreenStreamer
             int Height = videoBuffer.bitmap.Height;
 
 
+            int frameCount = 0;
+
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = 1000;
+            timer.Elapsed += (o, a) => 
+            {
+
+               // var fps = frameCount / 1000.0;
+                
+                Debug.WriteLine("FPS " + frameCount);
+
+                frameCount = 0;
+            };
+            timer.Start();
+
             double sec = 0;
             Task.Run(() =>
             {
@@ -166,8 +181,12 @@ namespace ScreenStreamer
     
                         try
                         {
+                            //bool res = false;
                             //var res = GDICapture.GetScreen(rect, ref videoBuffer);
-                            var res = GDIPlusCapture.GetScreen(rect, ref videoBuffer);
+
+                             var res = GDIPlusCapture.GetScreen(rect, ref videoBuffer);
+
+                           // var res = Direct3DCapture.CaptureRegionDirect3D(hWnd, rect, ref videoBuffer);
                             if (closing)
                             {
                                 break;
@@ -175,7 +194,10 @@ namespace ScreenStreamer
 
                             if (res)
                             {
-                                videoBuffer.time = sec;
+                                //videoBuffer.time = sec;
+                                //OnBufferUpdated();
+
+                                frameCount++;
                             }
                             OnBufferUpdated();
 
@@ -191,12 +213,14 @@ namespace ScreenStreamer
 
                         if (delay > 0)
                         {
+                            
                             Thread.Sleep(delay);
                         }
 
                         rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
 
                         sec += sw.ElapsedMilliseconds / 1000.0;
+                       
                     }
                 }
                 catch (Exception ex)

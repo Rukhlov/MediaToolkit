@@ -104,19 +104,22 @@ namespace ScreenStreamer
             }
 
 
+            var srcBounds = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
 
+            var destSize = new Size(1280, 720);
 
+            VideoBuffer buffer = new VideoBuffer(srcBounds.Width, srcBounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-
-            VideoBuffer buffer = new VideoBuffer(options.Width, options.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //VideoBuffer buffer = new VideoBuffer(1280, 720, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
             ScreenSource source = new ScreenSource();
-            source.Start(buffer);
+            int fps = 25;
+            source.Start(buffer, fps);
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
             {
-                Width = options.Width,
-                Height = options.Height,
+                Width = destSize.Width, // options.Width,
+                Height =  destSize.Height, // options.Height,
                 FrameRate = options.FrameRate,
                 EncoderName = "",
             };

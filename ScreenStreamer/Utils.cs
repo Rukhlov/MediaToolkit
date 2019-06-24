@@ -12,6 +12,9 @@ namespace ScreenStreamer
     [System.Security.SuppressUnmanagedCodeSecurity()]
     public sealed class NativeMethods
     {
+        [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CopyMemory")]
+        public static extern void CopyMemory(IntPtr destination, IntPtr source, uint length);
+
         [DllImport("user32.dll", EntryPoint = "GetDesktopWindow")]
         public static extern IntPtr GetDesktopWindow();
 

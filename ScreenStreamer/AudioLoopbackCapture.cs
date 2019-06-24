@@ -76,7 +76,7 @@ namespace ScreenStreamer
                 audioResampler.Resample2(src, out dest);
                 if (dest != null && dest.Length > 0)
                 {
-                    Debug.WriteLine("dest.Length " + dest.Length);
+                    //Debug.WriteLine("dest.Length " + dest.Length);
 
                     rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 8.0);
                     sw.Restart();

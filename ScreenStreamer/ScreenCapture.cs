@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommonData;
+using SlimDX;
 using SlimDX.Direct3D9;
 
 namespace ScreenStreamer
@@ -20,6 +22,7 @@ namespace ScreenStreamer
         private static Dictionary<IntPtr, Device> _direct3DDeviceCache = new Dictionary<IntPtr, Device>();
 
         private static Surface surface = null;
+        private static Surface destSurface = null;
 
         public static Bitmap CaptureRegionDirect3D(IntPtr handle, Rectangle region)
         {
@@ -62,12 +65,12 @@ namespace ScreenStreamer
                 surface = Surface.CreateOffscreenPlain(device, adapterInfo.CurrentDisplayMode.Width, adapterInfo.CurrentDisplayMode.Height, Format.A8R8G8B8, Pool.SystemMemory);
             }
 
-
             if (surface != null)
             {
                 device.GetFrontBufferData(0, surface);
 
-                using (var dataStream = Surface.ToStream(surface, ImageFileFormat.Bmp, 
+
+                using (var dataStream = Surface.ToStream(surface, ImageFileFormat.Bmp,
                     new Rectangle(region.Left, region.Top, region.Width, region.Height)))
                 {
                     MemoryStream memory = new MemoryStream();
@@ -90,7 +93,178 @@ namespace ScreenStreamer
 
             return bitmap;
         }
+
+        static Texture texture = null;
+        static Surface tmp = null;
+        public static bool CaptureRegionDirect3D(IntPtr handle, Rectangle region, ref VideoBuffer videoBuffer)
+        {
+            bool success = false;
+
+            IntPtr hWnd = handle;
+            Bitmap bitmap = null;
+
+            AdapterInformation adapterInfo = direct3D9.Adapters.DefaultAdapter;
+            Device device;
+
+            if (_direct3DDeviceCache.ContainsKey(hWnd))
+            {
+                device = _direct3DDeviceCache[hWnd];
+            }
+
+            else
+            {
+                Rectangle clientRect = NativeMethods.GetAbsoluteClientRect(hWnd);
+
+                PresentParameters parameters = new PresentParameters
+                {
+                    BackBufferFormat = adapterInfo.CurrentDisplayMode.Format,
+                    BackBufferHeight = clientRect.Height,
+                    BackBufferWidth = clientRect.Width,
+                    Multisample = MultisampleType.None,
+                    SwapEffect = SwapEffect.Discard,
+                    DeviceWindowHandle = hWnd,
+                    PresentationInterval = PresentInterval.Default,
+                    FullScreenRefreshRateInHertz = 0
+
+                };
+
+                CreateFlags Flags = (CreateFlags.Multithreaded | CreateFlags.FpuPreserve | CreateFlags.HardwareVertexProcessing);
+                device = new Device(direct3D9, adapterInfo.Adapter, DeviceType.Hardware, hWnd, Flags, parameters);
+
+                _direct3DDeviceCache.Add(hWnd, device);
+            }
+
+
+            if (surface == null)
+            {
+                surface = Surface.CreateOffscreenPlain(device, adapterInfo.CurrentDisplayMode.Width, adapterInfo.CurrentDisplayMode.Height, Format.A8R8G8B8, Pool.SystemMemory);
+            }
+
+
+
+
+            if (texture == null)
+            {
+                texture = new Texture(device, adapterInfo.CurrentDisplayMode.Width, adapterInfo.CurrentDisplayMode.Height, 1, Usage.Dynamic, Format.A8R8G8B8, Pool.Default);
+                tmp = texture.GetSurfaceLevel(0);
+            }
+
+            
+
+            if (destSurface == null)
+            {
+                //destSurface = texture.GetSurfaceLevel(0);
+
+                //destSurface = Surface.CreateRenderTarget(device, 640, 480, Format.A8R8G8B8, MultisampleType.None, 0, false);
+
+                destSurface = Surface.CreateRenderTarget(device, adapterInfo.CurrentDisplayMode.Width, adapterInfo.CurrentDisplayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
+            }
+
+            if (surface != null)
+            {
+               
+                var syncRoot = videoBuffer.syncRoot;
+                bool lockTaken = false;
+                
+                try
+                {
+
+                    Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+                    if (lockTaken)
+                    {
+
+                        Result result = device.GetFrontBufferData(0, surface);
+
+                        if (result.IsSuccess)
+                        {
+                            CopyToBitmap(videoBuffer.bitmap, surface);
+
+                            success = true;
+                        }
+                        
+                        //using (var dataStream = Surface.ToStream(surface, ImageFileFormat.Bmp,
+                        //    new Rectangle(region.Left, region.Top, region.Width, region.Height)))
+                        //{
+                        //    var bmp = videoBuffer.bitmap;
+                        //    int width = bmp.Width;
+                        //    int height = bmp.Height;
+
+                        //    var data = bmp.LockBits(new Rectangle(0, 0, width, height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+                        //    try
+                        //    {
+
+                        //        uint size = (uint)(data.Width * data.Height * 4);
+                        //        NativeMethods.CopyMemory(data.Scan0, dataStream.DataPointer, size);
+
+
+                        //        success = true;
+                        //    }
+                        //    finally
+                        //    {
+                        //        bmp.UnlockBits(data);
+                        //    }
+                        //}
+                    }
+
+                }
+                finally
+                {
+                    if (lockTaken)
+                    {
+                        Monitor.Exit(syncRoot);
+                    }
+                }
+            }
+
+            return success;
+        }
+
+
+        unsafe static private void CopyToBitmap(Bitmap bmp, Surface surface)
+        {
+            var bitmapData = bmp.LockBits(new Rectangle(0,0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            try
+            {
+                DataRectangle t_data = surface.LockRectangle(LockFlags.None);
+                try
+                {
+                    int pitch = ((int)t_data.Pitch / sizeof(ushort));
+                    int bitmapPitch = ((int)bitmapData.Stride / sizeof(ushort));
+
+                    DataStream d_stream = t_data.Data;
+
+                    ushort* to = (ushort*)bitmapData.Scan0.ToPointer();
+                    ushort* from = (ushort*)d_stream.DataPointer;
+
+                    //ushort* to = (ushort*)d_stream.DataPointer;
+                    //ushort* from = (ushort*)bitmapData.Scan0.ToPointer();
+
+                    for (int j = 0; j < bmp.Height; j++)
+                    {
+                        for (int i = 0; i < bitmapPitch; i++)
+                        {
+                            to[i + j * pitch] = from[i + j * bitmapPitch];
+                        }
+                    }
+                }
+                finally
+                {
+                    surface.UnlockRectangle();
+                }
+            }
+            finally
+            {
+                bmp.UnlockBits(bitmapData);
+            }
+           
+        }
+
+
     }
+
+
+
+
     public class GDICapture
     {
         public static Bitmap GetWindow(IntPtr handle, Rectangle rect)
@@ -136,19 +310,24 @@ namespace ScreenStreamer
 
             var syncRoot = videoBuffer.syncRoot;
             bool lockTaken = false;
-            Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+            
             IntPtr dest = IntPtr.Zero;
             Graphics g = null;
             try
             {
-                var bmp = videoBuffer.bitmap;
-                g = System.Drawing.Graphics.FromImage(bmp);
-                dest = g.GetHdc();
+                Monitor.TryEnter(syncRoot, 10, ref lockTaken);
 
-                IntPtr src = NativeMethods.GetDC(IntPtr.Zero);
+                if (lockTaken)
+                {
+                    var bmp = videoBuffer.bitmap;
+                    g = System.Drawing.Graphics.FromImage(bmp);
+                    dest = g.GetHdc();
 
-                success = NativeMethods.BitBlt(dest, rect.Left, rect.Top, rect.Width, rect.Height, src, 0, 0,
-                    (NativeMethods.TernaryRasterOperations)13369376);
+                    IntPtr src = NativeMethods.GetDC(IntPtr.Zero);
+
+                    success = NativeMethods.BitBlt(dest, rect.Left, rect.Top, rect.Width, rect.Height, src, 0, 0,
+                        (NativeMethods.TernaryRasterOperations)13369376);
+                }
                 
             }
             finally
@@ -184,23 +363,26 @@ namespace ScreenStreamer
             var syncRoot = videoBuffer.syncRoot;
 
             bool lockTaken = false;
-            Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+            
             try
             {
-                var bmp = videoBuffer.bitmap;
-                Size size = new Size(rect.Width, rect.Height);
-                Graphics g = Graphics.FromImage(bmp);
-                try
+                Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+                if (lockTaken)
                 {
-                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, size, CopyPixelOperation.SourceCopy);
+                    var bmp = videoBuffer.bitmap;
+                    Size size = new Size(rect.Width, rect.Height);
+                    Graphics g = Graphics.FromImage(bmp);
+                    try
+                    {
+                        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, size, CopyPixelOperation.SourceCopy);
+                        success = true;
+                    }
+                    finally
+                    {
+                        g.Dispose();
+                        g = null;
+                    }
                 }
-                finally
-                {
-                    g.Dispose();
-                    g = null;
-                }
-
-
             }
             finally
             {

@@ -154,7 +154,7 @@ namespace ScreenStreamer
                 offset += packetSize;
                 dataSize -= packetSize;
 
-                Debug.WriteLine("offset " + offset + " " + timestamp);
+                //Debug.WriteLine("offset " + offset + " " + timestamp);
                 timestamp += (uint)packetSize; //40 * 8;
 
 
