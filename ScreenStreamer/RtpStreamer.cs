@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScreenStreamer.Utils;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -54,12 +55,16 @@ namespace ScreenStreamer
 
             if (packets != null && packets.Count > 0)
             {
+                int bytesSend = 0;
                 foreach (byte[] rtp in packets)
                 {
                     try
                     {
                         // socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
                         socket?.BeginSendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint, null, null);
+                        bytesSend += rtp.Length;
+
+                        Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
                     }
                     catch (ObjectDisposedException) { }
                 }

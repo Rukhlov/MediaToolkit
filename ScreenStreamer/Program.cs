@@ -12,6 +12,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ScreenStreamer
 {
@@ -19,6 +20,8 @@ namespace ScreenStreamer
     class Program
     {
         private static Logger logger = null;
+
+        [STAThread]
         static void Main(string[] args)
         {
 
@@ -49,45 +52,6 @@ namespace ScreenStreamer
                 Console.ReadKey();
             };
 
-
-
-
-
-            //AudioLoopbackSource audioCapture = new AudioLoopbackSource();
-
-            //var outputParams = new AudioEncodingParams
-            //{
-            //    SampleRate = 8000,
-            //    Channels = 1,
-            //    Encoding = "PCMU"
-
-            //};
-
-            //audioCapture.Start(outputParams);
-            //Console.ReadKey();
-            //return;
-
-
-            //AudioResampler audioResampler = new AudioResampler();
-
-            //audioResampler.Open();
-
-            //audioResampler.Test();
-
-            //Console.ReadKey();
-
-            //return;
-
-            //AudioLoopbackCapture audioCapture = new AudioLoopbackCapture();
-            //audioCapture.Start();
-
-
-
-
-
-            //return;
-
-
             logger.Info("========== START ============");
 
             CommandLineOptions options = null;
@@ -103,18 +67,22 @@ namespace ScreenStreamer
                 }
             }
 
-
-            var srcBounds = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
-
-            var destSize = new Size(1280, 720);
-
-            VideoBuffer buffer = new VideoBuffer(srcBounds.Width, srcBounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-            //VideoBuffer buffer = new VideoBuffer(1280, 720, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //Utils.DwmApi.DisableAero(true);
+            
 
             ScreenSource source = new ScreenSource();
-            int fps = 25;
-            source.Start(buffer, fps);
+            
+            int fps = 30;
+            var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
+           // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+
+            var destSize = new Size(1280, 720);
+            //var destSize = new Size(2560, 1440);
+            source.Start(srcRect, destSize, fps);
+
+            Controls.StatisticForm statisticForm = new Controls.StatisticForm();
+            statisticForm.Start();
+
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
             {
@@ -133,7 +101,7 @@ namespace ScreenStreamer
             VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
             videoStreamer.Start(encodingParams, networkParams);
 
-            AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
+            //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
 
             var audioParams = new AudioEncodingParams
             {
@@ -142,12 +110,15 @@ namespace ScreenStreamer
                 Encoding = "PCMU"
             };
 
-            audioStreamer.Start(audioParams);
+            //audioStreamer.Start(audioParams);
 
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            //Console.WriteLine("Press any key to exit...");
+            //Console.ReadKey();
 
-            audioStreamer?.Close();
+            logger.Info("==========APP RUN ============");
+            Application.Run();
+
+            //audioStreamer?.Close();
             videoStreamer?.Close();
             source?.Close();
 

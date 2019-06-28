@@ -70,6 +70,10 @@ namespace TestClient
                 "a=rtpmap:96 H264/90000",
                 "a=fmtp:96 packetization-mode=1",
                 //"a=fmtp:96 packetization-mode=1 sprop-parameter-set=Z2QMH6yyAKALdCAAAAMAIAAAB5HjBkkAAAAB,aOvDyyLA",
+
+                "m=audio 1236 RTP/AVP 0",
+                "a=rtpmap:0 PCMU/8000",
+
             };
 
 
@@ -79,7 +83,7 @@ namespace TestClient
             {
                     // "--extraintf=logger",
                     //"--verbose=0",
-                   // "--network-caching=100",
+                    //"--network-caching=100", //не работает
             };
 
             mediaPlayer?.Play(new FileInfo(file), opts);

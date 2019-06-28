@@ -4,6 +4,7 @@ using NAudio.Utils;
 using NAudio.Wave;
 using NAudio.Wave.Compression;
 using NAudio.Wave.SampleProviders;
+using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

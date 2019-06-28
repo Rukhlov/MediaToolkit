@@ -11,12 +11,27 @@ namespace CommonData
     {
         public VideoBuffer(int width, int height, System.Drawing.Imaging.PixelFormat fmt)
         {
-             this.bitmap = new Bitmap(width, height, fmt);
+            this.bitmap = new Bitmap(width, height, fmt);
+            var channels = Image.GetPixelFormatSize(fmt) / 8;
+            this.size = channels * width * height;
         }
     
         public readonly object syncRoot = new object();
-        public readonly Bitmap bitmap = null;
+
+        public Bitmap bitmap = null;
         public double time = 0;
+
+        private long size = -1;
+        public long Size { get => size; }
+
+        public void Dispose()
+        {
+            if (bitmap != null)
+            {
+                bitmap.Dispose();
+                bitmap = null;
+            }
+        }
     }
 
     public class VideoEncodingParams

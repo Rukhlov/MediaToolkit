@@ -46,8 +46,8 @@ namespace FFmpegWrapper {
 				cleanedup = false;
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
 
-				AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
-				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // Работает быстрее всего ...
+				//AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
+				AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // Работает быстрее всего ...
 
 				if (!encoder) {
 					// Если нету энкодера Nvidia берем любой
@@ -111,10 +111,10 @@ namespace FFmpegWrapper {
 					else
 					{
 						//av_dict_set(&param, "preset", "medium", 0);
-						av_dict_set(&param, "preset", "ultrafast", 0);
+						//av_dict_set(&param, "preset", "ultrafast", 0);
 
 					}
-
+					av_dict_set(&param, "preset", "llhq", 0);
 					av_dict_set(&param, "tune", "zerolatency", 0);
 					
 				}
@@ -138,7 +138,8 @@ namespace FFmpegWrapper {
 				frame->height = encoder_ctx->height;
 				frame->format = encoder_ctx->pix_fmt;
 
-				if (av_frame_get_buffer(frame, 32) < 0) {
+				if (av_frame_get_buffer(frame, 0) < 0) {
+				//if (av_frame_get_buffer(frame, 32) < 0) {
 					throw gcnew Exception("Could not allocate frame data.");
 				}
 
@@ -172,9 +173,10 @@ namespace FFmpegWrapper {
 				Object^ syncRoot = videoBuffer->syncRoot;
 				bool lockTaken = false;
 
-				Monitor::Enter(syncRoot);
+				
 				try {
 
+					Monitor::Enter(syncRoot, lockTaken);
 					int width = bmp->Width;
 					int height = bmp->Height;
 					PixelFormat bmpFmt = bmp->PixelFormat;
@@ -190,6 +192,11 @@ namespace FFmpegWrapper {
 					else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
 
 						pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
+
+					}
+					else if (bmpFmt == PixelFormat::Format16bppRgb565 ) {
+
+						pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
 
 					}
 					else {
@@ -215,10 +222,11 @@ namespace FFmpegWrapper {
 						{
 							reinterpret_cast<uint8_t*>(bmpData->Scan0.ToPointer())
 						};
-
+						//int bmpStride = 4 * ((width * 3 + 3) / 4);
 						const int scr_size[1] =
 						{
 							bmpData->Stride
+							//bmpStride
 						};
 
 						//  конвертируем в новый формат
@@ -226,7 +234,9 @@ namespace FFmpegWrapper {
 					}
 					finally{
 
-						bmp->UnlockBits(bmpData);
+						if (lockTaken) {
+							bmp->UnlockBits(bmpData);
+						}
 					}
 
 				}
