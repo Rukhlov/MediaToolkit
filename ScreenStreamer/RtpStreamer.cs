@@ -64,7 +64,7 @@ namespace ScreenStreamer
                         socket?.BeginSendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += rtp.Length;
 
-                        Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
+                       // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
                     }
                     catch (ObjectDisposedException) { }
                 }

@@ -72,12 +72,30 @@ namespace ScreenStreamer
 
             ScreenSource source = new ScreenSource();
             
-            int fps = 30;
+            int fps = 10;
+            
+            // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
-           // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
 
             var destSize = new Size(1280, 720);
-            //var destSize = new Size(2560, 1440);
+            // var destSize = new Size(2560, 1440);
+            //var destSize = new Size(1920, 1080);
+
+            var ratio = srcRect.Width / (double)srcRect.Height;
+            if(ratio > 1)
+            {
+                int destWidth = srcRect.Width / 2;
+                int destHeight =(int)(destWidth / ratio);
+                destSize = new Size(destWidth, destHeight);
+            }
+            else
+            {
+                int destHeight = srcRect.Height / 2;
+                int destWidth = (int)(destHeight * ratio);
+                destSize = new Size(destWidth, destHeight);
+            }
+
+
             source.Start(srcRect, destSize, fps);
 
             Controls.StatisticForm statisticForm = new Controls.StatisticForm();
@@ -89,20 +107,29 @@ namespace ScreenStreamer
                 Width = destSize.Width, // options.Width,
                 Height =  destSize.Height, // options.Height,
                 FrameRate = options.FrameRate,
-                EncoderName = "",
+                EncoderName = "", //libx264 // h264_nvenc
             };
-
+            
+            MJpegOverHttpStreamer httpStreamer = new MJpegOverHttpStreamer(source);
+            httpStreamer.Start(encodingParams);
+            
+            
+            /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 MulitcastAddres = options.ServerAddr,
                 Port = options.Port,
             };
 
+
+
             VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
             videoStreamer.Start(encodingParams, networkParams);
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
+            */
 
+            /*
             var audioParams = new AudioEncodingParams
             {
                 SampleRate = 8000,
@@ -110,7 +137,9 @@ namespace ScreenStreamer
                 Encoding = "PCMU"
             };
 
-            //audioStreamer.Start(audioParams);
+            audioStreamer.Start(audioParams);
+            */
+
 
             //Console.WriteLine("Press any key to exit...");
             //Console.ReadKey();
@@ -119,7 +148,8 @@ namespace ScreenStreamer
             Application.Run();
 
             //audioStreamer?.Close();
-            videoStreamer?.Close();
+            //videoStreamer?.Close();
+
             source?.Close();
 
             logger.Info("========== THE END ============");

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScreenStreamer.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -30,30 +31,17 @@ namespace ScreenStreamer.Controls
         private Timer timer = new Timer();
         private void Timer_Tick(object sender, EventArgs e)
         {
-            var stats = Statistic.CaptureStats;
-            var perfCounter = Statistic.PerfCounter;
-            var rtpStats = Statistic.RtpStats;
+            var stats = Statistic.Stats;
+            this.labelCpuUsage.Text = Statistic.PerfCounter.GetReport();
 
+            if (stats.Count > 0)
             {
-                var fps = (1 / stats.avgFrameInterval);
-                var mbytesPerSec = stats.avgBytesPerSec / (1024.0 * 1024);
-                var mbytes = stats.totalBytes / (1024.0 * 1024);
-
-                this.labelFps.Text = fps.ToString("0.0") + " FPS";
-                this.labelFramesCount.Text = stats.totalFrameCount + " Frames";
-                this.labelBytesPerSec.Text = mbytesPerSec.ToString("0.0") + " MByte/s";
-                this.labelTotalBytes.Text = mbytes.ToString("0.0") + " MByte";
-                this.labelTime.Text = DateTime.Now.ToString("HH:mm:ss.fff");
-
-                this.labelCpuUsage.Text = perfCounter.GetCpuUsage();
+                this.labelCaptureStats.Text = stats[0].GetReport();
             }
-            {
-                var mbytesPerSec = rtpStats.sendBytesPerSec / (1024.0 * 1024);
-                var mbytes = rtpStats.bytesSend / (1024.0 * 1024);
 
-                this.labelRtpCount.Text = rtpStats.packetsCount + " Packets";
-                this.labelRtpTotal.Text = mbytes.ToString("0.0") + " MBytes";
-                this.labelRtpBytesPerSec.Text = mbytesPerSec.ToString("0.000") + " MByte/s";
+            if (stats.Count > 1)
+            {
+                this.labelNetworkStats.Text = stats[1].GetReport();
             }
 
         }
@@ -73,15 +61,15 @@ namespace ScreenStreamer.Controls
 
         public void Reset()
         {
-            this.labelFps.Text = "--- FPS";
-            this.labelFramesCount.Text = "--- Frames";
-            this.labelBytesPerSec.Text = "--- KByte/s";
-            this.labelTotalBytes.Text = "--- MByte";
-            this.labelTime.Text = "";
+            //this.labelFps.Text = "--- FPS";
+            //this.labelFramesCount.Text = "--- Frames";
+            //this.labelBytesPerSec.Text = "--- KByte/s";
+            //this.labelCaptureStats.Text = "--- MByte";
+            //this.labelTime.Text = "";
 
-            this.labelRtpCount.Text = "--- Packets";
-            this.labelRtpTotal.Text = "--- MBytes";
-            this.labelRtpBytesPerSec.Text = "--- MByte/s";
+            //this.labelNetworkStats.Text = "--- Packets";
+            //this.labelRtpTotal.Text = "--- MBytes";
+            //this.labelRtpBytesPerSec.Text = "--- MByte/s";
 
         }
 

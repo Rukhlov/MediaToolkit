@@ -164,6 +164,8 @@ namespace ScreenStreamer
 
             srcSurface = Surface.CreateOffscreenPlain(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, Pool.SystemMemory);
 
+            //tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
+
             tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
             destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
         }
@@ -174,7 +176,7 @@ namespace ScreenStreamer
         {
             sw.Restart();
             bool success = false;
-
+            
             Result result = device.TestCooperativeLevel();
             if (result != ResultCode.Success)
             {
@@ -211,6 +213,7 @@ namespace ScreenStreamer
                 return false;
             }
 
+
             //srcSurface1.UnlockRectangle();
 
             if (result != ResultCode.Success)
@@ -234,7 +237,18 @@ namespace ScreenStreamer
 
                 return false;
             }
+            
 
+
+            /*
+            var render = device.GetRenderTarget(0);
+
+           // var dc = render.GetDC();
+            var descr = render.Description;
+            var surf = Surface.CreateOffscreenPlain(device, descr.Width, descr.Height, Format.X8R8G8B8, Pool.SystemMemory);
+            device.GetRenderTargetData(render, surf);
+
+            */
             var syncRoot = videoBuffer.syncRoot;
             bool lockTaken = false;
 
@@ -460,16 +474,18 @@ namespace ScreenStreamer
             //videoBuffer.bitmap = new Bitmap(destSize.Width, destSize.Height, PixelFormat.Format24bppRgb);
 
         }
+
+
         //static IntPtr screenDc;
         //static IntPtr compatibleDc;
         //static IntPtr compatibleBitmap;
 
         public override bool UpdateBuffer(int timeout = 10)
         {
-            return GetScreen(base.srcRect, ref base.videoBuffer);
+            return TryGetScreen(base.srcRect, ref base.videoBuffer, timeout);
         }
 
-        public static bool GetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer)
+        public static bool TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer, int timeout = 10)
         {
             bool success = false;
 
@@ -481,11 +497,11 @@ namespace ScreenStreamer
             Graphics graphDest = null;
             try
             {
-                Monitor.TryEnter(syncRoot, 10, ref lockTaken);
+                Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
 
                 if (lockTaken)
                 {
-                    var bmp = videoBuffer.bitmap;                    
+                    var bmp = videoBuffer.bitmap;
                     graphDest = System.Drawing.Graphics.FromImage(bmp);
                     hdcDest = graphDest.GetHdc();
                     Size destSize = bmp.Size;
@@ -502,23 +518,15 @@ namespace ScreenStreamer
 
                     int nWidthSrc = srcRect.Width;
                     int nHeightSrc = srcRect.Height;
-               
+
                     // в этом режиме мигает курсор, но захватывается все содержимое рабочего стола (ContextMenu, ToolTip-ы PopUp-ы ...)
+                    // https://docs.microsoft.com/en-us/previous-versions/technet-magazine/dd392008(v=msdn.10)
                     var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                     //var dwRop = TernaryRasterOperations.SRCCOPY;
 
-                    if (destSize.Width != srcRect.Width || destSize.Height != srcRect.Height)
-                    {// Лучше не использовать !!!
-                        // Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR); //самый быстрый режим
-                        //самый качественный но все равно выглядит хуже чем масштабирование sws_scale
-                        Gdi32.SetStretchBltMode(hdcDest, StretchingMode.HALFTONE);
-                        
-                        success = Gdi32.StretchBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
-                            hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc,
-                            dwRop);
-                    }
-                    else
-                    {
+
+                    if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
+                    { 
                         //IntPtr hOldBmp = Gdi32.SelectObject(hMemoryDC, hBitmap);
                         //success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
                         //hBitmap = Gdi32.SelectObject(hMemoryDC, hOldBmp);
@@ -526,7 +534,18 @@ namespace ScreenStreamer
 
                         success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
                     }
+                    else
+                    {// Лучше не использовать !!!
+                        Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR); //самый быстрый режим
 
+                        //самый качественный но все равно выглядит хуже чем масштабирование sws_scale
+                        //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.HALFTONE);
+
+                        success = Gdi32.StretchBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
+                            hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc,
+                            dwRop);
+                    }
+  
                 }
 
             }

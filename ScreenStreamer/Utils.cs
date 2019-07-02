@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 namespace ScreenStreamer.Utils
 {
 
+
+
+
+
     public enum TernaryRasterOperations : uint
     {
         SRCCOPY = 0x00CC0020,
@@ -229,7 +233,7 @@ namespace ScreenStreamer.Utils
                 Left = screen.Left,
                 Top = screen.Top,
                 Right = screen.Right,
-                Bottom =screen.Bottom,
+                Bottom = screen.Bottom,
             };
 
             return MonitorFromRect(ref rect, MONITOR_MONITOR_DEFAULTTOPRIMARY);
@@ -441,8 +445,188 @@ namespace ScreenStreamer.Utils
         }
     }
 
+    public abstract class StatCounter
+    {
+        public abstract string GetReport();
+        public abstract void Reset();
+    }
 
-    public class PerfCounter : IDisposable
+    public class Statistic
+    {
+
+        public readonly static List<StatCounter> Stats = new List<StatCounter>();
+
+        private static PerfCounter perfCounter = new PerfCounter();
+        public static PerfCounter PerfCounter
+        {
+            get
+            {
+                if (perfCounter == null)
+                {
+                    perfCounter = new PerfCounter();
+                }
+                return perfCounter;
+            }
+        }
+    }
+
+    public class OutputStats : StatCounter
+    {
+
+
+        public uint packetsCount = 0;
+
+        public long bytesSend = 0;
+        public double sendBytesPerSec = 0;
+
+        public double lastTimestamp = 0;
+
+        public OutputStats()
+        {
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = 1000;
+
+            //double bytes = 0;
+            //timer.Elapsed += (o, a) =>
+            //{
+
+            //    sendBytesPerSec = _sendBytesPerSec;
+            //    _sendBytesPerSec = 0;
+            //};
+
+            //timer.Start();
+        }
+
+
+        double _sendBytesPerSec = 0;
+        public void Update(double timestamp, int packetSize)
+        {
+
+            if (lastTimestamp > 0)
+            {
+                var time = timestamp - lastTimestamp;
+                var bytesPerSec = packetSize / time;
+
+                sendBytesPerSec = (bytesPerSec * 0.05 + sendBytesPerSec * (1 - 0.05));
+            }
+
+            _sendBytesPerSec += packetSize;
+            bytesSend += packetSize;
+
+            lastTimestamp = timestamp;
+            packetsCount++;
+        }
+
+        public override string GetReport()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var mbytesPerSec = sendBytesPerSec / (1024.0 * 1024);
+            var mbytes = bytesSend / (1024.0 * 1024);
+
+            sb.AppendLine(packetsCount + " buffers");
+            sb.AppendLine(mbytes.ToString("0.0") + " MBytes");
+            sb.AppendLine(mbytesPerSec.ToString("0.000") + " MByte/s");
+
+            //var fps = (1 / this.avgFrameInterval);
+            //var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
+            //var mbytes = this.totalBytes / (1024.0 * 1024);
+
+            //TimeSpan time = TimeSpan.FromSeconds(totalTime);
+            //sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
+
+            //sb.AppendLine(fps.ToString("0.0") + " FPS");
+            //sb.AppendLine(this.totalFrameCount + " Frames");
+            //sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
+            //sb.AppendLine(mbytes.ToString("0.0") + " MByte");
+
+            return sb.ToString();
+        }
+
+        public override void Reset()
+        {
+            packetsCount = 0;
+
+            bytesSend = 0;
+            sendBytesPerSec = 0;
+
+            lastTimestamp = 0;
+        }
+
+
+
+    }
+
+    public class CaptureStats :StatCounter
+    {
+        public double totalTime = 0;
+        public long totalBytes = 0;
+        public uint totalFrameCount = 0;
+
+        public uint currentFrame = 0;
+        public long currentBytes = 0;
+
+        public double avgFrameInterval = 0;
+        public double avgBytesPerSec = 0;
+
+        public double lastTimestamp = 0;
+        //public long bufferSize = 0;
+
+        public void Update(double timestamp, int bytesSize)
+        {
+
+            if (lastTimestamp > 0)
+            {
+                var time = timestamp - lastTimestamp;
+
+                avgFrameInterval = (time * 0.05 + avgFrameInterval * (1 - 0.05));
+                avgBytesPerSec = bytesSize / avgFrameInterval;
+
+                totalTime += (timestamp - lastTimestamp);
+            }
+
+            totalBytes += bytesSize;
+
+            lastTimestamp = timestamp;
+            totalFrameCount++;
+        }
+
+
+        public override string GetReport()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var fps = (1 / this.avgFrameInterval);
+            var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
+            var mbytes = this.totalBytes / (1024.0 * 1024);
+
+            TimeSpan time = TimeSpan.FromSeconds(totalTime);
+            sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
+
+            sb.AppendLine(fps.ToString("0.0") + " FPS");
+            sb.AppendLine(this.totalFrameCount + " Frames");
+            sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
+            sb.AppendLine(mbytes.ToString("0.0") + " MByte");
+
+            return sb.ToString();
+        }
+
+        public override void Reset()
+        {
+            this.totalBytes = 0;
+            this.totalFrameCount = 0;
+            this.currentFrame = 0;
+            this.currentBytes = 0;
+
+            this.avgFrameInterval = 0;
+            this.avgBytesPerSec = 0;
+            this.lastTimestamp = 0;
+
+        }
+    }
+
+
+    public class PerfCounter : StatCounter, IDisposable
     {
         public PerfCounter()
         {
@@ -451,79 +635,32 @@ namespace ScreenStreamer.Utils
 
         private void _PerfCounter()
         {
-            closed = false;
-            isFirstUpdate = true;
-            isFirstPresent = true;
+            timer.Interval = 500;
+            timer.Elapsed += Timer_Elapsed;
+            timer.Disposed += Timer_Disposed;
+            timer.Start();
 
-            thread = new Thread(TimerTick);
-            thread.Start();
         }
 
-        private Thread thread = null;
+        public short CPU { get; private set; }
 
-        private short CPU = 0;
+        private System.Timers.Timer timer = new System.Timers.Timer();
+        private CPUCounter cpuCounter = new CPUCounter();
 
-        private double meanUpdatePerSec = 0;
-        private double meanPresentPerSec = 0;
-
-        private long lastUpdate = 0;
-        private long lastPresent = 0;
-
-        private bool isFirstUpdate = true;
-        private bool isFirstPresent = true;
-
-        public void UpdateSignalStats()
+        private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            long timestamp = Stopwatch.GetTimestamp();
-            if (!isFirstUpdate)
-            {
-                double elapsed = (timestamp - lastUpdate) / (double)Stopwatch.Frequency;
-
-                if (elapsed > 0)
-                {
-                    meanUpdatePerSec = (1.0 / elapsed) * 0.05 + (1 - 0.05) * meanUpdatePerSec;
-                }
-                else
-                {
-                    Debug.WriteLine("!!!!!!!!!!!!!!!!!!!!! elapsed " + elapsed);
-                }
-            }
-            else
-            {
-                isFirstUpdate = false;
-            }
-            lastUpdate = timestamp;
+            this.CPU = cpuCounter.GetUsage();
         }
 
-        public void UpdatePresentStats()
+        private void Timer_Disposed(object sender, EventArgs e)
         {
-            long timestamp = Stopwatch.GetTimestamp();
-
-            if (!isFirstPresent)
-            {
-                double elapsed = (timestamp - lastPresent) / (double)Stopwatch.Frequency;
-
-                if (elapsed > 0)
-                {
-                    meanPresentPerSec = (1.0 / elapsed) * 0.05 + (1 - 0.05) * meanPresentPerSec;
-                }
-                else
-                {
-                    Debug.WriteLine("!!!!!!!!!!!!!!!!!!!!! elapsed " + elapsed);
-                }
-            }
-            else
-            {
-                isFirstPresent = false;
-            }
-
-            lastPresent = timestamp;
+            cpuCounter?.Dispose();
         }
-        
-        public string GetCpuUsage()
+
+        public override string GetReport()
         {
             string cpuUsage = "";
-            if(CPU >= 0 && CPU <= 100)
+            if (CPU >= 0 && CPU <= 100)
             {
                 cpuUsage = "CPU=" + CPU + "%";
             }
@@ -534,55 +671,16 @@ namespace ScreenStreamer.Utils
             return cpuUsage;
         }
 
-        public string GetReport2()
+        public override void Reset()
         {
-
-            return string.Format("FPS={0:0.0} FPS2={1:0.0} CPU={2}%", meanUpdatePerSec, meanPresentPerSec, CPU);
+            //throw new NotImplementedException();
         }
 
-        private void TimerTick(object state)
-        {
-            Debug.WriteLine("TimerTick() BEGIN");
-
-            if (closed == false)
-            {
-                CPUCounter counter = null;
-                try
-                {
-                    counter = new CPUCounter();
-                    while (true)
-                    {
-                        if (closed)
-                        {
-                            break;
-                        }
-
-                        CPU = counter.GetUsage();
-
-                        syncEvent.WaitOne(1000);
-                    }
-
-                }
-                finally
-                {
-
-                    if (counter != null)
-                    {
-                        counter.Dispose();
-                        counter = null;
-                    }
-                }
-            }
-
-            Debug.WriteLine("TimerTick() END");
-        }
-
-        private AutoResetEvent syncEvent = new AutoResetEvent(true);
-        private volatile bool closed = false;
         public void Dispose()
         {
-            closed = true;
-            syncEvent.Set();
+            timer?.Stop();
+            timer?.Dispose();
+            timer = null;
         }
 
         class CPUCounter : IDisposable

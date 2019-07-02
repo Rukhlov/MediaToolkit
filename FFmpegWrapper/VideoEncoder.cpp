@@ -16,6 +16,8 @@ extern "C" {
 
 }
 
+//#include <vcclr.h>
+
 using namespace System;
 using namespace System::Diagnostics;
 using namespace System::Drawing;
@@ -44,8 +46,11 @@ namespace FFmpegWrapper {
 			try {
 
 				cleanedup = false;
+				
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
 
+				/*
+				
 				//AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
 				AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // Работает быстрее всего ...
 
@@ -53,6 +58,8 @@ namespace FFmpegWrapper {
 					// Если нету энкодера Nvidia берем любой
 					encoder = avcodec_find_encoder(AV_CODEC_ID_H264);
 				}
+				*/
+
 
 				//AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc");
@@ -60,7 +67,23 @@ namespace FFmpegWrapper {
 				//AV_CODEC_ID_H264 AV_CODEC_ID_MJPEG AV_CODEC_ID_HEVC //AV_CODEC_ID_VP9 //(AV_CODEC_ID_MPEG4);//
 				//AVCodec* encoder = avcodec_find_encoder(AV_CODEC_ID_H264 /*AV_CODEC_ID_MPEG4*/); 
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
+				//AVCodec* encoder = avcodec_find_encoder(AV_CODEC_ID_MJPEG);
 
+
+
+				AVCodec* encoder = NULL;
+				IntPtr pEncoderName = IntPtr::Zero;
+				try {
+
+					pEncoderName = Marshal::StringToHGlobalAnsi(encodingParams->EncoderName);
+
+					encoder = avcodec_find_encoder_by_name((char*)pEncoderName.ToPointer());
+				}
+				finally{
+					Marshal::FreeHGlobal(pEncoderName);
+				}
+				
+	
 				encoder_ctx = avcodec_alloc_context3(encoder); 
 
 				int den = (encodingParams->FrameRate > 0 && encodingParams->FrameRate <= 60) ? encodingParams->FrameRate : 30;
@@ -68,7 +91,8 @@ namespace FFmpegWrapper {
 
 				encoder_ctx->width = encodingParams->Width;
 				encoder_ctx->height = encodingParams->Height;
-				encoder_ctx->gop_size = 30;
+				
+				encoder_ctx->gop_size = 60;
 				encoder_ctx->max_b_frames = 0;
 				
 
@@ -97,13 +121,22 @@ namespace FFmpegWrapper {
 				else if (encoder_ctx->codec_id == AV_CODEC_ID_MPEG4) {
 					profile = FF_PROFILE_MPEG4_ADVANCED_SIMPLE;
 				}
+				else if (encoder_ctx->codec_id == AV_CODEC_ID_MJPEG) {
+					//...
+
+					//encoder_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
+
+					encoder_ctx->flags |= AV_CODEC_FLAG_QSCALE;
+					encoder_ctx->global_quality = 10;// (2-31)//FF_QP2LAMBDA * qscale;
+				}
+
 				encoder_ctx->profile = profile;
 
 				AVDictionary *param = 0;
 				if (encoder->id == AV_CODEC_ID_H264) {
 
 
-					if (encoder->name == "h264_nvenc") {
+					if (strcmp(encoder->name, "h264_nvenc") == 0) {
 
 						av_dict_set(&param, "preset", "llhq", 0); //lowlatency HQ 
 						//av_dict_set(&param, "rc", "ll_2pass_size", 1478); 
@@ -111,13 +144,14 @@ namespace FFmpegWrapper {
 					else
 					{
 						//av_dict_set(&param, "preset", "medium", 0);
-						//av_dict_set(&param, "preset", "ultrafast", 0);
+						av_dict_set(&param, "preset", "ultrafast", 0);
 
 					}
-					av_dict_set(&param, "preset", "llhq", 0);
+					//av_dict_set(&param, "preset", "llhq", 0);
 					av_dict_set(&param, "tune", "zerolatency", 0);
 					
 				}
+
 
 				if (avcodec_open2(encoder_ctx, encoder, &param) < 0) {
 					throw gcnew Exception("Unable to open video codec");
@@ -133,15 +167,41 @@ namespace FFmpegWrapper {
 				//encoder_ctx->extradata
 
 
+
 				frame = av_frame_alloc();
 				frame->width = encoder_ctx->width;
 				frame->height = encoder_ctx->height;
 				frame->format = encoder_ctx->pix_fmt;
+				//frame->quality = 1;
+				
+				AVPixelFormat pixFormat;
+				switch (encoder_ctx->pix_fmt) {
+				case AV_PIX_FMT_YUVJ420P:
+					pixFormat = AV_PIX_FMT_YUV420P;
+					break;
+				case AV_PIX_FMT_YUVJ422P:
+					pixFormat = AV_PIX_FMT_YUV422P;
+					break;
+				case AV_PIX_FMT_YUVJ444P:
+					pixFormat = AV_PIX_FMT_YUV444P;
+					break;
+				case AV_PIX_FMT_YUVJ440P:
+					pixFormat = AV_PIX_FMT_YUV440P;
+					break;
+				default:
+					pixFormat = encoder_ctx->pix_fmt;
+					break;
+				}
+
+				frame->format = pixFormat;
+				
+
 
 				if (av_frame_get_buffer(frame, 0) < 0) {
 				//if (av_frame_get_buffer(frame, 32) < 0) {
 					throw gcnew Exception("Could not allocate frame data.");
 				}
+
 
 				last_sec = -1;
 
@@ -207,11 +267,13 @@ namespace FFmpegWrapper {
 					BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
 					try {
 
+						
 						sws_ctx = sws_getCachedContext(sws_ctx,
 							width, height, pix_fmt, // input
 							frame->width, frame->height, (AVPixelFormat)frame->format,  // output
 							SWS_BICUBIC,
 							NULL, NULL, NULL);
+						
 
 						if (sws_ctx == NULL) {
 
@@ -300,10 +362,10 @@ namespace FFmpegWrapper {
 				int res = avcodec_send_frame(encoder_ctx, frame);
 				//int res = avcodec_encode_video2(encoder_st->codec, &packet, frame, &got_output);
 
-				if (res < 0) {
-					//...
-					throw gcnew Exception("Error while encode video " + res);
-				}
+				//if (res < 0) {
+				//	//...
+				//	throw gcnew Exception("Error while encode video " + res);
+				//}
 
 
 				while (res >= 0) {

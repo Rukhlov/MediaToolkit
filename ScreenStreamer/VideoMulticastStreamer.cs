@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -35,6 +37,7 @@ namespace ScreenStreamer
                 logger.Info("Streaming thread started...");
                 screenSource.BufferUpdated += () => syncEvent.Set();
 
+
                 RtpStreamer streamer = null;
                 FFmpegVideoEncoder encoder = null;
                 try
@@ -55,22 +58,26 @@ namespace ScreenStreamer
                         byte[] frame = new byte[len];
                         Marshal.Copy(ptr, frame, 0, len);
 
+                        // File.WriteAllBytes("d:\\test_123.jpg", frame);
+
+
                         double ralativeTime = MediaTimer.GetRelativeTime();
-                        uint rtpTime =(uint)(ralativeTime * 90000);
+                        uint rtpTime = (uint)(ralativeTime * 90000);
 
                         streamer.Send(frame, rtpTime);
 
                         // streamer.Send(frame, rtpTimestamp);
 
+
                     };
 
 
- 
+                    double sec = 0;
                     Stopwatch sw = Stopwatch.StartNew();
                     while (!closing)
                     {
                         sw.Restart();
-  
+
                         try
                         {
                             syncEvent.WaitOne();
@@ -82,8 +89,8 @@ namespace ScreenStreamer
 
                             var buffer = screenSource.Buffer;
                             encoder.Encode(buffer, 0);
-                           
-   
+
+
                         }
                         catch (Exception ex)
                         {
@@ -94,7 +101,9 @@ namespace ScreenStreamer
                         rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
 
                         var mSec = sw.ElapsedMilliseconds;
-  
+
+
+
                     }
                 }
                 catch (Exception ex)
@@ -123,139 +132,11 @@ namespace ScreenStreamer
 
     }
 
-    public class Statistic
-    {
-
-        private static CaptureStatistic captStats = new CaptureStatistic();
-        public static CaptureStatistic CaptureStats
-        {
-            get
-            {
-                if (captStats == null)
-                {
-                    captStats = new CaptureStatistic();
-                }
-                return captStats;
-            }        
-        }
-
-        public class CaptureStatistic
-        {
-
-            public long totalBytes = 0;
-            public uint totalFrameCount = 0;
-
-            public uint currentFrame = 0;
-            public long currentBytes = 0;
-
-            public double avgFrameInterval = 0;
-            public double avgBytesPerSec = 0;
-
-            public double lastTimestamp = 0;
-            public long bufferSize = 0;
-
-            public void Update(double timestamp)
-            {
-
-                if (lastTimestamp > 0)
-                {
-                    var time = timestamp - lastTimestamp;
-
-                    avgFrameInterval = (time * 0.05 + avgFrameInterval * (1 - 0.05));
-                    avgBytesPerSec = bufferSize / avgFrameInterval;
-
-                }
-
-                totalBytes += bufferSize;
-
-                lastTimestamp = timestamp;
-                totalFrameCount++;
-            }
-
-
-        }
-
-        public class RtpStatistic
-        {
-
-            public uint packetsCount = 0;
-
-            public long bytesSend = 0;
-            public double sendBytesPerSec = 0;
-
-            public double lastTimestamp = 0;
-
-            public RtpStatistic()
-            {
-                System.Timers.Timer timer = new System.Timers.Timer();
-                timer.Interval = 1000;
-
-                double bytes =0;
-                timer.Elapsed += (o, a) =>
-                {
-
-                    sendBytesPerSec = _sendBytesPerSec;
-                    _sendBytesPerSec = 0;
-                };
-
-                timer.Start();
-            }
-
-
-            double _sendBytesPerSec = 0;
-            public void Update(double timestamp, int packetSize)
-            {
-
-                if (lastTimestamp > 0)
-                {
-                    //var time = timestamp - lastTimestamp;
-                    //var bytesPerSec = packetSize / time;
-
-                    //sendBytesPerSec = (bytesPerSec * 0.05 + sendBytesPerSec * (1 - 0.05));
-
-                }
-
-                _sendBytesPerSec += packetSize;
-                bytesSend += packetSize;
-
-                lastTimestamp = timestamp;
-                packetsCount++;
-            }
-
-
-        }
-
-        private static RtpStatistic rtpStats = new RtpStatistic();
-        public static RtpStatistic RtpStats
-        {
-            get
-            {
-                if (rtpStats == null)
-                {
-                    rtpStats = new RtpStatistic();
-                }
-                return rtpStats;
-            }
-        }
-
-        private static PerfCounter perfCounter = new PerfCounter();
-        public static PerfCounter PerfCounter
-        {
-            get
-            {
-                if (perfCounter == null)
-                {
-                    perfCounter = new PerfCounter();
-                }
-                return perfCounter;
-            }
-        }
-    }
 
     class ScreenSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
- 
+
         public ScreenSource() { }
 
         public VideoBuffer Buffer { get; private set; }
@@ -290,14 +171,18 @@ namespace ScreenStreamer
 
             //timer.Start();
 
+
             double sec = 0;
             Task.Run(() =>
             {
                 logger.Info("Capturing thread started...");
 
+                CaptureStats captureStats = new CaptureStats();
+                Statistic.Stats.Add(captureStats);
+
                 try
                 {
-  
+
 
                     var frameInterval = (1000.0 / frameRate);
                     Stopwatch sw = Stopwatch.StartNew();
@@ -315,13 +200,13 @@ namespace ScreenStreamer
 
                     this.Buffer = screenCapture.VideoBuffer;
 
-                    Statistic.CaptureStats.bufferSize = this.Buffer.Size;
+                    int bufferSize =  (int)this.Buffer.Size;
 
                     uint rtpTimestamp = 0;
                     while (!closing)
                     {
                         sw.Restart();
-    
+
                         try
                         {
                             var res = screenCapture.UpdateBuffer();
@@ -333,13 +218,12 @@ namespace ScreenStreamer
 
                             if (res)
                             {
-                                //videoBuffer.time = sec;
-                                //OnBufferUpdated();
+                                Buffer.time = sec;
 
                                 OnBufferUpdated();
                                 frameCount++;
                             }
-                            
+
 
                         }
                         catch (Exception ex)
@@ -347,13 +231,13 @@ namespace ScreenStreamer
                             logger.Error(ex);
                             Thread.Sleep(1000);
                         }
-  
+
                         var mSec = sw.ElapsedMilliseconds;
                         var delay = (int)(frameInterval - mSec);
 
                         if (delay > 0)
                         {
-                            
+
                             Thread.Sleep(delay);
                         }
 
@@ -361,12 +245,13 @@ namespace ScreenStreamer
 
                         sec += sw.ElapsedMilliseconds / 1000.0;
 
-                        var timestamp = MediaTimer.GetRelativeTime();
-                        Statistic.CaptureStats.Update(timestamp);
+                        captureStats.Update(sec, bufferSize);
+
+                        //Statistic.CaptureStats.Update(sec);
 
                         //Statistic.PerfCounter.UpdateSignalStats();
                         //Statistic.PerfCounter.UpdatePresentStats();
-                       
+
                     }
 
                     screenCapture.Close();
@@ -380,6 +265,7 @@ namespace ScreenStreamer
 
                 logger.Info("Capturing thread stopped...");
 
+                Statistic.Stats.Remove(captureStats);
             });
 
         }

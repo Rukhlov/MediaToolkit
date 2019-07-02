@@ -72,11 +72,12 @@
     <Compile Include="Controls\StatisticForm.Designer.cs">
       <DependentUpon>StatisticForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MJpegOverHttpStreamer.cs" />
     <Compile Include="RtpStreamer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenCapture.cs" />
-    <Compile Include="ScreenStreamer.cs" />
+    <Compile Include="VideoMulticastStreamer.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
