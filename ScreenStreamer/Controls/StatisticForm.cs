@@ -19,30 +19,25 @@ namespace ScreenStreamer.Controls
 
             this.StartPosition = FormStartPosition.Manual;
             this.Location = new Point(20, 20);
+
             this.ShowInTaskbar = false;
             this.TopMost = true;
 
             Reset();
-
+            //timer.Elapsed+= Timer_Elapsed;
             timer.Tick += Timer_Tick;
             timer.Interval = 100;
         }
 
+
+        //private System.Timers.Timer timer = new System.Timers.Timer();
+
         private Timer timer = new Timer();
         private void Timer_Tick(object sender, EventArgs e)
         {
-            var stats = Statistic.Stats;
+
             this.labelCpuUsage.Text = Statistic.PerfCounter.GetReport();
-
-            if (stats.Count > 0)
-            {
-                this.labelCaptureStats.Text = stats[0].GetReport();
-            }
-
-            if (stats.Count > 1)
-            {
-                this.labelNetworkStats.Text = stats[1].GetReport();
-            }
+            this.labelStats.Text = Statistic.GetReport();
 
         }
 
@@ -50,7 +45,9 @@ namespace ScreenStreamer.Controls
         {
 
             timer.Enabled = true;
-            this.Visible = true;
+
+            //this.Visible = true;
+            //this.ShowDialog();
         }
 
         public void Stop()
@@ -79,8 +76,9 @@ namespace ScreenStreamer.Controls
             get
             {
                 CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x80;
-                cp.ExStyle |= 0x00000020;
+                cp.ExStyle |= 0x00000008; //WS_EX_TOPMOST
+                cp.ExStyle |= 0x80; //WS_EX_NOACTIVATE
+                cp.ExStyle |= 0x00000020; //WS_EX_TRANSPARENT
                 return cp;
             }
         }

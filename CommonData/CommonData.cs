@@ -26,10 +26,13 @@ namespace CommonData
 
         public void Dispose()
         {
-            if (bitmap != null)
+            lock (syncRoot)
             {
-                bitmap.Dispose();
-                bitmap = null;
+                if (bitmap != null)
+                {
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
             }
         }
     }

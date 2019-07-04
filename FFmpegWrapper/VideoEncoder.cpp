@@ -25,6 +25,7 @@ using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace CommonData;
 using namespace System::Threading;
+using namespace NLog;
 
 namespace FFmpegWrapper {
 
@@ -41,16 +42,17 @@ namespace FFmpegWrapper {
 
 		void Open(VideoEncodingParams^ encodingParams) {
 
-			//logger->Debug("FFmpegVideoEncoder::Open(...) " + Width + " " + Height + " " + FrameRate);
+			logger->Debug("FFmpegVideoEncoder::Open(...) " +
+				encodingParams->Width + "x" + encodingParams->Height + " " + encodingParams->EncoderName);
 
 			try {
 
 				cleanedup = false;
-				
+
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
 
 				/*
-				
+
 				//AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
 				AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc"); // –аботает быстрее всего ...
 
@@ -82,19 +84,19 @@ namespace FFmpegWrapper {
 				finally{
 					Marshal::FreeHGlobal(pEncoderName);
 				}
-				
-	
-				encoder_ctx = avcodec_alloc_context3(encoder); 
+
+
+				encoder_ctx = avcodec_alloc_context3(encoder);
 
 				int den = (encodingParams->FrameRate > 0 && encodingParams->FrameRate <= 60) ? encodingParams->FrameRate : 30;
 				encoder_ctx->time_base = { 1, den };
 
 				encoder_ctx->width = encodingParams->Width;
 				encoder_ctx->height = encodingParams->Height;
-				
+
 				encoder_ctx->gop_size = 60;
 				encoder_ctx->max_b_frames = 0;
-				
+
 
 				//encoder_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
@@ -149,7 +151,7 @@ namespace FFmpegWrapper {
 					}
 					//av_dict_set(&param, "preset", "llhq", 0);
 					av_dict_set(&param, "tune", "zerolatency", 0);
-					
+
 				}
 
 
@@ -173,7 +175,7 @@ namespace FFmpegWrapper {
 				frame->height = encoder_ctx->height;
 				frame->format = encoder_ctx->pix_fmt;
 				//frame->quality = 1;
-				
+
 				AVPixelFormat pixFormat;
 				switch (encoder_ctx->pix_fmt) {
 				case AV_PIX_FMT_YUVJ420P:
@@ -194,11 +196,11 @@ namespace FFmpegWrapper {
 				}
 
 				frame->format = pixFormat;
-				
+
 
 
 				if (av_frame_get_buffer(frame, 0) < 0) {
-				//if (av_frame_get_buffer(frame, 32) < 0) {
+					//if (av_frame_get_buffer(frame, 32) < 0) {
 					throw gcnew Exception("Could not allocate frame data.");
 				}
 
@@ -233,78 +235,85 @@ namespace FFmpegWrapper {
 				Object^ syncRoot = videoBuffer->syncRoot;
 				bool lockTaken = false;
 
-				
 				try {
 
 					Monitor::Enter(syncRoot, lockTaken);
-					int width = bmp->Width;
-					int height = bmp->Height;
-					PixelFormat bmpFmt = bmp->PixelFormat;
-					System::Drawing::Rectangle bmpRect = System::Drawing::Rectangle(0, 0, width, height);
+					if (lockTaken) {
 
-					AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-
-					if (bmpFmt == PixelFormat::Format24bppRgb) {
-
-						pix_fmt = AV_PIX_FMT_BGR24;
-
-					}
-					else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
-
-						pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
-
-					}
-					else if (bmpFmt == PixelFormat::Format16bppRgb565 ) {
-
-						pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
-
-					}
-					else {
-
-						throw gcnew Exception("Unsupported pixel format " + bmpFmt.ToString());
-					}
-
-					BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
-					try {
-
-						
-						sws_ctx = sws_getCachedContext(sws_ctx,
-							width, height, pix_fmt, // input
-							frame->width, frame->height, (AVPixelFormat)frame->format,  // output
-							SWS_BICUBIC,
-							NULL, NULL, NULL);
-						
-
-						if (sws_ctx == NULL) {
-
-							throw gcnew Exception("Could not allocate convert context");
+						if (bmp == nullptr) {
+							return;
 						}
 
-						const uint8_t* src_data[1] =
-						{
-							reinterpret_cast<uint8_t*>(bmpData->Scan0.ToPointer())
-						};
-						//int bmpStride = 4 * ((width * 3 + 3) / 4);
-						const int scr_size[1] =
-						{
-							bmpData->Stride
-							//bmpStride
-						};
+						int width = bmp->Width;
+						int height = bmp->Height;
+						PixelFormat bmpFmt = bmp->PixelFormat;
+						System::Drawing::Rectangle bmpRect = System::Drawing::Rectangle(0, 0, width, height);
 
-						//  конвертируем в новый формат
-						sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
-					}
-					finally{
+						AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
 
-						if (lockTaken) {
+						if (bmpFmt == PixelFormat::Format24bppRgb) {
+
+							pix_fmt = AV_PIX_FMT_BGR24;
+
+						}
+						else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
+
+							pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
+
+						}
+						else if (bmpFmt == PixelFormat::Format16bppRgb565) {
+
+							pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
+
+						}
+						else {
+
+							throw gcnew Exception("Unsupported pixel format " + bmpFmt.ToString());
+						}
+
+						BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
+						try {
+
+
+							sws_ctx = sws_getCachedContext(sws_ctx,
+								width, height, pix_fmt, // input
+								frame->width, frame->height, (AVPixelFormat)frame->format,  // output
+								SWS_BICUBIC,
+								NULL, NULL, NULL);
+
+
+							if (sws_ctx == NULL) {
+
+								throw gcnew Exception("Could not allocate convert context");
+							}
+
+							const uint8_t* src_data[1] =
+							{
+								reinterpret_cast<uint8_t*>(bmpData->Scan0.ToPointer())
+							};
+							//int bmpStride = 4 * ((width * 3 + 3) / 4);
+							const int scr_size[1] =
+							{
+								bmpData->Stride
+								//bmpStride
+							};
+
+							//  конвертируем в новый формат
+							sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
+						}
+						finally{
+
 							bmp->UnlockBits(bmpData);
+
 						}
 					}
 
 				}
 				finally{
 
-					Monitor::Exit(syncRoot);
+					if (lockTaken) {
+						Monitor::Exit(syncRoot);
+					}
 				}
 
 				__int64 pts = sec * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
@@ -331,7 +340,7 @@ namespace FFmpegWrapper {
 
 		void Close() {
 
-			//logger->Trace("Close()");
+			logger->Trace("Close()");
 			try {
 
 				FlushEncoder();
@@ -396,7 +405,7 @@ namespace FFmpegWrapper {
 		}
 		void FlushEncoder() {
 
-			//logger->Trace("FlushEncoder()");
+			logger->Trace("FlushEncoder()");
 
 			if (cleanedup) {
 
@@ -422,7 +431,7 @@ namespace FFmpegWrapper {
 
 		void CleanUp() {
 
-			//logger->Trace("CleanUp()");
+			logger->Trace("CleanUp()");
 
 			cleanedup = true;
 
@@ -455,7 +464,7 @@ namespace FFmpegWrapper {
 
 
 
-		//static NLog::Logger^ logger = NLog::LogManager::GetCurrentClassLogger();
+		static Logger^ logger = LogManager::GetCurrentClassLogger();
 
 	};
 

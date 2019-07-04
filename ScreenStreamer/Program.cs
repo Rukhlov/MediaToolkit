@@ -21,12 +21,12 @@ namespace ScreenStreamer
     {
         private static Logger logger = null;
 
-        [STAThread]
+        //[STAThread]
         static void Main(string[] args)
         {
-
+           
             logger = LogManager.GetCurrentClassLogger();
-
+            Console.Title = "App started...";
             AppDomain.CurrentDomain.UnhandledException += (o, a) => 
             {
                 Exception ex = null;
@@ -53,7 +53,7 @@ namespace ScreenStreamer
             };
 
             logger.Info("========== START ============");
-
+         
             CommandLineOptions options = null;
             if (args != null)
             {
@@ -96,24 +96,26 @@ namespace ScreenStreamer
             }
 
 
-            source.Start(srcRect, destSize, fps);
+            var captureTask = source.Start(srcRect, destSize, fps);
 
-            Controls.StatisticForm statisticForm = new Controls.StatisticForm();
-            statisticForm.Start();
-
-
+            MJpegOverHttpStreamer httpStreamer = new MJpegOverHttpStreamer(source);
             VideoEncodingParams encodingParams = new VideoEncodingParams
             {
                 Width = destSize.Width, // options.Width,
                 Height =  destSize.Height, // options.Height,
                 FrameRate = options.FrameRate,
-                EncoderName = "", //libx264 // h264_nvenc
+                EncoderName = "mjpeg", //libx264 // h264_nvenc
             };
             
-            MJpegOverHttpStreamer httpStreamer = new MJpegOverHttpStreamer(source);
-            httpStreamer.Start(encodingParams);
-            
-            
+            var streamerTask = httpStreamer.Start(encodingParams);
+
+
+            //Controls.StatisticForm statisticForm = new Controls.StatisticForm();
+            //statisticForm.Start();
+            //Application.Run();
+
+
+
             /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
@@ -140,19 +142,65 @@ namespace ScreenStreamer
             audioStreamer.Start(audioParams);
             */
 
+           
+            Task.Run(() =>
+            {
+                Controls.StatisticForm statisticForm = new Controls.StatisticForm();
+                statisticForm.Start();
 
-            //Console.WriteLine("Press any key to exit...");
-            //Console.ReadKey();
+                Application.Run(statisticForm);
+
+                //while (true)
+                //{
+                //    Application.DoEvents();
+                //    Thread.Sleep(1);
+                //
+
+            });
+
+
+            Task.Run(() =>
+            {
+                Console.Title ="App running, press 'q' to quit...";
+
+
+                while (Console.ReadKey().Key != ConsoleKey.Q) ;
+
+                logger.Debug("'q' pressed...");
+                httpStreamer?.Close();
+                source?.Close();
+            });
+
+            Console.CancelKeyPress += (o, a) => 
+            {
+                logger.Debug("Ctrl+C pressed...");
+                a.Cancel = true;
+
+                //httpStreamer?.Close();
+                //source?.Close();
+
+                logger.Debug("Environment exit...");
+                Environment.Exit(0);
+
+    
+            };
 
             logger.Info("==========APP RUN ============");
-            Application.Run();
+            // Application.Run();
+            var task = Task.WhenAny(streamerTask, captureTask);
+            var result = task.Result;
 
-            //audioStreamer?.Close();
-            //videoStreamer?.Close();
-
-            source?.Close();
+            var aex = result.Exception;
+            if (aex != null)
+            {
+                logger.Fatal(aex);
+            }
 
             logger.Info("========== THE END ============");
+
+            Console.Title = "App stopped, press any key to exit...";
+
+            Console.ReadKey();
 
 
         }

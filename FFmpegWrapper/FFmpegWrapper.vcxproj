@@ -154,6 +154,9 @@
     <ClCompile Include="VideoEncoder.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.4.6.3\lib\net40-client\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>

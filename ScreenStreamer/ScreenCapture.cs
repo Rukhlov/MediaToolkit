@@ -65,7 +65,7 @@ namespace ScreenStreamer
 
         public virtual void Close()
         {
-            logger.Debug("Close()");
+            logger.Debug("ScreenCapture::Close()");
 
             if (videoBuffer != null)
             {
@@ -524,7 +524,6 @@ namespace ScreenStreamer
                     var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                     //var dwRop = TernaryRasterOperations.SRCCOPY;
 
-
                     if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
                     { 
                         //IntPtr hOldBmp = Gdi32.SelectObject(hMemoryDC, hBitmap);
@@ -975,7 +974,7 @@ namespace ScreenStreamer
         public override void Close()
         {
 
-            logger.Debug("Close()");
+            logger.Debug("DatapathDesktopCapture::Close()");
           
             if (Initialized)
             {
@@ -1121,6 +1120,81 @@ namespace ScreenStreamer
 
     }
 
+    class CaptureStats : StatCounter
+    {
+        public double totalTime = 0;
+        public long totalBytes = 0;
+        public uint totalFrameCount = 0;
+
+        public uint currentFrame = 0;
+        public long currentBytes = 0;
+
+        public double avgFrameInterval = 0;
+        public double avgBytesPerSec = 0;
+
+        public double lastTimestamp = 0;
+
+        public void Update(double timestamp, int bytesSize)
+        {
+
+            if (lastTimestamp > 0)
+            {
+                var time = timestamp - lastTimestamp;
+
+                avgFrameInterval = (time * 0.05 + avgFrameInterval * (1 - 0.05));
+                avgBytesPerSec = bytesSize / avgFrameInterval;
+
+                totalTime += (timestamp - lastTimestamp);
+            }
+
+            totalBytes += bytesSize;
+
+            lastTimestamp = timestamp;
+            totalFrameCount++;
+        }
+
+
+        public override string GetReport()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var fps = (1 / this.avgFrameInterval);
+
+            //var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
+            //var mbytes = this.totalBytes / (1024.0 * 1024);
+
+            TimeSpan time = TimeSpan.FromSeconds(totalTime);
+            sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
+            sb.AppendLine(fps.ToString("0.0") + " FPS");
+
+            sb.AppendLine("");
+            sb.AppendLine(this.totalFrameCount + " Frames");
+
+            //sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
+
+            sb.AppendLine(StringHelper.SizeSuffix((long)avgBytesPerSec) + "/s");
+            sb.AppendLine(StringHelper.SizeSuffix(totalBytes));
+
+            return sb.ToString();
+        }
+
+        public override void Reset()
+        {
+            this.totalBytes = 0;
+            this.totalFrameCount = 0;
+            this.currentFrame = 0;
+            this.currentBytes = 0;
+
+            this.avgFrameInterval = 0;
+            this.avgBytesPerSec = 0;
+            this.lastTimestamp = 0;
+
+        }
+    }
+
+
+
+    /*
     public class Direct3DCapture__
     {
         private static Direct3D direct3D9 = new Direct3D();
@@ -1299,5 +1373,7 @@ namespace ScreenStreamer
 
 
     }
+    */
+
 
 }

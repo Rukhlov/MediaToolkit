@@ -456,6 +456,41 @@ namespace ScreenStreamer.Utils
 
         public readonly static List<StatCounter> Stats = new List<StatCounter>();
 
+        public static object syncRoot = new object();
+        public static void RegisterCounter(StatCounter counter)
+        {
+            lock (syncRoot)
+            {
+                Stats.Add(counter);
+            }
+        }
+
+        public static void UnregisterCounter(StatCounter counter)
+        {
+            lock (syncRoot)
+            {
+                Stats.Remove(counter);
+            }
+        }
+
+        public static string GetReport()
+        {
+            string report = "";
+            lock (syncRoot)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach(var stat in Stats)
+                {
+                    sb.AppendLine(stat.GetReport());
+                }
+
+                report = sb.ToString();
+
+            }
+
+            return report;
+        }
+
         private static PerfCounter perfCounter = new PerfCounter();
         public static PerfCounter PerfCounter
         {
@@ -470,160 +505,7 @@ namespace ScreenStreamer.Utils
         }
     }
 
-    public class OutputStats : StatCounter
-    {
 
-
-        public uint packetsCount = 0;
-
-        public long bytesSend = 0;
-        public double sendBytesPerSec = 0;
-
-        public double lastTimestamp = 0;
-
-        public OutputStats()
-        {
-            System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = 1000;
-
-            //double bytes = 0;
-            //timer.Elapsed += (o, a) =>
-            //{
-
-            //    sendBytesPerSec = _sendBytesPerSec;
-            //    _sendBytesPerSec = 0;
-            //};
-
-            //timer.Start();
-        }
-
-
-        double _sendBytesPerSec = 0;
-        public void Update(double timestamp, int packetSize)
-        {
-
-            if (lastTimestamp > 0)
-            {
-                var time = timestamp - lastTimestamp;
-                var bytesPerSec = packetSize / time;
-
-                sendBytesPerSec = (bytesPerSec * 0.05 + sendBytesPerSec * (1 - 0.05));
-            }
-
-            _sendBytesPerSec += packetSize;
-            bytesSend += packetSize;
-
-            lastTimestamp = timestamp;
-            packetsCount++;
-        }
-
-        public override string GetReport()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            var mbytesPerSec = sendBytesPerSec / (1024.0 * 1024);
-            var mbytes = bytesSend / (1024.0 * 1024);
-
-            sb.AppendLine(packetsCount + " buffers");
-            sb.AppendLine(mbytes.ToString("0.0") + " MBytes");
-            sb.AppendLine(mbytesPerSec.ToString("0.000") + " MByte/s");
-
-            //var fps = (1 / this.avgFrameInterval);
-            //var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
-            //var mbytes = this.totalBytes / (1024.0 * 1024);
-
-            //TimeSpan time = TimeSpan.FromSeconds(totalTime);
-            //sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
-
-            //sb.AppendLine(fps.ToString("0.0") + " FPS");
-            //sb.AppendLine(this.totalFrameCount + " Frames");
-            //sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
-            //sb.AppendLine(mbytes.ToString("0.0") + " MByte");
-
-            return sb.ToString();
-        }
-
-        public override void Reset()
-        {
-            packetsCount = 0;
-
-            bytesSend = 0;
-            sendBytesPerSec = 0;
-
-            lastTimestamp = 0;
-        }
-
-
-
-    }
-
-    public class CaptureStats :StatCounter
-    {
-        public double totalTime = 0;
-        public long totalBytes = 0;
-        public uint totalFrameCount = 0;
-
-        public uint currentFrame = 0;
-        public long currentBytes = 0;
-
-        public double avgFrameInterval = 0;
-        public double avgBytesPerSec = 0;
-
-        public double lastTimestamp = 0;
-        //public long bufferSize = 0;
-
-        public void Update(double timestamp, int bytesSize)
-        {
-
-            if (lastTimestamp > 0)
-            {
-                var time = timestamp - lastTimestamp;
-
-                avgFrameInterval = (time * 0.05 + avgFrameInterval * (1 - 0.05));
-                avgBytesPerSec = bytesSize / avgFrameInterval;
-
-                totalTime += (timestamp - lastTimestamp);
-            }
-
-            totalBytes += bytesSize;
-
-            lastTimestamp = timestamp;
-            totalFrameCount++;
-        }
-
-
-        public override string GetReport()
-        {
-            StringBuilder sb = new StringBuilder();
-
-            var fps = (1 / this.avgFrameInterval);
-            var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
-            var mbytes = this.totalBytes / (1024.0 * 1024);
-
-            TimeSpan time = TimeSpan.FromSeconds(totalTime);
-            sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
-
-            sb.AppendLine(fps.ToString("0.0") + " FPS");
-            sb.AppendLine(this.totalFrameCount + " Frames");
-            sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
-            sb.AppendLine(mbytes.ToString("0.0") + " MByte");
-
-            return sb.ToString();
-        }
-
-        public override void Reset()
-        {
-            this.totalBytes = 0;
-            this.totalFrameCount = 0;
-            this.currentFrame = 0;
-            this.currentBytes = 0;
-
-            this.avgFrameInterval = 0;
-            this.avgBytesPerSec = 0;
-            this.lastTimestamp = 0;
-
-        }
-    }
 
 
     public class PerfCounter : StatCounter, IDisposable
@@ -635,7 +517,7 @@ namespace ScreenStreamer.Utils
 
         private void _PerfCounter()
         {
-            timer.Interval = 500;
+            timer.Interval = 1000;
             timer.Elapsed += Timer_Elapsed;
             timer.Disposed += Timer_Disposed;
             timer.Start();
@@ -820,5 +702,33 @@ namespace ScreenStreamer.Utils
             }
         }
 
+    }
+
+    public class StringHelper
+    {
+        static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        public static string SizeSuffix(long value, int decimalPlaces = 1)
+        {
+            if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException("decimalPlaces"); }
+            if (value < 0) { return "-" + SizeSuffix(-value); }
+            if (value == 0) { return string.Format("{0:n" + decimalPlaces + "} bytes", 0); }
+
+            // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
+            int mag = (int)Math.Log(value, 1024);
+
+            // 1L << (mag * 10) == 2 ^ (10 * mag) 
+            // [i.e. the number of bytes in the unit corresponding to mag]
+            decimal adjustedSize = (decimal)value / (1L << (mag * 10));
+
+            // make adjustment when the value is large enough that
+            // it would round up to 1000 or more
+            if (Math.Round(adjustedSize, decimalPlaces) >= 1000)
+            {
+                mag += 1;
+                adjustedSize /= 1024;
+            }
+
+            return string.Format("{0:n" + decimalPlaces + "} {1}", adjustedSize,  SizeSuffixes[mag]);
+        }
     }
 }

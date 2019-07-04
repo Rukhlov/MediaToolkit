@@ -24,52 +24,55 @@ namespace ScreenStreamer
         public MJpegOverHttpStreamer(ScreenSource source)
         {
             this.screenSource = source;
+            this.screenSource.BufferUpdated += ScreenSource_BufferUpdated;
         }
+
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
-        public void Start(VideoEncodingParams encPars)
+        public Task Start(VideoEncodingParams encPars)
         {
-            Task.Run(() =>
+            logger.Debug("MJpegOverHttpStreamer::Start(...) " 
+                + encPars.Width + "x" + encPars.Height + " "+ encPars.EncoderName );
+
+            return Task.Run(() =>
             {
                 running = true;
 
-                screenSource.BufferUpdated += () => syncEvent.Set();
-
-                encPars.EncoderName = "mjpeg";
-
                 FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
-
                 encoder.Open(encPars);
-
-                List<AutoResetEvent> syncEvents = new List<AutoResetEvent>();
 
                 HttpStreamer httpStreamer = new HttpStreamer();
 
-                double sec = 0;
 
-                encoder.DataEncoded += (ptr, len) =>
-                {// получили данные от энкодера 
-
-
-                    httpStreamer.TryToPush(ptr, len, sec);
-
-                    // File.WriteAllBytes("d:\\test_3.jpg", frame);
-
-                };
-
-
-                Task.Run(() =>
+                try
                 {
-                    Stopwatch sw = Stopwatch.StartNew();
+                    logger.Debug("Start main streaming loop...");
 
+                    double sec = 0;
+
+                    encoder.DataEncoded += (ptr, len) =>
+                    {// получили данные от энкодера 
+
+                        httpStreamer.TryToPush(ptr, len, sec);
+
+                        // File.WriteAllBytes("d:\\test_3.jpg", frame);
+                    };
+
+
+                    httpStreamer.Start();
+
+                    Stopwatch sw = Stopwatch.StartNew();
                     while (running)
                     {
                         sw.Restart();
 
                         try
                         {
-                            syncEvent.WaitOne();
+                            if (!syncEvent.WaitOne(1000))
+                            {
+                                continue;
+                            }
 
                             if (!running)
                             {
@@ -79,8 +82,6 @@ namespace ScreenStreamer
                             var buffer = screenSource.Buffer;
                             sec = buffer.time;
                             encoder.Encode(buffer, sec);
-
-                            //sec += 0.2;//(sw.ElapsedMilliseconds / 1000.0);
                         }
                         catch (Exception ex)
                         {
@@ -93,22 +94,33 @@ namespace ScreenStreamer
                         var mSec = sw.ElapsedMilliseconds;
 
                     }
-
+                }
+                finally
+                {
+                    logger.Debug("Stop main streaming loop...");
                     httpStreamer?.Stop();
 
-                });
+                    encoder?.Close();
+                }
 
-                httpStreamer.Start();
             });
         }
 
+
+        private void ScreenSource_BufferUpdated()
+        {
+            syncEvent.Set();
+        }
 
         private bool running = false;
 
         public void Close()
         {
+            logger.Debug("MJpegOverHttpStreamer::Close()");
+
             running = false;
 
+            this.screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
             syncEvent.Set();
         }
 
@@ -120,65 +132,75 @@ namespace ScreenStreamer
 
             private List<MJpegClientHandler> clients = new List<MJpegClientHandler>();
 
-            public readonly OutputStats Stats = new OutputStats();
-            public void Start()
+            public readonly HttpStats statCounter = new HttpStats();
+            public Task Start()
             {
-                Statistic.Stats.Add(Stats);
+                logger.Debug("HttpStreamer::Start()");
 
-                logger.Debug("Start()");
-                running = true;
-
-                var addr = System.Net.IPAddress.Any;
-                //var addr = System.Net.IPAddress.Parse("192.168.1.135");
-                var port = 8086;
-                var listener = new TcpListener(addr, port);
-                //listener.AllowNatTraversal(true);
-
-                try
+                return Task.Run(() =>
                 {
+                    running = true;
 
-                    listener.Start();
+                    var addr = System.Net.IPAddress.Any;
+                    //var addr = System.Net.IPAddress.Parse("192.168.1.135");
+                    var port = 8086;
+                    var listener = new TcpListener(addr, port);
+                    //listener.AllowNatTraversal(true);
 
-                    while (running)
+                    try
                     {
-                        try
+                        Statistic.RegisterCounter(statCounter);
+
+                        listener.Start();
+
+                        while (running)
                         {
-                            logger.Info(" ========== Waiting for connection on " + listener.Server.LocalEndPoint.ToString() + " ================");
-
-                            // System.Net.Sockets.Socket socket = listener.AcceptSocket();
-                            var tcpClient = listener.AcceptTcpClient();
-
-                            var mjpegClient = new MJpegClientHandler(this);
-                            clients.Add(mjpegClient);
-
-                            logger.Debug("Clients count: " + clients.Count);
-
-                            // Start response task...
-                            var clientTask = mjpegClient.StartClientTask(tcpClient);
-
-                            clientTask.ContinueWith((_) =>
+                            try
                             {
-                                clients.Remove(mjpegClient);
+                                logger.Info(" ========== Waiting for connection on " + listener.Server.LocalEndPoint.ToString() + " ================");
+
+                                // System.Net.Sockets.Socket socket = listener.AcceptSocket();
+                                var tcpClient = listener.AcceptTcpClient();
+
+                                if (!running)
+                                {
+                                    break;
+                                }
+
+                                var mjpegClient = new MJpegClientHandler(this);
+                                clients.Add(mjpegClient);
 
                                 logger.Debug("Clients count: " + clients.Count);
-                            });
+
+                                // Start response task...
+                                var clientTask = mjpegClient.StartClientTask(tcpClient);
+
+                                clientTask.ContinueWith((_) =>
+                                {
+                                    clients.Remove(mjpegClient);
+
+                                    logger.Debug("Clients count: " + clients.Count);
+                                });
 
 
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.Error(ex);
 
-                            Thread.Sleep(1000);
+                                Thread.Sleep(1000);
+                            }
                         }
                     }
-                }
-                finally
-                {
-                    logger.Debug("listener?.Stop()");
+                    finally
+                    {
+                        logger.Debug("listener?.Stop()");
 
-                    listener?.Stop();
-                }
+                        listener?.Stop();
+
+                        Statistic.UnregisterCounter(statCounter);
+                    }
+                });
             }
 
             class MJpegClientHandler
@@ -267,10 +289,10 @@ namespace ScreenStreamer
 
                                     stream.Write(bytesToSend, 0, bytesToSend.Length);
 
-                                    this.streamer.Stats.Update(MediaTimer.GetRelativeTime(), bytesToSend.Length);
+                                    this.streamer.statCounter.Update(MediaTimer.GetRelativeTime(), bytesToSend.Length);
 
-                                   // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), bytesToSend.Length);
-                                    
+                                    // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), bytesToSend.Length);
+
 
                                     //logger.Debug("stream.Write(...) " + remoteAddr.ToString() + " "+ frameCount);
 
@@ -331,7 +353,7 @@ namespace ScreenStreamer
 
                 internal void Stop()
                 {
-                    logger.Debug("Stop()");
+                    logger.Debug("MJpegClientHandler::Stop()");
 
                     running = false;
                     syncEvent?.Set();
@@ -440,7 +462,7 @@ namespace ScreenStreamer
             private bool running = false;
             public void Stop()
             {
-                logger.Debug("Stop()");
+                logger.Debug("HttpStreamer::Stop()");
 
                 running = false;
 
@@ -451,5 +473,67 @@ namespace ScreenStreamer
             }
 
         }
+
+
+        class HttpStats : StatCounter
+        {
+            public uint packetsCount = 0;
+
+            public long totalBytesSend = 0;
+            public double sendBytesPerSec = 0;
+
+            public double lastTimestamp = 0;
+
+            public HttpStats() { }
+
+            public void Update(double timestamp, int bytesSend)
+            {
+                if (lastTimestamp > 0)
+                {
+                    var time = timestamp - lastTimestamp;
+                    if (time > 0)
+                    {
+                        var bytesPerSec = bytesSend / time;
+
+                        sendBytesPerSec = (bytesPerSec * 0.05 + sendBytesPerSec * (1 - 0.05));
+                    }
+                }
+
+                totalBytesSend += bytesSend;
+
+                lastTimestamp = timestamp;
+                packetsCount++;
+            }
+
+            public override string GetReport()
+            {
+                StringBuilder sb = new StringBuilder();
+
+                //var mbytesPerSec = sendBytesPerSec / (1024.0 * 1024);
+                //var mbytes = totalBytesSend / (1024.0 * 1024);
+
+                sb.AppendLine(packetsCount + " Frames");
+
+                sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec) + "/s");
+                sb.AppendLine(StringHelper.SizeSuffix(totalBytesSend));
+
+
+                //sb.AppendLine(mbytes.ToString("0.0") + " MBytes");
+                //sb.AppendLine(mbytesPerSec.ToString("0.000") + " MByte/s");
+
+                return sb.ToString();
+            }
+
+            public override void Reset()
+            {
+                packetsCount = 0;
+
+                totalBytesSend = 0;
+                sendBytesPerSec = 0;
+
+                lastTimestamp = 0;
+            }
+        }
+
     }
 }

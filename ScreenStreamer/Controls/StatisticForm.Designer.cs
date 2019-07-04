@@ -30,8 +30,7 @@
         {
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.labelCpuUsage = new System.Windows.Forms.Label();
-            this.labelCaptureStats = new System.Windows.Forms.Label();
-            this.labelNetworkStats = new System.Windows.Forms.Label();
+            this.labelStats = new System.Windows.Forms.Label();
             this.flowLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -40,8 +39,7 @@
             this.flowLayoutPanel1.AutoSize = true;
             this.flowLayoutPanel1.BackColor = System.Drawing.Color.Transparent;
             this.flowLayoutPanel1.Controls.Add(this.labelCpuUsage);
-            this.flowLayoutPanel1.Controls.Add(this.labelCaptureStats);
-            this.flowLayoutPanel1.Controls.Add(this.labelNetworkStats);
+            this.flowLayoutPanel1.Controls.Add(this.labelStats);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
@@ -64,31 +62,17 @@
             // 
             // labelCaptureStats
             // 
-            this.labelCaptureStats.AutoSize = true;
-            this.labelCaptureStats.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.labelCaptureStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelCaptureStats.ForeColor = System.Drawing.Color.Red;
-            this.labelCaptureStats.Location = new System.Drawing.Point(3, 31);
-            this.labelCaptureStats.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.labelCaptureStats.Name = "labelCaptureStats";
-            this.labelCaptureStats.Size = new System.Drawing.Size(31, 23);
-            this.labelCaptureStats.TabIndex = 5;
-            this.labelCaptureStats.Text = "---";
-            this.labelCaptureStats.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // labelNetworkStats
-            // 
-            this.labelNetworkStats.AutoSize = true;
-            this.labelNetworkStats.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.labelNetworkStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelNetworkStats.ForeColor = System.Drawing.Color.Red;
-            this.labelNetworkStats.Location = new System.Drawing.Point(3, 57);
-            this.labelNetworkStats.Margin = new System.Windows.Forms.Padding(3, 3, 3, 1);
-            this.labelNetworkStats.Name = "labelNetworkStats";
-            this.labelNetworkStats.Size = new System.Drawing.Size(31, 23);
-            this.labelNetworkStats.TabIndex = 10;
-            this.labelNetworkStats.Text = "---";
-            this.labelNetworkStats.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelStats.AutoSize = true;
+            this.labelStats.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.labelStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelStats.ForeColor = System.Drawing.Color.Red;
+            this.labelStats.Location = new System.Drawing.Point(3, 31);
+            this.labelStats.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.labelStats.Name = "labelCaptureStats";
+            this.labelStats.Size = new System.Drawing.Size(31, 23);
+            this.labelStats.TabIndex = 5;
+            this.labelStats.Text = "---";
+            this.labelStats.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // StatisticForm
             // 
@@ -113,8 +97,7 @@
 
         #endregion
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Label labelCaptureStats;
+        private System.Windows.Forms.Label labelStats;
         private System.Windows.Forms.Label labelCpuUsage;
-        private System.Windows.Forms.Label labelNetworkStats;
     }
 }
