@@ -48,10 +48,10 @@ namespace ScreenStreamer
             logger.Info("Server started " + endpoint.ToString());
         }
 
-        public void Send(byte[] bytes, uint timestamp)
+        public void Send(byte[] bytes, double sec)
         { 
 
-            var packets = session.Packetize(bytes, timestamp);
+            var packets = session.Packetize(bytes, sec);
 
             if (packets != null && packets.Count > 0)
             {
@@ -95,9 +95,9 @@ namespace ScreenStreamer
 
         public ushort Sequence { get; protected set; } = 0;
         public int PayloadType { get; protected set; } = 0;
+        public int ClockRate { get; protected set; } = 90000;
 
-
-        public abstract List<byte[]> Packetize(byte[] data, uint timestamp);
+        public abstract List<byte[]> Packetize(byte[] data, double sec);
     }
 
     public class PCMUSession : RtpSession
@@ -107,13 +107,14 @@ namespace ScreenStreamer
             SSRC = RngProvider.GetRandomNumber();
             Sequence = 0;
             PayloadType = 0;
+            ClockRate = 8000;
         }
 
 
-        public override List<byte[]> Packetize(byte[] data, uint timestamp)
+        public override List<byte[]> Packetize(byte[] data, double sec)
         {
             List<byte[]> packets = new List<byte[]>();
-
+            uint timestamp = (uint)(sec * ClockRate);
             if (data !=null && data.Length > 0)
             {
                 packets = CratePackets(data, timestamp);
@@ -186,9 +187,10 @@ namespace ScreenStreamer
             PayloadType = 96;
         }
 
-        public override List<byte[]> Packetize(byte[] data, uint timestamp)
+        public override List<byte[]> Packetize(byte[] data, double sec)
         {
             List<byte[]> packets = new List<byte[]>();
+            uint timestamp = (uint)(sec * ClockRate);
             var nals = HandleH264AnnexbFrames(data);
             if (nals.Count > 0)
             {

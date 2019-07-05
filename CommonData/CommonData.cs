@@ -57,7 +57,7 @@ namespace CommonData
 
     public class NetworkStreamingParams
     {
-        public string MulitcastAddres = "";
+        public string Address = "";
         public int Port = 0;
 
     }

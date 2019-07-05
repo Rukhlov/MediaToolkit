@@ -38,7 +38,7 @@ namespace FFmpegWrapper {
 			CleanUp();
 		}
 
-		event Action<IntPtr, int>^ DataEncoded;
+		event Action<IntPtr, int, double>^ DataEncoded;
 
 		void Open(VideoEncodingParams^ encodingParams) {
 
@@ -215,16 +215,18 @@ namespace FFmpegWrapper {
 			}
 		}
 
-		void Encode(VideoBuffer^ videoBuffer, double sec) {
+		void Encode(VideoBuffer^ videoBuffer) {
 
 			if (cleanedup) {
 
 				return;
 			}
 
+			double sec = videoBuffer->time;
+
 			if (sec <= last_sec) {
 
-				//logger->Warn("Non monotone time: " + sec + " <= " + last_sec);
+				logger->Warn("Non monotone time: " + sec + " <= " + last_sec);
 
 			}
 
@@ -384,11 +386,13 @@ namespace FFmpegWrapper {
 						break;
 					}
 
-					//AVRational codec_time = encoder_st->codec->time_base;
-					//AVRational stream_time = encoder_st->time_base;
-					//av_packet_rescale_ts(&packet, codec_time, stream_time); // переводим время в формат контейнера
+					AVRational codec_time = encoder_ctx->time_base;
+					AVRational av_time_base_q = { 1, AV_TIME_BASE };
 
-					OnDataEncoded((IntPtr)packet.data, packet.size);
+					av_packet_rescale_ts(&packet, codec_time, av_time_base_q); // переводим время в формат контейнера
+					double sec = packet.pts / (double)AV_TIME_BASE;
+
+					OnDataEncoded((IntPtr)packet.data, packet.size, sec);
 				}
 			}
 			finally{
@@ -400,8 +404,8 @@ namespace FFmpegWrapper {
 			return write_frame;
 		}
 
-		void OnDataEncoded(IntPtr ptr, int size) {
-			DataEncoded(ptr, size);
+		void OnDataEncoded(IntPtr ptr, int size, double time) {
+			DataEncoded(ptr, size, time);
 		}
 		void FlushEncoder() {
 

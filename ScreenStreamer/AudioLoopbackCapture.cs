@@ -83,9 +83,9 @@ namespace ScreenStreamer
                     sw.Restart();
 
                     double ralativeTime = MediaTimer.GetRelativeTime();
-                    uint rtpTime = (uint)(ralativeTime * 8000);
+                    //uint rtpTime = (uint)(ralativeTime * 8000);
 
-                    streamer.Send(dest, rtpTime);
+                    streamer.Send(dest, ralativeTime);
 
                     //fs.Write(dest, 0, dest.Length);
                     //fs.Write(a.Buffer, 0, a.BytesRecorded);

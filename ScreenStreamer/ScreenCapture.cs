@@ -56,6 +56,30 @@ namespace ScreenStreamer
 
         }
 
+        public static ScreenCapture Create(CaptureType type, object[]args = null)
+        {
+            ScreenCapture capture = null;
+
+            if (type == CaptureType.GDI)
+            {
+                capture = new GDICapture();
+            }
+            else if (type == CaptureType.Direct3D)
+            {
+                capture = new Direct3DCapture(args);
+            }
+            else if (type == CaptureType.GDIPlus)
+            {
+                capture = new GDIPlusCapture();
+            }
+            else if (type == CaptureType.Datapath)
+            {
+                capture = new DatapathDesktopCapture();
+            }
+
+            return capture;
+        }
+
         protected Rectangle srcRect;
         protected VideoBuffer videoBuffer = null;
 
@@ -76,6 +100,13 @@ namespace ScreenStreamer
 
     }
 
+    public enum CaptureType
+    {
+        GDI,
+        Direct3D,
+        GDIPlus,
+        Datapath,
+    }
 
     /// <summary>
     /// с включенной композитной отрисовкой работает лучше чем GDI
@@ -83,9 +114,13 @@ namespace ScreenStreamer
     public class Direct3DCapture : ScreenCapture
     {
        
-        public Direct3DCapture(IntPtr hWnd = new IntPtr()) : base()
+        public Direct3DCapture(object[] args) : base()
         {
-            this.hWnd = hWnd;
+            if(args!=null && args.Length > 0)
+            {
+                this.hWnd = (IntPtr)args[0];
+            }
+
         }
 
         private Direct3D direct3D9 = new Direct3D();

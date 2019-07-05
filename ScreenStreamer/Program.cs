@@ -98,16 +98,23 @@ namespace ScreenStreamer
 
             var captureTask = source.Start(srcRect, destSize, fps);
 
-            MJpegOverHttpStreamer httpStreamer = new MJpegOverHttpStreamer(source);
+            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            {
+                Address = "0.0.0.0",
+                Port = 8086,
+            };
+
+            MJpegOverHttpStreamer videoStreamer = new MJpegOverHttpStreamer(source);
             VideoEncodingParams encodingParams = new VideoEncodingParams
             {
                 Width = destSize.Width, // options.Width,
                 Height =  destSize.Height, // options.Height,
                 FrameRate = options.FrameRate,
-                EncoderName = "mjpeg", //libx264 // h264_nvenc
+                EncoderName = "mjpeg",
             };
             
-            var streamerTask = httpStreamer.Start(encodingParams);
+            var streamerTask = videoStreamer.Start(encodingParams, networkParams);
+            
 
 
             //Controls.StatisticForm statisticForm = new Controls.StatisticForm();
@@ -115,8 +122,8 @@ namespace ScreenStreamer
             //Application.Run();
 
 
-
             /*
+            
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 MulitcastAddres = options.ServerAddr,
@@ -124,12 +131,22 @@ namespace ScreenStreamer
             };
 
 
-
             VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
-            videoStreamer.Start(encodingParams, networkParams);
+
+            VideoEncodingParams encodingParams = new VideoEncodingParams
+            {
+                Width = destSize.Width, // options.Width,
+                Height = destSize.Height, // options.Height,
+                FrameRate = options.FrameRate,
+                EncoderName = "h264_nvenc", //libx264 // 
+            };
+
+            var streamerTask = videoStreamer.Start(encodingParams, networkParams);
+            */
+
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
-            */
+            
 
             /*
             var audioParams = new AudioEncodingParams
@@ -167,7 +184,9 @@ namespace ScreenStreamer
                 while (Console.ReadKey().Key != ConsoleKey.Q) ;
 
                 logger.Debug("'q' pressed...");
-                httpStreamer?.Close();
+                //videoStreamer?.Close();
+
+                videoStreamer?.Close();
                 source?.Close();
             });
 

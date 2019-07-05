@@ -25,62 +25,50 @@ namespace ScreenStreamer
         public VideoMulticastStreamer(ScreenSource source)
         {
             this.screenSource = source;
+           
         }
 
+
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        public void Start(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
+
+        private RtpStreamer rtpStreamer = null;
+        private StreamStats streamStats = null;
+
+        public Task Start(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
         {
             logger.Debug("ScreenStreamer::Start()");
-
-            Task.Run(() =>
+            
+            return Task.Run(() =>
             {
                 logger.Info("Streaming thread started...");
-                screenSource.BufferUpdated += () => syncEvent.Set();
 
 
-                RtpStreamer streamer = null;
                 FFmpegVideoEncoder encoder = null;
                 try
                 {
+                    streamStats = new StreamStats();
+
+                    Statistic.RegisterCounter(streamStats);
+                    
                     RtpSession h264Session = new H264Session();
 
-                    streamer = new RtpStreamer(h264Session);
-                    streamer.Open(networkParams.MulitcastAddres, networkParams.Port);
+                    rtpStreamer = new RtpStreamer(h264Session);
+                    rtpStreamer.Open(networkParams.Address, networkParams.Port);
 
                     encoder = new FFmpegVideoEncoder();
                     encoder.Open(encodingParams);
+                    encoder.DataEncoded += Encoder_DataEncoded;
 
-                    uint rtpTimestamp = 0;
+                    screenSource.BufferUpdated += ScreenSource_BufferUpdated;
 
-                    encoder.DataEncoded += (ptr, len) =>
-                    {// получили данные от энкодера 
-
-                        byte[] frame = new byte[len];
-                        Marshal.Copy(ptr, frame, 0, len);
-
-                        // File.WriteAllBytes("d:\\test_123.jpg", frame);
-
-
-                        double ralativeTime = MediaTimer.GetRelativeTime();
-                        uint rtpTime = (uint)(ralativeTime * 90000);
-
-                        streamer.Send(frame, rtpTime);
-
-                        // streamer.Send(frame, rtpTimestamp);
-
-
-                    };
-
-
-                    double sec = 0;
-                    Stopwatch sw = Stopwatch.StartNew();
                     while (!closing)
                     {
-                        sw.Restart();
-
                         try
                         {
-                            syncEvent.WaitOne();
+                            if (!syncEvent.WaitOne(1000))
+                            {
+                                continue;
+                            }
 
                             if (closing)
                             {
@@ -88,8 +76,8 @@ namespace ScreenStreamer
                             }
 
                             var buffer = screenSource.Buffer;
-                            encoder.Encode(buffer, 0);
-
+  
+                            encoder.Encode(buffer);
 
                         }
                         catch (Exception ex)
@@ -97,12 +85,6 @@ namespace ScreenStreamer
                             logger.Error(ex);
                             Thread.Sleep(1000);
                         }
-
-                        rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
-
-                        var mSec = sw.ElapsedMilliseconds;
-
-
 
                     }
                 }
@@ -113,8 +95,13 @@ namespace ScreenStreamer
                 }
                 finally
                 {
-                    streamer?.Close();
+                    encoder.DataEncoded -= Encoder_DataEncoded;
+                    screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+
+                    rtpStreamer?.Close();
                     encoder?.Close();
+
+                    Statistic.UnregisterCounter(streamStats);
                 }
 
                 logger.Info("Streaming thread ended...");
@@ -122,14 +109,110 @@ namespace ScreenStreamer
 
         }
 
+        private void Encoder_DataEncoded(IntPtr ptr, int len, double time)
+        {
+            if (ptr != IntPtr.Zero && len > 0)
+            {
+                // получили данные от энкодера 
+                byte[] frame = new byte[len];
+                Marshal.Copy(ptr, frame, 0, len);
+
+                rtpStreamer.Send(frame, time);
+
+                streamStats.Update(time, frame.Length);
+                // streamer.Send(frame, rtpTimestamp);
+            }
+
+        }
+
+        private void ScreenSource_BufferUpdated()
+        {
+            syncEvent.Set();
+        }
+
         private bool closing = false;
 
         public void Close()
         {
-            closing = false;
+ 
+            closing = true;
             syncEvent.Set();
         }
 
+
+        class StreamStats : StatCounter
+        {
+            public uint buffersCount = 0;
+
+            public long totalBytesSend = 0;
+            public double sendBytesPerSec1 = 0;
+            public double sendBytesPerSec2 = 0;
+            public double sendBytesPerSec3 = 0;
+            public double lastTimestamp = 0;
+
+            public double totalTime = 0;
+            public StreamStats() { }
+
+            public void Update(double timestamp, int bytesSend)
+            {
+                if (lastTimestamp > 0)
+                {
+                    var time = timestamp - lastTimestamp;
+                    if (time > 0)
+                    {
+                        var bytesPerSec = bytesSend / time;
+
+                        sendBytesPerSec1 = (bytesPerSec * 0.05 + sendBytesPerSec1 * (1 - 0.05));
+
+                        sendBytesPerSec2 = (sendBytesPerSec1 * 0.05 + sendBytesPerSec2 * (1 - 0.05));
+
+                        sendBytesPerSec3 = (sendBytesPerSec2 * 0.05 + sendBytesPerSec3 * (1 - 0.05));
+
+                        totalTime += (timestamp - lastTimestamp);
+                    }
+                }
+
+                totalBytesSend += bytesSend;
+
+                lastTimestamp = timestamp;
+                buffersCount++;
+            }
+
+            public override string GetReport()
+            {
+                StringBuilder sb = new StringBuilder();
+
+                //var mbytesPerSec = sendBytesPerSec / (1024.0 * 1024);
+                //var mbytes = totalBytesSend / (1024.0 * 1024);
+
+
+                TimeSpan time = TimeSpan.FromSeconds(totalTime);
+                sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
+
+                sb.AppendLine(buffersCount + " Buffers");
+
+                //sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec1) + "/s");
+                //sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec2) + "/s");
+                sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec3) + "/s");
+                sb.AppendLine(StringHelper.SizeSuffix(totalBytesSend));
+
+
+                //sb.AppendLine(mbytes.ToString("0.0") + " MBytes");
+                //sb.AppendLine(mbytesPerSec.ToString("0.000") + " MByte/s");
+
+                return sb.ToString();
+            }
+
+            public override void Reset()
+            {
+                buffersCount = 0;
+
+                totalBytesSend = 0;
+                sendBytesPerSec1 = 0;
+
+                lastTimestamp = 0;
+            }
+        }
     }
 
 }

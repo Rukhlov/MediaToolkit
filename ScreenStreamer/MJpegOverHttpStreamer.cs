@@ -24,13 +24,14 @@ namespace ScreenStreamer
         public MJpegOverHttpStreamer(ScreenSource source)
         {
             this.screenSource = source;
-            this.screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+           
         }
 
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private HttpStreamer httpStreamer = null;
 
-        public Task Start(VideoEncodingParams encPars)
+        public Task Start(VideoEncodingParams encPars, NetworkStreamingParams networkParams)
         {
             logger.Debug("MJpegOverHttpStreamer::Start(...) " 
                 + encPars.Width + "x" + encPars.Height + " "+ encPars.EncoderName );
@@ -40,27 +41,29 @@ namespace ScreenStreamer
                 running = true;
 
                 FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
-                encoder.Open(encPars);
-
-                HttpStreamer httpStreamer = new HttpStreamer();
-
-
+               
+                httpStreamer = new HttpStreamer();
                 try
                 {
                     logger.Debug("Start main streaming loop...");
 
-                    double sec = 0;
+                    encoder.Open(encPars);
+                    encoder.DataEncoded += Encoder_DataEncoded;
 
-                    encoder.DataEncoded += (ptr, len) =>
-                    {// получили данные от энкодера 
+                    screenSource.BufferUpdated += ScreenSource_BufferUpdated;
 
-                        httpStreamer.TryToPush(ptr, len, sec);
+                    var streamerTask = httpStreamer.Start(networkParams);
 
-                        // File.WriteAllBytes("d:\\test_3.jpg", frame);
-                    };
-
-
-                    httpStreamer.Start();
+                    streamerTask.ContinueWith(t => 
+                    {
+                        if (t.IsFaulted) { }
+                        var ex = t.Exception;
+                        if (ex != null)
+                        {
+                            logger.Error(ex);
+                            running = false;
+                        }
+                    });
 
                     Stopwatch sw = Stopwatch.StartNew();
                     while (running)
@@ -80,8 +83,8 @@ namespace ScreenStreamer
                             }
 
                             var buffer = screenSource.Buffer;
-                            sec = buffer.time;
-                            encoder.Encode(buffer, sec);
+
+                            encoder.Encode(buffer);
                         }
                         catch (Exception ex)
                         {
@@ -98,14 +101,27 @@ namespace ScreenStreamer
                 finally
                 {
                     logger.Debug("Stop main streaming loop...");
+
+                    screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+                    if (encoder != null)
+                    {
+                        encoder.DataEncoded -= Encoder_DataEncoded;
+                        encoder.Close();
+                    }
+
                     httpStreamer?.Stop();
 
-                    encoder?.Close();
                 }
 
             });
         }
 
+        private void Encoder_DataEncoded(IntPtr ptr, int len, double sec)
+        {
+            httpStreamer.TryToPush(ptr, len, sec);
+
+            // File.WriteAllBytes("d:\\test_3.jpg", frame);
+        }
 
         private void ScreenSource_BufferUpdated()
         {
@@ -133,7 +149,7 @@ namespace ScreenStreamer
             private List<MJpegClientHandler> clients = new List<MJpegClientHandler>();
 
             public readonly HttpStats statCounter = new HttpStats();
-            public Task Start()
+            public Task Start(NetworkStreamingParams networkParams)
             {
                 logger.Debug("HttpStreamer::Start()");
 
@@ -141,17 +157,30 @@ namespace ScreenStreamer
                 {
                     running = true;
 
+                    string ipStr = networkParams.Address;
                     var addr = System.Net.IPAddress.Any;
-                    //var addr = System.Net.IPAddress.Parse("192.168.1.135");
-                    var port = 8086;
-                    var listener = new TcpListener(addr, port);
-                    //listener.AllowNatTraversal(true);
+                    if (!System.Net.IPAddress.TryParse(ipStr, out addr))
+                    {
+                        logger.Warn("Unsupprted ip format " + ipStr);
+                    }
+                    
+                    if(addr == null)
+                    {
+                        addr = System.Net.IPAddress.Any;
+                    }
+
+                    var port = networkParams.Port;
+
+                    TcpListener listener = null;
 
                     try
                     {
                         Statistic.RegisterCounter(statCounter);
 
+                        listener = new TcpListener(addr, port);
+                        //listener.AllowNatTraversal(true);
                         listener.Start();
+                      
 
                         while (running)
                         {
@@ -175,9 +204,16 @@ namespace ScreenStreamer
                                 // Start response task...
                                 var clientTask = mjpegClient.StartClientTask(tcpClient);
 
-                                clientTask.ContinueWith((_) =>
+                                clientTask.ContinueWith((t) =>
                                 {
                                     clients.Remove(mjpegClient);
+
+                                    var ex = t.Exception;
+                                    if (ex != null)
+                                    {
+                                        logger.Error(ex);
+                                        running = false;
+                                    }
 
                                     logger.Debug("Clients count: " + clients.Count);
                                 });
@@ -325,12 +361,7 @@ namespace ScreenStreamer
                                 }
                             }
 
-                            logger.Error(ex);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-
+                            throw;
                         }
                         finally
                         {

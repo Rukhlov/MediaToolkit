@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 namespace ScreenStreamer
 {
 
-
     class ScreenSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -38,24 +37,16 @@ namespace ScreenStreamer
                 logger.Info("Capturing thread started...");
 
                 CaptureStats captureStats = new CaptureStats();
-                Statistic.Stats.Add(captureStats);
-
-                //var hWnd = User32.GetDesktopWindow();
-
-                //ScreenCapture screenCapture = new Direct3DCapture(hWnd);
-                //screenCapture.Init(srcRect, destSize);
-
-                //ScreenCapture screenCapture = new GDIPlusCapture();
-                //screenCapture.Init(srcRect);
-
-                ScreenCapture screenCapture = new GDICapture();
+        
+                ScreenCapture screenCapture = ScreenCapture.Create(CaptureType.GDI);
 
                 try
                 {
+                    Statistic.RegisterCounter(captureStats);
+
                     double sec = 0;
                     int frameCount = 0;
                     var frameInterval = (1000.0 / frameRate);
-                    Stopwatch sw = Stopwatch.StartNew();
 
                     screenCapture.Init(srcRect);
 
@@ -64,6 +55,8 @@ namespace ScreenStreamer
                     int bufferSize = (int)this.Buffer.Size;
 
                     uint rtpTimestamp = 0;
+                    Stopwatch sw = Stopwatch.StartNew();
+
                     while (!closing)
                     {
                         sw.Restart();
@@ -119,12 +112,12 @@ namespace ScreenStreamer
                 {
                     screenCapture?.Close();
 
-                    //direct3DCapture.Dispose();
+                    Statistic.UnregisterCounter(captureStats);
                 }
 
                 logger.Info("Capturing thread stopped...");
 
-                Statistic.Stats.Remove(captureStats);
+
             });
 
         }
