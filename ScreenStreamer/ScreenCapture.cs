@@ -13,8 +13,9 @@ using System.Windows.Forms;
 using CommonData;
 using NLog;
 using ScreenStreamer.Utils;
-using SlimDX;
-using SlimDX.Direct3D9;
+
+using SharpDX;
+using SharpDX.Direct3D9;
 
 namespace ScreenStreamer
 {
@@ -50,8 +51,7 @@ namespace ScreenStreamer
             this.srcRect = srcRect;
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format24bppRgb);
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppRgb);
-
-            //!!!!!
+    
             this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
         }
@@ -86,6 +86,10 @@ namespace ScreenStreamer
         public VideoBuffer VideoBuffer { get => videoBuffer; }
 
         public abstract bool UpdateBuffer(int timeout = 10);
+
+
+        public bool CaptureMouse { get; set; }
+
 
         public virtual void Close()
         {
@@ -126,13 +130,15 @@ namespace ScreenStreamer
         private Direct3D direct3D9 = new Direct3D();
         private Device device = null;
         private AdapterInformation adapterInfo = null;
-        private PresentParameters presentParams = null;
+        private PresentParameters presentParams = default(PresentParameters);
 
         private Surface srcSurface = null;
         private Surface destSurface = null;
         private Surface tmpSurface = null;
 
         private IntPtr hWnd = IntPtr.Zero;
+
+
 
         public override void Init(Rectangle srcRect, Size destSize)
         {
@@ -142,7 +148,7 @@ namespace ScreenStreamer
 
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
-            adapterInfo = direct3D9.Adapters.DefaultAdapter;//direct3D9.Adapters[1];
+            adapterInfo = direct3D9.Adapters.FirstOrDefault(); //  DefaultAdapter;//direct3D9.Adapters[1];
 
             var hMonitor = User32.GetMonitorFromRect(srcRect);
             if (hMonitor != IntPtr.Zero)
@@ -150,7 +156,10 @@ namespace ScreenStreamer
                 adapterInfo = direct3D9.Adapters.FirstOrDefault(a => a.Monitor == hMonitor);
             }
 
-           
+            if(hWnd == IntPtr.Zero)
+            {// иначе не работает Device.Reset()
+                hWnd = User32.GetDesktopWindow();
+            }
 
             logger.Info("DefaultAdapter " + " " + adapterInfo.Details.DeviceName + " " + adapterInfo.Details.Description);
 
@@ -161,20 +170,21 @@ namespace ScreenStreamer
 
             presentParams = new PresentParameters
             {
-               // BackBufferFormat = adapterInfo.CurrentDisplayMode.Format,
+                
                 //BackBufferHeight = clientRect.Height,
                 //BackBufferWidth = clientRect.Width,
-                //BackBufferHeight = adapterInfo.CurrentDisplayMode.Height,
-                //BackBufferWidth = adapterInfo.CurrentDisplayMode.Width,
+                BackBufferHeight = adapterInfo.CurrentDisplayMode.Height,
+                BackBufferWidth = adapterInfo.CurrentDisplayMode.Width,
+                BackBufferFormat = adapterInfo.CurrentDisplayMode.Format,
+                BackBufferCount = 1,
 
-                DeviceWindowHandle = hWnd,
-                //Windowed = false,
-                Multisample = MultisampleType.None,
+                Windowed = true,
+                
+                MultiSampleType = MultisampleType.None,
                 SwapEffect = SwapEffect.Discard,
 
                 PresentFlags = PresentFlags.None,
-                PresentationInterval = PresentInterval.Default,
-                // FullScreenRefreshRateInHertz = 0
+                PresentationInterval = PresentInterval.Default | PresentInterval.Immediate,
 
             };
 
@@ -197,12 +207,22 @@ namespace ScreenStreamer
             //AdapterInformation adapterInfo = direct3D9.Adapters.DefaultAdapter;
             var displayMode = adapterInfo.CurrentDisplayMode;
 
+            //srcSurface = Surface.CreateOffscreenPlain(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, Pool.SystemMemory);
+
+            /*
+             * The buffer pointed will be filled with a representation of the front buffer, converted to the standard 32 bits per pixel format D3DFMT_A8R8G8B8.
+             */
             srcSurface = Surface.CreateOffscreenPlain(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, Pool.SystemMemory);
 
             //tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
 
             tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
+
             destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
+
+            //destSurface = Surface.CreateOffscreenPlain(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, Pool.SystemMemory);
+
+            //destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
         }
 
         private Stopwatch sw = new Stopwatch();
@@ -215,75 +235,51 @@ namespace ScreenStreamer
             Result result = device.TestCooperativeLevel();
             if (result != ResultCode.Success)
             {
-                logger.Warn("Result " + result.Name);
-
+                logger.Warn("TestCooperativeLevel: " + result);
+                bool deviceReady = false;
                 if (result == ResultCode.DeviceLost)
-                {//..
-
+                {
+                    // OnLostDevice();
+                    Thread.Sleep(50);
                 }
                 else if (result == ResultCode.DeviceNotReset)
                 {
-                    bool deviceReinit = ReInitDevice();
+                    deviceReady = ReInitDevice();
+                }
+ 
+                if (!deviceReady)
+                {
+                    //TODO: error
+                    logger.Warn("Device is not ready...");
 
-                    if (deviceReinit == false)
-                    {
-                        //TODO: error
-                        logger.Warn("Reinitialize device fail");
-                    }
+                    Thread.Sleep(100);
+
+                    return false;
                 }
 
-                return false;
-
             }
 
-
-            var surfDescr = srcSurface.Description;
-
-            result = device.GetFrontBufferData(0, srcSurface);
-
-            //logger.Debug("GetFrontBufferData(...) " + sw.ElapsedMilliseconds);
-            if (result != ResultCode.Success)
+            try
             {
-                logger.Warn("GetFrontBufferData1(...) " + result);
-                return false;
+                device.GetFrontBufferData(0, srcSurface);
+                
+                if (CaptureMouse)
+                {
+                    var hDc = srcSurface.GetDC();
+                    User32.DrawCursor(hDc);
+                    srcSurface.ReleaseDC(hDc);
+                }
+                
+                device.UpdateSurface(srcSurface, tmpSurface);
+
+                device.StretchRectangle(tmpSurface, destSurface, TextureFilter.Linear);
             }
-
-
-            //srcSurface1.UnlockRectangle();
-
-            if (result != ResultCode.Success)
+            catch(SharpDXException ex)
             {
-                logger.Warn("GetFrontBufferData(...) " + result);
+                logger.Error(ex);
                 return false;
             }
 
-            result = device.UpdateSurface(srcSurface, tmpSurface);
-
-            if (result != ResultCode.Success)
-            {
-                logger.Warn("UpdateSurface(...) " + result);
-                return false;
-            }
-
-            result = device.StretchRectangle(tmpSurface, destSurface, TextureFilter.Linear);
-            if (result != ResultCode.Success)
-            {
-                logger.Warn("StretchRectangle(...) " + result);
-
-                return false;
-            }
-            
-
-
-            /*
-            var render = device.GetRenderTarget(0);
-
-           // var dc = render.GetDC();
-            var descr = render.Description;
-            var surf = Surface.CreateOffscreenPlain(device, descr.Width, descr.Height, Format.X8R8G8B8, Pool.SystemMemory);
-            device.GetRenderTargetData(render, surf);
-
-            */
             var syncRoot = videoBuffer.syncRoot;
             bool lockTaken = false;
 
@@ -292,7 +288,9 @@ namespace ScreenStreamer
                 Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
                 if (lockTaken)
                 {
-                    success = CopyToBitmap(videoBuffer.bitmap, destSurface);
+                    //success = BitBlt(srcSurface, videoBuffer.bitmap);
+
+                    success = SurfaceToBitmap(destSurface, videoBuffer.bitmap );
                 }
 
             }
@@ -305,12 +303,53 @@ namespace ScreenStreamer
             }
 
             //logger.Debug("CopyToBitmap(...) " + sw.ElapsedMilliseconds);
-            //ReInitDevice1();
+
             return success;
         }
 
+        private bool BitBlt(Surface surface, Bitmap bmp)
+        {
+            bool success;
 
-        private bool CopyToBitmap(Bitmap bmp, Surface surface)
+            IntPtr hdcDest = IntPtr.Zero;
+            Graphics graphDest = null;
+
+            IntPtr hdcSrc = surface.GetDC();
+            try
+            {
+                graphDest = System.Drawing.Graphics.FromImage(bmp);
+                hdcDest = graphDest.GetHdc();
+                Size destSize = bmp.Size;
+
+                int nXDest = 0;
+                int nYDest = 0;
+                int nWidth = destSize.Width;
+                int nHeight = destSize.Height;
+
+                int nXSrc = srcRect.Left;
+                int nYSrc = srcRect.Top;
+
+                int nWidthSrc = srcRect.Width;
+                int nHeightSrc = srcRect.Height;
+
+                var dwRop = TernaryRasterOperations.SRCCOPY;
+
+                success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+            }
+            finally
+            {
+                graphDest?.ReleaseHdc(hdcDest);
+                graphDest?.Dispose();
+                graphDest = null;
+
+                surface.ReleaseDC(hdcSrc);
+
+            }
+
+            return success;
+        }
+
+        private bool SurfaceToBitmap( Surface surface, Bitmap bmp)
         {
             bool result = false;
 
@@ -335,17 +374,34 @@ namespace ScreenStreamer
                 DataRectangle dataRect = surface.LockRectangle(LockFlags.ReadOnly);
                 try
                 {
+                    // должен быть одинаковый размер и формат!
+                    int height = bmp.Height;
+                    int width = bmp.Width;
+                    int pictWidth = width * 4;
 
+                    var sourcePtr = dataRect.DataPointer;
+                    var destPtr = bitmapData.Scan0;
+                    for (int line = 0; line < height; line++)
+                    {
+                        Utilities.CopyMemory(destPtr, sourcePtr, pictWidth);
+
+                        sourcePtr = IntPtr.Add(sourcePtr, dataRect.Pitch);
+                        destPtr = IntPtr.Add(destPtr, bitmapData.Stride);
+                    }
+                    result = true;
+                    
+
+                    /*
                     int surfPitch = ((int)dataRect.Pitch / sizeof(ushort));
                     int bmpPitch = ((int)bitmapData.Stride / sizeof(ushort));
                     //int surfPitch = ((int)dataRect.Pitch / 3);
                     //int bmpPitch = ((int)bitmapData.Stride / 3);
 
-                    DataStream dataStream = dataRect.Data;
+                    //DataStream dataStream = dataRect.DataPointer;
                     unsafe
                     {
                         ushort* to = (ushort*)bitmapData.Scan0.ToPointer();
-                        ushort* from = (ushort*)dataStream.DataPointer;
+                        ushort* from = (ushort*)dataRect.DataPointer;
 
                         //ushort* to = (ushort*)dataStream.DataPointer;
                         //ushort* from = (ushort*)bitmapData.Scan0.ToPointer();
@@ -361,6 +417,7 @@ namespace ScreenStreamer
 
                         result = true;
                     }
+                    */
 
                 }
                 finally
@@ -387,30 +444,43 @@ namespace ScreenStreamer
             {
                 OnLostDevice();
 
-                // device.Dispose();
-
-                // CreateFlags Flags = (CreateFlags.Multithreaded | CreateFlags.FpuPreserve | CreateFlags.HardwareVertexProcessing);
-                //// CreateFlags Flags = (CreateFlags.SoftwareVertexProcessing);
-
-                // AdapterInformation adapterInfo = direct3D9.Adapters[0];
-                // device = new Device(direct3D9, adapterInfo.Adapter, DeviceType.Hardware, IntPtr.Zero, Flags, presentParams);
-
-                // InitSurfaces();
-
-
-                var resetResult = device.Reset(presentParams);
-
-                if (resetResult.IsSuccess)
+                try
                 {
+                    device.Reset(presentParams);
                     InitSurfaces();
                     Result = true;
                 }
-                else
+                catch (SharpDXException ex)
                 {
-                    logger.Warn("Graphic device reset result: " + resetResult);
+                    logger.Warn("Graphic device reset result: " + ex.ResultCode);
                 }
+
+                /*
+                try
+                {
+                    device?.Dispose();
+
+                    CreateFlags Flags = (CreateFlags.Multithreaded | CreateFlags.FpuPreserve | CreateFlags.HardwareVertexProcessing);
+                    // CreateFlags Flags = (CreateFlags.SoftwareVertexProcessing);
+
+                    AdapterInformation adapterInfo = direct3D9.Adapters[0];
+                    device = new Device(direct3D9, adapterInfo.Adapter, DeviceType.Hardware, IntPtr.Zero, Flags, presentParams);
+
+                    InitSurfaces();
+
+                    Result = true;
+
+                }
+                catch (SharpDXException ex)
+                {
+                    logger.Warn("Graphic device reset result: " + ex.ResultCode);
+                }
+                */
+
+
+
             }
-            catch (Direct3D9Exception ex)
+            catch (SharpDXException ex)
             {
                 if (ex.ResultCode == ResultCode.DeviceLost)
                 {
@@ -440,6 +510,7 @@ namespace ScreenStreamer
         {
             logger.Debug("OnLostDevice");
 
+           
             DisposeSurfaces();
 
         }
@@ -447,19 +518,20 @@ namespace ScreenStreamer
         private void DisposeSurfaces()
         {
             logger.Debug("DisposeSurfaces()");
-
-            if (srcSurface != null && !srcSurface.Disposed)
+            
+            if (srcSurface != null && !srcSurface.IsDisposed)
             {
+
                 srcSurface.Dispose();
                 srcSurface = null;
             }
-            if (destSurface != null && !destSurface.Disposed)
+            if (destSurface != null && !destSurface.IsDisposed)
             {
                 destSurface.Dispose();
                 destSurface = null;
             }
 
-            if (tmpSurface != null && !tmpSurface.Disposed)
+            if (tmpSurface != null && !tmpSurface.IsDisposed)
             {
                 tmpSurface.Dispose();
                 tmpSurface = null;
@@ -469,13 +541,13 @@ namespace ScreenStreamer
 
         public override void Close()
         {
-            if (direct3D9 != null && !direct3D9.Disposed)
+            if (direct3D9 != null && !direct3D9.IsDisposed)
             {
                 direct3D9.Dispose();
                 direct3D9 = null;
             }
 
-            if (device != null && !device.Disposed)
+            if (device != null && !device.IsDisposed)
             {
                 device.Dispose();
                 device = null;
@@ -517,10 +589,10 @@ namespace ScreenStreamer
 
         public override bool UpdateBuffer(int timeout = 10)
         {
-            return TryGetScreen(base.srcRect, ref base.videoBuffer, timeout);
+            return TryGetScreen(base.srcRect, ref base.videoBuffer, this.CaptureMouse, timeout);
         }
 
-        public static bool TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer, int timeout = 10)
+        public static bool TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer, bool captureMouse = false, int timeout = 10)
         {
             bool success = false;
 
@@ -559,6 +631,8 @@ namespace ScreenStreamer
                     var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                     //var dwRop = TernaryRasterOperations.SRCCOPY;
 
+    
+
                     if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
                     { 
                         //IntPtr hOldBmp = Gdi32.SelectObject(hMemoryDC, hBitmap);
@@ -567,11 +641,19 @@ namespace ScreenStreamer
                         //videoBuffer.bitmap = Bitmap.FromHbitmap(hBitmap);
 
                         success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+
+                        if (captureMouse)
+                        {
+                            User32.DrawCursor(hdcDest);
+                        }
+
                     }
                     else
-                    {// Лучше не использовать !!!
-                        Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR); //самый быстрый режим
+                    {// Лучше не использовать масштабирорование StretchBlt !!!
 
+                        //самый быстрый и самый кривой режим масштабирования
+                        Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR); 
+                       
                         //самый качественный но все равно выглядит хуже чем масштабирование sws_scale
                         //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.HALFTONE);
 
@@ -603,6 +685,7 @@ namespace ScreenStreamer
 
             return success;
         }
+
 
 
         public static Bitmap GetScreen(Rectangle rect)
@@ -682,7 +765,7 @@ namespace ScreenStreamer
                         }
                     }
                     else
-                    {
+                    {// очень медленно лучше не использовать
                         Bitmap buf = new Bitmap(srcSize.Width, srcSize.Height);
                         try
                         {

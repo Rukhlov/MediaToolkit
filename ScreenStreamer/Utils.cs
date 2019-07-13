@@ -35,6 +35,8 @@ namespace ScreenStreamer.Utils
         CAPTUREBLT = 0x40000000 //only if WinVer >= 5.0.0 (see wingdi.h)
     }
 
+
+
     [StructLayout(LayoutKind.Sequential)]
     public struct BITMAPINFOHEADER
     {
@@ -71,14 +73,21 @@ namespace ScreenStreamer.Utils
     }
 
 
-    //[StructLayout(LayoutKind.Sequential)]
-    //public struct RECT
-    //{
-    //    public int Left;
-    //    public int Top;
-    //    public int Right;
-    //    public int Bottom;
-    //}
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CURSORINFO
+    {
+        public int cbSize;
+        public int flags;
+        public IntPtr hCursor;
+        public POINT ptScreenPos;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int x;
+        public int y;
+    }
 
     [Serializable, StructLayout(LayoutKind.Sequential)]
     public struct RECT
@@ -114,6 +123,16 @@ namespace ScreenStreamer.Utils
             return new RECT(rect.Left, rect.Top, rect.Right, rect.Bottom);
         }
     }
+
+    //[StructLayout(LayoutKind.Sequential)]
+    //public struct RECT
+    //{
+    //    public int Left;
+    //    public int Top;
+    //    public int Right;
+    //    public int Bottom;
+    //}
+
 
 
     [Flags]
@@ -170,6 +189,15 @@ namespace ScreenStreamer.Utils
         ERROR = 0
     }
 
+    public class WinMM
+    {
+        [DllImport("winmm.dll", EntryPoint = "timeBeginPeriod")]
+        public static extern uint timeBeginPeriod(uint uMilliseconds);
+
+        [DllImport("winmm.dll", EntryPoint = "timeEndPeriod")]
+        public static extern uint timeEndPeriod(uint uMilliseconds);
+    }
+
     public sealed class Gdi32
     {
         [DllImport("gdi32.dll")]
@@ -198,6 +226,11 @@ namespace ScreenStreamer.Utils
 
         [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern bool DeleteObject(IntPtr hObject);
+
+
+
+
+
     }
 
     public sealed class Kernel32
@@ -219,9 +252,35 @@ namespace ScreenStreamer.Utils
     public sealed class User32
     {
 
-        internal const uint MONITOR_MONITOR_DEFAULTTONULL = 0x00000000;
-        internal const uint MONITOR_MONITOR_DEFAULTTOPRIMARY = 0x00000001;
-        internal const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
+        public const int CURSOR_SHOWING = 0x00000001;
+        public const int CURSOR_SUPPRESSED = 0x00000002;
+
+        [DllImport("user32.dll")]
+        public static extern bool GetCursorInfo(out CURSORINFO pci);
+
+        public static void DrawCursor(IntPtr hDc)
+        {
+            CURSORINFO pci;
+            pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
+
+            if (GetCursorInfo(out pci))
+            {
+                if (pci.flags == CURSOR_SHOWING)
+                {
+                    var pos = pci.ptScreenPos;
+                    int x = pos.x - 12;
+                    int y = pos.y - 12;
+                    DrawIcon(hDc, x, y, pci.hCursor);
+                }
+            }
+        }
+
+        [DllImport("user32.dll")]
+        public static extern bool DrawIcon(IntPtr hDC, int X, int Y, IntPtr hIcon);
+
+        public const uint MONITOR_DEFAULTTONULL = 0x00000000;
+        public const uint MONITOR_DEFAULTTOPRIMARY = 0x00000001;
+        public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
         [DllImport("user32.dll")]
         internal static extern IntPtr MonitorFromRect([In] ref RECT lprc, uint dwFlags);
@@ -236,7 +295,7 @@ namespace ScreenStreamer.Utils
                 Bottom = screen.Bottom,
             };
 
-            return MonitorFromRect(ref rect, MONITOR_MONITOR_DEFAULTTOPRIMARY);
+            return MonitorFromRect(ref rect, MONITOR_DEFAULTTOPRIMARY);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -729,6 +788,35 @@ namespace ScreenStreamer.Utils
             }
 
             return string.Format("{0:n" + decimalPlaces + "} {1}", adjustedSize,  SizeSuffixes[mag]);
+        }
+    }
+
+    public static class TaskEx
+    {
+        public static Task<Task[]> WhenAllOrFirstException(params Task[] tasks)
+        {
+            var countdownEvent = new CountdownEvent(tasks.Length);
+            var completer = new TaskCompletionSource<Task[]>();
+
+            Action<Task> onCompletion = completed =>
+            {
+                if (completed.IsFaulted && completed.Exception != null)
+                {
+                    completer.TrySetException(completed.Exception.InnerExceptions);
+                }
+
+                if (countdownEvent.Signal() && !completer.Task.IsCompleted)
+                {
+                    completer.TrySetResult(tasks);
+                }
+            };
+
+            foreach (var task in tasks)
+            {
+                task.ContinueWith(onCompletion);
+            }
+
+            return completer.Task;
         }
     }
 }

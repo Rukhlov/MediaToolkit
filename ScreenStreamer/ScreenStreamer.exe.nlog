@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" internalLogFile="NlogInternal.txt" internalLogLevel="ERROR">
+
+  <targets>
+    
+    <target name="console" xsi:type="ColoredConsole" useDefaultRowHighlightingRules="false"
+      layout="${longdate}|${pad:padding=5:inner=${level:uppercase=true}}|${message}" >
+      <highlight-row condition="level == LogLevel.Debug" foregroundColor="DarkGray" />
+      <highlight-row condition="level == LogLevel.Info" foregroundColor="Gray" />
+      <highlight-row condition="level == LogLevel.Warn" foregroundColor="Yellow" />
+      <highlight-row condition="level == LogLevel.Error" foregroundColor="Red" />
+      <highlight-row condition="level == LogLevel.Fatal" foregroundColor="Red" backgroundColor="White" />
+    </target>
+    
+    <target name="debugout" xsi:type="Debugger" />
+
+
+    <!--<target name="richtext" xsi:type="RichTextBox"/>-->
+    <!--<target name="textbox" xsi:type="RichTextBox" 
+            controlName="LoggerTextBox"
+            formName="MainForm" 
+            layout="${message} ${newline}"
+            autoScroll="true"
+            maxLines="1000">
+    </target>-->
+
+  </targets>
+
+  <rules>
+
+    <logger name="*" minlevel="Debug" writeTo="console, debugout" />
+
+  </rules>
+</nlog>

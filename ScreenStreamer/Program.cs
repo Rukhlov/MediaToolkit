@@ -3,6 +3,7 @@ using CommonData;
 using FFmpegWrapper;
 
 using NLog;
+using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -67,12 +68,12 @@ namespace ScreenStreamer
                 }
             }
 
-            //Utils.DwmApi.DisableAero(true);
-            
+           // Utils.WinMM.timeBeginPeriod(1);
 
-            ScreenSource source = new ScreenSource();
-            
-            int fps = 10;
+            //Utils.DwmApi.DisableAero(true);
+
+    
+            int fps = 30;
             
             // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
@@ -95,6 +96,7 @@ namespace ScreenStreamer
                 destSize = new Size(destWidth, destHeight);
             }
 
+            ScreenSource source = new ScreenSource();
 
             var captureTask = source.Start(srcRect, destSize, fps);
 
@@ -186,6 +188,8 @@ namespace ScreenStreamer
                 logger.Debug("'q' pressed...");
                 //videoStreamer?.Close();
 
+                //cancellationTokenSource.Cancel();
+
                 videoStreamer?.Close();
                 source?.Close();
             });
@@ -205,15 +209,38 @@ namespace ScreenStreamer
             };
 
             logger.Info("==========APP RUN ============");
+
+           //var task =  TaskEx.WhenAllOrFirstException(new [] { streamerTask, captureTask });
+
             // Application.Run();
             var task = Task.WhenAny(streamerTask, captureTask);
-            var result = task.Result;
 
+            var result = task.Result;
             var aex = result.Exception;
             if (aex != null)
             {
-                logger.Fatal(aex);
+                logger.Error(aex);
+
+                videoStreamer?.Close();
+                source?.Close();
             }
+
+            //var faultedTasks = result.Where(t => t.Exception != null);
+
+            //foreach(var t in faultedTasks)
+            //{
+            //    var aex = t.Exception;
+            //    if (aex != null)
+            //    {
+            //        logger.Error(aex);
+            //    }
+            //}
+
+
+
+            //Task.WaitAll(streamerTask, captureTask);
+
+            //Utils.WinMM.timeEndPeriod(1);
 
             logger.Info("========== THE END ============");
 

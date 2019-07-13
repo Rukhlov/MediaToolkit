@@ -37,26 +37,29 @@ namespace ScreenStreamer
                 logger.Info("Capturing thread started...");
 
                 CaptureStats captureStats = new CaptureStats();
-        
+
                 ScreenCapture screenCapture = ScreenCapture.Create(CaptureType.GDI);
+                screenCapture.CaptureMouse = true;
 
                 try
                 {
                     Statistic.RegisterCounter(captureStats);
 
-                    double sec = 0;
+                    
                     int frameCount = 0;
                     var frameInterval = (1000.0 / frameRate);
 
+                   // screenCapture.Init(srcRect, destSize);
                     screenCapture.Init(srcRect);
-
                     this.Buffer = screenCapture.VideoBuffer;
 
                     int bufferSize = (int)this.Buffer.Size;
 
-                    uint rtpTimestamp = 0;
-                    Stopwatch sw = Stopwatch.StartNew();
 
+                    double lastTime = 0;
+                    double monotonicTime = 0;
+                    
+                    Stopwatch sw = Stopwatch.StartNew();
                     while (!closing)
                     {
                         sw.Restart();
@@ -64,6 +67,7 @@ namespace ScreenStreamer
                         try
                         {
                             var res = screenCapture.UpdateBuffer();
+                            //sec += sw.ElapsedMilliseconds / 1000.0;
 
                             if (closing)
                             {
@@ -72,10 +76,23 @@ namespace ScreenStreamer
 
                             if (res)
                             {
-                                Buffer.time = sec;
+                                var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
+
+                                Buffer.time = time; //MediaTimer.GetRelativeTime() 
+
+                                //var diff = time - lastTime;
+
+
+                                lastTime = Buffer.time;
 
                                 OnBufferUpdated();
-                                frameCount++;
+ 
+                                captureStats.Update(Buffer.time, bufferSize);
+
+                            }
+                            else
+                            {
+                                logger.Warn("Drop buffer...");
                             }
 
 
@@ -95,11 +112,11 @@ namespace ScreenStreamer
                             syncEvent.WaitOne(delay);
                         }
 
-                        rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
+                        //rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
 
-                        sec += sw.ElapsedMilliseconds / 1000.0;
+                        monotonicTime += sw.ElapsedMilliseconds / 1000.0;
 
-                        captureStats.Update(sec, bufferSize);
+                        //captureStats.Update(sec, bufferSize);
 
                     }
 

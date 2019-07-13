@@ -323,11 +323,22 @@ namespace FFmpegWrapper {
 				AVRational av_time_base_q = { 1, AV_TIME_BASE };
 
 				AVRational codec_time = encoder_ctx->time_base; //
-				frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
 
+
+				//__int64 framePts = frame->pts;
+
+				//Console::WriteLine("framePts " + framePts + "");
+
+				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				frame->pts++;
+
+				//if (framePts == frame->pts) {
+				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				//}
 				EncodeFrame(frame);
 
 				last_sec = sec;
+				//framePts = frame->pts;
 
 				//Console::WriteLine("last_sec " + last_sec);
 
@@ -386,11 +397,13 @@ namespace FFmpegWrapper {
 						break;
 					}
 
+					
 					AVRational codec_time = encoder_ctx->time_base;
 					AVRational av_time_base_q = { 1, AV_TIME_BASE };
 
 					av_packet_rescale_ts(&packet, codec_time, av_time_base_q); // переводим время в формат контейнера
 					double sec = packet.pts / (double)AV_TIME_BASE;
+					
 
 					OnDataEncoded((IntPtr)packet.data, packet.size, sec);
 				}
@@ -461,6 +474,7 @@ namespace FFmpegWrapper {
 		bool cleanedup;
 
 		double last_sec;
+		__int64 framePts;
 
 		AVCodecContext* encoder_ctx;
 		struct SwsContext* sws_ctx;

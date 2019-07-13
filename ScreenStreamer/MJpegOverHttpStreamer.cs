@@ -40,6 +40,8 @@ namespace ScreenStreamer
             {
                 running = true;
 
+                //throw new Exception("sdsdf");
+
                 FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
                
                 httpStreamer = new HttpStreamer();
