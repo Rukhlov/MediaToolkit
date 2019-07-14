@@ -25,10 +25,11 @@ namespace ScreenStreamer
         //[STAThread]
         static void Main(string[] args)
         {
-           
-            logger = LogManager.GetCurrentClassLogger();
             Console.Title = "App started...";
-            AppDomain.CurrentDomain.UnhandledException += (o, a) => 
+
+            logger = LogManager.GetCurrentClassLogger();
+
+            AppDomain.CurrentDomain.UnhandledException += (o, a) =>
             {
                 Exception ex = null;
 
@@ -47,14 +48,14 @@ namespace ScreenStreamer
                 {
                     logger.Fatal("FATAL ERROR!!!");
                 }
-    
+
 
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
             };
 
             logger.Info("========== START ============");
-         
+
             CommandLineOptions options = null;
             if (args != null)
             {
@@ -68,38 +69,51 @@ namespace ScreenStreamer
                 }
             }
 
-           // Utils.WinMM.timeBeginPeriod(1);
+            // Utils.WinMM.timeBeginPeriod(1);
 
             //Utils.DwmApi.DisableAero(true);
 
-    
+
             int fps = 30;
-            
+            bool aspectRatio = true;
+
             // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
             var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
 
-            var destSize = new Size(1280, 720);
-            // var destSize = new Size(2560, 1440);
-            //var destSize = new Size(1920, 1080);
+            //var srcRect = new Rectangle(0, 0, 1280, 1440);
+            //var srcRect = new Rectangle(0, 0, 2560, 1080);
 
-            var ratio = srcRect.Width / (double)srcRect.Height;
-            if(ratio > 1)
+            //var destSize = new Size(1280, 720);
+            //var destSize = new Size(2560, 1440);
+            var destSize = new Size(1920, 1080);
+
+            if (aspectRatio)
             {
-                int destWidth = srcRect.Width / 2;
-                int destHeight =(int)(destWidth / ratio);
-                destSize = new Size(destWidth, destHeight);
-            }
-            else
-            {
-                int destHeight = srcRect.Height / 2;
-                int destWidth = (int)(destHeight * ratio);
+                var ratio = srcRect.Width / (double)srcRect.Height;
+                int destWidth = destSize.Width;
+                int destHeight = (int)(destWidth / ratio);
+                if (ratio < 1)
+                {
+                    destHeight = destSize.Height;
+                    destWidth = (int)(destHeight * ratio);
+                }
+
                 destSize = new Size(destWidth, destHeight);
             }
 
             ScreenSource source = new ScreenSource();
+            ScreenCaptureParams captureParams = new ScreenCaptureParams
+            {
+                SrcRect = srcRect,
+                DestSize = destSize,
+                CaptureType = CaptureType.GDI,
+                Fps = fps,
+                CaptureMouse = true,
+            };
 
-            var captureTask = source.Start(srcRect, destSize, fps);
+            var captureTask = source.Start(captureParams);
 
+            /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 Address = "0.0.0.0",
@@ -116,19 +130,16 @@ namespace ScreenStreamer
             };
             
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
+            */
             
 
 
-            //Controls.StatisticForm statisticForm = new Controls.StatisticForm();
-            //statisticForm.Start();
-            //Application.Run();
 
-
-            /*
+            
             
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                MulitcastAddres = options.ServerAddr,
+                Address = options.ServerAddr,
                 Port = options.Port,
             };
 
@@ -144,7 +155,7 @@ namespace ScreenStreamer
             };
 
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
-            */
+            
 
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();

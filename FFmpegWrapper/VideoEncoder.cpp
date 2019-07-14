@@ -329,8 +329,8 @@ namespace FFmpegWrapper {
 
 				//Console::WriteLine("framePts " + framePts + "");
 
-				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
-				frame->pts++;
+				frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				//frame->pts++;
 
 				//if (framePts == frame->pts) {
 				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);

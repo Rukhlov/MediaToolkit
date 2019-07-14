@@ -228,9 +228,6 @@ namespace ScreenStreamer.Utils
         public static extern bool DeleteObject(IntPtr hObject);
 
 
-
-
-
     }
 
     public sealed class Kernel32
@@ -646,7 +643,6 @@ namespace ScreenStreamer.Utils
                 CPUUsage = -1;
                 lastTimestamp = 0;
 
-                //LastRun = DateTime.MinValue;
                 prevSysUser.dwHighDateTime = prevSysUser.dwLowDateTime = 0;
                 prevSysKernel.dwHighDateTime = prevSysKernel.dwLowDateTime = 0;
                 prevProcTotal = TimeSpan.MinValue;
@@ -678,32 +674,25 @@ namespace ScreenStreamer.Utils
                         return CPUCopy;
                     }
 
-                    //Process process = Process.GetCurrentProcess();
                     TimeSpan procTime = currentProcess.TotalProcessorTime;
 
-                    if (!isFirstRun)
+                    if (prevProcTotal != TimeSpan.MinValue)
                     {
-                        UInt64 sysKernelDiff = SubtractTimes(sysKernel, prevSysKernel);
-                        UInt64 sysUserDiff = SubtractTimes(sysUser, prevSysUser);
-                        UInt64 sysTotal = sysKernelDiff + sysUserDiff;
+                        ulong sysKernelDiff = SubtractTimes(sysKernel, prevSysKernel);
+                        ulong sysUserDiff = SubtractTimes(sysUser, prevSysUser);
+                        ulong sysTotal = sysKernelDiff + sysUserDiff;
 
-                        Int64 procTotal = procTime.Ticks - prevProcTotal.Ticks;
+                        long procTotal = procTime.Ticks - prevProcTotal.Ticks;
                         // long procTotal = (long)((Stopwatch.GetTimestamp() - lastTimestamp) * 10000000.0 / (double)Stopwatch.Frequency);
                         if (sysTotal > 0)
                         {
                             CPUUsage = (short)((100.0 * procTotal) / sysTotal);
                         }
                     }
-                    else
-                    {
-                        isFirstRun = false;
-                    }
-
+   
                     prevProcTotal = procTime;
                     prevSysKernel = sysKernel;
                     prevSysUser = sysUser;
-
-                    //LastRun = DateTime.Now;
 
                     lastTimestamp = Stopwatch.GetTimestamp();
 
@@ -715,10 +704,10 @@ namespace ScreenStreamer.Utils
 
             }
 
-            private UInt64 SubtractTimes(System.Runtime.InteropServices.ComTypes.FILETIME a, System.Runtime.InteropServices.ComTypes.FILETIME b)
+            private ulong SubtractTimes(System.Runtime.InteropServices.ComTypes.FILETIME a, System.Runtime.InteropServices.ComTypes.FILETIME b)
             {
-                UInt64 aInt = ((UInt64)(a.dwHighDateTime << 32)) | (UInt64)a.dwLowDateTime;
-                UInt64 bInt = ((UInt64)(b.dwHighDateTime << 32)) | (UInt64)b.dwLowDateTime;
+                ulong aInt = ((ulong)(a.dwHighDateTime << 32)) | (ulong)a.dwLowDateTime;
+                ulong bInt = ((ulong)(b.dwHighDateTime << 32)) | (ulong)b.dwLowDateTime;
 
                 return aInt - bInt;
             }
@@ -732,21 +721,9 @@ namespace ScreenStreamer.Utils
                     long ticks = (long)((Stopwatch.GetTimestamp() - lastTimestamp) * 10000000.0 / (double)Stopwatch.Frequency);
                     TimeSpan sinceLast = new TimeSpan(ticks);
 
-                    //TimeSpan sinceLast = DateTime.Now - LastRun;
-
-
                     return sinceLast.TotalMilliseconds > minimumElapsedMS;
                 }
             }
-
-            private bool isFirstRun = true;
-            //{
-            //    get
-            //    {
-            //        return (lastTimestamp == 0);
-            //        //return (LastRun == DateTime.MinValue);
-            //    }
-            //}
 
             private volatile bool disposed = false;
             public void Dispose()

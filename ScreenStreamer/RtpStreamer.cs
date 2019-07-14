@@ -25,15 +25,11 @@ namespace ScreenStreamer
         private Socket socket;
         private IPEndPoint endpoint;
 
-        private uint ssrc = 0;
-        private ushort sequence = 0;
+
 
         public void Open(string address, int port, int ttl = 10)
         {
-            logger.Debug("Open(...)");
-
-            sequence = 0;
-            ssrc = RngProvider.GetRandomNumber();
+            logger.Debug("RtpStreamer::Open(...) " + address + " " + port + " " + ttl);
 
             IPAddress addr = IPAddress.Parse(address);
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -250,171 +246,188 @@ namespace ScreenStreamer
             return nals;
         }
 
-
-        public List<byte[]> CratePackets(List<byte[]> nal_array, uint timestamp)
+        public List<byte[]> CratePackets(List<byte[]> nalArray, uint timestamp)
         {
 
-            List<byte[]> rtp_packets = new List<byte[]>();
+            List<byte[]> rtpPackets = new List<byte[]>();
 
-            for (int x = 0; x < nal_array.Count; x++)
+            for (int x = 0; x < nalArray.Count; x++)
             {
 
-                byte[] raw_nal = nal_array[x];
-                Boolean last_nal = false;
-                if (x == nal_array.Count - 1)
+                byte[] rawNal = nalArray[x];
+                bool lastNal = (x == nalArray.Count - 1);
+
+                bool fragmenting = (rawNal.Length > MTU);
+
+                RtpHeader rtpHeader = new RtpHeader
                 {
-                    last_nal = true; // last NAL in our nal_array
+                    Marker = (lastNal ? 1 : 0),
+                    Timestamp = timestamp,
+                    Sequence = this.Sequence,
+                    SSRC = this.SSRC,
+                    PayloadType = this.PayloadType,
+
+                };
+
+                byte[] headerBytes = rtpHeader.Serialize();
+
+                if (fragmenting)
+                {
+                    int dataRemaining = rawNal.Length;
+                    int nalPointer = 0;
+
+                    int startBit = 1;
+                    int endBit = 0;
+
+                    // consume first byte of the raw_nal. It is used in the FU header
+                    byte firstByte = rawNal[0];
+                    nalPointer++;
+                    dataRemaining--;
+
+                    while (dataRemaining > 0)
+                    {
+                        int payloadSize = Math.Min(MTU, dataRemaining);
+
+                        if (dataRemaining - payloadSize == 0)
+                        {
+                            endBit = 1;
+                        }
+
+                        int offset = 0;
+                        int rtpLength = headerBytes.Length + payloadSize + 2; //2 bytes for FU - A header;
+
+                        byte[] rtpPacket = new byte[rtpLength];
+
+                        // Update header sequence!
+                        RTPPacketUtil.WriteSequenceNumber(headerBytes, Sequence);
+
+                        System.Array.Copy(headerBytes, 0, rtpPacket, offset, headerBytes.Length);
+                        offset += headerBytes.Length;
+
+                        // Now append the Fragmentation Header (with Start and End marker) and part of the raw_nal
+                        byte f_bit = 0;
+                        byte nri = (byte)((firstByte >> 5) & 0x03); // Part of the 1st byte of the Raw NAL (NAL Reference ID)
+                        byte type = 28; // FU-A Fragmentation
+
+                        rtpPacket[offset] = (byte)((f_bit << 7) + (nri << 5) + type);
+                        offset++;
+
+                        rtpPacket[offset] = (byte)((startBit << 7) + (endBit << 6) + (0 << 5) + (firstByte & 0x1F));
+                        offset++;
+
+                        System.Array.Copy(rawNal, nalPointer, rtpPacket, offset, payloadSize);
+
+                        nalPointer +=  payloadSize;
+                        dataRemaining -=  payloadSize;
+
+                        rtpPackets.Add(rtpPacket);
+
+                        this.Sequence++;
+
+
+                        startBit = 0;
+                    }
                 }
-
-                bool fragmenting = false;
-
-                if (raw_nal.Length > MTU)
+                else
                 {
-                    fragmenting = true;
-                }
+                    int offset = 0;
 
-                if (fragmenting == false)
-                {
+                    int rtpLength = headerBytes.Length + rawNal.Length;
+                    byte[] rtpPacket = new byte[rtpLength];
+                    System.Array.Copy(headerBytes, 0, rtpPacket, offset, headerBytes.Length);
+
+                    offset += headerBytes.Length;
+
                     // Put the whole NAL into one RTP packet.
                     // Note some receivers will have maximum buffers and be unable to handle large RTP packets.
                     // Also with RTP over RTSP there is a limit of 65535 bytes for the RTP packet.
 
-
-                    byte[] rtp_packet = new byte[12 + raw_nal.Length]; // 12 is header size when there are no CSRCs or extensions
-                                                                       // Create an single RTP fragment
-
-                    // RTP Packet Header
-                    // 0 - Version, P, X, CC, M, PT and Sequence Number
-                    //32 - Timestamp. H264 uses a 90kHz clock
-                    //64 - SSRC
-                    //96 - CSRCs (optional)
-                    //nn - Extension ID and Length
-                    //nn - Extension header
-
-                    int version = 2;
-                    int padding = 0;
-                    int extension = 0;
-
-                    int marker = (last_nal == true ? 1 : 0); // set to 1 if the last NAL in the array
-
-
-                    RTPPacketUtil.WriteHeader(rtp_packet, version, padding, extension, CSRC, marker, PayloadType);
-
-
-                    RTPPacketUtil.WriteSequenceNumber(rtp_packet, Sequence);
-
-                    RTPPacketUtil.WriteTS(rtp_packet, timestamp);
-
-                    //UInt32 empty_ssrc = 0;
-                    RTPPacketUtil.WriteSSRC(rtp_packet, SSRC);
-
                     // Now append the raw NAL
-                    System.Array.Copy(raw_nal, 0, rtp_packet, 12, raw_nal.Length);
+                    System.Array.Copy(rawNal, 0, rtpPacket, offset, rawNal.Length);
 
-                    rtp_packets.Add(rtp_packet);
+                    rtpPackets.Add(rtpPacket);
 
-                    Sequence++;
-
-
+                    this.Sequence++;
                 }
-                else
-                {
-                    int data_remaining = raw_nal.Length;
-                    int nal_pointer = 0;
-                    int start_bit = 1;
-                    int end_bit = 0;
 
-                    // consume first byte of the raw_nal. It is used in the FU header
-                    byte first_byte = raw_nal[0];
-                    nal_pointer++;
-                    data_remaining--;
-
-                    while (data_remaining > 0)
-                    {
-                        int payload_size = Math.Min(MTU, data_remaining);
-                        if (data_remaining - payload_size == 0) end_bit = 1;
-
-                        byte[] rtp_packet = new byte[12 + 2 + payload_size]; // 12 is header size. 2 bytes for FU-A header. Then payload
-
-                        // RTP Packet Header
-                        // 0 - Version, P, X, CC, M, PT and Sequence Number
-                        //32 - Timestamp. H264 uses a 90kHz clock
-                        //64 - SSRC
-                        //96 - CSRCs (optional)
-                        //nn - Extension ID and Length
-                        //nn - Extension header
-
-                        int rtp_version = 2;
-                        int rtp_padding = 0;
-                        int rtp_extension = 0;
-                        int rtp_csrc_count = 0;
-                        int rtp_marker = (last_nal == true ? 1 : 0); // Marker set to 1 on last packet
-
-
-                        RTPPacketUtil.WriteHeader(rtp_packet, rtp_version, rtp_padding, rtp_extension, rtp_csrc_count, rtp_marker, PayloadType);
-
-                        RTPPacketUtil.WriteSequenceNumber(rtp_packet, Sequence);
-
-                        RTPPacketUtil.WriteTS(rtp_packet, timestamp);
-
-                        // UInt32 empty_ssrc = 0;
-                        RTPPacketUtil.WriteSSRC(rtp_packet, SSRC);
-
-                        // Now append the Fragmentation Header (with Start and End marker) and part of the raw_nal
-                        byte f_bit = 0;
-                        byte nri = (byte)((first_byte >> 5) & 0x03); // Part of the 1st byte of the Raw NAL (NAL Reference ID)
-                        byte type = 28; // FU-A Fragmentation
-
-                        rtp_packet[12] = (byte)((f_bit << 7) + (nri << 5) + type);
-                        rtp_packet[13] = (byte)((start_bit << 7) + (end_bit << 6) + (0 << 5) + (first_byte & 0x1F));
-
-                        System.Array.Copy(raw_nal, nal_pointer, rtp_packet, 14, payload_size);
-                        nal_pointer = nal_pointer + payload_size;
-                        data_remaining = data_remaining - payload_size;
-
-                        rtp_packets.Add(rtp_packet);
-
-                        Sequence++;
-
-                        start_bit = 0;
-                    }
-                }
             }
 
-            return rtp_packets;
+            return rtpPackets;
 
+        }
+
+    }
+
+    class RtpHeader
+    {
+
+        //First byte
+        public int Version = 2;
+        public int Padding = 0;
+        public int Extension = 0;
+        public int CSRCCount = 0;
+
+        //Second byte
+        public int Marker = 0;
+        public int PayloadType = 0;
+
+        //...
+        public ushort Sequence = 0;
+        public uint Timestamp;
+        public uint SSRC = 0;
+        //public uint[] CSRC;
+
+        public byte[] Serialize()
+        {
+            // 12 is header size when there are no CSRCs or extensions
+            byte[] rtpHeader = new byte[12];
+
+            // RTP Packet Header
+            // 0 - Version, P, X, CC, M, PT and Sequence Number
+            //32 - Timestamp. 
+            //64 - SSRC
+            //96 - CSRCs (optional)
+            //nn - Extension ID and Length
+            //nn - Extension header
+
+            RTPPacketUtil.WriteHeader(rtpHeader, Version, Padding, Extension, CSRCCount, Marker, PayloadType);
+            RTPPacketUtil.WriteSequenceNumber(rtpHeader, Sequence);
+            RTPPacketUtil.WriteTS(rtpHeader, Timestamp);
+            RTPPacketUtil.WriteSSRC(rtpHeader, SSRC);
+
+            return rtpHeader;
         }
     }
 
     public static class RTPPacketUtil
     {
 
-        public static void WriteHeader(byte[] rtp_packet, int rtp_version, int rtp_padding, int rtp_extension, int rtp_csrc_count, int rtp_marker, int rtp_payload_type)
+        public static void WriteHeader(byte[] packet, int version, int padding, int extension, int csrc_count, int marker, int payload_type)
         {
-            rtp_packet[0] = (byte)((rtp_version << 6) | (rtp_padding << 5) | (rtp_extension << 4) | rtp_csrc_count);
-            rtp_packet[1] = (byte)((rtp_marker << 7) | (rtp_payload_type & 0x7F));
+            packet[0] = (byte)((version << 6) | (padding << 5) | (extension << 4) | csrc_count);
+            packet[1] = (byte)((marker << 7) | (payload_type & 0x7F));
         }
 
-        public static void WriteSequenceNumber(byte[] rtp_packet, uint empty_sequence_id)
+        public static void WriteSequenceNumber(byte[] packet, uint sequence)
         {
-            rtp_packet[2] = ((byte)((empty_sequence_id >> 8) & 0xFF));
-            rtp_packet[3] = ((byte)((empty_sequence_id >> 0) & 0xFF));
+            packet[2] = ((byte)((sequence >> 8) & 0xFF));
+            packet[3] = ((byte)((sequence >> 0) & 0xFF));
         }
 
-        public static void WriteTS(byte[] rtp_packet, uint ts)
+        public static void WriteTS(byte[] packet, uint ts)
         {
-            rtp_packet[4] = ((byte)((ts >> 24) & 0xFF));
-            rtp_packet[5] = ((byte)((ts >> 16) & 0xFF));
-            rtp_packet[6] = ((byte)((ts >> 8) & 0xFF));
-            rtp_packet[7] = ((byte)((ts >> 0) & 0xFF));
+            packet[4] = ((byte)((ts >> 24) & 0xFF));
+            packet[5] = ((byte)((ts >> 16) & 0xFF));
+            packet[6] = ((byte)((ts >> 8) & 0xFF));
+            packet[7] = ((byte)((ts >> 0) & 0xFF));
         }
 
-        public static void WriteSSRC(byte[] rtp_packet, uint ssrc)
+        public static void WriteSSRC(byte[] packet, uint ssrc)
         {
-            rtp_packet[8] = ((byte)((ssrc >> 24) & 0xFF));
-            rtp_packet[9] = ((byte)((ssrc >> 16) & 0xFF));
-            rtp_packet[10] = ((byte)((ssrc >> 8) & 0xFF));
-            rtp_packet[11] = ((byte)((ssrc >> 0) & 0xFF));
+            packet[8] = ((byte)((ssrc >> 24) & 0xFF));
+            packet[9] = ((byte)((ssrc >> 16) & 0xFF));
+            packet[10] = ((byte)((ssrc >> 8) & 0xFF));
+            packet[11] = ((byte)((ssrc >> 0) & 0xFF));
         }
     }
 }

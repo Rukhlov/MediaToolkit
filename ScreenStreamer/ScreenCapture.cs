@@ -207,21 +207,15 @@ namespace ScreenStreamer
             //AdapterInformation adapterInfo = direct3D9.Adapters.DefaultAdapter;
             var displayMode = adapterInfo.CurrentDisplayMode;
 
-            //srcSurface = Surface.CreateOffscreenPlain(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, Pool.SystemMemory);
-
             /*
              * The buffer pointed will be filled with a representation of the front buffer, converted to the standard 32 bits per pixel format D3DFMT_A8R8G8B8.
              */
             srcSurface = Surface.CreateOffscreenPlain(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, Pool.SystemMemory);
 
+            tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
             //tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
 
-            tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
-
             destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
-
-            //destSurface = Surface.CreateOffscreenPlain(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, Pool.SystemMemory);
-
             //destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
         }
 
@@ -362,13 +356,13 @@ namespace ScreenStreamer
                 return result;
             }
 
-            //if (surfDescr.Format != Format.A8R8G8B8)
-            //{
-            //    logger.Warn("Unsupported surface format " + surfDescr.Format);
-            //    return result;
-            //}
+            if (!(surfDescr.Format == Format.A8R8G8B8 || surfDescr.Format == Format.X8R8G8B8))
+            {
+                logger.Warn("Unsupported surface format " + surfDescr.Format);
+                return result;
+            }
 
-            var bitmapData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            var bitmapData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadWrite, bmp.PixelFormat);
             try
             {
                 DataRectangle dataRect = surface.LockRectangle(LockFlags.ReadOnly);
@@ -388,37 +382,7 @@ namespace ScreenStreamer
                         sourcePtr = IntPtr.Add(sourcePtr, dataRect.Pitch);
                         destPtr = IntPtr.Add(destPtr, bitmapData.Stride);
                     }
-                    result = true;
-                    
-
-                    /*
-                    int surfPitch = ((int)dataRect.Pitch / sizeof(ushort));
-                    int bmpPitch = ((int)bitmapData.Stride / sizeof(ushort));
-                    //int surfPitch = ((int)dataRect.Pitch / 3);
-                    //int bmpPitch = ((int)bitmapData.Stride / 3);
-
-                    //DataStream dataStream = dataRect.DataPointer;
-                    unsafe
-                    {
-                        ushort* to = (ushort*)bitmapData.Scan0.ToPointer();
-                        ushort* from = (ushort*)dataRect.DataPointer;
-
-                        //ushort* to = (ushort*)dataStream.DataPointer;
-                        //ushort* from = (ushort*)bitmapData.Scan0.ToPointer();
-
-                        for (int j = 0; j < bmp.Height; j++)
-                        {
-                            for (int i = 0; i < bmpPitch; i++)
-                            {
-                                to[i + j * bmpPitch] = from[i + j * surfPitch];
-                                //to[i + j * surfPitch] = from[i + j * bmpPitch];
-                            }
-                        }
-
-                        result = true;
-                    }
-                    */
-
+                    result = true;                
                 }
                 finally
                 {
@@ -649,7 +613,7 @@ namespace ScreenStreamer
 
                     }
                     else
-                    {// Лучше не использовать масштабирорование StretchBlt !!!
+                    {// Лучше не использовать масштабирование StretchBlt !!!
 
                         //самый быстрый и самый кривой режим масштабирования
                         Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR); 
@@ -755,7 +719,7 @@ namespace ScreenStreamer
                         Graphics g = Graphics.FromImage(bmp);
                         try
                         {
-                            g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy);
+                            g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy| CopyPixelOperation.CaptureBlt);
                             success = true;
                         }
                         finally
@@ -772,7 +736,7 @@ namespace ScreenStreamer
                             Graphics g = Graphics.FromImage(buf);
                             try
                             {
-                                g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy);
+                                g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy | CopyPixelOperation.CaptureBlt);
 
                                 Graphics _g = Graphics.FromImage(bmp);
                                 try

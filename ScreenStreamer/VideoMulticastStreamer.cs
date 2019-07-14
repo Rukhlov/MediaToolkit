@@ -111,6 +111,11 @@ namespace ScreenStreamer
 
         private void Encoder_DataEncoded(IntPtr ptr, int len, double time)
         {
+            if (closing)
+            {
+                return;
+            }
+
             if (ptr != IntPtr.Zero && len > 0)
             {
                 // получили данные от энкодера 

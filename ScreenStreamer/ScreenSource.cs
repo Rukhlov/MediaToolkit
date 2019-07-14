@@ -12,6 +12,14 @@ using System.Threading.Tasks;
 
 namespace ScreenStreamer
 {
+    class ScreenCaptureParams
+    {
+        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
+        public Size DestSize = new Size(640, 480);
+        public CaptureType CaptureType = CaptureType.GDI;
+        public int Fps = 10;
+        public bool CaptureMouse = false;
+    }
 
     class ScreenSource
     {
@@ -28,33 +36,38 @@ namespace ScreenStreamer
         }
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        public Task Start(Rectangle srcRect, Size destSize, int frameRate = 30)
+        public Task Start(ScreenCaptureParams captureParams)
         {
             logger.Debug("ScreenSource::Start()");
+
+
 
             return Task.Run(() =>
             {
                 logger.Info("Capturing thread started...");
 
+                var frameRate = captureParams.Fps;
+                var srcRect = captureParams.SrcRect;
+                var destSize = captureParams.DestSize;
+                var captureType = captureParams.CaptureType;
+                var captureMouse = captureParams.CaptureMouse;
+
                 CaptureStats captureStats = new CaptureStats();
 
-                ScreenCapture screenCapture = ScreenCapture.Create(CaptureType.GDI);
-                screenCapture.CaptureMouse = true;
+                ScreenCapture screenCapture = ScreenCapture.Create(captureType);
+                screenCapture.CaptureMouse = captureMouse;
 
                 try
                 {
                     Statistic.RegisterCounter(captureStats);
 
-                    
-                    int frameCount = 0;
+
                     var frameInterval = (1000.0 / frameRate);
 
                    // screenCapture.Init(srcRect, destSize);
                     screenCapture.Init(srcRect);
+
                     this.Buffer = screenCapture.VideoBuffer;
-
-                    int bufferSize = (int)this.Buffer.Size;
-
 
                     double lastTime = 0;
                     double monotonicTime = 0;
@@ -67,8 +80,7 @@ namespace ScreenStreamer
                         try
                         {
                             var res = screenCapture.UpdateBuffer();
-                            //sec += sw.ElapsedMilliseconds / 1000.0;
-
+    
                             if (closing)
                             {
                                 break;
@@ -82,12 +94,11 @@ namespace ScreenStreamer
 
                                 //var diff = time - lastTime;
 
-
                                 lastTime = Buffer.time;
 
                                 OnBufferUpdated();
  
-                                captureStats.Update(Buffer.time, bufferSize);
+                                captureStats.Update(Buffer.time, (int)Buffer.Size);
 
                             }
                             else
@@ -112,11 +123,7 @@ namespace ScreenStreamer
                             syncEvent.WaitOne(delay);
                         }
 
-                        //rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
-
                         monotonicTime += sw.ElapsedMilliseconds / 1000.0;
-
-                        //captureStats.Update(sec, bufferSize);
 
                     }
 
