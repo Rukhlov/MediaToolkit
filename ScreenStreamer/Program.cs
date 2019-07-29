@@ -74,7 +74,7 @@ namespace ScreenStreamer
             //Utils.DwmApi.DisableAero(true);
 
 
-            int fps = 30;
+            int fps = 10;
             bool aspectRatio = true;
 
             // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
@@ -113,7 +113,7 @@ namespace ScreenStreamer
 
             var captureTask = source.Start(captureParams);
 
-            /*
+            
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 Address = "0.0.0.0",
@@ -130,12 +130,12 @@ namespace ScreenStreamer
             };
             
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
-            */
+            
             
 
 
 
-            
+            /*
             
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
@@ -156,7 +156,7 @@ namespace ScreenStreamer
 
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
             
-
+            */
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
             

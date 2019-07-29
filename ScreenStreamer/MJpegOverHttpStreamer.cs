@@ -297,6 +297,15 @@ namespace ScreenStreamer
                                 logger.Debug("Client request: " + request);
                             }
 
+                            if(streamer.clients.Count > 5)
+                            {
+                                string resp = "HTTP/1.0 503 Service Unavailable\r\n" + "Connectin: close\r\n";
+                                byte[] bytes = Encoding.ASCII.GetBytes(resp);
+                                stream.Write(bytes, 0, bytes.Length);
+
+                                return;
+                            }
+
                             // Send response...
                             string response = "HTTP/1.0 200 OK\r\n" +
                                     "Content-type: multipart/x-mixed-replace; boundary=" + BOUNDARY + "\r\n" +
