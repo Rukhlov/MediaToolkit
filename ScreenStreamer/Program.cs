@@ -69,16 +69,21 @@ namespace ScreenStreamer
                 }
             }
 
+            Shcore.SetDpiAwareness();
+
             // Utils.WinMM.timeBeginPeriod(1);
 
             //Utils.DwmApi.DisableAero(true);
 
 
-            int fps = 10;
-            bool aspectRatio = true;
+            int fps = 30;
+            bool aspectRatio = false;
 
             // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+
             var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
+            //var srcRect = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+            //var srcRect = SystemInformation.WorkingArea;
 
             //var srcRect = new Rectangle(0, 0, 1280, 1440);
             //var srcRect = new Rectangle(0, 0, 2560, 1080);
@@ -106,7 +111,9 @@ namespace ScreenStreamer
             {
                 SrcRect = srcRect,
                 DestSize = destSize,
-                CaptureType = CaptureType.GDI,
+                CaptureType = CaptureType.DXGI,
+               // CaptureType = CaptureType.Direct3D,
+                //CaptureType = CaptureType.GDI,
                 Fps = fps,
                 CaptureMouse = true,
             };

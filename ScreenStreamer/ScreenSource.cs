@@ -64,7 +64,7 @@ namespace ScreenStreamer
 
                     var frameInterval = (1000.0 / frameRate);
 
-                   // screenCapture.Init(srcRect, destSize);
+                    //screenCapture.Init(srcRect, destSize);
                     screenCapture.Init(srcRect);
 
                     this.Buffer = screenCapture.VideoBuffer;

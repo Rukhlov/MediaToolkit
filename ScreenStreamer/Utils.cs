@@ -264,9 +264,12 @@ namespace ScreenStreamer.Utils
             {
                 if (pci.flags == CURSOR_SHOWING)
                 {
+                    int offsetX = 0;//12;
+                    int offsetY = 0;//12;
+
                     var pos = pci.ptScreenPos;
-                    int x = pos.x - 12;
-                    int y = pos.y - 12;
+                    int x = pos.x - offsetX;
+                    int y = pos.y - offsetY;
                     DrawIcon(hDc, x, y, pci.hCursor);
                 }
             }
@@ -366,6 +369,35 @@ namespace ScreenStreamer.Utils
 
     }
 
+    public enum ProcessDPIAwareness
+    {
+        PROCESS_DPI_UNAWARE = 0,
+        PROCESS_SYSTEM_DPI_AWARE = 1,
+        PROCESS_PER_MONITOR_DPI_AWARE = 2
+    }
+
+    class Shcore { 
+
+        [DllImport("shcore.dll")]
+        internal static extern int SetProcessDpiAwareness(ProcessDPIAwareness value);
+
+
+        public static void SetDpiAwareness()
+        {
+            try
+            {
+                if (Environment.OSVersion.Version.Major >= 6)
+                {
+                    SetProcessDpiAwareness(ProcessDPIAwareness.PROCESS_PER_MONITOR_DPI_AWARE);
+                }
+            }
+            catch (EntryPointNotFoundException ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
+
+    }
     public class RngProvider
     {
         private static System.Security.Cryptography.RNGCryptoServiceProvider provider =
