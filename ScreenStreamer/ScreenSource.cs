@@ -61,17 +61,18 @@ namespace ScreenStreamer
                 {
                     Statistic.RegisterCounter(captureStats);
 
-
+                    
                     var frameInterval = (1000.0 / frameRate);
+                    captureStats.frameInterval = frameInterval;
 
-                    //screenCapture.Init(srcRect, destSize);
+                    // screenCapture.Init(srcRect, destSize);
                     screenCapture.Init(srcRect);
 
                     this.Buffer = screenCapture.VideoBuffer;
 
                     double lastTime = 0;
                     double monotonicTime = 0;
-                    
+                    double jitter = 0;
                     Stopwatch sw = Stopwatch.StartNew();
                     while (!closing)
                     {
@@ -79,12 +80,14 @@ namespace ScreenStreamer
 
                         try
                         {
-                            var res = screenCapture.UpdateBuffer();
+                            var res = screenCapture.UpdateBuffer(30);
     
                             if (closing)
                             {
                                 break;
                             }
+
+                         
 
                             if (res)
                             {
@@ -98,12 +101,13 @@ namespace ScreenStreamer
 
                                 OnBufferUpdated();
  
-                                captureStats.Update(Buffer.time, (int)Buffer.Size);
+                                captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.Size);
 
                             }
                             else
                             {
-                                logger.Warn("Drop buffer...");
+                                logger.Warn("No screen buffer...");
+
                             }
 
 
@@ -117,13 +121,20 @@ namespace ScreenStreamer
                         var mSec = sw.ElapsedMilliseconds;
                         var delay = (int)(frameInterval - mSec);
 
-                        if (delay > 0)
+                        if (delay > 0 && delay < 5000)
                         {
-
                             syncEvent.WaitOne(delay);
                         }
+                        else
+                        {
+                            logger.Warn("delay " + delay);
+                        }
+
+                        
 
                         monotonicTime += sw.ElapsedMilliseconds / 1000.0;
+                        captureStats.Update(monotonicTime);
+
 
                     }
 
@@ -158,4 +169,99 @@ namespace ScreenStreamer
 
 
     }
+
+
+    class CaptureStats : ScreenStreamer.Utils.StatCounter
+    {
+        public double totalTime = 0;
+        public long totalBytes = 0;
+        public uint totalFrameCount = 0;
+
+        public uint currentFrame = 0;
+        public long currentBytes = 0;
+
+        public double avgFrameInterval = 0;
+        public double avgBytesPerSec = 0;
+
+        public double lastTimestamp = 0;
+
+        public double frameInterval = 0;
+        public double jitterAvg = 0;
+
+        public void Update(double timestamp)
+        {
+            if (lastTimestamp > 0)
+            { 
+
+                var interval = (timestamp - lastTimestamp) * 1000;
+
+                var diff = (interval - frameInterval);
+
+                jitterAvg += (int)((1.0 / 16.0) * ((double)Math.Abs(diff) - jitterAvg));
+
+            }
+            //lastTimestamp = timestamp;
+
+        }
+
+        public void UpdateFrameStats(double timestamp, int bytesSize)
+        {
+
+            if (lastTimestamp > 0)
+            {
+                var time = timestamp - lastTimestamp;
+
+                avgFrameInterval = (time * 0.05 + avgFrameInterval * (1 - 0.05));
+                avgBytesPerSec = bytesSize / avgFrameInterval;
+
+                totalTime += (timestamp - lastTimestamp);
+            }
+
+            totalBytes += bytesSize;
+
+            lastTimestamp = timestamp;
+            totalFrameCount++;
+        }
+
+
+        public override string GetReport()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var fps = (1 / this.avgFrameInterval);
+
+            //var mbytesPerSec = this.avgBytesPerSec / (1024.0 * 1024);
+            //var mbytes = this.totalBytes / (1024.0 * 1024);
+
+            TimeSpan time = TimeSpan.FromSeconds(totalTime);
+            sb.AppendLine(time.ToString(@"hh\:mm\:ss\.fff"));
+            sb.AppendLine(fps.ToString("0.0") + " FPS");
+
+            sb.AppendLine("");
+            sb.AppendLine(this.totalFrameCount + " Frames");
+
+            //sb.AppendLine(mbytesPerSec.ToString("0.0") + " MByte/s");
+
+            sb.AppendLine(StringHelper.SizeSuffix((long)avgBytesPerSec) + "/s");
+            sb.AppendLine(StringHelper.SizeSuffix(totalBytes));
+
+            sb.AppendLine((jitterAvg).ToString("0.0") + " ms");
+
+            return sb.ToString();
+        }
+
+        public override void Reset()
+        {
+            this.totalBytes = 0;
+            this.totalFrameCount = 0;
+            this.currentFrame = 0;
+            this.currentBytes = 0;
+
+            this.avgFrameInterval = 0;
+            this.avgBytesPerSec = 0;
+            this.lastTimestamp = 0;
+
+        }
+    }
+
 }

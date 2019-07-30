@@ -34,9 +34,9 @@ namespace ScreenStreamer
         }
 
 
-        //static IntPtr screenDc;
-        //static IntPtr compatibleDc;
-        //static IntPtr compatibleBitmap;
+        //private IntPtr screenDc;
+        //private IntPtr compatibleDc;
+        //private IntPtr compatibleBitmap;
 
         public override bool UpdateBuffer(int timeout = 10)
         {
@@ -81,7 +81,6 @@ namespace ScreenStreamer
                     // https://docs.microsoft.com/en-us/previous-versions/technet-magazine/dd392008(v=msdn.10)
                     var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                     //var dwRop = TernaryRasterOperations.SRCCOPY;
-
 
 
                     if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
