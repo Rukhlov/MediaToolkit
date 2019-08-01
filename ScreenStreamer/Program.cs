@@ -112,8 +112,8 @@ namespace ScreenStreamer
                 SrcRect = srcRect,
                 DestSize = destSize,
                 CaptureType = CaptureType.DXGI,
-               // CaptureType = CaptureType.Direct3D,
-                //CaptureType = CaptureType.GDI,
+                //CaptureType = CaptureType.Direct3D,
+               // CaptureType = CaptureType.GDI,
                 Fps = fps,
                 CaptureMouse = true,
             };

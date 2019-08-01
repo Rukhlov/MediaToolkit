@@ -106,7 +106,7 @@ namespace ScreenStreamer
                             }
                             else
                             {
-                                logger.Warn("No screen buffer...");
+                                //logger.Warn("No screen buffer...");
 
                             }
 
@@ -127,7 +127,7 @@ namespace ScreenStreamer
                         }
                         else
                         {
-                            logger.Warn("delay " + delay);
+                            //logger.Warn("delay " + delay);
                         }
 
                         
