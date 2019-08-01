@@ -111,7 +111,7 @@ namespace ScreenStreamer
             {
                 SrcRect = srcRect,
                 DestSize = destSize,
-                CaptureType = CaptureType.DXGI,
+                CaptureType = CaptureType.DXGIDeskDupl,
                 //CaptureType = CaptureType.Direct3D,
                // CaptureType = CaptureType.GDI,
                 Fps = fps,
@@ -120,7 +120,7 @@ namespace ScreenStreamer
 
             var captureTask = source.Start(captureParams);
 
-            
+            /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 Address = "0.0.0.0",
@@ -137,12 +137,12 @@ namespace ScreenStreamer
             };
             
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
+            */
             
+
+
+
             
-
-
-
-            /*
             
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
@@ -158,12 +158,12 @@ namespace ScreenStreamer
                 Width = destSize.Width, // options.Width,
                 Height = destSize.Height, // options.Height,
                 FrameRate = options.FrameRate,
-                EncoderName = "h264_nvenc", //libx264 // 
+                EncoderName = "libx264", // "h264_nvenc", //
             };
 
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
             
-            */
+            
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
             

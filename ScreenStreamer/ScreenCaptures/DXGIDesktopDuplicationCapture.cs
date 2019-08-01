@@ -29,9 +29,7 @@ namespace ScreenStreamer
     public class DXGIDesktopDuplicationCapture : ScreenCapture
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
-        {
-
-        }
+        { }
 
         private SharpDX.DXGI.Factory1 dxgiFactory = null;
         private Device device3d11 = null;
@@ -39,10 +37,8 @@ namespace ScreenStreamer
         private Output output = null;
 
         private OutputDuplication deskDupl = null;
-        private Texture2D screenTexture = null;
-
-
         private Texture2D acquiredDesktopImage = null;
+        private Texture2D screenTexture = null;
 
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
@@ -110,12 +106,13 @@ namespace ScreenStreamer
 
             screenTexture = new Texture2D(device3d11, textureDesc);
 
-            deviceLost = false;
+            cursorObj = new CursorObj();
+
+            deviceReady = true;
 
         }
 
-        private bool deviceLost = false;
-
+        private bool deviceReady = false;
 
         public override bool UpdateBuffer(int timeout = 10)
         {
@@ -123,21 +120,16 @@ namespace ScreenStreamer
 
             try
             {
-                if (deviceLost)
+                if (!deviceReady)
                 {
                     InitDx(srcRect);
-                    deviceLost = false;
                 }
 
-                SharpDX.DXGI.Resource desktopResource = null;
                 OutputDuplicateFrameInformation frameInfo;
-
-
-                SharpDX.Result acquireResult = new SharpDX.Result();
+                SharpDX.DXGI.Resource desktopResource = null;
                 try
                 {
-
-                    acquireResult = deskDupl.TryAcquireNextFrame(50, out frameInfo, out desktopResource);
+                    var acquireResult = deskDupl.TryAcquireNextFrame(50, out frameInfo, out desktopResource);
 
                     if (acquireResult.Success)
                     {
@@ -149,8 +141,6 @@ namespace ScreenStreamer
                         }
 
                         acquiredDesktopImage = desktopResource.QueryInterface<Texture2D>();
-                        desktopResource.Dispose();
-                        desktopResource = null;
 
                         device3d11.ImmediateContext.CopyResource(acquiredDesktopImage, screenTexture);
                         //using (var screenTexture2D = screenResource.QueryInterface<Texture2D>())
@@ -160,13 +150,9 @@ namespace ScreenStreamer
                         //}
                         //device3d11.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, null, screenTexture, 0);
 
-                        var frameParams = GetFrameParams(frameInfo);
+                        //var frameParams = GetFrameParams(frameInfo);
 
                         UpdateMouseInfo(frameInfo);
-
-
-                        // logger.Debug("TotalMetadataBufferSize " + frameInfo.TotalMetadataBufferSize);
-                        //logger.Debug("dirtyRects " + dirtyRects.Length);
 
                         var syncRoot = videoBuffer.syncRoot;
                         bool lockTaken = false;
@@ -206,18 +192,17 @@ namespace ScreenStreamer
                                     Result = TextureToBitmap(screenTexture, videoBuffer.bitmap, rect);
                                 }
                                 */
+                                
+                                //var _rect = new GDI.Rectangle(0, 0, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height);
 
-                                var _rect = new GDI.Rectangle(0, 0, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height);
+                                Result = TextureToBitmap(screenTexture, videoBuffer.bitmap);
 
-                                Result = TextureToBitmap(screenTexture, videoBuffer.bitmap, _rect);
-
-                                if (cursorObj.Visible)
+                                if (this.CaptureMouse && cursorObj.Visible)
                                 {
                                     var desktop = videoBuffer.bitmap;
                                     GDI.Bitmap bmpCursor = null;
                                     try
                                     {
-
                                         bmpCursor = cursorObj.GetBitmap(desktop);
 
                                         if (bmpCursor != null)
@@ -235,16 +220,15 @@ namespace ScreenStreamer
                                             {
                                                 g?.Dispose();
                                             }
-                                            //bmpCursor.Save(@"d:\_test_.bmp");
-                                          
                                         }
                                     }
                                     finally
                                     {
                                         bmpCursor?.Dispose();
                                     }
-
+       
                                 }
+
                             }
                             else
                             {
@@ -277,10 +261,18 @@ namespace ScreenStreamer
                 }
                 finally
                 {
-                    if (acquireResult.Success)
+                    if (desktopResource != null)
                     {
                         deskDupl.ReleaseFrame();
+
+                        desktopResource.Dispose();
+                        desktopResource = null;
                     }
+
+                    //if (acquireResult.Success)
+                    //{
+                    //    deskDupl.ReleaseFrame();
+                    //}
                 }
             }
             catch (SharpDXException ex)
@@ -309,7 +301,6 @@ namespace ScreenStreamer
                     }
 
                     CloseDx();
-                    deviceLost = true;
 
                     //throw;
                     Thread.Sleep(100);
@@ -377,10 +368,12 @@ namespace ScreenStreamer
             {
                 deskDupl.GetFrameDirtyRects(bufferSizeBytes, dirtyRectsBuffer, out dirtyRectsBufferSizeRequired);
             }
-            catch (SharpDXException e)
+            catch (SharpDXException ex)
             {
-                if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
+                if (ex.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
                 {
+                    logger.Error(ex);
+
                     // TODO:
                     //...
                 }
@@ -401,7 +394,6 @@ namespace ScreenStreamer
                 }
             }
 
-
             return dirtyRectsBufferSizeRequired;
         }
 
@@ -415,7 +407,6 @@ namespace ScreenStreamer
                 return moveRectsBufferSizeRequired;
             }
 
-
             var moveItemSize = Marshal.SizeOf(typeof(OutputDuplicateMoveRectangle));
             var maxMoveRectItemCount = bufferSizeBytes / moveItemSize;
 
@@ -427,10 +418,12 @@ namespace ScreenStreamer
                 {
                     deskDupl.GetFrameMoveRects(bufferSizeBytes, moveRectBuf, out moveRectsBufferSizeRequired);
                 }
-                catch (SharpDXException e)
+                catch (SharpDXException ex)
                 {
-                    if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
+                    if (ex.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
                     {
+                        logger.Error(ex);
+
                         // TODO:
                         //maxMoveRectItemCount = moveRectsBufferSizeRequired / moveItemSize;
                         //moveRectBuf = new OutputDuplicateMoveRectangle[maxMoveRectItemCount];
@@ -464,6 +457,8 @@ namespace ScreenStreamer
 
         class CursorObj
         {
+           // public byte[] ShapeBuffer = null;
+
             public IntPtr PtrShapeBuffer = IntPtr.Zero;
             public int BufferSize = 0;
 
@@ -473,11 +468,6 @@ namespace ScreenStreamer
 
             public int WhoUpdatedPositionLast = 0;
             public long LastTimeStamp = 0;
-
-            static readonly byte[] White = { 0xFF, 0xFF, 0xFF, 0xFF };
-            static readonly byte[] Black = { 0, 0, 0, 0xFF };
-            static readonly byte[] TransparentWhite = { 0xFF, 0xFF, 0xFF, 0 };
-            static readonly byte[] TransparentBlack = new byte[4];
 
             internal Bitmap GetBitmap(Bitmap desktop)
             {
@@ -492,7 +482,6 @@ namespace ScreenStreamer
 
                 int givenLeft = Position.X;
                 int givenTop = Position.Y;
-
 
 
                 int screenWidth = desktop.Width;
@@ -533,15 +522,15 @@ namespace ScreenStreamer
                         desktop.UnlockBits(data);
                     }
 
-                    var shapeBuffer = new byte[width * height * 4];
+                    var shapeBufferLenght = width * height * 4;
+                    var shapeBuffer = new byte[shapeBufferLenght];
 
-                    var ptrShapeBuffer = PtrShapeBuffer;
+                    var maskBufferLenght = width * height / 8;
+                    var andMaskBuffer = new byte[maskBufferLenght];
+                    Marshal.Copy(PtrShapeBuffer, andMaskBuffer, 0, andMaskBuffer.Length);
 
-                    var andMaskBuffer = new byte[width * height / 8];
-                    Marshal.Copy(ptrShapeBuffer, andMaskBuffer, 0, andMaskBuffer.Length);
-
-                    var xorMaskBuffer = new byte[width * height / 8];
-                    Marshal.Copy(ptrShapeBuffer + andMaskBuffer.Length, xorMaskBuffer, 0, xorMaskBuffer.Length);
+                    var xorMaskBuffer = new byte[maskBufferLenght];
+                    Marshal.Copy(PtrShapeBuffer + andMaskBuffer.Length, xorMaskBuffer, 0, xorMaskBuffer.Length);
 
                     for (var row = 0; row < height; ++row)
                     {
@@ -551,18 +540,17 @@ namespace ScreenStreamer
                         {
                             var maskIndex = row * width / 8 + col / 8;
 
-                            var andMask = (andMaskBuffer[maskIndex] & mask) == mask;
-                            var xorMask = (xorMaskBuffer[maskIndex] & mask) == mask;
+                            var andMask = ((andMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
+                            var xorMask = ((xorMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
 
-                            var andMask32 = andMask ? White : Black;
-                            var xorMask32 = xorMask ? TransparentWhite : TransparentBlack;
-
-                            var offset = row * width * 4 + col * 4;
-
-                            for (var color = 0; color < 4; ++color)
-                            {
-                                shapeBuffer[color + offset] = (byte)((desktopBuffer[color + offset] & andMask32[color]) ^ xorMask32[color]);
+                            int pos = row * width * 4 + col * 4;
+                            for ( int i = 0; i < 3; i++)
+                            {// RGB
+                                shapeBuffer[pos] = (byte)((desktopBuffer[pos] & andMask) ^ xorMask);
+                                pos++;
                             }
+                            // Alpha
+                            shapeBuffer[pos] = (byte)((desktopBuffer[pos] & 0xFF) ^ 0); 
 
                             if (mask == 0x01)
                             {
@@ -592,13 +580,23 @@ namespace ScreenStreamer
                 else if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR)
                 {
                     //...
-                    //logger.Warn("Not supported");
+                    logger.Warn("Not supported");
                 }
 
                 return bmpCursor;
 
- 
+
             }
+
+            public void Dispose()
+            {
+                if (PtrShapeBuffer != null)
+                {
+                    Marshal.FreeHGlobal(PtrShapeBuffer);
+                    PtrShapeBuffer = IntPtr.Zero;
+                }
+            }
+
 
 
         }
@@ -642,12 +640,15 @@ namespace ScreenStreamer
                         cursorObj.ShapeInfo = pointerShapeInfo;
                         //logger.Debug("pointerShapeInfo " + pointerShapeInfo.Type);
                     }
-                    catch (SharpDXException e)
+                    catch (SharpDXException ex)
                     {
-                        if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
+       
+                        if (ex.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
                         {
                             // TODO:
                             //...
+                            logger.Error(ex);
+
                         }
 
                         throw;
@@ -661,7 +662,8 @@ namespace ScreenStreamer
             }
         }
 
-        private bool TextureToBitmap(Texture2D texture, GDI.Bitmap bmp, GDI.Rectangle rect)
+
+        private bool TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
         {
             bool success = false;
             var descr = texture.Description;
@@ -676,9 +678,9 @@ namespace ScreenStreamer
             {
                 var srcData = device3d11.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
 
-                int width = rect.Width;//bmp.Width;
-                int height = rect.Height;//bmp.Height;
-                //var rect = new GDI.Rectangle(0, 0, width, height);
+                int width = bmp.Width;
+                int height = bmp.Height;
+                var rect = new GDI.Rectangle(0, 0, width, height);
                 var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
                 try
                 {
@@ -686,8 +688,6 @@ namespace ScreenStreamer
                     int srcOffset = rect.Top * srcData.RowPitch + rect.Left * 4;
 
                     srcPtr = IntPtr.Add(srcPtr, srcOffset);
-                    //srcPtr += rect.Top * srcData.RowPitch; // Offset source to the correct row
-                    //srcPtr += rect.Left * 4; // Offset source to the correct column
 
                     var destPtr = destData.Scan0;
                     for (int row = rect.Top; row < rect.Bottom; row++)
@@ -698,16 +698,6 @@ namespace ScreenStreamer
 
                     }
 
-                    /*
-                    var srcPtr = srcData.DataPointer;
-                    var destPtr = destData.Scan0;
-                    for (int y = 0; y < height; y++)
-                    {
-                        Utilities.CopyMemory(destPtr, srcPtr, width * 4);
-                        srcPtr = IntPtr.Add(srcPtr, srcData.RowPitch);
-                        destPtr = IntPtr.Add(destPtr, destData.Stride);
-                    }
-                    */
                     success = true;
                 }
                 finally
@@ -723,6 +713,8 @@ namespace ScreenStreamer
 
             return success;
         }
+
+
         public override void Close()
         {
             logger.Debug("DXGIDesktopDuplicationCapture::Close()");
@@ -734,6 +726,22 @@ namespace ScreenStreamer
         private void CloseDx()
         {
             logger.Debug("DXGIDesktopDuplicationCapture::CloseDx()");
+
+            deviceReady = false;
+
+            if (cursorObj != null)
+            {
+                cursorObj.Dispose();
+                cursorObj = null;
+            }
+
+
+            if (acquiredDesktopImage != null && !acquiredDesktopImage.IsDisposed)
+            {
+                acquiredDesktopImage.Dispose();
+                acquiredDesktopImage = null;
+            }
+
 
             if (deskDupl != null && !deskDupl.IsDisposed)
             {
@@ -770,365 +778,6 @@ namespace ScreenStreamer
                 dxgiFactory.Dispose();
                 dxgiFactory = null;
             }
-        }
-
-
-
-
-
-        public bool __UpdateBuffer(int timeout = 10)
-        {
-            bool Result = false;
-
-            try
-            {
-                if (deviceLost)
-                {
-                    InitDx(srcRect);
-                    deviceLost = false;
-                }
-
-                SharpDX.DXGI.Resource desktopResource = null;
-                OutputDuplicateFrameInformation frameInfo;
-
-                bool frameAcquired = false;
-                while (true)
-                {
-                    try
-                    {
-                        //if (desktopResource != null)
-                        //{
-                        //    desktopResource.Dispose();
-                        //    desktopResource = null;
-                        //}
-
-                        deskDupl.AcquireNextFrame(500, out frameInfo, out desktopResource);
-                        frameAcquired = true;
-
-                        //OutputDuplicatePointerShapeInformation pointerShapeInfo = new OutputDuplicatePointerShapeInformation();
-                        //var pointerPos = frameInfo.PointerPosition;
-                        //if (frameInfo.LastMouseUpdateTime > 0)
-                        //{
-                        //    if (pointerPos.Visible)
-                        //    {
-
-                        //        var pointerShapeBufferSize = frameInfo.PointerShapeBufferSize;
-                        //        if (pointerShapeBufferSize > ptrShapeBufferSize)
-                        //        {
-                        //            if (ptrShapeBuffer != IntPtr.Zero)
-                        //            {
-                        //                Marshal.FreeHGlobal(ptrShapeBuffer);
-                        //            }
-                        //            ptrShapeBufferSize = pointerShapeBufferSize;
-                        //            ptrShapeBuffer = Marshal.AllocHGlobal(ptrShapeBufferSize);
-
-                        //        }
-
-                        //        int pointerShapeBufferSizeRequired;
-
-                        //        try
-                        //        {
-                        //            deskDupl.GetFramePointerShape(pointerShapeBufferSize, ptrShapeBuffer, out pointerShapeBufferSizeRequired, out pointerShapeInfo);
-
-                        //            logger.Debug("pointerShapeInfo " + pointerShapeInfo.Type);
-                        //        }
-                        //        catch (SharpDXException e)
-                        //        {
-                        //            if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
-                        //            {
-                        //                // TODO:
-                        //                //...
-                        //            }
-
-                        //            throw;
-                        //        }
-                        //    }
-
-                        //}
-
-                        if (frameInfo.AccumulatedFrames > 0)
-                        {
-                            if (acquiredDesktopImage != null)
-                            {
-                                acquiredDesktopImage.Dispose();
-                                acquiredDesktopImage = null;
-                            }
-
-                            acquiredDesktopImage = desktopResource.QueryInterface<Texture2D>();
-                            desktopResource.Dispose();
-                            desktopResource = null;
-
-                            device3d11.ImmediateContext.CopyResource(acquiredDesktopImage, screenTexture);
-                            //using (var screenTexture2D = screenResource.QueryInterface<Texture2D>())
-                            //{
-                            //    device3d11.ImmediateContext.CopyResource(screenTexture2D, screenTexture);
-                            //    //device3d11.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, null, screenTexture, 0);
-                            //}
-                            //device3d11.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, null, screenTexture, 0);
-
-
-                            OutputDuplicateMoveRectangle[] moveRects = new OutputDuplicateMoveRectangle[0];
-                            RawRectangle[] dirtyRects = new RawRectangle[0];
-
-
-                            if (frameInfo.TotalMetadataBufferSize > 0)
-                            {
-
-                                var bufferSizeBytes = frameInfo.TotalMetadataBufferSize;
-                                var moveItemSize = Marshal.SizeOf(typeof(OutputDuplicateMoveRectangle));
-                                var maxMoveRectItemCount = bufferSizeBytes / moveItemSize;
-
-                                if (maxMoveRectItemCount > 0)
-                                {
-                                    var moveRectBuf = new OutputDuplicateMoveRectangle[maxMoveRectItemCount];
-                                    int moveRectsBufferSizeRequired = -1;
-                                    try
-                                    {
-                                        deskDupl.GetFrameMoveRects(bufferSizeBytes, moveRectBuf, out moveRectsBufferSizeRequired);
-                                    }
-                                    catch (SharpDXException e)
-                                    {
-                                        if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
-                                        {
-                                            // TODO:
-                                            //maxMoveRectItemCount = moveRectsBufferSizeRequired / moveItemSize;
-                                            //moveRectBuf = new OutputDuplicateMoveRectangle[maxMoveRectItemCount];
-                                            // continue...
-                                        }
-
-                                        throw;
-                                    }
-
-
-                                    var moveCount = moveRectsBufferSizeRequired / moveItemSize;
-
-                                    if (moveCount > 0)
-                                    {
-                                        if (maxMoveRectItemCount > moveCount)
-                                        {
-                                            moveRects = moveRectBuf.Take(moveCount).ToArray();
-                                        }
-                                        else
-                                        {
-                                            moveRects = moveRectBuf;
-                                        }
-                                    }
-
-                                    bufferSizeBytes -= moveRectsBufferSizeRequired;
-                                }
-
-                                if (bufferSizeBytes > 0)
-                                {
-                                    var rawRectItemSize = Marshal.SizeOf(typeof(RawRectangle));
-                                    var maxRawRectItemCount = bufferSizeBytes / rawRectItemSize;
-
-                                    var dirtyRectsBuffer = new RawRectangle[maxRawRectItemCount];
-
-                                    int dirtyRectsBufferSizeRequired = -1;
-                                    try
-                                    {
-                                        deskDupl.GetFrameDirtyRects(bufferSizeBytes, dirtyRectsBuffer, out dirtyRectsBufferSizeRequired);
-                                    }
-                                    catch (SharpDXException e)
-                                    {
-                                        if (e.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
-                                        {
-                                            // TODO:
-                                            //...
-                                        }
-
-                                        throw;
-                                    }
-
-                                    var dirtyCount = dirtyRectsBufferSizeRequired / rawRectItemSize;
-                                    if (dirtyCount > 0)
-                                    {
-                                        if (dirtyCount > maxRawRectItemCount)
-                                        {
-                                            dirtyRects = dirtyRectsBuffer.Take(dirtyCount).ToArray();
-                                        }
-                                        else
-                                        {
-                                            dirtyRects = dirtyRectsBuffer;
-                                        }
-                                    }
-                                }
-
-
-
-                                //moveRects = GetMoveRectangles();
-                                // dirtyRects = GetDirtyRectangles();
-
-
-                                if (dirtyRects.Length > 0 || moveRects.Length > 0)
-                                {
-                                    // logger.Debug("TotalMetadataBufferSize " + frameInfo.TotalMetadataBufferSize);
-                                    //logger.Debug("dirtyRects " + dirtyRects.Length);
-
-                                    var syncRoot = videoBuffer.syncRoot;
-                                    bool lockTaken = false;
-
-                                    try
-                                    {
-                                        Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-
-                                        if (lockTaken)
-                                        {
-                                            foreach (OutputDuplicateMoveRectangle moveRect in moveRects)
-                                            {
-                                                //...
-                                                var srcPoint = moveRect.SourcePoint;
-                                                GDI.Point point = new GDI.Point(srcPoint.X, srcPoint.Y);
-
-                                                var destRect = moveRect.DestinationRect;
-                                                int x = destRect.Left;
-                                                int y = destRect.Top;
-                                                int width = destRect.Right - destRect.Left;
-                                                int height = destRect.Bottom - destRect.Top;
-                                                GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                                logger.Debug("srcPoint " + point.ToString() + " destRect " + rect.ToString());
-                                            }
-
-                                            foreach (RawRectangle dirtyRect in dirtyRects)
-                                            {
-                                                int x = dirtyRect.Left;
-                                                int y = dirtyRect.Top;
-                                                int width = dirtyRect.Right - dirtyRect.Left;
-                                                int height = dirtyRect.Bottom - dirtyRect.Top;
-                                                //GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                                //Result = TextureToBitmap(screenTexture, videoBuffer.bitmap, rect);
-                                            }
-                                            var _rect = new GDI.Rectangle(0, 0, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height);
-
-                                            //Result = TextureToBitmap(screenTexture, videoBuffer.bitmap, _rect);
-
-
-                                            //if (pointerPos.Visible)
-                                            //{
-                                            //    if (pointerShapeInfo.Width > 0 && pointerShapeInfo.Height > 0 
-                                            //        && pointerShapeInfo.Height <= 64 && pointerShapeInfo.Width <= 64)
-                                            //    {
-                                            //        int x = pointerPos.Position.X;
-                                            //        int y = pointerPos.Position.Y;
-                                            //        int width = pointerShapeInfo.Width;
-                                            //        int height = pointerShapeInfo.Height;
-                                            //        GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                            //        int pitch = pointerShapeInfo.Pitch;
-                                            //        logger.Debug(rect + " pointerShapeInfo " + pointerShapeInfo.Type);
-
-                                            //        if(pointerShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-                                            //        {
-
-                                            //        }
-                                            //        else if(pointerShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
-                                            //        {
-
-                                            //        }
-                                            //        else if (pointerShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR)
-                                            //        {
-
-                                            //        }
-
-                                            //        var bmp = new GDI.Bitmap(width, height, GDI.Imaging.PixelFormat.Format32bppArgb);
-
-                                            //        var destData = bmp.LockBits(new GDI.Rectangle(0, 0, width, height), System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
-                                            //        try
-                                            //        {
-                                            //            IntPtr srcPtr = ptrShapeBuffer;
-                                            //            var destPtr = destData.Scan0;
-                                            //            for (int i = 0; i < height; i++)
-                                            //            {
-                                            //                Utilities.CopyMemory(destPtr, srcPtr, width * 4);
-                                            //                srcPtr = IntPtr.Add(srcPtr, pitch);
-                                            //                destPtr = IntPtr.Add(destPtr, destData.Stride);
-                                            //            }
-
-                                            //        }
-                                            //        finally
-                                            //        {
-                                            //            bmp.UnlockBits(destData);
-                                            //        }
-
-                                            //        //bmp.Save(@"d:\test.bmp");
-
-                                            //    }
-                                            //}
-
-
-                                        }
-                                        else
-                                        {
-                                            logger.Debug("lockTaken == false");
-                                        }
-
-
-                                    }
-                                    finally
-                                    {
-                                        if (lockTaken)
-                                        {
-                                            Monitor.Exit(syncRoot);
-                                        }
-                                    }
-                                }
-                            }
-
-                            break;
-                        }
-
-                    }
-                    finally
-                    {
-                        if (frameAcquired)
-                        {
-                            deskDupl.ReleaseFrame();
-                        }
-                    }
-
-                }
-
-
-            }
-            catch (SharpDXException ex)
-            {
-
-                if (ex.ResultCode == SharpDX.DXGI.ResultCode.WaitTimeout)
-                {
-                    return false;
-                }
-                else
-                {
-
-                    const int E_ACCESSDENIED = -2147024891;// 0x80070005;
-
-                    if (ex.ResultCode == SharpDX.DXGI.ResultCode.AccessLost ||
-                        ex.ResultCode == SharpDX.DXGI.ResultCode.AccessDenied ||
-                        ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceReset ||
-                        ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceRemoved ||
-                        ex.HResult == E_ACCESSDENIED)
-                    {
-
-                        logger.Warn(ex.Descriptor.ToString());
-                    }
-                    else
-                    {
-                        logger.Error(ex);
-                    }
-
-                    CloseDx();
-                    deviceLost = true;
-
-                    //throw;
-                    Thread.Sleep(100);
-                }
-
-            }
-
-
-            return Result;
         }
     }
 
