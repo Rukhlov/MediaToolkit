@@ -1,7 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +20,7 @@ using Device = SharpDX.Direct3D11.Device;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 using GDI = System.Drawing;
+using Direct2D = SharpDX.Direct2D1;
 using ScreenStreamer.Utils;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
@@ -30,7 +31,7 @@ namespace ScreenStreamer
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
-
+        private SharpDX.Direct2D1.Factory1 factory2D1 = null;
         private SharpDX.DXGI.Factory1 dxgiFactory = null;
         private Device device3d11 = null;
         private Adapter1 adapter = null;
@@ -38,7 +39,11 @@ namespace ScreenStreamer
 
         private OutputDuplication deskDupl = null;
         private Texture2D acquiredDesktopImage = null;
-        private Texture2D screenTexture = null;
+        private Texture2D desktopTexture = null;
+
+        private Texture2D stagingTexture = null;
+
+        SharpDX.Direct2D1.RenderTarget desktopTarget = null;
 
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
@@ -70,18 +75,11 @@ namespace ScreenStreamer
                 output = adapter.Outputs.FirstOrDefault();
             }
 
-            device3d11 = new Device(adapter);
+            device3d11 = new Device(adapter, DeviceCreationFlags.BgraSupport);
             using (var multiThread = device3d11.QueryInterface<SharpDX.Direct3D11.Multithread>())
             {
                 multiThread.SetMultithreadProtected(true);
             }
-
-            //using (var dxgi = device3d11.QueryInterface<SharpDX.DXGI.Device2>())
-            //{
-            //    SharpDX.Direct2D1.Device device2d = new SharpDX.Direct2D1.Device(dxgi);
-            //    var d2dContext = new SharpDX.Direct2D1.DeviceContext(device2d, SharpDX.Direct2D1.DeviceContextOptions.None);
-
-            //}
 
             using (var output1 = output.QueryInterface<Output1>())
             {
@@ -90,21 +88,57 @@ namespace ScreenStreamer
             }
 
             // Create Staging texture CPU-accessible
-            var textureDesc = new Texture2DDescription
-            {
-                CpuAccessFlags = CpuAccessFlags.Read,
-                BindFlags = BindFlags.None,
-                Format = Format.B8G8R8A8_UNorm,
-                Width = videoBuffer.bitmap.Width,
-                Height = videoBuffer.bitmap.Height,
-                OptionFlags = ResourceOptionFlags.None,
-                MipLevels = 1,
-                ArraySize = 1,
-                SampleDescription = { Count = 1, Quality = 0 },
-                Usage = ResourceUsage.Staging
-            };
+            stagingTexture = new Texture2D(device3d11, 
+                new Texture2DDescription
+                {
+                    CpuAccessFlags = CpuAccessFlags.Read,
+                    BindFlags = BindFlags.None,
+                    Format = Format.B8G8R8A8_UNorm,
+                    Width = videoBuffer.bitmap.Width,
+                    Height = videoBuffer.bitmap.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Staging,
+                    OptionFlags = ResourceOptionFlags.None,
+                });
 
-            screenTexture = new Texture2D(device3d11, textureDesc);
+
+            desktopTexture = new Texture2D(device3d11,
+                new Texture2DDescription
+                {
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                    Format = Format.B8G8R8A8_UNorm,
+                    Width = srcRect.Width,
+                    Height = srcRect.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Default,
+                    //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                    OptionFlags = ResourceOptionFlags.None,
+                });
+
+
+
+            factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded);
+
+            //var device2d1 = new Device(SharpDX.Direct3D.DriverType.Hardware,
+            //    DeviceCreationFlags.BgraSupport | DeviceCreationFlags.VideoSupport);
+
+            using (var desktopSurf = desktopTexture.QueryInterface<Surface>())
+            {
+                //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
+
+                var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
+                var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
+                
+                desktopTarget = new Direct2D.RenderTarget(factory2D1, desktopSurf, renderTargetProps);
+
+                //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+            }
+
 
             cursorObj = new CursorObj();
 
@@ -142,99 +176,101 @@ namespace ScreenStreamer
 
                         acquiredDesktopImage = desktopResource.QueryInterface<Texture2D>();
 
-                        device3d11.ImmediateContext.CopyResource(acquiredDesktopImage, screenTexture);
-                        //using (var screenTexture2D = screenResource.QueryInterface<Texture2D>())
-                        //{
-                        //    device3d11.ImmediateContext.CopyResource(screenTexture2D, screenTexture);
-                        //    //device3d11.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, null, screenTexture, 0);
-                        //}
-                        //device3d11.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, null, screenTexture, 0);
+                        #region Update regions info
 
                         //var frameParams = GetFrameParams(frameInfo);
+                        /*
+                            var moveRects = frameParams.MoveRects;
+                            foreach (OutputDuplicateMoveRectangle moveRect in moveRects)
+                            {
+                                //...
+                                var srcPoint = moveRect.SourcePoint;
+                                GDI.Point point = new GDI.Point(srcPoint.X, srcPoint.Y);
+
+                                var destRect = moveRect.DestinationRect;
+                                int x = destRect.Left;
+                                int y = destRect.Top;
+                                int width = destRect.Right - destRect.Left;
+                                int height = destRect.Bottom - destRect.Top;
+                                GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
+
+                                logger.Debug("srcPoint " + point.ToString() + " destRect " + rect.ToString());
+                            }
+                            var dirtyRects = frameParams.DirtyRects;
+                            foreach (RawRectangle dirtyRect in dirtyRects)
+                            {
+                                int x = dirtyRect.Left;
+                                int y = dirtyRect.Top;
+                                int width = dirtyRect.Right - dirtyRect.Left;
+                                int height = dirtyRect.Bottom - dirtyRect.Top;
+                                GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
+                            }
+                        */
+
+                        //var _rect = new GDI.Rectangle(0, 0, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height);
+
+                        #endregion
 
                         UpdateMouseInfo(frameInfo);
 
-                        var syncRoot = videoBuffer.syncRoot;
-                        bool lockTaken = false;
-
-                        try
+                        using (var acquiredSurf = acquiredDesktopImage.QueryInterface<Surface1>())
                         {
-                            Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-
-                            if (lockTaken)
+                            
+                            var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                            Direct2D.Bitmap acquiredBits = new Direct2D.Bitmap(desktopTarget, acquiredSurf, prop);
+                            try
                             {
-                                /*
-                                var moveRects = frameParams.MoveRects;
-                                foreach (OutputDuplicateMoveRectangle moveRect in moveRects)
-                                {
-                                    //...
-                                    var srcPoint = moveRect.SourcePoint;
-                                    GDI.Point point = new GDI.Point(srcPoint.X, srcPoint.Y);
-
-                                    var destRect = moveRect.DestinationRect;
-                                    int x = destRect.Left;
-                                    int y = destRect.Top;
-                                    int width = destRect.Right - destRect.Left;
-                                    int height = destRect.Bottom - destRect.Top;
-                                    GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                    logger.Debug("srcPoint " + point.ToString() + " destRect " + rect.ToString());
-                                }
-                                var dirtyRects = frameParams.DirtyRects;
-                                foreach (RawRectangle dirtyRect in dirtyRects)
-                                {
-                                    int x = dirtyRect.Left;
-                                    int y = dirtyRect.Top;
-                                    int width = dirtyRect.Right - dirtyRect.Left;
-                                    int height = dirtyRect.Bottom - dirtyRect.Top;
-                                    GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                    Result = TextureToBitmap(screenTexture, videoBuffer.bitmap, rect);
-                                }
-                                */
                                 
-                                //var _rect = new GDI.Rectangle(0, 0, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height);
+                                desktopTarget.BeginDraw();
 
-                                Result = TextureToBitmap(screenTexture, videoBuffer.bitmap);
+                                var scrDescr = acquiredDesktopImage.Description;
+                                var scaleX = videoBuffer.bitmap.Width / (float)scrDescr.Width;
+                                var scaleY = videoBuffer.bitmap.Height / (float)scrDescr.Height;
+                                desktopTarget.Transform = Matrix3x2.Scaling(scaleX, scaleY);
+
+                                var renderSize = desktopTarget.Size;
+                                var srcRect = new RawRectangleF(0, 0, renderSize.Width, renderSize.Height);
+                                desktopTarget.DrawBitmap(acquiredBits, srcRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
 
                                 if (this.CaptureMouse && cursorObj.Visible)
                                 {
-                                    var desktop = videoBuffer.bitmap;
-                                    GDI.Bitmap bmpCursor = null;
-                                    try
-                                    {
-                                        bmpCursor = cursorObj.GetBitmap(desktop);
-
-                                        if (bmpCursor != null)
-                                        {
-                                            GDI.Graphics g = null;
-                                            try
-                                            {
-                                                g = GDI.Graphics.FromImage(desktop);
-                                                int x = cursorObj.Position.X;
-                                                int y = cursorObj.Position.Y;
-
-                                                g.DrawImage(bmpCursor, x, y);
-                                            }
-                                            finally
-                                            {
-                                                g?.Dispose();
-                                            }
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        bmpCursor?.Dispose();
-                                    }
-       
+                                    DrawCursor();
                                 }
 
+                                desktopTarget.EndDraw();
+                            }
+                            finally
+                            {
+                                acquiredBits?.Dispose();
+                            }
+                        }
+
+                        ResourceRegion scaledRegion = new ResourceRegion
+                        {
+                            Left = 0,
+                            Top = 0,
+                            Right = videoBuffer.bitmap.Width,
+                            Bottom = videoBuffer.bitmap.Height,
+                            Back = 1,
+                        };
+
+                        device3d11.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, stagingTexture, 0);
+                        //device3d11.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
+                        //device3d11.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
+
+                        var syncRoot = videoBuffer.syncRoot;
+                        bool lockTaken = false;
+                        try
+                        {
+                            Monitor.TryEnter(syncRoot, /*timeout,*/ ref lockTaken);
+                            if (lockTaken)
+                            {
+                                Result = TextureToBitmap(stagingTexture, videoBuffer.bitmap);
                             }
                             else
                             {
                                 logger.Debug("lockTaken == false");
                             }
-
 
                         }
                         finally
@@ -244,7 +280,6 @@ namespace ScreenStreamer
                                 Monitor.Exit(syncRoot);
                             }
                         }
-
                     }
                     else
                     {
@@ -268,11 +303,6 @@ namespace ScreenStreamer
                         desktopResource.Dispose();
                         desktopResource = null;
                     }
-
-                    //if (acquireResult.Success)
-                    //{
-                    //    deskDupl.ReleaseFrame();
-                    //}
                 }
             }
             catch (SharpDXException ex)
@@ -293,6 +323,7 @@ namespace ScreenStreamer
                         ex.HResult == E_ACCESSDENIED)
                     {
 
+                        
                         logger.Warn(ex.Descriptor.ToString());
                     }
                     else
@@ -311,7 +342,160 @@ namespace ScreenStreamer
             return Result;
         }
 
+        private unsafe void DrawCursor()
+        {
 
+            var position = cursorObj.Position;
+
+            var shapeBuff = cursorObj.PtrShapeBuffer;
+            var shapeInfo = cursorObj.ShapeInfo;
+
+            int width = shapeInfo.Width;
+            int height = shapeInfo.Height;
+            int pitch = shapeInfo.Pitch;
+
+            int left = position.X;
+            int top = position.Y;
+            int right = position.X + width;
+            int bottom = position.Y + height;
+
+
+            if (cursorObj.ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+
+                var data = new DataPointer(shapeBuff, height * pitch);
+                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                var size = new Size2(width, height);
+                var cursorBits = new Direct2D.Bitmap(desktopTarget, size, data, pitch, prop);
+                try
+                {
+
+                    var rect = new RawRectangleF(left, top, right, bottom);
+
+                    desktopTarget.DrawBitmap(cursorBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+
+                }
+                finally
+                {
+                    cursorBits?.Dispose();
+                }
+            }
+            else if (cursorObj.ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
+            {
+                height = height / 2;
+
+                left = position.X;
+                top = position.Y;
+                right = position.X + width;
+                bottom = position.Y + height;
+                pitch = width * 4;
+
+                Texture2D desktopRegionTex = null;
+                try
+                {
+                    desktopRegionTex = new Texture2D(device3d11,
+                    new Texture2DDescription
+                    {
+                        CpuAccessFlags = CpuAccessFlags.Read,
+                        BindFlags = BindFlags.None,
+                        Format = Format.B8G8R8A8_UNorm,
+                        Width = width,
+                        Height = height,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1, Quality = 0 },
+                        Usage = ResourceUsage.Staging,
+                        OptionFlags = ResourceOptionFlags.None,
+                    });
+
+                    var region = new ResourceRegion(left, top, 0, right, bottom, 1);
+                    device3d11.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, region, desktopRegionTex, 0);
+
+                    var dataBox = device3d11.ImmediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
+                    try
+                    {
+                        var desktopBuffer = new byte[width * height * 4];
+                        Marshal.Copy(dataBox.DataPointer, desktopBuffer, 0, desktopBuffer.Length);
+
+                        var shapeBufferLenght = width * height * 4;
+                        var shapeBuffer = new byte[shapeBufferLenght];
+
+                        var maskBufferLenght = width * height / 8;
+                        var andMaskBuffer = new byte[maskBufferLenght];
+                        Marshal.Copy(shapeBuff, andMaskBuffer, 0, andMaskBuffer.Length);
+
+                        var xorMaskBuffer = new byte[maskBufferLenght];
+                        Marshal.Copy(shapeBuff + andMaskBuffer.Length, xorMaskBuffer, 0, xorMaskBuffer.Length);
+
+                        for (var row = 0; row < height; ++row)
+                        {
+                            byte mask = 0x80;
+
+                            for (var col = 0; col < width; ++col)
+                            {
+                                var maskIndex = row * width / 8 + col / 8;
+
+                                var andMask = ((andMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
+                                var xorMask = ((xorMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
+
+                                int pos = row * width * 4 + col * 4;
+                                for (int i = 0; i < 3; i++)
+                                {// RGB
+                                    shapeBuffer[pos] = (byte)((desktopBuffer[pos] & andMask) ^ xorMask);
+                                    pos++;
+                                }
+                                // Alpha
+                                shapeBuffer[pos] = (byte)((desktopBuffer[pos] & 0xFF) ^ 0);
+
+                                if (mask == 0x01)
+                                {
+                                    mask = 0x80;
+                                }
+                                else
+                                {
+                                    mask = (byte)(mask >> 1);
+                                }
+                            }
+                        }
+
+
+                        Direct2D.Bitmap cursorBits = null;
+                        try
+                        {
+                            fixed (byte* ptr = shapeBuffer)
+                            {
+                                var data = new DataPointer(ptr, height * pitch);
+                                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                                var size = new Size2(width, height);
+                                cursorBits = new Direct2D.Bitmap(desktopTarget, size, data, pitch, prop);
+                            };
+
+                            var shapeRect = new RawRectangleF(left, top, right, bottom);
+
+                            desktopTarget.DrawBitmap(cursorBits, shapeRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                        }
+                        finally
+                        {
+                            cursorBits?.Dispose();
+                        }
+
+                    }
+                    finally
+                    {
+                        device3d11.ImmediateContext.UnmapSubresource(desktopRegionTex, 0);
+                    }
+
+                }
+                finally
+                {
+                    desktopRegionTex?.Dispose();
+                }
+            }
+            else if (cursorObj.ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+                logger.Warn("Not supported cursor type " + ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR);
+            }
+        }
 
         class FramePars
         {
@@ -469,7 +653,7 @@ namespace ScreenStreamer
             public int WhoUpdatedPositionLast = 0;
             public long LastTimeStamp = 0;
 
-            internal Bitmap GetBitmap(Bitmap desktop)
+            internal GDI.Bitmap GetBitmap(GDI.Bitmap desktop)
             {
                 GDI.Bitmap bmpCursor = null;
 
@@ -563,7 +747,7 @@ namespace ScreenStreamer
                         }
                     }
 
-                    bmpCursor = new Bitmap(width, height, GDI.Imaging.PixelFormat.Format32bppArgb);
+                    bmpCursor = new GDI.Bitmap(width, height, GDI.Imaging.PixelFormat.Format32bppArgb);
                     {
                         var data = bmpCursor.LockBits(new GDI.Rectangle(0, 0, width, height), GDI.Imaging.ImageLockMode.ReadWrite, bmpCursor.PixelFormat);
                         var offset = 0;
@@ -665,6 +849,7 @@ namespace ScreenStreamer
 
         private bool TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
         {
+
             bool success = false;
             var descr = texture.Description;
             if (bmp.Width != descr.Width || bmp.Height != descr.Height)
@@ -735,6 +920,18 @@ namespace ScreenStreamer
                 cursorObj = null;
             }
 
+            
+            if (desktopTexture != null && !desktopTexture.IsDisposed)
+            {
+                desktopTexture.Dispose();
+                desktopTexture = null;
+            }
+
+            if (desktopTarget != null && !desktopTarget.IsDisposed)
+            {
+                desktopTarget.Dispose();
+                desktopTarget = null;
+            }
 
             if (acquiredDesktopImage != null && !acquiredDesktopImage.IsDisposed)
             {
@@ -742,17 +939,16 @@ namespace ScreenStreamer
                 acquiredDesktopImage = null;
             }
 
-
             if (deskDupl != null && !deskDupl.IsDisposed)
             {
                 deskDupl.Dispose();
                 deskDupl = null;
             }
 
-            if (screenTexture != null && !screenTexture.IsDisposed)
+            if (stagingTexture != null && !stagingTexture.IsDisposed)
             {
-                screenTexture.Dispose();
-                screenTexture = null;
+                stagingTexture.Dispose();
+                stagingTexture = null;
             }
 
             if (output != null && !output.IsDisposed)
@@ -771,6 +967,12 @@ namespace ScreenStreamer
             {
                 device3d11.Dispose();
                 device3d11 = null;
+            }
+
+            if (factory2D1 != null && !factory2D1.IsDisposed)
+            {
+                factory2D1.Dispose();
+                factory2D1 = null;
             }
 
             if (dxgiFactory != null && !dxgiFactory.IsDisposed)
