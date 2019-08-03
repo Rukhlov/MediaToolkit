@@ -262,7 +262,7 @@ namespace ScreenStreamer
                         bool lockTaken = false;
                         try
                         {
-                            Monitor.TryEnter(syncRoot, /*timeout,*/ ref lockTaken);
+                            Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
                             if (lockTaken)
                             {
                                 Result = TextureToBitmap(stagingTexture, videoBuffer.bitmap);
