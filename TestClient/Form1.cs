@@ -71,8 +71,8 @@ namespace TestClient
                 "a=fmtp:96 packetization-mode=1",
                 //"a=fmtp:96 packetization-mode=1 sprop-parameter-set=Z2QMH6yyAKALdCAAAAMAIAAAB5HjBkkAAAAB,aOvDyyLA",
 
-                "m=audio 1236 RTP/AVP 0",
-                "a=rtpmap:0 PCMU/8000",
+                //"m=audio 1236 RTP/AVP 0",
+                //"a=rtpmap:0 PCMU/8000",
 
             };
 

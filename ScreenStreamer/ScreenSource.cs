@@ -65,8 +65,8 @@ namespace ScreenStreamer
                     var frameInterval = (1000.0 / frameRate);
                     captureStats.frameInterval = frameInterval;
 
-                    // screenCapture.Init(srcRect, destSize);
-                    screenCapture.Init(srcRect);
+                    screenCapture.Init(srcRect, destSize);
+                    //screenCapture.Init(srcRect);
 
                     this.Buffer = screenCapture.VideoBuffer;
 
@@ -106,7 +106,7 @@ namespace ScreenStreamer
                             }
                             else
                             {
-                                logger.Warn("No screen buffer...");
+                                //logger.Warn("No screen buffer...");
 
                             }
 
@@ -127,7 +127,7 @@ namespace ScreenStreamer
                         }
                         else
                         {
-                            logger.Warn("delay " + delay);
+                            //logger.Warn("delay " + delay);
                         }
 
                         

@@ -18,18 +18,14 @@ namespace ScreenStreamer
         Direct3D,
         GDIPlus,
         Datapath,
-        DXGI,
+        DXGIDeskDupl,
     }
 
 
     public abstract class ScreenCapture
     {
-        protected Logger logger { get; private set; }
+        protected static Logger logger =  LogManager.GetCurrentClassLogger();
 
-        internal ScreenCapture()
-        {
-            logger = LogManager.GetLogger(GetType().ToString());
-        }
 
         public virtual void Init(Rectangle srcRect, Size destSize = new Size())
         {
@@ -79,7 +75,7 @@ namespace ScreenStreamer
             {
                 capture = new DatapathDesktopCapture();
             }
-            else if (type == CaptureType.DXGI)
+            else if (type == CaptureType.DXGIDeskDupl)
             {
                 capture = new DXGIDesktopDuplicationCapture(args);
             }

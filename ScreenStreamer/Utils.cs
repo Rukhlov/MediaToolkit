@@ -283,6 +283,20 @@ namespace ScreenStreamer.Utils
         [DllImport("user32.dll")]
         public static extern bool GetCursorInfo(out CURSORINFO pci);
 
+        public static void DrawCursor(IntPtr hDc, int x, int y)
+        {
+            CURSORINFO pci;
+            pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
+
+            if (GetCursorInfo(out pci))
+            {
+                if (pci.flags == CURSOR_SHOWING)
+                {
+                    DrawIcon(hDc, x, y, pci.hCursor);
+                }
+            }
+        }
+
         public static void DrawCursor(IntPtr hDc)
         {
             CURSORINFO pci;
