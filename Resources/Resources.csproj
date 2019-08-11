@@ -235,6 +235,20 @@
     <Content Include="FFmpeg4\lib\swscale-5.def" />
     <Content Include="FFmpeg4\LICENSE.txt" />
     <Content Include="FFmpeg4\README.txt" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D11.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D9.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D9.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.DXGI.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.DXGI.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Mathematics.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.Mathematics.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />

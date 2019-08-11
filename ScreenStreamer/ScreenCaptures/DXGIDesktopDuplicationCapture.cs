@@ -33,7 +33,8 @@ namespace ScreenStreamer
         { }
         private SharpDX.Direct2D1.Factory1 factory2D1 = null;
         private SharpDX.DXGI.Factory1 dxgiFactory = null;
-        private Device device3d11 = null;
+
+        public Device device3d11 = null;
         private Adapter1 adapter = null;
         private Output output = null;
 
@@ -41,7 +42,7 @@ namespace ScreenStreamer
         private Texture2D acquiredDesktopImage = null;
         private Texture2D desktopTexture = null;
 
-        private Texture2D stagingTexture = null;
+        public Texture2D stagingTexture = null;
 
         SharpDX.Direct2D1.RenderTarget desktopTarget = null;
 
@@ -54,6 +55,8 @@ namespace ScreenStreamer
             InitDx(srcRect);
 
         }
+        //private MfEncoderAsync encoder = null;
+        //private MfWriter writer = null;
 
         private void InitDx(GDI.Rectangle srcRect)
         {
@@ -142,6 +145,7 @@ namespace ScreenStreamer
 
             cursorObj = new CursorObj();
 
+        
             deviceReady = true;
 
         }
@@ -258,6 +262,7 @@ namespace ScreenStreamer
                         //device3d11.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
                         //device3d11.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
 
+
                         var syncRoot = videoBuffer.syncRoot;
                         bool lockTaken = false;
                         try
@@ -280,6 +285,9 @@ namespace ScreenStreamer
                                 Monitor.Exit(syncRoot);
                             }
                         }
+
+                        Result = true;
+
                     }
                     else
                     {
@@ -913,6 +921,13 @@ namespace ScreenStreamer
             logger.Debug("DXGIDesktopDuplicationCapture::CloseDx()");
 
             deviceReady = false;
+
+            //if (encoder != null)
+            //{
+            //    encoder.Stop();
+
+            //    encoder.Close();
+            //}
 
             if (cursorObj != null)
             {

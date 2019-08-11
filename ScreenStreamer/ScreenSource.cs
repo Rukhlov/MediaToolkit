@@ -29,6 +29,9 @@ namespace ScreenStreamer
 
         public VideoBuffer Buffer { get; private set; }
 
+
+        public DXGIDesktopDuplicationCapture hwContext = null;
+
         public event Action BufferUpdated;
         private void OnBufferUpdated()
         {
@@ -68,6 +71,12 @@ namespace ScreenStreamer
                     //screenCapture.Init(srcRect, destSize);
                     screenCapture.Init(srcRect);
 
+                    //DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
+                    //if(capture != null)
+                    //{
+                    //    this.hwContext = capture;
+                    //}
+
                     this.Buffer = screenCapture.VideoBuffer;
 
                     double lastTime = 0;
@@ -86,8 +95,6 @@ namespace ScreenStreamer
                             {
                                 break;
                             }
-
-                         
 
                             if (res)
                             {

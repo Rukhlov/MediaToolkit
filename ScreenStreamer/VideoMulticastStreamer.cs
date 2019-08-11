@@ -1,6 +1,7 @@
 ﻿using CommonData;
 using FFmpegWrapper;
 using NLog;
+using ScreenStreamer.MediaFoundation;
 using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,10 @@ namespace ScreenStreamer
             {
                 logger.Info("Streaming thread started...");
 
+                var hwContext = screenSource.hwContext;
+
+               // MfEncoderAsync mfEncoder = null;
+
 
                 FFmpegVideoEncoder encoder = null;
                 try
@@ -54,6 +59,17 @@ namespace ScreenStreamer
 
                     rtpStreamer = new RtpStreamer(h264Session);
                     rtpStreamer.Open(networkParams.Address, networkParams.Port);
+
+                    //mfEncoder = new MfEncoderAsync(hwContext.device3d11);
+                    //mfEncoder.Setup(new VideoWriterArgs
+                    //{
+                    //        Width = screenSource.Buffer.bitmap.Width,
+                    //        Height = screenSource.Buffer.bitmap.Height,
+                    //    FrameRate = encodingParams.FrameRate,
+                    //});
+
+                    //mfEncoder.Start();
+                    //mfEncoder.DataReady += MfEncoder_DataReady;
 
                     encoder = new FFmpegVideoEncoder();
                     encoder.Open(encodingParams);
@@ -75,8 +91,10 @@ namespace ScreenStreamer
                                 break;
                             }
 
+                            //mfEncoder.WriteTexture(hwContext.stagingTexture);
+
                             var buffer = screenSource.Buffer;
-  
+
                             encoder.Encode(buffer);
 
                         }
@@ -96,10 +114,17 @@ namespace ScreenStreamer
                 finally
                 {
                     encoder.DataEncoded -= Encoder_DataEncoded;
+                    encoder?.Close();
+
                     screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
                     rtpStreamer?.Close();
-                    encoder?.Close();
+
+                    //if (mfEncoder != null) {
+                    //    mfEncoder.DataReady -= MfEncoder_DataReady;
+                    //    mfEncoder?.Stop();
+                    //}
+
 
                     Statistic.UnregisterCounter(streamStats);
                 }
@@ -107,6 +132,19 @@ namespace ScreenStreamer
                 logger.Info("Streaming thread ended...");
             });
 
+        }
+        FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
+        private void MfEncoder_DataReady(byte[] buf)
+        {
+            //throw new NotImplementedException();
+            var time = MediaTimer.GetRelativeTime();
+
+           // var memo = new MemoryStream(buf);
+           // memo.CopyTo(file);
+
+            rtpStreamer.Send(buf, time);
+
+            streamStats.Update(time, buf.Length);
         }
 
         private void Encoder_DataEncoded(IntPtr ptr, int len, double time)

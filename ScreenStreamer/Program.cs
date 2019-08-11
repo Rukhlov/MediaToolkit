@@ -69,6 +69,8 @@ namespace ScreenStreamer
                 }
             }
 
+            SharpDX.MediaFoundation.MediaManager.Startup();
+
             Shcore.SetDpiAwareness();
 
             // Utils.WinMM.timeBeginPeriod(1);
@@ -89,8 +91,8 @@ namespace ScreenStreamer
             //var srcRect = new Rectangle(0, 0, 2560, 1080);
 
             //var destSize = new Size(1280, 720);
-            //var destSize = new Size(2560, 1440);
-            var destSize = new Size(1920, 1080);
+            var destSize = new Size(2560, 1440);
+           // var destSize = new Size(1920, 1080);
 
             if (aspectRatio)
             {
@@ -120,6 +122,7 @@ namespace ScreenStreamer
 
             var captureTask = source.Start(captureParams);
 
+            //Thread.Sleep(2000);
             /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
@@ -259,6 +262,8 @@ namespace ScreenStreamer
             //Task.WaitAll(streamerTask, captureTask);
 
             //Utils.WinMM.timeEndPeriod(1);
+
+            SharpDX.MediaFoundation.MediaManager.Shutdown();
 
             logger.Info("========== THE END ============");
 
