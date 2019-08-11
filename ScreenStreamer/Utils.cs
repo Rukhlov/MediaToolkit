@@ -433,6 +433,10 @@ namespace ScreenStreamer.Utils
                     SetProcessDpiAwareness(ProcessDPIAwareness.PROCESS_PER_MONITOR_DPI_AWARE);
                 }
             }
+            catch(DllNotFoundException ex)
+            {
+                Debug.WriteLine(ex);
+            }
             catch (EntryPointNotFoundException ex)
             {
                 Debug.WriteLine(ex);
