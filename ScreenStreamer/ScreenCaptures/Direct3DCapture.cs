@@ -55,8 +55,8 @@ namespace ScreenStreamer
             {
                 adapterInfo = direct3D9.Adapters.FirstOrDefault(a => a.Monitor == hMonitor);
             }
-
-            if(hWnd == IntPtr.Zero)
+         
+            if (hWnd == IntPtr.Zero)
             {// иначе не работает Device.Reset()
                 hWnd = User32.GetDesktopWindow();
             }
@@ -160,7 +160,7 @@ namespace ScreenStreamer
                 if (CaptureMouse)
                 {
                     var hDc = srcSurface.GetDC();
-                    User32.DrawCursor(hDc);
+                    User32.DrawCursorEx(hDc);
                     srcSurface.ReleaseDC(hDc);
                 }
                 

@@ -69,9 +69,9 @@ namespace ScreenStreamer
                 }
             }
 
-            SharpDX.MediaFoundation.MediaManager.Startup();
-
             Shcore.SetDpiAwareness();
+
+            SharpDX.MediaFoundation.MediaManager.Startup();
 
             // Utils.WinMM.timeBeginPeriod(1);
 
@@ -115,13 +115,35 @@ namespace ScreenStreamer
                 DestSize = destSize,
                 CaptureType = CaptureType.DXGIDeskDupl,
                 //CaptureType = CaptureType.Direct3D,
-               // CaptureType = CaptureType.GDI,
+                //CaptureType = CaptureType.GDI,
                 Fps = fps,
                 CaptureMouse = true,
             };
 
-            var captureTask = source.Start(captureParams);
+            source.Setup(captureParams);
 
+
+            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            {
+                Address = options.ServerAddr,
+                Port = options.Port,
+            };
+
+            VideoEncodingParams encodingParams = new VideoEncodingParams
+            {
+                Width = destSize.Width, // options.Width,
+                Height = destSize.Height, // options.Height,
+                FrameRate = options.FrameRate,
+                EncoderName = "libx264", // "h264_nvenc", //
+            };
+
+            VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
+            videoStreamer.Setup(encodingParams, networkParams);
+
+            var captureTask = source.Start();
+            var streamerTask = videoStreamer.Start();
+ 
+  
             //Thread.Sleep(2000);
             /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
@@ -141,31 +163,8 @@ namespace ScreenStreamer
             
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
             */
-            
 
 
-
-            
-            
-            NetworkStreamingParams networkParams = new NetworkStreamingParams
-            {
-                Address = options.ServerAddr,
-                Port = options.Port,
-            };
-
-
-            VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
-
-            VideoEncodingParams encodingParams = new VideoEncodingParams
-            {
-                Width = destSize.Width, // options.Width,
-                Height = destSize.Height, // options.Height,
-                FrameRate = options.FrameRate,
-                EncoderName = "libx264", // "h264_nvenc", //
-            };
-
-            var streamerTask = videoStreamer.Start(encodingParams, networkParams);
-            
             
 
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();

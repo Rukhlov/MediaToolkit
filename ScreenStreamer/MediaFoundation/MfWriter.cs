@@ -78,9 +78,9 @@ namespace ScreenStreamer.MediaFoundation
                     outputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.H264);
                     outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 8_000_000);
                     outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
-                    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, Packer.ToLong(width, height));
-                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Packer.ToLong(Args.FrameRate, 1));
-                    outputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, Packer.ToLong(1, 1));
+                    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
+                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(Args.FrameRate, 1));
+                    outputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
 
                     sinkWriter.AddStream(outputMediaType, out videoStreamIndex);
@@ -94,9 +94,9 @@ namespace ScreenStreamer.MediaFoundation
                     inputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                     inputMediaType.Set(MediaTypeAttributeKeys.Subtype, inputFormat);
                     inputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
-                    inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, Packer.ToLong(width, height));
-                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Packer.ToLong(Args.FrameRate, 1));
-                    inputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, Packer.ToLong(1, 1));
+                    inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
+                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(Args.FrameRate, 1));
+                    inputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                     inputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 

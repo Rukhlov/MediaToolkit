@@ -21,6 +21,13 @@ namespace ScreenStreamer
         public bool CaptureMouse = false;
     }
 
+    enum CaptureState
+    {
+        Create, 
+        Capture,
+        Close
+    }
+
     class ScreenSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -29,6 +36,7 @@ namespace ScreenStreamer
 
         public VideoBuffer Buffer { get; private set; }
 
+        public CaptureState State { get; private set; } = CaptureState.Create;
 
         public DXGIDesktopDuplicationCapture hwContext = null;
 
@@ -38,11 +46,56 @@ namespace ScreenStreamer
             BufferUpdated?.Invoke();
         }
 
+        public event Action<CaptureState> StateChanged;
+        private void OnStateChanged(CaptureState state)
+        {
+            StateChanged?.Invoke(state);
+        }
+
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        public Task Start(ScreenCaptureParams captureParams)
+
+        private ScreenCapture screenCapture = null;
+
+        private ScreenCaptureParams captureParams = null;
+        public void Setup(ScreenCaptureParams captureParams)
+        {
+            logger.Debug("ScreenSource::Setup()");
+
+            this.captureParams = captureParams;
+
+            var srcRect = captureParams.SrcRect;
+            var destSize = captureParams.DestSize;
+
+
+            try
+            {
+                screenCapture = ScreenCapture.Create(captureParams.CaptureType);
+                screenCapture.CaptureMouse = captureParams.CaptureMouse;
+
+                //screenCapture.Init(srcRect, destSize);
+                screenCapture.Init(srcRect);
+
+                DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
+                if (capture != null)
+                {
+                    this.hwContext = capture;
+                }
+
+                this.Buffer = screenCapture.VideoBuffer;
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+                CleanUp();
+                throw;
+            }
+        }
+
+        public Task Start()
         {
             logger.Debug("ScreenSource::Start()");
-
 
 
             return Task.Run(() =>
@@ -50,38 +103,20 @@ namespace ScreenStreamer
                 logger.Info("Capturing thread started...");
 
                 var frameRate = captureParams.Fps;
-                var srcRect = captureParams.SrcRect;
-                var destSize = captureParams.DestSize;
-                var captureType = captureParams.CaptureType;
-                var captureMouse = captureParams.CaptureMouse;
 
                 CaptureStats captureStats = new CaptureStats();
-
-                ScreenCapture screenCapture = ScreenCapture.Create(captureType);
-                screenCapture.CaptureMouse = captureMouse;
 
                 try
                 {
                     Statistic.RegisterCounter(captureStats);
-
                     
                     var frameInterval = (1000.0 / frameRate);
                     captureStats.frameInterval = frameInterval;
 
-                    //screenCapture.Init(srcRect, destSize);
-                    screenCapture.Init(srcRect);
-
-                    //DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
-                    //if(capture != null)
-                    //{
-                    //    this.hwContext = capture;
-                    //}
-
-                    this.Buffer = screenCapture.VideoBuffer;
-
                     double lastTime = 0;
                     double monotonicTime = 0;
                     double jitter = 0;
+
                     Stopwatch sw = Stopwatch.StartNew();
                     while (!closing)
                     {
@@ -155,6 +190,10 @@ namespace ScreenStreamer
                     screenCapture?.Close();
 
                     Statistic.UnregisterCounter(captureStats);
+
+                    this.State = CaptureState.Close;
+
+                    OnStateChanged(this.State);
                 }
 
                 logger.Info("Capturing thread stopped...");
@@ -172,6 +211,15 @@ namespace ScreenStreamer
 
             closing = true;
             syncEvent.Set();
+        }
+
+        private void CleanUp()
+        {
+            if (screenCapture != null)
+            {
+                screenCapture.Close();
+                screenCapture = null;
+            }
         }
 
 

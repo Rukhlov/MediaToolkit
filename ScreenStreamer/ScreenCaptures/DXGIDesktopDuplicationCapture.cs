@@ -24,6 +24,7 @@ using Direct2D = SharpDX.Direct2D1;
 using ScreenStreamer.Utils;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
+using SharpDX.MediaFoundation;
 
 namespace ScreenStreamer
 {
@@ -31,18 +32,20 @@ namespace ScreenStreamer
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
+
+        public Device Device3d11 { get; private set; }
+        public Texture2D StagingTexture { get; private set; }
+
         private SharpDX.Direct2D1.Factory1 factory2D1 = null;
         private SharpDX.DXGI.Factory1 dxgiFactory = null;
+        
 
-        public Device device3d11 = null;
         private Adapter1 adapter = null;
         private Output output = null;
 
         private OutputDuplication deskDupl = null;
         private Texture2D acquiredDesktopImage = null;
         private Texture2D desktopTexture = null;
-
-        public Texture2D stagingTexture = null;
 
         SharpDX.Direct2D1.RenderTarget desktopTarget = null;
 
@@ -60,13 +63,22 @@ namespace ScreenStreamer
 
         private void InitDx(GDI.Rectangle srcRect)
         {
+
+               
             dxgiFactory = new SharpDX.DXGI.Factory1();
             adapter = dxgiFactory.Adapters1.FirstOrDefault();
+            //var adapter = dxgiFactory.Adapters1[1];
+
+            Device3d11 = new Device(adapter, DeviceCreationFlags.BgraSupport);
+            using (var multiThread = Device3d11.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+ 
 
             // Get DXGI.Output
             output = adapter.Outputs.FirstOrDefault();
 
-            // Get DXGI.Output
             var hMonitor = User32.GetMonitorFromRect(srcRect);
             if (hMonitor != IntPtr.Zero)
             {
@@ -78,20 +90,14 @@ namespace ScreenStreamer
                 output = adapter.Outputs.FirstOrDefault();
             }
 
-            device3d11 = new Device(adapter, DeviceCreationFlags.BgraSupport);
-            using (var multiThread = device3d11.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-
             using (var output1 = output.QueryInterface<Output1>())
             {
                 // Duplicate the output
-                deskDupl = output1.DuplicateOutput(device3d11);
+                deskDupl = output1.DuplicateOutput(Device3d11);
             }
 
             // Create Staging texture CPU-accessible
-            stagingTexture = new Texture2D(device3d11, 
+            StagingTexture = new Texture2D(Device3d11, 
                 new Texture2DDescription
                 {
                     CpuAccessFlags = CpuAccessFlags.Read,
@@ -107,9 +113,10 @@ namespace ScreenStreamer
                 });
 
 
-            desktopTexture = new Texture2D(device3d11,
+            desktopTexture = new Texture2D(Device3d11,
                 new Texture2DDescription
                 {
+                    
                     CpuAccessFlags = CpuAccessFlags.None,
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = Format.B8G8R8A8_UNorm,
@@ -120,7 +127,8 @@ namespace ScreenStreamer
                     SampleDescription = { Count = 1, Quality = 0 },
                     Usage = ResourceUsage.Default,
                     //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                    OptionFlags = ResourceOptionFlags.None,
+                    OptionFlags = ResourceOptionFlags.Shared,
+                    
                 });
 
 
@@ -177,6 +185,7 @@ namespace ScreenStreamer
                             acquiredDesktopImage.Dispose();
                             acquiredDesktopImage = null;
                         }
+ 
 
                         acquiredDesktopImage = desktopResource.QueryInterface<Texture2D>();
 
@@ -249,6 +258,13 @@ namespace ScreenStreamer
                             }
                         }
 
+                        // Device3d11.ImmediateContext.Flush();
+                        //using (var sharedRes = desktopTexture.QueryInterface<SharpDX.DXGI.Resource>())
+                        //{
+                        //    StagingTexture = Device3d11.OpenSharedResource<Texture2D>(sharedRes.SharedHandle);
+                        //}
+                        //
+
                         ResourceRegion scaledRegion = new ResourceRegion
                         {
                             Left = 0,
@@ -258,33 +274,35 @@ namespace ScreenStreamer
                             Back = 1,
                         };
 
-                        device3d11.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, stagingTexture, 0);
+                        Device3d11.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, StagingTexture, 0);
+
+
                         //device3d11.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
                         //device3d11.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
 
 
-                        var syncRoot = videoBuffer.syncRoot;
-                        bool lockTaken = false;
-                        try
-                        {
-                            Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
-                            if (lockTaken)
-                            {
-                                Result = TextureToBitmap(stagingTexture, videoBuffer.bitmap);
-                            }
-                            else
-                            {
-                                logger.Debug("lockTaken == false");
-                            }
+                        //var syncRoot = videoBuffer.syncRoot;
+                        //bool lockTaken = false;
+                        //try
+                        //{
+                        //    Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
+                        //    if (lockTaken)
+                        //    {
+                        //        Result = TextureToBitmap(StagingTexture, videoBuffer.bitmap);
+                        //    }
+                        //    else
+                        //    {
+                        //        logger.Debug("lockTaken == false");
+                        //    }
 
-                        }
-                        finally
-                        {
-                            if (lockTaken)
-                            {
-                                Monitor.Exit(syncRoot);
-                            }
-                        }
+                        //}
+                        //finally
+                        //{
+                        //    if (lockTaken)
+                        //    {
+                        //        Monitor.Exit(syncRoot);
+                        //    }
+                        //}
 
                         Result = true;
 
@@ -401,7 +419,7 @@ namespace ScreenStreamer
                 Texture2D desktopRegionTex = null;
                 try
                 {
-                    desktopRegionTex = new Texture2D(device3d11,
+                    desktopRegionTex = new Texture2D(Device3d11,
                     new Texture2DDescription
                     {
                         CpuAccessFlags = CpuAccessFlags.Read,
@@ -417,9 +435,9 @@ namespace ScreenStreamer
                     });
 
                     var region = new ResourceRegion(left, top, 0, right, bottom, 1);
-                    device3d11.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, region, desktopRegionTex, 0);
+                    Device3d11.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, region, desktopRegionTex, 0);
 
-                    var dataBox = device3d11.ImmediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
+                    var dataBox = Device3d11.ImmediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
                     try
                     {
                         var desktopBuffer = new byte[width * height * 4];
@@ -490,7 +508,7 @@ namespace ScreenStreamer
                     }
                     finally
                     {
-                        device3d11.ImmediateContext.UnmapSubresource(desktopRegionTex, 0);
+                        Device3d11.ImmediateContext.UnmapSubresource(desktopRegionTex, 0);
                     }
 
                 }
@@ -869,7 +887,7 @@ namespace ScreenStreamer
 
             try
             {
-                var srcData = device3d11.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
+                var srcData = Device3d11.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
 
                 int width = bmp.Width;
                 int height = bmp.Height;
@@ -901,7 +919,7 @@ namespace ScreenStreamer
             }
             finally
             {
-                device3d11.ImmediateContext.UnmapSubresource(texture, 0);
+                Device3d11.ImmediateContext.UnmapSubresource(texture, 0);
             }
 
             return success;
@@ -921,13 +939,6 @@ namespace ScreenStreamer
             logger.Debug("DXGIDesktopDuplicationCapture::CloseDx()");
 
             deviceReady = false;
-
-            //if (encoder != null)
-            //{
-            //    encoder.Stop();
-
-            //    encoder.Close();
-            //}
 
             if (cursorObj != null)
             {
@@ -960,10 +971,10 @@ namespace ScreenStreamer
                 deskDupl = null;
             }
 
-            if (stagingTexture != null && !stagingTexture.IsDisposed)
+            if (StagingTexture != null && !StagingTexture.IsDisposed)
             {
-                stagingTexture.Dispose();
-                stagingTexture = null;
+                StagingTexture.Dispose();
+                StagingTexture = null;
             }
 
             if (output != null && !output.IsDisposed)
@@ -978,10 +989,10 @@ namespace ScreenStreamer
                 adapter = null;
             }
 
-            if (device3d11 != null && !device3d11.IsDisposed)
+            if (Device3d11 != null && !Device3d11.IsDisposed)
             {
-                device3d11.Dispose();
-                device3d11 = null;
+                Device3d11.Dispose();
+                Device3d11 = null;
             }
 
             if (factory2D1 != null && !factory2D1.IsDisposed)

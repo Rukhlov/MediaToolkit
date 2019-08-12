@@ -100,6 +100,43 @@ namespace ScreenStreamer.Utils
         public byte rgbReserved;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ICONINFO
+    {
+        /// <summary>
+        /// Specifies whether this structure defines an icon or a cursor. A value of TRUE specifies an icon; FALSE specifies a cursor.
+        /// </summary>
+        public bool fIcon;
+
+        /// <summary>
+        /// The x-coordinate of a cursor's hot spot. If this structure defines an icon, 
+        /// the hot spot is always in the center of the icon, and this member is ignored.
+        /// </summary>
+        public int xHotspot;
+
+        /// <summary>
+        /// The y-coordinate of the cursor's hot spot. If this structure defines an icon, 
+        /// the hot spot is always in the center of the icon, and this member is ignored.
+        /// </summary>
+        public Int32 yHotspot;
+
+        /// <summary>
+        /// The icon bitmask bitmap. If this structure defines a black and white icon, 
+        /// this bitmask is formatted so that the upper half is the icon AND bitmask and the lower half is the icon XOR bitmask.
+        /// Under this condition, the height should be an even multiple of two.
+        /// If this structure defines a color icon, this mask only defines the AND bitmask of the icon.
+        /// </summary>
+        public IntPtr hbmMask;
+
+        /// <summary>
+        /// A handle to the icon color bitmap. 
+        /// This member can be optional if this structure defines a black and white icon. 
+        /// The AND bitmask of hbmMask is applied with the SRCAND flag to the destination; 
+        /// subsequently, the color bitmap is applied (using XOR) to the destination by using the SRCINVERT flag.
+        /// </summary>
+        public IntPtr hbmColor;    
+    }
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct CURSORINFO
@@ -273,17 +310,31 @@ namespace ScreenStreamer.Utils
     }
 
 
-    [System.Security.SuppressUnmanagedCodeSecurity()]
     public sealed class User32
     {
+        [DllImport("user32.dll")]
+        public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr CopyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool DestroyIcon(IntPtr hIcon);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool DrawIconEx(IntPtr hdc, int xLeft, int yTop, IntPtr hIcon, int cxWidth, int cyHeight, int istepIfAniCur, IntPtr hbrFlickerFreeDraw, int diFlags);
+
 
         public const int CURSOR_SHOWING = 0x00000001;
         public const int CURSOR_SUPPRESSED = 0x00000002;
 
+        public const int DI_NORMAL = 0x0003;
+
         [DllImport("user32.dll")]
         public static extern bool GetCursorInfo(out CURSORINFO pci);
 
-        public static void DrawCursor(IntPtr hDc, int x, int y)
+
+        public static void DrawCursorEx(IntPtr hDc)
         {
             CURSORINFO pci;
             pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
@@ -292,7 +343,24 @@ namespace ScreenStreamer.Utils
             {
                 if (pci.flags == CURSOR_SHOWING)
                 {
-                    DrawIcon(hDc, x, y, pci.hCursor);
+                    var hIcon = CopyIcon(pci.hCursor);
+
+                    if(GetIconInfo(hIcon, out ICONINFO pIconInfo))
+                    {
+                        
+                        var pos = pci.ptScreenPos;
+                        int x = pos.x - pIconInfo.xHotspot;
+                        int y = pos.y - pIconInfo.yHotspot;
+                        DrawIconEx(hDc, x, y, hIcon, 0, 0, 0, IntPtr.Zero, DI_NORMAL);
+
+                        //DrawIcon(hDc, x, y, pci.hCursor);
+
+                        Gdi32.DeleteObject(pIconInfo.hbmColor);
+                        Gdi32.DeleteObject(pIconInfo.hbmMask);
+                    }
+
+                    DestroyIcon(hIcon);
+
                 }
             }
         }

@@ -56,11 +56,11 @@ namespace ScreenStreamer
                 {
                     try
                     {
-                        // socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
+                        //socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
                         socket?.BeginSendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += rtp.Length;
 
-                       // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
+                        // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
                     }
                     catch (ObjectDisposedException) { }
                 }
@@ -204,43 +204,68 @@ namespace ScreenStreamer
             int pos1 = -1;
             int pos2 = -1;
 
-            while (offset < frame.Length)
+            try
             {
-                if (frame[offset] == 0 &&
-                    frame[offset + 1] == 0 &&
-                    frame[offset + 2] == 0 &&
-                    frame[offset + 3] == 1)
+                while (offset < frame.Length - 4)
                 {
 
-                    if (pos1 > 0)
+                    //if ((frame[offset] == 0 && frame[offset + 1] == 0 && frame[offset + 2] == 1))
+                    //{
+                    //    if (pos1 > 0)
+                    //    {
+                    //        pos2 = offset;
+                    //        int nalSize = pos2 - pos1;
+                    //        var nal = new byte[nalSize];
+                    //        Array.Copy(frame, pos1, nal, 0, nal.Length);
+
+                    //        nals.Add(nal);
+                    //        pos2 = -1;
+                    //    }
+
+                    //    offset += 3;
+                    //    pos1 = offset;
+                    //    continue;
+                    //}
+
+                    if ((frame[offset] == 0 && frame[offset + 1] == 0 && frame[offset + 2] == 0 && frame[offset + 3] == 1))
                     {
-                        pos2 = offset;
-                        int nalSize = pos2 - pos1;
-                        var nal = new byte[nalSize];
-                        Array.Copy(frame, pos1, nal, 0, nal.Length);
 
-                        nals.Add(nal);
-                        pos2 = -1;
+                        if (pos1 > 0)
+                        {
+                            pos2 = offset;
+                            int nalSize = pos2 - pos1;
+                            var nal = new byte[nalSize];
+                            Array.Copy(frame, pos1, nal, 0, nal.Length);
+
+                            nals.Add(nal);
+                            pos2 = -1;
+                        }
+
+                        offset += 4;
+                        pos1 = offset;
                     }
-
-                    offset += 4;
-                    pos1 = offset;
+                    else
+                    {
+                        offset += 4;
+                        //offset++;
+                    }
                 }
-                else
+
+                if (pos1 > 0 && pos2 == -1)
                 {
-                    offset += 4;
+                    pos2 = frame.Length;
+                    int nalSize = pos2 - pos1;
+
+                    var nal = new byte[nalSize];
+                    Array.Copy(frame, pos1, nal, 0, nal.Length);
+
+                    nals.Add(nal);
                 }
+
             }
-
-            if (pos1 > 0 && pos2 == -1)
+            catch (Exception ex)
             {
-                pos2 = frame.Length;
-                int nalSize = pos2 - pos1;
 
-                var nal = new byte[nalSize];
-                Array.Copy(frame, pos1, nal, 0, nal.Length);
-
-                nals.Add(nal);
             }
 
             return nals;

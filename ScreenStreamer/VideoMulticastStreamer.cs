@@ -32,10 +32,53 @@ namespace ScreenStreamer
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
+        private RtpSession h264Session = null;
+
         private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;
+        private FFmpegVideoEncoder encoder = null;
+        private MfEncoderAsync mfEncoder = null;
 
-        public Task Start(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
+        public void Setup(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
+        {
+            logger.Debug("ScreenStreamer::Setup()");
+
+            try
+            {
+                h264Session = new H264Session();
+
+                rtpStreamer = new RtpStreamer(h264Session);
+                rtpStreamer.Open(networkParams.Address, networkParams.Port);
+                var hwContext = screenSource.hwContext;
+
+    
+                mfEncoder = new MfEncoderAsync(hwContext.Device3d11);
+                mfEncoder.Setup(new VideoWriterArgs
+                {
+                    Width = screenSource.Buffer.bitmap.Width,
+                    Height = screenSource.Buffer.bitmap.Height,
+                    FrameRate = encodingParams.FrameRate,
+                });
+             
+                mfEncoder.DataReady += MfEncoder_DataReady;
+
+              
+                //encoder = new FFmpegVideoEncoder();
+                //encoder.Open(encodingParams);
+                //encoder.DataEncoded += Encoder_DataEncoded;
+
+                screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+                throw;
+            }
+
+        }
+
+
+        public Task Start()
         {
             logger.Debug("ScreenStreamer::Start()");
             
@@ -43,39 +86,15 @@ namespace ScreenStreamer
             {
                 logger.Info("Streaming thread started...");
 
-                var hwContext = screenSource.hwContext;
 
-               // MfEncoderAsync mfEncoder = null;
-
-
-                FFmpegVideoEncoder encoder = null;
                 try
                 {
                     streamStats = new StreamStats();
 
                     Statistic.RegisterCounter(streamStats);
-                    
-                    RtpSession h264Session = new H264Session();
 
-                    rtpStreamer = new RtpStreamer(h264Session);
-                    rtpStreamer.Open(networkParams.Address, networkParams.Port);
-
-                    //mfEncoder = new MfEncoderAsync(hwContext.device3d11);
-                    //mfEncoder.Setup(new VideoWriterArgs
-                    //{
-                    //        Width = screenSource.Buffer.bitmap.Width,
-                    //        Height = screenSource.Buffer.bitmap.Height,
-                    //    FrameRate = encodingParams.FrameRate,
-                    //});
-
-                    //mfEncoder.Start();
-                    //mfEncoder.DataReady += MfEncoder_DataReady;
-
-                    encoder = new FFmpegVideoEncoder();
-                    encoder.Open(encodingParams);
-                    encoder.DataEncoded += Encoder_DataEncoded;
-
-                    screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+                    var hwContext = screenSource.hwContext;
+                    mfEncoder.Start();
 
                     while (!closing)
                     {
@@ -91,11 +110,11 @@ namespace ScreenStreamer
                                 break;
                             }
 
-                            //mfEncoder.WriteTexture(hwContext.stagingTexture);
+                            mfEncoder.WriteTexture(hwContext.StagingTexture);
 
-                            var buffer = screenSource.Buffer;
+                            //var buffer = screenSource.Buffer;
 
-                            encoder.Encode(buffer);
+                            //encoder.Encode(buffer);
 
                         }
                         catch (Exception ex)
@@ -113,18 +132,7 @@ namespace ScreenStreamer
                 }
                 finally
                 {
-                    encoder.DataEncoded -= Encoder_DataEncoded;
-                    encoder?.Close();
-
-                    screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
-
-                    rtpStreamer?.Close();
-
-                    //if (mfEncoder != null) {
-                    //    mfEncoder.DataReady -= MfEncoder_DataReady;
-                    //    mfEncoder?.Stop();
-                    //}
-
+                    CleanUp();
 
                     Statistic.UnregisterCounter(streamStats);
                 }
@@ -182,6 +190,24 @@ namespace ScreenStreamer
             syncEvent.Set();
         }
 
+        private void CleanUp()
+        {
+            if (mfEncoder != null)
+            {
+                mfEncoder.DataReady -= MfEncoder_DataReady;
+                mfEncoder?.Stop();
+            }
+
+
+            if (encoder != null)
+            {
+                encoder.DataEncoded -= Encoder_DataEncoded;
+                encoder.Close();
+            }
+            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+
+            rtpStreamer?.Close();
+        }
 
         class StreamStats : StatCounter
         {

@@ -38,7 +38,7 @@ namespace ScreenStreamer.MediaFoundation
 
         public MfEncoderAsync(Device device)
         {
-            this.device = device;
+           this.device = device;
 
         }
 
@@ -58,6 +58,16 @@ namespace ScreenStreamer.MediaFoundation
 
             try
             {
+
+
+                //var dxgiFactory = new SharpDX.DXGI.Factory1();
+                //var adapter = dxgiFactory.Adapters1[1];
+                //device = new Device(adapter, DeviceCreationFlags.BgraSupport);
+                //using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                //{
+                //    multiThread.SetMultithreadProtected(true);
+                //}
+
                 //device = new Device(SharpDX.Direct3D.DriverType.Hardware,
                 //    DeviceCreationFlags.Debug | DeviceCreationFlags.VideoSupport | DeviceCreationFlags.BgraSupport);
 
@@ -137,6 +147,8 @@ namespace ScreenStreamer.MediaFoundation
                 }
                 finally
                 {
+                   // encoder = transformActivators[1].ActivateObject<Transform>();
+
                     foreach (var activator in transformActivators)
                     {
                         activator.Dispose();
@@ -164,7 +176,7 @@ namespace ScreenStreamer.MediaFoundation
 
                         using (DXGIDeviceManager devMan = new DXGIDeviceManager())
                         {
-                           
+
                             devMan.ResetDevice(device);
                             encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                         }
@@ -201,8 +213,8 @@ namespace ScreenStreamer.MediaFoundation
                     outputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.H264);
                     outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                     outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
-                    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, Packer.ToLong(width, height));
-                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Packer.ToLong(frameRate, 1));
+                    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
+                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
 
                     outputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
@@ -249,8 +261,8 @@ namespace ScreenStreamer.MediaFoundation
 
                     //inputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                     //inputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
-                    inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, Packer.ToLong(width, height));
-                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Packer.ToLong(frameRate, 1));
+                    inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
+                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
 
                     inputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                     inputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
@@ -373,6 +385,36 @@ namespace ScreenStreamer.MediaFoundation
 
         }
 
+        private void ProcessInput(Sample sample)
+        {
+            if (closing)
+            {
+                return;
+            }
+
+  
+            if (inputRequests > 0)
+            {
+                inputRequests--;
+                encoder.ProcessInput(inputStreamId, sample, 0);
+
+                needUpdate = false;
+
+                if (sample != null)
+                {
+                    sample.Dispose();
+                }
+
+                //logger.Debug("ProcessInput() " + inputRequests);
+            }
+            else
+            {
+                //logger.Debug("inputRequests == 0 " + inputRequests);
+            }
+            
+        }
+
+
         private void ProcessInput()
         {
             if (closing)
@@ -388,6 +430,7 @@ namespace ScreenStreamer.MediaFoundation
                     encoder.ProcessInput(inputStreamId, bufSample, 0);
 
                     needUpdate = false;
+
                     //logger.Debug("ProcessInput() " + inputRequests);
                 }
                 else
@@ -461,10 +504,13 @@ namespace ScreenStreamer.MediaFoundation
                         var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
                         try
                         {
-                            byte[] buf = new byte[cbCurrentLength];
-                            Marshal.Copy(ptr, buf, 0, buf.Length);
+                            if (cbCurrentLength > 0)
+                            {
+                                byte[] buf = new byte[cbCurrentLength];
+                                Marshal.Copy(ptr, buf, 0, buf.Length);
 
-                            OnDataReady(buf);
+                                OnDataReady(buf);
+                            }
                         }
                         finally
                         {
@@ -537,11 +583,37 @@ namespace ScreenStreamer.MediaFoundation
 
             lock (syncRoot)
             {
+                //if (inputRequests > 0)
+                //{
+                //    MediaBuffer buffer = null;
+                //    try
+                //    {
+
+                //        var sample = MediaFactory.CreateSample();
+                //        //MediaBuffer mediaBuffer = MediaFactory.CreateMemoryBuffer(4 * width * height);
+                //        MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, texture, 0, false, out buffer);
+                //        sample.AddBuffer(buffer);
+
+
+                //        inputRequests--;
+                //        encoder.ProcessInput(inputStreamId, sample, 0);
+
+                //        needUpdate = false;
+
+                //        if (sample != null)
+                //        {
+                //            sample.Dispose();
+                //        }
+                //    }
+                //    finally
+                //    {
+                //        buffer.Dispose();
+                //    }
+                //}
+
 
                 device.ImmediateContext.CopyResource(texture, bufTexture);
                 needUpdate = true;
-
-                //bufSample = MediaFactory.CreateVideoSampleFromSurface(bufTexture);
 
                 ProcessInput();
             }
@@ -604,15 +676,6 @@ namespace ScreenStreamer.MediaFoundation
             return format;
         }
 
-
-        //public static long PackLong(int Left, int Right)
-        //{
-        //    return new PackedLong
-        //    {
-        //        Low = Right,
-        //        High = Left
-        //    }.Long;
-        //}
 
         /// <summary>
         /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h

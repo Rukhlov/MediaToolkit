@@ -94,7 +94,7 @@ namespace ScreenStreamer
 
                         if (captureMouse)
                         {
-                            User32.DrawCursor(hdcDest);
+                            User32.DrawCursorEx(hdcDest);
                         }
 
                     }
