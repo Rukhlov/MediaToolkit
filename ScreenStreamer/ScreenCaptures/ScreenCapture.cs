@@ -65,7 +65,7 @@ namespace ScreenStreamer
             }
             else if (type == CaptureType.Direct3D)
             {
-                capture = new Direct3DCapture(args);
+                capture = new Direct3D9Capture(args);
             }
             else if (type == CaptureType.GDIPlus)
             {

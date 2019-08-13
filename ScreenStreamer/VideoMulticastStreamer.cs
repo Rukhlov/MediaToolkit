@@ -110,7 +110,7 @@ namespace ScreenStreamer
                                 break;
                             }
 
-                            mfEncoder.WriteTexture(hwContext.StagingTexture);
+                            mfEncoder.WriteTexture(hwContext.SharedTexture);
 
                             //var buffer = screenSource.Buffer;
 

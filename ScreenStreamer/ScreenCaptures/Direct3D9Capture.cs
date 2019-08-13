@@ -15,10 +15,10 @@ namespace ScreenStreamer
     /// <summary>
     /// с включенной композитной отрисовкой работает лучше чем GDI
     /// </summary>
-    public class Direct3DCapture : ScreenCapture
+    public class Direct3D9Capture : ScreenCapture
     {
        
-        public Direct3DCapture(object[] args) : base()
+        public Direct3D9Capture(object[] args) : base()
         {
             if(args!=null && args.Length > 0)
             {
@@ -95,6 +95,7 @@ namespace ScreenStreamer
 
             device = new Device(direct3D9, adapterInfo.Adapter, DeviceType.Hardware, hWnd, Flags, presentParams);
 
+            
             InitSurfaces();
 
 
