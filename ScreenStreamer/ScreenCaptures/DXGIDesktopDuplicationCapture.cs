@@ -241,7 +241,6 @@ namespace ScreenStreamer
                             acquiredDesktopImage.Dispose();
                             acquiredDesktopImage = null;
                         }
- 
 
                         acquiredDesktopImage = desktopResource.QueryInterface<Texture2D>();
 
@@ -326,14 +325,6 @@ namespace ScreenStreamer
                         Device3d11.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, SharedTexture, 0);
                         Device3d11.ImmediateContext.Flush();
 
-                        //StagingTexture = desktopTexture;
-                        //if (!flag)
-                        //{
-                        //    Device3d11.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, StagingTexture, 0);
-                        //    Device3d11.ImmediateContext.Flush();
-                        //    flag = true;
-
-                        //}
 
                         //device3d11.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
                         //device3d11.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
@@ -1035,6 +1026,12 @@ namespace ScreenStreamer
                 SharedTexture = null;
             }
 
+            if (Device3d11 != null && !Device3d11.IsDisposed)
+            {
+                Device3d11.Dispose();
+                Device3d11 = null;
+            }
+
             //if (output != null && !output.IsDisposed)
             //{
             //    output.Dispose();
@@ -1047,11 +1044,6 @@ namespace ScreenStreamer
             //    adapter = null;
             //}
 
-            //if (Device3d11 != null && !Device3d11.IsDisposed)
-            //{
-            //    Device3d11.Dispose();
-            //    Device3d11 = null;
-            //}
 
             //if (factory2D1 != null && !factory2D1.IsDisposed)
             //{
