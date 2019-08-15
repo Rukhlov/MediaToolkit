@@ -72,8 +72,8 @@ namespace ScreenStreamer
                 screenCapture = ScreenCapture.Create(captureParams.CaptureType);
                 screenCapture.CaptureMouse = captureParams.CaptureMouse;
 
-                //screenCapture.Init(srcRect, destSize);
-                screenCapture.Init(srcRect);
+                screenCapture.Init(srcRect, destSize);
+                //screenCapture.Init(srcRect);
 
                 DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
                 if (capture != null)

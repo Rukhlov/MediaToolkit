@@ -24,9 +24,10 @@ using ScreenStreamer.Utils;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
+using System.Reflection;
+
 namespace ScreenStreamer.MediaFoundation
 {
-
 
     public class VideoWriterArgs
     {
@@ -55,10 +56,195 @@ namespace ScreenStreamer.MediaFoundation
 
     class MfTool
     {
+        public static readonly Dictionary<Guid, string> AttrsDict= new Dictionary<Guid, string>();
+        public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();
+
+        static MfTool()
+        {
+
+            FillTypeDict(typeof(VideoFormatGuids));
+            FillTypeDict(typeof(MediaTypeGuids));
+
+            FillAttrDict(typeof(MediaTypeAttributeKeys));
+            FillAttrDict(typeof(TransformAttributeKeys));
+            FillAttrDict(typeof(SinkWriterAttributeKeys));
+
+            FillAttrDict(typeof(MFAttributeKeys));
+
+        }
+
+        public static string GetMediaTypeName(Guid guid, bool GetFullName = false)
+        {
+            string typeName = "";
+
+            if (TypesDict.ContainsKey(guid))
+            {
+                typeName = TypesDict[guid];
+                if (GetFullName)
+                {
+                    typeName += " {" + guid + "}";
+                }
+            }
+            return typeName;
+        }
+
+        public static string LogMediaType(MediaType mediaType)
+        {
+
+            StringBuilder log = new StringBuilder();
+            for(int i= 0; i < mediaType.Count; i++)
+            {
+                var obj = mediaType.GetByIndex(i, out Guid guid);
+                {
+                    string result = LogAttribute(guid, obj);
+
+                    log.AppendLine(result);
+                }
+            }
+
+            return log.ToString();
+        }
+
+        public static string LogMediaAttributes(MediaAttributes mediaAttributes)
+        {
+            StringBuilder log = new StringBuilder();
+            for (int i = 0; i < mediaAttributes.Count; i++)
+            {
+                var obj = mediaAttributes.GetByIndex(i, out Guid guid);
+                {
+                    string result = LogAttribute(guid, obj);
+
+                    log.AppendLine(result);
+                }
+            }
+
+            return log.ToString();
+        }
+
+        public static string LogAttribute(Guid guid, object obj)
+        {
+            var attrName = guid.ToString();
+            if (AttrsDict.ContainsKey(guid))
+            {
+                attrName = AttrsDict[guid];
+
+            }
+            var valStr = "";
+            if (obj != null)
+            {
+                valStr = obj.ToString();
+
+                if (obj is Guid)
+                {
+                    valStr = GetMediaTypeName((Guid)obj, true);
+                }
+            }
+
+            if (guid == MediaTypeAttributeKeys.FrameRate.Guid ||
+                guid == MediaTypeAttributeKeys.FrameRateRangeMax.Guid ||
+                guid == MediaTypeAttributeKeys.FrameRateRangeMin.Guid ||
+                guid == MediaTypeAttributeKeys.FrameSize.Guid ||
+                guid == MediaTypeAttributeKeys.PixelAspectRatio.Guid)
+            {
+                // Attributes that contain two packed 32-bit values.
+                long val = (long)obj;
+
+                valStr = string.Join(" ", UnPackLongToInts(val));
+
+            }
+            else if (guid == MediaTypeAttributeKeys.GeometricAperture.Guid ||
+                  guid == MediaTypeAttributeKeys.MinimumDisplayAperture.Guid ||
+                  guid == MediaTypeAttributeKeys.PanScanAperture.Guid)
+            {
+                // Attributes that an MFVideoArea structure.
+                //...
+            }
+
+            return attrName + " " + valStr;
+        }
+
+
+        private static void FillTypeDict(Type type)
+        {
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var field in fields)
+            {
+                if (field.FieldType == typeof(Guid))
+                {
+                    Guid guid = (Guid)field.GetValue(null);
+                    var name = field.Name;
+                    if (!TypesDict.ContainsKey(guid))
+                    {
+                        TypesDict.Add(guid, name);
+                    }
+                }
+            }
+        }
+
+        private static void FillAttrDict(Type type)
+        {
+            var attrFields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
+
+            foreach (var field in attrFields)
+            {
+                // if (field.DeclaringType == typeof(MediaAttributeKey))
+                {
+                    MediaAttributeKey attr = (MediaAttributeKey)field.GetValue(null);
+                    var name = attr.Name;
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        name = field.Name;
+                    }
+
+                    var guid = attr.Guid;
+
+                    if (!AttrsDict.ContainsKey(guid))
+                    {
+                        AttrsDict.Add(guid, name);
+                    }
+                }
+            }
+        }
+
         public static long PackToLong(int left, int right)
         {
             return ((long)left << 32 | (uint)right);
         }
+
+        public static int[] UnPackLongToInts(long val)
+        {
+            return new int[]
+            {
+                 (int)(val >> 32),
+                 (int)(val & uint.MaxValue),
+            };
+
+        }
+    }
+
+    /// <summary>
+    /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h
+    /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder
+    /// </summary>
+    class MFAttributeKeys
+    {
+        //#define STATIC_CODECAPI_AVEncNumWorkerThreads   0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6
+        public static readonly MediaAttributeKey<int> CODECAPI_AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
+
+        //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
+        public static readonly MediaAttributeKey<bool> CODECAPI_AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
+
+        // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
+        public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
+
+        //MFT_GFX_DRIVER_VERSION_ID_Attribute f34b9093-05e0-4b16-993d-3e2a2cde6ad3
+        public static readonly MediaAttributeKey<int> MFT_GFX_DRIVER_VERSION_ID_Attribute = new MediaAttributeKey<int>(new Guid(0xf34b9093, 0x05e0, 0x4b16, 0x99, 0x3d, 0x3e, 0x2a, 0x2c, 0xde, 0x6a, 0xd3));
+
+        //MFT_ENCODER_SUPPORTS_CONFIG_EVENT 86a355ae-3a77-4ec4-9f31-01149a4e92de
+        public static readonly MediaAttributeKey<int> MFT_ENCODER_SUPPORTS_CONFIG_EVENT = new MediaAttributeKey<int>(new Guid(0x86a355ae, 0x3a77, 0x4ec4, 0x9f, 0x31, 0x1, 0x14, 0x9a, 0x4e, 0x92, 0xde));
+
+
     }
 
 

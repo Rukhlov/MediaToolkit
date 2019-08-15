@@ -39,16 +39,22 @@ namespace ScreenStreamer.MediaFoundation
         private long frameNumber = -1;
         private long frameDuration;
 
-        public MfEncoderAsync(Device device)
-        {
-            //this.device = device;
-        }
+        public MfEncoderAsync()
+        { }
 
 
         public void Setup(VideoWriterArgs args)
         {
             logger.Debug("MfEncoderAsync::Setup(...)");
 
+            var winVersion = Environment.OSVersion.Version;
+            bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
+
+            if (!isCompatibleOSVersion)
+            {
+                //logger.Warn("Windows versions earlier than 8 are not supported.");
+                throw new NotSupportedException("Windows versions earlier than 8 are not supported.");
+            }
 
             var inputFormat = VideoFormatGuids.Argb32;
 
@@ -58,14 +64,16 @@ namespace ScreenStreamer.MediaFoundation
 
 
                 int adapterVenId = adapter.Description.VendorId;
+                long adapterLuid = adapter.Description.Luid;
 
                 encoder = FindEncoder(adapterVenId);
 
                 if (encoder == null)
-                { //TODO:
+                { 
 
-                    logger.Warn("Encoder not found");
-                    return;
+                    throw new NotSupportedException("Hardware encode acceleration is not available on this platform.");
+                    //logger.Warn("Encoder not found");
+                    //return;
                 }
 
                 SetupEncoder(args);
@@ -80,8 +88,63 @@ namespace ScreenStreamer.MediaFoundation
             }
         }
 
+
+        private void SetupDx(VideoWriterArgs args)
+        {
+            logger.Debug("SetupDx(...)");
+
+            int width = args.Width;
+            int height = args.Height;
+
+            dxgiFactory = new SharpDX.DXGI.Factory1();
+            adapter = dxgiFactory.Adapters1[0];
+            var descr = adapter.Description;
+
+            logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
+
+            device = new Device(adapter,
+                // DeviceCreationFlags.Debug | //System.AccessViolationException CopyResource(...)
+                DeviceCreationFlags.VideoSupport |
+                DeviceCreationFlags.BgraSupport);
+
+            deviceManager = new DXGIDeviceManager();
+            deviceManager.ResetDevice(device);
+
+            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+
+            var _descr = new Texture2DDescription
+            {
+                Format = Format.B8G8R8A8_UNorm,
+                Width = width,
+                Height = height,
+                MipLevels = 1,
+                ArraySize = 1,
+                SampleDescription = { Count = 1 },
+            };
+
+            bufTexture = new Texture2D(device, _descr);
+
+            MediaBuffer mediaBuffer = null;
+            try
+            {
+                //mediaBuffer = MediaFactory.CreateMemoryBuffer(4 * width * height);
+                MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out mediaBuffer);
+                bufSample = MediaFactory.CreateSample();
+                bufSample.AddBuffer(mediaBuffer);
+            }
+            finally
+            {
+                mediaBuffer.Dispose();
+            }
+        }
+
         private Transform FindEncoder(int adapterVenId)
         {
+            logger.Debug("FindEncoder(...) " + adapterVenId);
+
             Transform preferEncoder = null;
 
             var transformFlags = TransformEnumFlag.Hardware | // TransformEnumFlag.All |
@@ -111,15 +174,15 @@ namespace ScreenStreamer.MediaFoundation
 
                     //bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
                     //bool isAsync = flags.HasFlag(TransformEnumFlag.Asyncmft);
-
+                    //Guid clsid = activator.Get(TransformAttributeKeys.);
                     string name = activator.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
                     Guid clsid = activator.Get(TransformAttributeKeys.MftTransformClsidAttribute);
                     TransformEnumFlag flags = (TransformEnumFlag)activator.Get(TransformAttributeKeys.TransformFlagsAttribute);
 
 
                     bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
-                    isAsync |= !!(flags.HasFlag(TransformEnumFlag.Asyncmft));
-                    bool isHardware = !!(flags.HasFlag(TransformEnumFlag.Hardware));
+                    isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
+                    bool isHardware = (flags.HasFlag(TransformEnumFlag.Hardware));
 
                     if (isHardware)
                     {
@@ -150,6 +213,8 @@ namespace ScreenStreamer.MediaFoundation
 
                     logger.Info(transformInfo);
 
+                    logger.Debug(MfTool.LogMediaAttributes(activator));
+
                     //var HardwareUrl = activator.Get(TransformAttributeKeys.MftEnumHardwareUrlAttribute);
                     //logger.Info(HardwareUrl);
 
@@ -158,19 +223,17 @@ namespace ScreenStreamer.MediaFoundation
                     //logger.Info("-------------------------------------");
                 }
 
-                //encoder = transformActivators[1].ActivateObject<Transform>();
+               // preferEncoder = transformActivators[1].ActivateObject<Transform>();
 
                 if (preferActivator != null)
                 {
-                    preferEncoder = preferActivator.ActivateObject<Transform>();
+                   preferEncoder = preferActivator.ActivateObject<Transform>();
 
                 }
 
             }
             finally
             {
-                // 
-
                 foreach (var activator in transformActivators)
                 {
                     activator.Dispose();
@@ -180,70 +243,19 @@ namespace ScreenStreamer.MediaFoundation
             return preferEncoder;
         }
 
-        private void SetupDx(VideoWriterArgs args)
-        {
-            int width = args.Width;
-            int height = args.Height;
 
-   
-            dxgiFactory = new SharpDX.DXGI.Factory1();
-            adapter = dxgiFactory.Adapters1[0];
-            var descr = adapter.Description;
-
-            logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
-
-            device = new Device(adapter,
-                DeviceCreationFlags.Debug | //System.AccessViolationException CopyResource(...)
-                DeviceCreationFlags.VideoSupport |
-                DeviceCreationFlags.BgraSupport);
-
-            deviceManager = new DXGIDeviceManager();
-            deviceManager.ResetDevice(device);
-
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-
-            var _descr = new Texture2DDescription
-            {
-                Format = Format.B8G8R8A8_UNorm,
-                Width = width,
-                Height = height,
-                MipLevels = 1,
-                ArraySize = 1,
-                SampleDescription = { Count = 1 },
-            };
-
-            bufTexture = new Texture2D(device, _descr);
-
-            MediaBuffer mediaBuffer = null;
-            try
-            {
-                //MediaBuffer mediaBuffer = MediaFactory.CreateMemoryBuffer(4 * width * height);
-                MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out mediaBuffer);
-                bufSample = MediaFactory.CreateSample();
-                bufSample.AddBuffer(mediaBuffer);
-            }
-            finally
-            {
-                mediaBuffer.Dispose();
-            }
-        }
 
         private void SetupEncoder(VideoWriterArgs args)
         {
+            logger.Debug("SetupEncoder(...)");
 
-            var frameRate = args.FrameRate;
-
-            frameDuration = 10_000_000 / args.FrameRate;
-
+            var fps = args.FrameRate;
             var width = args.Width;
             var height = args.Height;
 
             var inputFormat = VideoFormatGuids.Argb32;
 
-
+            logger.Info("Encoder input params: " + width + "x" + height + " fps=" + fps + " {" + inputFormat+"}");
             using (var attr = encoder.Attributes)
             {
                 // TODO:
@@ -258,14 +270,18 @@ namespace ScreenStreamer.MediaFoundation
                     bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                     if (d3d11Aware)
                     {
-
-                        encoder.ProcessMessage(TMessageType.SetD3DManager, deviceManager.NativePointer);
-                        
+                        encoder.ProcessMessage(TMessageType.SetD3DManager, deviceManager.NativePointer);                      
                     }
 
-                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    attr.Set(MFAttributeKeys.CODECAPI_AVLowLatencyMode, true);
+
+                    //attr.Set(SinkWriterAttributeKeys.LowLatency, true);
                     //attr.Set(CODECAPI_AVEncNumWorkerThreads, 8);
                 }
+
+                var attrLog = MfTool.LogMediaAttributes(attr);
+
+                logger.Debug("\r\nMFT:\r\n-----------------\r\n" + attrLog);
             }
 
 
@@ -301,12 +317,14 @@ namespace ScreenStreamer.MediaFoundation
                 //outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
+                outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
 
                 outputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 encoder.SetOutputType(outputStreamId, outputMediaType, 0);
 
+                var mediaLog = MfTool.LogMediaType(outputMediaType);
+                logger.Debug("\r\nOutputMediaType:\r\n-----------------\r\n" + mediaLog);
                 outputMediaType.Dispose();
                 outputMediaType = null;
                 break;
@@ -325,7 +343,7 @@ namespace ScreenStreamer.MediaFoundation
                         var formatId = inputMediaType.Get(MediaTypeAttributeKeys.Subtype);
                         if (formatId == inputFormat)
                         {
-                            logger.Debug("inputFormat " + inputFormat);
+                            //logger.Debug("inputFormat " + inputFormat);
                             break;
                         }
                         inputMediaType.Dispose();
@@ -349,11 +367,14 @@ namespace ScreenStreamer.MediaFoundation
                 //inputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 //inputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
                 inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
+                inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
 
                 inputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 inputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
                 encoder.SetInputType(inputStreamId, inputMediaType, 0);
+
+                var mediaLog = MfTool.LogMediaType(inputMediaType);
+                logger.Debug("\r\nInputMediaType:\r\n-----------------\r\n" + mediaLog);
             }
             finally
             {
@@ -726,25 +747,6 @@ namespace ScreenStreamer.MediaFoundation
             }
             return format;
         }
-
-
-        /// <summary>
-        /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h
-        /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder
-        /// </summary>
-        class CodecApiAttributeKeys
-        {
-            //#define STATIC_CODECAPI_AVEncNumWorkerThreads   0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6
-            public readonly MediaAttributeKey<int> AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
-
-            //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
-            public readonly MediaAttributeKey<bool> AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
-
-
-        }
-
-
-
 
     }
 

@@ -91,8 +91,8 @@ namespace ScreenStreamer
             //var srcRect = new Rectangle(0, 0, 2560, 1080);
 
             //var destSize = new Size(1280, 720);
-            var destSize = new Size(2560, 1440);
-           // var destSize = new Size(1920, 1080);
+           // var destSize = new Size(2560, 1440);
+            var destSize = new Size(1920, 1080);
 
             if (aspectRatio)
             {

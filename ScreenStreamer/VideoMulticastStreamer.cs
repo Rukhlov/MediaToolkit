@@ -52,7 +52,7 @@ namespace ScreenStreamer
                 var hwContext = screenSource.hwContext;
 
     
-                mfEncoder = new MfEncoderAsync(hwContext.Device3d11);
+                mfEncoder = new MfEncoderAsync();
                 mfEncoder.Setup(new VideoWriterArgs
                 {
                     Width = screenSource.Buffer.bitmap.Width,
@@ -72,6 +72,8 @@ namespace ScreenStreamer
             catch(Exception ex)
             {
                 logger.Error(ex);
+                CleanUp();
+
                 throw;
             }
 
