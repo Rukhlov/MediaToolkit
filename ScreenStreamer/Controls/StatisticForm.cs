@@ -46,7 +46,7 @@ namespace ScreenStreamer.Controls
 
             timer.Enabled = true;
 
-            //this.Visible = true;
+            this.Visible = true;
             //this.ShowDialog();
         }
 

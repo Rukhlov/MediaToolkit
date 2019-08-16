@@ -147,7 +147,7 @@ namespace ScreenStreamer.MediaFoundation
 
             Transform preferEncoder = null;
 
-            var transformFlags = TransformEnumFlag.Hardware | // TransformEnumFlag.All |
+            var transformFlags = TransformEnumFlag.All | // TransformEnumFlag.All |
                                  TransformEnumFlag.SortAndFilter;
 
             var outputType = new TRegisterTypeInformation
@@ -168,10 +168,14 @@ namespace ScreenStreamer.MediaFoundation
             try
             {
                 Activate preferActivator = null;
-                string preferActivatorDescr = "";
                 foreach (var activator in transformActivators)
                 {
 
+                    var actLog = MfTool.LogMediaAttributes(activator);
+
+                    logger.Debug("\r\nActivator:\r\n-----------------\r\n" + actLog);
+
+ 
                     //bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
                     //bool isAsync = flags.HasFlag(TransformEnumFlag.Asyncmft);
                     //Guid clsid = activator.Get(TransformAttributeKeys.);
@@ -205,15 +209,15 @@ namespace ScreenStreamer.MediaFoundation
                     }
 
 
-                    var _flags = Enum.GetValues(typeof(TransformEnumFlag))
-                                 .Cast<TransformEnumFlag>()
-                                 .Where(m => (m != TransformEnumFlag.None && flags.HasFlag(m)));
+                    //var _flags = Enum.GetValues(typeof(TransformEnumFlag))
+                    //             .Cast<TransformEnumFlag>()
+                    //             .Where(m => (m != TransformEnumFlag.None && flags.HasFlag(m)));
 
-                    var transformInfo = name + " " + clsid.ToString() + " " + string.Join("|", _flags);
+                    //var transformInfo = name + " " + clsid.ToString() + " " + string.Join("|", _flags);
 
-                    logger.Info(transformInfo);
+                    //logger.Info(transformInfo);
 
-                    logger.Debug(MfTool.LogMediaAttributes(activator));
+                    //logger.Debug(MfTool.LogMediaAttributes(activator));
 
                     //var HardwareUrl = activator.Get(TransformAttributeKeys.MftEnumHardwareUrlAttribute);
                     //logger.Info(HardwareUrl);
@@ -223,7 +227,7 @@ namespace ScreenStreamer.MediaFoundation
                     //logger.Info("-------------------------------------");
                 }
 
-               // preferEncoder = transformActivators[1].ActivateObject<Transform>();
+               // preferEncoder = transformActivators[0].ActivateObject<Transform>();
 
                 if (preferActivator != null)
                 {
@@ -260,7 +264,7 @@ namespace ScreenStreamer.MediaFoundation
             {
                 // TODO:
                 // log pref
-
+                
                 var transformAsync = (attr.Get(TransformAttributeKeys.TransformAsync) == 1);
                 if (transformAsync)
                 {
@@ -324,10 +328,10 @@ namespace ScreenStreamer.MediaFoundation
                 encoder.SetOutputType(outputStreamId, outputMediaType, 0);
 
                 var mediaLog = MfTool.LogMediaType(outputMediaType);
-                logger.Debug("\r\nOutputMediaType:\r\n-----------------\r\n" + mediaLog);
+                logger.Debug("\r\n" + i + ". AvailableOutputMediaType:\r\n-----------------\r\n" + mediaLog);
                 outputMediaType.Dispose();
                 outputMediaType = null;
-                break;
+               // break;
             }
 
 
@@ -338,16 +342,25 @@ namespace ScreenStreamer.MediaFoundation
                 {
                     try
                     {
-                        encoder.GetInputAvailableType(0, i, out inputMediaType);
+                        encoder.GetInputAvailableType(0, i, out MediaType availableType);
 
-                        var formatId = inputMediaType.Get(MediaTypeAttributeKeys.Subtype);
+                        var log = MfTool.LogMediaType(availableType);
+                        logger.Debug("\r\n" + i + ". AvalibleInputMediaType:\r\n-----------------\r\n" + log);
+
+                        var formatId = availableType.Get(MediaTypeAttributeKeys.Subtype);
                         if (formatId == inputFormat)
                         {
+                            inputMediaType = availableType;
+                            availableType = null;
                             //logger.Debug("inputFormat " + inputFormat);
-                            break;
+                            //break;
                         }
-                        inputMediaType.Dispose();
-                        inputMediaType = null;
+
+                        if (availableType != null)
+                        {
+                            availableType.Dispose();
+                            availableType = null;
+                        }
                     }
                     catch (SharpDX.SharpDXException ex)
                     {

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ScreenStreamer
 {
-    class ScreenCaptureParams
+    public class ScreenCaptureParams
     {
         public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
         public Size DestSize = new Size(640, 480);
@@ -21,14 +21,14 @@ namespace ScreenStreamer
         public bool CaptureMouse = false;
     }
 
-    enum CaptureState
+    public enum CaptureState
     {
         Create, 
         Capture,
         Close
     }
 
-    class ScreenSource
+    public class ScreenSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 

@@ -29,31 +29,6 @@ using System.Reflection;
 namespace ScreenStreamer.MediaFoundation
 {
 
-    public class VideoWriterArgs
-    {
-        public string FileName { get; set; }
-        public int Width { get; set; } = 1280;
-        public int Height { get; set; } = 720;
-
-        //public IImageProvider ImageProvider { get; set; }
-        public int FrameRate { get; set; } = 15;
-        public int VideoQuality { get; set; } = 70;
-        //public int AudioQuality { get; set; } = 50;
-        //public IAudioProvider AudioProvider { get; set; }
-    }
-
-    enum RateControlMode
-    {
-        CBR,
-        PeakConstrainedVBR,
-        UnconstrainedVBR,
-        Quality,
-        LowDelayVBR,
-        GlobalVBR,
-        GlobalLowDelayVBR
-    };
-
-
     class MfTool
     {
         public static readonly Dictionary<Guid, string> AttrsDict= new Dictionary<Guid, string>();
@@ -61,9 +36,11 @@ namespace ScreenStreamer.MediaFoundation
 
         static MfTool()
         {
-
+              
+            FillTypeDict(typeof(AudioFormatGuids));
             FillTypeDict(typeof(VideoFormatGuids));
             FillTypeDict(typeof(MediaTypeGuids));
+            FillTypeDict(typeof(TransformCategoryGuids));
 
             FillAttrDict(typeof(MediaTypeAttributeKeys));
             FillAttrDict(typeof(TransformAttributeKeys));
@@ -75,7 +52,7 @@ namespace ScreenStreamer.MediaFoundation
 
         public static string GetMediaTypeName(Guid guid, bool GetFullName = false)
         {
-            string typeName = "";
+            string typeName = "UnknownType";
 
             if (TypesDict.ContainsKey(guid))
             {
@@ -85,6 +62,11 @@ namespace ScreenStreamer.MediaFoundation
                     typeName += " {" + guid + "}";
                 }
             }
+            else
+            {
+                typeName = "{" + guid + "}";
+            }
+
             return typeName;
         }
 
@@ -121,14 +103,16 @@ namespace ScreenStreamer.MediaFoundation
             return log.ToString();
         }
 
-        public static string LogAttribute(Guid guid, object obj)
+        public unsafe static string LogAttribute(Guid guid, object obj)
         {
             var attrName = guid.ToString();
+
             if (AttrsDict.ContainsKey(guid))
             {
                 attrName = AttrsDict[guid];
 
             }
+
             var valStr = "";
             if (obj != null)
             {
@@ -158,6 +142,43 @@ namespace ScreenStreamer.MediaFoundation
             {
                 // Attributes that an MFVideoArea structure.
                 //...
+            }
+            else if(guid == TransformAttributeKeys.MftInputTypesAttributes.Guid || 
+                guid == TransformAttributeKeys.MftOutputTypesAttributes.Guid)
+            {
+                if (obj != null)
+                {
+                    var data = obj as byte[];
+                    if (data != null)
+                    {
+                        try
+                        {
+                            TRegisterTypeInformation typeInfo;
+                            fixed (byte* ptr = data)
+                            {
+                                typeInfo = (TRegisterTypeInformation)Marshal.PtrToStructure((IntPtr)ptr, typeof(TRegisterTypeInformation));
+                            }
+                            valStr = GetMediaTypeName(typeInfo.GuidMajorType) + " " + GetMediaTypeName(typeInfo.GuidSubtype);
+                        } 
+                        catch(Exception ex)
+                        {
+                            valStr = "error";
+                            Debug.Fail(ex.Message);
+                        }
+                    }
+                }
+            }
+            else if(guid == TransformAttributeKeys.TransformFlagsAttribute.Guid)
+            {
+                if (obj != null)
+                {
+                    var flag = (TransformEnumFlag)obj;
+                    var flags = Enum.GetValues(typeof(TransformEnumFlag))
+                         .Cast<TransformEnumFlag>()
+                         .Where(m => (m != TransformEnumFlag.None && flag.HasFlag(m)));
+
+                    valStr = string.Join("|", flags);
+                }
             }
 
             return attrName + " " + valStr;
@@ -229,23 +250,61 @@ namespace ScreenStreamer.MediaFoundation
     /// </summary>
     class MFAttributeKeys
     {
-        //#define STATIC_CODECAPI_AVEncNumWorkerThreads   0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6
+        
+        /// <summary>
+        /// Sets the number of worker threads used by a video encoder.
+        /// </summary>
         public static readonly MediaAttributeKey<int> CODECAPI_AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
 
         //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
         public static readonly MediaAttributeKey<bool> CODECAPI_AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
 
+        /// <summary>
+        /// Applications can set this property to specify the rate control mode. Encoders can also return this property as a capability.
+        /// </summary>
+        public static readonly MediaAttributeKey<RateControlMode> CODECAPI_AVEncCommonRateControlMode = new MediaAttributeKey<RateControlMode>("1c0608e9-370c-4710-8a58-cb6181c42423");
+
+
         // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
         public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
 
-        //MFT_GFX_DRIVER_VERSION_ID_Attribute f34b9093-05e0-4b16-993d-3e2a2cde6ad3
+        /// <summary>
+        /// For hardware MFTs, this attribute allows the HMFT to report the graphics driver version.
+        /// MFT_GFX_DRIVER_VERSION_ID_Attribute f34b9093-05e0-4b16-993d-3e2a2cde6ad3
+        /// </summary>
         public static readonly MediaAttributeKey<int> MFT_GFX_DRIVER_VERSION_ID_Attribute = new MediaAttributeKey<int>(new Guid(0xf34b9093, 0x05e0, 0x4b16, 0x99, 0x3d, 0x3e, 0x2a, 0x2c, 0xde, 0x6a, 0xd3));
 
         //MFT_ENCODER_SUPPORTS_CONFIG_EVENT 86a355ae-3a77-4ec4-9f31-01149a4e92de
         public static readonly MediaAttributeKey<int> MFT_ENCODER_SUPPORTS_CONFIG_EVENT = new MediaAttributeKey<int>(new Guid(0x86a355ae, 0x3a77, 0x4ec4, 0x9f, 0x31, 0x1, 0x14, 0x9a, 0x4e, 0x92, 0xde));
 
-
+ 
     }
+
+    enum RateControlMode
+    {
+        CBR,
+        PeakConstrainedVBR,
+        UnconstrainedVBR,
+        Quality,
+        LowDelayVBR,
+        GlobalVBR,
+        GlobalLowDelayVBR
+    };
+
+    public class VideoWriterArgs
+    {
+        public string FileName { get; set; }
+        public int Width { get; set; } = 1280;
+        public int Height { get; set; } = 720;
+
+        //public IImageProvider ImageProvider { get; set; }
+        public int FrameRate { get; set; } = 15;
+        public int VideoQuality { get; set; } = 70;
+        //public int AudioQuality { get; set; } = 50;
+        //public IAudioProvider AudioProvider { get; set; }
+    }
+
+   
 
 
     public class MfContext

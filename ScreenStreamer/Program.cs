@@ -3,6 +3,7 @@ using CommonData;
 using FFmpegWrapper;
 
 using NLog;
+using ScreenStreamer.Controls;
 using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace ScreenStreamer
 {
@@ -22,7 +24,7 @@ namespace ScreenStreamer
     {
         private static Logger logger = null;
 
-        //[STAThread]
+        [STAThread]
         static void Main(string[] args)
         {
             Console.Title = "App started...";
@@ -81,7 +83,7 @@ namespace ScreenStreamer
             int fps = 30;
             bool aspectRatio = false;
 
-            // var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
+           //  var srcRect = System.Windows.Forms.Screen.AllScreens[1].Bounds;
 
             var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
             //var srcRect = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
@@ -122,7 +124,15 @@ namespace ScreenStreamer
 
             source.Setup(captureParams);
 
+            
+            //var imageProvider = new D3DImageProvider();
+            //imageProvider.Setup(source);
 
+            //PreviewForm previewForm = new PreviewForm();
+            //previewForm.SetProvider(imageProvider);
+
+         
+    
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 Address = options.ServerAddr,
@@ -142,8 +152,8 @@ namespace ScreenStreamer
 
             var captureTask = source.Start();
             var streamerTask = videoStreamer.Start();
- 
-  
+
+
             //Thread.Sleep(2000);
             /*
             NetworkStreamingParams networkParams = new NetworkStreamingParams
@@ -164,11 +174,8 @@ namespace ScreenStreamer
             var streamerTask = videoStreamer.Start(encodingParams, networkParams);
             */
 
-
-            
-
             //AudioLoopbackSource audioStreamer = new AudioLoopbackSource();
-            
+
 
             /*
             var audioParams = new AudioEncodingParams
@@ -181,21 +188,20 @@ namespace ScreenStreamer
             audioStreamer.Start(audioParams);
             */
 
-           
-            Task.Run(() =>
+            var uiThread = new Thread(() =>
             {
                 Controls.StatisticForm statisticForm = new Controls.StatisticForm();
                 statisticForm.Start();
 
-                Application.Run(statisticForm);
+                PreviewForm previewForm = new PreviewForm();
+                previewForm.Setup(source);
 
-                //while (true)
-                //{
-                //    Application.DoEvents();
-                //    Thread.Sleep(1);
-                //
+                previewForm.Show();
 
+                Application.Run();
             });
+            uiThread.IsBackground = true;
+            uiThread.SetApartmentState(ApartmentState.STA);
 
 
             Task.Run(() =>
@@ -228,11 +234,13 @@ namespace ScreenStreamer
     
             };
 
+            //Application.Run(previewForm);
             logger.Info("==========APP RUN ============");
 
-           //var task =  TaskEx.WhenAllOrFirstException(new [] { streamerTask, captureTask });
+            //var task =  TaskEx.WhenAllOrFirstException(new [] { streamerTask, captureTask });
 
-            // Application.Run();
+            uiThread.Start();
+
             var task = Task.WhenAny(streamerTask, captureTask);
 
             var result = task.Result;
