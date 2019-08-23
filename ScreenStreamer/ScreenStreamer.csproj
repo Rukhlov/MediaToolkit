@@ -116,9 +116,14 @@
     </Compile>
     <Compile Include="MediaFoundation\MfCommon.cs" />
     <Compile Include="MediaFoundation\MfEncoder.cs" />
+    <Compile Include="MediaFoundation\MfH264Decoder.cs" />
+    <Compile Include="MediaFoundation\MfProcessor.cs" />
     <Compile Include="MediaFoundation\MfWriter.cs" />
     <Compile Include="MJpegOverHttpStreamer.cs" />
-    <Compile Include="RtpStreamer.cs" />
+    <Compile Include="RTP\RtpCommon.cs" />
+    <Compile Include="RTP\RtpReceiver.cs" />
+    <Compile Include="RTP\RtpSession.cs" />
+    <Compile Include="RTP\RtpStreamer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenCaptures\Direct3D9Capture.cs" />

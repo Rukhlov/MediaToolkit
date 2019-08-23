@@ -3,9 +3,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using NLog;
-//using Captura;
-//using Captura.Audio;
-//using Captura.Models;
+
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;

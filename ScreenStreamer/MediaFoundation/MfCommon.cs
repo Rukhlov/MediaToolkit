@@ -29,7 +29,7 @@ using System.Reflection;
 namespace ScreenStreamer.MediaFoundation
 {
 
-    class MfTool
+    public class MfTool
     {
         public static readonly Dictionary<Guid, string> AttrsDict= new Dictionary<Guid, string>();
         public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();

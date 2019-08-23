@@ -252,7 +252,9 @@ namespace ScreenStreamer
 
                 var diff = (interval - frameInterval);
 
-                jitterAvg += (int)((1.0 / 16.0) * ((double)Math.Abs(diff) - jitterAvg));
+                jitterAvg = (diff * 0.05 + jitterAvg * (1 - 0.05));
+
+                //jitterAvg += (int)((1.0 / 16.0) * ((double)Math.Abs(diff) - jitterAvg));
 
             }
             //lastTimestamp = timestamp;

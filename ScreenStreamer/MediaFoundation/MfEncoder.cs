@@ -328,10 +328,12 @@ namespace ScreenStreamer.MediaFoundation
                 encoder.SetOutputType(outputStreamId, outputMediaType, 0);
 
                 var mediaLog = MfTool.LogMediaType(outputMediaType);
-                logger.Debug("\r\n" + i + ". AvailableOutputMediaType:\r\n-----------------\r\n" + mediaLog);
+                logger.Debug("\r\nOutputMediaType:\r\n-----------------\r\n" + mediaLog);
+
+                //logger.Debug("\r\n" + i + ". AvailableOutputMediaType:\r\n-----------------\r\n" + mediaLog);
                 outputMediaType.Dispose();
                 outputMediaType = null;
-               // break;
+                break;
             }
 
 
@@ -344,8 +346,8 @@ namespace ScreenStreamer.MediaFoundation
                     {
                         encoder.GetInputAvailableType(0, i, out MediaType availableType);
 
-                        var log = MfTool.LogMediaType(availableType);
-                        logger.Debug("\r\n" + i + ". AvalibleInputMediaType:\r\n-----------------\r\n" + log);
+                        //var log = MfTool.LogMediaType(availableType);
+                        //logger.Debug("\r\n" + i + ". AvalibleInputMediaType:\r\n-----------------\r\n" + log);
 
                         var formatId = availableType.Get(MediaTypeAttributeKeys.Subtype);
                         if (formatId == inputFormat)
@@ -415,6 +417,7 @@ namespace ScreenStreamer.MediaFoundation
 
         }
 
+        Stopwatch sw = new Stopwatch();
         private volatile bool closing = false;
         private void EventProc()
         {
@@ -514,6 +517,7 @@ namespace ScreenStreamer.MediaFoundation
                 if (inputRequests > 0)
                 {
                     inputRequests--;
+                    sw.Restart();
                     encoder.ProcessInput(inputStreamId, bufSample, 0);
 
                     needUpdate = false;
@@ -597,6 +601,9 @@ namespace ScreenStreamer.MediaFoundation
                                 Marshal.Copy(ptr, buf, 0, buf.Length);
 
                                 OnDataReady(buf);
+
+                                var ts = sw.ElapsedMilliseconds;
+                                //Console.WriteLine("ElapsedMilliseconds " + ts);
                             }
                         }
                         finally

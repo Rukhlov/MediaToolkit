@@ -1,4 +1,11 @@
-﻿using System;
+﻿using MfTransformTest;
+using NLog;
+using ScreenStreamer;
+using ScreenStreamer.MediaFoundation;
+using ScreenStreamer.RTP;
+using SharpDX.Direct3D11;
+using SharpDX.MediaFoundation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -6,15 +13,20 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using Vlc.DotNet.Core;
 
 namespace TestClient
 {
     public partial class Form1 : Form
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static readonly string CurrentDirectory = new System.IO.FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
         public static readonly System.IO.DirectoryInfo VlcLibDirectory = new System.IO.DirectoryInfo(System.IO.Path.Combine(CurrentDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
 
@@ -32,6 +44,9 @@ namespace TestClient
             mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
 
             mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
+
+
+            SharpDX.MediaFoundation.MediaManager.Startup();
 
         }
 
@@ -90,6 +105,7 @@ namespace TestClient
 
 
         }
+        FileStream file = new FileStream("d:\\test_rtp.h264", FileMode.Create);
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -99,6 +115,221 @@ namespace TestClient
         private void button3_Click(object sender, EventArgs e)
         {
             Process.Start(Path.Combine(CurrentDirectory, "ScreenStreamer.exe"));
+        }
+
+
+        private Device device = null;
+
+        private Texture2D sharedTexture1 = null;
+        MfTransformTest.D3DImageProvider imageProvider = null;
+
+
+        private MfH264Decoder decoder = null;
+        private MfProcessor processor = null;
+
+
+        private H264Session h264Session = null;
+        private RtpReceiver rtpReceiver = null;
+
+        private Form testForm = null;
+
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+
+            int adapterIndex = 0;
+            var dxgiFactory = new SharpDX.DXGI.Factory1();
+            var adapter = dxgiFactory.Adapters1[adapterIndex];
+
+
+            device = new Device(adapter,
+                                DeviceCreationFlags.Debug |
+                                DeviceCreationFlags.VideoSupport |
+                                DeviceCreationFlags.BgraSupport);
+
+            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+
+            sharedTexture1 = new Texture2D(device,
+                new Texture2DDescription
+                {
+
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    Width = 2560,//640,//texture.Description.Width,
+                    Height = 1440, //480,//texture.Description.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Default,
+                                //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                                OptionFlags = ResourceOptionFlags.Shared,
+
+                });
+
+
+            imageProvider = new MfTransformTest.D3DImageProvider(Dispatcher.CurrentDispatcher);
+            imageProvider.Setup(sharedTexture1);
+
+ 
+            if (testForm == null)
+            {
+                testForm = new Form
+                {
+                    StartPosition = FormStartPosition.CenterParent,
+                    Width = 1280,
+                    Height = 720,
+                };
+
+                System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
+                {
+                    Dock = DockStyle.Fill,
+                };
+                testForm.Controls.Add(host);
+
+
+                UserControl1 video = new UserControl1();
+                host.Child = video;
+
+                video.DataContext = imageProvider;
+
+                testForm.Visible = true;
+            }
+
+
+
+
+            decoder = new MfH264Decoder(device);
+            processor = new MfProcessor(device);
+
+            var inputArgs = new VideoWriterArgs
+            {
+                Width = 2560,
+                Height = 1440,
+                FrameRate = 30,
+            };
+
+            var outputArgs = new VideoWriterArgs
+            {
+                Width = 2560,
+                Height = 1440,
+
+                FrameRate = 30,
+            };
+
+            decoder.Setup(inputArgs);
+            decoder.Start();
+
+            processor.Setup(inputArgs, outputArgs);
+            processor.Start();
+
+
+            h264Session = new H264Session();
+
+            rtpReceiver = new RtpReceiver(null);
+            rtpReceiver.Open("239.0.0.1", 1234);
+            rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
+            rtpReceiver.Start();
+
+        }
+
+        private void RtpReceiver_RtpPacketReceived(ScreenStreamer.RTP.RtpPacket packet)
+        {
+            byte[] rtpPayload = packet.Payload.ToArray();
+
+            //totalPayloadReceivedSize += rtpPayload.Length;
+            // logger.Debug("totalPayloadReceivedSize " + totalPayloadReceivedSize);
+            var nal = h264Session.Depacketize(packet);
+            if (nal != null)
+            {
+                Decode(nal);
+            }
+        }
+
+
+        int sampleCount = 0;
+        private static object syncRoot = new object();
+        private void Decode(byte[] nal)
+        {
+            try
+            {
+                var encodedSample = MediaFactory.CreateSample();
+                try
+                {
+                    using (MediaBuffer mb = MediaFactory.CreateMemoryBuffer(nal.Length))
+                    {
+                        var dest = mb.Lock(out int cbMaxLength, out int cbCurrentLength);
+                        //logger.Debug(sampleCount + " Marshal.Copy(...) " + nal.Length);
+                        Marshal.Copy(nal, 0, dest, nal.Length);
+
+                        mb.CurrentLength = nal.Length;
+                        mb.Unlock();
+
+                        encodedSample.AddBuffer(mb);
+                    }
+
+                    var res = decoder.ProcessSample(encodedSample, out Sample decodedSample);
+
+                    if (res)
+                    {
+                        if (decodedSample != null)
+                        {
+                            res = processor.ProcessSample(decodedSample, out Sample rgbSample);
+
+                            if (res)
+                            {
+                                if (rgbSample != null)
+                                {
+                                    var buffer = rgbSample.ConvertToContiguousBuffer();
+                                    using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
+                                    {
+                                        var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+                                        dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
+                                        using (Texture2D rgbTexture = new Texture2D(intPtr))
+                                        {
+                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture1);
+                                            device.ImmediateContext.Flush();
+                                        };
+
+                                        imageProvider?.Update();
+                                    }
+
+                                    buffer?.Dispose();
+                                }
+                            }
+
+                            rgbSample?.Dispose();
+
+                                    //logger.Debug("decodedSample " + decodedSample.SampleTime);
+                        }
+                    }
+
+                    decodedSample?.Dispose();
+                }
+                finally
+                {
+                    encodedSample?.Dispose();
+                }
+
+                sampleCount++;
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (rtpReceiver != null)
+            {
+                rtpReceiver.Close();
+            }
         }
     }
 }

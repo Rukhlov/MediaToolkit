@@ -2,6 +2,7 @@
 using FFmpegWrapper;
 using NLog;
 using ScreenStreamer.MediaFoundation;
+using ScreenStreamer.RTP;
 using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,7 @@ namespace ScreenStreamer
         private FFmpegVideoEncoder encoder = null;
         private MfEncoderAsync mfEncoder = null;
 
+       
         public void Setup(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
         {
             logger.Debug("ScreenStreamer::Setup()");
@@ -79,7 +81,7 @@ namespace ScreenStreamer
 
         }
 
-
+        private Stopwatch sw = new Stopwatch();
         public Task Start()
         {
             logger.Debug("ScreenStreamer::Start()");
@@ -112,6 +114,7 @@ namespace ScreenStreamer
                                 break;
                             }
 
+                            sw.Restart();
                             mfEncoder.WriteTexture(hwContext.SharedTexture);
 
                             //var buffer = screenSource.Buffer;
@@ -143,7 +146,8 @@ namespace ScreenStreamer
             });
 
         }
-        FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
+
+       // FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
         private void MfEncoder_DataReady(byte[] buf)
         {
             //throw new NotImplementedException();
@@ -153,30 +157,36 @@ namespace ScreenStreamer
            // memo.CopyTo(file);
 
             rtpStreamer.Send(buf, time);
+            var processingTime = sw.ElapsedMilliseconds;
+            //logger.Debug(processingTime);
 
-            streamStats.Update(time, buf.Length);
+            var hwContext = screenSource.hwContext;
+
+            //var ts = hwContext.sw.ElapsedMilliseconds;
+            //Console.WriteLine("ElapsedMilliseconds " + ts);
+            streamStats.Update(time, buf.Length, processingTime);
         }
 
-        private void Encoder_DataEncoded(IntPtr ptr, int len, double time)
-        {
-            if (closing)
-            {
-                return;
-            }
+        //private void Encoder_DataEncoded(IntPtr ptr, int len, double time)
+        //{
+        //    if (closing)
+        //    {
+        //        return;
+        //    }
 
-            if (ptr != IntPtr.Zero && len > 0)
-            {
-                // получили данные от энкодера 
-                byte[] frame = new byte[len];
-                Marshal.Copy(ptr, frame, 0, len);
+        //    if (ptr != IntPtr.Zero && len > 0)
+        //    {
+        //        // получили данные от энкодера 
+        //        byte[] frame = new byte[len];
+        //        Marshal.Copy(ptr, frame, 0, len);
 
-                rtpStreamer.Send(frame, time);
+        //        rtpStreamer.Send(frame, time);
 
-                streamStats.Update(time, frame.Length);
-                // streamer.Send(frame, rtpTimestamp);
-            }
+        //        streamStats.Update(time, frame.Length);
+        //        // streamer.Send(frame, rtpTimestamp);
+        //    }
 
-        }
+        //}
 
         private void ScreenSource_BufferUpdated()
         {
@@ -201,11 +211,12 @@ namespace ScreenStreamer
             }
 
 
-            if (encoder != null)
-            {
-                encoder.DataEncoded -= Encoder_DataEncoded;
-                encoder.Close();
-            }
+            //if (encoder != null)
+            //{
+            //    encoder.DataEncoded -= Encoder_DataEncoded;
+            //    encoder.Close();
+            //}
+
             screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
             rtpStreamer?.Close();
@@ -222,9 +233,11 @@ namespace ScreenStreamer
             public double lastTimestamp = 0;
 
             public double totalTime = 0;
-            public StreamStats() { }
+            public long avgEncodingTime = 0;
 
-            public void Update(double timestamp, int bytesSend)
+            public StreamStats() { }
+            
+            public void Update(double timestamp, int bytesSend, long encTime)
             {
                 if (lastTimestamp > 0)
                 {
@@ -242,6 +255,8 @@ namespace ScreenStreamer
                         totalTime += (timestamp - lastTimestamp);
                     }
                 }
+
+                avgEncodingTime = (long)(encTime * 0.1 + avgEncodingTime * (1 - 0.1));
 
                 totalBytesSend += bytesSend;
 
@@ -267,6 +282,7 @@ namespace ScreenStreamer
                 sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec3) + "/s");
                 sb.AppendLine(StringHelper.SizeSuffix(totalBytesSend));
 
+                sb.AppendLine(avgEncodingTime + " ms");
 
                 //sb.AppendLine(mbytes.ToString("0.0") + " MBytes");
                 //sb.AppendLine(mbytesPerSec.ToString("0.000") + " MByte/s");

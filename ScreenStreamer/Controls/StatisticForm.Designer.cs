@@ -60,15 +60,15 @@
             this.labelCpuUsage.Text = "---";
             this.labelCpuUsage.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // labelCaptureStats
+            // labelStats
             // 
             this.labelStats.AutoSize = true;
             this.labelStats.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.labelStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelStats.ForeColor = System.Drawing.Color.Red;
             this.labelStats.Location = new System.Drawing.Point(3, 31);
             this.labelStats.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.labelStats.Name = "labelCaptureStats";
+            this.labelStats.Name = "labelStats";
             this.labelStats.Size = new System.Drawing.Size(31, 23);
             this.labelStats.TabIndex = 5;
             this.labelStats.Text = "---";

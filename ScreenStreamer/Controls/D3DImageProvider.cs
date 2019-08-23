@@ -1,4 +1,6 @@
-﻿using ScreenStreamer.Utils;
+﻿using NLog;
+using ScreenStreamer.Utils;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 using System;
@@ -12,11 +14,15 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 
+using Direct3D9 = SharpDX.Direct3D9;
+
 namespace ScreenStreamer
 {
 
     public class D3DImageProvider : INotifyPropertyChanged
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public Dispatcher dispatcher = null;
         
         public D3DImageProvider()
@@ -26,9 +32,8 @@ namespace ScreenStreamer
 
         }
 
-
-        private SharpDX.Direct3D9.Direct3DEx direct3D = null;
-        private SharpDX.Direct3D9.DeviceEx device = null;
+        private Direct3DEx direct3D = null;
+        private DeviceEx device = null;
 
         private Surface surface = null;
 
@@ -50,8 +55,50 @@ namespace ScreenStreamer
 
         public void Setup(ScreenSource source)
         {
-            this.screenSource = source;
-            var sharedTexture = screenSource.hwContext.SharedTexture;
+            logger.Debug("D3DImageProvider::Setup(...)");
+
+            try
+            {
+                this.screenSource = source;
+                var sharedTexture = screenSource.hwContext.SharedTexture;
+                screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+
+                ScreenView = new D3DImage();
+                ScreenView.IsFrontBufferAvailableChanged += ScreenView_IsFrontBufferAvailableChanged;
+
+                SetupDx(sharedTexture);
+                Update(sharedTexture);
+
+ 
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+
+                Close();
+                throw;
+            }
+
+        }
+
+        private void ScreenView_IsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            logger.Debug("ScreenView_IsFrontBufferAvailableChanged(...) ");
+
+            if (!ScreenView.IsFrontBufferAvailable)
+            {
+                ClosDx();
+            }
+            else
+            {
+                SetupDx(screenSource.hwContext.SharedTexture);
+            }
+        }
+
+        bool deviceReady = false;
+        private void SetupDx(Texture2D sharedTexture)
+        {
+            logger.Debug("D3DImageProvider::SetupDx(...)");
 
             var descr = sharedTexture.Description;
 
@@ -64,7 +111,7 @@ namespace ScreenStreamer
                 Windowed = true,
                 MultiSampleType = MultisampleType.None,
                 SwapEffect = SwapEffect.Discard,
-                PresentFlags =PresentFlags.None,
+                PresentFlags = PresentFlags.None,
             };
 
             var flags = CreateFlags.HardwareVertexProcessing |
@@ -86,36 +133,40 @@ namespace ScreenStreamer
                 using (var texture3d9 = new Texture(device, descr.Width, descr.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default, ref handle))
                 {
                     surface = texture3d9.GetSurfaceLevel(0);
-                }     
+                }
 
             }
-            ScreenView = new D3DImage();
-
-            this.Update();
-
-            screenSource.BufferUpdated += ScreenSource_BufferUpdated;
-
-
+            deviceReady = true;
         }
 
         private void ScreenSource_BufferUpdated()
         {
 
-            Update();
+            var sharedTexture = screenSource.hwContext.SharedTexture;
+
+            Update(sharedTexture);
 
         }
 
-        public void Update()
+        
+
+        public void Update(Texture2D sharedTexture)
         {
             if (surface == null)
             {
                 return;
             }
 
+
            dispatcher.Invoke(() =>
            {
                if (screenView.IsFrontBufferAvailable)
                {
+                   if (!deviceReady)
+                   {
+                       SetupDx(sharedTexture);
+                   }
+
                    var ptr = surface.NativePointer;
                    screenView.Lock();
                    screenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, ptr);
@@ -127,6 +178,10 @@ namespace ScreenStreamer
 
                    screenView.Unlock();
                }
+               else
+               {
+                   //ClosDx();
+               }
 
 
            }, DispatcherPriority.Render);
@@ -134,18 +189,22 @@ namespace ScreenStreamer
         }
 
         public bool running = true;
-        public void Close()
+
+        private void ClosDx()
         {
-            if (screenSource != null)
-            {
-                screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            logger.Debug("D3DImageProvider::ClosDx()");
 
-            }
-
+            deviceReady = false;
             if (surface != null)
             {
                 surface.Dispose();
                 surface = null;
+            }
+
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
             }
 
             if (direct3D != null)
@@ -154,11 +213,22 @@ namespace ScreenStreamer
                 direct3D = null;
             }
 
-            if (device != null)
+        }
+
+        public void Close()
+        {
+            logger.Debug("D3DImageProvider::Close()");
+
+            if (screenSource != null)
             {
-                device.Dispose();
-                device = null;
+                screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+
             }
+
+            ScreenView.IsFrontBufferAvailableChanged -= ScreenView_IsFrontBufferAvailableChanged;
+
+            ClosDx();
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

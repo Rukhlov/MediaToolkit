@@ -75,7 +75,7 @@ namespace ScreenStreamer
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
-            // Utils.WinMM.timeBeginPeriod(1);
+            Utils.WinMM.timeBeginPeriod(1);
 
             //Utils.DwmApi.DisableAero(true);
 
@@ -92,10 +92,11 @@ namespace ScreenStreamer
             //var srcRect = new Rectangle(0, 0, 1280, 1440);
             //var srcRect = new Rectangle(0, 0, 2560, 1080);
 
-            //var destSize = new Size(1280, 720);
-           // var destSize = new Size(2560, 1440);
-            var destSize = new Size(1920, 1080);
+           // var destSize = new Size(1280, 720);
+            //var destSize = new Size(2560, 1440);
+            // var destSize = new Size(1920, 1080);
 
+            var destSize = new Size(srcRect.Width, srcRect.Height);
             if (aspectRatio)
             {
                 var ratio = srcRect.Width / (double)srcRect.Height;
@@ -268,7 +269,7 @@ namespace ScreenStreamer
 
             //Task.WaitAll(streamerTask, captureTask);
 
-            //Utils.WinMM.timeEndPeriod(1);
+            Utils.WinMM.timeEndPeriod(1);
 
             SharpDX.MediaFoundation.MediaManager.Shutdown();
 

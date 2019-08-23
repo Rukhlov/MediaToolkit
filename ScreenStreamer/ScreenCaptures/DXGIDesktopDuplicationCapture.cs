@@ -33,6 +33,8 @@ namespace ScreenStreamer
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
 
+       // public Stopwatch sw = new Stopwatch();
+
         private Device device = null;
 
         public Texture2D SharedTexture { get; private set; }
@@ -174,7 +176,7 @@ namespace ScreenStreamer
             //        Usage = ResourceUsage.Staging,
             //        OptionFlags = ResourceOptionFlags.None,
             //    });
-
+            
             SharedTexture = new Texture2D(device,
                  new Texture2DDescription
                  {
@@ -261,7 +263,7 @@ namespace ScreenStreamer
                 SharpDX.DXGI.Resource desktopResource = null;
                 try
                 {
-                    var acquireResult = deskDupl.TryAcquireNextFrame(50, out frameInfo, out desktopResource);
+                    var acquireResult = deskDupl.TryAcquireNextFrame(0, out frameInfo, out desktopResource);
 
                     if (acquireResult.Success)
                     {
@@ -382,6 +384,8 @@ namespace ScreenStreamer
                         //        Monitor.Exit(syncRoot);
                         //    }
                         //}
+
+                        //sw.Restart();
 
                         Result = true;
 
