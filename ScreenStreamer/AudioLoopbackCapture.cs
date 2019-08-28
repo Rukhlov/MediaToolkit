@@ -4,6 +4,7 @@ using NAudio.Utils;
 using NAudio.Wave;
 using NAudio.Wave.Compression;
 using NAudio.Wave.SampleProviders;
+using ScreenStreamer.RTP;
 using ScreenStreamer.Utils;
 using System;
 using System.Collections.Generic;
@@ -47,12 +48,12 @@ namespace ScreenStreamer
                 };
 
 
-                //audioResampler.Open(captureParams, outputParams);
+                audioResampler.Open(captureParams, outputParams);
 
-                //PCMUSession session = new PCMUSession();
+                PCMUSession session = new PCMUSession();
 
-                //streamer = new RtpStreamer(session);
-                //streamer.Open("239.0.0.1", 1236);
+                streamer = new RtpStreamer(session);
+                streamer.Open("239.0.0.1", 1236);
 
 
                 capture.StartRecording();

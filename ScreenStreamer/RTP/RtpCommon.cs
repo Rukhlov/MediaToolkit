@@ -85,9 +85,14 @@ namespace ScreenStreamer.RTP
 
         public RtpPacket() { }
 
-        public RtpPacket(byte[] payload)
+        public RtpPacket(byte[] payload, int position, int size = 0)
         {
             int payloadSize = payload.Length;
+            if (size > 0)
+            {
+                payloadSize = size;
+            }
+
             int headerSize = RtpConst.MinRtpLength;
 
             int packetSize = headerSize + payloadSize;
@@ -95,7 +100,7 @@ namespace ScreenStreamer.RTP
             this.packetBytes = new byte[packetSize];
             int offset = headerSize;
 
-            System.Array.Copy(payload, 0, packetBytes, offset, payloadSize);
+            System.Array.Copy(payload, position, packetBytes, offset, payloadSize);
 
             this.Payload = new ArraySegment<byte>(packetBytes, offset, payloadSize);
 

@@ -59,9 +59,9 @@ namespace ScreenStreamer
                     {
                         //var data = pkt;//.GetBytes();
                         var data = pkt.GetBytes();
-
-                        //socket?.SendTo(rtp, 0, rtp.Length, SocketFlags.None, endpoint);
-                        socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
+                        //logger.Debug("pkt" + pkt.Sequence);
+                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, endpoint);
+                        //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += data.Length;
 
                         // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);

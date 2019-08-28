@@ -162,6 +162,9 @@ namespace TestClient
                     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                     Width = 2560,//640,//texture.Description.Width,
                     Height = 1440, //480,//texture.Description.Height,
+
+                    //Width = 640,//2560,//640,//texture.Description.Width,
+                    //Height = 480,//1440, //480,//texture.Description.Height,
                     MipLevels = 1,
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
@@ -210,14 +213,18 @@ namespace TestClient
             {
                 Width = 2560,
                 Height = 1440,
+
+                //Width = 640,//2560,
+                //Height = 480,//1440,
                 FrameRate = 30,
             };
 
             var outputArgs = new VideoWriterArgs
             {
+                //Width = 640,//2560,
+                //Height = 480,//1440,
                 Width = 2560,
                 Height = 1440,
-
                 FrameRate = 30,
             };
 

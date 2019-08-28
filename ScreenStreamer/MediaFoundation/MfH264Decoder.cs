@@ -27,7 +27,6 @@ namespace ScreenStreamer.MediaFoundation
         public Device device = null;
 
         private Transform decoder = null;
-        private MediaEventGenerator eventGen = null;
 
         private int inputStreamId = -1;
         private int outputStreamId = -1;
@@ -168,10 +167,6 @@ namespace ScreenStreamer.MediaFoundation
                     inputStreamId = 0;
                     outputStreamId = 0;
                 }
-
-                //encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
-
-
 
 
                 MediaType inputMediaType = null;
@@ -442,12 +437,6 @@ namespace ScreenStreamer.MediaFoundation
             {
                 decoder.Dispose();
                 decoder = null;
-            }
-
-            if (eventGen != null)
-            {
-                eventGen.Dispose();
-                eventGen = null;
             }
 
         }
