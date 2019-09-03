@@ -10,12 +10,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
+using WindowsInput;
 
 namespace ScreenStreamer
 {
@@ -234,6 +237,125 @@ namespace ScreenStreamer
 
     
             };
+
+            Task.Run(() => 
+            {        
+                
+                var ipaddr = IPAddress.Any;
+                int port = 8888;
+
+                logger.Info("Start input simulator...");
+
+
+                Socket socket = null;
+                try
+                {
+                    InputSimulator inputSimulator = new InputSimulator();
+
+
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
+                    socket.Bind(new IPEndPoint(ipaddr, port));
+
+                    logger.Debug("Socket binded " + ipaddr.ToString() + " " + port);
+
+                    byte[] buffer = new byte[1024];
+                    while (true)
+                    {
+                        try
+                        {
+                            var bytesReceived = socket.Receive(buffer, SocketFlags.None);
+
+                            if (bytesReceived > 0)
+                            {
+                                var message = Encoding.ASCII.GetString(buffer, 0, bytesReceived);
+
+                                var pars = message.Split(':');
+                                if (pars != null && pars.Length > 1)
+                                {
+                                    var command = pars[0];
+                                    if (command == "MouseMove")
+                                    {
+                                        logger.Debug(command + " " + string.Join(" ", pars));
+
+                                        var position = pars[1];
+                                        var pos = position.Split(' ');
+
+                                        if (pos != null && pos.Length == 2)
+                                        {
+                                            var x = double.Parse(pos[0]);
+                                            var y = double.Parse(pos[1]);
+                                            inputSimulator.Mouse.MoveMouseTo(x, y);
+                                        }
+                                    }
+                                    else if (command == "MouseUp")
+                                    {
+                                        var par = pars[1];
+                                        var buttonParams = par.Split(' ');
+
+                                        if (buttonParams != null && buttonParams.Length == 2)
+                                        {
+                                            logger.Debug(command + " " +  string.Join(" ", buttonParams));
+
+                                            var button = (MouseButtons)int.Parse(buttonParams[0]);
+                                            var click = int.Parse(buttonParams[1]);
+
+                                            if (button == MouseButtons.Left)
+                                            { 
+                                                inputSimulator.Mouse.LeftButtonUp();
+                                            }
+                                            else if (button == MouseButtons.Right)
+                                            {
+                                                inputSimulator.Mouse.RightButtonUp();
+                                            }
+                                        }
+                                    }
+                                    else if (command == "MouseDown")
+                                    {
+                                        var par = pars[1];
+                                        var buttonParams = par.Split(' ');
+
+                                        if (buttonParams != null && buttonParams.Length == 2)
+                                        {
+                                            logger.Debug(command + " " + string.Join(" ", buttonParams));
+
+                                            var button = (MouseButtons)int.Parse(buttonParams[0]);
+                                            var click = int.Parse(buttonParams[1]);
+
+                                            if (button == MouseButtons.Left)
+                                            {
+                                                inputSimulator.Mouse.LeftButtonDown();
+                                            }
+                                            else if (button == MouseButtons.Right)
+                                            {
+                                                inputSimulator.Mouse.RightButtonDown();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                }
+                finally
+                {
+                    if (socket != null)
+                    {
+                        socket.Close();
+                        socket = null;
+                    }
+                }
+
+            });
+
 
             //Application.Run(previewForm);
             logger.Info("==========APP RUN ============");

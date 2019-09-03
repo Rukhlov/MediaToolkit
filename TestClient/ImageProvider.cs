@@ -55,7 +55,7 @@ namespace MfTransformTest
 
             var hWnd = GetDesktopWindow();
 
-            var presentparams = new SharpDX.Direct3D9.PresentParameters
+            var presentParams = new SharpDX.Direct3D9.PresentParameters
             {
                 //Windowed = true,
                 //SwapEffect = SharpDX.Direct3D9.SwapEffect.Discard,
@@ -75,28 +75,29 @@ namespace MfTransformTest
 
             int adapterIndex = 0;
 
-            device = new SharpDX.Direct3D9.DeviceEx(direct3D, adapterIndex, SharpDX.Direct3D9.DeviceType.Hardware, hWnd, flags, presentparams);
+            device = new SharpDX.Direct3D9.DeviceEx(direct3D, adapterIndex, SharpDX.Direct3D9.DeviceType.Hardware, hWnd, flags, presentParams);
 
-            var resource = sharedTexture.QueryInterface<SharpDX.DXGI.Resource>();
-            var handle = resource.SharedHandle;
+            using (var resource = sharedTexture.QueryInterface<SharpDX.DXGI.Resource>())
+            {
+                var handle = resource.SharedHandle;
 
-            if (handle == IntPtr.Zero)
-                throw new ArgumentNullException(nameof(handle));
+                if (handle == IntPtr.Zero)
+                {
+                    throw new ArgumentNullException(nameof(handle));
+                }
 
- 
-            var texture3d9 = new SharpDX.Direct3D9.Texture(device,
-                descr.Width,
-                descr.Height,
-                1,
-                SharpDX.Direct3D9.Usage.RenderTarget,
-                SharpDX.Direct3D9.Format.A8R8G8B8,
-                SharpDX.Direct3D9.Pool.Default,
-                ref handle);
-
-            surface = texture3d9.GetSurfaceLevel(0);
-
-            resource.Dispose();
-            texture3d9.Dispose();
+                using (var texture3d9 = new SharpDX.Direct3D9.Texture(device,
+                        descr.Width,
+                        descr.Height,
+                        1,
+                        SharpDX.Direct3D9.Usage.RenderTarget,
+                        SharpDX.Direct3D9.Format.A8R8G8B8,
+                        SharpDX.Direct3D9.Pool.Default,
+                        ref handle))
+                {
+                    surface = texture3d9.GetSurfaceLevel(0);
+                };
+            }
 
             _D3DImage = new System.Windows.Interop.D3DImage();
 
@@ -148,6 +149,11 @@ namespace MfTransformTest
         public bool running = true;
         public void Close()
         {
+            if (surface != null)
+            {
+                surface.Dispose();
+                surface = null;
+            }
 
             if (direct3D != null)
             {
@@ -159,6 +165,11 @@ namespace MfTransformTest
             {
                 device.Dispose();
                 device = null;
+            }
+
+            if (_D3DImage != null)
+            {
+               
             }
         }
 

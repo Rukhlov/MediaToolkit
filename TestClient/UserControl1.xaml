@@ -3,13 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TestClient"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    
-    <Grid>
-        <Image Source="{Binding Path=_D3DImage}">
-        </Image>
+             xmlns:local="clr-namespace:TestClient" Height="419.2" Width="646.4">
+
+    <Grid Background="Black">
+        <Image Source="{Binding Path=_D3DImage}" />
     </Grid>
-    
+
 </UserControl>

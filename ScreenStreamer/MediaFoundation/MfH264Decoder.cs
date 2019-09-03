@@ -65,7 +65,7 @@ namespace ScreenStreamer.MediaFoundation
                     var adapter = dxgiFactory.Adapters1[0];
 
                     device = new Device(adapter,
-                        DeviceCreationFlags.Debug |
+                        //DeviceCreationFlags.Debug |
                         DeviceCreationFlags.VideoSupport |
                         DeviceCreationFlags.BgraSupport);
 

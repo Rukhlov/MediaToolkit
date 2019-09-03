@@ -41,6 +41,8 @@ namespace TestClient
                //"--network-caching=300"
              };
 
+            logger.Debug("VlcLibDirectory: " + VlcLibDirectory);
+
             mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
 
             mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
@@ -105,7 +107,7 @@ namespace TestClient
 
 
         }
-        FileStream file = new FileStream("d:\\test_rtp.h264", FileMode.Create);
+        //FileStream file = new FileStream("d:\\test_rtp.h264", FileMode.Create);
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -120,7 +122,7 @@ namespace TestClient
 
         private Device device = null;
 
-        private Texture2D sharedTexture1 = null;
+        private Texture2D sharedTexture = null;
         MfTransformTest.D3DImageProvider imageProvider = null;
 
 
@@ -131,11 +133,44 @@ namespace TestClient
         private H264Session h264Session = null;
         private RtpReceiver rtpReceiver = null;
 
-        private Form testForm = null;
-
+        //private Form testForm = null;
+        private Form2 testForm = null;
 
         private void button4_Click(object sender, EventArgs e)
         {
+            var address = addressTextBox.Text;
+            if (string.IsNullOrEmpty(address))
+            {
+                return;
+            }
+
+            var port = (int)portNumeric.Value;
+
+            var inputArgs = new VideoWriterArgs
+            {
+                Width = 1920,
+                Height = 1080,
+
+                //Width = 2560,
+                //Height = 1440,
+
+                //Width = 640,//2560,
+                //Height = 480,//1440,
+                FrameRate = 30,
+            };
+
+            var outputArgs = new VideoWriterArgs
+            {
+                //Width = 640,//2560,
+                //Height = 480,//1440,
+                //Width = 2560,
+                //Height = 1440,
+
+                Width = 1920,
+                Height = 1080,
+
+                FrameRate = 30,
+            };
 
 
             int adapterIndex = 0;
@@ -144,7 +179,7 @@ namespace TestClient
 
 
             device = new Device(adapter,
-                                DeviceCreationFlags.Debug |
+                                //DeviceCreationFlags.Debug |
                                 DeviceCreationFlags.VideoSupport |
                                 DeviceCreationFlags.BgraSupport);
 
@@ -153,18 +188,16 @@ namespace TestClient
                 multiThread.SetMultithreadProtected(true);
             }
 
-            sharedTexture1 = new Texture2D(device,
+            sharedTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
 
                     CpuAccessFlags = CpuAccessFlags.None,
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Width = 2560,//640,//texture.Description.Width,
-                    Height = 1440, //480,//texture.Description.Height,
+                    Width = outputArgs.Width,//640,//texture.Description.Width,
+                    Height = outputArgs.Height, //480,//texture.Description.Height,
 
-                    //Width = 640,//2560,//640,//texture.Description.Width,
-                    //Height = 480,//1440, //480,//texture.Description.Height,
                     MipLevels = 1,
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
@@ -176,57 +209,45 @@ namespace TestClient
 
 
             imageProvider = new MfTransformTest.D3DImageProvider(Dispatcher.CurrentDispatcher);
-            imageProvider.Setup(sharedTexture1);
+            imageProvider.Setup(sharedTexture);
 
  
-            if (testForm == null)
+            if (testForm == null || testForm.IsDisposed)
             {
-                testForm = new Form
+                testForm = new Form2
                 {
                     StartPosition = FormStartPosition.CenterParent,
                     Width = 1280,
                     Height = 720,
+
+                    Text = (@"rtp://" + address + ":" + port),
                 };
 
-                System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
-                {
-                    Dock = DockStyle.Fill,
-                };
-                testForm.Controls.Add(host);
+                //System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
+                //{
+                //    Dock = DockStyle.Fill,
+                //};
+                //testForm.Controls.Add(host);
 
 
-                UserControl1 video = new UserControl1();
-                host.Child = video;
+                //UserControl1 video = new UserControl1();
+                //host.Child = video;
 
+                //video.DataContext = imageProvider;
+
+                var video = testForm.userControl11;
                 video.DataContext = imageProvider;
 
-                testForm.Visible = true;
+                testForm.FormClosed += TestForm_FormClosed;
             }
 
-
+            testForm.Visible = true;
 
 
             decoder = new MfH264Decoder(device);
             processor = new MfProcessor(device);
 
-            var inputArgs = new VideoWriterArgs
-            {
-                Width = 2560,
-                Height = 1440,
 
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                FrameRate = 30,
-            };
-
-            var outputArgs = new VideoWriterArgs
-            {
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                Width = 2560,
-                Height = 1440,
-                FrameRate = 30,
-            };
 
             decoder.Setup(inputArgs);
             decoder.Start();
@@ -238,18 +259,31 @@ namespace TestClient
             h264Session = new H264Session();
 
             rtpReceiver = new RtpReceiver(null);
-            rtpReceiver.Open("239.0.0.1", 1234);
+            rtpReceiver.Open(address, port);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
             rtpReceiver.Start();
 
+
+
+
+
+
+
+
         }
 
-        private void RtpReceiver_RtpPacketReceived(ScreenStreamer.RTP.RtpPacket packet)
+        private void TestForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            CloseRtpStream();
+        }
+
+        private void RtpReceiver_RtpPacketReceived(RtpPacket packet)
         {
             byte[] rtpPayload = packet.Payload.ToArray();
 
             //totalPayloadReceivedSize += rtpPayload.Length;
             // logger.Debug("totalPayloadReceivedSize " + totalPayloadReceivedSize);
+
             var nal = h264Session.Depacketize(packet);
             if (nal != null)
             {
@@ -298,7 +332,7 @@ namespace TestClient
                                         dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
                                         using (Texture2D rgbTexture = new Texture2D(intPtr))
                                         {
-                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture1);
+                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
                                             device.ImmediateContext.Flush();
                                         };
 
@@ -311,7 +345,6 @@ namespace TestClient
 
                             rgbSample?.Dispose();
 
-                                    //logger.Debug("decodedSample " + decodedSample.SampleTime);
                         }
                     }
 
@@ -333,9 +366,78 @@ namespace TestClient
 
         private void button5_Click(object sender, EventArgs e)
         {
+            CloseRtpStream();
+
+            if (testForm != null && !testForm.IsDisposed)
+            {
+                testForm.Close();
+                testForm.FormClosed -= TestForm_FormClosed;
+                testForm = null;
+            }
+
+            if (imageProvider != null)
+            {
+                imageProvider.Close();
+                imageProvider = null;
+            }
+
+        }
+
+        private void CloseRtpStream()
+        {
             if (rtpReceiver != null)
             {
+                rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
                 rtpReceiver.Close();
+            }
+
+            if (decoder != null)
+            {
+                decoder.Close();
+                decoder = null;
+            }
+            if (processor != null)
+            {
+                processor.Close();
+                processor = null;
+            }
+
+            if (sharedTexture != null)
+            {
+                sharedTexture.Dispose();
+                sharedTexture = null;
+            }
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (testForm != null && !testForm.IsDisposed)
+            {
+
+
+                var addr = textBox1.Text;
+                int port = (int)numericUpDown1.Value;
+                testForm.StartInputSimulator(addr, port);
+            }
+
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            if (testForm != null && !testForm.IsDisposed)
+            {
+                testForm.StopInputSimulator();
             }
         }
     }

@@ -56,7 +56,7 @@ namespace ScreenStreamer.MediaFoundation
                     var adapter = dxgiFactory.Adapters1[0];
 
                     device = new Device(adapter,
-                        DeviceCreationFlags.Debug |
+                        //DeviceCreationFlags.Debug |
                         DeviceCreationFlags.VideoSupport |
                         DeviceCreationFlags.BgraSupport);
 
@@ -243,16 +243,16 @@ namespace ScreenStreamer.MediaFoundation
 
             // if (processor.OutputStatus == 0)
             {
-                try
-                {
+                //try
+                //{
                     processor.ProcessInput(0, inputSample, 0);
 
-                }
-                catch (Exception ex)
-                {
-                    //processor.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
-                    //return false;
-                }
+                //}
+                //catch (Exception ex)
+                //{
+                //    //processor.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+                //    //return false;
+                //}
             }
 
             //if (processor.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
