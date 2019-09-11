@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -35,8 +36,8 @@ namespace TestClient
             this.userControl11.MouseLeftButtonDown += UserControl11_MouseLeftButtonDown;
             this.userControl11.MouseLeftButtonUp += UserControl11_MouseLeftButtonUp;
 
-            //this.userControl11.MouseRightButtonDown += UserControl11_MouseRightButtonDown;
-            //this.userControl11.MouseRightButtonUp += UserControl11_MouseRightButtonUp;
+            this.userControl11.MouseRightButtonDown += UserControl11_MouseRightButtonDown;
+            this.userControl11.MouseRightButtonUp += UserControl11_MouseRightButtonUp;
 
             this.userControl11.MouseDoubleClick += UserControl11_MouseDoubleClick;
 
@@ -170,7 +171,7 @@ namespace TestClient
             lock (syncRoot)
             {
                 // message = time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y;
-                message = "MouseMove:" + _x + " " + _y;
+                message = "MouseMove:" + _x.ToString(CultureInfo.InvariantCulture) + " " + _y.ToString(CultureInfo.InvariantCulture);
             }
 
             waitEvent.Set();
@@ -179,7 +180,7 @@ namespace TestClient
 
             ////client.Send("MouseMove: " + DateTime.Now.ToString("HH:mm:ss.fff") + ": " + _x + ":" + _y);
 
-            Console.WriteLine("MouseMove: " + time.ToString("HH:mm:ss.fff") + ">>" + _x + " " + _y);
+            //Console.WriteLine(time.ToString("HH:mm:ss.fff") + ">>" + message);
 
         }
     }

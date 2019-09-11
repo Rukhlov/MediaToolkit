@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
-[assembly: AssemblyTitle("MediaToolkit.Resources")]
+[assembly: AssemblyTitle("TestStreamer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MediaToolkit.Resources")]
+[assembly: AssemblyProduct("TestStreamer")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
-[assembly: Guid("53677e3b-7880-4c45-8ea9-95db9fcb2d8c")]
+[assembly: Guid("fb9ea9ce-8052-4caf-a85a-89a41b62c7a0")]
 
 // Сведения о версии сборки состоят из следующих четырех значений:
 //

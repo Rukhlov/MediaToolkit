@@ -1,8 +1,8 @@
 ﻿using MfTransformTest;
 using NLog;
-using ScreenStreamer;
-using ScreenStreamer.MediaFoundation;
-using ScreenStreamer.RTP;
+using MediaToolkit;
+using MediaToolkit.MediaFoundation;
+using MediaToolkit.RTP;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
 using System;
@@ -116,7 +116,7 @@ namespace TestClient
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Process.Start(Path.Combine(CurrentDirectory, "ScreenStreamer.exe"));
+            Process.Start(Path.Combine(CurrentDirectory, "TestStreamer.exe"));
         }
 
 
@@ -127,7 +127,7 @@ namespace TestClient
 
 
         private MfH264Decoder decoder = null;
-        private MfProcessor processor = null;
+        private MfVideoProcessor processor = null;
 
 
         private H264Session h264Session = null;
@@ -146,7 +146,7 @@ namespace TestClient
 
             var port = (int)portNumeric.Value;
 
-            var inputArgs = new VideoWriterArgs
+            var inputArgs = new MfVideoArgs
             {
                 Width = 1920,
                 Height = 1080,
@@ -159,7 +159,7 @@ namespace TestClient
                 FrameRate = 30,
             };
 
-            var outputArgs = new VideoWriterArgs
+            var outputArgs = new MfVideoArgs
             {
                 //Width = 640,//2560,
                 //Height = 480,//1440,
@@ -245,14 +245,33 @@ namespace TestClient
 
 
             decoder = new MfH264Decoder(device);
-            processor = new MfProcessor(device);
-
-
 
             decoder.Setup(inputArgs);
             decoder.Start();
 
-            processor.Setup(inputArgs, outputArgs);
+            var decoderType = decoder.OutputMediaType;
+            var decFormat = decoderType.Get(MediaTypeAttributeKeys.Subtype);
+            var decFrameSize = MfTool.GetFrameSize(decoderType);
+
+
+            processor = new MfVideoProcessor(device);
+            var inProcArgs = new MfVideoArgs
+            {
+                Width = decFrameSize.Width,
+                Height = decFrameSize.Height,
+                Format = decFormat,
+            };
+
+
+           
+            var outProcArgs = new MfVideoArgs
+            {
+                Width = inputArgs.Width,
+                Height = inputArgs.Height,
+                Format = VideoFormatGuids.Argb32,
+            };
+
+            processor.Setup(inProcArgs, outProcArgs);
             processor.Start();
 
 
@@ -262,12 +281,6 @@ namespace TestClient
             rtpReceiver.Open(address, port);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
             rtpReceiver.Start();
-
-
-
-
-
-
 
 
         }
