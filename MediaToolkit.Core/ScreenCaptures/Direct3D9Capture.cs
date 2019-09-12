@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Utils;
+using MediaToolkit.NativeAPIs;
 using SharpDX;
 using SharpDX.Direct3D9;
 

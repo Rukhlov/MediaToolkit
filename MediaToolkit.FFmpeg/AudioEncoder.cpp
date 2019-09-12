@@ -27,7 +27,7 @@ using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Common;
 using namespace System::Threading;
 
-namespace FFmpegWrapper {
+namespace FFmpegLib {
 
 	public ref class AudioEncoder {
 	public:

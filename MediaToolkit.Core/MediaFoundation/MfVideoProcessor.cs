@@ -222,6 +222,8 @@ namespace MediaToolkit.MediaFoundation
                 //bool res = true;
                 // processor.ProcessOutput(TransformProcessOutputFlags.None,  1, outputDataBuffer, out TransformProcessOutputStatus status);
                 //var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
+                
+                //((NAudio.MediaFoundation.IMFTransform)Marshal.GetObjectForIUnknown(processor.NativePointer)).ProcessOutput(0, 1, buf, out _);
 
                 var res = processor.TryProcessOutput(TransformProcessOutputFlags.None, 1, outputDataBuffer, out TransformProcessOutputStatus status);
 

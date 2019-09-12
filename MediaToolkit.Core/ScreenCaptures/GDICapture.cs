@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Common;
 using MediaToolkit.Utils;
+using MediaToolkit.NativeAPIs;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

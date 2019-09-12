@@ -99,12 +99,9 @@ namespace MediaToolkit.MediaFoundation
                     inputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                     using (var encoderParams = new MediaAttributes(2))
-                    {
-                        var rateControlModeKeyAttr = new MediaAttributeKey<RateControlMode>("1c0608e9-370c-4710-8a58-cb6181c42423");
-                        encoderParams.Set(rateControlModeKeyAttr, RateControlMode.Quality);
-
-                        var qualityKeyAttr = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
-                        encoderParams.Set(qualityKeyAttr, Args.VideoQuality);
+                    {                      
+                        encoderParams.Set(MFAttributeKeys.CODECAPI_AVEncCommonRateControlMode, RateControlMode.Quality);
+                        encoderParams.Set(MFAttributeKeys.CODECAPI_AVEncCommonQuality, Args.VideoQuality);
 
                         sinkWriter.SetInputMediaType(0, inputMediaType, encoderParams);
                     }

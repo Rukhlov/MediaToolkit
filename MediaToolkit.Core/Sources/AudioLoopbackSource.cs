@@ -1,5 +1,5 @@
 ﻿using MediaToolkit.Common;
-using FFmpegWrapper;
+using FFmpegLib;
 using NAudio.Utils;
 using NAudio.Wave;
 using NAudio.Wave.Compression;

@@ -1,5 +1,5 @@
 ﻿using MediaToolkit.Common;
-using FFmpegWrapper;
+using FFmpegLib;
 using NLog;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.RTP;
@@ -96,6 +96,15 @@ namespace MediaToolkit
                 //processor.Setup(inProcArgs, outProcArgs);
                 //processor.Start();
 
+                var hwDevice = screenSource.hwContext.device;
+
+                long adapterLuid = -1;
+                using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
+                {
+                    var adapter = dxgiDevice.Adapter;
+                    adapterLuid = adapter.Description.Luid;
+
+                }
 
                 mfEncoder = new MfEncoderAsync();
                 mfEncoder.Setup(new MfVideoArgs
@@ -103,13 +112,14 @@ namespace MediaToolkit
                     Width = screenSource.Buffer.bitmap.Width,
                     Height = screenSource.Buffer.bitmap.Height,
                     FrameRate = encodingParams.FrameRate,
+                    AdapterId = adapterLuid,
+
                 });
              
 
                 mfEncoder.DataReady += MfEncoder_DataReady;
 
                 
-
 
                 //encoder = new FFmpegVideoEncoder();
                 //encoder.Open(encodingParams);

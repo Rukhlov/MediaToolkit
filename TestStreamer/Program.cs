@@ -4,7 +4,6 @@ using MediaToolkit.Common;
 
 using NLog;
 
-using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,6 +21,8 @@ using System.Windows.Threading;
 using WindowsInput;
 using MediaToolkit;
 using TestStreamer.Controls;
+
+using MediaToolkit.NativeAPIs;
 
 namespace TestStreamer
 {
@@ -93,7 +94,7 @@ namespace TestStreamer
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
-            MediaToolkit.Utils.WinMM.timeBeginPeriod(1);
+            MediaToolkit.NativeAPIs.WinMM.timeBeginPeriod(1);
 
             //Utils.DwmApi.DisableAero(true);
 
@@ -418,7 +419,7 @@ namespace TestStreamer
 
             //Task.WaitAll(streamerTask, captureTask);
 
-            MediaToolkit.Utils.WinMM.timeEndPeriod(1);
+            MediaToolkit.NativeAPIs.WinMM.timeEndPeriod(1);
 
             SharpDX.MediaFoundation.MediaManager.Shutdown();
 

@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MediaToolkit.NativeAPIs;
+
 namespace MediaToolkit
 {
 

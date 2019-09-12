@@ -12,7 +12,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 
-namespace MfTransformTest
+namespace TestClient
 {
 
     class D3DImageProvider : INotifyPropertyChanged
@@ -26,16 +26,16 @@ namespace MfTransformTest
         private SharpDX.Direct3D9.Direct3DEx direct3D = null;
         private SharpDX.Direct3D9.DeviceEx device = null;
 
-        private System.Windows.Interop.D3DImage d3dImage = null;
-        public System.Windows.Interop.D3DImage _D3DImage
+        private System.Windows.Interop.D3DImage screenView = null;
+        public System.Windows.Interop.D3DImage ScreenView
         {
-            get { return d3dImage; }
+            get { return screenView; }
             private set
             {
-                if (d3dImage != value)
+                if (screenView != value)
                 {
-                    d3dImage = value;
-                    OnPropertyChanged(nameof(_D3DImage));
+                    screenView = value;
+                    OnPropertyChanged(nameof(ScreenView));
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace MfTransformTest
 
             direct3D = new SharpDX.Direct3D9.Direct3DEx();
 
-            var hWnd = GetDesktopWindow();
+            var hWnd = MediaToolkit.NativeAPIs.User32.GetDesktopWindow();
 
             var presentParams = new SharpDX.Direct3D9.PresentParameters
             {
@@ -99,7 +99,7 @@ namespace MfTransformTest
                 };
             }
 
-            _D3DImage = new System.Windows.Interop.D3DImage();
+            ScreenView = new System.Windows.Interop.D3DImage();
 
             this.Update();
 
@@ -116,23 +116,23 @@ namespace MfTransformTest
                 return;
             }
 
-            var ptr = surface.NativePointer;
 
             dispatcher.Invoke(() =>
             {
-               // if (_D3DImage.IsFrontBufferAvailable)
+                // if (_D3DImage.IsFrontBufferAvailable)
                 {
-                    _D3DImage.Lock();
-                    _D3DImage.SetBackBuffer(D3DResourceType.IDirect3DSurface9, ptr);
+                    var ptr = surface.NativePointer;
+
+                    ScreenView.Lock();
+                    ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, ptr);
 
                     if (ptr != IntPtr.Zero)
                     {
-                        _D3DImage.AddDirtyRect(new Int32Rect(0, 0, _D3DImage.PixelWidth, _D3DImage.PixelHeight));
+                        ScreenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
                     }
 
-                    _D3DImage.Unlock();
+                    ScreenView.Unlock();
                 }
-
 
             }, System.Windows.Threading.DispatcherPriority.Render);
 
@@ -167,7 +167,7 @@ namespace MfTransformTest
                 device = null;
             }
 
-            if (_D3DImage != null)
+            if (ScreenView != null)
             {
                
             }
@@ -179,8 +179,8 @@ namespace MfTransformTest
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        [DllImport("user32.dll", EntryPoint = "GetDesktopWindow")]
-        public static extern IntPtr GetDesktopWindow();
+        //[DllImport("user32.dll", EntryPoint = "GetDesktopWindow")]
+        //public static extern IntPtr GetDesktopWindow();
 
 
     }

@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
 
+
 namespace MediaToolkit
 {
     public class DXGIDesktopDuplicationCapture : ScreenCapture
@@ -77,40 +78,27 @@ namespace MediaToolkit
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
-                StringBuilder log = new StringBuilder();
-                log.AppendLine("");
-                foreach (var _adapter in dxgiFactory.Adapters1)
-                {
-                    var adaptDescr = _adapter.Description1;
-                    log.AppendLine("-------------------------------------");
-                    log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
-                  
-                    foreach(var _output in _adapter.Outputs)
-                    {
-                        var outputDescr = _output.Description;
-                        var bound = outputDescr.DesktopBounds;
-                        var rect = new GDI.Rectangle
-                        {
-                            X = bound.Left,
-                            Y = bound.Top,
-                            Width = ( bound.Right - bound.Left),
-                            Height = ( bound.Bottom - bound.Top ),                           
-                        };
+                LogDxAdapters(dxgiFactory.Adapters1);
 
-                        log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
-                    }
-                }
-                logger.Info(log);
-
-
-                var hMonitor = User32.GetMonitorFromRect(srcRect);
+                var hMonitor = NativeAPIs.User32.GetMonitorFromRect(srcRect);
                 if (hMonitor != IntPtr.Zero)
                 {
-                    adapter = dxgiFactory.Adapters1.FirstOrDefault(_adapter => _adapter.Outputs.Any(_output => _output.Description.MonitorHandle == hMonitor));
-                    output = adapter.Outputs.FirstOrDefault(o => o.Description.MonitorHandle == hMonitor);
+                    foreach (var _adapter in dxgiFactory.Adapters1)
+                    {
+                        foreach (var _output in _adapter.Outputs)
+                        {
+                            var descr = _output.Description;
+                            if (descr.MonitorHandle == hMonitor)
+                            {
+                                adapter = _adapter;
+                                output = _output;
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                if(adapter == null)
+                if (adapter == null)
                 {
                     adapter = dxgiFactory.Adapters1.FirstOrDefault();
                 }
@@ -121,8 +109,8 @@ namespace MediaToolkit
                 }
 
                 logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
-   
-                var deviceCreationFlags = 
+
+                var deviceCreationFlags =
                     //DeviceCreationFlags.Debug |
                     DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
@@ -246,7 +234,7 @@ namespace MediaToolkit
 
         }
 
-        private bool deviceReady = false;
+          private bool deviceReady = false;
 
         public override bool UpdateBuffer(int timeout = 10)
         {
@@ -924,11 +912,12 @@ namespace MediaToolkit
 
                     }
 
-                    int pointerShapeBufferSizeRequired;
                     try
                     {
-                        OutputDuplicatePointerShapeInformation pointerShapeInfo;
-                        deskDupl.GetFramePointerShape(cursorObj.BufferSize, cursorObj.PtrShapeBuffer, out pointerShapeBufferSizeRequired, out pointerShapeInfo);
+
+                        deskDupl.GetFramePointerShape(cursorObj.BufferSize, cursorObj.PtrShapeBuffer, 
+                            out int pointerShapeBufferSizeRequired, 
+                            out OutputDuplicatePointerShapeInformation pointerShapeInfo);
 
                         cursorObj.ShapeInfo = pointerShapeInfo;
                         //logger.Debug("pointerShapeInfo " + pointerShapeInfo.Type);
@@ -1092,8 +1081,35 @@ namespace MediaToolkit
             //}
         }
 
+        public static void LogDxAdapters(Adapter1[] adapters)
+        {
+            StringBuilder log = new StringBuilder();
+            log.AppendLine("");
+            foreach (var _adapter in adapters)
+            {
+                var adaptDescr = _adapter.Description1;
+                log.AppendLine("-------------------------------------");
+                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
 
-        public static SharpDX.Direct3D11.Texture2D GetTexture(GDI.Bitmap bitmap, Device device)
+                foreach (var _output in _adapter.Outputs)
+                {
+                    var outputDescr = _output.Description;
+                    var bound = outputDescr.DesktopBounds;
+                    var rect = new GDI.Rectangle
+                    {
+                        X = bound.Left,
+                        Y = bound.Top,
+                        Width = (bound.Right - bound.Left),
+                        Height = (bound.Bottom - bound.Top),
+                    };
+
+                    log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+                }
+            }
+            logger.Info(log);
+        }
+
+        public static Texture2D GetTexture(GDI.Bitmap bitmap, Device device)
         {
 
             if (bitmap.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)

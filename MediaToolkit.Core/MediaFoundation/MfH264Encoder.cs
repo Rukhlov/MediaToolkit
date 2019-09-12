@@ -36,13 +36,11 @@ namespace MediaToolkit.MediaFoundation
         private int inputStreamId = -1;
         private int outputStreamId = -1;
 
-        private long frameNumber = -1;
-        private long frameDuration;
-
-
 
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
+
+
 
         public MfEncoderAsync()
         { }
@@ -62,6 +60,8 @@ namespace MediaToolkit.MediaFoundation
             }
 
             var inputFormat = VideoFormatGuids.Argb32;
+
+
 
             try
             {
@@ -102,7 +102,18 @@ namespace MediaToolkit.MediaFoundation
             int height = args.Height;
 
             dxgiFactory = new SharpDX.DXGI.Factory1();
-            adapter = dxgiFactory.Adapters1[0];
+
+            var adapterId = args.AdapterId;
+            if (adapterId > 0)
+            {
+                adapter = dxgiFactory.Adapters1.FirstOrDefault(a => a.Description1.Luid == adapterId);
+            }
+
+            if (adapter == null)
+            {
+                adapter = dxgiFactory.Adapters1.FirstOrDefault();
+            }
+
             var descr = adapter.Description;
 
             logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
@@ -186,10 +197,10 @@ namespace MediaToolkit.MediaFoundation
                     //bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
                     //bool isAsync = flags.HasFlag(TransformEnumFlag.Asyncmft);
                     //Guid clsid = activator.Get(TransformAttributeKeys.);
+
                     string name = activator.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
                     Guid clsid = activator.Get(TransformAttributeKeys.MftTransformClsidAttribute);
                     TransformEnumFlag flags = (TransformEnumFlag)activator.Get(TransformAttributeKeys.TransformFlagsAttribute);
-
 
                     bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
                     isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
@@ -213,6 +224,10 @@ namespace MediaToolkit.MediaFoundation
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        //TODO:...
                     }
 
 

@@ -27,7 +27,7 @@ using namespace MediaToolkit::Common;
 using namespace System::Threading;
 using namespace NLog;
 
-namespace FFmpegWrapper {
+namespace FFmpegLib {
 
 
 	public ref class FFmpegVideoEncoder {

@@ -1,4 +1,4 @@
-﻿using MfTransformTest;
+﻿
 using NLog;
 using MediaToolkit;
 using MediaToolkit.MediaFoundation;
@@ -19,6 +19,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
+using MediaToolkit.UI;
+
 using Vlc.DotNet.Core;
 
 namespace TestClient
@@ -123,7 +125,7 @@ namespace TestClient
         private Device device = null;
 
         private Texture2D sharedTexture = null;
-        MfTransformTest.D3DImageProvider imageProvider = null;
+        D3DImageProvider imageProvider = null;
 
 
         private MfH264Decoder decoder = null;
@@ -208,7 +210,7 @@ namespace TestClient
                 });
 
 
-            imageProvider = new MfTransformTest.D3DImageProvider(Dispatcher.CurrentDispatcher);
+            imageProvider = new D3DImageProvider(Dispatcher.CurrentDispatcher);
             imageProvider.Setup(sharedTexture);
 
  

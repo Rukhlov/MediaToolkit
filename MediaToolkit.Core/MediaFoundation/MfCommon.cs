@@ -273,6 +273,10 @@ namespace MediaToolkit.MediaFoundation
                         Height = sizeInts[1],
                     };
                 }
+                else
+                {
+                    //...
+                }
             }
 
             return frameSize;
@@ -299,6 +303,9 @@ namespace MediaToolkit.MediaFoundation
         /// </summary>
         public static readonly MediaAttributeKey<RateControlMode> CODECAPI_AVEncCommonRateControlMode = new MediaAttributeKey<RateControlMode>("1c0608e9-370c-4710-8a58-cb6181c42423");
 
+        public static readonly MediaAttributeKey<int> CODECAPI_AVEncCommonQuality = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
+
+        
 
         // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
         public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
@@ -336,6 +343,9 @@ namespace MediaToolkit.MediaFoundation
         public int VideoQuality { get; set; } = 70;
 
         public Guid Format { get; set; } = VideoFormatGuids.NV12;
+
+        public long AdapterId { get; set; } = -1;
+
 
     }
 

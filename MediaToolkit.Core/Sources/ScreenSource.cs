@@ -36,6 +36,7 @@ namespace MediaToolkit
 
         public VideoBuffer Buffer { get; private set; }
 
+       
         public CaptureState State { get; private set; } = CaptureState.Create;
 
         public DXGIDesktopDuplicationCapture hwContext = null;

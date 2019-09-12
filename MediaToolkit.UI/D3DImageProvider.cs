@@ -15,8 +15,9 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 
 using Direct3D9 = SharpDX.Direct3D9;
+using MediaToolkit.NativeAPIs;
 
-namespace MediaToolkit
+namespace MediaToolkit.UI
 {
 
     public class D3DImageProvider : INotifyPropertyChanged
@@ -167,16 +168,18 @@ namespace MediaToolkit
                        SetupDx(sharedTexture);
                    }
 
-                   var ptr = surface.NativePointer;
-                   screenView.Lock();
-                   screenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, ptr);
-
-                   if (ptr != IntPtr.Zero)
+                   var surfPtr = surface.NativePointer;
+ 
+                   if (surfPtr != IntPtr.Zero)
                    {
+                       screenView.Lock();
+                       screenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
+
                        screenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
+                       screenView.Unlock();
                    }
 
-                   screenView.Unlock();
+  
                }
                else
                {

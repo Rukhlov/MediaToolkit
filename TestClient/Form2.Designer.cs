@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.userControl11 = new TestClient.UserControl1();
+            this.userControl11 = new MediaToolkit.UI.D3DImageControl();
             this.SuspendLayout();
             // 
             // elementHost1
@@ -60,6 +60,6 @@
         #endregion
 
         internal System.Windows.Forms.Integration.ElementHost elementHost1;
-        internal UserControl1 userControl11;
+        internal MediaToolkit.UI.D3DImageControl userControl11;
     }
 }

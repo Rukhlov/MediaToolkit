@@ -128,6 +128,10 @@
       <Project>{f83157fd-4e1f-4f55-bed8-f4f138824ffd}</Project>
       <Name>MediaToolkit.FFmpeg</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+      <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
+      <Name>MediaToolkit.NativeAPIs</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
