@@ -144,7 +144,7 @@ namespace MediaToolkit
 
                                 OnBufferUpdated();
  
-                                captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.Size);
+                                captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.DataLength);
 
                             }
                             else

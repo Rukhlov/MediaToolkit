@@ -762,6 +762,12 @@ namespace MediaToolkit.MediaFoundation
                 bufSample = null;
             }
 
+            if(bufTexture!=null)
+            {
+                bufTexture.Dispose();
+                bufTexture = null;
+            }
+
             if (device != null)
             {
                 device.Dispose();
@@ -785,6 +791,9 @@ namespace MediaToolkit.MediaFoundation
                 deviceManager.Dispose();
                 deviceManager = null;
             }
+            
+            logger.Debug(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+
 
         }
 

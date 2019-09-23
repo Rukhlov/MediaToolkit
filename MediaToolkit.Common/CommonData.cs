@@ -13,16 +13,23 @@ namespace MediaToolkit.Common
         {
             this.bitmap = new Bitmap(width, height, fmt);
             var channels = Image.GetPixelFormatSize(fmt) / 8;
-            this.size = channels * width * height;
+            this.length = channels * width * height;
+
+            this.FrameSize = new Size(width, height);
         }
     
         public readonly object syncRoot = new object();
 
-        public Bitmap bitmap = null;
+        public Size FrameSize { get; private set; } = Size.Empty;
+
+        public Bitmap bitmap { get; private set; }
+
         public double time = 0;
 
-        private long size = -1;
-        public long Size { get => size; }
+        private long length = -1;
+        public long DataLength { get => length; }
+
+        public object HwContext = null;
 
         public void Dispose()
         {

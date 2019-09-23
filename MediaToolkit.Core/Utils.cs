@@ -391,9 +391,20 @@ namespace MediaToolkit.Utils
         static readonly string[] SizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
         public static string SizeSuffix(long value, int decimalPlaces = 1)
         {
-            if (decimalPlaces < 0) { throw new ArgumentOutOfRangeException("decimalPlaces"); }
-            if (value < 0) { return "-" + SizeSuffix(-value); }
-            if (value == 0) { return string.Format("{0:n" + decimalPlaces + "} bytes", 0); }
+            if (decimalPlaces < 0)
+            {
+                throw new ArgumentOutOfRangeException("decimalPlaces");
+            }
+
+            if (value < 0)
+            {
+                return "-" + SizeSuffix(-value);
+            }
+
+            if (value == 0)
+            {
+                return string.Format("{0:n" + decimalPlaces + "} bytes", 0);
+            }
 
             // mag is 0 for bytes, 1 for KB, 2, for MB, etc.
             int mag = (int)Math.Log(value, 1024);

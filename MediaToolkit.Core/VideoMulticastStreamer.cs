@@ -40,7 +40,7 @@ namespace MediaToolkit
 
         private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;
-        private FFmpegVideoEncoder encoder = null;
+        //private FFmpegVideoEncoder encoder = null;
         private MfEncoderAsync mfEncoder = null;
 
         private MfVideoProcessor processor = null;
@@ -95,6 +95,8 @@ namespace MediaToolkit
 
                 //processor.Setup(inProcArgs, outProcArgs);
                 //processor.Start();
+
+
 
                 var hwDevice = screenSource.hwContext.device;
 
@@ -274,7 +276,6 @@ namespace MediaToolkit
             var processingTime = sw.ElapsedMilliseconds;
             //logger.Debug(processingTime);
 
-            var hwContext = screenSource.hwContext;
 
             //var ts = hwContext.sw.ElapsedMilliseconds;
             //Console.WriteLine("ElapsedMilliseconds " + ts);
@@ -311,17 +312,19 @@ namespace MediaToolkit
 
         public void Close()
         {
- 
+            logger.Debug("VideoMulticastStreamer::Close()");
             closing = true;
             syncEvent.Set();
         }
 
         private void CleanUp()
         {
+            logger.Debug("VideoMulticastStreamer::CleanUp()");
             if (mfEncoder != null)
             {
                 mfEncoder.DataReady -= MfEncoder_DataReady;
-                mfEncoder?.Stop();
+                mfEncoder.Stop();
+                //mfEncoder.Close();
             }
 
             if (processor != null)

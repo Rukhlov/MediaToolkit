@@ -18,14 +18,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
-using WindowsInput;
+
 using MediaToolkit;
 using TestStreamer.Controls;
 
 using MediaToolkit.NativeAPIs;
+using MediaToolkit.Core;
 
 namespace TestStreamer
 {
+
 
     class Program
     {
@@ -33,6 +35,88 @@ namespace TestStreamer
 
         [STAThread]
         static void Main(string[] args)
+        {
+            Console.Title = "App started...";
+
+            logger = LogManager.GetCurrentClassLogger();
+
+            AppDomain.CurrentDomain.UnhandledException += (o, a) =>
+            {
+                Exception ex = null;
+
+                var obj = a.ExceptionObject;
+                if (obj != null)
+                {
+                    ex = obj as Exception;
+                    logger.Fatal(ex);
+
+                }
+                if (ex != null)
+                {
+                    logger.Fatal(ex);
+                }
+                else
+                {
+                    logger.Fatal("FATAL ERROR!!!");
+                }
+
+
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            };
+
+            logger.Info("========== START ============");
+
+            CommandLineOptions options = null;
+            if (args != null)
+            {
+                logger.Info("Command Line String: " + string.Join(" ", args));
+
+                options = new CommandLineOptions();
+                var res = Parser.Default.ParseArguments(args, options);
+                if (!res)
+                {
+                    //...
+                }
+            }
+
+            var winVersion = Environment.OSVersion.Version;
+            bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
+
+            if (!isCompatibleOSVersion)
+            {
+                logger.Fatal("Windows versions earlier than 8 are not supported.");
+
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
+
+
+            Shcore.SetDpiAwareness();
+
+            SharpDX.MediaFoundation.MediaManager.Startup();
+            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+
+            MediaToolkit.NativeAPIs.WinMM.timeBeginPeriod(1);
+
+            //Utils.DwmApi.DisableAero(true);
+
+
+            MainForm form = new MainForm();
+
+            Application.Run(form);
+
+
+            MediaToolkit.NativeAPIs.WinMM.timeEndPeriod(1);
+
+            SharpDX.MediaFoundation.MediaManager.Shutdown();
+
+            logger.Info("========== THE END ============");
+
+        }
+
+        [STAThread]
+        static void _Main(string[] args)
         {
             Console.Title = "App started...";
 
@@ -144,15 +228,6 @@ namespace TestStreamer
 
             source.Setup(captureParams);
 
-
-            //var imageProvider = new D3DImageProvider();
-            //imageProvider.Setup(source);
-
-            //PreviewForm previewForm = new PreviewForm();
-            //previewForm.SetProvider(imageProvider);
-
-
-
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
                 Address = options.IpAddr,
@@ -218,8 +293,11 @@ namespace TestStreamer
 
                 previewForm.Show();
 
-                Application.Run();
+                MainForm form = new MainForm();
+
+                Application.Run(form);
             });
+
             uiThread.IsBackground = true;
             uiThread.SetApartmentState(ApartmentState.STA);
 
@@ -254,136 +332,9 @@ namespace TestStreamer
 
             };
 
-            Task.Run(() =>
-            {
+            DesktopManager desktopMan = new DesktopManager();
 
-                var ipaddr = IPAddress.Any;
-                int port = 8888;
-
-                logger.Info("Start input simulator...");
-
-
-                Socket socket = null;
-                try
-                {
-                    InputSimulator inputSimulator = new InputSimulator();
-
-
-                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
-                    socket.Bind(new IPEndPoint(ipaddr, port));
-
-                    logger.Debug("Socket binded " + ipaddr.ToString() + " " + port);
-
-                    byte[] buffer = new byte[1024];
-                    while (true)
-                    {
-                        try
-                        {
-                            var bytesReceived = socket.Receive(buffer, SocketFlags.None);
-
-                            if (bytesReceived > 0)
-                            {
-                                var message = Encoding.ASCII.GetString(buffer, 0, bytesReceived);
-
-                                var pars = message.Split(':');
-                                if (pars != null && pars.Length > 1)
-                                {
-                                    //logger.Debug(string.Join(" ", pars));
-
-                                    var command = pars[0];
-                                    if (command == "MouseMove")
-                                    {
-
-                                        var position = pars[1];
-                                        var pos = position.Split(' ');
-
-                                        if (pos != null && pos.Length == 2)
-                                        {
-                                            var posX = pos[0];
-                                            var posY = pos[1];
-
-                                            if (posX != null && posY != null)
-                                            {
-                                                if (double.TryParse(posX.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out double _x) &&
-                                                   double.TryParse(posY.ToString(), System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out double _y))
-                                                {
-                                                    inputSimulator.Mouse.MoveMouseTo(_x, _y);
-
-                                                    //logger.Debug("MoveMouseTo: " + _x + " " + _y);
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                    else if (command == "MouseUp")
-                                    {
-                                        var par = pars[1];
-                                        var buttonParams = par.Split(' ');
-
-                                        if (buttonParams != null && buttonParams.Length == 2)
-                                        {
-                                            logger.Debug(command + " " + string.Join(" ", buttonParams));
-
-                                            var button = (MouseButtons)int.Parse(buttonParams[0]);
-                                            var click = int.Parse(buttonParams[1]);
-
-                                            if (button == MouseButtons.Left)
-                                            {
-                                                inputSimulator.Mouse.LeftButtonUp();
-                                            }
-                                            else if (button == MouseButtons.Right)
-                                            {
-                                                inputSimulator.Mouse.RightButtonUp();
-                                            }
-                                        }
-                                    }
-                                    else if (command == "MouseDown")
-                                    {
-                                        var par = pars[1];
-                                        var buttonParams = par.Split(' ');
-
-                                        if (buttonParams != null && buttonParams.Length == 2)
-                                        {
-                                            logger.Debug(command + " " + string.Join(" ", buttonParams));
-
-                                            var button = (MouseButtons)int.Parse(buttonParams[0]);
-                                            var click = int.Parse(buttonParams[1]);
-
-                                            if (button == MouseButtons.Left)
-                                            {
-                                                inputSimulator.Mouse.LeftButtonDown();
-                                            }
-                                            else if (button == MouseButtons.Right)
-                                            {
-                                                inputSimulator.Mouse.RightButtonDown();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-                }
-                finally
-                {
-                    if (socket != null)
-                    {
-                        socket.Close();
-                        socket = null;
-                    }
-                }
-
-            });
-
+            var desktopControllerTask = desktopMan.Start();
 
             //Application.Run(previewForm);
             logger.Info("==========APP RUN ============");
@@ -392,7 +343,7 @@ namespace TestStreamer
 
             uiThread.Start();
 
-            var task = Task.WhenAny(streamerTask, captureTask);
+            var task = Task.WhenAny(streamerTask, captureTask, desktopControllerTask);
 
             var result = task.Result;
             var aex = result.Exception;
@@ -402,6 +353,7 @@ namespace TestStreamer
 
                 videoStreamer?.Close();
                 source?.Close();
+                desktopMan?.Stop();
             }
 
             //var faultedTasks = result.Where(t => t.Exception != null);

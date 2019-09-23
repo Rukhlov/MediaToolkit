@@ -84,7 +84,7 @@ namespace MediaToolkit
         public void Close()
         {
 
-            logger.Debug("Close()");
+            logger.Debug("RtpStreamer::Close()");
 
             socket?.Close();
 

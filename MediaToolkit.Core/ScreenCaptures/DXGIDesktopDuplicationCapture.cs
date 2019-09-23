@@ -55,6 +55,8 @@ namespace MediaToolkit
 
         SharpDX.Direct2D1.RenderTarget desktopTarget = null;
 
+        public bool UseHwContext = true;
+
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
             logger.Debug("DXGIDesktopDuplicationCapture::Init() " + srcRect.ToString() + " " + destSize.ToString());
@@ -64,8 +66,7 @@ namespace MediaToolkit
             InitDx(srcRect);
 
         }
-        //private MfEncoderAsync encoder = null;
-        //private MfWriter writer = null;
+
 
         private void InitDx(GDI.Rectangle srcRect)
         {
@@ -342,36 +343,45 @@ namespace MediaToolkit
                             Back = 1,
                         };
 
-                        device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, SharedTexture, 0);
-                        device.ImmediateContext.Flush();
+                        if (UseHwContext)
+                        {
+    
+                            device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, SharedTexture, 0);
+                            device.ImmediateContext.Flush();
+                        }
+                        else
+                        {
+                            device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, stagingTexture, 0);
+                            device.ImmediateContext.Flush();
+
+                            //device.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
+                            //device.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
+
+                            var syncRoot = videoBuffer.syncRoot;
+                            bool lockTaken = false;
+                            try
+                            {
+                                Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
+                                if (lockTaken)
+                                {
+                                    Result = TextureToBitmap(stagingTexture, videoBuffer.bitmap);
+                                }
+                                else
+                                {
+                                    logger.Debug("lockTaken == false");
+                                }
+
+                            }
+                            finally
+                            {
+                                if (lockTaken)
+                                {
+                                    Monitor.Exit(syncRoot);
+                                }
+                            }
+                        }
 
 
-                        //device3d11.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
-                        //device3d11.ImmediateContext.CopyResource(desktopTexture, stagingTexture);
-
-
-                        //var syncRoot = videoBuffer.syncRoot;
-                        //bool lockTaken = false;
-                        //try
-                        //{
-                        //    Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
-                        //    if (lockTaken)
-                        //    {
-                        //        Result = TextureToBitmap(StagingTexture, videoBuffer.bitmap);
-                        //    }
-                        //    else
-                        //    {
-                        //        logger.Debug("lockTaken == false");
-                        //    }
-
-                        //}
-                        //finally
-                        //{
-                        //    if (lockTaken)
-                        //    {
-                        //        Monitor.Exit(syncRoot);
-                        //    }
-                        //}
 
                         //sw.Restart();
 

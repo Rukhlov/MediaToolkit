@@ -128,7 +128,7 @@ namespace MediaToolkit.RTP
             var nals = HandleH264AnnexbFrames(data);
             if (nals.Count > 0)
             {
-                packets = CratePackets(nals, timestamp);
+                packets = CreatePackets(nals, timestamp);
             }
 
             return packets;
@@ -187,19 +187,19 @@ namespace MediaToolkit.RTP
         }
 
 
-        public List<RtpPacket> CratePackets(List<ArraySegment<byte>> nalSegments, uint timestamp)
+        public List<RtpPacket> CreatePackets(List<ArraySegment<byte>> nalSegments, uint timestamp)
         {
             List<RtpPacket> rtpPackets = new List<RtpPacket>();
 
-            for (int x = 0; x < nalSegments.Count; x++)
+            for (int nalIndex = 0; nalIndex < nalSegments.Count; nalIndex++)
             {
-                var segment = nalSegments[x];
+                var segment = nalSegments[nalIndex];
 
                 byte[] nalBuffer = segment.Array;
                 int nalPointer = segment.Offset;
                 int nalSize = segment.Count;
 
-                bool lastNal = (x == nalSegments.Count - 1);
+                bool lastNal = (nalIndex == nalSegments.Count - 1);
                 bool fragmenting = (nalSize > MTU);
 
                 if (fragmenting)

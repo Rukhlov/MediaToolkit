@@ -53,6 +53,7 @@ namespace TestStreamer.Controls
         public void Stop()
         {
             timer.Enabled = false;
+
             Reset();
         }
 
