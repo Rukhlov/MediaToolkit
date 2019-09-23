@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -67,5 +68,27 @@ namespace MediaToolkit.Common
         public string Address = "";
         public int Port = 0;
 
+    }
+
+
+    [ServiceContract(SessionMode = SessionMode.Required)]
+    public interface IRemoteDesktopService
+    {
+
+        //[OperationContract(IsInitiating = true)]
+        //object Connect(string id, object[] args);
+
+        //[OperationContract(IsTerminating = true)]
+        //void Disconnect();
+
+        [OperationContract]
+        object SendMessage(string command, object[] args);
+
+        //[OperationContractAttribute(AsyncPattern = true)]
+        //IAsyncResult BeginSendMessage1(string command, object[] args, AsyncCallback callback, object asyncState);
+        //object EndSendMessage1(IAsyncResult result);
+
+        [OperationContract(IsOneWay = true)]
+        void PostMessage(string command, object[] args);
     }
 }

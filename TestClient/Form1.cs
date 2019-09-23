@@ -22,6 +22,8 @@ using System.Windows.Threading;
 using MediaToolkit.UI;
 
 using Vlc.DotNet.Core;
+using System.ServiceModel.Discovery;
+using MediaToolkit.Common;
 
 namespace TestClient
 {
@@ -440,7 +442,6 @@ namespace TestClient
             if (testForm != null && !testForm.IsDisposed)
             {
 
-
                 var addr = textBox1.Text;
                 int port = (int)numericUpDown1.Value;
                 testForm.StartInputSimulator(addr, port);
@@ -455,5 +456,112 @@ namespace TestClient
                 testForm.StopInputSimulator();
             }
         }
+
+        private void findServiceButton_Click(object sender, EventArgs e)
+        {
+            logger.Debug("\nFinding IRemoteDesktopService...");
+
+            DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
+
+            var criteria = new FindCriteria(typeof(IRemoteDesktopService));
+            criteria.Duration = TimeSpan.FromSeconds(5);
+            ProgressForm progress = new ProgressForm();
+
+            discoveryClient.FindCompleted += (o, a) =>
+            {
+                logger.Debug("FindCompleted(...)");
+
+                if (a.Cancelled)
+                {
+                    logger.Debug("Cancelled");
+                }
+                if (a.Error != null)
+                {
+                    logger.Debug(a.Error.ToString());
+                }
+
+                if (!a.Cancelled)
+                {
+                    var result = a.Result;
+                    if (result != null)
+                    {
+                        foreach (var p in result.Endpoints)
+                        {
+                            logger.Debug(p.Address.ToString());
+                        }
+                    }
+                }
+
+                progress.Close();
+            };
+
+            discoveryClient.FindProgressChanged += (o, a) =>
+            {
+                logger.Debug("FindProgressChanged(...) " + a.EndpointDiscoveryMetadata.Address.ToString());
+            };
+
+
+            progress.Shown += (o, a) =>
+            {
+                discoveryClient.FindAsync(criteria, this);
+
+            };
+
+            progress.FormClosed += (o, a) =>
+            {
+                logger.Debug("FormClosed(...)");
+
+                if (discoveryClient != null)
+                {
+                    discoveryClient.CancelAsync(this);
+                    discoveryClient.Close();
+                }
+            };
+
+            progress.ShowDialog();
+
+        }
+
+    }
+
+
+    public class ProgressForm : Form
+    {
+
+        private Button button = new Button();
+        public ProgressBar progress = new ProgressBar();
+        private TableLayoutPanel panel = new TableLayoutPanel();
+
+        public ProgressForm()
+        {
+            this.MaximizeBox = false;
+
+            this.Width = 450;
+            this.Height = 60;
+
+            button.Text = "Cancel";
+            button.AutoSize = true;
+
+            this.DialogResult = System.Windows.Forms.DialogResult.OK;
+
+            button.Dock = DockStyle.Fill;
+
+            this.CancelButton = button;
+
+            progress.Dock = DockStyle.Fill;
+            progress.Style = ProgressBarStyle.Marquee;
+
+            this.panel.Dock = DockStyle.Fill;
+
+            this.panel.ColumnCount = 2;
+            this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80));
+            this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20));
+
+            this.panel.Controls.Add(this.progress, 0, 0);
+            this.panel.Controls.Add(this.button, 1, 0);
+
+            this.Controls.Add(panel);
+        }
+
     }
 }

@@ -52,6 +52,10 @@
             this.previewButton = new System.Windows.Forms.Button();
             this.settingPanel = new System.Windows.Forms.Panel();
             this.inputSimulatorCheckBox = new System.Windows.Forms.CheckBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.stopRemoteServButton = new System.Windows.Forms.Button();
+            this.startRemoteServButton = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.contextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
@@ -290,11 +294,53 @@
             this.inputSimulatorCheckBox.Text = "_InputSimulator";
             this.inputSimulatorCheckBox.UseVisualStyleBackColor = true;
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(519, 23);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(269, 22);
+            this.textBox1.TabIndex = 17;
+            this.textBox1.Text = "net.tcp://localhost/RemoteDesktop";
+            // 
+            // stopRemoteServButton
+            // 
+            this.stopRemoteServButton.Location = new System.Drawing.Point(713, 51);
+            this.stopRemoteServButton.Name = "stopRemoteServButton";
+            this.stopRemoteServButton.Size = new System.Drawing.Size(75, 23);
+            this.stopRemoteServButton.TabIndex = 19;
+            this.stopRemoteServButton.Text = "_Stop";
+            this.stopRemoteServButton.UseVisualStyleBackColor = true;
+            this.stopRemoteServButton.Click += new System.EventHandler(this.stopRemoteServButton_Click);
+            // 
+            // startRemoteServButton
+            // 
+            this.startRemoteServButton.Location = new System.Drawing.Point(632, 51);
+            this.startRemoteServButton.Name = "startRemoteServButton";
+            this.startRemoteServButton.Size = new System.Drawing.Size(75, 23);
+            this.startRemoteServButton.TabIndex = 18;
+            this.startRemoteServButton.Text = "_Start";
+            this.startRemoteServButton.UseVisualStyleBackColor = true;
+            this.startRemoteServButton.Click += new System.EventHandler(this.startRemoteServButton_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(697, 173);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(91, 23);
+            this.button1.TabIndex = 20;
+            this.button1.Text = "_TestClient";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.stopRemoteServButton);
+            this.Controls.Add(this.startRemoteServButton);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.settingPanel);
             this.Controls.Add(this.previewButton);
             this.Controls.Add(this.stopButton);
@@ -308,6 +354,7 @@
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -335,6 +382,10 @@
         private System.Windows.Forms.Button previewButton;
         private System.Windows.Forms.Panel settingPanel;
         private System.Windows.Forms.CheckBox inputSimulatorCheckBox;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button stopRemoteServButton;
+        private System.Windows.Forms.Button startRemoteServButton;
+        private System.Windows.Forms.Button button1;
     }
 }
 

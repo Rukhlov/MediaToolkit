@@ -101,6 +101,12 @@ namespace MediaToolkit.UI
         {
             logger.Debug("D3DImageProvider::SetupDx(...)");
 
+            if(sharedTexture == null)
+            {
+                logger.Warn("sharedTexture == null");
+                return;
+            }
+
             var descr = sharedTexture.Description;
 
             direct3D = new Direct3DEx();
@@ -153,8 +159,10 @@ namespace MediaToolkit.UI
 
         public void Update(Texture2D sharedTexture)
         {
-            if (surface == null)
+            if (/*surface == null || */sharedTexture == null)
             {
+                logger.Warn("sharedTexture == null");
+
                 return;
             }
 
@@ -168,15 +176,18 @@ namespace MediaToolkit.UI
                        SetupDx(sharedTexture);
                    }
 
-                   var surfPtr = surface.NativePointer;
- 
-                   if (surfPtr != IntPtr.Zero)
+                   if (deviceReady)
                    {
-                       screenView.Lock();
-                       screenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
+                       var surfPtr = surface.NativePointer;
 
-                       screenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
-                       screenView.Unlock();
+                       if (surfPtr != IntPtr.Zero)
+                       {
+                           ScreenView.Lock();
+                           ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
+
+                           ScreenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
+                           ScreenView.Unlock();
+                       }
                    }
 
   

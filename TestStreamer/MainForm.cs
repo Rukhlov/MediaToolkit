@@ -6,8 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Discovery;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -138,7 +142,6 @@ namespace TestStreamer
                 destSize = new Size(destWidth, destHeight);
             }
 
-
             screenSource = new ScreenSource();
             ScreenCaptureParams captureParams = new ScreenCaptureParams
             {
@@ -265,7 +268,8 @@ namespace TestStreamer
         }
 
         private StatisticForm statisticForm = new StatisticForm();
-        private PreviewForm previewForm = new PreviewForm();
+        private PreviewForm previewForm = null;
+
         private void previewButton_Click(object sender, EventArgs e)
         {
             if (previewForm != null && !previewForm.IsDisposed)
@@ -279,6 +283,103 @@ namespace TestStreamer
                 previewForm.Setup(screenSource);
                 previewForm.Visible = true;
             }
+        }
+
+        private ServiceHost host = null;
+        private void startRemoteServButton_Click(object sender, EventArgs e)
+        {
+            logger.Debug("startRemoteServButton_Click(...)");
+            try
+            {
+
+                RemoteDesktopServiceImpl remoteDesktop = new RemoteDesktopServiceImpl();
+
+                var address = textBox1.Text;
+
+                var uri = new Uri(address);
+
+                var binding = new NetTcpBinding
+                {
+                    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
+                    SendTimeout = TimeSpan.FromSeconds(10),
+                };
+
+
+                host = new ServiceHost(remoteDesktop, uri);
+
+                // host.AddDefaultEndpoints();
+
+                host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
+
+                ServiceDiscoveryBehavior behavior = new ServiceDiscoveryBehavior();
+
+                behavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
+
+                host.Description.Behaviors.Add(behavior);
+
+                host.Description.Endpoints.Add(new UdpDiscoveryEndpoint());
+
+                //behavior.Scopes.Add(scope);
+
+                //foreach (ServiceEndpoint endpoint in host.Description.Endpoints)
+                //{
+                //    if (endpoint.IsSystemEndpoint || endpoint is DiscoveryEndpoint ||
+                //       endpoint is AnnouncementEndpoint || endpoint is ServiceMetadataEndpoint)
+                //        continue;
+
+                //    endpoint.Behaviors.Add(behavior);
+                //}
+
+                //host.AddServiceEndpoint(new UdpDiscoveryEndpoint());
+
+
+                //host.Opened += new EventHandler(service_Opened);
+                //host.Faulted += new EventHandler(service_Faulted);
+                //host.Closed += new EventHandler(service_Closed);
+
+                host.Open();
+
+                logger.Debug("Service opened: " + uri.ToString());
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private void stopRemoteServButton_Click(object sender, EventArgs e)
+        {
+            logger.Debug("stopRemoteServButton_Click(...)");
+            if (host != null)
+            {
+                host.Close();
+                host = null;
+            }
+        }
+
+
+        [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
+        class RemoteDesktopServiceImpl : IRemoteDesktopService
+        {
+
+            public object SendMessage(string id, object[] pars)
+            {
+                logger.Debug("SendMessage(...) " + id);
+
+                //...
+                return id + "OK!";
+            }
+            public void PostMessage(string id, object[] pars)
+            {
+                logger.Debug("PostMessage(...) " + id);
+                //...
+            }
+        }
+
+        public static readonly string CurrentDirectory = new System.IO.FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Process.Start(Path.Combine(CurrentDirectory, "TestClient.exe"));
         }
     }
 }

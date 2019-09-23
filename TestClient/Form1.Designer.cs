@@ -48,6 +48,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button6 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
+            this.findServiceButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -102,7 +103,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(7, 122);
+            this.button4.Location = new System.Drawing.Point(7, 137);
             this.button4.Margin = new System.Windows.Forms.Padding(4);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(100, 28);
@@ -125,6 +126,7 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.findServiceButton);
             this.groupBox1.Controls.Add(this.checkBox1);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
@@ -297,6 +299,17 @@
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
+            // findServiceButton
+            // 
+            this.findServiceButton.Location = new System.Drawing.Point(47, 101);
+            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
+            this.findServiceButton.Name = "findServiceButton";
+            this.findServiceButton.Size = new System.Drawing.Size(100, 28);
+            this.findServiceButton.TabIndex = 11;
+            this.findServiceButton.Text = "Find";
+            this.findServiceButton.UseVisualStyleBackColor = true;
+            this.findServiceButton.Click += new System.EventHandler(this.findServiceButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -343,6 +356,7 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button findServiceButton;
     }
 }
 
