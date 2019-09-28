@@ -40,6 +40,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.portNumeric = new System.Windows.Forms.NumericUpDown();
             this.addressTextBox = new System.Windows.Forms.TextBox();
+            this.findServiceButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -48,12 +49,16 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button6 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
-            this.findServiceButton = new System.Windows.Forms.Button();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.disconnectButton = new System.Windows.Forms.Button();
+            this.remoteDesktopTextBox = new System.Windows.Forms.TextBox();
+            this.connectButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -65,7 +70,7 @@
             this.panel1.Location = new System.Drawing.Point(13, 13);
             this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1003, 715);
+            this.panel1.Size = new System.Drawing.Size(482, 336);
             this.panel1.TabIndex = 0;
             // 
             // button1
@@ -126,7 +131,6 @@
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.findServiceButton);
             this.groupBox1.Controls.Add(this.checkBox1);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
@@ -200,6 +204,17 @@
             this.addressTextBox.Size = new System.Drawing.Size(146, 22);
             this.addressTextBox.TabIndex = 6;
             this.addressTextBox.Text = "239.0.0.1";
+            // 
+            // findServiceButton
+            // 
+            this.findServiceButton.Location = new System.Drawing.Point(630, 33);
+            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
+            this.findServiceButton.Name = "findServiceButton";
+            this.findServiceButton.Size = new System.Drawing.Size(100, 28);
+            this.findServiceButton.TabIndex = 11;
+            this.findServiceButton.Text = "Find";
+            this.findServiceButton.UseVisualStyleBackColor = true;
+            this.findServiceButton.Click += new System.EventHandler(this.findServiceButton_Click);
             // 
             // groupBox2
             // 
@@ -299,22 +314,51 @@
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
-            // findServiceButton
+            // panel2
             // 
-            this.findServiceButton.Location = new System.Drawing.Point(47, 101);
-            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
-            this.findServiceButton.Name = "findServiceButton";
-            this.findServiceButton.Size = new System.Drawing.Size(100, 28);
-            this.findServiceButton.TabIndex = 11;
-            this.findServiceButton.Text = "Find";
-            this.findServiceButton.UseVisualStyleBackColor = true;
-            this.findServiceButton.Click += new System.EventHandler(this.findServiceButton_Click);
+            this.panel2.Controls.Add(this.disconnectButton);
+            this.panel2.Controls.Add(this.remoteDesktopTextBox);
+            this.panel2.Controls.Add(this.connectButton);
+            this.panel2.Location = new System.Drawing.Point(630, 107);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(344, 83);
+            this.panel2.TabIndex = 22;
+            // 
+            // disconnectButton
+            // 
+            this.disconnectButton.Location = new System.Drawing.Point(231, 39);
+            this.disconnectButton.Name = "disconnectButton";
+            this.disconnectButton.Size = new System.Drawing.Size(105, 23);
+            this.disconnectButton.TabIndex = 19;
+            this.disconnectButton.Text = "_Disconnect";
+            this.disconnectButton.UseVisualStyleBackColor = true;
+            this.disconnectButton.Click += new System.EventHandler(this.disconnectButton_Click);
+            // 
+            // remoteDesktopTextBox
+            // 
+            this.remoteDesktopTextBox.Location = new System.Drawing.Point(14, 11);
+            this.remoteDesktopTextBox.Name = "remoteDesktopTextBox";
+            this.remoteDesktopTextBox.Size = new System.Drawing.Size(327, 22);
+            this.remoteDesktopTextBox.TabIndex = 17;
+            this.remoteDesktopTextBox.Text = "net.tcp://localhost/RemoteDesktop";
+            // 
+            // connectButton
+            // 
+            this.connectButton.Location = new System.Drawing.Point(123, 39);
+            this.connectButton.Name = "connectButton";
+            this.connectButton.Size = new System.Drawing.Size(102, 23);
+            this.connectButton.TabIndex = 18;
+            this.connectButton.Text = "_Connect";
+            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1278, 741);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.findServiceButton);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.groupBox2);
@@ -330,6 +374,8 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -357,6 +403,10 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button findServiceButton;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button disconnectButton;
+        private System.Windows.Forms.TextBox remoteDesktopTextBox;
+        private System.Windows.Forms.Button connectButton;
     }
 }
 

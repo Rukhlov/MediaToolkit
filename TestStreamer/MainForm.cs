@@ -10,6 +10,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.ServiceModel;
 using System.ServiceModel.Discovery;
 using System.Text;
@@ -41,6 +44,13 @@ namespace TestStreamer
 
             screensComboBox.DisplayMember = "Title";
             screensComboBox.DataSource = screenItems;
+
+            var hostName = System.Net.Dns.GetHostName();
+            //textBox1.Text = @"net.tcp://" + hostName + @"/RemoteDesktop";
+
+            textBox1.Text = @"net.tcp://192.168.1.135/RemoteDesktop";
+
+            UpdateNetworks();
 
             UpdateControls();
 
@@ -118,7 +128,26 @@ namespace TestStreamer
 
         private void startButton_Click(object sender, EventArgs e)
         {
+
+            var srcAddr = "0.0.0.0";
+            var obj = networkComboBox.SelectedItem;
+            if (obj != null)
+            {
+                var networkItem = obj as NetworkItem;
+                if (networkItem != null)
+                {
+                    var ipAddrInfo = networkItem.IPAddressInfo;
+                    if (ipAddrInfo != null)
+                    {
+                        srcAddr = ipAddrInfo.Address?.ToString();
+                    }
+
+                }
+            }
+
             int fps = (int)fpsNumeric.Value;
+
+
 
             bool showMouse = showMouseCheckBox.Checked;
             bool enableInputSimulator = inputSimulatorCheckBox.Checked;
@@ -162,8 +191,11 @@ namespace TestStreamer
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                Address = cmdOptions.IpAddr,
-                Port = cmdOptions.Port,
+
+                SrcAddr = srcAddr,
+
+                DestAddr = cmdOptions.IpAddr,
+                DestPort = cmdOptions.Port,
             };
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
@@ -195,6 +227,7 @@ namespace TestStreamer
             }
 
             isStreaming = true;
+
             UpdateControls();
 
         }
@@ -247,6 +280,9 @@ namespace TestStreamer
             this.previewButton.Enabled = isStreaming;
 
             this.stopButton.Enabled = isStreaming;
+
+            this.startRemoteServButton.Enabled = !ServiceHostOpened;
+            this.stopRemoteServButton.Enabled = ServiceHostOpened;
         }
 
         private Screen currentScreen = null;
@@ -285,101 +321,125 @@ namespace TestStreamer
             }
         }
 
-        private ServiceHost host = null;
+        RemoteDesktopEngine desktopEngine = null;
+
+        public bool ServiceHostOpened
+        {
+            get
+            {
+                return (desktopEngine != null && desktopEngine.ServiceHostOpened);
+            }
+        }
+
         private void startRemoteServButton_Click(object sender, EventArgs e)
         {
             logger.Debug("startRemoteServButton_Click(...)");
-            try
-            {
+            desktopEngine = new RemoteDesktopEngine();
+            //var address = @"net.tcp://localhost/RemoteDesktop";
+            var address = textBox1.Text;
 
-                RemoteDesktopServiceImpl remoteDesktop = new RemoteDesktopServiceImpl();
-
-                var address = textBox1.Text;
-
-                var uri = new Uri(address);
-
-                var binding = new NetTcpBinding
-                {
-                    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
-                    SendTimeout = TimeSpan.FromSeconds(10),
-                };
+            desktopEngine.Open(address);
 
 
-                host = new ServiceHost(remoteDesktop, uri);
+            UpdateControls();
 
-                // host.AddDefaultEndpoints();
-
-                host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
-
-                ServiceDiscoveryBehavior behavior = new ServiceDiscoveryBehavior();
-
-                behavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
-
-                host.Description.Behaviors.Add(behavior);
-
-                host.Description.Endpoints.Add(new UdpDiscoveryEndpoint());
-
-                //behavior.Scopes.Add(scope);
-
-                //foreach (ServiceEndpoint endpoint in host.Description.Endpoints)
-                //{
-                //    if (endpoint.IsSystemEndpoint || endpoint is DiscoveryEndpoint ||
-                //       endpoint is AnnouncementEndpoint || endpoint is ServiceMetadataEndpoint)
-                //        continue;
-
-                //    endpoint.Behaviors.Add(behavior);
-                //}
-
-                //host.AddServiceEndpoint(new UdpDiscoveryEndpoint());
-
-
-                //host.Opened += new EventHandler(service_Opened);
-                //host.Faulted += new EventHandler(service_Faulted);
-                //host.Closed += new EventHandler(service_Closed);
-
-                host.Open();
-
-                logger.Debug("Service opened: " + uri.ToString());
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
         }
 
         private void stopRemoteServButton_Click(object sender, EventArgs e)
         {
             logger.Debug("stopRemoteServButton_Click(...)");
-            if (host != null)
+
+            
+
+            if (desktopEngine != null)
             {
-                host.Close();
-                host = null;
+                desktopEngine.Close();
+                desktopEngine = null;
             }
+
+            UpdateControls();
         }
 
-
-        [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
-        class RemoteDesktopServiceImpl : IRemoteDesktopService
-        {
-
-            public object SendMessage(string id, object[] pars)
-            {
-                logger.Debug("SendMessage(...) " + id);
-
-                //...
-                return id + "OK!";
-            }
-            public void PostMessage(string id, object[] pars)
-            {
-                logger.Debug("PostMessage(...) " + id);
-                //...
-            }
-        }
 
         public static readonly string CurrentDirectory = new System.IO.FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
         private void button1_Click(object sender, EventArgs e)
         {
             Process.Start(Path.Combine(CurrentDirectory, "TestClient.exe"));
         }
+
+        private void networkComboBox_SelectedValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        class NetworkItem
+        {
+            public string Name { get; set; }
+            public IPAddressInformation IPAddressInfo { get; set; }
+        }
+
+        private static List<NetworkItem> GetNetworkItems()
+        {
+
+            List<NetworkItem> networkItems = new List<NetworkItem>();
+
+            var networkAny = new NetworkItem
+            {
+                Name = "_Any",
+                IPAddressInfo = null,
+            };
+            networkItems.Add(networkAny);
+
+            NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface network in networkInterfaces)
+            {
+                IPInterfaceProperties prop = network.GetIPProperties();
+
+                if (network.OperationalStatus == OperationalStatus.Up && 
+                    network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                {
+                    foreach (IPAddressInformation addr in prop.UnicastAddresses)
+                    {
+                        //var phAddr = network.GetPhysicalAddress();
+                        //logger.Debug(addr.Address.ToString() + " (" + network.Name + " - " + network.Description + ") " + phAddr.ToString());
+
+                        // IPv4
+                        if (addr.Address.AddressFamily != AddressFamily.InterNetwork)
+                        {
+                            continue;
+                        }
+
+                        networkItems.Add(new NetworkItem
+                        {
+                            Name = network.Name + " (" + addr.Address.ToString() + ")",
+                            IPAddressInfo = addr,
+                        });
+
+                    }
+                }
+            }
+
+            return networkItems;
+        }
+
+        private void updateNetworksButton_Click(object sender, EventArgs e)
+        {
+            UpdateNetworks();
+
+        }
+
+        private void UpdateNetworks()
+        {
+            var networks = GetNetworkItems();
+
+    
+            BindingList<NetworkItem> networkItems = new BindingList<NetworkItem>(networks);
+            
+            networkComboBox.DataSource = networkItems;
+            networkComboBox.DisplayMember = "Name";
+        }
     }
+
+
 }

@@ -65,8 +65,13 @@ namespace MediaToolkit.Common
 
     public class NetworkStreamingParams
     {
-        public string Address = "";
-        public int Port = 0;
+        public string SrcAddr = "";
+        public int SrcPort = 0;
+
+        public string DestAddr = "";
+        public int DestPort = 0;
+
+        public int MulticastTimeToLive = 10;
 
     }
 
@@ -75,11 +80,17 @@ namespace MediaToolkit.Common
     public interface IRemoteDesktopService
     {
 
-        //[OperationContract(IsInitiating = true)]
-        //object Connect(string id, object[] args);
+        [OperationContract(IsInitiating = true)]
+        object Connect(string id, object[] args);
 
-        //[OperationContract(IsTerminating = true)]
-        //void Disconnect();
+        [OperationContract(IsTerminating = true)]
+        void Disconnect();
+
+        [OperationContract]
+        bool Start(RemoteDesktopOptions options);
+
+        [OperationContract]
+        bool Stop();
 
         [OperationContract]
         object SendMessage(string command, object[] args);
@@ -90,5 +101,24 @@ namespace MediaToolkit.Common
 
         [OperationContract(IsOneWay = true)]
         void PostMessage(string command, object[] args);
+    }
+
+    public class RemoteDesktopOptions
+    {
+        public string DestAddr { get; set; } = "239.0.0.1";
+
+        public int DestPort { get; set; } = 1234;
+
+        public int FrameRate { get; set; } = 30;
+
+        public bool EnableInputSimulator { get; set; } = true;
+
+        public Rectangle SrcRect { get; set; } = Rectangle.Empty;
+
+        public Size DstSize { get; set; } = new Size(1920, 1080);
+
+        public bool AspectRatio { get; set; } = true;
+
+        public bool ShowMouse { get; set; } = true;
     }
 }

@@ -53,7 +53,7 @@ namespace MediaToolkit
                 PCMUSession session = new PCMUSession();
 
                 streamer = new RtpStreamer(session);
-                streamer.Open("239.0.0.1", 1236);
+                //streamer.Open("239.0.0.1", 1236);
 
 
                 capture.StartRecording();

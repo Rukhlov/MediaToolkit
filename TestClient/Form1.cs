@@ -24,6 +24,9 @@ using MediaToolkit.UI;
 using Vlc.DotNet.Core;
 using System.ServiceModel.Discovery;
 using MediaToolkit.Common;
+using System.ServiceModel;
+using System.Net;
+using System.ServiceModel.Channels;
 
 namespace TestClient
 {
@@ -487,7 +490,10 @@ namespace TestClient
                     {
                         foreach (var p in result.Endpoints)
                         {
+                            //Dns.GetHostEntry(p.Address.Uri.Host)
                             logger.Debug(p.Address.ToString());
+
+
                         }
                     }
                 }
@@ -497,6 +503,8 @@ namespace TestClient
 
             discoveryClient.FindProgressChanged += (o, a) =>
             {
+   
+
                 logger.Debug("FindProgressChanged(...) " + a.EndpointDiscoveryMetadata.Address.ToString());
             };
 
@@ -522,6 +530,87 @@ namespace TestClient
 
         }
 
+        private ChannelFactory<IRemoteDesktopService> factory = null;
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            var addr = remoteDesktopTextBox.Text;
+            try
+            {
+
+                var uri = new Uri(addr);
+
+                var binding = new NetTcpBinding
+                {
+                    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
+                    SendTimeout = TimeSpan.FromSeconds(10),
+                };
+                factory = new ChannelFactory<IRemoteDesktopService>(binding, new EndpointAddress(uri));
+
+                var channel = factory.CreateChannel();
+                try
+                {
+                    channel.Connect("", null);
+
+                    //var receiver = new RtpReceiver(null);
+                    //receiver.Open("0.0.0.0", 1234);
+
+                    //var hostName = Dns.GetHostName();
+                    //var localIPs = Dns.GetHostAddresses(hostName);
+                    //var localAddr = localIPs.FirstOrDefault(a=>a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    //var localAddr = receiver.LocalEndpoint;
+
+                     var options = new RemoteDesktopOptions
+                    {
+                        DestAddr = "192.168.1.135",//localAddr.Address.ToString(), //localAddr.ToString(),
+                        DestPort = 1234,
+                        DstSize = new Size(2560, 1440),
+                        
+                    };
+
+                    channel.Start(options);
+
+                }
+                finally
+                {
+                    if (channel != null)
+                    {
+                        ((IClientChannel)channel).Close();
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private void disconnectButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (factory != null)
+                {
+                    var channel = factory.CreateChannel();
+                    try
+                    {
+                        channel.Stop();
+                        channel.Disconnect();
+
+                    }
+                    finally
+                    {
+                        if (channel != null)
+                        {
+                            ((IClientChannel)channel).Close();
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
     }
 
 

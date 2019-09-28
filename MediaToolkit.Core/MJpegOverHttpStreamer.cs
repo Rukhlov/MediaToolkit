@@ -159,7 +159,7 @@ namespace MediaToolkit
                 {
                     running = true;
 
-                    string ipStr = networkParams.Address;
+                    string ipStr = networkParams.DestAddr;
                     var addr = System.Net.IPAddress.Any;
                     if (!System.Net.IPAddress.TryParse(ipStr, out addr))
                     {
@@ -171,7 +171,7 @@ namespace MediaToolkit
                         addr = System.Net.IPAddress.Any;
                     }
 
-                    var port = networkParams.Port;
+                    var port = networkParams.DestPort;
 
                     TcpListener listener = null;
 

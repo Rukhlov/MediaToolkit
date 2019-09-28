@@ -1,4 +1,5 @@
-﻿using MediaToolkit.RTP;
+﻿using MediaToolkit.Common;
+using MediaToolkit.RTP;
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -25,33 +26,33 @@ namespace MediaToolkit
 
         private RtpSession session;
         private Socket socket;
-        private IPEndPoint endpoint;
+        private IPEndPoint remoteEndpoint;
 
 
-        public void Open(string address, int port, int ttl = 10)
+        public void Open(NetworkStreamingParams streamingParams)
         {
-            logger.Debug("RtpStreamer::Open(...) " + address + " " + port + " " + ttl);
+            var localIp = IPAddress.Parse(streamingParams.SrcAddr);
+            var localEndpoint = new IPEndPoint(localIp, streamingParams.SrcPort);
 
-            IPAddress addr = IPAddress.Parse(address);
+            var remoteIp = IPAddress.Parse(streamingParams.DestAddr);
+            remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.DestPort);
 
-            var bytes = addr.GetAddressBytes();
+            logger.Debug("RtpStreamer::Open(...) " + remoteEndpoint + " " + localEndpoint);
+
+
+            var bytes = remoteIp.GetAddressBytes();
             bool isMulicast = (bytes[0] >= 224 && bytes[0] <= 239);
-
-            endpoint = new IPEndPoint(addr, port);
 
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
            
             if (isMulicast)
             {
+                var ttl = streamingParams.MulticastTimeToLive;
                 socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
             }
-            else
-            {
-                var localEndpoint = new IPEndPoint(IPAddress.Any, port);
-               // socket.Bind(localEndpoint);
-            }
 
-            logger.Info("Server started " + endpoint.ToString());
+            socket.Bind(localEndpoint);
+            logger.Info("Server started " + remoteEndpoint.ToString());
         }
 
         public void Send(byte[] bytes, double sec)
@@ -69,7 +70,7 @@ namespace MediaToolkit
                         //var data = pkt;//.GetBytes();
                         var data = pkt.GetBytes();
                         //logger.Debug("pkt" + pkt.Sequence);
-                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, endpoint);
+                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, remoteEndpoint);
                         //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += data.Length;
 

@@ -54,7 +54,9 @@ namespace MediaToolkit
                 h264Session = new H264Session();
 
                 rtpStreamer = new RtpStreamer(h264Session);
-                rtpStreamer.Open(networkParams.Address, networkParams.Port);
+
+
+                rtpStreamer.Open(networkParams);
                 var hwContext = screenSource.hwContext;
 
                 //processor = new MfVideoProcessor(hwContext.device);

@@ -230,8 +230,8 @@ namespace TestStreamer
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                Address = options.IpAddr,
-                Port = options.Port,
+                DestAddr = options.IpAddr,
+                DestPort = options.Port,
             };
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
@@ -407,6 +407,20 @@ namespace TestStreamer
         [Option("encoder")]
         public string EncoderName { get; set; } = "";
 
+        [Option("isim")]
+        public bool EnableInputSimulator { get; set; } = true;
+
+        [Option("srcrect")]
+        public Rectangle SrcRect { get; set; } = Rectangle.Empty;
+
+        [Option("dstsize")]
+        public Size DstSize { get; set; } = Size.Empty;
+
+        [Option("aratio")]
+        public bool AspectRatio { get; set; } = true;
+
+        [Option("showmouse")]
+        public bool ShowMouse { get; set; } = true;
         //...
 
     }

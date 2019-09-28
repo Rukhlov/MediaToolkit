@@ -18,8 +18,8 @@ namespace MediaToolkit
         private RtpSession session = null;
 
         private Socket socket = null;
-        private IPEndPoint remoteEndpoint;
-        private IPEndPoint localEndpoint;
+        public IPEndPoint RemoteEndpoint { get; private set; }
+        public IPEndPoint LocalEndpoint { get; private set; }
 
         private MulticastOption mcastOption = null;
         public RtpReceiver(RtpSession session)
@@ -37,8 +37,8 @@ namespace MediaToolkit
                 var bytes = addr.GetAddressBytes();
                 bool isMulicast = (bytes[0] >= 224 && bytes[0] <= 239);
 
-                remoteEndpoint = new IPEndPoint(addr, port);
-                localEndpoint = new IPEndPoint(IPAddress.Any, port);
+                RemoteEndpoint = new IPEndPoint(addr, port);
+                LocalEndpoint = new IPEndPoint(IPAddress.Any, port);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
@@ -46,15 +46,15 @@ namespace MediaToolkit
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 socket.ReceiveBufferSize = 100 * 1024;//int.MaxValue;//32 * 1024 * 1024;
 
-                socket.Bind(localEndpoint);
+                socket.Bind(LocalEndpoint);
 
                 if (isMulicast)
                 {
-                    mcastOption = new MulticastOption(remoteEndpoint.Address, localEndpoint.Address);
+                    mcastOption = new MulticastOption(RemoteEndpoint.Address, LocalEndpoint.Address);
                     socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
                 }
 
-                logger.Info("Client started " + remoteEndpoint.ToString());
+                logger.Info("Client started: " + LocalEndpoint.ToString() + " " + RemoteEndpoint.ToString());
             }
             catch(Exception ex)
             {
