@@ -122,7 +122,7 @@ namespace TestStreamer
 
         private bool isStreaming = false;
 
-        private VideoMulticastStreamer videoStreamer = null;
+        private VideoStreamer videoStreamer = null;
         private ScreenSource screenSource = null;
         private DesktopManager desktopMan = null;
 
@@ -206,7 +206,7 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            videoStreamer = new VideoMulticastStreamer(screenSource);
+            videoStreamer = new VideoStreamer(screenSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
 
@@ -372,11 +372,18 @@ namespace TestStreamer
 
         }
 
+        class ComboBoxItem
+        {
+            public string Name { get; set; }
+            public object Tag { get; set; }
+        }
+
         class NetworkItem
         {
             public string Name { get; set; }
             public IPAddressInformation IPAddressInfo { get; set; }
         }
+
 
         private static List<NetworkItem> GetNetworkItems()
         {
@@ -396,7 +403,7 @@ namespace TestStreamer
             {
                 IPInterfaceProperties prop = network.GetIPProperties();
 
-                if (network.OperationalStatus == OperationalStatus.Up && 
+                if (network.OperationalStatus == OperationalStatus.Up &&
                     network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 {
                     foreach (IPAddressInformation addr in prop.UnicastAddresses)
@@ -422,6 +429,7 @@ namespace TestStreamer
 
             return networkItems;
         }
+
 
         private void updateNetworksButton_Click(object sender, EventArgs e)
         {

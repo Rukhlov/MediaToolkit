@@ -27,17 +27,18 @@ using MediaToolkit.Common;
 using System.ServiceModel;
 using System.Net;
 using System.ServiceModel.Channels;
+using MediaToolkit.Utils;
 
 namespace TestClient
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public static readonly string CurrentDirectory = new System.IO.FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
         public static readonly System.IO.DirectoryInfo VlcLibDirectory = new System.IO.DirectoryInfo(System.IO.Path.Combine(CurrentDirectory, "libvlc", IntPtr.Size == 4 ? "win-x86" : "win-x64"));
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
 
@@ -52,35 +53,54 @@ namespace TestClient
 
             mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
 
-            mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
+            //mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
 
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
         }
 
+        private VideoForm vlcVideoForm = null;
         private VlcMediaPlayer mediaPlayer = null;
         private void button1_Click(object sender, EventArgs e)
         {
-            
+            var address = addressTextBox.Text;
+            if (string.IsNullOrEmpty(address))
+            {
+                return;
+            }
 
-            //OpenFileDialog dlg = new OpenFileDialog
-            //{
-            //    InitialDirectory = CurrentDirectory,
-            //};
+            var port = (int)portNumeric.Value;
 
-            //if (dlg.ShowDialog() == DialogResult.OK)
-            //{
-            //    var file = dlg.FileName;              
-            //    var opts = new string[]
-            //    {
-            //        // "--extraintf=logger",
-            //        //"--verbose=0",
-            //        "--network-caching=100",
-            //    };
+            if (vlcVideoForm == null || vlcVideoForm.IsDisposed)
+            {
+                vlcVideoForm = new VideoForm
+                {
+                    StartPosition = FormStartPosition.CenterParent,
+                    Width = 1280,
+                    Height = 720,
+                
+                };
 
-            //    mediaPlayer?.Play(new FileInfo(sdpFileName), opts);
-            //}
+                mediaPlayer.VideoHostControlHandle = vlcVideoForm.elementHost1.Handle; //vlcVideoForm.Handle;
+
+                //System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
+                //{
+                //    Dock = DockStyle.Fill,
+                //};
+                //testForm.Controls.Add(host);
+
+
+                //UserControl1 video = new UserControl1();
+                //host.Child = video;
+
+                //video.DataContext = imageProvider;
+
+
+                vlcVideoForm.FormClosed += VlcVideoForm_FormClosed;
+            }
+
+            vlcVideoForm.Visible = true;
 
 
             var file = Path.Combine(CurrentDirectory, "tmp.sdp");
@@ -88,8 +108,8 @@ namespace TestClient
             {
                 "v=0",
                 "s=SCREEN_STREAM",
-                "c=IN IP4 239.0.0.1",
-                "m=video 1234 RTP/AVP 96",
+                "c=IN IP4 " + address, // "c=IN IP4 239.0.0.1",
+                "m=video " + port  + " RTP/AVP 96", //"m=video 1234 RTP/AVP 96",
                 "b=AS:2000",
                 "a=rtpmap:96 H264/90000",
                 "a=fmtp:96 packetization-mode=1",
@@ -109,16 +129,27 @@ namespace TestClient
                     //"--verbose=0",
                     //"--network-caching=100", //не работает
             };
-
+           
             mediaPlayer?.Play(new FileInfo(file), opts);
+
+           
 
 
         }
+
+        private void VlcVideoForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            mediaPlayer?.Stop();
+        }
+
         //FileStream file = new FileStream("d:\\test_rtp.h264", FileMode.Create);
 
         private void button2_Click(object sender, EventArgs e)
         {
-            mediaPlayer?.Stop();
+            vlcVideoForm?.Close();
+          
+
+            //mediaPlayer?.Stop();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -127,21 +158,11 @@ namespace TestClient
         }
 
 
-        private Device device = null;
+        private VideoReceiver videoReceiver = null;
 
-        private Texture2D sharedTexture = null;
-        D3DImageProvider imageProvider = null;
-
-
-        private MfH264Decoder decoder = null;
-        private MfVideoProcessor processor = null;
-
-
-        private H264Session h264Session = null;
-        private RtpReceiver rtpReceiver = null;
-
+ 
         //private Form testForm = null;
-        private Form2 testForm = null;
+        private VideoForm testForm = null;
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -153,75 +174,13 @@ namespace TestClient
 
             var port = (int)portNumeric.Value;
 
-            var inputArgs = new MfVideoArgs
-            {
-                Width = 1920,
-                Height = 1080,
-
-                //Width = 2560,
-                //Height = 1440,
-
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                FrameRate = 30,
-            };
-
-            var outputArgs = new MfVideoArgs
-            {
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                //Width = 2560,
-                //Height = 1440,
-
-                Width = 1920,
-                Height = 1080,
-
-                FrameRate = 30,
-            };
-
-
-            int adapterIndex = 0;
-            var dxgiFactory = new SharpDX.DXGI.Factory1();
-            var adapter = dxgiFactory.Adapters1[adapterIndex];
-
-
-            device = new Device(adapter,
-                                //DeviceCreationFlags.Debug |
-                                DeviceCreationFlags.VideoSupport |
-                                DeviceCreationFlags.BgraSupport);
-
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-
-            sharedTexture = new Texture2D(device,
-                new Texture2DDescription
-                {
-
-                    CpuAccessFlags = CpuAccessFlags.None,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Width = outputArgs.Width,//640,//texture.Description.Width,
-                    Height = outputArgs.Height, //480,//texture.Description.Height,
-
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Default,
-                                //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                                OptionFlags = ResourceOptionFlags.Shared,
-
-                });
-
-
-            imageProvider = new D3DImageProvider(Dispatcher.CurrentDispatcher);
-            imageProvider.Setup(sharedTexture);
+            videoReceiver = new VideoReceiver(Dispatcher.CurrentDispatcher);
+            videoReceiver.Setup(address, port);
 
  
             if (testForm == null || testForm.IsDisposed)
             {
-                testForm = new Form2
+                testForm = new VideoForm
                 {
                     StartPosition = FormStartPosition.CenterParent,
                     Width = 1280,
@@ -243,150 +202,31 @@ namespace TestClient
                 //video.DataContext = imageProvider;
 
                 var video = testForm.userControl11;
-                video.DataContext = imageProvider;
+                video.DataContext = videoReceiver.ImageProvider;
 
                 testForm.FormClosed += TestForm_FormClosed;
             }
 
             testForm.Visible = true;
 
-
-            decoder = new MfH264Decoder(device);
-
-            decoder.Setup(inputArgs);
-            decoder.Start();
-
-            var decoderType = decoder.OutputMediaType;
-            var decFormat = decoderType.Get(MediaTypeAttributeKeys.Subtype);
-            var decFrameSize = MfTool.GetFrameSize(decoderType);
-
-
-            processor = new MfVideoProcessor(device);
-            var inProcArgs = new MfVideoArgs
-            {
-                Width = decFrameSize.Width,
-                Height = decFrameSize.Height,
-                Format = decFormat,
-            };
-
-
-           
-            var outProcArgs = new MfVideoArgs
-            {
-                Width = inputArgs.Width,
-                Height = inputArgs.Height,
-                Format = VideoFormatGuids.Argb32,
-            };
-
-            processor.Setup(inProcArgs, outProcArgs);
-            processor.Start();
-
-
-            h264Session = new H264Session();
-
-            rtpReceiver = new RtpReceiver(null);
-            rtpReceiver.Open(address, port);
-            rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
-            rtpReceiver.Start();
-
+            videoReceiver.Play();
 
         }
+
 
         private void TestForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            CloseRtpStream();
-        }
-
-        private void RtpReceiver_RtpPacketReceived(RtpPacket packet)
-        {
-            byte[] rtpPayload = packet.Payload.ToArray();
-
-            //totalPayloadReceivedSize += rtpPayload.Length;
-            // logger.Debug("totalPayloadReceivedSize " + totalPayloadReceivedSize);
-
-            var nal = h264Session.Depacketize(packet);
-            if (nal != null)
-            {
-                Decode(nal);
-            }
+            videoReceiver?.Stop();
         }
 
 
-        int sampleCount = 0;
-        private static object syncRoot = new object();
-        private void Decode(byte[] nal)
-        {
-            try
-            {
-                var encodedSample = MediaFactory.CreateSample();
-                try
-                {
-                    using (MediaBuffer mb = MediaFactory.CreateMemoryBuffer(nal.Length))
-                    {
-                        var dest = mb.Lock(out int cbMaxLength, out int cbCurrentLength);
-                        //logger.Debug(sampleCount + " Marshal.Copy(...) " + nal.Length);
-                        Marshal.Copy(nal, 0, dest, nal.Length);
-
-                        mb.CurrentLength = nal.Length;
-                        mb.Unlock();
-
-                        encodedSample.AddBuffer(mb);
-                    }
-
-                    var res = decoder.ProcessSample(encodedSample, out Sample decodedSample);
-
-                    if (res)
-                    {
-                        if (decodedSample != null)
-                        {
-                            res = processor.ProcessSample(decodedSample, out Sample rgbSample);
-
-                            if (res)
-                            {
-                                if (rgbSample != null)
-                                {
-                                    var buffer = rgbSample.ConvertToContiguousBuffer();
-                                    using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
-                                    {
-                                        var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                                        dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
-                                        using (Texture2D rgbTexture = new Texture2D(intPtr))
-                                        {
-                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
-                                            device.ImmediateContext.Flush();
-                                        };
-
-                                        imageProvider?.Update();
-                                    }
-
-                                    buffer?.Dispose();
-                                }
-                            }
-
-                            rgbSample?.Dispose();
-
-                        }
-                    }
-
-                    decodedSample?.Dispose();
-                }
-                finally
-                {
-                    encodedSample?.Dispose();
-                }
-
-                sampleCount++;
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex);
-            }
-
-        }
 
         private void button5_Click(object sender, EventArgs e)
         {
-            CloseRtpStream();
+            if (videoReceiver != null)
+            {
+                videoReceiver.Stop();
+            }
 
             if (testForm != null && !testForm.IsDisposed)
             {
@@ -395,45 +235,8 @@ namespace TestClient
                 testForm = null;
             }
 
-            if (imageProvider != null)
-            {
-                imageProvider.Close();
-                imageProvider = null;
-            }
-
         }
 
-        private void CloseRtpStream()
-        {
-            if (rtpReceiver != null)
-            {
-                rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
-                rtpReceiver.Close();
-            }
-
-            if (decoder != null)
-            {
-                decoder.Close();
-                decoder = null;
-            }
-            if (processor != null)
-            {
-                processor.Close();
-                processor = null;
-            }
-
-            if (sharedTexture != null)
-            {
-                sharedTexture.Dispose();
-                sharedTexture = null;
-            }
-            if (device != null)
-            {
-                device.Dispose();
-                device = null;
-            }
-
-        }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
@@ -460,6 +263,12 @@ namespace TestClient
             }
         }
 
+        class ComboBoxItem
+        {
+            public string Name { get; set; }
+            public object Tag{ get; set; }
+        }
+
         private void findServiceButton_Click(object sender, EventArgs e)
         {
             logger.Debug("\nFinding IRemoteDesktopService...");
@@ -469,6 +278,8 @@ namespace TestClient
             var criteria = new FindCriteria(typeof(IRemoteDesktopService));
             criteria.Duration = TimeSpan.FromSeconds(5);
             ProgressForm progress = new ProgressForm();
+
+            List<ComboBoxItem> hostItems = new List<ComboBoxItem>();
 
             discoveryClient.FindCompleted += (o, a) =>
             {
@@ -488,15 +299,37 @@ namespace TestClient
                     var result = a.Result;
                     if (result != null)
                     {
-                        foreach (var p in result.Endpoints)
+                        foreach (var ep in result.Endpoints)
                         {
-                            //Dns.GetHostEntry(p.Address.Uri.Host)
-                            logger.Debug(p.Address.ToString());
+                            string address = ep.Address.ToString();
+                            string hostName = address;
 
+                            var extensions = ep.Extensions;
+                            if(extensions!=null && extensions.Count > 0)
+                            {
+                                var hostElement = extensions.FirstOrDefault(el => el.Name == "HostName");
+                                if (hostElement != null)
+                                {
+                                    hostName = hostElement.Value; // + " {" + address + "}";
+                                }
+                            }
 
+                            logger.Debug(hostName);
+
+                            hostItems.Add(new ComboBoxItem
+                            {
+                                Name = hostName,
+                                Tag = address,
+                            });
                         }
                     }
+
+
+
                 }
+
+                hostsComboBox.DataSource = hostItems;
+                hostsComboBox.DisplayMember = "Name";
 
                 progress.Close();
             };
@@ -610,6 +443,18 @@ namespace TestClient
             {
                 logger.Error(ex);
             }
+        }
+
+        private void groupBox2_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private StatisticForm statisticForm = new StatisticForm();
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            statisticForm.Visible = !statisticForm.Visible;
         }
     }
 

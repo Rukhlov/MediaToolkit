@@ -22,12 +22,12 @@ using System.Threading.Tasks;
 namespace MediaToolkit
 {
 
-    public class VideoMulticastStreamer
+    public class VideoStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly ScreenSource screenSource = null;
-        public VideoMulticastStreamer(ScreenSource source)
+        public VideoStreamer(ScreenSource source)
         {
             this.screenSource = source;
            
@@ -59,44 +59,44 @@ namespace MediaToolkit
                 rtpStreamer.Open(networkParams);
                 var hwContext = screenSource.hwContext;
 
-                //processor = new MfVideoProcessor(hwContext.device);
-                //var inProcArgs = new MfVideoArgs
-                //{
-                //    Width = screenSource.Buffer.bitmap.Width,
-                //    Height = screenSource.Buffer.bitmap.Height,
-                //    Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
-                //};
+                processor = new MfVideoProcessor(hwContext.device);
+                var inProcArgs = new MfVideoArgs
+                {
+                    Width = screenSource.Buffer.bitmap.Width,
+                    Height = screenSource.Buffer.bitmap.Height,
+                    Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+                };
 
 
-                //var outProcArgs = new MfVideoArgs
-                //{
-                //    Width = screenSource.Buffer.bitmap.Width,
-                //    Height = screenSource.Buffer.bitmap.Height,
-                //    Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
-                //};
+                var outProcArgs = new MfVideoArgs
+                {
+                    Width = screenSource.Buffer.bitmap.Width,
+                    Height = screenSource.Buffer.bitmap.Height,
+                    Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
+                };
 
-                //SharedTexture = new Texture2D(hwContext.device,
-                //     new Texture2DDescription
-                //     {
+                SharedTexture = new Texture2D(hwContext.device,
+                     new Texture2DDescription
+                     {
 
-                //         CpuAccessFlags = CpuAccessFlags.None,
-                //         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                //         Format = SharpDX.DXGI.Format.NV12,
-                //         //Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                //         Width = screenSource.Buffer.bitmap.Width,
-                //         Height = screenSource.Buffer.bitmap.Height,
+                         CpuAccessFlags = CpuAccessFlags.None,
+                         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                         Format = SharpDX.DXGI.Format.NV12,
+                         //Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                         Width = screenSource.Buffer.bitmap.Width,
+                         Height = screenSource.Buffer.bitmap.Height,
 
-                //         MipLevels = 1,
-                //         ArraySize = 1,
-                //         SampleDescription = { Count = 1, Quality = 0 },
-                //         Usage = ResourceUsage.Default,
-                //         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                //         OptionFlags = ResourceOptionFlags.Shared,
+                         MipLevels = 1,
+                         ArraySize = 1,
+                         SampleDescription = { Count = 1, Quality = 0 },
+                         Usage = ResourceUsage.Default,
+                         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                         OptionFlags = ResourceOptionFlags.Shared,
 
-                //     });
+                     });
 
-                //processor.Setup(inProcArgs, outProcArgs);
-                //processor.Start();
+                processor.Setup(inProcArgs, outProcArgs);
+                processor.Start();
 
 
 
@@ -178,62 +178,62 @@ namespace MediaToolkit
 
                             sw.Restart();
 
-                            //Sample inputSample = null;
-                            //try
-                            //{
-                            //    MediaBuffer mediaBuffer = null;
-                            //    try
-                            //    {
-                            //        var texture = hwContext.SharedTexture;
-                            //        MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, texture, 0, false, out mediaBuffer);
-                            //        inputSample = MediaFactory.CreateSample();
-                            //        inputSample.AddBuffer(mediaBuffer);
+                            Sample inputSample = null;
+                            try
+                            {
+                                MediaBuffer mediaBuffer = null;
+                                try
+                                {
+                                    var texture = hwContext.SharedTexture;
+                                    MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, texture, 0, false, out mediaBuffer);
+                                    inputSample = MediaFactory.CreateSample();
+                                    inputSample.AddBuffer(mediaBuffer);
 
-                            //        inputSample.SampleTime = 0;
-                            //        inputSample.SampleDuration = 0;
-                            //    }
-                            //    finally
-                            //    {
-                            //        mediaBuffer?.Dispose();
-                            //    }
+                                    inputSample.SampleTime = 0;
+                                    inputSample.SampleDuration = 0;
+                                }
+                                finally
+                                {
+                                    mediaBuffer?.Dispose();
+                                }
 
-                            //    Sample nv12Sample = null;
-                            //    try
-                            //    {
-                            //        bool result = processor.ProcessSample(inputSample, out nv12Sample);
-                            //        if (result)
-                            //        {
-                            //            using (var buffer = nv12Sample.ConvertToContiguousBuffer())
-                            //            {
-                            //                using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
-                            //                {
-                            //                    var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                            //                    dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
-                            //                    using (Texture2D nv12Texture = new Texture2D(intPtr))
-                            //                    {
-                                                    
-                            //                        processor.device.ImmediateContext.CopyResource(nv12Texture, SharedTexture);
-                            //                        processor.device.ImmediateContext.Flush();
+                                Sample nv12Sample = null;
+                                try
+                                {
+                                    bool result = processor.ProcessSample(inputSample, out nv12Sample);
+                                    if (result)
+                                    {
+                                        using (var buffer = nv12Sample.ConvertToContiguousBuffer())
+                                        {
+                                            using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
+                                            {
+                                                var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+                                                dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
+                                                using (Texture2D nv12Texture = new Texture2D(intPtr))
+                                                {
+
+                                                    processor.device.ImmediateContext.CopyResource(nv12Texture, SharedTexture);
+                                                    processor.device.ImmediateContext.Flush();
 
 
-                            //                        mfEncoder.WriteTexture(SharedTexture);
-                            //                    };
-                            //                }
-                            //            }
-    
-                            //        }
-                            //    }
-                            //    finally
-                            //    {
-                            //        nv12Sample?.Dispose();
-                            //    }
-                            //}
-                            //finally
-                            //{
-                            //    inputSample?.Dispose();
-                            //}
+                                                    mfEncoder.WriteTexture(SharedTexture);
+                                                };
+                                            }
+                                        }
 
-                            mfEncoder.WriteTexture(hwContext.SharedTexture);
+                                    }
+                                }
+                                finally
+                                {
+                                    nv12Sample?.Dispose();
+                                }
+                            }
+                            finally
+                            {
+                                inputSample?.Dispose();
+                            }
+
+                            // mfEncoder.WriteTexture(hwContext.SharedTexture);
 
                             //var buffer = screenSource.Buffer;
 
@@ -333,6 +333,12 @@ namespace MediaToolkit
             {
                 processor.Close();
                 processor = null;
+            }
+
+            if (SharedTexture != null)
+            {
+                SharedTexture.Dispose();
+                SharedTexture = null;
             }
 
             //if (encoder != null)

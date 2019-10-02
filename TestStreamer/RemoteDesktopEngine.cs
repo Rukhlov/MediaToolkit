@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Discovery;
@@ -36,6 +37,7 @@ namespace TestStreamer
             try
             {
                 var uri = new Uri(address);
+                var hostName = Dns.GetHostName();
 
                 var binding = new NetTcpBinding
                 {
@@ -43,19 +45,18 @@ namespace TestStreamer
                     SendTimeout = TimeSpan.FromSeconds(10),
                 };
 
-
                 host = new ServiceHost(this, uri);
+                var endpoint = host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
 
-                // host.AddDefaultEndpoints();
+                var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
+                endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + hostName));
+                endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", hostName));
+                endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
 
-                host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
 
-                ServiceDiscoveryBehavior behavior = new ServiceDiscoveryBehavior();
-
-                behavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
-
-                host.Description.Behaviors.Add(behavior);
-
+                ServiceDiscoveryBehavior serviceDiscoveryBehavior = new ServiceDiscoveryBehavior();
+                serviceDiscoveryBehavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
+                host.Description.Behaviors.Add(serviceDiscoveryBehavior);
                 host.Description.Endpoints.Add(new UdpDiscoveryEndpoint());
 
                 //behavior.Scopes.Add(scope);
@@ -127,7 +128,7 @@ namespace TestStreamer
 
         private bool isStreaming = false;
 
-        private VideoMulticastStreamer videoStreamer = null;
+        private VideoStreamer videoStreamer = null;
         private ScreenSource screenSource = null;
         private DesktopManager desktopMan = null;
         public void StartStreaming(RemoteDesktopOptions options)
@@ -197,7 +198,7 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            videoStreamer = new VideoMulticastStreamer(screenSource);
+            videoStreamer = new VideoStreamer(screenSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
             var captureTask = screenSource.Start();

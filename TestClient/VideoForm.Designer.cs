@@ -1,6 +1,6 @@
 ﻿namespace TestClient
 {
-    partial class Form2
+    partial class VideoForm
     {
         /// <summary>
         /// Required designer variable.

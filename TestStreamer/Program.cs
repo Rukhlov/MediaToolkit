@@ -242,7 +242,7 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            VideoMulticastStreamer videoStreamer = new VideoMulticastStreamer(source);
+            VideoStreamer videoStreamer = new VideoStreamer(source);
             videoStreamer.Setup(encodingParams, networkParams);
 
             var captureTask = source.Start();

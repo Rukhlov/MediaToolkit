@@ -111,9 +111,9 @@
             // 
             // exitButton
             // 
-            this.exitButton.Location = new System.Drawing.Point(713, 415);
+            this.exitButton.Location = new System.Drawing.Point(692, 405);
             this.exitButton.Name = "exitButton";
-            this.exitButton.Size = new System.Drawing.Size(75, 23);
+            this.exitButton.Size = new System.Drawing.Size(157, 33);
             this.exitButton.TabIndex = 0;
             this.exitButton.Text = "_Exit";
             this.exitButton.UseVisualStyleBackColor = true;
@@ -143,7 +143,7 @@
             // 
             this.startButton.Location = new System.Drawing.Point(28, 351);
             this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(75, 23);
+            this.startButton.Size = new System.Drawing.Size(177, 35);
             this.startButton.TabIndex = 3;
             this.startButton.Text = "_Start";
             this.startButton.UseVisualStyleBackColor = true;
@@ -151,9 +151,9 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(109, 351);
+            this.stopButton.Location = new System.Drawing.Point(220, 351);
             this.stopButton.Name = "stopButton";
-            this.stopButton.Size = new System.Drawing.Size(75, 23);
+            this.stopButton.Size = new System.Drawing.Size(107, 35);
             this.stopButton.TabIndex = 4;
             this.stopButton.Text = "_Stop";
             this.stopButton.UseVisualStyleBackColor = true;
@@ -195,7 +195,7 @@
             this.showMouseCheckBox.AutoSize = true;
             this.showMouseCheckBox.Checked = true;
             this.showMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showMouseCheckBox.Location = new System.Drawing.Point(26, 229);
+            this.showMouseCheckBox.Location = new System.Drawing.Point(26, 237);
             this.showMouseCheckBox.Name = "showMouseCheckBox";
             this.showMouseCheckBox.Size = new System.Drawing.Size(118, 21);
             this.showMouseCheckBox.TabIndex = 7;
@@ -261,9 +261,9 @@
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(284, 351);
+            this.previewButton.Location = new System.Drawing.Point(405, 351);
             this.previewButton.Name = "previewButton";
-            this.previewButton.Size = new System.Drawing.Size(75, 23);
+            this.previewButton.Size = new System.Drawing.Size(97, 35);
             this.previewButton.TabIndex = 15;
             this.previewButton.Text = "_Preview";
             this.previewButton.UseVisualStyleBackColor = true;
@@ -361,9 +361,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 415);
+            this.button1.Location = new System.Drawing.Point(12, 405);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(91, 23);
+            this.button1.Size = new System.Drawing.Size(172, 33);
             this.button1.TabIndex = 20;
             this.button1.Text = "_TestClient";
             this.button1.UseVisualStyleBackColor = true;
@@ -374,7 +374,7 @@
             this.panel1.Controls.Add(this.stopRemoteServButton);
             this.panel1.Controls.Add(this.textBox1);
             this.panel1.Controls.Add(this.startRemoteServButton);
-            this.panel1.Location = new System.Drawing.Point(567, 15);
+            this.panel1.Location = new System.Drawing.Point(545, 147);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(295, 83);
             this.panel1.TabIndex = 21;

@@ -26,6 +26,11 @@ namespace MediaToolkit.Utils
         public static object syncRoot = new object();
         public static void RegisterCounter(StatCounter counter)
         {
+            if (counter == null)
+            {
+                return;
+            }
+
             lock (syncRoot)
             {
                 Stats.Add(counter);
@@ -34,6 +39,11 @@ namespace MediaToolkit.Utils
 
         public static void UnregisterCounter(StatCounter counter)
         {
+            if(counter == null)
+            {
+                return;
+            }
+
             lock (syncRoot)
             {
                 Stats.Remove(counter);

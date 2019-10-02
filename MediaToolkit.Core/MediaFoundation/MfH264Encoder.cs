@@ -134,8 +134,8 @@ namespace MediaToolkit.MediaFoundation
 
             var _descr = new Texture2DDescription
             {
-                //Format = Format.NV12,
-                Format = Format.B8G8R8A8_UNorm,
+                Format = Format.NV12,
+                //Format = Format.B8G8R8A8_UNorm,
                 Width = width,
                 Height = height,
                 MipLevels = 1,
@@ -279,8 +279,8 @@ namespace MediaToolkit.MediaFoundation
             var width = args.Width;
             var height = args.Height;
 
-            var inputFormat = VideoFormatGuids.Argb32;
-            //var inputFormat = VideoFormatGuids.NV12;
+            //var inputFormat = VideoFormatGuids.Argb32;
+            var inputFormat = VideoFormatGuids.NV12;
 
             logger.Info("Encoder input params: " + width + "x" + height + " fps=" + fps + " {" + inputFormat + "}");
             using (var attr = encoder.Attributes)

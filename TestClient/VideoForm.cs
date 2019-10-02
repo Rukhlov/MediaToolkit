@@ -14,9 +14,9 @@ using System.Windows.Forms;
 
 namespace TestClient
 {
-    public partial class Form2 : Form
+    public partial class VideoForm : Form
     {
-        public Form2()
+        public VideoForm()
         {
             InitializeComponent();
 
