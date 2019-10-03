@@ -54,6 +54,16 @@
             this.hostsComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.button8 = new System.Windows.Forms.Button();
+            this.srcWidthNumeric = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.srcHeightNumeric = new System.Windows.Forms.NumericUpDown();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.destWidthNumeric = new System.Windows.Forms.NumericUpDown();
+            this.destHeightNumeric = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
             this.groupBox2.SuspendLayout();
@@ -61,6 +71,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.panel2.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.srcWidthNumeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.srcHeightNumeric)).BeginInit();
+            this.groupBox5.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.destHeightNumeric)).BeginInit();
             this.SuspendLayout();
             // 
             // button1
@@ -127,7 +143,7 @@
             this.groupBox1.Size = new System.Drawing.Size(385, 80);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "TestRender";
+            this.groupBox1.Text = "TestClient";
             // 
             // label2
             // 
@@ -346,7 +362,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(664, 397);
+            this.button8.Location = new System.Drawing.Point(706, 530);
             this.button8.Margin = new System.Windows.Forms.Padding(4);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(100, 28);
@@ -355,11 +371,144 @@
             this.button8.UseVisualStyleBackColor = true;
             this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
+            // srcWidthNumeric
+            // 
+            this.srcWidthNumeric.Location = new System.Drawing.Point(72, 31);
+            this.srcWidthNumeric.Maximum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            0});
+            this.srcWidthNumeric.Name = "srcWidthNumeric";
+            this.srcWidthNumeric.Size = new System.Drawing.Size(137, 22);
+            this.srcWidthNumeric.TabIndex = 26;
+            this.srcWidthNumeric.Value = new decimal(new int[] {
+            1920,
+            0,
+            0,
+            0});
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(18, 33);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(48, 17);
+            this.label5.TabIndex = 28;
+            this.label5.Text = "Width:";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(18, 61);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(53, 17);
+            this.label6.TabIndex = 30;
+            this.label6.Text = "Height:";
+            // 
+            // srcHeightNumeric
+            // 
+            this.srcHeightNumeric.Location = new System.Drawing.Point(72, 59);
+            this.srcHeightNumeric.Maximum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            0});
+            this.srcHeightNumeric.Name = "srcHeightNumeric";
+            this.srcHeightNumeric.Size = new System.Drawing.Size(137, 22);
+            this.srcHeightNumeric.TabIndex = 29;
+            this.srcHeightNumeric.Value = new decimal(new int[] {
+            1080,
+            0,
+            0,
+            0});
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.label5);
+            this.groupBox5.Controls.Add(this.label6);
+            this.groupBox5.Controls.Add(this.srcWidthNumeric);
+            this.groupBox5.Controls.Add(this.srcHeightNumeric);
+            this.groupBox5.Location = new System.Drawing.Point(542, 179);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(239, 116);
+            this.groupBox5.TabIndex = 31;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "SrcSize";
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.label7);
+            this.groupBox6.Controls.Add(this.label8);
+            this.groupBox6.Controls.Add(this.destWidthNumeric);
+            this.groupBox6.Controls.Add(this.destHeightNumeric);
+            this.groupBox6.Location = new System.Drawing.Point(542, 321);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(239, 116);
+            this.groupBox6.TabIndex = 32;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "DestSize";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(18, 33);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(48, 17);
+            this.label7.TabIndex = 28;
+            this.label7.Text = "Width:";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(18, 61);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(53, 17);
+            this.label8.TabIndex = 30;
+            this.label8.Text = "Height:";
+            // 
+            // destWidthNumeric
+            // 
+            this.destWidthNumeric.Location = new System.Drawing.Point(72, 31);
+            this.destWidthNumeric.Maximum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            0});
+            this.destWidthNumeric.Name = "destWidthNumeric";
+            this.destWidthNumeric.Size = new System.Drawing.Size(137, 22);
+            this.destWidthNumeric.TabIndex = 26;
+            this.destWidthNumeric.Value = new decimal(new int[] {
+            1920,
+            0,
+            0,
+            0});
+
+            // 
+            // destHeightNumeric
+            // 
+            this.destHeightNumeric.Location = new System.Drawing.Point(72, 59);
+            this.destHeightNumeric.Maximum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            0});
+            this.destHeightNumeric.Name = "destHeightNumeric";
+            this.destHeightNumeric.Size = new System.Drawing.Size(137, 22);
+            this.destHeightNumeric.TabIndex = 29;
+            this.destHeightNumeric.Value = new decimal(new int[] {
+            1080,
+            0,
+            0,
+            0});
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(889, 762);
+            this.Controls.Add(this.groupBox6);
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.button8);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.hostsComboBox);
@@ -382,6 +531,14 @@
             this.panel2.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.srcWidthNumeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.srcHeightNumeric)).EndInit();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.destHeightNumeric)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -413,6 +570,16 @@
         private System.Windows.Forms.ComboBox hostsComboBox;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.NumericUpDown srcWidthNumeric;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.NumericUpDown srcHeightNumeric;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.NumericUpDown destWidthNumeric;
+        private System.Windows.Forms.NumericUpDown destHeightNumeric;
     }
 }
 

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using MediaToolkit;
+using MediaToolkit.Common;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
@@ -21,18 +22,9 @@ namespace TestClient
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
 
-        public VideoReceiver(Dispatcher dispatcher)
-        {
-            this.dispatcher = dispatcher;
-        }
-
-        private readonly Dispatcher dispatcher = null;
-
         private Device device = null;
 
-        private Texture2D sharedTexture = null;
-        public D3DImageProvider ImageProvider { get; private set; }
-
+        internal Texture2D sharedTexture { get; private set; }
 
         private MfH264Decoder decoder = null;
         private MfVideoProcessor processor = null;
@@ -41,32 +33,22 @@ namespace TestClient
         private H264Session h264Session = null;
         private RtpReceiver rtpReceiver = null;
 
-        public void Setup(string address, int port)
+        public void Setup(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
         {
             var inputArgs = new MfVideoArgs
             {
-                Width = 1920,
-                Height = 1080,
-
-                //Width = 2560,
-                //Height = 1440,
-
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                FrameRate = 30,
+                Width = inputPars.Width,
+                Height = inputPars.Height,
+                FrameRate = inputPars.FrameRate,
             };
 
             var outputArgs = new MfVideoArgs
             {
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                //Width = 2560,
-                //Height = 1440,
 
-                Width = 1920,
-                Height = 1080,
+                Width = outputPars.Width,
+                Height = outputPars.Height,
 
-                FrameRate = 30,
+                FrameRate = outputPars.FrameRate,
             };
 
 
@@ -104,8 +86,8 @@ namespace TestClient
 
             });
 
-            ImageProvider = new D3DImageProvider(dispatcher);
-            ImageProvider.Setup(sharedTexture);
+            //ImageProvider = new D3DImageProvider(dispatcher);
+            
 
             decoder = new MfH264Decoder(device);
 
@@ -129,8 +111,8 @@ namespace TestClient
 
             var outProcArgs = new MfVideoArgs
             {
-                Width = inputArgs.Width,
-                Height = inputArgs.Height,
+                Width = outputArgs.Width,
+                Height = outputArgs.Height,
                 Format = VideoFormatGuids.Argb32,
             };
 
@@ -139,7 +121,11 @@ namespace TestClient
 
             h264Session = new H264Session();
             rtpReceiver = new RtpReceiver(null);
-            rtpReceiver.Open(address, port);
+
+
+            rtpReceiver.Open(networkPars.SrcAddr, networkPars.SrcPort);
+
+
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
             
 
@@ -150,6 +136,8 @@ namespace TestClient
         public void Play()
         {
             Statistic.RegisterCounter(receiverStats);
+
+            //ImageProvider.Start(sharedTexture);
 
             decoder.Start();
             processor.Start();
@@ -225,7 +213,9 @@ namespace TestClient
                                             device.ImmediateContext.Flush();
                                         };
 
-                                        ImageProvider?.Update();
+                                        OnUpdateBuffer();
+
+                                        //ImageProvider?.Update();
                                     }
 
                                     buffer?.Dispose();
@@ -253,7 +243,12 @@ namespace TestClient
 
         }
 
+        public event Action UpdateBuffer;
 
+        private void OnUpdateBuffer()
+        {
+            UpdateBuffer?.Invoke();
+        }
         public void Stop()
         {
             if (rtpReceiver != null)
@@ -282,12 +277,6 @@ namespace TestClient
             {
                 device.Dispose();
                 device = null;
-            }
-
-            if (ImageProvider != null)
-            {
-                ImageProvider.Close();
-                ImageProvider = null;
             }
 
             Statistic.UnregisterCounter(receiverStats);

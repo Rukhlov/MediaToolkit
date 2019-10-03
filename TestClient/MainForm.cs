@@ -160,7 +160,9 @@ namespace TestClient
 
         private VideoReceiver videoReceiver = null;
 
- 
+        private D3DImageProvider imageProvider = null;
+
+
         //private Form testForm = null;
         private VideoForm testForm = null;
 
@@ -174,10 +176,44 @@ namespace TestClient
 
             var port = (int)portNumeric.Value;
 
-            videoReceiver = new VideoReceiver(Dispatcher.CurrentDispatcher);
-            videoReceiver.Setup(address, port);
+            videoReceiver = new VideoReceiver();
 
- 
+            var inputPars = new VideoEncodingParams
+            {
+                Width = (int)srcWidthNumeric.Value,            
+                Height = (int)srcHeightNumeric.Value,
+
+                //Width = 2560,
+                //Height = 1440,
+
+                //Width = 640,//2560,
+                //Height = 480,//1440,
+                FrameRate = 30,
+            };
+
+            var outputPars = new VideoEncodingParams
+            {
+                //Width = 640,//2560,
+                //Height = 480,//1440,
+                //Width = 2560,
+                //Height = 1440,
+
+                Width = (int)destWidthNumeric.Value,
+                Height = (int)destHeightNumeric.Value,
+
+                FrameRate = 30,
+            };
+
+            var networkPars = new NetworkStreamingParams
+            {
+                SrcAddr = address,
+                SrcPort = port
+            };
+
+            videoReceiver.Setup(inputPars, outputPars, networkPars);
+            videoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
+
+
             if (testForm == null || testForm.IsDisposed)
             {
                 testForm = new VideoForm
@@ -200,33 +236,51 @@ namespace TestClient
                 //host.Child = video;
 
                 //video.DataContext = imageProvider;
+                imageProvider = new D3DImageProvider(Dispatcher.CurrentDispatcher);
 
                 var video = testForm.userControl11;
-                video.DataContext = videoReceiver.ImageProvider;
+                video.DataContext = imageProvider;
 
                 testForm.FormClosed += TestForm_FormClosed;
             }
 
             testForm.Visible = true;
 
+            imageProvider.Start(videoReceiver.sharedTexture);
+
             videoReceiver.Play();
 
         }
 
+        private void VideoReceiver_UpdateBuffer()
+        {
+            imageProvider?.Update();
+        }
 
         private void TestForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            videoReceiver?.Stop();
+            if (videoReceiver != null)
+            {
+                videoReceiver.Stop();
+                videoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
+            }
+
+            imageProvider?.Close();
+
         }
 
 
 
         private void button5_Click(object sender, EventArgs e)
         {
+
             if (videoReceiver != null)
             {
                 videoReceiver.Stop();
+                videoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
             }
+
+            imageProvider?.Close();
 
             if (testForm != null && !testForm.IsDisposed)
             {
@@ -456,6 +510,8 @@ namespace TestClient
         {
             statisticForm.Visible = !statisticForm.Visible;
         }
+
+
     }
 
 

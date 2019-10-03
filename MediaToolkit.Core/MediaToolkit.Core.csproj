@@ -116,7 +116,7 @@
     <Compile Include="ScreenCaptures\GDIPlusCapture.cs" />
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />
     <Compile Include="Sources\ScreenSource.cs" />
-    <Compile Include="VideoStreamer.cs" />
+    <Compile Include="VideoEncoder.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

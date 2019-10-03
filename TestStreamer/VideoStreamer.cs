@@ -1,27 +1,20 @@
-﻿using MediaToolkit.Common;
-using FFmpegLib;
-using NLog;
-using MediaToolkit.MediaFoundation;
+﻿using MediaToolkit;
+using MediaToolkit.Common;
+using MediaToolkit.Core;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
-
-using SharpDX.Direct3D11;
-using SharpDX.MediaFoundation;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace TestStreamer
 {
-
     public class VideoStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -30,7 +23,7 @@ namespace MediaToolkit
         public VideoStreamer(ScreenSource source)
         {
             this.screenSource = source;
-           
+
         }
 
 
@@ -41,10 +34,10 @@ namespace MediaToolkit
         private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;
         //private FFmpegVideoEncoder encoder = null;
-        private MfEncoderAsync mfEncoder = null;
 
-        private MfVideoProcessor processor = null;
-       
+        private VideoEncoder videoEncoder = null;
+
+
         public void Setup(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
         {
             logger.Debug("ScreenStreamer::Setup()");
@@ -52,86 +45,28 @@ namespace MediaToolkit
             try
             {
                 h264Session = new H264Session();
-
                 rtpStreamer = new RtpStreamer(h264Session);
-
-
                 rtpStreamer.Open(networkParams);
-                var hwContext = screenSource.hwContext;
-
-                processor = new MfVideoProcessor(hwContext.device);
-                var inProcArgs = new MfVideoArgs
-                {
-                    Width = screenSource.Buffer.bitmap.Width,
-                    Height = screenSource.Buffer.bitmap.Height,
-                    Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
-                };
 
 
-                var outProcArgs = new MfVideoArgs
-                {
-                    Width = screenSource.Buffer.bitmap.Width,
-                    Height = screenSource.Buffer.bitmap.Height,
-                    Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
-                };
+                //var hwContext = screenSource.hwContext;
+                //var hwDevice = hwContext.device;
+                var srcSize = new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-                SharedTexture = new Texture2D(hwContext.device,
-                     new Texture2DDescription
-                     {
+                var destSize = new Size(encodingParams.Width, encodingParams.Height);
 
-                         CpuAccessFlags = CpuAccessFlags.None,
-                         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                         Format = SharpDX.DXGI.Format.NV12,
-                         //Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                         Width = screenSource.Buffer.bitmap.Width,
-                         Height = screenSource.Buffer.bitmap.Height,
-
-                         MipLevels = 1,
-                         ArraySize = 1,
-                         SampleDescription = { Count = 1, Quality = 0 },
-                         Usage = ResourceUsage.Default,
-                         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                         OptionFlags = ResourceOptionFlags.Shared,
-
-                     });
-
-                processor.Setup(inProcArgs, outProcArgs);
-                processor.Start();
-
-
-
-                var hwDevice = screenSource.hwContext.device;
-
-                long adapterLuid = -1;
-                using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
-                {
-                    var adapter = dxgiDevice.Adapter;
-                    adapterLuid = adapter.Description.Luid;
-
-                }
-
-                mfEncoder = new MfEncoderAsync();
-                mfEncoder.Setup(new MfVideoArgs
-                {
-                    Width = screenSource.Buffer.bitmap.Width,
-                    Height = screenSource.Buffer.bitmap.Height,
-                    FrameRate = encodingParams.FrameRate,
-                    AdapterId = adapterLuid,
-
-                });
-             
-
-                mfEncoder.DataReady += MfEncoder_DataReady;
-
-                
 
                 //encoder = new FFmpegVideoEncoder();
                 //encoder.Open(encodingParams);
                 //encoder.DataEncoded += Encoder_DataEncoded;
 
+                videoEncoder = new VideoEncoder(screenSource);
+                videoEncoder.Open(encodingParams);
+                videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
+
                 screenSource.BufferUpdated += ScreenSource_BufferUpdated;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex);
                 CleanUp();
@@ -141,13 +76,15 @@ namespace MediaToolkit
 
         }
 
-        private Texture2D SharedTexture = null;
+
+
+        // private Texture2D SharedTexture = null;
 
         private Stopwatch sw = new Stopwatch();
         public Task Start()
         {
             logger.Debug("ScreenStreamer::Start()");
-            
+
             return Task.Run(() =>
             {
                 logger.Info("Streaming thread started...");
@@ -160,7 +97,8 @@ namespace MediaToolkit
                     Statistic.RegisterCounter(streamStats);
 
                     var hwContext = screenSource.hwContext;
-                    mfEncoder.Start();
+                    //mfEncoder.Start();
+
 
                     while (!closing)
                     {
@@ -178,66 +116,7 @@ namespace MediaToolkit
 
                             sw.Restart();
 
-                            Sample inputSample = null;
-                            try
-                            {
-                                MediaBuffer mediaBuffer = null;
-                                try
-                                {
-                                    var texture = hwContext.SharedTexture;
-                                    MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, texture, 0, false, out mediaBuffer);
-                                    inputSample = MediaFactory.CreateSample();
-                                    inputSample.AddBuffer(mediaBuffer);
-
-                                    inputSample.SampleTime = 0;
-                                    inputSample.SampleDuration = 0;
-                                }
-                                finally
-                                {
-                                    mediaBuffer?.Dispose();
-                                }
-
-                                Sample nv12Sample = null;
-                                try
-                                {
-                                    bool result = processor.ProcessSample(inputSample, out nv12Sample);
-                                    if (result)
-                                    {
-                                        using (var buffer = nv12Sample.ConvertToContiguousBuffer())
-                                        {
-                                            using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
-                                            {
-                                                var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                                                dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
-                                                using (Texture2D nv12Texture = new Texture2D(intPtr))
-                                                {
-
-                                                    processor.device.ImmediateContext.CopyResource(nv12Texture, SharedTexture);
-                                                    processor.device.ImmediateContext.Flush();
-
-
-                                                    mfEncoder.WriteTexture(SharedTexture);
-                                                };
-                                            }
-                                        }
-
-                                    }
-                                }
-                                finally
-                                {
-                                    nv12Sample?.Dispose();
-                                }
-                            }
-                            finally
-                            {
-                                inputSample?.Dispose();
-                            }
-
-                            // mfEncoder.WriteTexture(hwContext.SharedTexture);
-
-                            //var buffer = screenSource.Buffer;
-
-                            //encoder.Encode(buffer);
+                            videoEncoder.Encode();
 
                         }
                         catch (Exception ex)
@@ -265,14 +144,16 @@ namespace MediaToolkit
 
         }
 
-       // FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
-        private void MfEncoder_DataReady(byte[] buf)
+
+        // FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
+        //private void MfEncoder_DataReady(byte[] buf)
+        private void VideoEncoder_DataEncoded(byte[] buf)
         {
             //throw new NotImplementedException();
             var time = MediaTimer.GetRelativeTime();
 
-           // var memo = new MemoryStream(buf);
-           // memo.CopyTo(file);
+            // var memo = new MemoryStream(buf);
+            // memo.CopyTo(file);
 
             rtpStreamer.Send(buf, time);
             var processingTime = sw.ElapsedMilliseconds;
@@ -322,24 +203,31 @@ namespace MediaToolkit
         private void CleanUp()
         {
             logger.Debug("VideoMulticastStreamer::CleanUp()");
-            if (mfEncoder != null)
+
+            if (videoEncoder != null)
             {
-                mfEncoder.DataReady -= MfEncoder_DataReady;
-                mfEncoder.Stop();
-                //mfEncoder.Close();
+                videoEncoder.Close();
+                videoEncoder = null;
             }
 
-            if (processor != null)
-            {
-                processor.Close();
-                processor = null;
-            }
+            //if (mfEncoder != null)
+            //{
+            //    mfEncoder.DataReady -= MfEncoder_DataReady;
+            //    mfEncoder.Stop();
+            //    //mfEncoder.Close();
+            //}
 
-            if (SharedTexture != null)
-            {
-                SharedTexture.Dispose();
-                SharedTexture = null;
-            }
+            //if (processor != null)
+            //{
+            //    processor.Close();
+            //    processor = null;
+            //}
+
+            //if (SharedTexture != null)
+            //{
+            //    SharedTexture.Dispose();
+            //    SharedTexture = null;
+            //}
 
             //if (encoder != null)
             //{
@@ -366,7 +254,7 @@ namespace MediaToolkit
             public long avgEncodingTime = 0;
 
             public StreamStats() { }
-            
+
             public void Update(double timestamp, int bytesSend, long encTime)
             {
                 if (lastTimestamp > 0)
@@ -431,5 +319,4 @@ namespace MediaToolkit
             }
         }
     }
-
 }

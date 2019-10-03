@@ -41,7 +41,6 @@ namespace MediaToolkit.MediaFoundation
         public MediaType OutputMediaType { get; private set; }
 
 
-
         public MfEncoderAsync()
         { }
 
@@ -119,7 +118,7 @@ namespace MediaToolkit.MediaFoundation
             logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
 
             device = new Device(adapter,
-                // DeviceCreationFlags.Debug | //System.AccessViolationException CopyResource(...)
+                // DeviceCreationFlags.Debug | 
                 DeviceCreationFlags.VideoSupport |
                 DeviceCreationFlags.BgraSupport);
 
@@ -695,22 +694,22 @@ namespace MediaToolkit.MediaFoundation
 
             lock (syncRoot)
             {
-                using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
-                {
-                    using (var sharedTexture = device.OpenSharedResource<Texture2D>(sharedRes.SharedHandle))
-                    {
-                        device.ImmediateContext.CopyResource(sharedTexture, bufTexture);
+                //using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
+                //{
+                //    using (var sharedTexture = device.OpenSharedResource<Texture2D>(sharedRes.SharedHandle))
+                //    {
+                //        device.ImmediateContext.CopyResource(sharedTexture, bufTexture);
 
-                        needUpdate = true;
+                //        needUpdate = true;
 
-                        ProcessInput();
-                    }
-                }
+                //        ProcessInput();
+                //    }
+                //}
 
-                //device.ImmediateContext.CopyResource(texture, bufTexture);
-                //needUpdate = true;
+                device.ImmediateContext.CopyResource(texture, bufTexture);
+                needUpdate = true;
 
-                //ProcessInput();
+                ProcessInput();
             }
 
         }

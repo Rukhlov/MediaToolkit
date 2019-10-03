@@ -30,8 +30,10 @@ namespace MediaToolkit.UI
         {
 
             this.dispatcher = Dispatcher.CurrentDispatcher;
+            //System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
         }
+
 
         private Direct3DEx direct3D = null;
         private DeviceEx device = null;
