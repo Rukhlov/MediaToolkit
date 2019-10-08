@@ -144,6 +144,7 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "TestClient";
+            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
             // 
             // label2
             // 
@@ -195,7 +196,7 @@
             // 
             // findServiceButton
             // 
-            this.findServiceButton.Location = new System.Drawing.Point(270, 285);
+            this.findServiceButton.Location = new System.Drawing.Point(264, 271);
             this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
             this.findServiceButton.Name = "findServiceButton";
             this.findServiceButton.Size = new System.Drawing.Size(100, 28);
@@ -214,7 +215,6 @@
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "VLC";
-            this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
             // 
             // groupBox3
             // 
@@ -224,7 +224,7 @@
             this.groupBox3.Controls.Add(this.textBox1);
             this.groupBox3.Controls.Add(this.button6);
             this.groupBox3.Controls.Add(this.button7);
-            this.groupBox3.Location = new System.Drawing.Point(85, 479);
+            this.groupBox3.Location = new System.Drawing.Point(55, 448);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(309, 233);
             this.groupBox3.TabIndex = 8;
@@ -306,7 +306,7 @@
             this.panel2.Controls.Add(this.disconnectButton);
             this.panel2.Controls.Add(this.remoteDesktopTextBox);
             this.panel2.Controls.Add(this.connectButton);
-            this.panel2.Location = new System.Drawing.Point(48, 342);
+            this.panel2.Location = new System.Drawing.Point(42, 328);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(344, 83);
             this.panel2.TabIndex = 22;
@@ -327,7 +327,7 @@
             this.remoteDesktopTextBox.Name = "remoteDesktopTextBox";
             this.remoteDesktopTextBox.Size = new System.Drawing.Size(327, 22);
             this.remoteDesktopTextBox.TabIndex = 17;
-            this.remoteDesktopTextBox.Text = "net.tcp://localhost/RemoteDesktop";
+            this.remoteDesktopTextBox.Text = "192.168.1.135";
             // 
             // connectButton
             // 
@@ -342,7 +342,7 @@
             // hostsComboBox
             // 
             this.hostsComboBox.FormattingEnabled = true;
-            this.hostsComboBox.Location = new System.Drawing.Point(48, 288);
+            this.hostsComboBox.Location = new System.Drawing.Point(42, 274);
             this.hostsComboBox.Name = "hostsComboBox";
             this.hostsComboBox.Size = new System.Drawing.Size(215, 24);
             this.hostsComboBox.TabIndex = 23;
@@ -362,7 +362,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(706, 530);
+            this.button8.Location = new System.Drawing.Point(742, 479);
             this.button8.Margin = new System.Windows.Forms.Padding(4);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(100, 28);
@@ -429,7 +429,7 @@
             this.groupBox5.Controls.Add(this.label6);
             this.groupBox5.Controls.Add(this.srcWidthNumeric);
             this.groupBox5.Controls.Add(this.srcHeightNumeric);
-            this.groupBox5.Location = new System.Drawing.Point(542, 179);
+            this.groupBox5.Location = new System.Drawing.Point(536, 167);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(239, 116);
             this.groupBox5.TabIndex = 31;
@@ -442,7 +442,7 @@
             this.groupBox6.Controls.Add(this.label8);
             this.groupBox6.Controls.Add(this.destWidthNumeric);
             this.groupBox6.Controls.Add(this.destHeightNumeric);
-            this.groupBox6.Location = new System.Drawing.Point(542, 321);
+            this.groupBox6.Location = new System.Drawing.Point(536, 309);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(239, 116);
             this.groupBox6.TabIndex = 32;
@@ -483,7 +483,6 @@
             0,
             0,
             0});
-
             // 
             // destHeightNumeric
             // 

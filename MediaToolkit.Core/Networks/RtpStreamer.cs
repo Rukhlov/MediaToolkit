@@ -31,8 +31,20 @@ namespace MediaToolkit
 
         public void Open(NetworkStreamingParams streamingParams)
         {
-            var localIp = IPAddress.Parse(streamingParams.SrcAddr);
-            var localEndpoint = new IPEndPoint(localIp, streamingParams.SrcPort);
+            
+            var srcAddr = streamingParams.SrcAddr;
+            var srcPort = streamingParams.SrcPort;
+
+            var localIp = IPAddress.Any;
+            if (string.IsNullOrEmpty(srcAddr))
+            {
+                if(IPAddress.TryParse(srcAddr, out IPAddress _localIp))
+                {
+                    localIp = _localIp;
+                }
+            }
+            
+            var localEndpoint = new IPEndPoint(localIp, srcPort);
 
             var remoteIp = IPAddress.Parse(streamingParams.DestAddr);
             remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.DestPort);

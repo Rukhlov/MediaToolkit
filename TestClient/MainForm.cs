@@ -28,6 +28,11 @@ using System.ServiceModel;
 using System.Net;
 using System.ServiceModel.Channels;
 using MediaToolkit.Utils;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
+using System.Xml;
+using Message = System.ServiceModel.Channels.Message;
+using MediaToolkit.NativeAPIs;
 
 namespace TestClient
 {
@@ -40,6 +45,7 @@ namespace TestClient
 
         public MainForm()
         {
+
             InitializeComponent();
 
             var args = new string[]
@@ -55,11 +61,9 @@ namespace TestClient
 
             //mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
 
-
-            SharpDX.MediaFoundation.MediaManager.Startup();
-
         }
 
+ 
         private VideoForm vlcVideoForm = null;
         private VlcMediaPlayer mediaPlayer = null;
         private void button1_Click(object sender, EventArgs e)
@@ -158,9 +162,9 @@ namespace TestClient
         }
 
 
-        private VideoReceiver videoReceiver = null;
+        private ScreenReceiver videoReceiver = null;
 
-        private D3DImageProvider imageProvider = null;
+        private D3DImageProvider2 imageProvider = null;
 
 
         //private Form testForm = null;
@@ -176,11 +180,17 @@ namespace TestClient
 
             var port = (int)portNumeric.Value;
 
-            videoReceiver = new VideoReceiver();
+            Play(address, port);
+
+        }
+
+        private void Play(string address, int port)
+        {
+            videoReceiver = new ScreenReceiver();
 
             var inputPars = new VideoEncodingParams
             {
-                Width = (int)srcWidthNumeric.Value,            
+                Width = (int)srcWidthNumeric.Value,
                 Height = (int)srcHeightNumeric.Value,
 
                 //Width = 2560,
@@ -236,7 +246,7 @@ namespace TestClient
                 //host.Child = video;
 
                 //video.DataContext = imageProvider;
-                imageProvider = new D3DImageProvider(Dispatcher.CurrentDispatcher);
+                imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
 
                 var video = testForm.userControl11;
                 video.DataContext = imageProvider;
@@ -249,7 +259,6 @@ namespace TestClient
             imageProvider.Start(videoReceiver.sharedTexture);
 
             videoReceiver.Play();
-
         }
 
         private void VideoReceiver_UpdateBuffer()
@@ -273,7 +282,12 @@ namespace TestClient
 
         private void button5_Click(object sender, EventArgs e)
         {
+            Teardown();
 
+        }
+
+        private void Teardown()
+        {
             if (videoReceiver != null)
             {
                 videoReceiver.Stop();
@@ -288,14 +302,8 @@ namespace TestClient
                 testForm.FormClosed -= TestForm_FormClosed;
                 testForm = null;
             }
-
         }
 
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
 
         private void button6_Click(object sender, EventArgs e)
         {
@@ -327,7 +335,10 @@ namespace TestClient
         {
             logger.Debug("\nFinding IRemoteDesktopService...");
 
-            DiscoveryClient discoveryClient = new DiscoveryClient(new UdpDiscoveryEndpoint());
+            var udpDiscoveryEndpoint = new UdpDiscoveryEndpoint();
+            udpDiscoveryEndpoint.EndpointBehaviors.Add(new WcfDiscoveryAddressCustomEndpointBehavior());
+
+            DiscoveryClient discoveryClient = new DiscoveryClient(udpDiscoveryEndpoint);
 
             var criteria = new FindCriteria(typeof(IRemoteDesktopService));
             criteria.Duration = TimeSpan.FromSeconds(5);
@@ -417,26 +428,54 @@ namespace TestClient
 
         }
 
+
         private ChannelFactory<IRemoteDesktopService> factory = null;
         private void connectButton_Click(object sender, EventArgs e)
         {
-            var addr = remoteDesktopTextBox.Text;
+            var _addr = remoteDesktopTextBox.Text;
+
+            var address = "net.tcp://" + _addr + "/RemoteDesktop";
             try
             {
 
-                var uri = new Uri(addr);
+                var uri = new Uri(address);
+                //NetTcpSecurity security = new NetTcpSecurity
+                //{
+                //    Mode = SecurityMode.Transport,
+                //    Transport = new TcpTransportSecurity
+                //    {
+                //        ClientCredentialType = TcpClientCredentialType.Windows,
+                //        ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign,
+                //    },
+                //};
+
+                NetTcpSecurity security = new NetTcpSecurity
+                {
+                    Mode = SecurityMode.None,
+                };
 
                 var binding = new NetTcpBinding
                 {
                     ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
                     SendTimeout = TimeSpan.FromSeconds(10),
+                    Security = security,
                 };
+
                 factory = new ChannelFactory<IRemoteDesktopService>(binding, new EndpointAddress(uri));
 
+                //var hostName = Dns.GetHostName();
+                //var via = new Uri("net.tcp://" + hostName + "/RemoteDesktop");
+                //factory.Endpoint.EndpointBehaviors.Add(new ClientViaBehavior(via));
+
                 var channel = factory.CreateChannel();
+                
                 try
                 {
-                    channel.Connect("", null);
+                    var clientId = Guid.NewGuid().ToString();
+                    var sessionParams = channel.Connect(clientId);
+
+                    var screens = sessionParams.Screens;
+                    var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
 
                     //var receiver = new RtpReceiver(null);
                     //receiver.Open("0.0.0.0", 1234);
@@ -446,22 +485,33 @@ namespace TestClient
                     //var localAddr = localIPs.FirstOrDefault(a=>a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
                     //var localAddr = receiver.LocalEndpoint;
 
-                     var options = new RemoteDesktopOptions
+                    var options = new SessionOptions
                     {
-                        DestAddr = "192.168.1.135",//localAddr.Address.ToString(), //localAddr.ToString(),
+                        SrcRect = primaryScreen.Bounds,
+                        DestAddr = "", //"192.168.1.135",//localAddr.Address.ToString(), //localAddr.ToString(),
                         DestPort = 1234,
-                        DstSize = new Size(2560, 1440),
-                        
+                        DstSize = new Size(1920, 1080),
+                        EnableInputSimulator = true,
+
                     };
 
                     channel.Start(options);
 
+
+                    this.Play(_addr, 1234);
+
+                    testForm.StartInputSimulator(_addr, 8888);
                 }
                 finally
                 {
-                    if (channel != null)
+                    var c = (IClientChannel)channel;
+                    if (c.State!= CommunicationState.Faulted)
                     {
-                        ((IClientChannel)channel).Close();
+                        c.Close();
+                    }
+                    else
+                    {
+                        c.Abort();
                     }
                 }
             }
@@ -470,6 +520,8 @@ namespace TestClient
                 logger.Error(ex);
             }
         }
+
+
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
@@ -480,8 +532,12 @@ namespace TestClient
                     var channel = factory.CreateChannel();
                     try
                     {
+                        Teardown();
+
                         channel.Stop();
                         channel.Disconnect();
+
+
 
                     }
                     finally
@@ -499,10 +555,7 @@ namespace TestClient
             }
         }
 
-        private void groupBox2_Enter(object sender, EventArgs e)
-        {
 
-        }
 
         private StatisticForm statisticForm = new StatisticForm();
 
@@ -511,7 +564,10 @@ namespace TestClient
             statisticForm.Visible = !statisticForm.Visible;
         }
 
+        private void groupBox1_Enter(object sender, EventArgs e)
+        {
 
+        }
     }
 
 

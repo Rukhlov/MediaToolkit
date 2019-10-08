@@ -32,8 +32,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitButton = new System.Windows.Forms.Button();
@@ -60,6 +60,8 @@
             this.startRemoteServButton = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.settingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.button2 = new System.Windows.Forms.Button();
             this.contextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
@@ -73,39 +75,41 @@
             this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
             this.notifyIcon.Text = "ScreenStreamer";
             this.notifyIcon.Visible = true;
+            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseClick);
             // 
             // contextMenu
             // 
             this.contextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem1,
-            this.toolStripMenuItem2,
+            this.startToolStripMenuItem,
+            this.stopToolStripMenuItem,
+            this.settingToolStripMenuItem,
             this.toolStripSeparator1,
             this.exitMenuItem});
             this.contextMenu.Name = "contextMenu";
-            this.contextMenu.Size = new System.Drawing.Size(125, 82);
+            this.contextMenu.Size = new System.Drawing.Size(130, 106);
             // 
-            // toolStripMenuItem1
+            // startToolStripMenuItem
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(124, 24);
-            this.toolStripMenuItem1.Text = "_TEST1";
+            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.startToolStripMenuItem.Text = "_Start";
             // 
-            // toolStripMenuItem2
+            // stopToolStripMenuItem
             // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(124, 24);
-            this.toolStripMenuItem2.Text = "_TEST2";
+            this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.stopToolStripMenuItem.Text = "_Stop";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(121, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(126, 6);
             // 
             // exitMenuItem
             // 
             this.exitMenuItem.Name = "exitMenuItem";
-            this.exitMenuItem.Size = new System.Drawing.Size(124, 24);
+            this.exitMenuItem.Size = new System.Drawing.Size(129, 24);
             this.exitMenuItem.Text = "_Exit";
             this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
             // 
@@ -335,9 +339,10 @@
             // 
             this.textBox1.Location = new System.Drawing.Point(14, 11);
             this.textBox1.Name = "textBox1";
+            this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(269, 22);
             this.textBox1.TabIndex = 17;
-            this.textBox1.Text = "net.tcp://localhost/RemoteDesktop";
+            this.textBox1.Text = "0.0.0.0";
             // 
             // stopRemoteServButton
             // 
@@ -374,16 +379,34 @@
             this.panel1.Controls.Add(this.stopRemoteServButton);
             this.panel1.Controls.Add(this.textBox1);
             this.panel1.Controls.Add(this.startRemoteServButton);
-            this.panel1.Location = new System.Drawing.Point(545, 147);
+            this.panel1.Location = new System.Drawing.Point(539, 49);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(295, 83);
             this.panel1.TabIndex = 21;
+            // 
+            // settingToolStripMenuItem
+            // 
+            this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.settingToolStripMenuItem.Text = "_Debug";
+            this.settingToolStripMenuItem.Click += new System.EventHandler(this.settingToolStripMenuItem_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(736, 265);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 22;
+            this.button2.Text = "button2";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(874, 450);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.settingPanel);
@@ -409,8 +432,8 @@
         private System.Windows.Forms.NotifyIcon notifyIcon;
         private System.Windows.Forms.Button exitButton;
         private System.Windows.Forms.ContextMenuStrip contextMenu;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitMenuItem;
         private System.Windows.Forms.Button screensUpdateButton;
@@ -436,6 +459,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox networkComboBox;
         private System.Windows.Forms.Button updateNetworksButton;
+        private System.Windows.Forms.ToolStripMenuItem settingToolStripMenuItem;
+        private System.Windows.Forms.Button button2;
     }
 }
 

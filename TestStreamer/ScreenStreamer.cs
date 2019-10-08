@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace TestStreamer
 {
-    public class VideoStreamer
+    public class ScreenStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly ScreenSource screenSource = null;
-        public VideoStreamer(ScreenSource source)
+        public ScreenStreamer(ScreenSource source)
         {
             this.screenSource = source;
 

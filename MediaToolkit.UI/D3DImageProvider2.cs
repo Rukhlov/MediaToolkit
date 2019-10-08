@@ -14,16 +14,16 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Threading;
 
-namespace TestClient
-{
 
-    class D3DImageProvider : INotifyPropertyChanged
+namespace MediaToolkit.UI
+{
+    public class D3DImageProvider2 : INotifyPropertyChanged
     {
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly Dispatcher dispatcher = null;
-        public D3DImageProvider(System.Windows.Threading.Dispatcher dispatcher)
+        public D3DImageProvider2(System.Windows.Threading.Dispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
         }
@@ -52,15 +52,15 @@ namespace TestClient
         {
             logger.Debug("D3DImageProvider::Start()");
 
-            if(sharedTexture == null)
+            if (sharedTexture == null)
             {
                 return;
             }
 
             //ScreenView = new System.Windows.Interop.D3DImage();
-            
 
-            Task.Run(() => 
+
+            Task.Run(() =>
             {
                 waitEvent = new AutoResetEvent(false);
                 Stopwatch sw = new Stopwatch();
@@ -77,13 +77,13 @@ namespace TestClient
                         waitEvent.WaitOne(1000);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.Error(ex);
                 }
                 finally
                 {
-
+                 
                     CleanUp();
                 }
             });
@@ -104,7 +104,7 @@ namespace TestClient
                 //System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
                 var descr = sharedTexture.Description;
- 
+
                 direct3D = new SharpDX.Direct3D9.Direct3DEx();
 
                 var hWnd = MediaToolkit.NativeAPIs.User32.GetDesktopWindow();
@@ -178,7 +178,7 @@ namespace TestClient
                         return;
                     }
 
-                    if(ScreenView == null)
+                    if (ScreenView == null)
                     {
                         ScreenView = new D3DImage();
                     }
@@ -233,11 +233,11 @@ namespace TestClient
                 device = null;
             }
 
-            if (waitEvent != null)
-            {
-                waitEvent.Dispose();
-                waitEvent = null;
-            }
+            //if (waitEvent != null)
+            //{
+            //    waitEvent.Dispose();
+            //    waitEvent = null;
+            //}
 
         }
 
@@ -249,6 +249,5 @@ namespace TestClient
 
 
     }
-
 
 }

@@ -15,8 +15,12 @@ using System.Threading.Tasks;
 
 namespace TestStreamer
 {
-    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single, ConcurrencyMode = ConcurrencyMode.Multiple, UseSynchronizationContext = false)]
-    class RemoteDesktopEngine : IRemoteDesktopService
+
+    [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single,
+        ConcurrencyMode = ConcurrencyMode.Multiple,
+        UseSynchronizationContext = false)]
+        //IncludeExceptionDetailInFaults = true)]
+    class RemoteDesktopService : IRemoteDesktopService
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -39,18 +43,66 @@ namespace TestStreamer
                 var uri = new Uri(address);
                 var hostName = Dns.GetHostName();
 
+                var listenUri = new Uri("net.tcp://" + hostName + "/RemoteDesktop");
+
+                //NetTcpSecurity security = new NetTcpSecurity
+                //{
+                //    Mode = SecurityMode.Transport,
+                //    Transport = new TcpTransportSecurity
+                //    {
+                //        ClientCredentialType = TcpClientCredentialType.Windows,
+                //        ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign,
+                //    },
+                //};
+
+                NetTcpSecurity security = new NetTcpSecurity
+                {
+                    Mode = SecurityMode.None,
+                };
+
                 var binding = new NetTcpBinding
                 {
                     ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
                     SendTimeout = TimeSpan.FromSeconds(10),
+                    Security = security,
                 };
 
                 host = new ServiceHost(this, uri);
-                var endpoint = host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
 
+
+                ////var ips = Dns.GetHostAddresses(hostName);
+                //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
+
+                //foreach (var ip in addrInfos)
+                //{
+                //    var addr = ip.Address;
+                //    if (addr.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                //    {
+                //        continue;
+                //    }
+
+                //    var _addr = new Uri("net.tcp://" + addr + "/RemoteDesktop");
+
+                //    var endpoint = host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, _addr, listenUri);
+
+                //    //var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
+                //    //endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + hostName));
+                //    //endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", hostName));
+                //    //endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
+
+                //}
+
+
+                var endpoint = host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
                 var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
                 endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + hostName));
                 endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", hostName));
+
+                var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
+                foreach (var addr in addrInfos)
+                {
+                    endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"ListenAddr/" + addr));
+                }
                 endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
 
 
@@ -78,7 +130,7 @@ namespace TestStreamer
                 host.Closed += Host_Closed;
 
                 host.Open();
-
+               
                 logger.Debug("Service opened: " + uri.ToString());
 
             }
@@ -128,10 +180,10 @@ namespace TestStreamer
 
         private bool isStreaming = false;
 
-        private VideoStreamer videoStreamer = null;
+        private ScreenStreamer videoStreamer = null;
         private ScreenSource screenSource = null;
         private DesktopManager desktopMan = null;
-        public void StartStreaming(RemoteDesktopOptions options)
+        public void StartStreaming(SessionOptions options)
         {
             int fps = options.FrameRate;
 
@@ -198,7 +250,7 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            videoStreamer = new VideoStreamer(screenSource);
+            videoStreamer = new ScreenStreamer(screenSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
             var captureTask = screenSource.Start();
@@ -238,22 +290,33 @@ namespace TestStreamer
             isStreaming = false;
         }
 
+        public string ServerId { get; private set; }
 
-        public object Connect(string id, object[] args)
+        public SessionDescriptionParams Connect(string clientId)
         {
-            logger.Debug("RemoteDesktopEngine::Connect()");
+            logger.Debug("RemoteDesktopEngine::Connect() " + clientId);
 
-            return null;
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            var screeenBounds = screens.Select(s => new RemoteScreen
+            {
+                DeviceName = s.DeviceName,
+                Bounds = s.Bounds,
+                IsPrimary = s.Primary,            
+            } );
+
+            SessionDescriptionParams sessionDescription = new SessionDescriptionParams
+            {
+                ServerId = this.ServerId,
+                Screens = screeenBounds.ToList(),
+            };
+
+            
+
+            return sessionDescription;
         }
 
-        public bool Setup()
-        {
-            logger.Debug("RemoteDesktopEngine::Setup()");
 
-            return false;
-        }
-
-        public bool Start(RemoteDesktopOptions options )
+        public bool Start(SessionOptions options )
         {
             logger.Debug("RemoteDesktopEngine::Start()");
             bool Result = false;
@@ -262,7 +325,7 @@ namespace TestStreamer
             {
 
                 var destAddr = options.DestAddr;
-                //if (string.IsNullOrEmpty(destAddr))
+                if (string.IsNullOrEmpty(destAddr))
                 {
                     OperationContext context = OperationContext.Current;
 

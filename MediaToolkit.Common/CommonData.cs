@@ -81,13 +81,13 @@ namespace MediaToolkit.Common
     {
 
         [OperationContract(IsInitiating = true)]
-        object Connect(string id, object[] args);
+        SessionDescriptionParams Connect(string ClientId);
 
         [OperationContract(IsTerminating = true)]
         void Disconnect();
 
         [OperationContract]
-        bool Start(RemoteDesktopOptions options);
+        bool Start(SessionOptions options);
 
         [OperationContract]
         bool Stop();
@@ -103,7 +103,28 @@ namespace MediaToolkit.Common
         void PostMessage(string command, object[] args);
     }
 
-    public class RemoteDesktopOptions
+
+
+    public class SessionDescriptionParams
+    {
+        public string ServerId { get; set; }
+
+        public List<RemoteScreen> Screens { get; set; } = new List<RemoteScreen>();
+
+
+        //...
+    }
+
+    public class RemoteScreen
+    {
+        public string DeviceName { get; set; }
+        public bool IsPrimary { get; set; }
+
+        public Rectangle Bounds { get; set; } = Rectangle.Empty;
+
+    }
+
+    public class SessionOptions
     {
         public string DestAddr { get; set; } = "239.0.0.1";
 

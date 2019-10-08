@@ -74,27 +74,24 @@ namespace MediaToolkit.Core
 
             processor.Setup(inProcArgs, outProcArgs);
 
-            var _descr = new Texture2DDescription
-            {
-                // Format = Format.NV12,
-                Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                Width = srcSize.Width,
-                Height = srcSize.Height,
-                MipLevels = 1,
-                ArraySize = 1,
-                SampleDescription = { Count = 1 },
-            };
 
-            bufTexture = new Texture2D(encDevice, _descr);
+            bufTexture = new Texture2D(encDevice, 
+                new Texture2DDescription
+                {
+                    // Format = Format.NV12,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1 },
+                });
 
    
             encoder.DataReady += MfEncoder_DataReady;
 
-
             processor.Start();
             encoder.Start();
-
-
         }
 
         private void MfEncoder_DataReady(byte[] obj)

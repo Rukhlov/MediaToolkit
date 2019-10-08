@@ -30,35 +30,34 @@ namespace TestStreamer
         {
             InitializeComponent();
 
-            this.Visible = false;
 
-            //this.notifyIcon.Visible = true;
-            this.notifyIcon.BalloonTipTitle = "TEST_TITLE";
-            this.notifyIcon.BalloonTipText = "TEST_TEXT";
+            this.notifyIcon.Visible = true;
 
-            this.notifyIcon.MouseClick += NotifyIcon_MouseClick;
+            this.notifyIcon.Text = "TEST_TEXT_TEST_TEXT_TEST_TEXT\r\nTEST_TEXT_TEST_TEXT_TEST_TEXT\r\n";
 
 
-            var screens = Screen.AllScreens.Select(s=>new ScreenItem {Screen = s, Title = s.DeviceName }).ToList();
-            screenItems = new BindingList<ScreenItem>(screens);
+            UpdateScreens();
 
-            screensComboBox.DisplayMember = "Title";
-            screensComboBox.DataSource = screenItems;
-
-            var hostName = System.Net.Dns.GetHostName();
+            //var hostName = System.Net.Dns.GetHostName();
             //textBox1.Text = @"net.tcp://" + hostName + @"/RemoteDesktop";
 
-            textBox1.Text = @"net.tcp://192.168.1.135/RemoteDesktop";
+            //textBox1.Text = @"net.tcp://0.0.0.0/RemoteDesktop";
 
             UpdateNetworks();
 
             UpdateControls();
 
 
-
         }
 
-        private BindingList<ScreenItem> screenItems = new BindingList<ScreenItem>();
+        private bool allowshowdisplay = true;
+
+        protected override void SetVisibleCore(bool value)
+        {
+            base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
+        }
+
+        private BindingList<ComboBoxItem> screenItems = new BindingList<ComboBoxItem>();
 
         class ScreenItem
         {
@@ -69,10 +68,18 @@ namespace TestStreamer
 
         private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left)
             {
+                this.allowshowdisplay = true;
+
                 this.Visible = !this.Visible;
             }
+
+        }
+
+        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Visible = true;
         }
 
         private void exitButton_Click(object sender, EventArgs e)
@@ -81,9 +88,8 @@ namespace TestStreamer
             closing = true;
             this.Close();
 
-            //this.notifyIcon.BalloonTipTitle = "TEST_TITLE";
-            //this.notifyIcon.BalloonTipText = "TEST_TEXT";
-            //this.notifyIcon.ShowBalloonTip(3000);
+            //Application.Exit();
+
         }
 
 
@@ -112,17 +118,22 @@ namespace TestStreamer
 
         private void screensUpdateButton_Click(object sender, EventArgs e)
         {
-            var screens = Screen.AllScreens.Select(s => new ScreenItem { Screen = s, Title = s.DeviceName }).ToList();
+            UpdateScreens();
+        }
 
-            screenItems = new BindingList<ScreenItem>(screens);
+        private void UpdateScreens()
+        {
+            var screens = Screen.AllScreens.Select(s => new ComboBoxItem { Name = s.DeviceName, Tag = s }).ToList();
 
-            screensComboBox.DisplayMember = "Title";
+            screenItems = new BindingList<ComboBoxItem>(screens);
+
+            screensComboBox.DisplayMember = "Name";
             screensComboBox.DataSource = screenItems;
         }
 
         private bool isStreaming = false;
 
-        private VideoStreamer videoStreamer = null;
+        private ScreenStreamer videoStreamer = null;
         private ScreenSource screenSource = null;
         private DesktopManager desktopMan = null;
 
@@ -130,23 +141,14 @@ namespace TestStreamer
         {
 
             var srcAddr = "0.0.0.0";
-            var obj = networkComboBox.SelectedItem;
-            if (obj != null)
+            var ipInfo = GetCurrentIpAddrInfo();
+            if (ipInfo != null)
             {
-                var networkItem = obj as NetworkItem;
-                if (networkItem != null)
-                {
-                    var ipAddrInfo = networkItem.IPAddressInfo;
-                    if (ipAddrInfo != null)
-                    {
-                        srcAddr = ipAddrInfo.Address?.ToString();
-                    }
-
-                }
+                srcAddr = ipInfo.Address?.ToString();
             }
 
-            int fps = (int)fpsNumeric.Value;
 
+            int fps = (int)fpsNumeric.Value;
 
 
             bool showMouse = showMouseCheckBox.Checked;
@@ -206,7 +208,7 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            videoStreamer = new VideoStreamer(screenSource);
+            videoStreamer = new ScreenStreamer(screenSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
 
@@ -288,16 +290,16 @@ namespace TestStreamer
         private Screen currentScreen = null;
         private void screensComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
-            var selectedItem = screensComboBox.SelectedItem;
-            if (selectedItem != null)
+            var obj = screensComboBox.SelectedItem;
+            if (obj != null)
             {
-                var screenItem = selectedItem as ScreenItem;
-                if (screenItem != null)
+                var item = obj as ComboBoxItem;
+                if (item != null)
                 {
-                    var screen = screenItem.Screen;
-                    if(screen != null)
+                    var tag = item.Tag;
+                    if(tag != null)
                     {
-                        currentScreen = screen;
+                        currentScreen = tag as Screen;
                     }
                 }
             }
@@ -321,7 +323,7 @@ namespace TestStreamer
             }
         }
 
-        RemoteDesktopEngine desktopEngine = null;
+        RemoteDesktopService desktopEngine = null;
 
         public bool ServiceHostOpened
         {
@@ -334,9 +336,13 @@ namespace TestStreamer
         private void startRemoteServButton_Click(object sender, EventArgs e)
         {
             logger.Debug("startRemoteServButton_Click(...)");
-            desktopEngine = new RemoteDesktopEngine();
+            desktopEngine = new RemoteDesktopService();
+
+         
             //var address = @"net.tcp://localhost/RemoteDesktop";
-            var address = textBox1.Text;
+            var _addr = textBox1.Text;
+
+            var address = "net.tcp://" + _addr + "/RemoteDesktop";
 
             desktopEngine.Open(address);
 
@@ -369,7 +375,37 @@ namespace TestStreamer
 
         private void networkComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
+            var addr = "0.0.0.0";
+            var ipInfo = GetCurrentIpAddrInfo();
 
+            if (ipInfo != null)
+            {
+                addr = ipInfo.Address.ToString();
+            }
+
+            textBox1.Text = addr;
+
+        }
+
+        public IPAddressInformation GetCurrentIpAddrInfo()
+        {
+            IPAddressInformation ipInfo = null;
+
+            var obj = networkComboBox.SelectedItem;
+            if (obj != null)
+            {
+                var item = obj as ComboBoxItem;
+                if (item != null)
+                {
+                    var tag = item.Tag;
+                    if (tag != null)
+                    {
+                        ipInfo = tag as IPAddressInformation;
+                    }
+                }
+            }
+
+            return ipInfo;
         }
 
         class ComboBoxItem
@@ -378,22 +414,15 @@ namespace TestStreamer
             public object Tag { get; set; }
         }
 
-        class NetworkItem
-        {
-            public string Name { get; set; }
-            public IPAddressInformation IPAddressInfo { get; set; }
-        }
-
-
-        private static List<NetworkItem> GetNetworkItems()
+        private static List<ComboBoxItem> GetNetworkItems()
         {
 
-            List<NetworkItem> networkItems = new List<NetworkItem>();
+            List<ComboBoxItem> networkItems = new List<ComboBoxItem>();
 
-            var networkAny = new NetworkItem
+            var networkAny = new ComboBoxItem
             {
                 Name = "_Any",
-                IPAddressInfo = null,
+                Tag = null,
             };
             networkItems.Add(networkAny);
 
@@ -401,11 +430,13 @@ namespace TestStreamer
 
             foreach (NetworkInterface network in networkInterfaces)
             {
-                IPInterfaceProperties prop = network.GetIPProperties();
 
                 if (network.OperationalStatus == OperationalStatus.Up &&
                     network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 {
+
+                    IPInterfaceProperties prop = network.GetIPProperties();
+
                     foreach (IPAddressInformation addr in prop.UnicastAddresses)
                     {
                         //var phAddr = network.GetPhysicalAddress();
@@ -417,10 +448,10 @@ namespace TestStreamer
                             continue;
                         }
 
-                        networkItems.Add(new NetworkItem
+                        networkItems.Add(new ComboBoxItem
                         {
                             Name = network.Name + " (" + addr.Address.ToString() + ")",
-                            IPAddressInfo = addr,
+                            Tag = addr,
                         });
 
                     }
@@ -429,6 +460,9 @@ namespace TestStreamer
 
             return networkItems;
         }
+
+
+
 
 
         private void updateNetworksButton_Click(object sender, EventArgs e)
@@ -442,10 +476,36 @@ namespace TestStreamer
             var networks = GetNetworkItems();
 
     
-            BindingList<NetworkItem> networkItems = new BindingList<NetworkItem>(networks);
-            
-            networkComboBox.DataSource = networkItems;
+            networkComboBox.DataSource = networks;
             networkComboBox.DisplayMember = "Name";
+
+            var maxWidth = DropDownWidth(networkComboBox);
+            networkComboBox.DropDownWidth = maxWidth;
+        }
+
+
+        int DropDownWidth(ComboBox comboBox)
+        {
+            int maxWidth = 0, temp = 0;
+            foreach (var obj in comboBox.Items)
+            {
+                temp = TextRenderer.MeasureText(comboBox.GetItemText(obj), comboBox.Font).Width;
+                if (temp > maxWidth)
+                {
+                    maxWidth = temp;
+                }
+            }
+            return maxWidth;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //this.notifyIcon.Visible = true;
+            //this.notifyIcon.BalloonTipTitle = "TEST_TITLE";
+            //this.notifyIcon.BalloonTipText = "TEST_TEXT";
+            ////this.notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            ///
+            this.notifyIcon.ShowBalloonTip(10000, "TEST_TITLE", "TEST_TEXT", ToolTipIcon.Info);
         }
     }
 

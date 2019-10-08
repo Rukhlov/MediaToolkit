@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Threading;
+
 using MediaToolkit;
 using MediaToolkit.Common;
 using MediaToolkit.MediaFoundation;
@@ -17,14 +17,14 @@ using SharpDX.MediaFoundation;
 
 namespace TestClient
 {
-    class VideoReceiver
+    public class ScreenReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
 
         private Device device = null;
 
-        internal Texture2D sharedTexture { get; private set; }
+        public Texture2D sharedTexture { get; private set; }
 
         private MfH264Decoder decoder = null;
         private MfVideoProcessor processor = null;
@@ -87,7 +87,7 @@ namespace TestClient
             });
 
             //ImageProvider = new D3DImageProvider(dispatcher);
-            
+
 
             decoder = new MfH264Decoder(device);
 
@@ -117,7 +117,7 @@ namespace TestClient
             };
 
             processor.Setup(inProcArgs, outProcArgs);
-           
+
 
             h264Session = new H264Session();
             rtpReceiver = new RtpReceiver(null);
@@ -127,10 +127,10 @@ namespace TestClient
 
 
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
-            
+
 
             receiverStats = new ReceiverStats();
-            
+
         }
 
         public void Play()
@@ -249,6 +249,7 @@ namespace TestClient
         {
             UpdateBuffer?.Invoke();
         }
+
         public void Stop()
         {
             if (rtpReceiver != null)

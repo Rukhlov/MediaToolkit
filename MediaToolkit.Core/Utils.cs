@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -469,6 +471,34 @@ namespace MediaToolkit.Utils
         }
     }
 
+    public class NetworkHelper
+    {
+        public static List<IPAddressInformation> GetActiveUnicastIpAddressInfos()
+        {
+
+            List<IPAddressInformation> ipAddrInfos = new List<IPAddressInformation>();
+
+            var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface network in networkInterfaces)
+            {
+                if (network.OperationalStatus == OperationalStatus.Up &&
+                    network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                {
+                    IPInterfaceProperties prop = network.GetIPProperties();
+                    foreach (IPAddressInformation addr in prop.UnicastAddresses)
+                    {
+                        if (addr.Address.AddressFamily != AddressFamily.InterNetwork)
+                        {
+                            continue;
+                        }
+                        ipAddrInfos.Add(addr);
+                    }
+                }
+            }
+            return ipAddrInfos;
+        }
+    }
 
 
 }
