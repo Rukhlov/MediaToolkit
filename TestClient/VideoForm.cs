@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -19,18 +20,13 @@ namespace TestClient
         public VideoForm()
         {
             InitializeComponent();
-
-
-
         }
 
-        private AutoResetEvent waitEvent = new AutoResetEvent(false);
-        private object syncRoot = new object();
-        private Socket socket = null;
+        private InputManager inputMan = null;
 
-        public void StartInputSimulator(string address, int port)
+
+        public void LinkInputManager(InputManager manager)
         {
-
             this.userControl11.MouseMove += UserControl11_MouseMove;
 
             this.userControl11.MouseLeftButtonDown += UserControl11_MouseLeftButtonDown;
@@ -41,46 +37,13 @@ namespace TestClient
 
             this.userControl11.MouseDoubleClick += UserControl11_MouseDoubleClick;
 
-            running = true;
-
-            Task.Run(() =>
-            {
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                var ipaddr = IPAddress.Parse(address);
-                socket.Connect(ipaddr, port);
-
-                while (running)
-                {
-
-                    try
-                    {
-                        waitEvent.WaitOne();
-                        lock (syncRoot)
-                        {
-
-                            byte[] data = Encoding.ASCII.GetBytes(message);
-                            socket.Send(data);
-
-                            //client.Send(message);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-
-
-                }
-            });
+            this.inputMan = manager;
 
         }
 
-
-        private string message = "";
-        private bool running = false;
-        public void StopInputSimulator()
+        public void UnlinkInputManager()
         {
-            running = false;
+            this.inputMan = null;
 
             this.userControl11.MouseMove -= UserControl11_MouseMove;
             this.userControl11.MouseLeftButtonDown -= UserControl11_MouseLeftButtonDown;
@@ -102,52 +65,51 @@ namespace TestClient
         private void UserControl11_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Console.WriteLine("MouseLeftButtonDown(...) ");
-
-            lock (syncRoot)
+            if (inputMan != null)
             {
-                // message = time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y;
-                message = "MouseDown:" + (int)MouseButtons.Left+ " " + 1;
+                var message = "MouseDown:" + (int)MouseButtons.Left + " " + 1;
+
+                inputMan.ProcessMessage(message);
             }
-
-            waitEvent.Set();
-
 
         }
 
         private void UserControl11_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Console.WriteLine("MouseLeftButtonUp(...) ");
-            lock (syncRoot)
-            {
-                // message = time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y;
-                message = "MouseUp:" + (int)MouseButtons.Left + " " + 1;
-            }
 
-            waitEvent.Set();
+            if (inputMan != null)
+            {
+                var message = "MouseUp:" + (int)MouseButtons.Left + " " + 1;
+
+                inputMan.ProcessMessage(message);
+            }
 
         }
 
         private void UserControl11_MouseRightButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Console.WriteLine("MouseRightButtonUp(...) ");
-            lock (syncRoot)
+
+            if (inputMan != null)
             {
-                // message = time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y;
-                message = "MouseUp:" + (int)MouseButtons.Right + " " + 1;
+                var message = "MouseUp:" + (int)MouseButtons.Right + " " + 1;
+
+                inputMan.ProcessMessage(message);
             }
 
-            waitEvent.Set();
         }
 
         private void UserControl11_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Console.WriteLine("MouseRightButtonDown(...) ");
-            lock (syncRoot)
-            { 
-                message = "MouseDown:" + (int)MouseButtons.Right + " " + 1;
-            }
 
-            waitEvent.Set();
+            if (inputMan != null)
+            {
+                var message = "MouseDown:" + (int)MouseButtons.Right + " " + 1;
+
+                inputMan.ProcessMessage(message);
+            }
         }
 
 
@@ -168,20 +130,16 @@ namespace TestClient
 
             var time = DateTime.Now;
 
-            lock (syncRoot)
+            if (inputMan != null)
             {
-                // message = time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y;
-                message = "MouseMove:" + _x.ToString(CultureInfo.InvariantCulture) + " " + _y.ToString(CultureInfo.InvariantCulture);
+                var message = "MouseMove:" + _x.ToString(CultureInfo.InvariantCulture) + " " + _y.ToString(CultureInfo.InvariantCulture);
+
+                inputMan.ProcessMessage(message);
             }
 
-            waitEvent.Set();
-
-            ////client.Send(time.ToString("HH:mm:ss.fff") + ">" + _x + " " + _y);
-
-            ////client.Send("MouseMove: " + DateTime.Now.ToString("HH:mm:ss.fff") + ": " + _x + ":" + _y);
-
-            //Console.WriteLine(time.ToString("HH:mm:ss.fff") + ">>" + message);
 
         }
     }
+
+
 }

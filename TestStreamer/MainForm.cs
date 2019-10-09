@@ -329,7 +329,7 @@ namespace TestStreamer
         {
             get
             {
-                return (desktopEngine != null && desktopEngine.ServiceHostOpened);
+                return (desktopEngine != null && desktopEngine.IsOpened);
             }
         }
 

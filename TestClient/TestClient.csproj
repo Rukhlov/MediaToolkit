@@ -108,6 +108,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="RemoteDesktopClient.cs" />
     <Compile Include="StatisticForm.cs">
       <SubType>Form</SubType>
     </Compile>

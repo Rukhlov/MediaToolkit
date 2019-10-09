@@ -135,10 +135,6 @@ namespace TestClient
             };
            
             mediaPlayer?.Play(new FileInfo(file), opts);
-
-           
-
-
         }
 
         private void VlcVideoForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -161,14 +157,8 @@ namespace TestClient
             Process.Start(Path.Combine(CurrentDirectory, "TestStreamer.exe"));
         }
 
-
-        private ScreenReceiver videoReceiver = null;
-
-        private D3DImageProvider2 imageProvider = null;
-
-
-        //private Form testForm = null;
         private VideoForm testForm = null;
+        private D3DImageProvider2 imageProvider = null;
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -180,50 +170,58 @@ namespace TestClient
 
             var port = (int)portNumeric.Value;
 
-            Play(address, port);
+            try
+            {
+                remoteClient = new RemoteDesktopClient();
+
+                var inputPars = new VideoEncodingParams
+                {
+                    Width = (int)srcWidthNumeric.Value,
+                    Height = (int)srcHeightNumeric.Value,
+
+                    //Width = 2560,
+                    //Height = 1440,
+
+                    //Width = 640,//2560,
+                    //Height = 480,//1440,
+                    FrameRate = 30,
+                };
+
+                var outputPars = new VideoEncodingParams
+                {
+                    //Width = 640,//2560,
+                    //Height = 480,//1440,
+                    //Width = 2560,
+                    //Height = 1440,
+
+                    Width = (int)destWidthNumeric.Value,
+                    Height = (int)destHeightNumeric.Value,
+
+                    FrameRate = 30,
+                };
+
+                var networkPars = new NetworkStreamingParams
+                {
+                    SrcAddr = address,
+                    SrcPort = port
+                };
+
+                remoteClient.Play(inputPars, outputPars, networkPars);
+
+                string title = (@"rtp://" + address + ":" + port);
+
+                ShowVideoForm(title);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+                CleanUp();
+            }
 
         }
 
-        private void Play(string address, int port)
+        private void ShowVideoForm(string title)
         {
-            videoReceiver = new ScreenReceiver();
-
-            var inputPars = new VideoEncodingParams
-            {
-                Width = (int)srcWidthNumeric.Value,
-                Height = (int)srcHeightNumeric.Value,
-
-                //Width = 2560,
-                //Height = 1440,
-
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                FrameRate = 30,
-            };
-
-            var outputPars = new VideoEncodingParams
-            {
-                //Width = 640,//2560,
-                //Height = 480,//1440,
-                //Width = 2560,
-                //Height = 1440,
-
-                Width = (int)destWidthNumeric.Value,
-                Height = (int)destHeightNumeric.Value,
-
-                FrameRate = 30,
-            };
-
-            var networkPars = new NetworkStreamingParams
-            {
-                SrcAddr = address,
-                SrcPort = port
-            };
-
-            videoReceiver.Setup(inputPars, outputPars, networkPars);
-            videoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
-
-
             if (testForm == null || testForm.IsDisposed)
             {
                 testForm = new VideoForm
@@ -232,21 +230,13 @@ namespace TestClient
                     Width = 1280,
                     Height = 720,
 
-                    Text = (@"rtp://" + address + ":" + port),
+                    Text = title,
                 };
 
-                //System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
-                //{
-                //    Dock = DockStyle.Fill,
-                //};
-                //testForm.Controls.Add(host);
-
-
-                //UserControl1 video = new UserControl1();
-                //host.Child = video;
-
-                //video.DataContext = imageProvider;
                 imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
+                var reciver = remoteClient.VideoReceiver;
+
+                imageProvider.Start(reciver.sharedTexture);
 
                 var video = testForm.userControl11;
                 video.DataContext = imageProvider;
@@ -254,27 +244,85 @@ namespace TestClient
                 testForm.FormClosed += TestForm_FormClosed;
             }
 
+
             testForm.Visible = true;
-
-            imageProvider.Start(videoReceiver.sharedTexture);
-
-            videoReceiver.Play();
         }
 
-        private void VideoReceiver_UpdateBuffer()
+        private void CloseVideoForm()
         {
-            imageProvider?.Update();
+            if (testForm != null && !testForm.IsDisposed)
+            {
+                testForm.UnlinkInputManager();
+
+                testForm.Close();
+                testForm.FormClosed -= TestForm_FormClosed;
+                testForm = null;
+            }
         }
+
+        public string ClientId { get; private set; }
+        public string ServerId { get; private set; }
+
+        private RemoteDesktopClient remoteClient = new RemoteDesktopClient();
+
+        private ChannelFactory<IRemoteDesktopService> factory = null;
+
+        private void Connect(string _addr)
+        {
+            try
+            {
+                remoteClient.Connect(_addr);
+
+                string title = remoteClient.ServerName + " (" + _addr + ")"; //(@"rtp://" + address + ":" + 1234);
+
+                ShowVideoForm(title);
+                var inputMan = remoteClient.InputManager;
+                testForm.LinkInputManager(inputMan);
+
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                CleanUp();
+            }
+        }
+
+        private void Disconnect()
+        {
+
+            remoteClient?.Disconnect();
+
+            CloseVideoForm();
+
+        }
+
+
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            var _addr = remoteDesktopTextBox.Text;
+
+            Connect(_addr);
+        }
+
+
+        private void disconnectButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Disconnect();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                CleanUp();
+            }
+        }
+
 
         private void TestForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (videoReceiver != null)
-            {
-                videoReceiver.Stop();
-                videoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
-            }
-
-            imageProvider?.Close();
+            remoteClient?.Disconnect();
 
         }
 
@@ -282,54 +330,18 @@ namespace TestClient
 
         private void button5_Click(object sender, EventArgs e)
         {
-            Teardown();
-
-        }
-
-        private void Teardown()
-        {
-            if (videoReceiver != null)
+            try
             {
-                videoReceiver.Stop();
-                videoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
+                remoteClient?.Stop();
+
+                CloseVideoForm();
             }
-
-            imageProvider?.Close();
-
-            if (testForm != null && !testForm.IsDisposed)
+            catch(Exception ex)
             {
-                testForm.Close();
-                testForm.FormClosed -= TestForm_FormClosed;
-                testForm = null;
+                logger.Error(ex);
             }
         }
 
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            if (testForm != null && !testForm.IsDisposed)
-            {
-
-                var addr = textBox1.Text;
-                int port = (int)numericUpDown1.Value;
-                testForm.StartInputSimulator(addr, port);
-            }
-
-        }
-
-        private void button7_Click(object sender, EventArgs e)
-        {
-            if (testForm != null && !testForm.IsDisposed)
-            {
-                testForm.StopInputSimulator();
-            }
-        }
-
-        class ComboBoxItem
-        {
-            public string Name { get; set; }
-            public object Tag{ get; set; }
-        }
 
         private void findServiceButton_Click(object sender, EventArgs e)
         {
@@ -429,133 +441,11 @@ namespace TestClient
         }
 
 
-        private ChannelFactory<IRemoteDesktopService> factory = null;
-        private void connectButton_Click(object sender, EventArgs e)
+        private void CleanUp()
         {
-            var _addr = remoteDesktopTextBox.Text;
+            //...
 
-            var address = "net.tcp://" + _addr + "/RemoteDesktop";
-            try
-            {
-
-                var uri = new Uri(address);
-                //NetTcpSecurity security = new NetTcpSecurity
-                //{
-                //    Mode = SecurityMode.Transport,
-                //    Transport = new TcpTransportSecurity
-                //    {
-                //        ClientCredentialType = TcpClientCredentialType.Windows,
-                //        ProtectionLevel = System.Net.Security.ProtectionLevel.EncryptAndSign,
-                //    },
-                //};
-
-                NetTcpSecurity security = new NetTcpSecurity
-                {
-                    Mode = SecurityMode.None,
-                };
-
-                var binding = new NetTcpBinding
-                {
-                    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
-                    SendTimeout = TimeSpan.FromSeconds(10),
-                    Security = security,
-                };
-
-                factory = new ChannelFactory<IRemoteDesktopService>(binding, new EndpointAddress(uri));
-
-                //var hostName = Dns.GetHostName();
-                //var via = new Uri("net.tcp://" + hostName + "/RemoteDesktop");
-                //factory.Endpoint.EndpointBehaviors.Add(new ClientViaBehavior(via));
-
-                var channel = factory.CreateChannel();
-                
-                try
-                {
-                    var clientId = Guid.NewGuid().ToString();
-                    var sessionParams = channel.Connect(clientId);
-
-                    var screens = sessionParams.Screens;
-                    var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
-
-                    //var receiver = new RtpReceiver(null);
-                    //receiver.Open("0.0.0.0", 1234);
-
-                    //var hostName = Dns.GetHostName();
-                    //var localIPs = Dns.GetHostAddresses(hostName);
-                    //var localAddr = localIPs.FirstOrDefault(a=>a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                    //var localAddr = receiver.LocalEndpoint;
-
-                    var options = new SessionOptions
-                    {
-                        SrcRect = primaryScreen.Bounds,
-                        DestAddr = "", //"192.168.1.135",//localAddr.Address.ToString(), //localAddr.ToString(),
-                        DestPort = 1234,
-                        DstSize = new Size(1920, 1080),
-                        EnableInputSimulator = true,
-
-                    };
-
-                    channel.Start(options);
-
-
-                    this.Play(_addr, 1234);
-
-                    testForm.StartInputSimulator(_addr, 8888);
-                }
-                finally
-                {
-                    var c = (IClientChannel)channel;
-                    if (c.State!= CommunicationState.Faulted)
-                    {
-                        c.Close();
-                    }
-                    else
-                    {
-                        c.Abort();
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex);
-            }
         }
-
-
-
-        private void disconnectButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (factory != null)
-                {
-                    var channel = factory.CreateChannel();
-                    try
-                    {
-                        Teardown();
-
-                        channel.Stop();
-                        channel.Disconnect();
-
-
-
-                    }
-                    finally
-                    {
-                        if (channel != null)
-                        {
-                            ((IClientChannel)channel).Close();
-                        }
-                    }
-                }
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex);
-            }
-        }
-
-
 
         private StatisticForm statisticForm = new StatisticForm();
 
@@ -564,9 +454,10 @@ namespace TestClient
             statisticForm.Visible = !statisticForm.Visible;
         }
 
-        private void groupBox1_Enter(object sender, EventArgs e)
+        class ComboBoxItem
         {
-
+            public string Name { get; set; }
+            public object Tag { get; set; }
         }
     }
 

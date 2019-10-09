@@ -26,7 +26,7 @@ namespace TestStreamer
 
         private ServiceHost host = null;
 
-        public bool ServiceHostOpened
+        public bool IsOpened
         {
             get
             {
@@ -34,16 +34,21 @@ namespace TestStreamer
             }
         }
 
+        public string HostName  { get; private set; }
+        public string ServerId { get; private set; }
+
         public void Open(string address)
         {
             logger.Debug("RemoteDesktopEngine::Open(...) " + address);
 
+            
             try
             {
                 var uri = new Uri(address);
-                var hostName = Dns.GetHostName();
 
-                var listenUri = new Uri("net.tcp://" + hostName + "/RemoteDesktop");
+                this.HostName = Dns.GetHostName();
+                this.ServerId = MediaToolkit.Utils.RngProvider.GetRandomNumber().ToString();
+
 
                 //NetTcpSecurity security = new NetTcpSecurity
                 //{
@@ -69,6 +74,7 @@ namespace TestStreamer
 
                 host = new ServiceHost(this, uri);
 
+                // var listenUri = new Uri("net.tcp://" + HostName + "/RemoteDesktop");
 
                 ////var ips = Dns.GetHostAddresses(hostName);
                 //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
@@ -95,8 +101,8 @@ namespace TestStreamer
 
                 var endpoint = host.AddServiceEndpoint(typeof(IRemoteDesktopService), binding, uri);
                 var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
-                endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + hostName));
-                endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", hostName));
+                endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
+                endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
                 var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
                 foreach (var addr in addrInfos)
@@ -110,19 +116,6 @@ namespace TestStreamer
                 serviceDiscoveryBehavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
                 host.Description.Behaviors.Add(serviceDiscoveryBehavior);
                 host.Description.Endpoints.Add(new UdpDiscoveryEndpoint());
-
-                //behavior.Scopes.Add(scope);
-
-                //foreach (ServiceEndpoint endpoint in host.Description.Endpoints)
-                //{
-                //    if (endpoint.IsSystemEndpoint || endpoint is DiscoveryEndpoint ||
-                //       endpoint is AnnouncementEndpoint || endpoint is ServiceMetadataEndpoint)
-                //        continue;
-
-                //    endpoint.Behaviors.Add(behavior);
-                //}
-
-                //host.AddServiceEndpoint(new UdpDiscoveryEndpoint());
 
 
                 host.Opened += Host_Opened;
@@ -178,12 +171,158 @@ namespace TestStreamer
 
         }
 
+        private Dictionary<string, object> Clients = new Dictionary<string, object>();
+
+        public ConnectionResponse Connect(RemoteDesktopRequest request)
+        {
+            //var sessionId = OperationContext.Current.SessionId;
+
+            var clientId = request.ClientId;
+            logger.Debug("RemoteDesktopEngine::Connect() " + clientId);
+
+
+            ConnectionResponse response = new ConnectionResponse
+            {
+                ServerId = this.ServerId,
+                HostName = this.HostName,
+            };
+
+            if(Clients.Count > 0)
+            {
+                response.FaultCode = -100501;
+                response.FaultDescription = "Max clients limit";
+            }
+
+            if (!Clients.ContainsKey(clientId))
+            {
+                Clients.Add(clientId, null);
+
+                var screens = System.Windows.Forms.Screen.AllScreens;
+                var screeenBounds = screens.Select(s => new RemoteScreen
+                {
+                    DeviceName = s.DeviceName,
+                    Bounds = s.Bounds,
+                    IsPrimary = s.Primary,
+                });
+
+                response.Screens = screeenBounds.ToList();
+                //...
+            }
+            else
+            {
+                response.FaultCode = -100502;
+                response.FaultDescription = "Client is already connected";
+            }
+
+            return response;
+        }
+
+        public RemoteDesktopResponse Start(StartSessionRequest request)
+        {
+            logger.Debug("RemoteDesktopEngine::Start()");
+
+            var clientId = request.ClientId;
+
+            int faultCode = 0;
+            RemoteDesktopResponse response = new RemoteDesktopResponse
+            {
+                ServerId = this.ServerId,
+            };
+
+            if (!Clients.ContainsKey(clientId))
+            {
+                response.FaultCode = -100503;
+                response.FaultDescription = "Client not connected";
+
+                return response;
+            }
+
+
+            try
+            {
+
+                var destAddr = request.DestAddr;
+                if (string.IsNullOrEmpty(destAddr))
+                {
+                    OperationContext context = OperationContext.Current;
+
+                    //var endpoint = context.Channel.RemoteAddress;
+                    //var addr = endpoint.Uri.AbsoluteUri;
+
+                    MessageProperties properties = context.IncomingMessageProperties;
+                    RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
+
+                    request.DestAddr = endpoint.Address;
+
+                }
+
+                StartStreaming(request);
+
+
+            }
+            catch(Exception ex)
+            {
+                faultCode = -100500;
+                logger.Error(ex);
+            }
+
+            response.FaultCode = faultCode;
+
+            return response;
+        }
+
+
+        public RemoteDesktopResponse Stop(RemoteDesktopRequest request)
+        {
+            logger.Debug("RemoteDesktopEngine::Stop()");
+
+            RemoteDesktopResponse response = new RemoteDesktopResponse
+            {
+                ServerId = this.ServerId,
+            };
+
+            StopStreaming();
+
+            return response;
+        }
+
+        public void Disconnect(RemoteDesktopRequest request)
+        {
+            var sessionId = OperationContext.Current.Channel.SessionId;
+            var clientId = request.ClientId;
+
+            logger.Debug("RemoteDesktopEngine::Disconnect() " + clientId);
+         
+            if (Clients.ContainsKey(clientId))
+            {
+                Clients.Remove(clientId);
+            }
+
+
+        }
+
+        public object SendMessage(string id, object[] pars)
+        {
+            logger.Debug("RemoteDesktopEngine::SendMessage(...) " + id);
+
+            return id + "OK!";
+        }
+
+        public void PostMessage(string id, object[] pars)
+        {
+            logger.Debug("RemoteDesktopEngine::PostMessage(...) " + id);
+            //...
+        }
+
+
+
         private bool isStreaming = false;
 
         private ScreenStreamer videoStreamer = null;
         private ScreenSource screenSource = null;
         private DesktopManager desktopMan = null;
-        public void StartStreaming(SessionOptions options)
+
+        public void StartStreaming(StartSessionRequest options)
         {
             int fps = options.FrameRate;
 
@@ -205,7 +344,7 @@ namespace TestStreamer
                 destSize = new Size(srcRect.Width, srcRect.Height);
             }
 
-           
+
             if (aspectRatio)
             {
                 var ratio = srcRect.Width / (double)srcRect.Height;
@@ -290,94 +429,8 @@ namespace TestStreamer
             isStreaming = false;
         }
 
-        public string ServerId { get; private set; }
-
-        public SessionDescriptionParams Connect(string clientId)
-        {
-            logger.Debug("RemoteDesktopEngine::Connect() " + clientId);
-
-            var screens = System.Windows.Forms.Screen.AllScreens;
-            var screeenBounds = screens.Select(s => new RemoteScreen
-            {
-                DeviceName = s.DeviceName,
-                Bounds = s.Bounds,
-                IsPrimary = s.Primary,            
-            } );
-
-            SessionDescriptionParams sessionDescription = new SessionDescriptionParams
-            {
-                ServerId = this.ServerId,
-                Screens = screeenBounds.ToList(),
-            };
-
-            
-
-            return sessionDescription;
-        }
+   
 
 
-        public bool Start(SessionOptions options )
-        {
-            logger.Debug("RemoteDesktopEngine::Start()");
-            bool Result = false;
-
-            try
-            {
-
-                var destAddr = options.DestAddr;
-                if (string.IsNullOrEmpty(destAddr))
-                {
-                    OperationContext context = OperationContext.Current;
-
-                    //var endpoint = context.Channel.RemoteAddress;
-                    //var addr = endpoint.Uri.AbsoluteUri;
-
-                    MessageProperties properties = context.IncomingMessageProperties;
-                    RemoteEndpointMessageProperty endpoint = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-
-                    options.DestAddr = endpoint.Address;
-
-                }
-
-                StartStreaming(options);
-
-                Result = true;
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex);
-            }
-
-            return Result;
-        }
-
-
-        public bool Stop()
-        {
-            logger.Debug("RemoteDesktopEngine::Stop()");
-
-            StopStreaming();
-
-            return true;
-        }
-
-        public void Disconnect()
-        {
-            logger.Debug("RemoteDesktopEngine::Disconnect()");
-
-        }
-
-        public object SendMessage(string id, object[] pars)
-        {
-            logger.Debug("RemoteDesktopEngine::SendMessage(...) " + id);
-
-            return id + "OK!";
-        }
-
-        public void PostMessage(string id, object[] pars)
-        {
-            logger.Debug("RemoteDesktopEngine::PostMessage(...) " + id);
-            //...
-        }
     }
 }

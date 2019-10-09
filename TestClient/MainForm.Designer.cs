@@ -144,7 +144,7 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "TestClient";
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+
             // 
             // label2
             // 
@@ -288,7 +288,7 @@
             this.button6.TabIndex = 4;
             this.button6.Text = "Start";
             this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
+
             // 
             // button7
             // 
@@ -299,7 +299,7 @@
             this.button7.TabIndex = 5;
             this.button7.Text = "Stop";
             this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
+
             // 
             // panel2
             // 

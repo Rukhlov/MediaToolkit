@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
@@ -81,65 +82,119 @@ namespace MediaToolkit.Common
     {
 
         [OperationContract(IsInitiating = true)]
-        SessionDescriptionParams Connect(string ClientId);
+        ConnectionResponse Connect(RemoteDesktopRequest request);
 
         [OperationContract(IsTerminating = true)]
-        void Disconnect();
+        void Disconnect(RemoteDesktopRequest request);
 
         [OperationContract]
-        bool Start(SessionOptions options);
+        RemoteDesktopResponse Start(StartSessionRequest request);
 
         [OperationContract]
-        bool Stop();
+        RemoteDesktopResponse Stop(RemoteDesktopRequest request);
+
 
         [OperationContract]
         object SendMessage(string command, object[] args);
-
-        //[OperationContractAttribute(AsyncPattern = true)]
-        //IAsyncResult BeginSendMessage1(string command, object[] args, AsyncCallback callback, object asyncState);
-        //object EndSendMessage1(IAsyncResult result);
 
         [OperationContract(IsOneWay = true)]
         void PostMessage(string command, object[] args);
     }
 
 
-
-    public class SessionDescriptionParams
+    [DataContract]
+    public class RemoteDesktopRequest
     {
+        [DataMember]
+        public string ClientId { get; set; }
+
+    }
+
+
+    [DataContract]
+    public class RemoteDesktopResponse
+    {
+        [DataMember]
+        public int FaultCode { get; set; } = 0;
+
+        [DataMember]
+        public string FaultDescription { get; set; }
+
+        [DataMember]
         public string ServerId { get; set; }
 
-        public List<RemoteScreen> Screens { get; set; } = new List<RemoteScreen>();
+        public bool IsSuccess
+        {
+            get
+            {
+                return (FaultCode == 0);
+            }
+        }
 
+    }
+
+
+    public class ConnectionResponse : RemoteDesktopResponse
+    {
+        [DataMember]
+        public string HostName { get; set; }
+
+        [DataMember]
+        public List<RemoteScreen> Screens { get; set; } = new List<RemoteScreen>();
 
         //...
     }
 
+    [DataContract]
     public class RemoteScreen
     {
+        [DataMember]
         public string DeviceName { get; set; }
+
+        [DataMember]
         public bool IsPrimary { get; set; }
 
+        [DataMember]
         public Rectangle Bounds { get; set; } = Rectangle.Empty;
 
     }
 
-    public class SessionOptions
+    [DataContract]
+    public class StartSessionRequest: RemoteDesktopRequest
     {
+        [DataMember]
         public string DestAddr { get; set; } = "239.0.0.1";
 
+        [DataMember]
         public int DestPort { get; set; } = 1234;
 
+        [DataMember]
         public int FrameRate { get; set; } = 30;
 
+        [DataMember]
         public bool EnableInputSimulator { get; set; } = true;
 
+        [DataMember]
         public Rectangle SrcRect { get; set; } = Rectangle.Empty;
 
+        [DataMember]
         public Size DstSize { get; set; } = new Size(1920, 1080);
 
+        [DataMember]
         public bool AspectRatio { get; set; } = true;
 
+        [DataMember]
         public bool ShowMouse { get; set; } = true;
+    }
+
+    [ServiceContract(SessionMode = SessionMode.Required)]
+    public interface IRemoteDesktopClient
+    {
+
+        [OperationContract]
+        object SendMessage(string command, object[] args);
+
+        [OperationContract(IsOneWay = true)]
+        void PostMessage(string command, object[] args);
     }
 }
