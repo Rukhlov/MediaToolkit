@@ -62,15 +62,16 @@ namespace MediaToolkit.Common
         public int BitsPerSample = 0;
         public int BlockAlign = 0;
         public string Encoding = "";
+        public string DeviceId = "";
     }
 
     public class NetworkStreamingParams
     {
-        public string SrcAddr = "";
-        public int SrcPort = 0;
+        public string LocalAddr = "";
+        public int LocalPort = 0;
 
-        public string DestAddr = "";
-        public int DestPort = 0;
+        public string RemoteAddr = "";
+        public int RemotePort = 0;
 
         public int MulticastTimeToLive = 10;
 
@@ -106,7 +107,7 @@ namespace MediaToolkit.Common
     public class RemoteDesktopRequest
     {
         [DataMember]
-        public string ClientId { get; set; }
+        public string SenderId { get; set; }
 
     }
 
@@ -195,6 +196,16 @@ namespace MediaToolkit.Common
         object SendMessage(string command, object[] args);
 
         [OperationContract(IsOneWay = true)]
-        void PostMessage(string command, object[] args);
+        void PostMessage(ServerRequest request);
+    }
+
+    public class ServerRequest :RemoteDesktopRequest
+    {
+
+        [DataMember]
+        public string Command { get; set; }
+
+        [DataMember]
+        public object[] Args { get; set; }
     }
 }

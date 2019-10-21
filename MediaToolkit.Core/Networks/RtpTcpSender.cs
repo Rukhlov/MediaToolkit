@@ -16,10 +16,11 @@ namespace MediaToolkit
 {
 
 
-    public class RtpStreamer
+    public class RtpTcpSender
+
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        public RtpStreamer(RtpSession session)
+        public RtpTcpSender(RtpSession session)
         {
             this.session = session;
 
@@ -30,68 +31,82 @@ namespace MediaToolkit
         private IPEndPoint remoteEndpoint;
 
 
-        public void Open(NetworkStreamingParams streamingParams)
+        public void Start(NetworkStreamingParams streamingParams)
         {
             try
             {
-                logger.Debug("RtpStreamer::Open(...)");
-                var srcAddr = streamingParams.LocalAddr;
-                var srcPort = streamingParams.LocalPort;
-
-                var localIp = IPAddress.Any;
-                if (string.IsNullOrEmpty(srcAddr))
-                {
-                    if (IPAddress.TryParse(srcAddr, out IPAddress _localIp))
-                    {
-                        localIp = _localIp;
-                    }
-                }
-
-                var localEndpoint = new IPEndPoint(localIp, srcPort);
-
-                var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
-                remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
-
-                logger.Debug("RtpStreamer::Open(...) " + remoteEndpoint + " " + localEndpoint);
-
-
-                var bytes = remoteIp.GetAddressBytes();
-                bool isMulicast = (bytes[0] >= 224 && bytes[0] <= 239);
-
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                if (isMulicast)
-                {
-                    var ttl = streamingParams.MulticastTimeToLive;
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
-                }
-
-                socket.Bind(localEndpoint);
-
-                running = true;
-
-                logger.Info("Server started " + remoteEndpoint.ToString());
-
 
                 Task.Run(() =>
                 {
+                    logger.Debug("RtpStreamer::Open(...)");
+
+                    var localAddr = streamingParams.LocalAddr;
+                    var localPort = streamingParams.LocalPort;
+
+                    var localIp = IPAddress.Any;
+                    if (!string.IsNullOrEmpty(localAddr))
+                    {
+                        if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
+                        {
+                            localIp = _localIp;
+                        }
+                    }
+
+                    var localEndpoint = new IPEndPoint(localIp, localPort);
+
+                    var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
+                    remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
+
+                    logger.Debug("RtpStreamer::Open(...) " + remoteEndpoint + " " + localEndpoint);
+
+
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    socket.Bind(localEndpoint);
+                    socket.Listen(10);
+
+                    running = true;
 
                     while (running)
                     {
-                        //if (!syncEvent.WaitOne(1000))
-                        //{
-                        //    continue;
-                        //}
 
-                        syncEvent.WaitOne(1000);
-
-                        SendPackets();
-
-                        if (!running)
+                        try
                         {
-                            break;
+                            logger.Info("Waiting for a connection " + localEndpoint.ToString());
+
+                            var _socket = socket.Accept();
+
+                            if (!running)
+                            {
+                                break;
+                            }
+
+                            var remotePoint = _socket.RemoteEndPoint;
+
+                            logger.Info("Server started " + remotePoint.ToString());
+
+                            while (running)
+                            {
+                                //if (!syncEvent.WaitOne(1000))
+                                //{
+                                //    continue;
+                                //}
+
+                                syncEvent.WaitOne(1000);
+
+                                SendPackets(_socket);
+
+                                if (!running)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        catch(Exception ex)
+                        {
+                            logger.Error(ex);
                         }
                     }
+
                 });
 
             }
@@ -133,7 +148,7 @@ namespace MediaToolkit
             syncEvent.Set();
         }
 
-        private void SendPackets()
+        private void SendPackets(Socket _socket)
         {
             if (!running)
             {
@@ -159,18 +174,47 @@ namespace MediaToolkit
                 {
                     try
                     {
-                        //var data = pkt;//.GetBytes();
+
+                        // RFC 2326 10.12 Embedded (Interleaved) Binary Data
+
+                        /*
+                        *   S->C: $\000{2 byte length}{"length" bytes data, w/RTP header}
+                            S->C: $\000{2 byte length}{"length" bytes data, w/RTP header}
+                            S->C: $\001{2 byte length}{"length" bytes  RTCP packet}
+                        */
+
+                        const byte magicSymbol = (byte)'$';
+                        byte channelId = 0x42;
                         var data = pkt.GetBytes();
-                        //logger.Debug("pkt" + pkt.Sequence);
-                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, remoteEndpoint);
-                        //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
-                        bytesSend += data.Length;
+
+                        ushort dataLength = (ushort)data.Length;
+
+                        int frameSize = data.Length + 4; // data + header
+
+                        byte[] frameBytes = new byte[frameSize];
+
+                        int offset = 0;
+                        frameBytes[offset] = magicSymbol;
+                        offset++;
+
+                        frameBytes[offset] = channelId;
+                        offset++;
+
+                        BigEndian.WriteUInt16(frameBytes, offset, dataLength);
+                        offset += 2;
+
+                        Array.Copy(data, 0, frameBytes, offset, data.Length);
+                        offset += data.Length;
+
+                        _socket?.Send(frameBytes, 0, frameBytes.Length, SocketFlags.None);
+
+                        bytesSend += frameBytes.Length;
 
                         // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), rtp.Length);
                     }
                     catch (ObjectDisposedException) { }
                 }
-                
+
             }
 
         }

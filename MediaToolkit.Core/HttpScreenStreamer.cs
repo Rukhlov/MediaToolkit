@@ -17,7 +17,7 @@ using MediaToolkit.Core.Networks;
 namespace MediaToolkit
 {
 
-    class HttpScreenStreamer
+    public class HttpScreenStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -42,7 +42,6 @@ namespace MediaToolkit
             {
                 running = true;
 
-                //throw new Exception("sdsdf");
 
                 FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
                

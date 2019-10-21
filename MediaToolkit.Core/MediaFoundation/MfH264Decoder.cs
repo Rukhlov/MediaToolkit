@@ -381,7 +381,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
                     {
-                        logger.Warn(res.ToString() + " TransformNeedMoreInput");
+                        //logger.Warn(res.ToString() + " TransformNeedMoreInput");
 
                         Result = true;
 

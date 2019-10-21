@@ -15,7 +15,7 @@ using NLog;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
 
-namespace TestClient
+namespace MediaToolkit
 {
     public class ScreenReceiver
     {
@@ -31,7 +31,9 @@ namespace TestClient
 
 
         private H264Session h264Session = null;
-        private RtpReceiver rtpReceiver = null;
+        private RtpTcpReceiver rtpReceiver = null;
+        
+        //private RtpReceiver rtpReceiver = null;
 
         public void Setup(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
         {
@@ -120,12 +122,8 @@ namespace TestClient
 
 
             h264Session = new H264Session();
-            rtpReceiver = new RtpReceiver(null);
-
-
-            rtpReceiver.Open(networkPars.SrcAddr, networkPars.SrcPort);
-
-
+            rtpReceiver = new RtpTcpReceiver(null);
+            rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
 

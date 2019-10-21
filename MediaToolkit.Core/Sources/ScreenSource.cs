@@ -19,6 +19,7 @@ namespace MediaToolkit
         public CaptureType CaptureType = CaptureType.GDI;
         public int Fps = 10;
         public bool CaptureMouse = false;
+        public bool AspectRatio = true;
     }
 
     public enum CaptureState
@@ -57,12 +58,12 @@ namespace MediaToolkit
 
         private ScreenCapture screenCapture = null;
 
-        private ScreenCaptureParams captureParams = null;
+        public ScreenCaptureParams CaptureParams { get; private set; }
         public void Setup(ScreenCaptureParams captureParams)
         {
             logger.Debug("ScreenSource::Setup()");
 
-            this.captureParams = captureParams;
+            this.CaptureParams = captureParams;
 
             var srcRect = captureParams.SrcRect;
             var destSize = captureParams.DestSize;
@@ -72,6 +73,7 @@ namespace MediaToolkit
             {
                 screenCapture = ScreenCapture.Create(captureParams.CaptureType);
                 screenCapture.CaptureMouse = captureParams.CaptureMouse;
+                screenCapture.AspectRatio = captureParams.AspectRatio;
 
                 screenCapture.Init(srcRect, destSize);
                 //screenCapture.Init(srcRect);
@@ -103,7 +105,7 @@ namespace MediaToolkit
             {
                 logger.Info("Capturing thread started...");
 
-                var frameRate = captureParams.Fps;
+                var frameRate = CaptureParams.Fps;
 
                 CaptureStats captureStats = new CaptureStats();
 

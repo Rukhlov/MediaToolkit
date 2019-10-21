@@ -158,6 +158,8 @@ namespace TestStreamer
         {
             logger.Debug("RemoteDesktopEngine::Close()");
 
+            Clients.Clear();
+
             if (host != null)
             {
 
@@ -177,7 +179,7 @@ namespace TestStreamer
         {
             //var sessionId = OperationContext.Current.SessionId;
 
-            var clientId = request.ClientId;
+            var clientId = request.SenderId;
             logger.Debug("RemoteDesktopEngine::Connect() " + clientId);
 
 
@@ -221,7 +223,7 @@ namespace TestStreamer
         {
             logger.Debug("RemoteDesktopEngine::Start()");
 
-            var clientId = request.ClientId;
+            var clientId = request.SenderId;
 
             int faultCode = 0;
             RemoteDesktopResponse response = new RemoteDesktopResponse
@@ -262,6 +264,8 @@ namespace TestStreamer
             }
             catch(Exception ex)
             {
+                StopStreaming();
+
                 faultCode = -100500;
                 logger.Error(ex);
             }
@@ -289,7 +293,7 @@ namespace TestStreamer
         public void Disconnect(RemoteDesktopRequest request)
         {
             var sessionId = OperationContext.Current.Channel.SessionId;
-            var clientId = request.ClientId;
+            var clientId = request.SenderId;
 
             logger.Debug("RemoteDesktopEngine::Disconnect() " + clientId);
          
@@ -324,6 +328,9 @@ namespace TestStreamer
 
         public void StartStreaming(StartSessionRequest options)
         {
+
+            logger.Debug("StartStreaming()");
+
             int fps = options.FrameRate;
 
             bool showMouse = options.ShowMouse;
@@ -377,8 +384,8 @@ namespace TestStreamer
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                DestAddr = options.DestAddr,
-                DestPort = options.DestPort,
+                RemoteAddr = options.DestAddr,
+                RemotePort = options.DestPort,
             };
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
@@ -409,6 +416,8 @@ namespace TestStreamer
 
         public void StopStreaming()
         {
+            logger.Debug("StopStreaming()");
+
             if (screenSource != null)
             {
                 screenSource.Close();

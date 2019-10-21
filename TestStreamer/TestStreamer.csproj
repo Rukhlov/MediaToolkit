@@ -39,6 +39,9 @@
     <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
       <HintPath>..\packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
     </Reference>
+    <Reference Include="NAudio, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.9.0\lib\net35\NAudio.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=2.0.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.2.0.1.2\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -72,11 +75,35 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\AudioStreamerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\AudioStreamerControl.Designer.cs">
+      <DependentUpon>AudioStreamerControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HttpStreamerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\HttpStreamerControl.Designer.cs">
+      <DependentUpon>HttpStreamerControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PreviewForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Controls\PreviewForm.Designer.cs">
       <DependentUpon>PreviewForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\RemoteServerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\RemoteServerControl.Designer.cs">
+      <DependentUpon>RemoteServerControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ScreenStreamerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ScreenStreamerControl.Designer.cs">
+      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\StatisticForm.cs">
       <SubType>Form</SubType>
@@ -94,6 +121,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteDesktopService.cs" />
     <Compile Include="ScreenStreamer.cs" />
+    <EmbeddedResource Include="Controls\AudioStreamerControl.resx">
+      <DependentUpon>AudioStreamerControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\HttpStreamerControl.resx">
+      <DependentUpon>HttpStreamerControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\RemoteServerControl.resx">
+      <DependentUpon>RemoteServerControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\ScreenStreamerControl.resx">
+      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\StatisticForm.resx">
       <DependentUpon>StatisticForm.cs</DependentUpon>
     </EmbeddedResource>

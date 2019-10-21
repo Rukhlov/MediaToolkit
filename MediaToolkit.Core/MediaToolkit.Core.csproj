@@ -96,10 +96,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioReceiver.cs" />
     <Compile Include="DesktopManager.cs" />
     <Compile Include="Networks\HttpStreamer.cs" />
+    <Compile Include="Networks\RtpTcpReceiver.cs" />
+    <Compile Include="Networks\RtpTcpSender.cs" />
     <Compile Include="ScreenReceiver.cs" />
-    <Compile Include="Sources\AudioLoopbackSource.cs" />
+    <Compile Include="Sources\AudioSource.cs" />
     <Compile Include="MediaFoundation\MfCommon.cs" />
     <Compile Include="MediaFoundation\MfH264Encoder.cs" />
     <Compile Include="MediaFoundation\MfH264Decoder.cs" />
@@ -118,7 +121,7 @@
     <Compile Include="ScreenCaptures\GDIPlusCapture.cs" />
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />
     <Compile Include="Sources\ScreenSource.cs" />
-    <Compile Include="VideoEncoder.cs" />
+    <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

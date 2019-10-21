@@ -26,6 +26,7 @@ using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Common;
 using namespace System::Threading;
+using namespace NLog;
 
 namespace FFmpegLib {
 
@@ -39,6 +40,7 @@ namespace FFmpegLib {
 
 		void Open(AudioEncodingParams^ srcParams, AudioEncodingParams^ dstParams) {
 
+			logger->Debug("AudioEncoder::Open(...)");
 			closing = false;
 
 			//AVCodec* encoder = avcodec_find_encoder_by_name("");
@@ -360,6 +362,9 @@ namespace FFmpegLib {
 
 		void Close() {
 
+
+			logger->Debug("AudioEncoder::Close(...)");
+
 			if (swr_ctx != NULL) {
 
 				pin_ptr<SwrContext*> p_swr_ctx = &swr_ctx;
@@ -679,6 +684,8 @@ namespace FFmpegLib {
 
 		void CleanUp() {
 
+			logger->Debug("AudioEncoder::CleanUp()");
+
 			if (fifo) {
 				av_audio_fifo_free(fifo);
 			}
@@ -715,7 +722,7 @@ namespace FFmpegLib {
 		//int src_linesize;
 		//int src_nb_samples = 1024;
 
-
+		static Logger^ logger = LogManager::GetCurrentClassLogger();
 
 	};
 

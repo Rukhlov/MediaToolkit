@@ -40,6 +40,21 @@ namespace MediaToolkit.UI
 
         private Surface surface = null;
 
+        public Size SurfSize
+        {
+            get
+            {
+                var size = Size.Empty;
+                if (surface != null)
+                {
+                    var descr = surface.Description;
+                    size = new Size(descr.Width, descr.Height);
+
+                }
+                return size;
+            }
+        }
+
         private D3DImage screenView = null;
         public D3DImage ScreenView
         {

@@ -25,6 +25,9 @@ namespace MediaToolkit.Core.Networks
         private List<MJpegClientHandler> clients = new List<MJpegClientHandler>();
 
         public readonly HttpStats statCounter = new HttpStats();
+
+        private TcpListener listener = null;
+
         public Task Start(NetworkStreamingParams networkParams)
         {
             logger.Debug("HttpStreamer::Start()");
@@ -33,7 +36,7 @@ namespace MediaToolkit.Core.Networks
             {
                 running = true;
 
-                string ipStr = networkParams.DestAddr;
+                string ipStr = networkParams.RemoteAddr;
                 var addr = System.Net.IPAddress.Any;
                 if (!System.Net.IPAddress.TryParse(ipStr, out addr))
                 {
@@ -45,10 +48,9 @@ namespace MediaToolkit.Core.Networks
                     addr = System.Net.IPAddress.Any;
                 }
 
-                var port = networkParams.DestPort;
+                var port = networkParams.RemotePort;
 
-                TcpListener listener = null;
-
+  
                 try
                 {
                     Statistic.RegisterCounter(statCounter);
@@ -109,7 +111,7 @@ namespace MediaToolkit.Core.Networks
                     logger.Debug("listener?.Stop()");
 
                     listener?.Stop();
-
+                    
                     //foreach (var c in clients)
                     //{
                     //    c.Dispose();
@@ -281,6 +283,8 @@ namespace MediaToolkit.Core.Networks
 
                 running = false;
                 syncEvent?.Set();
+
+
             }
 
             public void Dispose()
@@ -403,6 +407,9 @@ namespace MediaToolkit.Core.Networks
             {
                 client.Stop();
             }
+
+            listener?.Stop();
+
         }
 
     }

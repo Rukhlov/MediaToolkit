@@ -30,8 +30,10 @@ namespace TestStreamer
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         private RtpSession h264Session = null;
+        private RtpTcpSender rtpStreamer = null;
+        
 
-        private RtpStreamer rtpStreamer = null;
+        //private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;
         //private FFmpegVideoEncoder encoder = null;
 
@@ -45,8 +47,10 @@ namespace TestStreamer
             try
             {
                 h264Session = new H264Session();
-                rtpStreamer = new RtpStreamer(h264Session);
-                rtpStreamer.Open(networkParams);
+                rtpStreamer = new RtpTcpSender(h264Session);
+
+                //rtpStreamer = new RtpStreamer(h264Session);
+                rtpStreamer.Start(networkParams);
 
 
                 //var hwContext = screenSource.hwContext;
@@ -155,7 +159,9 @@ namespace TestStreamer
             // var memo = new MemoryStream(buf);
             // memo.CopyTo(file);
 
-            rtpStreamer.Send(buf, time);
+            rtpStreamer.Push(buf, time);
+
+            // rtpStreamer.Send(buf, time);
             var processingTime = sw.ElapsedMilliseconds;
             //logger.Debug(processingTime);
 

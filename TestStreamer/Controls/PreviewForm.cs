@@ -27,6 +27,8 @@ namespace TestStreamer.Controls
             provider.Setup(source);
 
             d3DImageControl1.DataContext = provider;
+
+
         }
     }
 }

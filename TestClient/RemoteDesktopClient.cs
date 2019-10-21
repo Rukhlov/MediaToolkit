@@ -1,4 +1,5 @@
-﻿using MediaToolkit.Common;
+﻿using MediaToolkit;
+using MediaToolkit.Common;
 using MediaToolkit.UI;
 using MediaToolkit.Utils;
 using NLog;
@@ -20,22 +21,44 @@ namespace TestClient
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public ScreenReceiver VideoReceiver { get; private set; } = new ScreenReceiver();
-        public InputManager InputManager { get; private set; } = new InputManager();
+        public ScreenReceiver VideoReceiver { get; private set; }
+        public InputManager InputManager { get; private set; } 
 
 
         public string ClientId { get; private set; }
         public string ServerId { get; private set; }
         public string ServerName { get; private set; }
+        public string ServerAddr { get; private set; }
+        public ClientState State { get; private set; }
 
         private ChannelFactory<IRemoteDesktopService> factory = null;
 
 
         public void Connect(string _addr)
         {
-            var address = "net.tcp://" + _addr + "/RemoteDesktop";
+
+            logger.Debug("RemoteDesktopClient::Connect(...) " + _addr);
+
+            this.ServerAddr = _addr;
+            Task.Run(() => 
+            {
+                ClientProc();
+            });
+          
+        }
+        private CommandQueue commandQueue = new CommandQueue();
+
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private bool running = false;
+
+
+        private void ClientProc()
+        {
+            var address = "net.tcp://" + ServerAddr + "/RemoteDesktop";
             try
             {
+
+
                 var uri = new Uri(address);
                 //NetTcpSecurity security = new NetTcpSecurity
                 //{
@@ -66,11 +89,9 @@ namespace TestClient
                 {
                     this.ClientId = RngProvider.GetRandomNumber().ToString();
 
-                    //var clientId = Guid.NewGuid().ToString();
-
                     var connectReq = new RemoteDesktopRequest
                     {
-                        ClientId = ClientId,
+                        SenderId = ClientId,
                     };
 
                     var connectionResponse = channel.Connect(connectReq);
@@ -88,7 +109,7 @@ namespace TestClient
 
                     var startRequest = new StartSessionRequest
                     {
-                        ClientId = this.ClientId,
+                        SenderId = this.ClientId,
 
                         SrcRect = primaryScreen.Bounds,
                         DestAddr = "", //"192.168.1.135",//localAddr.Address.ToString(), //localAddr.ToString(),
@@ -128,40 +149,101 @@ namespace TestClient
 
                     var networkPars = new NetworkStreamingParams
                     {
-                        SrcAddr = _addr,
-                        SrcPort = 1234
+                        LocalAddr = ServerAddr,
+                        LocalPort = 1234
                     };
 
                     this.Play(inputPars, outputPars, networkPars);
 
-                    InputManager.Start(_addr, 8888);
+                    InputManager = new InputManager();
 
+                    InputManager.Start(ServerAddr, 8888);
+                    running = true;
+
+                    State = ClientState.Connected;
+
+                    OnStateChanged(State);
+
+                    while (running)
+                    {
+
+                        channel.PostMessage("Ping", null);
+
+
+                        syncEvent.WaitOne(1000);
+
+                        //InternalCommand command = null;
+                        //do
+                        //{
+                        //    command = DequeueCommand();
+                        //    if (command != null)
+                        //    {
+                        //        ProcessCommand(command);
+                        //    }
+
+                        //} while (command != null);
+                    }
 
 
                 }
                 finally
                 {
-                    var c = (IClientChannel)channel;
-                    if (c.State != CommunicationState.Faulted)
+                    running = false;
+
+                    State = ClientState.Disconnected;
+                    OnStateChanged(State);
+
+                    try
                     {
-                        c.Close();
+                        var c = (IClientChannel)channel;
+                        if (c.State != CommunicationState.Faulted)
+                        {
+                            c.Close();
+                        }
+                        else
+                        {
+                            c.Abort();
+                        }
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        c.Abort();
+                        logger.Error(ex);
                     }
                 }
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
-                CleanUp();
+
+               
+                State = ClientState.Faulted;
+                OnStateChanged(State);
+
+                Close();
             }
         }
 
 
-        public void Play(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
+        private void ProcessCommand(InternalCommand command)
         {
+            // logger.Debug("ProcessInternalCommand(...)");
+
+            if (!running)
+            {
+                return;
+            }
+
+            if (command == null)
+            {
+                return;
+            }
+        }
+
+
+
+        internal void Play(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
+        {
+            logger.Debug("RemoteDesktopClient::Play(...)");
             VideoReceiver = new ScreenReceiver();
 
             VideoReceiver.Setup(inputPars, outputPars, networkPars);
@@ -170,14 +252,32 @@ namespace TestClient
             VideoReceiver.Play();
         }
 
-        public Action UpdateBuffer;
+        public event Action<ClientState> StateChanged;
+        private void OnStateChanged(ClientState state)
+        {
+            StateChanged?.Invoke(state);
+        }
+
+        public event Action Connected;
+        private void OnConnected()
+        {
+            Connected?.Invoke();
+        }
+        public event Action Disconnected;
+        private void OnDisconnected()
+        {
+            Disconnected?.Invoke();
+        }
+        public event Action UpdateBuffer;
         private void VideoReceiver_UpdateBuffer()
         {
             UpdateBuffer?.Invoke();
         }
 
-        public void Stop()
+        internal void Stop()
         {
+            logger.Debug("RemoteDesktopClient::Stop()");
+
             if (VideoReceiver != null)
             {
                 VideoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
@@ -187,6 +287,9 @@ namespace TestClient
 
         public void Disconnect()
         {
+            logger.Debug("RemoteDesktopClient::Disconnect()");
+
+            running = false;
 
             if (factory != null)
             {
@@ -195,13 +298,13 @@ namespace TestClient
                 {
                     var request = new RemoteDesktopRequest
                     {
-                        ClientId = ClientId,
+                        SenderId = ClientId,
                     };
 
                     var resp = channel.Stop(request);
                     channel.Disconnect(request);
 
-                    Stop();
+                    CloseReceiver();
 
                 }
                 finally
@@ -216,8 +319,17 @@ namespace TestClient
 
         }
 
+        private void CloseReceiver()
+        {
+            if (InputManager != null)
+            {
+                InputManager.Stop();
+            }
 
-        private void CleanUp()
+            Stop();
+        }
+
+        public void Close()
         {
 
             if (VideoReceiver != null)
@@ -234,7 +346,6 @@ namespace TestClient
 
             }
 
-
             if (factory != null)
             {
                 factory.Abort();
@@ -249,12 +360,45 @@ namespace TestClient
             return id + "OK!";
         }
 
-        public void PostMessage(string id, object[] pars)
+        public void PostMessage(ServerRequest request)
         {
-            logger.Debug("IRemoteDesktopClient::PostMessage(...) " + id);
-            //...
+            var id = request.SenderId;
+            var cmd = request.Command;
+            var args = request.Args;
+
+            logger.Debug("IRemoteDesktopClient::PostMessage(...) " + id + " " + cmd);
+
+            var command = new InternalCommand
+            {
+                command = cmd,
+                args = args,
+            };
+
+            EnqueueCommand(command);
+
         }
 
+
+        private InternalCommand DequeueCommand()
+        {
+            if (!running)
+            {
+                return null;
+            }
+
+            return commandQueue.Dequeue();
+        }
+
+        private void EnqueueCommand(InternalCommand command)
+        {
+            if (!running)
+            {
+                return;
+            }
+
+            commandQueue.Enqueue(command);
+            syncEvent.Set();
+        }
     }
 
 
@@ -272,14 +416,19 @@ namespace TestClient
 
         public void Start(string address, int port)
         {
+            logger.Debug("InputManager::Start(...) " + address + " " + port);
             Task.Run(() =>
             {
+
+                logger.Debug("InputManagerTask BEGIN");
+
                 try
                 {
                     socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                     var ipaddr = IPAddress.Parse(address);
                     socket.Connect(ipaddr, port);
                     running = true;
+
 
                     while (running)
                     {
@@ -304,6 +453,8 @@ namespace TestClient
                             logger.Error(ex);
                         }
                     }
+
+
                 }
                 catch (Exception ex)
                 {
@@ -320,6 +471,8 @@ namespace TestClient
 
                     running = false;
                 }
+
+                logger.Debug("InputManagerTask END");
             });
         }
 
@@ -340,9 +493,20 @@ namespace TestClient
         }
         public void Stop()
         {
+            logger.Debug("InputManager::Stop()");
+
             running = false;
             waitEvent.Set();
 
         }
+    }
+
+
+    public enum ClientState
+    {
+        Created,
+        Connected,
+        Disconnected,
+        Faulted,
     }
 }

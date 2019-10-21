@@ -245,6 +245,33 @@ namespace MediaToolkit.RTP
 
             return packet;
         }
+
+        public RtpPacket Clone()
+        {
+            RtpPacket packet = new RtpPacket();
+
+            packet.Version = this.Version;
+            packet.Padding = this.Padding;
+            packet.Extension = this.Extension;
+            packet.CSRCCount = this.CSRCCount;
+
+            packet.Marker = this.Marker;
+            packet.PayloadType = this.PayloadType;
+            packet.Sequence = this.Sequence;
+
+            packet.Timestamp = this.Timestamp;
+            packet.SSRC = this.SSRC;
+
+            packet.CSRC = this.CSRC;
+            packet.HeaderExtensionProfile = this.HeaderExtensionProfile;
+
+            packet.packetBytes = new byte[this.packetBytes.Length];
+
+            this.packetBytes.CopyTo(packet.packetBytes, 0);
+
+            return packet;
+            
+        }
     }
 
     public unsafe static class BigEndian

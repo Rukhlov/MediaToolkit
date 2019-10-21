@@ -33,6 +33,9 @@ using System.ServiceModel.Dispatcher;
 using System.Xml;
 using Message = System.ServiceModel.Channels.Message;
 using MediaToolkit.NativeAPIs;
+using MediaToolkit.Core;
+using NAudio.CoreAudioApi;
+using NAudio.Wave;
 
 namespace TestClient
 {
@@ -60,10 +63,20 @@ namespace TestClient
             mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
 
             //mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
+            //remoteClient = new RemoteDesktopClient();
 
+            //remoteClient.StateChanged += RemoteClient_StateChanged;
+
+            //remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
+
+
+            LoadMMDevicesCombo();
+
+            UpdateControls();
         }
 
- 
+
+
         private VideoForm vlcVideoForm = null;
         private VlcMediaPlayer mediaPlayer = null;
         private void button1_Click(object sender, EventArgs e)
@@ -160,8 +173,10 @@ namespace TestClient
         private VideoForm testForm = null;
         private D3DImageProvider2 imageProvider = null;
 
-        private void button4_Click(object sender, EventArgs e)
+        private void playButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("playButton_Click(...)");
+
             var address = addressTextBox.Text;
             if (string.IsNullOrEmpty(address))
             {
@@ -173,6 +188,8 @@ namespace TestClient
             try
             {
                 remoteClient = new RemoteDesktopClient();
+
+                remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
 
                 var inputPars = new VideoEncodingParams
                 {
@@ -202,8 +219,8 @@ namespace TestClient
 
                 var networkPars = new NetworkStreamingParams
                 {
-                    SrcAddr = address,
-                    SrcPort = port
+                    LocalAddr = address,
+                    LocalPort = port
                 };
 
                 remoteClient.Play(inputPars, outputPars, networkPars);
@@ -263,22 +280,33 @@ namespace TestClient
         public string ClientId { get; private set; }
         public string ServerId { get; private set; }
 
-        private RemoteDesktopClient remoteClient = new RemoteDesktopClient();
+        private RemoteDesktopClient remoteClient = null;
 
-        private ChannelFactory<IRemoteDesktopService> factory = null;
 
         private void Connect(string _addr)
         {
+           
             try
             {
+                if (remoteClient != null)
+                {
+                    remoteClient.StateChanged -= RemoteClient_StateChanged;
+                    remoteClient.UpdateBuffer -= RemoteClient_UpdateBuffer;
+                    remoteClient.Close();
+
+                }
+
+                remoteClient = new RemoteDesktopClient();
+
+                remoteClient.StateChanged += RemoteClient_StateChanged;
+
+                remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
+
                 remoteClient.Connect(_addr);
+                this.Cursor = Cursors.WaitCursor;
 
-                string title = remoteClient.ServerName + " (" + _addr + ")"; //(@"rtp://" + address + ":" + 1234);
 
-                ShowVideoForm(title);
-                var inputMan = remoteClient.InputManager;
-                testForm.LinkInputManager(inputMan);
-
+                panel2.Enabled = false;
 
             }
             catch (Exception ex)
@@ -288,9 +316,71 @@ namespace TestClient
             }
         }
 
+        private void RemoteClient_StateChanged(ClientState state)
+        {
+            logger.Debug("RemoteClient_StateChanged(...) " + state);
+
+            this.Invoke((Action)(() =>
+            {
+                if (state == ClientState.Connected)
+                {
+                    string title = remoteClient.ServerName + " (" + remoteClient.ServerAddr + ")"; //(@"rtp://" + address + ":" + 1234);
+
+                    ShowVideoForm(title);
+                    var inputMan = remoteClient.InputManager;
+                    testForm.LinkInputManager(inputMan);
+
+                    UpdateControls();
+
+
+                }
+                else if (state == ClientState.Disconnected)
+                {
+                    UpdateControls();
+                }
+                else if (state == ClientState.Faulted)
+                {
+                    MessageBox.Show("(state == ClientState.Faulted)", "Achtung_Achtung");
+
+                    remoteClient?.Close();
+
+                    CloseVideoForm();
+                }
+
+                this.Cursor = Cursors.Default;
+               // this.UseWaitCursor = false;
+                panel2.Enabled = true;
+
+            }));
+        }
+
+        Stopwatch sw = new Stopwatch();
+        private void RemoteClient_UpdateBuffer()
+        {
+            
+
+            imageProvider?.Update();
+            //var ts = sw.ElapsedMilliseconds;
+            //Console.WriteLine("ElapsedMilliseconds " + ts);
+
+            //sw.Restart();
+        }
+
+        private void UpdateControls()
+        {
+            bool isConnected = (remoteClient != null && remoteClient.State == ClientState.Connected);
+
+            connectButton.Enabled = !isConnected;
+            disconnectButton.Enabled = isConnected;
+        }
+
+
         private void Disconnect()
         {
 
+  
+
+            remoteClient.UpdateBuffer -= RemoteClient_UpdateBuffer;
             remoteClient?.Disconnect();
 
             CloseVideoForm();
@@ -328,10 +418,14 @@ namespace TestClient
 
 
 
-        private void button5_Click(object sender, EventArgs e)
+        private void stopButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("stopButton_Click(...)");
+
             try
             {
+                remoteClient.UpdateBuffer -= RemoteClient_UpdateBuffer;
+
                 remoteClient?.Stop();
 
                 CloseVideoForm();
@@ -354,7 +448,10 @@ namespace TestClient
 
             var criteria = new FindCriteria(typeof(IRemoteDesktopService));
             criteria.Duration = TimeSpan.FromSeconds(5);
-            ProgressForm progress = new ProgressForm();
+            ProgressForm progress = new ProgressForm
+            {
+                StartPosition = FormStartPosition.CenterParent,
+            };
 
             List<ComboBoxItem> hostItems = new List<ComboBoxItem>();
 
@@ -459,46 +556,166 @@ namespace TestClient
             public string Name { get; set; }
             public object Tag { get; set; }
         }
-    }
 
-
-    public class ProgressForm : Form
-    {
-
-        private Button button = new Button();
-        public ProgressBar progress = new ProgressBar();
-        private TableLayoutPanel panel = new TableLayoutPanel();
-
-        public ProgressForm()
+        private void hostsComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
-            this.MaximizeBox = false;
+            var obj = hostsComboBox.SelectedItem;
 
-            this.Width = 450;
-            this.Height = 60;
+            if (obj != null)
+            {
+                var item = obj as ComboBoxItem;
+                if (item != null)
+                {
+                    var tag = item.Tag;
+                    if (tag != null)
+                    {
+                        var addr = tag.ToString();
+                        try
+                        {
+                            var builder = new UriBuilder(addr);
 
-            button.Text = "Cancel";
-            button.AutoSize = true;
+                            remoteDesktopTextBox.Text = builder.Host;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Debug(ex);
+                        }
 
-            this.DialogResult = System.Windows.Forms.DialogResult.OK;
+                    }
 
-            button.Dock = DockStyle.Fill;
-
-            this.CancelButton = button;
-
-            progress.Dock = DockStyle.Fill;
-            progress.Style = ProgressBarStyle.Marquee;
-
-            this.panel.Dock = DockStyle.Fill;
-
-            this.panel.ColumnCount = 2;
-            this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80));
-            this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20));
-
-            this.panel.Controls.Add(this.progress, 0, 0);
-            this.panel.Controls.Add(this.button, 1, 0);
-
-            this.Controls.Add(panel);
+                }
+            }
         }
 
+        private AudioReceiver audioReceiver = null;
+
+        private void audioPlayButton_Click(object sender, EventArgs e)
+        {
+            audioReceiver = new AudioReceiver();
+            var addr = audioAddrTextBox.Text;
+            var port = (int)audioPortNumeric.Value;
+
+            var sampleRate = (int)sampleRateNumeric.Value;
+            var channels = (int)channelsNumeric.Value;
+            var networkPars = new NetworkStreamingParams
+            {
+                LocalAddr = addr,
+                LocalPort = port
+            };
+
+            var audioPars = new AudioEncodingParams
+            {
+                SampleRate = sampleRate,
+                Channels = channels,
+                Encoding = "ulaw",
+                DeviceId = currentDirectSoundDeviceInfo?.Guid.ToString() ?? "",
+            };
+
+            audioReceiver.SetWaveformPainter(this.waveformPainter1);
+
+            audioReceiver.Setup(audioPars, networkPars);
+            audioReceiver.Play();
+
+        }
+
+        private void audioStopButton_Click(object sender, EventArgs e)
+        {
+            audioReceiver?.Stop();
+        }
+
+        private DirectSoundDeviceInfo currentDirectSoundDeviceInfo = null;
+
+        private void audioUpdateButton_Click(object sender, EventArgs e)
+        {
+            LoadMMDevicesCombo();
+        }
+
+        private void LoadMMDevicesCombo()
+        {
+
+
+            //List<MMDevice> mmdevices = new List<MMDevice>();
+
+            //using (var deviceEnum = new MMDeviceEnumerator())
+            //{
+                
+            //    var renderDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active).ToList();
+            //    var defaultDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+            //    if (defaultDevice != null)
+            //    {
+            //        mmdevices.Add(defaultDevice);
+            //        foreach(var device in renderDevices)
+            //        {
+            //            if(device.ID == defaultDevice.ID)
+            //            {
+            //                continue;
+            //            }
+            //            mmdevices.Add(device);
+            //        }
+            //    }
+            //    else
+            //    {
+
+            //        mmdevices.AddRange(renderDevices);
+            //    }
+
+            //}
+
+            audioRenderComboBox.DataSource = DirectSoundOut.Devices;
+            audioRenderComboBox.DisplayMember = "Description";
+
+
+        }
+
+        private void audioRenderComboBox_SelectedValueChanged(object sender, EventArgs e)
+        {
+            var selectedItem = audioRenderComboBox.SelectedItem;
+            if (selectedItem != null)
+            {
+                currentDirectSoundDeviceInfo = selectedItem as DirectSoundDeviceInfo;
+                
+            }
+        }
     }
+
+
+    //public class ProgressForm : Form
+    //{
+
+    //    private Button button = new Button();
+    //    public ProgressBar progress = new ProgressBar();
+    //    private TableLayoutPanel panel = new TableLayoutPanel();
+
+    //    public ProgressForm()
+    //    {
+    //        this.MaximizeBox = false;
+
+    //        this.Width = 450;
+    //        this.Height = 60;
+
+    //        button.Text = "_Cancel";
+    //        button.AutoSize = true;
+
+    //        this.DialogResult = System.Windows.Forms.DialogResult.OK;
+
+    //        button.Dock = DockStyle.Fill;
+
+    //        this.CancelButton = button;
+
+    //        progress.Dock = DockStyle.Fill;
+    //        progress.Style = ProgressBarStyle.Marquee;
+
+    //        this.panel.Dock = DockStyle.Fill;
+
+    //        this.panel.ColumnCount = 2;
+    //        this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80));
+    //        this.panel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20));
+
+    //        this.panel.Controls.Add(this.progress, 0, 0);
+    //        this.panel.Controls.Add(this.button, 1, 0);
+
+    //        this.Controls.Add(panel);
+    //    }
+
+    //}
 }

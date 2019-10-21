@@ -93,6 +93,7 @@ namespace MediaToolkit
 
         public bool CaptureMouse { get; set; }
 
+        public bool AspectRatio { get; set; }
 
         public virtual void Close()
         {

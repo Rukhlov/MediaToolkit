@@ -54,7 +54,13 @@ namespace MediaToolkit.RTP
 
         public override byte[] Depacketize(RtpPacket pkt)
         {
-            throw new NotImplementedException();
+            byte[] payload = null;
+            if (pkt != null)
+            {
+                payload = pkt.Payload.ToArray();
+            }
+
+            return payload;
         }
 
         public List<RtpPacket> CratePackets(byte[] data, uint timestamp)

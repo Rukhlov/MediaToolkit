@@ -51,6 +51,8 @@ namespace MediaToolkit
         private Texture2D acquiredDesktopImage = null;
         private Texture2D desktopTexture = null;
 
+        private Texture2D regionTexture = null;
+
         private Texture2D stagingTexture = null;
 
         SharpDX.Direct2D1.RenderTarget desktopTarget = null;
@@ -150,22 +152,22 @@ namespace MediaToolkit
 
             }
 
-            //// Create Staging texture CPU-accessible
-            //stagingTexture = new Texture2D(Device3d11,
-            //    new Texture2DDescription
-            //    {
-            //        CpuAccessFlags = CpuAccessFlags.Read,
-            //        BindFlags = BindFlags.None,
-            //        Format = Format.B8G8R8A8_UNorm,
-            //        Width = videoBuffer.bitmap.Width,
-            //        Height = videoBuffer.bitmap.Height,
-            //        MipLevels = 1,
-            //        ArraySize = 1,
-            //        SampleDescription = { Count = 1, Quality = 0 },
-            //        Usage = ResourceUsage.Staging,
-            //        OptionFlags = ResourceOptionFlags.None,
-            //    });
-            
+            // Create Staging texture CPU-accessible
+            stagingTexture = new Texture2D(device,
+                new Texture2DDescription
+                {
+                    CpuAccessFlags = CpuAccessFlags.Read,
+                    BindFlags = BindFlags.None,
+                    Format = Format.B8G8R8A8_UNorm,
+                    Width = videoBuffer.bitmap.Width,
+                    Height = videoBuffer.bitmap.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Staging,
+                    OptionFlags = ResourceOptionFlags.None,
+                });
+
             SharedTexture = new Texture2D(device,
                  new Texture2DDescription
                  {
@@ -190,11 +192,30 @@ namespace MediaToolkit
             //bmp.Dispose();
             //Device3d11.ImmediateContext.CopyResource(texture, SharedTexture);
             //Device3d11.ImmediateContext.Flush();
-
+            
             desktopTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                    Format = Format.B8G8R8A8_UNorm,
+
+                    Width = 2560,//srcRect.Width,
+                    Height = 1440,//srcRect.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Default,
+                    //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                    OptionFlags = ResourceOptionFlags.Shared,
+                    
+                });
+
+            regionTexture = new Texture2D(device,
+                new Texture2DDescription
+                {
+
                     CpuAccessFlags = CpuAccessFlags.None,
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = Format.B8G8R8A8_UNorm,
@@ -205,9 +226,9 @@ namespace MediaToolkit
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
                     Usage = ResourceUsage.Default,
-                    //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                    OptionFlags = ResourceOptionFlags.Shared,
-                    
+                                //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                                OptionFlags = ResourceOptionFlags.Shared,
+
                 });
 
 
@@ -235,7 +256,7 @@ namespace MediaToolkit
 
         }
 
-          private bool deviceReady = false;
+        private bool deviceReady = false;
 
         public override bool UpdateBuffer(int timeout = 10)
         {
@@ -302,37 +323,120 @@ namespace MediaToolkit
 
                         UpdateMouseInfo(frameInfo);
 
-                        using (var acquiredSurf = acquiredDesktopImage.QueryInterface<Surface1>())
+                        var _left = srcRect.Left;
+                        var _top = srcRect.Top;
+                        var _right = srcRect.Right;
+                        var _bottom = srcRect.Bottom;
+
+                        if (_left < 0)
+                        {
+                            _left = (srcRect.Width + _left);                          
+                        }
+
+                        _right = _left + srcRect.Width;
+
+                        //if (_top < 0)
+                        //{
+                        //    _top = 0;
+                        //}
+
+                        ResourceRegion region = new ResourceRegion
+                        {
+                            Left = _left, //srcRect.Left,
+                            Top = _top, //srcRect.Top,
+                            Right = _right, // srcRect.Right,
+                            Bottom = _bottom, //srcRect.Bottom,
+                            Back = 1,
+                        };
+                        
+                        device.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, region, regionTexture, 0);
+
+                        desktopTarget.BeginDraw();
+                        desktopTarget.Clear(Color.Red);
+                        
+                        using (var acquiredSurf = regionTexture.QueryInterface<Surface1>())
+                        //using (var acquiredSurf = acquiredDesktopImage.QueryInterface<Surface1>())
                         {
 
                             var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
                             Direct2D.Bitmap acquiredBits = new Direct2D.Bitmap(desktopTarget, acquiredSurf, prop);
                             try
                             {
+                                float width = videoBuffer.bitmap.Width;
+                                float height = videoBuffer.bitmap.Height;
 
-                                desktopTarget.BeginDraw();
+                                float srcWidth = acquiredSurf.Description.Width;
+                                float srcHeight = acquiredSurf.Description.Height;
 
-                                var scrDescr = acquiredDesktopImage.Description;
-                                var scaleX = videoBuffer.bitmap.Width / (float)scrDescr.Width;
-                                var scaleY = videoBuffer.bitmap.Height / (float)scrDescr.Height;
-                                desktopTarget.Transform = Matrix3x2.Scaling(scaleX, scaleY);
+                                float scaleX = width / srcWidth;
+                                float scaleY = height / srcHeight;
 
-                                var renderSize = desktopTarget.Size;
-                                var srcRect = new RawRectangleF(0, 0, renderSize.Width, renderSize.Height);
-                                desktopTarget.DrawBitmap(acquiredBits, srcRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                                float destX = 0;
+                                float destY = 0;
+
+                                if (AspectRatio)
+                                {
+                                    if (scaleY < scaleX)
+                                    {
+                                        scaleX = scaleY;
+                                        destX = ((width - srcWidth * scaleX) / 2);
+                                    }
+                                    else
+                                    {
+                                        scaleY = scaleX;
+                                        destY = ((height - srcHeight * scaleY) / 2);
+                                    }
+                                }
+
+                                float destWidth = srcWidth * scaleX;
+                                float destHeight = srcHeight * scaleY;
+
+        
+                                //var scaleX = videoBuffer.bitmap.Width / (float)scrDescr.Width;
+                                //var scaleY = videoBuffer.bitmap.Height / (float)scrDescr.Height;
+
+                                ////var destDescr = regionTexture.Description;
+                                ////var scrDescr = acquiredDesktopImage.Description;
+
+                                ////var srcRatio = scrDescr.Width / scrDescr.Height;
+                                ////var destRatio = destDescr.Width / destDescr.Height;
+
+                                ////var scaleX = scrDescr.Width / (float)destDescr.Width;
+                                ////var scaleY = scrDescr.Height / (float)destDescr.Height;
+
+                                ////var scrDescr = regionTexture.Description;
+
+                                //var scrDescr = acquiredDesktopImage.Description;
+                                //var scaleX =(float)videoBuffer.bitmap.Width / width  ;//(float)scrDescr.Width;
+                                //var scaleY =  (float)videoBuffer.bitmap.Height / height ;//(float)scrDescr.Height;
+
+                                //desktopTarget.Transform = Matrix3x2.Scaling(scaleX, scaleY);
+
+
+                                var left = destX;
+                                var right = destX + destWidth;
+                                var top = destY;
+                                var bottom = destY + destHeight;
+
+                                var rect = new RawRectangleF(left, top, right, bottom);
+   
+                                desktopTarget.DrawBitmap(acquiredBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
 
                                 if (this.CaptureMouse && cursorObj.Visible)
                                 {
                                     DrawCursor();
                                 }
 
-                                desktopTarget.EndDraw();
+
                             }
                             finally
                             {
                                 acquiredBits?.Dispose();
                             }
                         }
+                        
+
+                        desktopTarget.EndDraw();
 
                         ResourceRegion scaledRegion = new ResourceRegion
                         {
@@ -345,7 +449,9 @@ namespace MediaToolkit
 
                         if (UseHwContext)
                         {
-    
+                           // device.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, scaledRegion, SharedTexture, 0);
+
+                            
                             device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, SharedTexture, 0);
                             device.ImmediateContext.Flush();
                         }
@@ -1028,7 +1134,12 @@ namespace MediaToolkit
                 cursorObj = null;
             }
 
-            
+            if (regionTexture != null && !regionTexture.IsDisposed)
+            {
+                regionTexture.Dispose();
+                regionTexture = null;
+            }
+
             if (desktopTexture != null && !desktopTexture.IsDisposed)
             {
                 desktopTexture.Dispose();
@@ -1051,6 +1162,12 @@ namespace MediaToolkit
             {
                 deskDupl.Dispose();
                 deskDupl = null;
+            }
+
+            if (stagingTexture != null && !stagingTexture.IsDisposed)
+            {
+                stagingTexture.Dispose();
+                stagingTexture = null;
             }
 
             if (SharedTexture != null && !SharedTexture.IsDisposed)
