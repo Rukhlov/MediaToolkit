@@ -75,8 +75,28 @@ namespace MediaToolkit.Common
 
         public int MulticastTimeToLive = 10;
 
+        public TransportMode TransportMode = TransportMode.Udp;
+
     }
 
+    public enum TransportMode
+    {
+        Tcp,
+        Udp,
+        Unknown,
+    }
+
+    public enum AudioEncoderMode
+    {
+        AAC,
+        G711,
+    }
+
+    public enum VideoEncoderMode
+    {
+        H264,
+        JPEG
+    }
 
     [ServiceContract(SessionMode = SessionMode.Required)]
     public interface IRemoteDesktopService

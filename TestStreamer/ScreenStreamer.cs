@@ -30,7 +30,7 @@ namespace TestStreamer
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         private RtpSession h264Session = null;
-        private RtpTcpSender rtpStreamer = null;
+        private IRtpSender rtpSender = null;
         
 
         //private RtpStreamer rtpStreamer = null;
@@ -47,10 +47,21 @@ namespace TestStreamer
             try
             {
                 h264Session = new H264Session();
-                rtpStreamer = new RtpTcpSender(h264Session);
+                if(networkParams.TransportMode == TransportMode.Tcp)
+                {
+                    rtpSender = new RtpTcpSender(h264Session);
+                }
+                else if(networkParams.TransportMode == TransportMode.Udp)
+                {
+                    rtpSender = new RtpStreamer(h264Session);
+                }
+                else
+                {
+                    throw new FormatException("NotSupportedFormat " +  networkParams.TransportMode);
+                }
 
                 //rtpStreamer = new RtpStreamer(h264Session);
-                rtpStreamer.Start(networkParams);
+                rtpSender.Start(networkParams);
 
 
                 //var hwContext = screenSource.hwContext;
@@ -159,7 +170,7 @@ namespace TestStreamer
             // var memo = new MemoryStream(buf);
             // memo.CopyTo(file);
 
-            rtpStreamer.Push(buf, time);
+            rtpSender.Push(buf, time);
 
             // rtpStreamer.Send(buf, time);
             var processingTime = sw.ElapsedMilliseconds;
@@ -243,7 +254,7 @@ namespace TestStreamer
 
             screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
-            rtpStreamer?.Close();
+            rtpSender?.Close();
         }
 
         class StreamStats : StatCounter

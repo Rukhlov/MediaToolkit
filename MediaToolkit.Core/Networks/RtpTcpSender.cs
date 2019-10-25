@@ -14,9 +14,15 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
+    public interface IRtpSender
+    {
+        void Start(NetworkStreamingParams streamingParams);
+        void Push(byte[] bytes, double sec);
+        void Close();
 
+    }
 
-    public class RtpTcpSender
+    public class RtpTcpSender : IRtpSender
 
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
@@ -66,6 +72,7 @@ namespace MediaToolkit
 
                     running = true;
 
+                    int clientsCount = 0;
                     while (running)
                     {
 
@@ -74,31 +81,47 @@ namespace MediaToolkit
                             logger.Info("Waiting for a connection " + localEndpoint.ToString());
 
                             var _socket = socket.Accept();
+                            
+                            //if(clientsCount > 0)
+                            //{
+                            //    logger.Warn("clientsCount > 0");
+                            //    _socket?.Close();
+                            //    continue;
+                            //}
 
-                            if (!running)
+                            try
                             {
-                                break;
-                            }
-
-                            var remotePoint = _socket.RemoteEndPoint;
-
-                            logger.Info("Server started " + remotePoint.ToString());
-
-                            while (running)
-                            {
-                                //if (!syncEvent.WaitOne(1000))
-                                //{
-                                //    continue;
-                                //}
-
-                                syncEvent.WaitOne(1000);
-
-                                SendPackets(_socket);
-
+                                clientsCount++;
                                 if (!running)
                                 {
                                     break;
                                 }
+
+                                var remotePoint = _socket.RemoteEndPoint;
+
+                                logger.Info("Client connected: " + remotePoint.ToString());
+
+                                while (running)
+                                {
+                                    //if (!syncEvent.WaitOne(1000))
+                                    //{
+                                    //    continue;
+                                    //}
+
+                                    syncEvent.WaitOne(1000);
+
+                                    SendPackets(_socket);
+
+                                    if (!running)
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                            finally
+                            {
+                                clientsCount--;
+                                _socket?.Close();
                             }
                         }
                         catch(Exception ex)
@@ -128,6 +151,15 @@ namespace MediaToolkit
             if (!running)
             {
                 return;
+            }
+
+            lock (locker)
+            { 
+                if (packetQueue.Count > 1024)
+                {
+                    packetQueue.Clear();
+                    logger.Warn("Buffer full drop frames...");
+                }
             }
 
             var packets = session.Packetize(bytes, sec);

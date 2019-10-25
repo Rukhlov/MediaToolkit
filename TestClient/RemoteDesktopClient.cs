@@ -146,11 +146,13 @@ namespace TestClient
 
                         FrameRate = 30,
                     };
+                    var transport = TransportMode.Udp;
 
                     var networkPars = new NetworkStreamingParams
                     {
                         LocalAddr = ServerAddr,
-                        LocalPort = 1234
+                        LocalPort = 1234,
+                        TransportMode = transport,
                     };
 
                     this.Play(inputPars, outputPars, networkPars);

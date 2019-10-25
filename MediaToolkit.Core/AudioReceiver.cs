@@ -1,12 +1,14 @@
 ﻿using FFmpegLib;
 using MediaToolkit.Common;
 using MediaToolkit.RTP;
+using NAudio.Codecs;
 using NAudio.Gui;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,7 +22,7 @@ namespace MediaToolkit.Core
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private PCMUSession session = null;
-        private RtpReceiver rtpReceiver = null;
+        private IRtpReceiver rtpReceiver = null;
 
 
         private IWavePlayer wavePlayer;
@@ -32,6 +34,7 @@ namespace MediaToolkit.Core
         private volatile bool bufferLost = false;
 
         private AudioDecoder decoder = null;
+         
 
         public void Setup(AudioEncodingParams inputPars, NetworkStreamingParams networkPars)
         {
@@ -84,11 +87,12 @@ namespace MediaToolkit.Core
                     };
 
                     volumeProvider = new VolumeSampleProvider(waveBuffer.ToSampleProvider());
-                    var postVolumeMeter = new MeteringSampleProvider(volumeProvider);
+                    
+                    var meteringSampleProvider = new MeteringSampleProvider(volumeProvider);
 
-                    postVolumeMeter.StreamVolume += PostVolumeMeter_StreamVolume;
+                    meteringSampleProvider.StreamVolume += PostVolumeMeter_StreamVolume;
 
-                    wavePlayer.Init(postVolumeMeter);
+                    wavePlayer.Init(meteringSampleProvider);
 
 
                     bufferLost = false;
@@ -100,7 +104,19 @@ namespace MediaToolkit.Core
 
 
                 session = new PCMUSession();
-                rtpReceiver = new RtpReceiver(session);
+
+                if(networkPars.TransportMode == TransportMode.Tcp)
+                {
+                    rtpReceiver = new RtpTcpReceiver(session);
+                }
+                else 
+                {
+                    rtpReceiver = new RtpReceiver(session);
+                }
+                
+
+
+
                 rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
                 rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
@@ -112,9 +128,28 @@ namespace MediaToolkit.Core
 
                 throw;
             }
- 
-
         }
+
+        public float Volume
+        {
+            get
+            {
+                return volumeProvider?.Volume ?? 0;
+            }
+            set
+            {
+                if (volumeProvider != null)
+                {
+                    float vol = volumeProvider.Volume;
+                    if (vol != value)
+                    {
+                        //logger.Debug("Volume: " + vol + " newVolume: " + value);
+                        volumeProvider.Volume = value;
+                    }
+                }
+            }
+        }
+
 
         private WaveformPainter waveformPainter = null;
         public void SetWaveformPainter(WaveformPainter painter)
@@ -173,6 +208,9 @@ namespace MediaToolkit.Core
             }
         }
 
+        //FileStream fileStream = new FileStream("d:\\test.wav", FileMode.Create);
+        //FileStream fileStream1 = new FileStream("d:\\test1.wav", FileMode.Create);
+
         private void RtpReceiver_RtpPacketReceived(RtpPacket packet)
         {
             if (closing)
@@ -184,7 +222,23 @@ namespace MediaToolkit.Core
             var data = session.Depacketize(packet);
             if (data != null)
             {
-                decoder.Decode(data, out byte[] decoded);
+               //fileStream.Write(data, 0, data.Length);
+
+
+                byte[] decoded = new byte[2 * data.Length];
+                int j = 0;
+                for (int i = 0; i < data.Length; i++)
+                {
+                    short sample = MuLawDecoder.MuLawToLinearSample(data[i]);
+                    decoded[j++] = (byte)(sample & 0xFF);
+                    decoded[j++] = (byte)(sample >> 8);
+                }
+
+                //decoder.Decode(data, out byte[] decoded);
+
+
+                //fileStream1.Write(decoded, 0, decoded.Length);
+
                 if (decoded != null && decoded.Length > 0)
                 {
                     waveBuffer.AddSamples(decoded, 0, decoded.Length);

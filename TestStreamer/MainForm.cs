@@ -243,25 +243,13 @@ namespace TestStreamer
 
         }
 
+        private void screenStreamerControl_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 
-    enum TransportMode
-    {
-        Tcp,
-        Udp
-    }
 
-    enum AudioEncoderMode
-    {
-        G711,
-        AAC
-    }
-
-    enum VideoEncoderMode
-    {
-        H264,
-        JPEG
-    }
 
 
     class ComboBoxItem

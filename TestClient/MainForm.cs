@@ -51,16 +51,6 @@ namespace TestClient
 
             InitializeComponent();
 
-            var args = new string[]
-            {
-             // "--extraintf=logger",
-             //"--verbose=0",
-               //"--network-caching=300"
-             };
-
-            logger.Debug("VlcLibDirectory: " + VlcLibDirectory);
-
-            mediaPlayer = new VlcMediaPlayer(VlcLibDirectory, args);
 
             //mediaPlayer.VideoHostControlHandle = this.panel1.Handle;
             //remoteClient = new RemoteDesktopClient();
@@ -70,100 +60,11 @@ namespace TestClient
             //remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
 
 
-            LoadMMDevicesCombo();
 
             UpdateControls();
         }
 
 
-
-        private VideoForm vlcVideoForm = null;
-        private VlcMediaPlayer mediaPlayer = null;
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var address = addressTextBox.Text;
-            if (string.IsNullOrEmpty(address))
-            {
-                return;
-            }
-
-            var port = (int)portNumeric.Value;
-
-            if (vlcVideoForm == null || vlcVideoForm.IsDisposed)
-            {
-                vlcVideoForm = new VideoForm
-                {
-                    StartPosition = FormStartPosition.CenterParent,
-                    Width = 1280,
-                    Height = 720,
-                
-                };
-
-                mediaPlayer.VideoHostControlHandle = vlcVideoForm.elementHost1.Handle; //vlcVideoForm.Handle;
-
-                //System.Windows.Forms.Integration.ElementHost host = new System.Windows.Forms.Integration.ElementHost
-                //{
-                //    Dock = DockStyle.Fill,
-                //};
-                //testForm.Controls.Add(host);
-
-
-                //UserControl1 video = new UserControl1();
-                //host.Child = video;
-
-                //video.DataContext = imageProvider;
-
-
-                vlcVideoForm.FormClosed += VlcVideoForm_FormClosed;
-            }
-
-            vlcVideoForm.Visible = true;
-
-
-            var file = Path.Combine(CurrentDirectory, "tmp.sdp");
-            string[] sdp = 
-            {
-                "v=0",
-                "s=SCREEN_STREAM",
-                "c=IN IP4 " + address, // "c=IN IP4 239.0.0.1",
-                "m=video " + port  + " RTP/AVP 96", //"m=video 1234 RTP/AVP 96",
-                "b=AS:2000",
-                "a=rtpmap:96 H264/90000",
-                "a=fmtp:96 packetization-mode=1",
-                //"a=fmtp:96 packetization-mode=1 sprop-parameter-set=Z2QMH6yyAKALdCAAAAMAIAAAB5HjBkkAAAAB,aOvDyyLA",
-
-                //"m=audio 1236 RTP/AVP 0",
-                //"a=rtpmap:0 PCMU/8000",
-
-            };
-
-
-            File.WriteAllLines(file, sdp);
-
-            var opts = new string[]
-            {
-                    // "--extraintf=logger",
-                    //"--verbose=0",
-                    //"--network-caching=100", //не работает
-            };
-           
-            mediaPlayer?.Play(new FileInfo(file), opts);
-        }
-
-        private void VlcVideoForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            mediaPlayer?.Stop();
-        }
-
-        //FileStream file = new FileStream("d:\\test_rtp.h264", FileMode.Create);
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            vlcVideoForm?.Close();
-          
-
-            //mediaPlayer?.Stop();
-        }
 
         private void button3_Click(object sender, EventArgs e)
         {
@@ -173,69 +74,6 @@ namespace TestClient
         private VideoForm testForm = null;
         private D3DImageProvider2 imageProvider = null;
 
-        private void playButton_Click(object sender, EventArgs e)
-        {
-            logger.Debug("playButton_Click(...)");
-
-            var address = addressTextBox.Text;
-            if (string.IsNullOrEmpty(address))
-            {
-                return;
-            }
-
-            var port = (int)portNumeric.Value;
-
-            try
-            {
-                remoteClient = new RemoteDesktopClient();
-
-                remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
-
-                var inputPars = new VideoEncodingParams
-                {
-                    Width = (int)srcWidthNumeric.Value,
-                    Height = (int)srcHeightNumeric.Value,
-
-                    //Width = 2560,
-                    //Height = 1440,
-
-                    //Width = 640,//2560,
-                    //Height = 480,//1440,
-                    FrameRate = 30,
-                };
-
-                var outputPars = new VideoEncodingParams
-                {
-                    //Width = 640,//2560,
-                    //Height = 480,//1440,
-                    //Width = 2560,
-                    //Height = 1440,
-
-                    Width = (int)destWidthNumeric.Value,
-                    Height = (int)destHeightNumeric.Value,
-
-                    FrameRate = 30,
-                };
-
-                var networkPars = new NetworkStreamingParams
-                {
-                    LocalAddr = address,
-                    LocalPort = port
-                };
-
-                remoteClient.Play(inputPars, outputPars, networkPars);
-
-                string title = (@"rtp://" + address + ":" + port);
-
-                ShowVideoForm(title);
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex);
-                CleanUp();
-            }
-
-        }
 
         private void ShowVideoForm(string title)
         {
@@ -587,95 +425,7 @@ namespace TestClient
             }
         }
 
-        private AudioReceiver audioReceiver = null;
 
-        private void audioPlayButton_Click(object sender, EventArgs e)
-        {
-            audioReceiver = new AudioReceiver();
-            var addr = audioAddrTextBox.Text;
-            var port = (int)audioPortNumeric.Value;
-
-            var sampleRate = (int)sampleRateNumeric.Value;
-            var channels = (int)channelsNumeric.Value;
-            var networkPars = new NetworkStreamingParams
-            {
-                LocalAddr = addr,
-                LocalPort = port
-            };
-
-            var audioPars = new AudioEncodingParams
-            {
-                SampleRate = sampleRate,
-                Channels = channels,
-                Encoding = "ulaw",
-                DeviceId = currentDirectSoundDeviceInfo?.Guid.ToString() ?? "",
-            };
-
-            audioReceiver.SetWaveformPainter(this.waveformPainter1);
-
-            audioReceiver.Setup(audioPars, networkPars);
-            audioReceiver.Play();
-
-        }
-
-        private void audioStopButton_Click(object sender, EventArgs e)
-        {
-            audioReceiver?.Stop();
-        }
-
-        private DirectSoundDeviceInfo currentDirectSoundDeviceInfo = null;
-
-        private void audioUpdateButton_Click(object sender, EventArgs e)
-        {
-            LoadMMDevicesCombo();
-        }
-
-        private void LoadMMDevicesCombo()
-        {
-
-
-            //List<MMDevice> mmdevices = new List<MMDevice>();
-
-            //using (var deviceEnum = new MMDeviceEnumerator())
-            //{
-                
-            //    var renderDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active).ToList();
-            //    var defaultDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
-            //    if (defaultDevice != null)
-            //    {
-            //        mmdevices.Add(defaultDevice);
-            //        foreach(var device in renderDevices)
-            //        {
-            //            if(device.ID == defaultDevice.ID)
-            //            {
-            //                continue;
-            //            }
-            //            mmdevices.Add(device);
-            //        }
-            //    }
-            //    else
-            //    {
-
-            //        mmdevices.AddRange(renderDevices);
-            //    }
-
-            //}
-
-            audioRenderComboBox.DataSource = DirectSoundOut.Devices;
-            audioRenderComboBox.DisplayMember = "Description";
-
-
-        }
-
-        private void audioRenderComboBox_SelectedValueChanged(object sender, EventArgs e)
-        {
-            var selectedItem = audioRenderComboBox.SelectedItem;
-            if (selectedItem != null)
-            {
-                currentDirectSoundDeviceInfo = selectedItem as DirectSoundDeviceInfo;
-                
-            }
-        }
     }
 
 

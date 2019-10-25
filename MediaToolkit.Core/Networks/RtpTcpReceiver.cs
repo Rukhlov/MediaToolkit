@@ -11,7 +11,17 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-    public class RtpTcpReceiver
+
+    public interface IRtpReceiver
+    {
+        void Open(string address, int port, int ttl = 10);
+        Task Start();
+        void Close();
+
+        event Action<RtpPacket> RtpPacketReceived;
+    }
+
+    public class RtpTcpReceiver : IRtpReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -37,7 +47,7 @@ namespace MediaToolkit
                 var bytes = addr.GetAddressBytes();
 
                 RemoteEndpoint = new IPEndPoint(addr, port);
-                LocalEndpoint = new IPEndPoint(IPAddress.Any, port);
+                LocalEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 

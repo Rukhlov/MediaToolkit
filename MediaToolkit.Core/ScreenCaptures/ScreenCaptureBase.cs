@@ -53,6 +53,8 @@ namespace MediaToolkit
 
             this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
+            this.destSize = new Size(destSize.Width, destSize.Height);
+
         }
 
         public static ScreenCapture Create(CaptureType type, object[] args = null)
@@ -84,6 +86,8 @@ namespace MediaToolkit
         }
 
         protected Rectangle srcRect;
+        protected Size destSize;
+
         protected VideoBuffer videoBuffer = null;
 
         public VideoBuffer VideoBuffer { get => videoBuffer; }

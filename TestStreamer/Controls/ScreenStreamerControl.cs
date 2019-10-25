@@ -59,6 +59,7 @@ namespace TestStreamer.Controls
 
             bool showMouse = showMouseCheckBox.Checked;
 
+            TransportMode transport = GetTransportMode();
 
             bool aspectRatio = aspectRatioCheckBox.Checked;
             var top = (int)srcTopNumeric.Value;
@@ -69,6 +70,9 @@ namespace TestStreamer.Controls
             int width = right - left;
             int height = bottom - top;
 
+            var virtualScreen = SystemInformation.VirtualScreen;
+            //var srcRect = new Rectangle(0, 0, virtualScreen.Width, virtualScreen.Height);
+
             var srcRect = new Rectangle(left, top, width, height); //currentScreen.Bounds;
             //var srcRect = currentScreen.Bounds;
 
@@ -76,6 +80,10 @@ namespace TestStreamer.Controls
             var _destHeight = (int)destHeightNumeric.Value;
 
             var destSize = new Size(_destWidth, _destHeight);
+
+            //
+
+            //var destSize = new Size(virtualScreen.Width, virtualScreen.Height);
 
             //if (aspectRatio)
             //{
@@ -122,6 +130,8 @@ namespace TestStreamer.Controls
 
                 RemoteAddr = cmdOptions.IpAddr,
                 RemotePort = cmdOptions.Port,
+
+                TransportMode = transport,
             };
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
@@ -218,6 +228,7 @@ namespace TestStreamer.Controls
             //    Name = "_SelectRegion",
             //    Tag = null
             //});
+            //var s = Screen.AllScreens.FirstOrDefault();
 
             screenItems = new BindingList<ComboBoxItem>(screens);
             screensComboBox.DisplayMember = "Name";
@@ -275,7 +286,16 @@ namespace TestStreamer.Controls
             return screen;
         }
 
-
+        private TransportMode GetTransportMode()
+        {
+            TransportMode transport = TransportMode.Unknown;
+            var item = transportComboBox.SelectedItem;
+            if (item != null)
+            {
+                transport = (TransportMode)item;
+            }
+            return transport;
+        }
 
 
         private void LoadTransportItems()
@@ -319,6 +339,33 @@ namespace TestStreamer.Controls
 
         }
 
+        private SnippingTool snippingTool = new SnippingTool();
+        private void snippingToolButton_Click(object sender, EventArgs e)
+        {
+            if (snippingTool != null)
+            {
+                snippingTool.Dispose();
+            }
 
+            snippingTool = new SnippingTool();
+            var screen = GetCurrentScreen();
+
+            var areaSelected = new Action<Rectangle, Rectangle>((a, s) =>
+            {
+                int left = a.Left + s.Left;
+                int top = a.Top + s.Top;
+                var rect = new Rectangle(left, top, a.Width, a.Height);
+
+
+                srcTopNumeric.Value = rect.Top;
+                srcLeftNumeric.Value = rect.Left;
+                srcRightNumeric.Value = rect.Right;
+                srcBottomNumeric.Value = rect.Bottom;
+
+                //MessageBox.Show(a.ToString() + " " + s.ToString() + " " + rect.ToString());
+            });
+
+            snippingTool.Snip(screen, areaSelected);
+        }
     }
 }

@@ -61,6 +61,7 @@
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
+            this.snippingToolButton = new System.Windows.Forms.Button();
             this.settingPanel.SuspendLayout();
             this.destSizeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
@@ -76,6 +77,7 @@
             // 
             // settingPanel
             // 
+            this.settingPanel.Controls.Add(this.snippingToolButton);
             this.settingPanel.Controls.Add(this.encoderComboBox);
             this.settingPanel.Controls.Add(this.label6);
             this.settingPanel.Controls.Add(this.label5);
@@ -95,7 +97,7 @@
             this.settingPanel.Controls.Add(this.addressTextBox);
             this.settingPanel.Location = new System.Drawing.Point(3, 3);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(473, 441);
+            this.settingPanel.Size = new System.Drawing.Size(473, 469);
             this.settingPanel.TabIndex = 20;
             // 
             // encoderComboBox
@@ -103,7 +105,7 @@
             this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encoderComboBox.Enabled = false;
             this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(87, 336);
+            this.encoderComboBox.Location = new System.Drawing.Point(85, 373);
             this.encoderComboBox.Name = "encoderComboBox";
             this.encoderComboBox.Size = new System.Drawing.Size(107, 24);
             this.encoderComboBox.TabIndex = 47;
@@ -111,7 +113,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(16, 339);
+            this.label6.Location = new System.Drawing.Point(14, 376);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(65, 17);
             this.label6.TabIndex = 46;
@@ -129,7 +131,6 @@
             // transportComboBox
             // 
             this.transportComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.transportComboBox.Enabled = false;
             this.transportComboBox.FormattingEnabled = true;
             this.transportComboBox.Location = new System.Drawing.Point(96, 122);
             this.transportComboBox.Name = "transportComboBox";
@@ -223,7 +224,6 @@
             this.srcRectGroupBox.Controls.Add(this.label11);
             this.srcRectGroupBox.Controls.Add(this.srcRightNumeric);
             this.srcRectGroupBox.Controls.Add(this.srcBottomNumeric);
-            this.srcRectGroupBox.Enabled = false;
             this.srcRectGroupBox.Location = new System.Drawing.Point(19, 180);
             this.srcRectGroupBox.Name = "srcRectGroupBox";
             this.srcRectGroupBox.Size = new System.Drawing.Size(188, 141);
@@ -251,6 +251,7 @@
             // 
             // srcTopNumeric
             // 
+            this.srcTopNumeric.Enabled = false;
             this.srcTopNumeric.Location = new System.Drawing.Point(72, 21);
             this.srcTopNumeric.Maximum = new decimal(new int[] {
             8128,
@@ -268,6 +269,7 @@
             // 
             // srcLeftNumeric
             // 
+            this.srcLeftNumeric.Enabled = false;
             this.srcLeftNumeric.Location = new System.Drawing.Point(72, 49);
             this.srcLeftNumeric.Maximum = new decimal(new int[] {
             8128,
@@ -303,12 +305,18 @@
             // 
             // srcRightNumeric
             // 
+            this.srcRightNumeric.Enabled = false;
             this.srcRightNumeric.Location = new System.Drawing.Point(72, 77);
             this.srcRightNumeric.Maximum = new decimal(new int[] {
             8128,
             0,
             0,
             0});
+            this.srcRightNumeric.Minimum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            -2147483648});
             this.srcRightNumeric.Name = "srcRightNumeric";
             this.srcRightNumeric.Size = new System.Drawing.Size(91, 22);
             this.srcRightNumeric.TabIndex = 26;
@@ -320,12 +328,18 @@
             // 
             // srcBottomNumeric
             // 
+            this.srcBottomNumeric.Enabled = false;
             this.srcBottomNumeric.Location = new System.Drawing.Point(72, 105);
             this.srcBottomNumeric.Maximum = new decimal(new int[] {
             8128,
             0,
             0,
             0});
+            this.srcBottomNumeric.Minimum = new decimal(new int[] {
+            8128,
+            0,
+            0,
+            -2147483648});
             this.srcBottomNumeric.Name = "srcBottomNumeric";
             this.srcBottomNumeric.Size = new System.Drawing.Size(91, 22);
             this.srcBottomNumeric.TabIndex = 29;
@@ -366,7 +380,7 @@
             // 
             // fpsNumeric
             // 
-            this.fpsNumeric.Location = new System.Drawing.Point(87, 368);
+            this.fpsNumeric.Location = new System.Drawing.Point(85, 405);
             this.fpsNumeric.Maximum = new decimal(new int[] {
             60,
             0,
@@ -398,7 +412,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(16, 368);
+            this.label1.Location = new System.Drawing.Point(14, 405);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(38, 17);
             this.label1.TabIndex = 6;
@@ -407,7 +421,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(16, 65);
+            this.label3.Location = new System.Drawing.Point(15, 69);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(64, 17);
             this.label3.TabIndex = 12;
@@ -418,7 +432,7 @@
             this.showMouseCheckBox.AutoSize = true;
             this.showMouseCheckBox.Checked = true;
             this.showMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showMouseCheckBox.Location = new System.Drawing.Point(19, 396);
+            this.showMouseCheckBox.Location = new System.Drawing.Point(17, 433);
             this.showMouseCheckBox.Name = "showMouseCheckBox";
             this.showMouseCheckBox.Size = new System.Drawing.Size(118, 21);
             this.showMouseCheckBox.TabIndex = 7;
@@ -457,7 +471,7 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(8, 460);
+            this.startButton.Location = new System.Drawing.Point(3, 495);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(177, 35);
             this.startButton.TabIndex = 17;
@@ -467,7 +481,7 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(201, 460);
+            this.stopButton.Location = new System.Drawing.Point(198, 495);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(107, 35);
             this.stopButton.TabIndex = 18;
@@ -477,13 +491,23 @@
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(359, 460);
+            this.previewButton.Location = new System.Drawing.Point(355, 495);
             this.previewButton.Name = "previewButton";
             this.previewButton.Size = new System.Drawing.Size(97, 35);
             this.previewButton.TabIndex = 19;
             this.previewButton.Text = "_Preview";
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.previewButton_Click);
+            // 
+            // snippingToolButton
+            // 
+            this.snippingToolButton.Location = new System.Drawing.Point(19, 327);
+            this.snippingToolButton.Name = "snippingToolButton";
+            this.snippingToolButton.Size = new System.Drawing.Size(142, 23);
+            this.snippingToolButton.TabIndex = 48;
+            this.snippingToolButton.Text = "_SetScreenRect";
+            this.snippingToolButton.UseVisualStyleBackColor = true;
+            this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
             // 
             // ScreenStreamerControl
             // 
@@ -494,7 +518,7 @@
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.previewButton);
             this.Name = "ScreenStreamerControl";
-            this.Size = new System.Drawing.Size(479, 521);
+            this.Size = new System.Drawing.Size(479, 546);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
             this.destSizeGroupBox.ResumeLayout(false);
@@ -548,5 +572,6 @@
         private System.Windows.Forms.ComboBox transportComboBox;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox encoderComboBox;
+        private System.Windows.Forms.Button snippingToolButton;
     }
 }

@@ -19,12 +19,12 @@ using NAudio.Gui;
 
 namespace MediaToolkit
 {
-    public class AudioLoopbackSource
+    public class AudioSource
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
 
-        public AudioLoopbackSource() { }
+        public AudioSource() { }
 
         private IWaveIn capture = null;
         private BufferedWaveProvider bufferedWaveProvider = null;
@@ -32,7 +32,7 @@ namespace MediaToolkit
         private SampleChannel sampleChannel = null;
 
         private AudioEncoder audioResampler = null;
-        private RtpStreamer streamer = null;
+        private IRtpSender streamer = null;
 
         //public bool IsCapturing
         //{
@@ -129,8 +129,22 @@ namespace MediaToolkit
 
                     PCMUSession session = new PCMUSession();
 
-                    streamer = new RtpStreamer(session);
-                    streamer.Open(networkPars);
+                    if (networkPars.TransportMode == TransportMode.Tcp)
+                    {
+                        streamer = new RtpTcpSender(session);
+                    }
+                    else if (networkPars.TransportMode == TransportMode.Udp)
+                    {
+                        streamer = new RtpStreamer(session);
+                    }
+                    else
+                    {
+                        throw new FormatException("NotSupportedFormat " + networkPars.TransportMode);
+                    }
+
+                    //streamer = new RtpStreamer(session);
+
+                    streamer.Start(networkPars);
 
 
                     capture.StartRecording();
@@ -201,7 +215,7 @@ namespace MediaToolkit
 
                     // streamer.Push(dest, ralativeTime);
 
-                    streamer.Send(dest, ralativeTime);
+                    streamer.Push(dest, ralativeTime);
 
                     //fs.Write(dest, 0, dest.Length);
                     //fs.Write(a.Buffer, 0, a.BytesRecorded);

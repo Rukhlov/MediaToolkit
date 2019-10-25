@@ -40,12 +40,13 @@ namespace TestStreamer.Controls
         }
 
 
-        private AudioLoopbackSource audioStreamer = null;
+        private AudioSource audioStreamer = null;
 
         private void audioStartButton_Click(object sender, EventArgs e)
         {
             logger.Debug("audioStartButton_Click(...)");
-            audioStreamer = new AudioLoopbackSource();
+            audioStreamer = new AudioSource();
+            var transport = GetTransportMode();
 
             var audioParams = new AudioEncodingParams
             {
@@ -64,6 +65,7 @@ namespace TestStreamer.Controls
                 LocalAddr = "",
                 RemoteAddr = addr,
                 RemotePort = port,
+                TransportMode = transport,
             };
 
             if (audioStreamer != null)
@@ -143,6 +145,17 @@ namespace TestStreamer.Controls
             audioSrcComboBox.DisplayMember = "FriendlyName";
 
 
+        }
+
+        private TransportMode GetTransportMode()
+        {
+            TransportMode transport = TransportMode.Unknown;
+            var item = transportComboBox.SelectedItem;
+            if (item != null)
+            {
+                transport = (TransportMode)item;
+            }
+            return transport;
         }
 
 

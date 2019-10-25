@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-    public class RtpReceiver
+    public class RtpReceiver :IRtpReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 

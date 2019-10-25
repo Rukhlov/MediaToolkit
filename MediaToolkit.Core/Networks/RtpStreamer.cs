@@ -16,7 +16,7 @@ namespace MediaToolkit
 {
 
 
-    public class RtpStreamer
+    public class RtpStreamer : IRtpSender
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         public RtpStreamer(RtpSession session)
@@ -30,13 +30,13 @@ namespace MediaToolkit
         private IPEndPoint remoteEndpoint;
 
 
-        public void Open(NetworkStreamingParams streamingParams)
+        public void Start(NetworkStreamingParams streamingParams)
         {
             try
             {
                 logger.Debug("RtpStreamer::Open(...)");
                 var srcAddr = streamingParams.LocalAddr;
-                var srcPort = streamingParams.LocalPort;
+                var srcPort = 0;//streamingParams.LocalPort;
 
                 var localIp = IPAddress.Any;
                 if (string.IsNullOrEmpty(srcAddr))
@@ -113,6 +113,12 @@ namespace MediaToolkit
             if (!running)
             {
                 return;
+            }
+
+            if (packetQueue.Count > 1024)
+            {
+                packetQueue.Clear();
+                logger.Warn("Buffer full drop frames...");
             }
 
             var packets = session.Packetize(bytes, sec);

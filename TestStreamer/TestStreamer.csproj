@@ -121,6 +121,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteDesktopService.cs" />
     <Compile Include="ScreenStreamer.cs" />
+    <Compile Include="Utils.cs" />
     <EmbeddedResource Include="Controls\AudioStreamerControl.resx">
       <DependentUpon>AudioStreamerControl.cs</DependentUpon>
     </EmbeddedResource>

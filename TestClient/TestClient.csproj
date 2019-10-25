@@ -105,6 +105,24 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\AudioReceiverControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\AudioReceiverControl.Designer.cs">
+      <DependentUpon>AudioReceiverControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SimpleReceiverControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\SimpleReceiverControl.Designer.cs">
+      <DependentUpon>SimpleReceiverControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\VlcControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\VlcControl.Designer.cs">
+      <DependentUpon>VlcControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,6 +151,15 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Controls\AudioReceiverControl.resx">
+      <DependentUpon>AudioReceiverControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\SimpleReceiverControl.resx">
+      <DependentUpon>SimpleReceiverControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\VlcControl.resx">
+      <DependentUpon>VlcControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

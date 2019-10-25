@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
+            this.encoderComboBox = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.transportComboBox = new System.Windows.Forms.ComboBox();
             this.waveformPainter1 = new NAudio.Gui.WaveformPainter();
             this.label16 = new System.Windows.Forms.Label();
             this.audioUpdateButton = new System.Windows.Forms.Button();
@@ -43,10 +47,6 @@
             this.audioAddrTextBox = new System.Windows.Forms.TextBox();
             this.audioStartButton = new System.Windows.Forms.Button();
             this.audioStopButton = new System.Windows.Forms.Button();
-            this.label5 = new System.Windows.Forms.Label();
-            this.transportComboBox = new System.Windows.Forms.ComboBox();
-            this.encoderComboBox = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.settingPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.channelsNumeric)).BeginInit();
@@ -71,15 +71,52 @@
             this.settingPanel.Controls.Add(this.label21);
             this.settingPanel.Controls.Add(this.audioPortNumeric);
             this.settingPanel.Controls.Add(this.audioAddrTextBox);
-            this.settingPanel.Location = new System.Drawing.Point(35, 26);
+            this.settingPanel.Location = new System.Drawing.Point(3, 26);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(461, 409);
+            this.settingPanel.Size = new System.Drawing.Size(458, 409);
             this.settingPanel.TabIndex = 23;
+            // 
+            // encoderComboBox
+            // 
+            this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.encoderComboBox.Enabled = false;
+            this.encoderComboBox.FormattingEnabled = true;
+            this.encoderComboBox.Location = new System.Drawing.Point(116, 176);
+            this.encoderComboBox.Name = "encoderComboBox";
+            this.encoderComboBox.Size = new System.Drawing.Size(107, 24);
+            this.encoderComboBox.TabIndex = 49;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(21, 179);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(65, 17);
+            this.label1.TabIndex = 48;
+            this.label1.Text = "Encoder:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(11, 125);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(74, 17);
+            this.label5.TabIndex = 42;
+            this.label5.Text = "Transport:";
+            // 
+            // transportComboBox
+            // 
+            this.transportComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.transportComboBox.FormattingEnabled = true;
+            this.transportComboBox.Location = new System.Drawing.Point(91, 125);
+            this.transportComboBox.Name = "transportComboBox";
+            this.transportComboBox.Size = new System.Drawing.Size(138, 24);
+            this.transportComboBox.TabIndex = 41;
             // 
             // waveformPainter1
             // 
             this.waveformPainter1.BackColor = System.Drawing.SystemColors.Info;
-            this.waveformPainter1.Location = new System.Drawing.Point(14, 317);
+            this.waveformPainter1.Location = new System.Drawing.Point(14, 318);
             this.waveformPainter1.Name = "waveformPainter1";
             this.waveformPainter1.Size = new System.Drawing.Size(433, 69);
             this.waveformPainter1.TabIndex = 21;
@@ -88,7 +125,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(21, 18);
+            this.label16.Location = new System.Drawing.Point(11, 18);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(69, 17);
             this.label16.TabIndex = 20;
@@ -108,9 +145,9 @@
             // 
             this.audioSrcComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.audioSrcComboBox.FormattingEnabled = true;
-            this.audioSrcComboBox.Location = new System.Drawing.Point(96, 15);
+            this.audioSrcComboBox.Location = new System.Drawing.Point(86, 15);
             this.audioSrcComboBox.Name = "audioSrcComboBox";
-            this.audioSrcComboBox.Size = new System.Drawing.Size(270, 24);
+            this.audioSrcComboBox.Size = new System.Drawing.Size(281, 24);
             this.audioSrcComboBox.TabIndex = 19;
             this.audioSrcComboBox.SelectedValueChanged += new System.EventHandler(this.audioSrcComboBox_SelectedValueChanged);
             // 
@@ -181,7 +218,7 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(21, 96);
+            this.label19.Location = new System.Drawing.Point(11, 96);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(38, 17);
             this.label19.TabIndex = 13;
@@ -190,7 +227,7 @@
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(21, 69);
+            this.label21.Location = new System.Drawing.Point(11, 69);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(64, 17);
             this.label21.TabIndex = 12;
@@ -198,7 +235,7 @@
             // 
             // audioPortNumeric
             // 
-            this.audioPortNumeric.Location = new System.Drawing.Point(101, 94);
+            this.audioPortNumeric.Location = new System.Drawing.Point(91, 94);
             this.audioPortNumeric.Maximum = new decimal(new int[] {
             100500,
             0,
@@ -220,7 +257,7 @@
             // 
             // audioAddrTextBox
             // 
-            this.audioAddrTextBox.Location = new System.Drawing.Point(101, 66);
+            this.audioAddrTextBox.Location = new System.Drawing.Point(91, 66);
             this.audioAddrTextBox.Name = "audioAddrTextBox";
             this.audioAddrTextBox.Size = new System.Drawing.Size(276, 22);
             this.audioAddrTextBox.TabIndex = 10;
@@ -246,44 +283,6 @@
             this.audioStopButton.UseVisualStyleBackColor = true;
             this.audioStopButton.Click += new System.EventHandler(this.audioStopButton_Click);
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(21, 125);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(74, 17);
-            this.label5.TabIndex = 42;
-            this.label5.Text = "Transport:";
-            // 
-            // transportComboBox
-            // 
-            this.transportComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.transportComboBox.Enabled = false;
-            this.transportComboBox.FormattingEnabled = true;
-            this.transportComboBox.Location = new System.Drawing.Point(101, 122);
-            this.transportComboBox.Name = "transportComboBox";
-            this.transportComboBox.Size = new System.Drawing.Size(138, 24);
-            this.transportComboBox.TabIndex = 41;
-            // 
-            // encoderComboBox
-            // 
-            this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.encoderComboBox.Enabled = false;
-            this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(116, 176);
-            this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(107, 24);
-            this.encoderComboBox.TabIndex = 49;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(21, 179);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(65, 17);
-            this.label1.TabIndex = 48;
-            this.label1.Text = "Encoder:";
-            // 
             // AudioStreamerControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -292,7 +291,7 @@
             this.Controls.Add(this.audioStartButton);
             this.Controls.Add(this.audioStopButton);
             this.Name = "AudioStreamerControl";
-            this.Size = new System.Drawing.Size(590, 549);
+            this.Size = new System.Drawing.Size(483, 549);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).EndInit();

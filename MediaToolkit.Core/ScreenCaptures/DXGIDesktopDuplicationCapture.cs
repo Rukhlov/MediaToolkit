@@ -49,13 +49,12 @@ namespace MediaToolkit
 
         private OutputDuplication deskDupl = null;
         private Texture2D acquiredDesktopImage = null;
-        private Texture2D desktopTexture = null;
-
+ 
         private Texture2D regionTexture = null;
-
         private Texture2D stagingTexture = null;
 
-        SharpDX.Direct2D1.RenderTarget desktopTarget = null;
+        private Texture2D renderTexture = null;
+        SharpDX.Direct2D1.RenderTarget renderTarget = null;
 
         public bool UseHwContext = true;
 
@@ -69,6 +68,7 @@ namespace MediaToolkit
 
         }
 
+        private Rectangle screenBound = Rectangle.Empty;
 
         private void InitDx(GDI.Rectangle srcRect)
         {
@@ -82,10 +82,23 @@ namespace MediaToolkit
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
                 LogDxAdapters(dxgiFactory.Adapters1);
+                var screen = System.Windows.Forms.Screen.FromRectangle(srcRect);
+                if (screen != null)
+                {
+                    var bounds = screen.Bounds;
+                    screenBound = new Rectangle
+                    {
+                        Left = bounds.Left,
+                        Top = bounds.Top,
+                        Right = bounds.Left + bounds.Width,
+                        Bottom = bounds.Top + bounds.Height,
+                    };
+                }
 
                 var hMonitor = NativeAPIs.User32.GetMonitorFromRect(srcRect);
                 if (hMonitor != IntPtr.Zero)
                 {
+
                     foreach (var _adapter in dxgiFactory.Adapters1)
                     {
                         foreach (var _output in _adapter.Outputs)
@@ -159,8 +172,8 @@ namespace MediaToolkit
                     CpuAccessFlags = CpuAccessFlags.Read,
                     BindFlags = BindFlags.None,
                     Format = Format.B8G8R8A8_UNorm,
-                    Width = videoBuffer.bitmap.Width,
-                    Height = videoBuffer.bitmap.Height,
+                    Width = destSize.Width,
+                    Height = destSize.Height,
                     MipLevels = 1,
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
@@ -175,8 +188,8 @@ namespace MediaToolkit
                      CpuAccessFlags = CpuAccessFlags.None,
                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                      Format = Format.B8G8R8A8_UNorm,
-                     Width = videoBuffer.bitmap.Width,
-                     Height = videoBuffer.bitmap.Height,
+                     Width = destSize.Width,
+                     Height = destSize.Height,
 
                      MipLevels = 1,
                      ArraySize = 1,
@@ -193,7 +206,7 @@ namespace MediaToolkit
             //Device3d11.ImmediateContext.CopyResource(texture, SharedTexture);
             //Device3d11.ImmediateContext.Flush();
             
-            desktopTexture = new Texture2D(device,
+            renderTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     
@@ -201,8 +214,8 @@ namespace MediaToolkit
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = Format.B8G8R8A8_UNorm,
 
-                    Width = 2560,//srcRect.Width,
-                    Height = 1440,//srcRect.Height,
+                    Width = destSize.Width, //2560,//srcRect.Width,
+                    Height = destSize.Height, //1440,//srcRect.Height,
                     MipLevels = 1,
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
@@ -235,14 +248,14 @@ namespace MediaToolkit
 
             using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
             {
-                using (var desktopSurf = desktopTexture.QueryInterface<Surface>())
+                using (var surf = renderTexture.QueryInterface<Surface>())
                 {
                     //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
 
                     var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
                     var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
 
-                    desktopTarget = new Direct2D.RenderTarget(factory2D1, desktopSurf, renderTargetProps);
+                    renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
 
                     //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
                 }
@@ -323,47 +336,45 @@ namespace MediaToolkit
 
                         UpdateMouseInfo(frameInfo);
 
-                        var _left = srcRect.Left;
-                        var _top = srcRect.Top;
-                        var _right = srcRect.Right;
-                        var _bottom = srcRect.Bottom;
+                        var _left =  srcRect.Left - screenBound.Left;
+                        var _top = srcRect.Top - screenBound.Top;
 
-                        if (_left < 0)
-                        {
-                            _left = (srcRect.Width + _left);                          
-                        }
-
-                        _right = _left + srcRect.Width;
-
-                        //if (_top < 0)
+                        //if (_left != 0)
                         //{
-                        //    _top = 0;
+                        //    _left = 0;                      
                         //}
+                        //if (_top != 0)
+                        //{
+                        //    _top = 0;                        
+                        //}
+
+                        var _right = _left + srcRect.Width;
+                        var _bottom = _top + srcRect.Height;
 
                         ResourceRegion region = new ResourceRegion
                         {
-                            Left = _left, //srcRect.Left,
-                            Top = _top, //srcRect.Top,
-                            Right = _right, // srcRect.Right,
-                            Bottom = _bottom, //srcRect.Bottom,
+                            Left = _left,
+                            Top = _top,
+                            Right = _right, 
+                            Bottom = _bottom, 
                             Back = 1,
                         };
                         
                         device.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, region, regionTexture, 0);
 
-                        desktopTarget.BeginDraw();
-                        desktopTarget.Clear(Color.Red);
+                        renderTarget.BeginDraw();
+                        renderTarget.Clear(Color.Red);
                         
                         using (var acquiredSurf = regionTexture.QueryInterface<Surface1>())
                         //using (var acquiredSurf = acquiredDesktopImage.QueryInterface<Surface1>())
                         {
 
                             var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
-                            Direct2D.Bitmap acquiredBits = new Direct2D.Bitmap(desktopTarget, acquiredSurf, prop);
+                            Direct2D.Bitmap acquiredBits = new Direct2D.Bitmap(renderTarget, acquiredSurf, prop);
                             try
                             {
-                                float width = videoBuffer.bitmap.Width;
-                                float height = videoBuffer.bitmap.Height;
+                                float width = destSize.Width;
+                                float height = destSize.Height;
 
                                 float srcWidth = acquiredSurf.Description.Width;
                                 float srcHeight = acquiredSurf.Description.Height;
@@ -390,37 +401,15 @@ namespace MediaToolkit
 
                                 float destWidth = srcWidth * scaleX;
                                 float destHeight = srcHeight * scaleY;
-
-        
-                                //var scaleX = videoBuffer.bitmap.Width / (float)scrDescr.Width;
-                                //var scaleY = videoBuffer.bitmap.Height / (float)scrDescr.Height;
-
-                                ////var destDescr = regionTexture.Description;
-                                ////var scrDescr = acquiredDesktopImage.Description;
-
-                                ////var srcRatio = scrDescr.Width / scrDescr.Height;
-                                ////var destRatio = destDescr.Width / destDescr.Height;
-
-                                ////var scaleX = scrDescr.Width / (float)destDescr.Width;
-                                ////var scaleY = scrDescr.Height / (float)destDescr.Height;
-
-                                ////var scrDescr = regionTexture.Description;
-
-                                //var scrDescr = acquiredDesktopImage.Description;
-                                //var scaleX =(float)videoBuffer.bitmap.Width / width  ;//(float)scrDescr.Width;
-                                //var scaleY =  (float)videoBuffer.bitmap.Height / height ;//(float)scrDescr.Height;
-
-                                //desktopTarget.Transform = Matrix3x2.Scaling(scaleX, scaleY);
-
-
+      
                                 var left = destX;
                                 var right = destX + destWidth;
                                 var top = destY;
                                 var bottom = destY + destHeight;
 
                                 var rect = new RawRectangleF(left, top, right, bottom);
-   
-                                desktopTarget.DrawBitmap(acquiredBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+
+                                renderTarget.DrawBitmap(acquiredBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
 
                                 if (this.CaptureMouse && cursorObj.Visible)
                                 {
@@ -436,14 +425,14 @@ namespace MediaToolkit
                         }
                         
 
-                        desktopTarget.EndDraw();
+                        renderTarget.EndDraw();
 
                         ResourceRegion scaledRegion = new ResourceRegion
                         {
                             Left = 0,
                             Top = 0,
-                            Right = videoBuffer.bitmap.Width,
-                            Bottom = videoBuffer.bitmap.Height,
+                            Right = destSize.Width,
+                            Bottom = destSize.Height,
                             Back = 1,
                         };
 
@@ -452,12 +441,12 @@ namespace MediaToolkit
                            // device.ImmediateContext.CopySubresourceRegion(acquiredDesktopImage, 0, scaledRegion, SharedTexture, 0);
 
                             
-                            device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, SharedTexture, 0);
+                            device.ImmediateContext.CopySubresourceRegion(renderTexture, 0, scaledRegion, SharedTexture, 0);
                             device.ImmediateContext.Flush();
                         }
                         else
                         {
-                            device.ImmediateContext.CopySubresourceRegion(desktopTexture, 0, scaledRegion, stagingTexture, 0);
+                            device.ImmediateContext.CopySubresourceRegion(renderTexture, 0, scaledRegion, stagingTexture, 0);
                             device.ImmediateContext.Flush();
 
                             //device.ImmediateContext.CopyResource(scaledTexture, stagingTexture);
@@ -579,13 +568,13 @@ namespace MediaToolkit
                 var data = new DataPointer(shapeBuff, height * pitch);
                 var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
                 var size = new Size2(width, height);
-                var cursorBits = new Direct2D.Bitmap(desktopTarget, size, data, pitch, prop);
+                var cursorBits = new Direct2D.Bitmap(renderTarget, size, data, pitch, prop);
                 try
                 {
                    
                     var rect = new RawRectangleF(left, top, right, bottom);
 
-                    desktopTarget.DrawBitmap(cursorBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                    renderTarget.DrawBitmap(cursorBits, rect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
 
                 }
                 finally
@@ -680,12 +669,12 @@ namespace MediaToolkit
                                 var data = new DataPointer(ptr, height * pitch);
                                 var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
                                 var size = new Size2(width, height);
-                                cursorBits = new Direct2D.Bitmap(desktopTarget, size, data, pitch, prop);
+                                cursorBits = new Direct2D.Bitmap(renderTarget, size, data, pitch, prop);
                             };
 
                             var shapeRect = new RawRectangleF(left, top, right, bottom);
 
-                            desktopTarget.DrawBitmap(cursorBits, shapeRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                            renderTarget.DrawBitmap(cursorBits, shapeRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
                         }
                         finally
                         {
@@ -1140,16 +1129,16 @@ namespace MediaToolkit
                 regionTexture = null;
             }
 
-            if (desktopTexture != null && !desktopTexture.IsDisposed)
+            if (renderTexture != null && !renderTexture.IsDisposed)
             {
-                desktopTexture.Dispose();
-                desktopTexture = null;
+                renderTexture.Dispose();
+                renderTexture = null;
             }
 
-            if (desktopTarget != null && !desktopTarget.IsDisposed)
+            if (renderTarget != null && !renderTarget.IsDisposed)
             {
-                desktopTarget.Dispose();
-                desktopTarget = null;
+                renderTarget.Dispose();
+                renderTarget = null;
             }
 
             if (acquiredDesktopImage != null && !acquiredDesktopImage.IsDisposed)
