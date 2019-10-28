@@ -102,7 +102,17 @@ namespace TestClient.Controls
 
             //}
 
-            audioRenderComboBox.DataSource = DirectSoundOut.Devices;
+            IEnumerable<DirectSoundDeviceInfo> devices = null;
+            try
+            {
+                devices = DirectSoundOut.Devices;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            audioRenderComboBox.DataSource = devices;
             audioRenderComboBox.DisplayMember = "Description";
 
 

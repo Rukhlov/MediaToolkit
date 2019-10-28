@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using MediaToolkit;
 using System.Net.NetworkInformation;
 using MediaToolkit.Common;
+using System.Diagnostics;
 
 namespace TestStreamer.Controls
 {
@@ -46,7 +47,7 @@ namespace TestStreamer.Controls
 
             var localAddr = "0.0.0.0";
 
-            
+
             //var ipInfo = GetCurrentIpAddrInfo();
             //if (ipInfo != null)
             //{
@@ -147,7 +148,7 @@ namespace TestStreamer.Controls
             videoStreamer.Setup(encodingParams, networkParams);
 
 
-            statisticForm.Location = currentScreen.Bounds.Location;
+            statisticForm.Location = currentScreenRect.Location;
             statisticForm.Start();
 
             var captureTask = screenSource.Start();
@@ -206,7 +207,7 @@ namespace TestStreamer.Controls
                 previewForm.Setup(screenSource);
                 var pars = screenSource.CaptureParams;
 
-                var title = "Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps +  " Ratio=" + pars.AspectRatio;
+                var title = "Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps + " Ratio=" + pars.AspectRatio;
 
                 previewForm.Text = title;
 
@@ -223,32 +224,40 @@ namespace TestStreamer.Controls
         private void LoadScreenItems()
         {
             var screens = Screen.AllScreens.Select(s => new ComboBoxItem { Name = s.DeviceName, Tag = s }).ToList();
-            //screens.Add(new ComboBoxItem
-            //{
-            //    Name = "_SelectRegion",
-            //    Tag = null
-            //});
-            //var s = Screen.AllScreens.FirstOrDefault();
+
+            screens.Add(new ComboBoxItem
+            {
+                Name = "_AllScreen",
+                Tag = null
+            });
 
             screenItems = new BindingList<ComboBoxItem>(screens);
             screensComboBox.DisplayMember = "Name";
             screensComboBox.DataSource = screenItems;
         }
 
+        private Rectangle currentScreenRect = Rectangle.Empty;
+
         private Screen currentScreen = null;
         private void screensComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
             currentScreen = GetCurrentScreen();
+            currentScreenRect = currentScreen?.Bounds ?? SystemInformation.VirtualScreen;
 
-            if (currentScreen != null)
-            {
-                var rect = currentScreen.Bounds;
+            srcTopNumeric.Value = currentScreenRect.Top;
+            srcLeftNumeric.Value = currentScreenRect.Left;
+            srcRightNumeric.Value = currentScreenRect.Right;
+            srcBottomNumeric.Value = currentScreenRect.Bottom;
 
-                srcTopNumeric.Value = rect.Top;
-                srcLeftNumeric.Value = rect.Left;
-                srcRightNumeric.Value = rect.Right;
-                srcBottomNumeric.Value = rect.Bottom;
-            }
+            //if (currentScreen != null)
+            //{
+            //    var rect = currentScreen.Bounds;
+
+            //    srcTopNumeric.Value = rect.Top;
+            //    srcLeftNumeric.Value = rect.Left;
+            //    srcRightNumeric.Value = rect.Right;
+            //    srcBottomNumeric.Value = rect.Bottom;
+            //}
 
         }
 
@@ -256,15 +265,22 @@ namespace TestStreamer.Controls
         {
             currentScreen = GetCurrentScreen();
 
-            if (currentScreen != null)
-            {
-                var rect = currentScreen.Bounds;
+            currentScreenRect = currentScreen?.Bounds ?? SystemInformation.VirtualScreen;
 
-                srcTopNumeric.Value = rect.Top;
-                srcLeftNumeric.Value = rect.Left;
-                srcRightNumeric.Value = rect.Right;
-                srcBottomNumeric.Value = rect.Bottom;
-            }
+            srcTopNumeric.Value = currentScreenRect.Top;
+            srcLeftNumeric.Value = currentScreenRect.Left;
+            srcRightNumeric.Value = currentScreenRect.Right;
+            srcBottomNumeric.Value = currentScreenRect.Bottom;
+
+            //if (currentScreen != null)
+            //{
+            //    var rect = currentScreen.Bounds;
+
+            //    srcTopNumeric.Value = rect.Top;
+            //    srcLeftNumeric.Value = rect.Left;
+            //    srcRightNumeric.Value = rect.Right;
+            //    srcBottomNumeric.Value = rect.Bottom;
+            //}
         }
 
         private Screen GetCurrentScreen()
@@ -319,7 +335,7 @@ namespace TestStreamer.Controls
             };
 
             encoderComboBox.DataSource = items;
-    
+
         }
 
         private void UpdateControls()
@@ -367,5 +383,109 @@ namespace TestStreamer.Controls
 
             snippingTool.Snip(screen, areaSelected);
         }
+
+
+        public void Test(int x, int y, int width, int height)
+        {
+
+            int X, X1, Y, Y1;
+            int _X, _X1, _Y, _Y1;
+
+            var srcRect = new Rectangle(x, y, width, height);
+
+            Rectangle abcSrcRect = new Rectangle
+            {
+                X = 0,
+                Y = 0,
+                Width = srcRect.Width,
+                Height = srcRect.Height,
+            };
+
+            Debug.WriteLine("srcRect=" + srcRect.ToString() + " abcSrcRect=" + abcSrcRect.ToString());
+
+            foreach (var screen in Screen.AllScreens)
+            {
+                var screenRect = screen.Bounds;
+
+                Debug.WriteLine("screenRect =" + screenRect.ToString());
+
+
+                if ((screenRect.X > srcRect.Right) || (screenRect.Right < srcRect.X) ||
+                 (screenRect.Y > srcRect.Bottom) || (screenRect.Bottom < srcRect.Y))
+                {
+
+                    Debug.WriteLine(screenRect.ToString() + " no common area");
+                    continue;
+                }
+                else
+                {
+                    if (srcRect.X < screenRect.X)
+                    {// за левой границей экрана
+                        X = screenRect.X;
+                    }
+                    else
+                    {
+                        X = srcRect.X;
+
+                    }
+
+                    if (srcRect.Right > screenRect.Right)
+                    { // за правой границей
+                        X1 = screenRect.Right;
+                    }
+                    else
+                    {
+                        X1 = srcRect.Right;
+                    }
+
+                    if (srcRect.Y < screenRect.Y)
+                    {// за верхней границей
+                        Y = screenRect.Y;
+                    }
+                    else
+                    {
+                        Y = srcRect.Y;
+                    }
+
+                    if (srcRect.Bottom > screenRect.Bottom)
+                    {// за нижней границей
+                        Y1 = screenRect.Bottom;
+                    }
+                    else
+                    {
+                        Y1 = srcRect.Bottom;
+                    }
+
+                    Rectangle drawRect = new Rectangle
+                    {
+                        X = X - x,
+                        Y = Y - y,
+                        Width = X1 - X,
+                        Height = Y1 - Y,
+                    };
+
+                    // в координатах от '0'
+                    _X = X - screenRect.X;
+                    _X1 = X1 - screenRect.X;
+                    _Y = Y - screenRect.Y;
+                    _Y1 = Y1 - screenRect.Y;
+
+                    Rectangle desktopRect = new Rectangle
+                    {
+                        X = _X,
+                        Y = _Y,
+                        Width = _X1 - _X,
+                        Height = _Y1 - _Y,
+                    };
+
+                    Debug.WriteLine("desktopRect=" + desktopRect.ToString() + " drawRect=" + drawRect.ToString());
+
+                    // Main API that does memory data transfer
+                    //BitBlt(hdcDest, X - x, Y - y, X1 - X, Y1 - Y, hdcSrc, X, Y, 0x40000000 | 0x00CC0020); //SRCCOPY AND CAPTUREBLT
+                }
+            }
+        }
     }
+
+
 }

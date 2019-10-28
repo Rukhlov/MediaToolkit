@@ -45,6 +45,13 @@ namespace TestStreamer.Controls
         private void audioStartButton_Click(object sender, EventArgs e)
         {
             logger.Debug("audioStartButton_Click(...)");
+
+            if(string.IsNullOrEmpty(currentMMDeviceId ))
+            {
+                logger.Warn("Empty MMDeviceId...");
+                return;
+            }
+
             audioStreamer = new AudioSource();
             var transport = GetTransportMode();
 
@@ -128,17 +135,24 @@ namespace TestStreamer.Controls
         {
             List<MMDevice> mmdevices = new List<MMDevice>();
 
-            using (var deviceEnum = new MMDeviceEnumerator())
+            try
             {
-                var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                using (var deviceEnum = new MMDeviceEnumerator())
+                {
+                    var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                    var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
 
-                mmdevices.Add(captureDevice);
-                mmdevices.Add(renderDevice);
+                    mmdevices.Add(captureDevice);
+                    mmdevices.Add(renderDevice);
 
-                //var captureDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active).ToList();
-                //mmdevices.AddRange(captureDevices);
+                    //var captureDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active).ToList();
+                    //mmdevices.AddRange(captureDevices);
 
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
             }
 
             audioSrcComboBox.DataSource = mmdevices;

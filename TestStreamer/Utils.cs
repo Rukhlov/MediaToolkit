@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +25,7 @@ namespace TestStreamer
 
             this.AreaSelected = areaSelected;
 
-            var bound = screen.Bounds;
+            var bound = screen?.Bounds??SystemInformation.VirtualScreen;
 
             var bmp = new Bitmap(bound.Width, bound.Height, PixelFormat.Format32bppPArgb);
             try
@@ -76,8 +77,14 @@ namespace TestStreamer
                 StartPosition = FormStartPosition.Manual;
 
                 DoubleBuffered = true;
+                //var cur = Properties.Resources.cross_128x128;
+                //using (var stream = new MemoryStream(cur))
+                //{
+                //    Cursor = new System.Windows.Forms.Cursor(stream);
+                //}
+                
                 Cursor = Cursors.Cross;
-
+            
                 TopMost = true;
             }
 
@@ -160,7 +167,7 @@ namespace TestStreamer
                     e.Graphics.FillRectangle(br, new Rectangle(x1, 0, x2 - x1, y1));
                     e.Graphics.FillRectangle(br, new Rectangle(x1, y2, x2 - x1, Height - y2));
                 }
-                using (Pen pen = new Pen(Color.Red, 2))
+                using (Pen pen = new Pen(Color.Red, 1))
                 {
                     e.Graphics.DrawRectangle(pen, selectionRect);
                 }

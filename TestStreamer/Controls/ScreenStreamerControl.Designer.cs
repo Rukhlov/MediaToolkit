@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
+            this.snippingToolButton = new System.Windows.Forms.Button();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -61,7 +62,6 @@
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
-            this.snippingToolButton = new System.Windows.Forms.Button();
             this.settingPanel.SuspendLayout();
             this.destSizeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
@@ -99,6 +99,16 @@
             this.settingPanel.Name = "settingPanel";
             this.settingPanel.Size = new System.Drawing.Size(473, 469);
             this.settingPanel.TabIndex = 20;
+            // 
+            // snippingToolButton
+            // 
+            this.snippingToolButton.Location = new System.Drawing.Point(17, 312);
+            this.snippingToolButton.Name = "snippingToolButton";
+            this.snippingToolButton.Size = new System.Drawing.Size(142, 23);
+            this.snippingToolButton.TabIndex = 48;
+            this.snippingToolButton.Text = "_SetScreenRect";
+            this.snippingToolButton.UseVisualStyleBackColor = true;
+            this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
             // 
             // encoderComboBox
             // 
@@ -224,7 +234,7 @@
             this.srcRectGroupBox.Controls.Add(this.label11);
             this.srcRectGroupBox.Controls.Add(this.srcRightNumeric);
             this.srcRectGroupBox.Controls.Add(this.srcBottomNumeric);
-            this.srcRectGroupBox.Location = new System.Drawing.Point(19, 180);
+            this.srcRectGroupBox.Location = new System.Drawing.Point(19, 165);
             this.srcRectGroupBox.Name = "srcRectGroupBox";
             this.srcRectGroupBox.Size = new System.Drawing.Size(188, 141);
             this.srcRectGroupBox.TabIndex = 34;
@@ -498,16 +508,6 @@
             this.previewButton.Text = "_Preview";
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.previewButton_Click);
-            // 
-            // snippingToolButton
-            // 
-            this.snippingToolButton.Location = new System.Drawing.Point(19, 327);
-            this.snippingToolButton.Name = "snippingToolButton";
-            this.snippingToolButton.Size = new System.Drawing.Size(142, 23);
-            this.snippingToolButton.TabIndex = 48;
-            this.snippingToolButton.Text = "_SetScreenRect";
-            this.snippingToolButton.UseVisualStyleBackColor = true;
-            this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
             // 
             // ScreenStreamerControl
             // 

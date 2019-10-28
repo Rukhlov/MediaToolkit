@@ -148,6 +148,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -180,6 +181,21 @@
       <Project>{6ec45781-0060-4f0a-ad0e-1452704f0740}</Project>
       <Name>MediaToolkit.UI</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cross_32x32.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cross_48x48.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cross_64x64.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cross_96x96.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cross_128x128.cur" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -30,7 +30,7 @@ namespace TestStreamer.Controls
 
         private void httpStartButton_Click(object sender, EventArgs e)
         {
-            var screen = HttpGetCurrentScreen();
+            currentScreen = HttpGetCurrentScreen();
 
             var srcRect = currentScreen.Bounds;
             //var srcRect = currentScreen.Bounds;
