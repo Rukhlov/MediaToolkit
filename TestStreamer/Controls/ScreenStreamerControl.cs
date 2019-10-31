@@ -22,6 +22,7 @@ namespace TestStreamer.Controls
         {
             InitializeComponent();
 
+            LoadEncoderProfilesItems();
             LoadScreenItems();
             LoadTransportItems();
             LoadEncoderItems();
@@ -40,6 +41,7 @@ namespace TestStreamer.Controls
         private StatisticForm statisticForm = new StatisticForm();
         private PreviewForm previewForm = null;
 
+        private RegionForm regionForm = null;
 
         private void startButton_Click(object sender, EventArgs e)
         {
@@ -56,11 +58,15 @@ namespace TestStreamer.Controls
 
 
             int fps = (int)fpsNumeric.Value;
+            int bitrate = (int)bitrateNumeric.Value;
+            bool latencyMode = latencyModeCheckBox.Checked;
 
+            H264Profile h264Profile = (H264Profile)encProfileComboBox.SelectedItem;
 
             bool showMouse = showMouseCheckBox.Checked;
 
             TransportMode transport = GetTransportMode();
+
 
             bool aspectRatio = aspectRatioCheckBox.Checked;
             var top = (int)srcTopNumeric.Value;
@@ -115,6 +121,7 @@ namespace TestStreamer.Controls
                 Fps = fps,
                 CaptureMouse = showMouse,
                 AspectRatio = aspectRatio,
+                
             };
 
             screenSource.Setup(captureParams);
@@ -141,12 +148,17 @@ namespace TestStreamer.Controls
                 Height = destSize.Height, // options.Height,
                 FrameRate = cmdOptions.FrameRate,
                 EncoderName = "libx264", // "h264_nvenc", //
+                Bitrate = bitrate,
+                LowLatency= latencyMode,
+                Profile = h264Profile,
             };
 
             videoStreamer = new ScreenStreamer(screenSource);
 
             videoStreamer.Setup(encodingParams, networkParams);
 
+            regionForm = new RegionForm(srcRect);
+            regionForm.Visible = true;
 
             statisticForm.Location = currentScreenRect.Location;
             statisticForm.Start();
@@ -186,6 +198,9 @@ namespace TestStreamer.Controls
                 previewForm.Close();
                 previewForm = null;
             }
+
+            regionForm?.Close();
+            regionForm = null;
 
             isStreaming = false;
 
@@ -324,6 +339,20 @@ namespace TestStreamer.Controls
 
             };
             transportComboBox.DataSource = items;
+        }
+
+        private void LoadEncoderProfilesItems()
+        {
+
+            var items = new List<H264Profile>
+            {
+               H264Profile.Main,
+               H264Profile.Base,
+               H264Profile.High,
+
+            };
+
+            encProfileComboBox.DataSource = items;
         }
 
         private void LoadEncoderItems()

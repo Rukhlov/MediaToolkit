@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
+            this.waveformPainter2 = new NAudio.Gui.WaveformPainter();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -55,6 +56,7 @@
             // 
             // settingPanel
             // 
+            this.settingPanel.Controls.Add(this.waveformPainter2);
             this.settingPanel.Controls.Add(this.encoderComboBox);
             this.settingPanel.Controls.Add(this.label1);
             this.settingPanel.Controls.Add(this.label5);
@@ -75,6 +77,16 @@
             this.settingPanel.Name = "settingPanel";
             this.settingPanel.Size = new System.Drawing.Size(458, 409);
             this.settingPanel.TabIndex = 23;
+            // 
+            // waveformPainter2
+            // 
+            this.waveformPainter2.BackColor = System.Drawing.SystemColors.Info;
+            this.waveformPainter2.Location = new System.Drawing.Point(1, 370);
+            this.waveformPainter2.Margin = new System.Windows.Forms.Padding(1);
+            this.waveformPainter2.Name = "waveformPainter2";
+            this.waveformPainter2.Size = new System.Drawing.Size(433, 38);
+            this.waveformPainter2.TabIndex = 50;
+            this.waveformPainter2.Text = "waveformPainter2";
             // 
             // encoderComboBox
             // 
@@ -116,9 +128,10 @@
             // waveformPainter1
             // 
             this.waveformPainter1.BackColor = System.Drawing.SystemColors.Info;
-            this.waveformPainter1.Location = new System.Drawing.Point(14, 318);
+            this.waveformPainter1.Location = new System.Drawing.Point(1, 330);
+            this.waveformPainter1.Margin = new System.Windows.Forms.Padding(1);
             this.waveformPainter1.Name = "waveformPainter1";
-            this.waveformPainter1.Size = new System.Drawing.Size(433, 69);
+            this.waveformPainter1.Size = new System.Drawing.Size(433, 38);
             this.waveformPainter1.TabIndex = 21;
             this.waveformPainter1.Text = "waveformPainter1";
             // 
@@ -322,5 +335,6 @@
         private System.Windows.Forms.ComboBox transportComboBox;
         private System.Windows.Forms.ComboBox encoderComboBox;
         private System.Windows.Forms.Label label1;
+        private NAudio.Gui.WaveformPainter waveformPainter2;
     }
 }

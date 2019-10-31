@@ -69,6 +69,7 @@ namespace TestStreamer.Controls
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
+                LocalPort = port,
                 LocalAddr = "",
                 RemoteAddr = addr,
                 RemotePort = port,
@@ -80,7 +81,8 @@ namespace TestStreamer.Controls
                 audioStreamer.StateChanged -= AudioStreamer_StateChanged;
             }
 
-            audioStreamer.SetWaveformPainter(this.waveformPainter1);
+            audioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
+
             audioStreamer.StateChanged += AudioStreamer_StateChanged;
             audioStreamer.Start(audioParams, networkParams);
         }
@@ -139,15 +141,60 @@ namespace TestStreamer.Controls
             {
                 using (var deviceEnum = new MMDeviceEnumerator())
                 {
-                    var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                    var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
 
-                    mmdevices.Add(captureDevice);
-                    mmdevices.Add(renderDevice);
+                    var defaultCaptureId = "";
+                    try
+                    {
+                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console))
+                        {
+                            var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                            if (captureDevice != null)
+                            {
+                                defaultCaptureId = captureDevice.ID;
+                                mmdevices.Add(captureDevice);
+                            }
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
 
-                    //var captureDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active).ToList();
-                    //mmdevices.AddRange(captureDevices);
+                    var defaultRenderId = "";
+                    try
+                    {
+                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
+                        {
+                            var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                            if (renderDevice != null)
+                            {
+                                defaultRenderId = renderDevice.ID;
+                                mmdevices.Add(renderDevice);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
 
+                    try
+                    {
+
+                        var allDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+                        foreach (var d in allDevices)
+                        {
+                            if (d.ID == defaultRenderId || d.ID == defaultCaptureId)
+                            {
+                                continue;
+                            }
+                            mmdevices.Add(d);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
                 }
             }
             catch(Exception ex)
@@ -206,5 +253,7 @@ namespace TestStreamer.Controls
 
             settingPanel.Enabled = !isStreaming;
         }
+
+
     }
 }

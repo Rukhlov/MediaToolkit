@@ -29,9 +29,17 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
-            this.snippingToolButton = new System.Windows.Forms.Button();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
+            this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.bitrateNumeric = new System.Windows.Forms.NumericUpDown();
+            this.encProfileComboBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.fpsNumeric = new System.Windows.Forms.NumericUpDown();
+            this.label1 = new System.Windows.Forms.Label();
+            this.snippingToolButton = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.transportComboBox = new System.Windows.Forms.ComboBox();
             this.aspectRatioCheckBox = new System.Windows.Forms.CheckBox();
@@ -52,9 +60,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.screensUpdateButton = new System.Windows.Forms.Button();
             this.screensComboBox = new System.Windows.Forms.ComboBox();
-            this.fpsNumeric = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.showMouseCheckBox = new System.Windows.Forms.CheckBox();
             this.portNumeric = new System.Windows.Forms.NumericUpDown();
@@ -63,6 +69,9 @@
             this.stopButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
             this.settingPanel.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             this.destSizeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.destHeightNumeric)).BeginInit();
@@ -71,15 +80,13 @@
             ((System.ComponentModel.ISupportInitialize)(this.srcLeftNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.srcRightNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.srcBottomNumeric)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
             this.SuspendLayout();
             // 
             // settingPanel
             // 
+            this.settingPanel.Controls.Add(this.tableLayoutPanel1);
             this.settingPanel.Controls.Add(this.snippingToolButton);
-            this.settingPanel.Controls.Add(this.encoderComboBox);
-            this.settingPanel.Controls.Add(this.label6);
             this.settingPanel.Controls.Add(this.label5);
             this.settingPanel.Controls.Add(this.transportComboBox);
             this.settingPanel.Controls.Add(this.aspectRatioCheckBox);
@@ -88,17 +95,159 @@
             this.settingPanel.Controls.Add(this.label4);
             this.settingPanel.Controls.Add(this.screensUpdateButton);
             this.settingPanel.Controls.Add(this.screensComboBox);
-            this.settingPanel.Controls.Add(this.fpsNumeric);
             this.settingPanel.Controls.Add(this.label2);
-            this.settingPanel.Controls.Add(this.label1);
             this.settingPanel.Controls.Add(this.label3);
             this.settingPanel.Controls.Add(this.showMouseCheckBox);
             this.settingPanel.Controls.Add(this.portNumeric);
             this.settingPanel.Controls.Add(this.addressTextBox);
             this.settingPanel.Location = new System.Drawing.Point(3, 3);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(473, 469);
+            this.settingPanel.Size = new System.Drawing.Size(473, 533);
             this.settingPanel.TabIndex = 20;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.Controls.Add(this.encoderComboBox, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.latencyModeCheckBox, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.label14, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.bitrateNumeric, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.encProfileComboBox, 1, 1);
+            this.tableLayoutPanel1.Controls.Add(this.label6, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.fpsNumeric, 1, 3);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(19, 353);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 5;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(218, 156);
+            this.tableLayoutPanel1.TabIndex = 54;
+            // 
+            // encoderComboBox
+            // 
+            this.encoderComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.encoderComboBox.Enabled = false;
+            this.encoderComboBox.FormattingEnabled = true;
+            this.encoderComboBox.Location = new System.Drawing.Point(86, 3);
+            this.encoderComboBox.Name = "encoderComboBox";
+            this.encoderComboBox.Size = new System.Drawing.Size(129, 24);
+            this.encoderComboBox.TabIndex = 47;
+            // 
+            // latencyModeCheckBox
+            // 
+            this.latencyModeCheckBox.AutoSize = true;
+            this.latencyModeCheckBox.Checked = true;
+            this.latencyModeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tableLayoutPanel1.SetColumnSpan(this.latencyModeCheckBox, 2);
+            this.latencyModeCheckBox.Location = new System.Drawing.Point(3, 119);
+            this.latencyModeCheckBox.Name = "latencyModeCheckBox";
+            this.latencyModeCheckBox.Size = new System.Drawing.Size(113, 21);
+            this.latencyModeCheckBox.TabIndex = 51;
+            this.latencyModeCheckBox.Text = "_LowLatency";
+            this.latencyModeCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label14.Location = new System.Drawing.Point(3, 30);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(77, 30);
+            this.label14.TabIndex = 52;
+            this.label14.Text = "Profile:";
+            this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label7.Location = new System.Drawing.Point(3, 60);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(77, 28);
+            this.label7.TabIndex = 50;
+            this.label7.Text = "AvgBitrate:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // bitrateNumeric
+            // 
+            this.bitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bitrateNumeric.Location = new System.Drawing.Point(86, 63);
+            this.bitrateNumeric.Maximum = new decimal(new int[] {
+            50000,
+            0,
+            0,
+            0});
+            this.bitrateNumeric.Name = "bitrateNumeric";
+            this.bitrateNumeric.Size = new System.Drawing.Size(129, 22);
+            this.bitrateNumeric.TabIndex = 49;
+            this.bitrateNumeric.Value = new decimal(new int[] {
+            2500,
+            0,
+            0,
+            0});
+            // 
+            // encProfileComboBox
+            // 
+            this.encProfileComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.encProfileComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.encProfileComboBox.FormattingEnabled = true;
+            this.encProfileComboBox.Location = new System.Drawing.Point(86, 33);
+            this.encProfileComboBox.Name = "encProfileComboBox";
+            this.encProfileComboBox.Size = new System.Drawing.Size(129, 24);
+            this.encProfileComboBox.TabIndex = 53;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label6.Location = new System.Drawing.Point(3, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(77, 30);
+            this.label6.TabIndex = 46;
+            this.label6.Text = "Encoder:";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // fpsNumeric
+            // 
+            this.fpsNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.fpsNumeric.Location = new System.Drawing.Point(86, 91);
+            this.fpsNumeric.Maximum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            this.fpsNumeric.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.fpsNumeric.Name = "fpsNumeric";
+            this.fpsNumeric.Size = new System.Drawing.Size(129, 22);
+            this.fpsNumeric.TabIndex = 5;
+            this.fpsNumeric.Value = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label1.Location = new System.Drawing.Point(3, 88);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(77, 28);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "FPS:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // snippingToolButton
             // 
@@ -109,25 +258,6 @@
             this.snippingToolButton.Text = "_SetScreenRect";
             this.snippingToolButton.UseVisualStyleBackColor = true;
             this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
-            // 
-            // encoderComboBox
-            // 
-            this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.encoderComboBox.Enabled = false;
-            this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(85, 373);
-            this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(107, 24);
-            this.encoderComboBox.TabIndex = 47;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(14, 376);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(65, 17);
-            this.label6.TabIndex = 46;
-            this.label6.Text = "Encoder:";
             // 
             // label5
             // 
@@ -152,7 +282,7 @@
             this.aspectRatioCheckBox.AutoSize = true;
             this.aspectRatioCheckBox.Checked = true;
             this.aspectRatioCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.aspectRatioCheckBox.Location = new System.Drawing.Point(248, 285);
+            this.aspectRatioCheckBox.Location = new System.Drawing.Point(248, 272);
             this.aspectRatioCheckBox.Name = "aspectRatioCheckBox";
             this.aspectRatioCheckBox.Size = new System.Drawing.Size(114, 21);
             this.aspectRatioCheckBox.TabIndex = 38;
@@ -165,7 +295,7 @@
             this.destSizeGroupBox.Controls.Add(this.label13);
             this.destSizeGroupBox.Controls.Add(this.destWidthNumeric);
             this.destSizeGroupBox.Controls.Add(this.destHeightNumeric);
-            this.destSizeGroupBox.Location = new System.Drawing.Point(248, 180);
+            this.destSizeGroupBox.Location = new System.Drawing.Point(248, 165);
             this.destSizeGroupBox.Name = "destSizeGroupBox";
             this.destSizeGroupBox.Size = new System.Drawing.Size(163, 99);
             this.destSizeGroupBox.TabIndex = 37;
@@ -388,28 +518,6 @@
             this.screensComboBox.TabIndex = 2;
             this.screensComboBox.SelectedValueChanged += new System.EventHandler(this.screensComboBox_SelectedValueChanged_1);
             // 
-            // fpsNumeric
-            // 
-            this.fpsNumeric.Location = new System.Drawing.Point(85, 405);
-            this.fpsNumeric.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.fpsNumeric.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.fpsNumeric.Name = "fpsNumeric";
-            this.fpsNumeric.Size = new System.Drawing.Size(107, 22);
-            this.fpsNumeric.TabIndex = 5;
-            this.fpsNumeric.Value = new decimal(new int[] {
-            30,
-            0,
-            0,
-            0});
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -418,15 +526,6 @@
             this.label2.Size = new System.Drawing.Size(38, 17);
             this.label2.TabIndex = 13;
             this.label2.Text = "Port:";
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 405);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 17);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "FPS:";
             // 
             // label3
             // 
@@ -442,7 +541,7 @@
             this.showMouseCheckBox.AutoSize = true;
             this.showMouseCheckBox.Checked = true;
             this.showMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showMouseCheckBox.Location = new System.Drawing.Point(17, 433);
+            this.showMouseCheckBox.Location = new System.Drawing.Point(293, 488);
             this.showMouseCheckBox.Name = "showMouseCheckBox";
             this.showMouseCheckBox.Size = new System.Drawing.Size(118, 21);
             this.showMouseCheckBox.TabIndex = 7;
@@ -481,7 +580,7 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(3, 495);
+            this.startButton.Location = new System.Drawing.Point(3, 542);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(177, 35);
             this.startButton.TabIndex = 17;
@@ -491,7 +590,7 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(198, 495);
+            this.stopButton.Location = new System.Drawing.Point(198, 542);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(107, 35);
             this.stopButton.TabIndex = 18;
@@ -501,7 +600,7 @@
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(355, 495);
+            this.previewButton.Location = new System.Drawing.Point(355, 542);
             this.previewButton.Name = "previewButton";
             this.previewButton.Size = new System.Drawing.Size(97, 35);
             this.previewButton.TabIndex = 19;
@@ -518,9 +617,13 @@
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.previewButton);
             this.Name = "ScreenStreamerControl";
-            this.Size = new System.Drawing.Size(479, 546);
+            this.Size = new System.Drawing.Size(518, 605);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).EndInit();
             this.destSizeGroupBox.ResumeLayout(false);
             this.destSizeGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).EndInit();
@@ -531,7 +634,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.srcLeftNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.srcRightNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.srcBottomNumeric)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).EndInit();
             this.ResumeLayout(false);
 
@@ -573,5 +675,11 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox encoderComboBox;
         private System.Windows.Forms.Button snippingToolButton;
+        private System.Windows.Forms.CheckBox latencyModeCheckBox;
+        private System.Windows.Forms.NumericUpDown bitrateNumeric;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.ComboBox encProfileComboBox;
     }
 }

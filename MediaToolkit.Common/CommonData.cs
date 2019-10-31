@@ -53,6 +53,20 @@ namespace MediaToolkit.Common
         public int FrameRate = 0;
         public string EncoderName = "";
 
+        public int Bitrate = 2500;
+        public int MaxBitrate = 5000;
+        public bool LowLatency = true;
+        public int Quality = 75;
+
+        public H264Profile Profile = H264Profile.Main;
+
+    }
+
+    public enum H264Profile
+    {
+        Base,
+        Main,
+        High,
     }
 
     public class AudioEncodingParams

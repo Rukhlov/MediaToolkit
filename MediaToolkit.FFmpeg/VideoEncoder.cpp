@@ -265,8 +265,9 @@ namespace FFmpegLib {
 						}
 						else if (bmpFmt == PixelFormat::Format16bppRgb565) {
 
-							pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
-
+							//pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
+							pix_fmt = AV_PIX_FMT_RGB565LE;
+							
 						}
 						else {
 

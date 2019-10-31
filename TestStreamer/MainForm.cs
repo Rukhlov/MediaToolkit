@@ -238,19 +238,50 @@ namespace TestStreamer
             this.notifyIcon.ShowBalloonTip(10000, "TEST_TITLE", "TEST_TEXT", ToolTipIcon.Info);
         }
 
-        private void aspectRatioCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void screenStreamerControl_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 
 
+    class RegionForm : Form
+    {
+        internal RegionForm(Rectangle region)
+        {
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = region.Location;
+            this.Size = new Size(region.Width, region.Height);
 
+            this.TransparencyKey = Color.White;
+            this.BackColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TopMost = true;
+            this.ShowInTaskbar = false;
+
+            RegionPanel panel = new RegionPanel();
+            panel.Dock = DockStyle.Fill;
+
+            this.Controls.Add(panel);
+        }
+
+        class RegionPanel : Panel
+        {
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                using (var b = new SolidBrush(Color.Green))
+                {
+                    using (var pen = new Pen(b,3))
+                    {
+                        var r = e.ClipRectangle;
+                        var rect = new Rectangle(r.X, r.Y, r.Width -1, r.Height - 1);
+
+                        var g = e.Graphics;
+                        g.DrawRectangle(pen, rect);
+                    }
+
+                }
+
+                base.OnPaint(e);
+            }
+        }
+    }
 
     class ComboBoxItem
     {

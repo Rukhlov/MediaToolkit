@@ -133,22 +133,22 @@ namespace MediaToolkit
 
                 };
 
-                //var bmiColors = GetColourMask(bmp.PixelFormat);
+                var bmiColors = GetColourMask(bmp.PixelFormat);
 
-                var bmiColors = new RGBQUAD[]
-                {
-                     new RGBQUAD
-                     {
-                         rgbRed = 0,
-                         rgbBlue = 248,
-                         rgbGreen = 0
-                     }
-                };
+                //var bmiColors = new RGBQUAD[]
+                //{
+                //     new RGBQUAD
+                //     {
+                //         rgbRed = 0,
+                //         rgbBlue = 248,
+                //         rgbGreen = 0
+                //     }
+                //};
 
                 BITMAPINFO bmi = new BITMAPINFO
                 {
                     bmiHeader = bmiHeader,
-                    //bmiColors = bmiColors,
+                   // bmiColors = bmiColors,
                 };
 
 
@@ -364,7 +364,7 @@ namespace MediaToolkit
             }
         }
 
-        // Этот код взят из WallControll и он не работает!!!
+        // Таблица цветов из WallControll-a
         private static RGBQUAD[] GetColourMask(PixelFormat format)
         {
             RGBQUAD[] array = new RGBQUAD[3];

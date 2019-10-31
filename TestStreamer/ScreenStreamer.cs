@@ -265,6 +265,8 @@ namespace TestStreamer
             public double sendBytesPerSec1 = 0;
             public double sendBytesPerSec2 = 0;
             public double sendBytesPerSec3 = 0;
+            public double avgBitrate = 0;
+
             public double lastTimestamp = 0;
 
             public double totalTime = 0;
@@ -286,6 +288,8 @@ namespace TestStreamer
                         sendBytesPerSec2 = (sendBytesPerSec1 * 0.05 + sendBytesPerSec2 * (1 - 0.05));
 
                         sendBytesPerSec3 = (sendBytesPerSec2 * 0.05 + sendBytesPerSec3 * (1 - 0.05));
+
+                        avgBitrate = sendBytesPerSec3  * 8 / 1000.0;
 
                         totalTime += (timestamp - lastTimestamp);
                     }
@@ -316,6 +320,8 @@ namespace TestStreamer
                 //sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec2) + "/s");
                 sb.AppendLine(StringHelper.SizeSuffix((long)sendBytesPerSec3) + "/s");
                 sb.AppendLine(StringHelper.SizeSuffix(totalBytesSend));
+
+                sb.AppendLine(avgBitrate.ToString("0.0") + " kbps");
 
                 sb.AppendLine(avgEncodingTime + " ms");
 

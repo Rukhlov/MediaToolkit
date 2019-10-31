@@ -72,33 +72,6 @@ namespace MediaToolkit
 
                 LogDxAdapters(dxgiFactory.Adapters1);
 
-
-                //var screen = System.Windows.Forms.Screen.FromRectangle(srcRect);
-                //if (screen != null)
-                //{
-                //    var bounds = screen.Bounds;
-                //    screenBound = new Rectangle
-                //    {
-                //        Left = bounds.Left,
-                //        Top = bounds.Top,
-                //        Right = bounds.Left + bounds.Width,
-                //        Bottom = bounds.Top + bounds.Height,
-                //    };
-                //}
-
-                //foreach (var _adapter in dxgiFactory.Adapters1)
-                //{
-
-                //    if (_adapter.Outputs.Length == 0)
-                //    {
-                //        continue;
-                //    }
-
-                //}
-
-                //SetupRegions(screen);
-
-
                 //var hMonitor = NativeAPIs.User32.GetMonitorFromRect(this.srcRect);
                 //if (hMonitor != IntPtr.Zero)
                 //{
@@ -157,7 +130,7 @@ namespace MediaToolkit
                         (desktopBounds.Top > srcRect.Bottom) || (desktopBounds.Bottom < srcRect.Y))
                     {
 
-                        logger.Debug(descr.DeviceName.ToString() + " no common area....");
+                        logger.Debug("No common area: " + descr.DeviceName + " " + srcRect.ToString());
                         continue;
 
                     }
@@ -1447,7 +1420,6 @@ namespace MediaToolkit
             return texture;
         }
     }
-
 
 
     enum ShapeType

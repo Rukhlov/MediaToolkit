@@ -44,12 +44,12 @@
             this.button1 = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.screenStreamerControl = new TestStreamer.Controls.ScreenStreamerControl();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
             this.audioStreamerControl = new TestStreamer.Controls.AudioStreamerControl();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.httpStreamerControl1 = new TestStreamer.Controls.HttpStreamerControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.remoteServerControl1 = new TestStreamer.Controls.RemoteServerControl();
             this.contextMenu.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -113,7 +113,7 @@
             // exitButton
             // 
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.exitButton.Location = new System.Drawing.Point(545, 682);
+            this.exitButton.Location = new System.Drawing.Point(443, 725);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(157, 33);
             this.exitButton.TabIndex = 0;
@@ -153,7 +153,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(28, 673);
+            this.button1.Location = new System.Drawing.Point(28, 716);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(172, 33);
             this.button1.TabIndex = 20;
@@ -173,7 +173,7 @@
             this.tabControl1.Location = new System.Drawing.Point(10, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(696, 583);
+            this.tabControl1.Size = new System.Drawing.Size(594, 626);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage2
@@ -182,58 +182,47 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 25);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(688, 554);
+            this.tabPage2.Size = new System.Drawing.Size(586, 597);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "ScreenStreamer";
             this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.audioStreamerControl);
-            this.tabPage3.Location = new System.Drawing.Point(4, 25);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(688, 517);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "AudioStreamer";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // tabPage4
-            // 
-            this.tabPage4.Controls.Add(this.httpStreamerControl1);
-            this.tabPage4.Location = new System.Drawing.Point(4, 25);
-            this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(688, 517);
-            this.tabPage4.TabIndex = 3;
-            this.tabPage4.Text = "HttpStreamer";
-            this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.remoteServerControl1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 25);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(688, 517);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
-            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // screenStreamerControl
             // 
             this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.screenStreamerControl.Location = new System.Drawing.Point(3, 3);
             this.screenStreamerControl.Name = "screenStreamerControl";
-            this.screenStreamerControl.Size = new System.Drawing.Size(682, 548);
+            this.screenStreamerControl.Size = new System.Drawing.Size(580, 591);
             this.screenStreamerControl.TabIndex = 0;
-            this.screenStreamerControl.Load += new System.EventHandler(this.screenStreamerControl_Load);
+
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.audioStreamerControl);
+            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(688, 554);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "AudioStreamer";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // audioStreamerControl
             // 
             this.audioStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioStreamerControl.Location = new System.Drawing.Point(0, 0);
             this.audioStreamerControl.Name = "audioStreamerControl";
-            this.audioStreamerControl.Size = new System.Drawing.Size(688, 517);
+            this.audioStreamerControl.Size = new System.Drawing.Size(688, 554);
             this.audioStreamerControl.TabIndex = 0;
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.httpStreamerControl1);
+            this.tabPage4.Location = new System.Drawing.Point(4, 25);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(688, 554);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "HttpStreamer";
+            this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // httpStreamerControl1
             // 
@@ -241,6 +230,17 @@
             this.httpStreamerControl1.Name = "httpStreamerControl1";
             this.httpStreamerControl1.Size = new System.Drawing.Size(495, 497);
             this.httpStreamerControl1.TabIndex = 0;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.remoteServerControl1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(688, 554);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "tabPage1";
+            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // remoteServerControl1
             // 
@@ -253,7 +253,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(718, 727);
+            this.ClientSize = new System.Drawing.Size(616, 770);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.updateNetworksButton);
             this.Controls.Add(this.label5);

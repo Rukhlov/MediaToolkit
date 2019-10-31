@@ -322,7 +322,7 @@ namespace MediaToolkit.MediaFoundation
  
     }
 
-    enum RateControlMode
+    public enum RateControlMode
     {
         CBR,
         PeakConstrainedVBR,
@@ -332,6 +332,28 @@ namespace MediaToolkit.MediaFoundation
         GlobalVBR,
         GlobalLowDelayVBR
     };
+
+    public enum eAVEncH264VProfile
+    {
+        eAVEncH264VProfile_unknown = 0,
+        eAVEncH264VProfile_Simple = 66,
+        eAVEncH264VProfile_Base = 66,
+        eAVEncH264VProfile_Main = 77,
+        eAVEncH264VProfile_High = 100,
+        eAVEncH264VProfile_422 = 122,
+        eAVEncH264VProfile_High10 = 110,
+        eAVEncH264VProfile_444 = 144,
+        eAVEncH264VProfile_Extended = 88,
+        eAVEncH264VProfile_ScalableBase = 83,
+        eAVEncH264VProfile_ScalableHigh = 86,
+        eAVEncH264VProfile_MultiviewHigh = 118,
+        eAVEncH264VProfile_StereoHigh = 128,
+        eAVEncH264VProfile_ConstrainedBase = 256,
+        eAVEncH264VProfile_UCConstrainedHigh = 257,
+        eAVEncH264VProfile_UCScalableConstrainedBase = 258,
+        eAVEncH264VProfile_UCScalableConstrainedHigh = 259
+
+    }
 
     public class MfVideoArgs
     {
@@ -346,7 +368,19 @@ namespace MediaToolkit.MediaFoundation
 
         public long AdapterId { get; set; } = -1;
 
+        public int Bitrate { get; set; } = 2500;
+
+        public int MaxBitrate { get; set; } = 5000;
+
+        public RateControlMode RateControl { get; set; } = RateControlMode.CBR;
+
+        public bool LowLatency { get; set; } = true;
+
+        public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.eAVEncH264VProfile_Main;
+
+        
 
     }
+
 
 }

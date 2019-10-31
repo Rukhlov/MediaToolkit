@@ -45,14 +45,26 @@ namespace MediaToolkit.Core
 
             }
 
+            var profile = eAVEncH264VProfile.eAVEncH264VProfile_Main;
+            if(destParams.Profile == H264Profile.High)
+            {
+                profile = eAVEncH264VProfile.eAVEncH264VProfile_High;
+            }
+            else if (destParams.Profile == H264Profile.Base)
+            {
+                profile = eAVEncH264VProfile.eAVEncH264VProfile_Base;
+            }
+
             encoder = new MfEncoderAsync();
             encoder.Setup(new MfVideoArgs
             {
                 Width = srcSize.Width,
                 Height = srcSize.Height,
                 FrameRate = destParams.FrameRate,
-
+                Bitrate = destParams.Bitrate,
+                LowLatency = destParams.LowLatency,
                 AdapterId = adapterLuid,
+                Profile = profile,
 
             });
 

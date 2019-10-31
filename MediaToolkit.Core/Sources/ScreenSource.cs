@@ -20,6 +20,7 @@ namespace MediaToolkit
         public int Fps = 10;
         public bool CaptureMouse = false;
         public bool AspectRatio = true;
+        public bool UseHardware = true;
     }
 
     public enum CaptureState
@@ -81,6 +82,8 @@ namespace MediaToolkit
                 DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
                 if (capture != null)
                 {
+                    capture.UseHwContext = captureParams.UseHardware;
+
                     this.hwContext = capture;
                 }
 

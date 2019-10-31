@@ -51,10 +51,17 @@ namespace MediaToolkit
         public bool IsStreaming { get; private set; }
         private int sampleByteSize = 0;
 
-        private WaveformPainter waveformPainter = null;
-        public void SetWaveformPainter(WaveformPainter painter)
+        private WaveformPainter[] wavePainters = null;
+
+        //public void SetWaveformPainter(WaveformPainter painter)
+        //{
+        //    this.waveformPainter = painter;
+
+        //}
+
+        public void SetWaveformPainter(WaveformPainter[] wavePainters)
         {
-            this.waveformPainter = painter;
+            this.wavePainters = wavePainters;
 
         }
 
@@ -163,19 +170,25 @@ namespace MediaToolkit
 
         private void SampleChannel_PreVolumeMeter(object sender, StreamVolumeEventArgs e)
         {
-            var maxSample0 = e.MaxSampleValues[0];
-            //if (e.MaxSampleValues.Count() > 1)
-            //{
-     
-            //    var maxSample1 = e.MaxSampleValues[1];
-            //    logger.Debug("MaxSampleValues" + maxSample0 + " " + maxSample1);
-            //}
-            //else
-            //{
-            //    logger.Debug("MaxSampleValues" + maxSample0);
-            //}
+            if(wavePainters == null)
+            {
+                return;
+            }
 
-            waveformPainter?.AddMax(maxSample0);
+            var samples = e.MaxSampleValues;
+
+            for (int i = 0; i < samples.Length; i++)
+            {
+                var s = samples[i];
+
+                if (i < wavePainters.Length)
+                {
+                    var painter = wavePainters[i];
+
+                    painter?.AddMax(s);
+                }
+            }
+                       
         }
 
         private uint rtpTimestamp = 0;

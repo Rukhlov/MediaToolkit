@@ -299,9 +299,11 @@ namespace MediaToolkit.MediaFoundation
                         encoder.ProcessMessage(TMessageType.SetD3DManager, deviceManager.NativePointer);
                     }
 
-                    attr.Set(MFAttributeKeys.CODECAPI_AVLowLatencyMode, true);
+                    attr.Set(MFAttributeKeys.CODECAPI_AVLowLatencyMode, args.LowLatency);
 
-                    //attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    
+
+                    // attr.Set(SinkWriterAttributeKeys.LowLatency, true);
                     //attr.Set(CODECAPI_AVEncNumWorkerThreads, 8);
                 }
 
@@ -339,12 +341,18 @@ namespace MediaToolkit.MediaFoundation
                     break;
                 }
 
-                //outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
+               
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
 
+                mediaType.Set(MediaTypeAttributeKeys.Mpeg2Profile, (int)args.Profile);
+
                 mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+
+                int avgBitrate = args.Bitrate * 1000;
+
+                mediaType.Set(MediaTypeAttributeKeys.AvgBitrate, avgBitrate);
 
                 encoder.SetOutputType(outputStreamId, mediaType, 0);
 
@@ -622,7 +630,7 @@ namespace MediaToolkit.MediaFoundation
 
                                 OnDataReady(buf);
 
-                                var ts = sw.ElapsedMilliseconds;
+                                //var ts = sw.ElapsedMilliseconds;
                                 //Console.WriteLine("ElapsedMilliseconds " + ts);
                             }
                         }

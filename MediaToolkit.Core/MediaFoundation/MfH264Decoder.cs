@@ -256,7 +256,7 @@ namespace MediaToolkit.MediaFoundation
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
-                OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
+               // OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
@@ -314,12 +314,7 @@ namespace MediaToolkit.MediaFoundation
             inputSample.SampleTime = frameNumber * frameDuration;
             inputSample.SampleDuration = frameDuration;
 
-            //decoder.ProcessInput(0, bufSample, 0);
-
-           // logger.Debug("ProcessInput ");
-
             decoder.ProcessInput(0, inputSample, 0);
-
 
             //if (decoder.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
             {

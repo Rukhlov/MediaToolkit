@@ -19,6 +19,8 @@ namespace TestStreamer.Controls
             InitializeComponent();
 
             HttpUpdateScreens();
+
+            HttpUpdateCaptures();
         }
 
         private StatisticForm statisticForm = new StatisticForm();
@@ -45,19 +47,27 @@ namespace TestStreamer.Controls
             var addr = httpAddrTextBox.Text;
             var port = (int)httpPortNumeric.Value;
 
+            CaptureType captureType = (CaptureType)captureTypesComboBox.SelectedItem;
 
             httpScreenSource = new ScreenSource();
             ScreenCaptureParams captureParams = new ScreenCaptureParams
             {
                 SrcRect = srcRect,
                 DestSize = destSize,
-                CaptureType = CaptureType.DXGIDeskDupl,
+                CaptureType = captureType,//CaptureType.DXGIDeskDupl,
                 //CaptureType = CaptureType.Direct3D,
                 //CaptureType = CaptureType.GDI,
                 Fps = (int)fps,
                 CaptureMouse = true,
                 AspectRatio = true,
+                UseHardware = false,
             };
+
+            if(captureType == CaptureType.GDI || captureType == CaptureType.GDIPlus)
+            {// масштабируем на энкодере
+                captureParams.DestSize = new Size(srcRect.Width, srcRect.Height);
+            }
+
             httpScreenSource.Setup(captureParams);
 
 
@@ -110,6 +120,20 @@ namespace TestStreamer.Controls
 
             httpDisplayComboBox.DisplayMember = "Name";
             httpDisplayComboBox.DataSource = screenItems2;
+        }
+
+
+        private void HttpUpdateCaptures()
+        {
+
+            List<CaptureType> captureTypes = new List<CaptureType>();
+            captureTypes.Add(CaptureType.DXGIDeskDupl);
+            captureTypes.Add(CaptureType.GDI);
+            //captureTypes.Add(CaptureType.GDIPlus);
+            captureTypes.Add(CaptureType.Direct3D);
+            captureTypes.Add(CaptureType.Datapath);
+
+            captureTypesComboBox.DataSource = captureTypes;
         }
 
         private Screen HttpGetCurrentScreen()

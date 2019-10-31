@@ -45,6 +45,8 @@
             this.httpAddrTextBox = new System.Windows.Forms.TextBox();
             this.httpStartButton = new System.Windows.Forms.Button();
             this.httpStopButton = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
             this.panel3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.httpDestWidthNumeric)).BeginInit();
@@ -55,6 +57,8 @@
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.label1);
+            this.panel3.Controls.Add(this.captureTypesComboBox);
             this.panel3.Controls.Add(this.groupBox1);
             this.panel3.Controls.Add(this.label22);
             this.panel3.Controls.Add(this.httpUpdateButton);
@@ -76,7 +80,7 @@
             this.groupBox1.Controls.Add(this.label15);
             this.groupBox1.Controls.Add(this.httpDestWidthNumeric);
             this.groupBox1.Controls.Add(this.httpDestHeightNumeric);
-            this.groupBox1.Location = new System.Drawing.Point(16, 121);
+            this.groupBox1.Location = new System.Drawing.Point(16, 170);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(163, 99);
             this.groupBox1.TabIndex = 38;
@@ -165,7 +169,7 @@
             // 
             // httpFpsNumeric
             // 
-            this.httpFpsNumeric.Location = new System.Drawing.Point(57, 236);
+            this.httpFpsNumeric.Location = new System.Drawing.Point(57, 285);
             this.httpFpsNumeric.Maximum = new decimal(new int[] {
             60,
             0,
@@ -197,7 +201,7 @@
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(13, 238);
+            this.label24.Location = new System.Drawing.Point(13, 287);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(38, 17);
             this.label24.TabIndex = 6;
@@ -262,6 +266,24 @@
             this.httpStopButton.UseVisualStyleBackColor = true;
             this.httpStopButton.Click += new System.EventHandler(this.httpStopButton_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(19, 133);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(62, 17);
+            this.label1.TabIndex = 40;
+            this.label1.Text = "Capture:";
+            // 
+            // captureComboBox
+            // 
+            this.captureTypesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.captureTypesComboBox.FormattingEnabled = true;
+            this.captureTypesComboBox.Location = new System.Drawing.Point(87, 130);
+            this.captureTypesComboBox.Name = "captureComboBox";
+            this.captureTypesComboBox.Size = new System.Drawing.Size(181, 24);
+            this.captureTypesComboBox.TabIndex = 39;
+            // 
             // HttpStreamerControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -302,5 +324,7 @@
         private System.Windows.Forms.TextBox httpAddrTextBox;
         private System.Windows.Forms.Button httpStartButton;
         private System.Windows.Forms.Button httpStopButton;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox captureTypesComboBox;
     }
 }
