@@ -27,6 +27,8 @@ namespace TestStreamer.Controls
             LoadTransportItems();
             LoadEncoderItems();
 
+            LoadRateModeItems();
+
             UpdateControls();
 
         }
@@ -59,9 +61,13 @@ namespace TestStreamer.Controls
 
             int fps = (int)fpsNumeric.Value;
             int bitrate = (int)bitrateNumeric.Value;
+            int maxBitrate = (int)MaxBitrateNumeric.Value;
+
             bool latencyMode = latencyModeCheckBox.Checked;
 
             H264Profile h264Profile = (H264Profile)encProfileComboBox.SelectedItem;
+
+            BitrateControlMode bitrateMode = (BitrateControlMode)bitrateModeComboBox.SelectedItem;
 
             bool showMouse = showMouseCheckBox.Checked;
 
@@ -151,6 +157,8 @@ namespace TestStreamer.Controls
                 Bitrate = bitrate,
                 LowLatency= latencyMode,
                 Profile = h264Profile,
+                BitrateMode = bitrateMode,
+                MaxBitrate = maxBitrate,
             };
 
             videoStreamer = new ScreenStreamer(screenSource);
@@ -341,6 +349,20 @@ namespace TestStreamer.Controls
             transportComboBox.DataSource = items;
         }
 
+        private void LoadRateModeItems()
+        {
+
+            var items = new List<BitrateControlMode>
+            {
+               BitrateControlMode.CBR,
+               BitrateControlMode.VBR,
+               BitrateControlMode.Quality,
+
+            };
+
+            bitrateModeComboBox.DataSource = items;
+        }
+
         private void LoadEncoderProfilesItems()
         {
 
@@ -407,9 +429,16 @@ namespace TestStreamer.Controls
                 srcRightNumeric.Value = rect.Right;
                 srcBottomNumeric.Value = rect.Bottom;
 
+                //regionForm?.Close();
+
+                //regionForm = new RegionForm(rect);
+                //regionForm.Visible = true;
+
                 //MessageBox.Show(a.ToString() + " " + s.ToString() + " " + rect.ToString());
             });
 
+            //regionForm?.Close();
+            //regionForm = null;
             snippingTool.Snip(screen, areaSelected);
         }
 
@@ -513,6 +542,11 @@ namespace TestStreamer.Controls
                     //BitBlt(hdcDest, X - x, Y - y, X1 - X, Y1 - Y, hdcSrc, X, Y, 0x40000000 | 0x00CC0020); //SRCCOPY AND CAPTUREBLT
                 }
             }
+        }
+
+        private void MaxBitrateNumeric_ValueChanged(object sender, EventArgs e)
+        {
+
         }
     }
 

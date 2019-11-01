@@ -37,6 +37,7 @@ namespace MediaToolkit
 
         public void Setup(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
         {
+            logger.Debug("ScreenReceiver::Setup(...)");
             var inputArgs = new MfVideoArgs
             {
                 Width = inputPars.Width,
@@ -55,18 +56,19 @@ namespace MediaToolkit
 
 
             int adapterIndex = 0;
-            var dxgiFactory = new SharpDX.DXGI.Factory1();
-            var adapter = dxgiFactory.Adapters1[adapterIndex];
-
-
-            device = new Device(adapter,
-                                //DeviceCreationFlags.Debug |
-                                DeviceCreationFlags.VideoSupport |
-                                DeviceCreationFlags.BgraSupport);
-
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
             {
-                multiThread.SetMultithreadProtected(true);
+                var adapter = dxgiFactory.Adapters1[adapterIndex];
+
+                device = new Device(adapter,
+                                    //DeviceCreationFlags.Debug |
+                                    DeviceCreationFlags.VideoSupport |
+                                    DeviceCreationFlags.BgraSupport);
+
+                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                {
+                    multiThread.SetMultithreadProtected(true);
+                }
             }
 
             sharedTexture = new Texture2D(device,
@@ -146,6 +148,8 @@ namespace MediaToolkit
 
         public void Play()
         {
+            logger.Debug("ScreenReceiver::Play()");
+
             Statistic.RegisterCounter(receiverStats);
 
             //ImageProvider.Start(sharedTexture);
@@ -263,6 +267,8 @@ namespace MediaToolkit
 
         public void Stop()
         {
+            logger.Debug("ScreenReceiver::Stop()");
+
             if (rtpReceiver != null)
             {
                 rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
@@ -274,6 +280,7 @@ namespace MediaToolkit
                 decoder.Close();
                 decoder = null;
             }
+
             if (processor != null)
             {
                 processor.Close();

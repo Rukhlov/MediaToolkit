@@ -305,7 +305,8 @@ namespace MediaToolkit.MediaFoundation
 
         public static readonly MediaAttributeKey<int> CODECAPI_AVEncCommonQuality = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
 
-        
+        public static readonly MediaAttributeKey<int> CODECAPI_AVEncCommonMaxBitRate = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
+
 
         // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
         public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
@@ -362,17 +363,17 @@ namespace MediaToolkit.MediaFoundation
         public int Height { get; set; } = 720;
 
         public int FrameRate { get; set; } = 15;
-        public int VideoQuality { get; set; } = 70;
+        public int Quality { get; set; } = 70;
 
         public Guid Format { get; set; } = VideoFormatGuids.NV12;
 
         public long AdapterId { get; set; } = -1;
 
-        public int Bitrate { get; set; } = 2500;
+        public int AvgBitrate { get; set; } = 2500;
 
         public int MaxBitrate { get; set; } = 5000;
 
-        public RateControlMode RateControl { get; set; } = RateControlMode.CBR;
+        public RateControlMode BitrateMode { get; set; } = RateControlMode.CBR;
 
         public bool LowLatency { get; set; } = true;
 

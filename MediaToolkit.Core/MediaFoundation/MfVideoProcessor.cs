@@ -288,7 +288,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Stop()
         {
-            logger.Debug("Stop()");
+            logger.Debug("MfVideoProcessor::Stop()");
 
             processor.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
             processor.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
@@ -299,7 +299,9 @@ namespace MediaToolkit.MediaFoundation
         public void Close()
         {
 
-            if(InputMediaType != null)
+            logger.Debug("MfVideoProcessor::Close()");
+
+            if (InputMediaType != null)
             {
                 InputMediaType.Dispose();
                 InputMediaType = null;

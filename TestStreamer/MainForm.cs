@@ -261,25 +261,89 @@ namespace TestStreamer
             this.Controls.Add(panel);
         }
 
+        const int WS_EX_LAYERED = 0x00080000;
+        //protected override CreateParams CreateParams
+        //{
+        //    get
+        //    {
+        //        CreateParams createParams = base.CreateParams;
+        //        createParams.ExStyle |= WS_EX_LAYERED;
+        //        return createParams;
+        //    }
+        //}
+
         class RegionPanel : Panel
         {
-            protected override void OnPaint(PaintEventArgs e)
+            internal RegionPanel()
             {
-                using (var b = new SolidBrush(Color.Green))
-                {
-                    using (var pen = new Pen(b,3))
-                    {
-                        var r = e.ClipRectangle;
-                        var rect = new Rectangle(r.X, r.Y, r.Width -1, r.Height - 1);
+                timer.Tick += Timer_Tick;
+                timer.Interval = 1000;
+                timer.Enabled = true;
 
-                        var g = e.Graphics;
+            }
+
+
+            private byte tick = 0;
+            private Timer timer = new Timer();
+            private void Timer_Tick(object sender, EventArgs e)
+            {
+                DrawBorder();
+
+                tick++;
+
+
+            }
+
+            private void DrawBorder()
+            {
+                var color = Color.Red;
+                var color2 = Color.Green;
+
+                if (tick % 2 == 0)
+                {
+                    color = Color.Green;
+                    color2 = Color.Red;
+                }
+
+                var r = this.ClientRectangle;
+                var rect = new Rectangle(r.X, r.Y, r.Width - 1, r.Height - 1);
+                var g = Graphics.FromHwnd(this.Handle);
+
+                using (var b = new SolidBrush(color))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
                         g.DrawRectangle(pen, rect);
                     }
-
                 }
+
+                using (var b = new SolidBrush(color2))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
+                        pen.DashPattern = new float[] { 5, 5 };
+  
+                        g.DrawRectangle(pen, rect);
+                    }
+                }
+            }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                DrawBorder();
 
                 base.OnPaint(e);
             }
+
+            protected override void Dispose(bool disposing)
+            {
+
+                timer.Tick -= Timer_Tick;
+                timer.Dispose();
+
+                base.Dispose(disposing);
+            }
+
         }
     }
 

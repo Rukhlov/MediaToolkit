@@ -55,16 +55,28 @@ namespace MediaToolkit.Core
                 profile = eAVEncH264VProfile.eAVEncH264VProfile_Base;
             }
 
+            var bitrateMode = RateControlMode.CBR;
+            if(destParams.BitrateMode == BitrateControlMode.VBR)
+            {
+                bitrateMode = RateControlMode.LowDelayVBR;
+            }
+            else if(destParams.BitrateMode == BitrateControlMode.Quality)
+            {
+                bitrateMode = RateControlMode.Quality;
+            }
+
             encoder = new MfEncoderAsync();
             encoder.Setup(new MfVideoArgs
             {
                 Width = srcSize.Width,
                 Height = srcSize.Height,
                 FrameRate = destParams.FrameRate,
-                Bitrate = destParams.Bitrate,
+                AvgBitrate = destParams.Bitrate,
                 LowLatency = destParams.LowLatency,
                 AdapterId = adapterLuid,
                 Profile = profile,
+                BitrateMode = bitrateMode,
+                MaxBitrate = destParams.MaxBitrate,
 
             });
 

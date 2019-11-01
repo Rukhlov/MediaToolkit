@@ -29,9 +29,10 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
+            this.MaxBitrateNumeric = new System.Windows.Forms.NumericUpDown();
+            this.bitrateModeComboBox = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
-            this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.bitrateNumeric = new System.Windows.Forms.NumericUpDown();
@@ -39,6 +40,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.fpsNumeric = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
             this.snippingToolButton = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.transportComboBox = new System.Windows.Forms.ComboBox();
@@ -68,7 +70,10 @@
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
             this.settingPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
@@ -102,32 +107,68 @@
             this.settingPanel.Controls.Add(this.addressTextBox);
             this.settingPanel.Location = new System.Drawing.Point(3, 3);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(473, 533);
+            this.settingPanel.Size = new System.Drawing.Size(522, 559);
             this.settingPanel.TabIndex = 20;
+            // 
+            // MaxBitrateNumeric
+            // 
+            this.MaxBitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MaxBitrateNumeric.Location = new System.Drawing.Point(87, 121);
+            this.MaxBitrateNumeric.Maximum = new decimal(new int[] {
+            50000,
+            0,
+            0,
+            0});
+            this.MaxBitrateNumeric.Name = "MaxBitrateNumeric";
+            this.MaxBitrateNumeric.Size = new System.Drawing.Size(175, 22);
+            this.MaxBitrateNumeric.TabIndex = 56;
+            this.MaxBitrateNumeric.Value = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.MaxBitrateNumeric.ValueChanged += new System.EventHandler(this.MaxBitrateNumeric_ValueChanged);
+            // 
+            // bitrateModeComboBox
+            // 
+            this.bitrateModeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bitrateModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.bitrateModeComboBox.FormattingEnabled = true;
+            this.bitrateModeComboBox.Location = new System.Drawing.Point(87, 63);
+            this.bitrateModeComboBox.Name = "bitrateModeComboBox";
+            this.bitrateModeComboBox.Size = new System.Drawing.Size(175, 24);
+            this.bitrateModeComboBox.TabIndex = 55;
             // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.Controls.Add(this.label16, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label15, 0, 5);
+            this.tableLayoutPanel1.Controls.Add(this.MaxBitrateNumeric, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.encoderComboBox, 1, 0);
-            this.tableLayoutPanel1.Controls.Add(this.latencyModeCheckBox, 0, 4);
             this.tableLayoutPanel1.Controls.Add(this.label14, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.bitrateNumeric, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.encProfileComboBox, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.label6, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.fpsNumeric, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 3);
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(19, 353);
+            this.tableLayoutPanel1.Controls.Add(this.bitrateNumeric, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.bitrateModeComboBox, 1, 2);
+            this.tableLayoutPanel1.Controls.Add(this.label7, 0, 4);
+            this.tableLayoutPanel1.Controls.Add(this.fpsNumeric, 1, 6);
+            this.tableLayoutPanel1.Controls.Add(this.label1, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.latencyModeCheckBox, 0, 7);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(19, 341);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 5;
+            this.tableLayoutPanel1.RowCount = 8;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(218, 156);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(265, 204);
             this.tableLayoutPanel1.TabIndex = 54;
             // 
             // encoderComboBox
@@ -136,23 +177,10 @@
             this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encoderComboBox.Enabled = false;
             this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(86, 3);
+            this.encoderComboBox.Location = new System.Drawing.Point(87, 3);
             this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(129, 24);
+            this.encoderComboBox.Size = new System.Drawing.Size(175, 24);
             this.encoderComboBox.TabIndex = 47;
-            // 
-            // latencyModeCheckBox
-            // 
-            this.latencyModeCheckBox.AutoSize = true;
-            this.latencyModeCheckBox.Checked = true;
-            this.latencyModeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.tableLayoutPanel1.SetColumnSpan(this.latencyModeCheckBox, 2);
-            this.latencyModeCheckBox.Location = new System.Drawing.Point(3, 119);
-            this.latencyModeCheckBox.Name = "latencyModeCheckBox";
-            this.latencyModeCheckBox.Size = new System.Drawing.Size(113, 21);
-            this.latencyModeCheckBox.TabIndex = 51;
-            this.latencyModeCheckBox.Text = "_LowLatency";
-            this.latencyModeCheckBox.UseVisualStyleBackColor = true;
             // 
             // label14
             // 
@@ -160,7 +188,7 @@
             this.label14.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label14.Location = new System.Drawing.Point(3, 30);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(77, 30);
+            this.label14.Size = new System.Drawing.Size(78, 30);
             this.label14.TabIndex = 52;
             this.label14.Text = "Profile:";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -169,9 +197,9 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label7.Location = new System.Drawing.Point(3, 60);
+            this.label7.Location = new System.Drawing.Point(3, 90);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(77, 28);
+            this.label7.Size = new System.Drawing.Size(78, 28);
             this.label7.TabIndex = 50;
             this.label7.Text = "AvgBitrate:";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -179,14 +207,14 @@
             // bitrateNumeric
             // 
             this.bitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bitrateNumeric.Location = new System.Drawing.Point(86, 63);
+            this.bitrateNumeric.Location = new System.Drawing.Point(87, 93);
             this.bitrateNumeric.Maximum = new decimal(new int[] {
             50000,
             0,
             0,
             0});
             this.bitrateNumeric.Name = "bitrateNumeric";
-            this.bitrateNumeric.Size = new System.Drawing.Size(129, 22);
+            this.bitrateNumeric.Size = new System.Drawing.Size(175, 22);
             this.bitrateNumeric.TabIndex = 49;
             this.bitrateNumeric.Value = new decimal(new int[] {
             2500,
@@ -199,9 +227,9 @@
             this.encProfileComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.encProfileComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encProfileComboBox.FormattingEnabled = true;
-            this.encProfileComboBox.Location = new System.Drawing.Point(86, 33);
+            this.encProfileComboBox.Location = new System.Drawing.Point(87, 33);
             this.encProfileComboBox.Name = "encProfileComboBox";
-            this.encProfileComboBox.Size = new System.Drawing.Size(129, 24);
+            this.encProfileComboBox.Size = new System.Drawing.Size(175, 24);
             this.encProfileComboBox.TabIndex = 53;
             // 
             // label6
@@ -210,7 +238,7 @@
             this.label6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label6.Location = new System.Drawing.Point(3, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(77, 30);
+            this.label6.Size = new System.Drawing.Size(78, 30);
             this.label6.TabIndex = 46;
             this.label6.Text = "Encoder:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -218,7 +246,7 @@
             // fpsNumeric
             // 
             this.fpsNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.fpsNumeric.Location = new System.Drawing.Point(86, 91);
+            this.fpsNumeric.Location = new System.Drawing.Point(87, 149);
             this.fpsNumeric.Maximum = new decimal(new int[] {
             60,
             0,
@@ -230,7 +258,7 @@
             0,
             0});
             this.fpsNumeric.Name = "fpsNumeric";
-            this.fpsNumeric.Size = new System.Drawing.Size(129, 22);
+            this.fpsNumeric.Size = new System.Drawing.Size(175, 22);
             this.fpsNumeric.TabIndex = 5;
             this.fpsNumeric.Value = new decimal(new int[] {
             30,
@@ -242,12 +270,25 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(3, 88);
+            this.label1.Location = new System.Drawing.Point(3, 146);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(77, 28);
+            this.label1.Size = new System.Drawing.Size(78, 28);
             this.label1.TabIndex = 6;
             this.label1.Text = "FPS:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // latencyModeCheckBox
+            // 
+            this.latencyModeCheckBox.AutoSize = true;
+            this.latencyModeCheckBox.Checked = true;
+            this.latencyModeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tableLayoutPanel1.SetColumnSpan(this.latencyModeCheckBox, 2);
+            this.latencyModeCheckBox.Location = new System.Drawing.Point(3, 177);
+            this.latencyModeCheckBox.Name = "latencyModeCheckBox";
+            this.latencyModeCheckBox.Size = new System.Drawing.Size(113, 21);
+            this.latencyModeCheckBox.TabIndex = 51;
+            this.latencyModeCheckBox.Text = "_LowLatency";
+            this.latencyModeCheckBox.UseVisualStyleBackColor = true;
             // 
             // snippingToolButton
             // 
@@ -324,7 +365,12 @@
             // 
             this.destWidthNumeric.Location = new System.Drawing.Point(66, 29);
             this.destWidthNumeric.Maximum = new decimal(new int[] {
-            8128,
+            4096,
+            0,
+            0,
+            0});
+            this.destWidthNumeric.Minimum = new decimal(new int[] {
+            64,
             0,
             0,
             0});
@@ -341,7 +387,12 @@
             // 
             this.destHeightNumeric.Location = new System.Drawing.Point(66, 57);
             this.destHeightNumeric.Maximum = new decimal(new int[] {
-            8128,
+            4096,
+            0,
+            0,
+            0});
+            this.destHeightNumeric.Minimum = new decimal(new int[] {
+            64,
             0,
             0,
             0});
@@ -541,7 +592,7 @@
             this.showMouseCheckBox.AutoSize = true;
             this.showMouseCheckBox.Checked = true;
             this.showMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showMouseCheckBox.Location = new System.Drawing.Point(293, 488);
+            this.showMouseCheckBox.Location = new System.Drawing.Point(257, 314);
             this.showMouseCheckBox.Name = "showMouseCheckBox";
             this.showMouseCheckBox.Size = new System.Drawing.Size(118, 21);
             this.showMouseCheckBox.TabIndex = 7;
@@ -580,7 +631,7 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(3, 542);
+            this.startButton.Location = new System.Drawing.Point(3, 568);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(177, 35);
             this.startButton.TabIndex = 17;
@@ -590,7 +641,7 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(198, 542);
+            this.stopButton.Location = new System.Drawing.Point(198, 568);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(107, 35);
             this.stopButton.TabIndex = 18;
@@ -600,13 +651,35 @@
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(355, 542);
+            this.previewButton.Location = new System.Drawing.Point(428, 568);
             this.previewButton.Name = "previewButton";
             this.previewButton.Size = new System.Drawing.Size(97, 35);
             this.previewButton.TabIndex = 19;
             this.previewButton.Text = "_Preview";
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.previewButton_Click);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label15.Location = new System.Drawing.Point(3, 118);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(78, 28);
+            this.label15.TabIndex = 55;
+            this.label15.Text = "MaxBitrate:";
+            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label16.Location = new System.Drawing.Point(3, 60);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(78, 30);
+            this.label16.TabIndex = 55;
+            this.label16.Text = "Mode:";
+            this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // ScreenStreamerControl
             // 
@@ -617,9 +690,10 @@
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.previewButton);
             this.Name = "ScreenStreamerControl";
-            this.Size = new System.Drawing.Size(518, 605);
+            this.Size = new System.Drawing.Size(540, 619);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).EndInit();
@@ -675,11 +749,15 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox encoderComboBox;
         private System.Windows.Forms.Button snippingToolButton;
-        private System.Windows.Forms.CheckBox latencyModeCheckBox;
         private System.Windows.Forms.NumericUpDown bitrateNumeric;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.ComboBox encProfileComboBox;
+        private System.Windows.Forms.NumericUpDown MaxBitrateNumeric;
+        private System.Windows.Forms.ComboBox bitrateModeComboBox;
+        private System.Windows.Forms.CheckBox latencyModeCheckBox;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label15;
     }
 }

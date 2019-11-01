@@ -130,6 +130,8 @@ namespace TestClient.Controls
                     Text = title,
                 };
 
+                imageProvider?.Close();
+
                 imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
                 var reciver = remoteClient.VideoReceiver;
 

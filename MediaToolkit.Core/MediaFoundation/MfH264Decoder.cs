@@ -148,7 +148,7 @@ namespace MediaToolkit.MediaFoundation
                         decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                     }
 
-                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    attr.Set(SinkWriterAttributeKeys.LowLatency, false);
                 }
 
 
@@ -256,7 +256,7 @@ namespace MediaToolkit.MediaFoundation
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
-               // OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
+                OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));

@@ -300,8 +300,9 @@ namespace MediaToolkit.MediaFoundation
                     }
 
                     attr.Set(MFAttributeKeys.CODECAPI_AVLowLatencyMode, args.LowLatency);
+                    attr.Set(MFAttributeKeys.CODECAPI_AVEncCommonRateControlMode, args.BitrateMode);
+                    attr.Set(MFAttributeKeys.CODECAPI_AVEncCommonQuality, args.Quality);
 
-                    
 
                     // attr.Set(SinkWriterAttributeKeys.LowLatency, true);
                     //attr.Set(CODECAPI_AVEncNumWorkerThreads, 8);
@@ -350,9 +351,12 @@ namespace MediaToolkit.MediaFoundation
 
                 mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
-                int avgBitrate = args.Bitrate * 1000;
+                int avgBitrate = args.AvgBitrate * 1000;
 
                 mediaType.Set(MediaTypeAttributeKeys.AvgBitrate, avgBitrate);
+
+                int maxBitrate = args.MaxBitrate * 1000;
+                mediaType.Set(MFAttributeKeys.CODECAPI_AVEncCommonMaxBitRate, maxBitrate);
 
                 encoder.SetOutputType(outputStreamId, mediaType, 0);
 

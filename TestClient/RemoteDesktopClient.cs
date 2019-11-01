@@ -293,6 +293,8 @@ namespace TestClient
 
             running = false;
 
+            CloseReceiver();
+
             if (factory != null)
             {
                 var channel = factory.CreateChannel();
@@ -305,8 +307,6 @@ namespace TestClient
 
                     var resp = channel.Stop(request);
                     channel.Disconnect(request);
-
-                    CloseReceiver();
 
                 }
                 finally

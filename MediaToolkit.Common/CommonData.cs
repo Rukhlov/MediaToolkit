@@ -60,6 +60,8 @@ namespace MediaToolkit.Common
 
         public H264Profile Profile = H264Profile.Main;
 
+        public BitrateControlMode BitrateMode = BitrateControlMode.CBR;
+
     }
 
     public enum H264Profile
@@ -67,6 +69,13 @@ namespace MediaToolkit.Common
         Base,
         Main,
         High,
+    }
+
+    public enum BitrateControlMode
+    {
+        CBR,
+        VBR,
+        Quality,
     }
 
     public class AudioEncodingParams
