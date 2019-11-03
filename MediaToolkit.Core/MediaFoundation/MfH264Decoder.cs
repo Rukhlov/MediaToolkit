@@ -148,7 +148,7 @@ namespace MediaToolkit.MediaFoundation
                         decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                     }
 
-                    attr.Set(SinkWriterAttributeKeys.LowLatency, false);
+                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
                 }
 
 

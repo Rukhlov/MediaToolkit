@@ -31,6 +31,8 @@ namespace TestStreamer.Controls
 
             UpdateControls();
 
+            statInfoCheckBox.Checked = showStatistic;
+
         }
 
         private readonly MainForm mainForm = null;
@@ -168,8 +170,11 @@ namespace TestStreamer.Controls
             regionForm = new RegionForm(srcRect);
             regionForm.Visible = true;
 
-            statisticForm.Location = currentScreenRect.Location;
-            statisticForm.Start();
+            statisticForm.Location = srcRect.Location;//currentScreenRect.Location;
+            if (showStatistic)
+            {
+                statisticForm.Start();
+            }
 
             var captureTask = screenSource.Start();
             var streamerTask = videoStreamer.Start();
@@ -547,6 +552,26 @@ namespace TestStreamer.Controls
         private void MaxBitrateNumeric_ValueChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private bool showStatistic = true;
+        private void statInfoCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+
+            showStatistic = statInfoCheckBox.Checked;
+
+            if (showStatistic)
+            {
+                statisticForm.Start();
+            }
+            else
+            {
+                if (statisticForm != null)
+                {
+                    statisticForm.Stop();
+                    statisticForm.Visible = false;
+                }
+            }
         }
     }
 

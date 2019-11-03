@@ -53,7 +53,8 @@
             this.labelCpuUsage.BackColor = System.Drawing.SystemColors.ControlLight;
             this.labelCpuUsage.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelCpuUsage.ForeColor = System.Drawing.Color.Red;
-            this.labelCpuUsage.Location = new System.Drawing.Point(3, 0);
+            this.labelCpuUsage.Location = new System.Drawing.Point(0, 0);
+            this.labelCpuUsage.Margin = new System.Windows.Forms.Padding(0);
             this.labelCpuUsage.Name = "labelCpuUsage";
             this.labelCpuUsage.Size = new System.Drawing.Size(36, 28);
             this.labelCpuUsage.TabIndex = 8;
@@ -66,8 +67,8 @@
             this.labelStats.BackColor = System.Drawing.SystemColors.ControlLight;
             this.labelStats.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelStats.ForeColor = System.Drawing.Color.Red;
-            this.labelStats.Location = new System.Drawing.Point(3, 31);
-            this.labelStats.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.labelStats.Location = new System.Drawing.Point(0, 28);
+            this.labelStats.Margin = new System.Windows.Forms.Padding(0);
             this.labelStats.Name = "labelStats";
             this.labelStats.Size = new System.Drawing.Size(31, 23);
             this.labelStats.TabIndex = 5;

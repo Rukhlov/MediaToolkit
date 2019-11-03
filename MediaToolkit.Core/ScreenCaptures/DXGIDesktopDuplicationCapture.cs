@@ -263,6 +263,8 @@ namespace MediaToolkit
                     InitDx();
                 }
 
+                //Texture2D test = null;
+
                 foreach (var dupl in deskDupls)
                 {
                     var result = dupl.TryGetScreenTexture(out Texture2D screenTexture);
@@ -289,7 +291,8 @@ namespace MediaToolkit
                     var destRect = dupl.drawRect;
 
                     device.ImmediateContext.CopySubresourceRegion(screenTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
-                    
+
+                    //test = screenTexture;
                 }
 
                 renderTarget.BeginDraw();
@@ -302,6 +305,8 @@ namespace MediaToolkit
 
                 if (UseHwContext)
                 {
+                    //device.ImmediateContext.CopyResource(test, SharedTexture);
+
                     device.ImmediateContext.CopyResource(renderTexture, SharedTexture);
                     device.ImmediateContext.Flush();
                     Result = true;
@@ -309,7 +314,37 @@ namespace MediaToolkit
                 else
                 {
 
-                    Result = CopyToGdiBuffer();
+                    Texture2D stagingTexture = null;
+                    try
+                    {
+                        // Create Staging texture CPU-accessible
+                        stagingTexture = new Texture2D(device,
+                            new Texture2DDescription
+                            {
+                                CpuAccessFlags = CpuAccessFlags.Read,
+                                BindFlags = BindFlags.None,
+                                Format = Format.B8G8R8A8_UNorm,
+                                Width = destSize.Width,
+                                Height = destSize.Height,
+                                MipLevels = 1,
+                                ArraySize = 1,
+                                SampleDescription = { Count = 1, Quality = 0 },
+                                Usage = ResourceUsage.Staging,
+                                OptionFlags = ResourceOptionFlags.None,
+                            });
+                        device.ImmediateContext.CopyResource(renderTexture, stagingTexture);
+                        //device.ImmediateContext.CopyResource(test, stagingTexture);
+                        device.ImmediateContext.Flush();
+
+                        Result = CopyToGdiBuffer(stagingTexture);
+
+                    }
+                    finally
+                    {
+                        stagingTexture?.Dispose();
+                    }
+
+                    
                 }
             }
             catch (SharpDXException ex)
@@ -524,19 +559,19 @@ namespace MediaToolkit
             {
                 texture = null;
 
+                bool Result = false;
                 if (!deviceReady)
                 {
                     return false;
                 }
 
-                bool Result = false;
                 try
                 {
 
                     SharpDX.DXGI.Resource desktopResource = null;
                     try
                     {
-                        var acquireResult = deskDupl.TryAcquireNextFrame(timeout, out OutputDuplicateFrameInformation frameInfo, out desktopResource);
+                           var acquireResult = deskDupl.TryAcquireNextFrame(timeout, out OutputDuplicateFrameInformation frameInfo, out desktopResource);
 
                         if (acquireResult.Failure)
                         {
@@ -550,7 +585,6 @@ namespace MediaToolkit
                                 acquireResult.CheckError();
                             }
                         }
-
 
                         if (duplTexture != null)
                         {
@@ -596,7 +630,7 @@ namespace MediaToolkit
                         UpdateMouseInfo(frameInfo);
 
                         device.ImmediateContext.CopyResource(duplTexture, screenTexture);
-
+                        device.ImmediateContext.Flush();
 
                         if (cursorInfo != null && cursorInfo.Visible && CaptureMouse)
                         {
@@ -607,8 +641,11 @@ namespace MediaToolkit
 
                             screenTarget.EndDraw();
                         }
-
                         texture = screenTexture;
+
+                        //texture = duplTexture;
+
+
                         Result = true;
                     }
                     finally
@@ -1201,61 +1238,35 @@ namespace MediaToolkit
         }
 
 
-        private bool CopyToGdiBuffer()
+        private bool CopyToGdiBuffer(Texture2D texture)
         {
 
             bool Result = false;
 
-            Texture2D stagingTexture = null;
+            var syncRoot = videoBuffer.syncRoot;
+            bool lockTaken = false;
             try
             {
-                // Create Staging texture CPU-accessible
-                stagingTexture = new Texture2D(device,
-                    new Texture2DDescription
-                    {
-                        CpuAccessFlags = CpuAccessFlags.Read,
-                        BindFlags = BindFlags.None,
-                        Format = Format.B8G8R8A8_UNorm,
-                        Width = destSize.Width,
-                        Height = destSize.Height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = { Count = 1, Quality = 0 },
-                        Usage = ResourceUsage.Staging,
-                        OptionFlags = ResourceOptionFlags.None,
-                    });
-
-                device.ImmediateContext.CopyResource(renderTexture, stagingTexture);
-                device.ImmediateContext.Flush();
-
-
-                var syncRoot = videoBuffer.syncRoot;
-                bool lockTaken = false;
-                try
+                Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
+                if (lockTaken)
                 {
-                    Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
-                    if (lockTaken)
-                    {
-                        Result = TextureToBitmap(stagingTexture, videoBuffer.bitmap);
-                    }
-                    else
-                    {
-                        logger.Debug("lockTaken == false");
-                    }
-
+                    Result = TextureToBitmap(texture, videoBuffer.bitmap);
                 }
-                finally
+                else
                 {
-                    if (lockTaken)
-                    {
-                        Monitor.Exit(syncRoot);
-                    }
+                    logger.Debug("lockTaken == false");
                 }
+
             }
             finally
             {
-                stagingTexture?.Dispose();
+                if (lockTaken)
+                {
+                    Monitor.Exit(syncRoot);
+                }
             }
+
+
 
             return Result;
         }

@@ -29,15 +29,17 @@
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
-            this.MaxBitrateNumeric = new System.Windows.Forms.NumericUpDown();
-            this.bitrateModeComboBox = new System.Windows.Forms.ComboBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label15 = new System.Windows.Forms.Label();
+            this.MaxBitrateNumeric = new System.Windows.Forms.NumericUpDown();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.label14 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.bitrateNumeric = new System.Windows.Forms.NumericUpDown();
             this.encProfileComboBox = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
+            this.bitrateNumeric = new System.Windows.Forms.NumericUpDown();
+            this.bitrateModeComboBox = new System.Windows.Forms.ComboBox();
+            this.label7 = new System.Windows.Forms.Label();
             this.fpsNumeric = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
@@ -70,11 +72,10 @@
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
+            this.statInfoCheckBox = new System.Windows.Forms.CheckBox();
             this.settingPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
             this.tableLayoutPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             this.destSizeGroupBox.SuspendLayout();
@@ -110,35 +111,6 @@
             this.settingPanel.Size = new System.Drawing.Size(522, 559);
             this.settingPanel.TabIndex = 20;
             // 
-            // MaxBitrateNumeric
-            // 
-            this.MaxBitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MaxBitrateNumeric.Location = new System.Drawing.Point(87, 121);
-            this.MaxBitrateNumeric.Maximum = new decimal(new int[] {
-            50000,
-            0,
-            0,
-            0});
-            this.MaxBitrateNumeric.Name = "MaxBitrateNumeric";
-            this.MaxBitrateNumeric.Size = new System.Drawing.Size(175, 22);
-            this.MaxBitrateNumeric.TabIndex = 56;
-            this.MaxBitrateNumeric.Value = new decimal(new int[] {
-            5000,
-            0,
-            0,
-            0});
-            this.MaxBitrateNumeric.ValueChanged += new System.EventHandler(this.MaxBitrateNumeric_ValueChanged);
-            // 
-            // bitrateModeComboBox
-            // 
-            this.bitrateModeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bitrateModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.bitrateModeComboBox.FormattingEnabled = true;
-            this.bitrateModeComboBox.Location = new System.Drawing.Point(87, 63);
-            this.bitrateModeComboBox.Name = "bitrateModeComboBox";
-            this.bitrateModeComboBox.Size = new System.Drawing.Size(175, 24);
-            this.bitrateModeComboBox.TabIndex = 55;
-            // 
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 2;
@@ -171,6 +143,47 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(265, 204);
             this.tableLayoutPanel1.TabIndex = 54;
             // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label16.Location = new System.Drawing.Point(3, 60);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(78, 30);
+            this.label16.TabIndex = 55;
+            this.label16.Text = "Mode:";
+            this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label15.Location = new System.Drawing.Point(3, 118);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(78, 28);
+            this.label15.TabIndex = 55;
+            this.label15.Text = "MaxBitrate:";
+            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // MaxBitrateNumeric
+            // 
+            this.MaxBitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MaxBitrateNumeric.Location = new System.Drawing.Point(87, 121);
+            this.MaxBitrateNumeric.Maximum = new decimal(new int[] {
+            50000,
+            0,
+            0,
+            0});
+            this.MaxBitrateNumeric.Name = "MaxBitrateNumeric";
+            this.MaxBitrateNumeric.Size = new System.Drawing.Size(175, 22);
+            this.MaxBitrateNumeric.TabIndex = 56;
+            this.MaxBitrateNumeric.Value = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.MaxBitrateNumeric.ValueChanged += new System.EventHandler(this.MaxBitrateNumeric_ValueChanged);
+            // 
             // encoderComboBox
             // 
             this.encoderComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -193,35 +206,6 @@
             this.label14.Text = "Profile:";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label7.Location = new System.Drawing.Point(3, 90);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(78, 28);
-            this.label7.TabIndex = 50;
-            this.label7.Text = "AvgBitrate:";
-            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // bitrateNumeric
-            // 
-            this.bitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.bitrateNumeric.Location = new System.Drawing.Point(87, 93);
-            this.bitrateNumeric.Maximum = new decimal(new int[] {
-            50000,
-            0,
-            0,
-            0});
-            this.bitrateNumeric.Name = "bitrateNumeric";
-            this.bitrateNumeric.Size = new System.Drawing.Size(175, 22);
-            this.bitrateNumeric.TabIndex = 49;
-            this.bitrateNumeric.Value = new decimal(new int[] {
-            2500,
-            0,
-            0,
-            0});
-            // 
             // encProfileComboBox
             // 
             this.encProfileComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -242,6 +226,45 @@
             this.label6.TabIndex = 46;
             this.label6.Text = "Encoder:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // bitrateNumeric
+            // 
+            this.bitrateNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bitrateNumeric.Location = new System.Drawing.Point(87, 93);
+            this.bitrateNumeric.Maximum = new decimal(new int[] {
+            50000,
+            0,
+            0,
+            0});
+            this.bitrateNumeric.Name = "bitrateNumeric";
+            this.bitrateNumeric.Size = new System.Drawing.Size(175, 22);
+            this.bitrateNumeric.TabIndex = 49;
+            this.bitrateNumeric.Value = new decimal(new int[] {
+            2500,
+            0,
+            0,
+            0});
+            // 
+            // bitrateModeComboBox
+            // 
+            this.bitrateModeComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.bitrateModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.bitrateModeComboBox.FormattingEnabled = true;
+            this.bitrateModeComboBox.Location = new System.Drawing.Point(87, 63);
+            this.bitrateModeComboBox.Name = "bitrateModeComboBox";
+            this.bitrateModeComboBox.Size = new System.Drawing.Size(175, 24);
+            this.bitrateModeComboBox.TabIndex = 55;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label7.Location = new System.Drawing.Point(3, 90);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(78, 28);
+            this.label7.TabIndex = 50;
+            this.label7.Text = "AvgBitrate:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // fpsNumeric
             // 
@@ -592,7 +615,7 @@
             this.showMouseCheckBox.AutoSize = true;
             this.showMouseCheckBox.Checked = true;
             this.showMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showMouseCheckBox.Location = new System.Drawing.Point(257, 314);
+            this.showMouseCheckBox.Location = new System.Drawing.Point(248, 312);
             this.showMouseCheckBox.Name = "showMouseCheckBox";
             this.showMouseCheckBox.Size = new System.Drawing.Size(118, 21);
             this.showMouseCheckBox.TabIndex = 7;
@@ -641,7 +664,7 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(198, 568);
+            this.stopButton.Location = new System.Drawing.Point(186, 568);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(107, 35);
             this.stopButton.TabIndex = 18;
@@ -659,32 +682,25 @@
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.previewButton_Click);
             // 
-            // label15
+            // statInfoCheckBox
             // 
-            this.label15.AutoSize = true;
-            this.label15.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label15.Location = new System.Drawing.Point(3, 118);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(78, 28);
-            this.label15.TabIndex = 55;
-            this.label15.Text = "MaxBitrate:";
-            this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label16.Location = new System.Drawing.Point(3, 60);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(78, 30);
-            this.label16.TabIndex = 55;
-            this.label16.Text = "Mode:";
-            this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.statInfoCheckBox.Appearance = System.Windows.Forms.Appearance.Button;
+            this.statInfoCheckBox.Checked = true;
+            this.statInfoCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.statInfoCheckBox.Location = new System.Drawing.Point(304, 568);
+            this.statInfoCheckBox.Name = "statInfoCheckBox";
+            this.statInfoCheckBox.Size = new System.Drawing.Size(118, 35);
+            this.statInfoCheckBox.TabIndex = 55;
+            this.statInfoCheckBox.Text = "_StatisticInfo";
+            this.statInfoCheckBox.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.statInfoCheckBox.UseVisualStyleBackColor = true;
+            this.statInfoCheckBox.CheckedChanged += new System.EventHandler(this.statInfoCheckBox_CheckedChanged);
             // 
             // ScreenStreamerControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.statInfoCheckBox);
             this.Controls.Add(this.settingPanel);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.stopButton);
@@ -693,9 +709,9 @@
             this.Size = new System.Drawing.Size(540, 619);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).EndInit();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).EndInit();
             this.destSizeGroupBox.ResumeLayout(false);
@@ -759,5 +775,6 @@
         private System.Windows.Forms.CheckBox latencyModeCheckBox;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.CheckBox statInfoCheckBox;
     }
 }
