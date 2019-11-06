@@ -23,9 +23,6 @@ namespace TestStreamer.Controls
         {
             InitializeComponent();
 
-
-            LoadTransportItems();
-            LoadEncoderItems();
             LoadMMDevicesCombo();
 
             UpdateAudioControls();
@@ -40,7 +37,7 @@ namespace TestStreamer.Controls
         }
 
 
-        private AudioSource audioStreamer = null;
+        private AudioStreamer audioStreamer = null;
 
         private void audioStartButton_Click(object sender, EventArgs e)
         {
@@ -52,8 +49,8 @@ namespace TestStreamer.Controls
                 return;
             }
 
-            audioStreamer = new AudioSource();
-            var transport = GetTransportMode();
+            //audioStreamer = new AudioStreamer();
+
 
             var audioParams = new AudioEncodingParams
             {
@@ -64,16 +61,14 @@ namespace TestStreamer.Controls
 
             };
 
-            var addr = audioAddrTextBox.Text;
-            var port = (int)audioPortNumeric.Value;
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                LocalPort = port,
+                LocalPort = audioSettings.Port,
                 LocalAddr = "",
-                RemoteAddr = addr,
-                RemotePort = port,
-                TransportMode = transport,
+                RemoteAddr = audioSettings.Address,
+                RemotePort = audioSettings.Port,
+                TransportMode = audioSettings.TransportMode,
             };
 
             if (audioStreamer != null)
@@ -150,6 +145,7 @@ namespace TestStreamer.Controls
                             var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
                             if (captureDevice != null)
                             {
+                               
                                 defaultCaptureId = captureDevice.ID;
                                 mmdevices.Add(captureDevice);
                             }
@@ -208,41 +204,6 @@ namespace TestStreamer.Controls
 
         }
 
-        private TransportMode GetTransportMode()
-        {
-            TransportMode transport = TransportMode.Unknown;
-            var item = transportComboBox.SelectedItem;
-            if (item != null)
-            {
-                transport = (TransportMode)item;
-            }
-            return transport;
-        }
-
-
-        private void LoadTransportItems()
-        {
-
-            var items = new List<TransportMode>
-            {
-                TransportMode.Udp,
-                TransportMode.Tcp,
-                
-            };
-            transportComboBox.DataSource = items;
-        }
-
-        private void LoadEncoderItems()
-        {
-            var items = new List<AudioEncoderMode>
-            {
-                AudioEncoderMode.G711,
-                AudioEncoderMode.AAC,
-            };
-
-            encoderComboBox.DataSource = items;
-
-        }
 
         private void UpdateAudioControls()
         {
@@ -254,6 +215,40 @@ namespace TestStreamer.Controls
             settingPanel.Enabled = !isStreaming;
         }
 
+        private AudioSettingsParams audioSettings = new AudioSettingsParams();
+        private void settingButton_Click(object sender, EventArgs e)
+        {
+            //videoSettings.CaptureRegion = currentScreenRect;
 
+            var f = new AudioSettingsForm
+            {
+                StartPosition = FormStartPosition.CenterParent,
+
+            };
+            f.Setup(audioSettings);
+
+            f.ShowDialog();
+
+            //currentScreenRect = videoSettings.CaptureRegion;
+        }
+    }
+
+
+    public class AudioSettingsParams
+    {
+        public string Address = "127.0.0.1";
+        public int Port = 1235;
+        public TransportMode TransportMode = TransportMode.Udp;
+
+        public AudioEncoderMode Encoder = AudioEncoderMode.G711;
+
+        public int Samplerate = 8000;
+        public int Channels = 1;
+
+
+        public AudioSettingsParams Clone()
+        {
+            return (AudioSettingsParams)this.MemberwiseClone();
+        }
     }
 }

@@ -18,6 +18,13 @@ namespace TestStreamer
 
         public void Snip(Screen screen, Action<Rectangle, Rectangle> areaSelected)
         {
+            var bound = screen?.Bounds ?? SystemInformation.VirtualScreen;
+            Snip(bound, areaSelected);
+
+        }
+        public void Snip(Rectangle bound, Action<Rectangle, Rectangle> areaSelected)
+        {
+
             if (form != null && !form.IsDisposed && !form.Disposing)
             {
                 form.Dispose();
@@ -25,7 +32,7 @@ namespace TestStreamer
 
             this.AreaSelected = areaSelected;
 
-            var bound = screen?.Bounds??SystemInformation.VirtualScreen;
+
 
             var bmp = new Bitmap(bound.Width, bound.Height, PixelFormat.Format32bppPArgb);
             try
@@ -50,8 +57,9 @@ namespace TestStreamer
 
                 AreaSelected = null;
             }
-
         }
+
+
 
         public void Dispose()
         {

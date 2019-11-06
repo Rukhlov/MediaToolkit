@@ -19,16 +19,14 @@ namespace TestStreamer.Controls
             InitializeComponent();
         }
 
-        private D3DImageProvider provider = null;
-        public void Setup(ScreenSource source)
+        public void Link(D3DImageProvider provider)
         {
-
-            provider = new D3DImageProvider();
-            provider.Setup(source);
-
             d3DImageControl1.DataContext = provider;
+        }
 
-
+        public void UnLink()
+        {
+            d3DImageControl1.DataContext = null;
         }
     }
 }

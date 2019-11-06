@@ -117,7 +117,7 @@ namespace MediaToolkit
             tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
             //tmpSurface = Surface.CreateRenderTarget(device, displayMode.Width, displayMode.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
 
-            destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
+            destSurface = Surface.CreateRenderTarget(device, DestSize.Width, DestSize.Height, Format.A8R8G8B8, MultisampleType.None, 0, true);
             //destSurface = Surface.CreateRenderTarget(device, videoBuffer.bitmap.Width, videoBuffer.bitmap.Height, Format.X8R8G8B8, MultisampleType.None, 0, true);
         }
 
@@ -222,11 +222,11 @@ namespace MediaToolkit
                 int nWidth = destSize.Width;
                 int nHeight = destSize.Height;
 
-                int nXSrc = srcRect.Left;
-                int nYSrc = srcRect.Top;
+                int nXSrc = SrcRect.Left;
+                int nYSrc = SrcRect.Top;
 
-                int nWidthSrc = srcRect.Width;
-                int nHeightSrc = srcRect.Height;
+                int nWidthSrc = SrcRect.Width;
+                int nHeightSrc = SrcRect.Height;
 
                 var dwRop = TernaryRasterOperations.SRCCOPY;
 

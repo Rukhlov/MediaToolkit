@@ -32,8 +32,15 @@ namespace MediaToolkit.Core
             logger.Debug("VideoEncoder::Setup(...)");
 
             var hwContext = videoSource.hwContext;
-            var hwDevice = hwContext.device;
-            var srcSize = new Size(videoSource.Buffer.bitmap.Width, videoSource.Buffer.bitmap.Height);
+            // var hwDevice = hwContext.Device3D11;
+
+            var hwBuffer = hwContext.SharedTexture;
+            var hwDevice = hwBuffer.Device;
+            var hwDescr = hwBuffer.Description;
+            int srcWidth = hwDescr.Width;
+            int srcHeight = hwDescr.Height;
+
+            var srcSize = new Size(srcWidth, srcHeight);
 
             var destSize = new Size(destParams.Width, destParams.Height);
 
@@ -98,7 +105,6 @@ namespace MediaToolkit.Core
 
             processor.Setup(inProcArgs, outProcArgs);
 
-
             bufTexture = new Texture2D(encDevice, 
                 new Texture2DDescription
                 {
@@ -122,6 +128,7 @@ namespace MediaToolkit.Core
         {
             OnDataReady(obj);
         }
+
         public void Encode()
         {
             var texture = videoSource?.hwContext?.SharedTexture;
@@ -174,16 +181,10 @@ namespace MediaToolkit.Core
                                 dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
                                 using (Texture2D nv12Texture = new Texture2D(intPtr))
                                 {
-                                    //processor.device.ImmediateContext.CopyResource(nv12Texture, SharedTexture);
-                                    //processor.device.ImmediateContext.Flush();
-
-                                    //mfEncoder.WriteTexture(SharedTexture);
-
                                     encoder.WriteTexture(nv12Texture);
                                 };
                             }
                         }
-
                     }
                 }
                 finally

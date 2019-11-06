@@ -11,6 +11,8 @@ using MediaToolkit;
 using System.Net.NetworkInformation;
 using MediaToolkit.Common;
 using System.Diagnostics;
+using NAudio.CoreAudioApi;
+using MediaToolkit.UI;
 
 namespace TestStreamer.Controls
 {
@@ -22,12 +24,12 @@ namespace TestStreamer.Controls
         {
             InitializeComponent();
 
-            LoadEncoderProfilesItems();
-            LoadScreenItems();
+            UpdateVideoSources();
             LoadTransportItems();
-            LoadEncoderItems();
 
-            LoadRateModeItems();
+            UpdateAudioSources();
+
+            SetupRoutingSchema();
 
             UpdateControls();
 
@@ -47,96 +49,47 @@ namespace TestStreamer.Controls
 
         private RegionForm regionForm = null;
 
+
+        private AudioSource audioSource = null;
+        private AudioStreamer audioStreamer = null;
+        
+
         private void startButton_Click(object sender, EventArgs e)
         {
             logger.Debug("startButton_Click(...)");
 
+            if (videoEnabled)
+            {
+                StartVideo();
+            }
+
+            if (audioEnabled)
+            {
+                StartAudio();
+            }
+            
+            isStreaming = true;
+
+            UpdateControls();
+        }
+
+        private void StartVideo()
+        {
+            logger.Debug("StartVideo()");
+
             var localAddr = "0.0.0.0";
 
-
-            //var ipInfo = GetCurrentIpAddrInfo();
-            //if (ipInfo != null)
-            //{
-            //    localAddr = ipInfo.Address?.ToString();
-            //}
-
-
-            int fps = (int)fpsNumeric.Value;
-            int bitrate = (int)bitrateNumeric.Value;
-            int maxBitrate = (int)MaxBitrateNumeric.Value;
-
-            bool latencyMode = latencyModeCheckBox.Checked;
-
-            H264Profile h264Profile = (H264Profile)encProfileComboBox.SelectedItem;
-
-            BitrateControlMode bitrateMode = (BitrateControlMode)bitrateModeComboBox.SelectedItem;
-
-            bool showMouse = showMouseCheckBox.Checked;
-
-            TransportMode transport = GetTransportMode();
-
-
-            bool aspectRatio = aspectRatioCheckBox.Checked;
-            var top = (int)srcTopNumeric.Value;
-            var left = (int)srcLeftNumeric.Value;
-            var right = (int)srcRightNumeric.Value;
-            var bottom = (int)srcBottomNumeric.Value;
-
-            int width = right - left;
-            int height = bottom - top;
-
-            var virtualScreen = SystemInformation.VirtualScreen;
-            //var srcRect = new Rectangle(0, 0, virtualScreen.Width, virtualScreen.Height);
-
-            var srcRect = new Rectangle(left, top, width, height); //currentScreen.Bounds;
-            //var srcRect = currentScreen.Bounds;
-
-            var _destWidth = (int)destWidthNumeric.Value;
-            var _destHeight = (int)destHeightNumeric.Value;
-
-            var destSize = new Size(_destWidth, _destHeight);
-
-            //
-
-            //var destSize = new Size(virtualScreen.Width, virtualScreen.Height);
-
-            //if (aspectRatio)
-            //{
-            //    var ratio = srcRect.Width / (double)srcRect.Height;
-            //    int destWidth = destSize.Width;
-            //    int destHeight = (int)(destWidth / ratio);
-            //    if (ratio < 1)
-            //    {
-            //        destHeight = destSize.Height;
-            //        destWidth = (int)(destHeight * ratio);
-            //    }
-
-            //    destSize = new Size(destWidth, destHeight);
-
-            //    logger.Info("New destionation size: " + destSize);
-            //}
-
-
-
-            screenSource = new ScreenSource();
-            ScreenCaptureParams captureParams = new ScreenCaptureParams
+            if (videoSettings.DisplayRegion.IsEmpty)
             {
-                SrcRect = srcRect,
-                DestSize = destSize,
-                CaptureType = CaptureType.DXGIDeskDupl,
-                //CaptureType = CaptureType.Direct3D,
-                //CaptureType = CaptureType.GDI,
-                Fps = fps,
-                CaptureMouse = showMouse,
-                AspectRatio = aspectRatio,
-                
-            };
+                logger.Debug("VideoSource Disabled");
+                return;
+            }
 
-            screenSource.Setup(captureParams);
+            StartVideoSource();
 
             var cmdOptions = new CommandLineOptions();
-            cmdOptions.IpAddr = addressTextBox.Text;
-            cmdOptions.Port = (int)portNumeric.Value;
+            cmdOptions.IpAddr = videoSettings.Address;
+            cmdOptions.Port = videoSettings.Port;
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
@@ -147,51 +100,196 @@ namespace TestStreamer.Controls
                 RemoteAddr = cmdOptions.IpAddr,
                 RemotePort = cmdOptions.Port,
 
-                TransportMode = transport,
+                TransportMode = videoSettings.TransportMode,
             };
 
             VideoEncodingParams encodingParams = new VideoEncodingParams
             {
-                Width = destSize.Width, // options.Width,
-                Height = destSize.Height, // options.Height,
+                Width = videoSettings.VideoResoulution.Width, // options.Width,
+                Height = videoSettings.VideoResoulution.Height, // options.Height,
                 FrameRate = cmdOptions.FrameRate,
                 EncoderName = "libx264", // "h264_nvenc", //
-                Bitrate = bitrate,
-                LowLatency= latencyMode,
-                Profile = h264Profile,
-                BitrateMode = bitrateMode,
-                MaxBitrate = maxBitrate,
+                Bitrate = videoSettings.Bitrate,
+                LowLatency = videoSettings.LowLatency,
+                Profile = videoSettings.Profile,
+                BitrateMode = videoSettings.BitrateMode,
+                MaxBitrate = videoSettings.MaxBitrate,
             };
 
             videoStreamer = new ScreenStreamer(screenSource);
 
             videoStreamer.Setup(encodingParams, networkParams);
 
-            regionForm = new RegionForm(srcRect);
+            regionForm = new RegionForm(videoSettings.CaptureRegion);
             regionForm.Visible = true;
 
-            statisticForm.Location = srcRect.Location;//currentScreenRect.Location;
+            statisticForm.Location = videoSettings.CaptureRegion.Location;//currentScreenRect.Location;
             if (showStatistic)
             {
                 statisticForm.Start();
             }
 
-            var captureTask = screenSource.Start();
             var streamerTask = videoStreamer.Start();
+        }
+
+        private bool StartVideoSource()
+        {
+            bool Result = false;
+            try
+            {
+                if (screenSource != null)
+                {
+                    screenSource.StateChanged -= ScreenSource_StateChanged;
+                    screenSource.Dispose();
+                    screenSource = null;
+                }
+
+                screenSource = new ScreenSource();
+                screenSource.StateChanged += ScreenSource_StateChanged;
+
+                ScreenCaptureParams captureParams = new ScreenCaptureParams
+                {
+                    SrcRect = videoSettings.CaptureRegion,
+                    DestSize = videoSettings.VideoResoulution,
+                    CaptureType = CaptureType.DXGIDeskDupl,
+                    Fps = videoSettings.Fps,
+                    CaptureMouse = videoSettings.CaptureMouse,
+                    AspectRatio = videoSettings.AspectRatio,
+
+                };
+
+                screenSource.Setup(captureParams);
+
+                screenSource.Start();
+
+               
+
+                Result = true;
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+
+                if (screenSource != null)
+                {
+                    screenSource.StateChanged -= ScreenSource_StateChanged;
+                    screenSource.Dispose();
+                    screenSource = null;
+                }
+            }
+
+            return Result;
+        }
+
+        private void ScreenSource_StateChanged(MediaToolkit.CaptureState state)
+        {
+
+            logger.Debug("ScreenSource_StateChanged(...) " + state);
 
 
-            isStreaming = true;
+        }
 
-            UpdateControls();
+        private void StartAudio()
+        {
+            logger.Debug("StartAudio()");
+
+            var currentMMDeviceId = currentAudioDevice?.ID ?? "";
+
+            if (string.IsNullOrEmpty(currentMMDeviceId))
+            {
+                logger.Debug("Empty MMDeviceId...");
+                return;
+            }
+
+            StartAudioSource(currentMMDeviceId);
+
+            var audioParams = new AudioEncodingParams
+            {
+                SampleRate = 8000,
+                Channels = 1,
+                Encoding = "PCMU",
+
+            };
+
+
+            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            {
+                LocalPort = audioSettings.Port,
+                LocalAddr = "",
+                RemoteAddr = audioSettings.Address,
+                RemotePort = audioSettings.Port,
+                TransportMode = audioSettings.TransportMode,
+            };
+
+            if (audioStreamer != null)
+            {
+                audioStreamer.StateChanged -= AudioStreamer_StateChanged;
+            }
+
+            // audioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
+
+            audioStreamer.StateChanged += AudioStreamer_StateChanged;
+
+
+            audioStreamer.Start(audioParams, networkParams);
+
+        }
+
+        private void StartAudioSource(string currentMMDeviceId)
+        {
+            audioSource = new AudioSource();
+            audioSource.Setup(currentMMDeviceId);
+
+            audioStreamer = new AudioStreamer(audioSource);
+            audioSource.Start();
+        }
+
+        private void AudioStreamer_StateChanged()
+        {
+            if (audioStreamer.IsStreaming)
+            {
+
+            }
+            else
+            {
+                audioStreamer.StateChanged -= AudioStreamer_StateChanged;
+            }
+
+            this.Invoke((Action)(() =>
+            {
+                //UpdateAudioControls();
+            }));
+        }
+
+        private void StopAudio()
+        {
+            if (audioStreamer != null)
+            {
+                audioStreamer.SetWaveformPainter(null);
+                audioStreamer.Close();
+            }
         }
 
         private void stopButton_Click(object sender, EventArgs e)
         {
             logger.Debug("stopButton_Click(...)");
 
+            StopVideo();
+
+            StopAudio();
+
+            isStreaming = false;
+
+            UpdateControls();
+
+        }
+
+        private void StopVideo()
+        {
             if (screenSource != null)
             {
-                screenSource.Close();
+                screenSource.Stop();
+              
             }
 
             if (videoStreamer != null)
@@ -214,107 +312,88 @@ namespace TestStreamer.Controls
 
             regionForm?.Close();
             regionForm = null;
-
-            isStreaming = false;
-
-            UpdateControls();
-
         }
 
+        private D3DImageProvider provider = new D3DImageProvider();
 
         private void previewButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("previewButton_Click(...)");
+
             if (previewForm != null && !previewForm.IsDisposed)
             {
                 previewForm.Visible = !previewForm.Visible;
             }
             else
             {
+                if (StartVideoSource())
+                {
+                    //provider = new D3DImageProvider();
 
-                previewForm = new PreviewForm();
-                previewForm.Setup(screenSource);
-                var pars = screenSource.CaptureParams;
+                    provider.Setup(screenSource);
 
-                var title = "Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps + " Ratio=" + pars.AspectRatio;
+                    previewForm = new PreviewForm
+                    {
+                        StartPosition = FormStartPosition.CenterParent,
+                    };
+                    
+                    previewForm.Link(provider);
 
-                previewForm.Text = title;
+                    var pars = screenSource.CaptureParams;
 
-                previewForm.Visible = true;
+                    var title = "Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps + " Ratio=" + pars.AspectRatio;
+
+                    previewForm.Text = title;
+
+                    previewForm.Visible = true;
+                }
+
+
+
+               
             }
         }
 
         private void screensUpdateButton_Click(object sender, EventArgs e)
         {
-            LoadScreenItems();
+            UpdateVideoSources();
         }
 
         private BindingList<ComboBoxItem> screenItems = null;
-        private void LoadScreenItems()
+        private void UpdateVideoSources()
         {
-            var screens = Screen.AllScreens.Select(s => new ComboBoxItem { Name = s.DeviceName, Tag = s }).ToList();
+            var screens = Screen.AllScreens
+                .Select(s => new ComboBoxItem
+                {
+                    Name = s.DeviceName,//+ "" + s.Bounds.ToString(),
+                    Tag = s.Bounds }
+                ).ToList();
 
             screens.Add(new ComboBoxItem
             {
                 Name = "_AllScreen",
-                Tag = null
+                Tag = SystemInformation.VirtualScreen
             });
 
+            //screens.Add(new ComboBoxItem
+            //{
+            //    Name = "_Disabled",
+            //    Tag = null
+            //});
+
             screenItems = new BindingList<ComboBoxItem>(screens);
-            screensComboBox.DisplayMember = "Name";
-            screensComboBox.DataSource = screenItems;
+            videoSourcesComboBox.DisplayMember = "Name";
+            videoSourcesComboBox.DataSource = screenItems;
         }
 
-        private Rectangle currentScreenRect = Rectangle.Empty;
+        private bool videoEnabled = true;
 
-        private Screen currentScreen = null;
-        private void screensComboBox_SelectedValueChanged(object sender, EventArgs e)
+        private void videoSourcesComboBox_SelectedValueChanged_1(object sender, EventArgs e)
         {
-            currentScreen = GetCurrentScreen();
-            currentScreenRect = currentScreen?.Bounds ?? SystemInformation.VirtualScreen;
 
-            srcTopNumeric.Value = currentScreenRect.Top;
-            srcLeftNumeric.Value = currentScreenRect.Left;
-            srcRightNumeric.Value = currentScreenRect.Right;
-            srcBottomNumeric.Value = currentScreenRect.Bottom;
-
-            //if (currentScreen != null)
-            //{
-            //    var rect = currentScreen.Bounds;
-
-            //    srcTopNumeric.Value = rect.Top;
-            //    srcLeftNumeric.Value = rect.Left;
-            //    srcRightNumeric.Value = rect.Right;
-            //    srcBottomNumeric.Value = rect.Bottom;
-            //}
-
-        }
-
-        private void screensComboBox_SelectedValueChanged_1(object sender, EventArgs e)
-        {
-            currentScreen = GetCurrentScreen();
-
-            currentScreenRect = currentScreen?.Bounds ?? SystemInformation.VirtualScreen;
-
-            srcTopNumeric.Value = currentScreenRect.Top;
-            srcLeftNumeric.Value = currentScreenRect.Left;
-            srcRightNumeric.Value = currentScreenRect.Right;
-            srcBottomNumeric.Value = currentScreenRect.Bottom;
-
-            //if (currentScreen != null)
-            //{
-            //    var rect = currentScreen.Bounds;
-
-            //    srcTopNumeric.Value = rect.Top;
-            //    srcLeftNumeric.Value = rect.Left;
-            //    srcRightNumeric.Value = rect.Right;
-            //    srcBottomNumeric.Value = rect.Bottom;
-            //}
-        }
-
-        private Screen GetCurrentScreen()
-        {
-            Screen screen = null;
-            var obj = screensComboBox.SelectedItem;
+            Rectangle displayRect = Rectangle.Empty;
+            string displayName = "";
+            var obj = videoSourcesComboBox.SelectedItem;
             if (obj != null)
             {
                 var item = obj as ComboBoxItem;
@@ -323,86 +402,59 @@ namespace TestStreamer.Controls
                     var tag = item.Tag;
                     if (tag != null)
                     {
-                        screen = tag as Screen;
+                        displayRect = (Rectangle)tag;
+                        displayName = item.Name ;
                     }
                 }
             }
-            return screen;
+
+
+            videoSettings.DisplayName = displayName;
+            videoSettings.DisplayRegion = displayRect;
+
+            videoSettings.CaptureRegion = displayRect;
+
+            videoEnabled = !displayRect.IsEmpty;
+
+            UpdateControls();
         }
 
-        private TransportMode GetTransportMode()
-        {
-            TransportMode transport = TransportMode.Unknown;
-            var item = transportComboBox.SelectedItem;
-            if (item != null)
-            {
-                transport = (TransportMode)item;
-            }
-            return transport;
-        }
-
-
-        private void LoadTransportItems()
-        {
-
-            var items = new List<TransportMode>
-            {
-                TransportMode.Tcp,
-                TransportMode.Udp,
-
-            };
-            transportComboBox.DataSource = items;
-        }
-
-        private void LoadRateModeItems()
-        {
-
-            var items = new List<BitrateControlMode>
-            {
-               BitrateControlMode.CBR,
-               BitrateControlMode.VBR,
-               BitrateControlMode.Quality,
-
-            };
-
-            bitrateModeComboBox.DataSource = items;
-        }
-
-        private void LoadEncoderProfilesItems()
-        {
-
-            var items = new List<H264Profile>
-            {
-               H264Profile.Main,
-               H264Profile.Base,
-               H264Profile.High,
-
-            };
-
-            encProfileComboBox.DataSource = items;
-        }
-
-        private void LoadEncoderItems()
-        {
-            var items = new List<VideoEncoderMode>
-            {
-                VideoEncoderMode.H264,
-                VideoEncoderMode.JPEG,
-            };
-
-            encoderComboBox.DataSource = items;
-
-        }
 
         private void UpdateControls()
         {
-            this.settingPanel.Enabled = !isStreaming;
+            //this.settingPanel.Enabled = !isStreaming;
 
             this.startButton.Enabled = !isStreaming;
-            this.previewButton.Enabled = isStreaming;
+            //this.videoPreviewButton.Enabled = isStreaming;
 
             this.stopButton.Enabled = isStreaming;
 
+
+            videoSettingsButton.Enabled = videoEnabled;
+            videoSourcesComboBox.Enabled = videoEnabled;
+
+            videoUpdateButton.Enabled = videoEnabled;
+
+            audioSettingButton.Enabled = audioEnabled;
+            audioSourcesComboBox.Enabled = audioEnabled;
+            audioUpdateButton.Enabled = audioEnabled;
+
+
+            videoSourcesComboBox.Enabled = !isStreaming;
+            audioSourcesComboBox.Enabled = !isStreaming;
+
+            videoSettingsButton.Enabled = !isStreaming;
+            audioSettingButton.Enabled = !isStreaming;
+
+            videoEnabledCheckBox.Enabled = !isStreaming;
+            audioEnabledCheckBox.Enabled = !isStreaming;
+
+            videoUpdateButton.Enabled = !isStreaming;
+            audioUpdateButton.Enabled = !isStreaming;
+            networkPanel.Enabled = !isStreaming;
+
+            //videoPreviewButton.Enabled = true;
+            //audioPreviewButton.Enabled = true;
 
             //this.fpsNumeric2.Enabled = !ServiceHostOpened;
             //this.inputSimulatorCheckBox2.Enabled = !ServiceHostOpened;
@@ -411,143 +463,7 @@ namespace TestStreamer.Controls
 
         }
 
-        private SnippingTool snippingTool = new SnippingTool();
-        private void snippingToolButton_Click(object sender, EventArgs e)
-        {
-            if (snippingTool != null)
-            {
-                snippingTool.Dispose();
-            }
-
-            snippingTool = new SnippingTool();
-            var screen = GetCurrentScreen();
-
-            var areaSelected = new Action<Rectangle, Rectangle>((a, s) =>
-            {
-                int left = a.Left + s.Left;
-                int top = a.Top + s.Top;
-                var rect = new Rectangle(left, top, a.Width, a.Height);
-
-
-                srcTopNumeric.Value = rect.Top;
-                srcLeftNumeric.Value = rect.Left;
-                srcRightNumeric.Value = rect.Right;
-                srcBottomNumeric.Value = rect.Bottom;
-
-                //regionForm?.Close();
-
-                //regionForm = new RegionForm(rect);
-                //regionForm.Visible = true;
-
-                //MessageBox.Show(a.ToString() + " " + s.ToString() + " " + rect.ToString());
-            });
-
-            //regionForm?.Close();
-            //regionForm = null;
-            snippingTool.Snip(screen, areaSelected);
-        }
-
-
-        public void Test(int x, int y, int width, int height)
-        {
-
-            int X, X1, Y, Y1;
-            int _X, _X1, _Y, _Y1;
-
-            var srcRect = new Rectangle(x, y, width, height);
-
-            Rectangle abcSrcRect = new Rectangle
-            {
-                X = 0,
-                Y = 0,
-                Width = srcRect.Width,
-                Height = srcRect.Height,
-            };
-
-            Debug.WriteLine("srcRect=" + srcRect.ToString() + " abcSrcRect=" + abcSrcRect.ToString());
-
-            foreach (var screen in Screen.AllScreens)
-            {
-                var screenRect = screen.Bounds;
-
-                Debug.WriteLine("screenRect =" + screenRect.ToString());
-
-
-                if ((screenRect.X > srcRect.Right) || (screenRect.Right < srcRect.X) ||
-                 (screenRect.Y > srcRect.Bottom) || (screenRect.Bottom < srcRect.Y))
-                {
-
-                    Debug.WriteLine(screenRect.ToString() + " no common area");
-                    continue;
-                }
-                else
-                {
-                    if (srcRect.X < screenRect.X)
-                    {// за левой границей экрана
-                        X = screenRect.X;
-                    }
-                    else
-                    {
-                        X = srcRect.X;
-
-                    }
-
-                    if (srcRect.Right > screenRect.Right)
-                    { // за правой границей
-                        X1 = screenRect.Right;
-                    }
-                    else
-                    {
-                        X1 = srcRect.Right;
-                    }
-
-                    if (srcRect.Y < screenRect.Y)
-                    {// за верхней границей
-                        Y = screenRect.Y;
-                    }
-                    else
-                    {
-                        Y = srcRect.Y;
-                    }
-
-                    if (srcRect.Bottom > screenRect.Bottom)
-                    {// за нижней границей
-                        Y1 = screenRect.Bottom;
-                    }
-                    else
-                    {
-                        Y1 = srcRect.Bottom;
-                    }
-
-                    Rectangle drawRect = new Rectangle
-                    {
-                        X = X - x,
-                        Y = Y - y,
-                        Width = X1 - X,
-                        Height = Y1 - Y,
-                    };
-
-                    // в координатах от '0'
-                    _X = X - screenRect.X;
-                    _X1 = X1 - screenRect.X;
-                    _Y = Y - screenRect.Y;
-                    _Y1 = Y1 - screenRect.Y;
-
-                    Rectangle desktopRect = new Rectangle
-                    {
-                        X = _X,
-                        Y = _Y,
-                        Width = _X1 - _X,
-                        Height = _Y1 - _Y,
-                    };
-
-                    Debug.WriteLine("desktopRect=" + desktopRect.ToString() + " drawRect=" + drawRect.ToString());
-
-                    // Main API that does memory data transfer
-                    //BitBlt(hdcDest, X - x, Y - y, X1 - X, Y1 - Y, hdcSrc, X, Y, 0x40000000 | 0x00CC0020); //SRCCOPY AND CAPTUREBLT
-                }
-            }
-        }
+  
 
         private void MaxBitrateNumeric_ValueChanged(object sender, EventArgs e)
         {
@@ -572,6 +488,244 @@ namespace TestStreamer.Controls
                     statisticForm.Visible = false;
                 }
             }
+        }
+
+        private VideoSettingsParams videoSettings = new VideoSettingsParams();
+        private void videoSettingsButton_Click(object sender, EventArgs e)
+        {
+            //videoSettings.CaptureRegion = currentScreenRect;
+           // videoSettings.DisplayName = currentScreen?.DeviceName ?? "_AllScreen";
+
+            var f = new VideoSettingsForm
+            {
+                StartPosition = FormStartPosition.CenterParent,
+
+            };
+            f.Setup(videoSettings);
+
+            f.ShowDialog();
+
+            //currentScreenRect = videoSettings.CaptureRegion;
+        }
+
+
+
+        private bool isMulticastMode = true;
+
+        private void multicastRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            SetupRoutingSchema();
+        }
+
+        private void unicastRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            SetupRoutingSchema();
+        }
+
+        private void SetupRoutingSchema()
+        {
+            isMulticastMode = multicastRadioButton.Checked;
+            multicastAddressTextBox.Enabled = isMulticastMode;
+            transportComboBox.Enabled = !isMulticastMode;
+        }
+
+        private void LoadTransportItems()
+        {
+
+            var items = new List<TransportMode>
+            {
+                TransportMode.Udp,
+                TransportMode.Tcp,
+
+            };
+            transportComboBox.DataSource = items;
+        }
+
+        private MMDevice GetCurrentAudioDevice()
+        {
+            MMDevice device = null;
+
+            var item = audioSourcesComboBox.SelectedItem;
+            if (item != null)
+            {
+                device = (MMDevice)((item as ComboBoxItem)?.Tag) ?? null;
+            }
+
+            return device;
+        } 
+
+        private void UpdateAudioSources()
+        {
+
+            List<MMDevice> mmdevices = new List<MMDevice>();
+
+            try
+            {
+                using (var deviceEnum = new MMDeviceEnumerator())
+                {
+
+                    var defaultCaptureId = "";
+                    try
+                    {
+                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console))
+                        {
+                            var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                            if (captureDevice != null)
+                            {
+
+                                defaultCaptureId = captureDevice.ID;
+                                mmdevices.Add(captureDevice);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
+
+                    var defaultRenderId = "";
+                    try
+                    {
+                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
+                        {
+                            var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                            if (renderDevice != null)
+                            {
+                                defaultRenderId = renderDevice.ID;
+                                mmdevices.Add(renderDevice);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
+
+                    try
+                    {
+
+                        var allDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+                        foreach (var d in allDevices)
+                        {
+                            if (d.ID == defaultRenderId || d.ID == defaultCaptureId)
+                            {
+                                continue;
+                            }
+                            mmdevices.Add(d);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Warn(ex);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+            var dataSource = new BindingList<ComboBoxItem>(mmdevices.Select(d => new ComboBoxItem { Name = d.FriendlyName, Tag = d }).ToList());
+            //dataSource.Add(new ComboBoxItem { Name = "Disabled", Tag = null, });
+
+            audioSourcesComboBox.DataSource = dataSource;
+            audioSourcesComboBox.DisplayMember = "Name";
+
+
+        }
+
+        private bool audioEnabled = true;
+        private MMDevice currentAudioDevice = null;
+        private void audioSrcComboBox_SelectedValueChanged(object sender, EventArgs e)
+        {
+            currentAudioDevice = GetCurrentAudioDevice();
+            audioEnabled = (currentAudioDevice != null);
+
+            audioSettingButton.Enabled = audioEnabled;
+
+        }
+
+        private AudioSettingsParams audioSettings = new AudioSettingsParams();
+        private void audioSettingButton_Click(object sender, EventArgs e)
+        {
+            //videoSettings.CaptureRegion = currentScreenRect;
+
+            var f = new AudioSettingsForm
+            {
+                StartPosition = FormStartPosition.CenterParent,
+
+            };
+            f.Setup(audioSettings);
+
+            f.ShowDialog();
+
+            //currentScreenRect = videoSettings.CaptureRegion;
+        }
+
+        private void videoUpdateButton_Click(object sender, EventArgs e)
+        {
+            UpdateVideoSources();
+        }
+
+        private void audioUpdateButton_Click(object sender, EventArgs e)
+        {
+            UpdateAudioSources();
+        }
+
+        private void audioEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            audioEnabled = audioEnabledCheckBox.Checked;
+            UpdateControls();
+        }
+
+        private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            videoEnabled = videoEnabledCheckBox.Checked;
+            UpdateControls();
+        }
+
+        private AudioPreviewForm audioPreviewForm = null;
+        private void audioPreviewButton_Click(object sender, EventArgs e)
+        {
+            if (audioPreviewForm != null && !audioPreviewForm.IsDisposed)
+            {
+                audioPreviewForm.Visible = !audioPreviewForm.Visible;
+            }
+            else
+            {
+
+                audioPreviewForm = new AudioPreviewForm();
+
+                audioPreviewForm.Visible = true;
+
+
+            }
+        }
+    }
+
+    public class VideoSettingsParams
+    {
+        public string Address = "127.0.0.1";
+        public int Port = 1234;
+        public TransportMode TransportMode = TransportMode.Udp;
+        public Rectangle CaptureRegion = Rectangle.Empty;
+        public string DisplayName = "";
+        public Rectangle DisplayRegion = Rectangle.Empty;
+
+        public bool CaptureMouse = true;
+        public Size VideoResoulution = new Size(1920, 1080);
+        public bool AspectRatio = true;
+        public VideoEncoderMode Encoder = VideoEncoderMode.H264;
+        public H264Profile Profile = H264Profile.Main;
+        public BitrateControlMode BitrateMode = BitrateControlMode.CBR;
+        public int Bitrate = 2500;
+        public int MaxBitrate = 5000;
+        public int Fps = 30;
+        public bool LowLatency = true;
+
+        public VideoSettingsParams Clone()
+        {
+            return (VideoSettingsParams)this.MemberwiseClone();
         }
     }
 

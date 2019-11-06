@@ -66,6 +66,7 @@ namespace TestStreamer
 
                 //var hwContext = screenSource.hwContext;
                 //var hwDevice = hwContext.device;
+                
                 var srcSize = new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
                 var destSize = new Size(encodingParams.Width, encodingParams.Height);

@@ -41,7 +41,7 @@ namespace MediaToolkit
 
         public override bool UpdateBuffer(int timeout = 10)
         {
-            return TryGetScreen(base.srcRect, ref base.videoBuffer, this.CaptureMouse, timeout);
+            return TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout);
         }
 
         public static bool TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer, bool captureMouse = false, int timeout = 10)

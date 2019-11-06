@@ -25,9 +25,11 @@ namespace MediaToolkit
 
     public enum CaptureState
     {
-        Create, 
-        Capture,
-        Close
+       
+        Stopped,
+        Starting,
+        Capturing,
+        Stopping,
     }
 
     public class ScreenSource
@@ -38,8 +40,8 @@ namespace MediaToolkit
 
         public VideoBuffer Buffer { get; private set; }
 
-       
-        public CaptureState State { get; private set; } = CaptureState.Create;
+
+        public CaptureState State { get; private set; } = CaptureState.Stopped;
 
         public DXGIDesktopDuplicationCapture hwContext = null;
 
@@ -60,6 +62,8 @@ namespace MediaToolkit
         private ScreenCapture screenCapture = null;
 
         public ScreenCaptureParams CaptureParams { get; private set; }
+
+        private bool initialized = false;
         public void Setup(ScreenCaptureParams captureParams)
         {
             logger.Debug("ScreenSource::Setup()");
@@ -89,142 +93,164 @@ namespace MediaToolkit
 
                 this.Buffer = screenCapture.VideoBuffer;
 
+                initialized = true;
+
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
 
-                CleanUp();
+                screenCapture?.Close();
+
                 throw;
             }
         }
 
-        public Task Start()
+        public void Start()
         {
             logger.Debug("ScreenSource::Start()");
 
-
-            return Task.Run(() =>
+            if (State == CaptureState.Capturing)
             {
-                logger.Info("Capturing thread started...");
+                return;
+            }
 
-                var frameRate = CaptureParams.Fps;
+            State = CaptureState.Starting;
 
-                CaptureStats captureStats = new CaptureStats();
-
-                try
-                {
-                    Statistic.RegisterCounter(captureStats);
-                    
-                    var frameInterval = (1000.0 / frameRate);
-                    captureStats.frameInterval = frameInterval;
-
-                    double lastTime = 0;
-                    double monotonicTime = 0;
-                    double jitter = 0;
-
-                    Stopwatch sw = Stopwatch.StartNew();
-                    while (!closing)
-                    {
-                        sw.Restart();
-
-                        try
-                        {
-                            var res = screenCapture.UpdateBuffer(30);
-    
-                            if (closing)
-                            {
-                                break;
-                            }
-
-                            if (res)
-                            {
-                                var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
-
-                                Buffer.time = time; //MediaTimer.GetRelativeTime() 
-
-                                //var diff = time - lastTime;
-
-                                lastTime = Buffer.time;
-
-                                OnBufferUpdated();
- 
-                                captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.DataLength);
-
-                            }
-                            else
-                            {
-                                //logger.Warn("No screen buffer...");
-
-                            }
-
-
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                            Thread.Sleep(1000);
-                        }
-
-                        var mSec = sw.ElapsedMilliseconds;
-                        var delay = (int)(frameInterval - mSec);
-
-                        if (delay > 0 && delay < 5000)
-                        {
-                            syncEvent.WaitOne(delay);
-                        }
-                        else
-                        {
-                            //logger.Warn("delay " + delay);
-                        }
-
-                        
-
-                        monotonicTime += sw.ElapsedMilliseconds / 1000.0;
-                        captureStats.Update(monotonicTime);
-
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-                }
-                finally
-                {
-                    screenCapture?.Close();
-
-                    Statistic.UnregisterCounter(captureStats);
-
-                    this.State = CaptureState.Close;
-
-                    OnStateChanged(this.State);
-                }
-
-                logger.Info("Capturing thread stopped...");
-
+            Task.Run(() =>
+            {
+                CaptureProc();
 
             });
 
         }
 
-        private bool closing = false;
+        private void CaptureProc()
+        {
+            logger.Info("Capturing thread started...");
 
-        public void Close()
+            var frameRate = CaptureParams.Fps;
+
+            CaptureStats captureStats = new CaptureStats();
+
+            try
+            {
+                Statistic.RegisterCounter(captureStats);
+
+                var frameInterval = (1000.0 / frameRate);
+                captureStats.frameInterval = frameInterval;
+
+                double lastTime = 0;
+                double monotonicTime = 0;
+                double jitter = 0;
+
+                Stopwatch sw = Stopwatch.StartNew();
+                State = CaptureState.Capturing;
+
+                while (State == CaptureState.Capturing && initialized)
+                {
+                    sw.Restart();
+
+                    try
+                    {
+                        var res = screenCapture.UpdateBuffer(30);
+
+                        if (State != CaptureState.Capturing || !initialized)
+                        {
+                            break;
+                        }
+
+                        if (res)
+                        {
+                            var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
+
+                            Buffer.time = time; //MediaTimer.GetRelativeTime() 
+
+                            //var diff = time - lastTime;
+
+                            lastTime = Buffer.time;
+
+                            OnBufferUpdated();
+
+                            captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.DataLength);
+
+                        }
+                        else
+                        {
+                            //logger.Warn("No screen buffer...");
+
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                        Thread.Sleep(1000);
+                    }
+
+                    var mSec = sw.ElapsedMilliseconds;
+                    var delay = (int)(frameInterval - mSec);
+
+                    if (delay > 0 && delay < 5000)
+                    {
+                        syncEvent.WaitOne(delay);
+                    }
+                    else
+                    {
+                        //logger.Warn("delay " + delay);
+                    }
+
+
+                    monotonicTime += sw.ElapsedMilliseconds / 1000.0;
+                    captureStats.Update(monotonicTime);
+
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+            finally
+            {
+                screenCapture?.Close();
+
+                Statistic.UnregisterCounter(captureStats);
+
+                this.State = CaptureState.Stopped;
+
+                OnStateChanged(this.State);
+            }
+
+            logger.Info("Capturing thread stopped...");
+        }
+
+  
+        public void Stop()
         {
             logger.Debug("ScreenSource::Close()");
 
-            closing = true;
+            State = CaptureState.Stopping;
             syncEvent.Set();
         }
 
-        private void CleanUp()
+        public void Dispose()
         {
+            logger.Debug("ScreenSource::Dispose()");
+
+            initialized = false;
             if (screenCapture != null)
             {
                 screenCapture.Close();
                 screenCapture = null;
+            }
+
+            if (syncEvent != null)
+            {
+                syncEvent.Dispose();
+                syncEvent = null;
             }
         }
 

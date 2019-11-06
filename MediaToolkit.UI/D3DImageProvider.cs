@@ -77,6 +77,8 @@ namespace MediaToolkit.UI
 
             try
             {
+                Close();
+
                 this.screenSource = source;
                 var sharedTexture = screenSource.hwContext.SharedTexture;
                 screenSource.BufferUpdated += ScreenSource_BufferUpdated;
@@ -256,7 +258,10 @@ namespace MediaToolkit.UI
 
             }
 
-            ScreenView.IsFrontBufferAvailableChanged -= ScreenView_IsFrontBufferAvailableChanged;
+            if (ScreenView != null)
+            {
+                ScreenView.IsFrontBufferAvailableChanged -= ScreenView_IsFrontBufferAvailableChanged;
+            }
 
             ClosDx();
 

@@ -399,7 +399,7 @@ namespace TestStreamer
             videoStreamer = new ScreenStreamer(screenSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
-            var captureTask = screenSource.Start();
+            screenSource.Start();
             var streamerTask = videoStreamer.Start();
 
             //previewForm = new PreviewForm();
@@ -420,7 +420,7 @@ namespace TestStreamer
 
             if (screenSource != null)
             {
-                screenSource.Close();
+                screenSource.Stop();
             }
 
             if (videoStreamer != null)

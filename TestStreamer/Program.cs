@@ -101,9 +101,13 @@ namespace TestStreamer
 
             //Utils.DwmApi.DisableAero(true);
 
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+
 
             MainForm form = new MainForm();
-     
+            //StreamingForm form = new StreamingForm();
 
             Application.Run(form);
             
@@ -115,7 +119,10 @@ namespace TestStreamer
             logger.Info("========== THE END ============");
 
         }
+
+
     }
+
 
 
 

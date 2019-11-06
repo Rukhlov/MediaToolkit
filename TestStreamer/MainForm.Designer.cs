@@ -51,12 +51,14 @@
             this.httpStreamerControl1 = new TestStreamer.Controls.HttpStreamerControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.remoteServerControl1 = new TestStreamer.Controls.RemoteServerControl();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.contextMenu.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -113,7 +115,7 @@
             // exitButton
             // 
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.exitButton.Location = new System.Drawing.Point(492, 761);
+            this.exitButton.Location = new System.Drawing.Point(339, 494);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(157, 33);
             this.exitButton.TabIndex = 0;
@@ -123,7 +125,7 @@
             // 
             // updateNetworksButton
             // 
-            this.updateNetworksButton.Location = new System.Drawing.Point(444, 24);
+            this.updateNetworksButton.Location = new System.Drawing.Point(366, 9);
             this.updateNetworksButton.Name = "updateNetworksButton";
             this.updateNetworksButton.Size = new System.Drawing.Size(75, 23);
             this.updateNetworksButton.TabIndex = 18;
@@ -134,7 +136,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(25, 27);
+            this.label5.Location = new System.Drawing.Point(3, 12);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(78, 17);
             this.label5.TabIndex = 17;
@@ -144,16 +146,16 @@
             // 
             this.networkComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.networkComboBox.FormattingEnabled = true;
-            this.networkComboBox.Location = new System.Drawing.Point(109, 24);
+            this.networkComboBox.Location = new System.Drawing.Point(91, 9);
             this.networkComboBox.Name = "networkComboBox";
-            this.networkComboBox.Size = new System.Drawing.Size(329, 24);
+            this.networkComboBox.Size = new System.Drawing.Size(269, 24);
             this.networkComboBox.TabIndex = 16;
             this.networkComboBox.SelectedValueChanged += new System.EventHandler(this.networkComboBox_SelectedValueChanged);
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(28, 752);
+            this.button1.Location = new System.Drawing.Point(16, 494);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(172, 33);
             this.button1.TabIndex = 20;
@@ -170,10 +172,10 @@
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Location = new System.Drawing.Point(10, 65);
+            this.tabControl1.Location = new System.Drawing.Point(12, 75);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(643, 662);
+            this.tabControl1.Size = new System.Drawing.Size(490, 413);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage2
@@ -182,9 +184,9 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 25);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(635, 633);
+            this.tabPage2.Size = new System.Drawing.Size(482, 384);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "ScreenStreamer";
+            this.tabPage2.Text = "RtpStreamer";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // screenStreamerControl
@@ -192,15 +194,16 @@
             this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.screenStreamerControl.Location = new System.Drawing.Point(3, 3);
             this.screenStreamerControl.Name = "screenStreamerControl";
-            this.screenStreamerControl.Size = new System.Drawing.Size(629, 627);
+            this.screenStreamerControl.Size = new System.Drawing.Size(476, 378);
             this.screenStreamerControl.TabIndex = 0;
+            this.screenStreamerControl.Load += new System.EventHandler(this.screenStreamerControl_Load);
             // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.audioStreamerControl);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(586, 597);
+            this.tabPage3.Size = new System.Drawing.Size(542, 295);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "AudioStreamer";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -210,7 +213,7 @@
             this.audioStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioStreamerControl.Location = new System.Drawing.Point(0, 0);
             this.audioStreamerControl.Name = "audioStreamerControl";
-            this.audioStreamerControl.Size = new System.Drawing.Size(586, 597);
+            this.audioStreamerControl.Size = new System.Drawing.Size(542, 295);
             this.audioStreamerControl.TabIndex = 0;
             // 
             // tabPage4
@@ -218,7 +221,7 @@
             this.tabPage4.Controls.Add(this.httpStreamerControl1);
             this.tabPage4.Location = new System.Drawing.Point(4, 25);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(586, 597);
+            this.tabPage4.Size = new System.Drawing.Size(542, 295);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "HttpStreamer";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -236,7 +239,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(586, 597);
+            this.tabPage1.Size = new System.Drawing.Size(542, 295);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -248,15 +251,23 @@
             this.remoteServerControl1.Size = new System.Drawing.Size(487, 462);
             this.remoteServerControl1.TabIndex = 0;
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.label5);
+            this.panel1.Controls.Add(this.updateNetworksButton);
+            this.panel1.Controls.Add(this.networkComboBox);
+            this.panel1.Location = new System.Drawing.Point(19, 12);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(456, 57);
+            this.panel1.TabIndex = 67;
+            // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(665, 806);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(512, 539);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.updateNetworksButton);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.networkComboBox);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.exitButton);
             this.Name = "MainForm";
@@ -267,8 +278,9 @@
             this.tabPage3.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -295,6 +307,7 @@
         private Controls.AudioStreamerControl audioStreamerControl;
         private Controls.HttpStreamerControl httpStreamerControl1;
         private Controls.RemoteServerControl remoteServerControl1;
+        private System.Windows.Forms.Panel panel1;
     }
 }
 

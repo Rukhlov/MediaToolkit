@@ -23,312 +23,122 @@ namespace MediaToolkit
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-
         public AudioSource() { }
 
-        private IWaveIn capture = null;
-        private BufferedWaveProvider bufferedWaveProvider = null;
+        public IWaveIn Capture { get; private set; }
 
-        private SampleChannel sampleChannel = null;
-
-        private AudioEncoder audioResampler = null;
-        private IRtpSender streamer = null;
-
-        //public bool IsCapturing
-        //{
-        //    get
-        //    {
-        //        bool isCapturing = false;
-        //        if (capture != null)
-        //        {
-        //            isCapturing = (capture.CaptureState == NAudio.CoreAudioApi.CaptureState.Capturing);
-        //        }
-
-        //        return IsCapturing;
-        //    }
-        //}
-
-        public bool IsStreaming { get; private set; }
-        private int sampleByteSize = 0;
-
-        private WaveformPainter[] wavePainters = null;
-
-        //public void SetWaveformPainter(WaveformPainter painter)
-        //{
-        //    this.waveformPainter = painter;
-
-        //}
-
-        public void SetWaveformPainter(WaveformPainter[] wavePainters)
+        public void Setup(string DeviceId)
         {
-            this.wavePainters = wavePainters;
+            logger.Debug("AudioSource::Setup(...) " + DeviceId);
 
-        }
-
-        public void Start(AudioEncodingParams outputParams, NetworkStreamingParams networkPars)
-        {
-            logger.Debug("AudioLoopbackSource::Start(...) ");
-
-            //FileStream fs = new FileStream("d:\\test_audio_4", FileMode.Create, FileAccess.ReadWrite);
-            Task.Run(() =>
+            MMDevice device = null;
+            try
             {
-                try
+                using (var deviceEnum = new MMDeviceEnumerator())
                 {
-                    MMDevice device = null;
+                    var mmDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
+                    device = mmDevices.FirstOrDefault(d => d.ID == DeviceId);
 
-                    var deviceId = outputParams.DeviceId;
-                    if (!string.IsNullOrEmpty(deviceId))
-                    {
-
-                    }
-                    else
-                    {
-                        //...
-                    }
-                   
-                    using (var deviceEnum = new MMDeviceEnumerator())
-                    {
-   
-                        var mmDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-                        device = mmDevices.FirstOrDefault(d => d.ID == deviceId);
-
-                    }
-
-                    if(device == null)
-                    {
-                        //...
-                        throw new Exception("MMDevice not found...");
-                    }
-
-                    if (device.DataFlow == DataFlow.Capture)
-                    {
-                        capture = new WasapiCapture(device);
-                    }
-                    else
-                    {
-                        capture = new WasapiLoopbackCapture(device);
-                    }
-                    
-
-                    capture.DataAvailable += Capture_DataAvailable;
-                    capture.RecordingStopped += Capture_RecordingStopped;
-
-                    sampleByteSize = capture.WaveFormat.BitsPerSample / 8;
-
-                    bufferedWaveProvider = new BufferedWaveProvider(capture.WaveFormat);
-                    bufferedWaveProvider.DiscardOnBufferOverflow = true;
-
-                    sampleChannel = new SampleChannel(bufferedWaveProvider);
-                    sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
-
-                    audioResampler = new AudioEncoder();
-
-                    var waveFormat = capture.WaveFormat;
-                    var captureParams = new AudioEncodingParams
-                    {
-                        SampleRate = waveFormat.SampleRate,
-                        Channels = waveFormat.Channels,
-
-                    };
-
-
-                    audioResampler.Open(captureParams, outputParams);
-
-                    PCMUSession session = new PCMUSession();
-
-                    if (networkPars.TransportMode == TransportMode.Tcp)
-                    {
-                        streamer = new RtpTcpSender(session);
-                    }
-                    else if (networkPars.TransportMode == TransportMode.Udp)
-                    {
-                        streamer = new RtpStreamer(session);
-                    }
-                    else
-                    {
-                        throw new FormatException("NotSupportedFormat " + networkPars.TransportMode);
-                    }
-
-                    //streamer = new RtpStreamer(session);
-
-                    streamer.Start(networkPars);
-
-
-                    capture.StartRecording();
-
-                    IsStreaming = true;
-                    OnStateChanged();
                 }
-                catch(Exception ex)
+
+                if (device == null)
                 {
-                    logger.Error(ex);
-
-                    CleanUp();
+                    //...
+                    throw new Exception("MMDevice not found...");
                 }
-            });
-        }
 
-        private void SampleChannel_PreVolumeMeter(object sender, StreamVolumeEventArgs e)
-        {
-            if(wavePainters == null)
-            {
-                return;
+                if (device.DataFlow == DataFlow.Capture)
+                {
+                    Capture = new WasapiCapture(device);
+                }
+                else
+                {
+                    Capture = new WasapiLoopbackCapture(device);
+                }
+
+                Capture.DataAvailable += Capture_DataAvailable; ;
+                Capture.RecordingStopped += Capture_RecordingStopped;
+
+
+
             }
-
-            var samples = e.MaxSampleValues;
-
-            for (int i = 0; i < samples.Length; i++)
+            catch (Exception ex)
             {
-                var s = samples[i];
+                logger.Error(ex);
 
-                if (i < wavePainters.Length)
+                Close();
+
+            }
+            finally
+            {
+                if (device != null)
                 {
-                    var painter = wavePainters[i];
-
-                    painter?.AddMax(s);
+                    device.Dispose();
+                    device = null;
                 }
             }
-                       
         }
 
-        private uint rtpTimestamp = 0;
-        private Stopwatch sw = new Stopwatch();
+        public void Start()
+        {
+            logger.Debug("AudioSource::Start(...)");
+
+            Capture.StartRecording();
+
+        }
+
+        public event Action<byte[]> DataAvailable;
 
         private void Capture_DataAvailable(object sender, WaveInEventArgs e)
         {
-            if (closing)
-            {
-                return;
-            }
-
             if (e.BytesRecorded > 0)
             {
+                byte[] data = new byte[e.BytesRecorded];
+                Array.Copy(e.Buffer, data, data.Length);
 
-                bufferedWaveProvider.AddSamples(e.Buffer, 0, e.BytesRecorded);
-                
-                var audioBuffer = new float[e.BytesRecorded];
+                DataAvailable?.Invoke(data);
 
-                sampleChannel.Read(audioBuffer, 0, e.BytesRecorded );
-
-
-                byte[] src = new byte[e.BytesRecorded];
-                Array.Copy(e.Buffer, src, src.Length);
-
-                byte[] dest = null;
-                audioResampler.Resample2(src, out dest);
-                if (dest != null && dest.Length > 0)
-                {
-                    //Debug.WriteLine("dest.Length " + dest.Length);
-
-                    rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 8.0);
-                    sw.Restart();
-
-                    double ralativeTime = MediaTimer.GetRelativeTime();
-                    //uint rtpTime = (uint)(ralativeTime * 8000);
-
-                    // streamer.Push(dest, ralativeTime);
-
-                    streamer.Push(dest, ralativeTime);
-
-                    //fs.Write(dest, 0, dest.Length);
-                    //fs.Write(a.Buffer, 0, a.BytesRecorded);
-                }
             }
         }
 
-        //private void Capture_DataAvailable(object sender, WaveInEventArgs e)
-        //{
-        //    if (closing)
-        //    {
-        //        return;
-        //    }
-
-        //    if (e.BytesRecorded > 0 )
-        //    {
-
-        //        byte[] src = new byte[e.BytesRecorded];
-        //        Array.Copy(e.Buffer, src, src.Length);
-
-        //        byte[] dest = null;
-        //        audioResampler.Resample2(src, out dest);
-        //        if (dest != null && dest.Length > 0)
-        //        {
-        //            //Debug.WriteLine("dest.Length " + dest.Length);
-
-        //            rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 8.0);
-        //            sw.Restart();
-
-        //            double ralativeTime = MediaTimer.GetRelativeTime();
-        //            //uint rtpTime = (uint)(ralativeTime * 8000);
-
-        //           // streamer.Push(dest, ralativeTime);
-
-        //            streamer.Send(dest, ralativeTime);
-
-        //            //fs.Write(dest, 0, dest.Length);
-        //            //fs.Write(a.Buffer, 0, a.BytesRecorded);
-        //        }
-        //    }
-        //}
-
-
-        public event Action StateChanged;
-
-        private void OnStateChanged()
-        {
-            StateChanged?.Invoke();
-        }
 
         private void Capture_RecordingStopped(object sender, StoppedEventArgs e)
         {
-            logger.Debug("AudioLoopbackSource::Capture_RecordingStopped(...)");
-
-            CleanUp();
-
-            IsStreaming = false;
-            OnStateChanged();
-        }
-
-        private void CleanUp()
-        {
-
-            logger.Debug("AudioLoopbackSource::CleanUp()");
-
-            if (streamer != null)
-            {
-                streamer.Close();
-                streamer = null;
-            }
+            logger.Debug("Capture_RecordingStopped(...)");
             
-
-            if (capture != null)
+            var ex = e.Exception;
+            if (ex != null)
             {
-
-                capture.DataAvailable -= Capture_DataAvailable;
-                capture.RecordingStopped -= Capture_RecordingStopped;
-                capture.Dispose();
-                capture = null;
+                logger.Error(ex);
             }
 
-            if (audioResampler != null)
-            {
-                audioResampler.Close();
-                audioResampler = null;
-            }
-
+            Close();
         }
 
-        private bool closing = false;
+
+
+        public void Stop()
+        {
+            logger.Debug("AudioSource::Stop()");
+            if (Capture != null)
+            {
+                Capture.StopRecording();
+            }
+        }
+
         public void Close()
         {
-            logger.Debug("AudioLoopbackSource::Close()");
-            closing = true;
-            if (capture != null)
-            {
-                capture.StopRecording();
-            }
-        }
+            logger.Debug("AudioSource::Close()");
 
+            if (Capture != null)
+            {
+                Capture.DataAvailable -= Capture_DataAvailable;
+                Capture.RecordingStopped -= Capture_RecordingStopped;
+                Capture.Dispose();
+                Capture = null;
+            }
+
+        }
 
     }
 

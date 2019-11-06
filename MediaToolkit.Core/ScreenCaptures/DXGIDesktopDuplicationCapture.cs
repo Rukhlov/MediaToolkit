@@ -29,21 +29,26 @@ using SharpDX.MediaFoundation;
 
 namespace MediaToolkit
 {
-    public class DXGIDesktopDuplicationCapture : ScreenCapture
+    public interface IDirect3D11Capture
+    {
+        Device Device3D11 { get; }
+
+        Texture2D SharedTexture { get; }
+    }
+
+    public class DXGIDesktopDuplicationCapture : ScreenCapture //, IDirect3D11Capture
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
 
-        // public Stopwatch sw = new Stopwatch();
-
-        public Device device { get; private set; }
-
-        public Texture2D SharedTexture { get; private set; }
+        private Device device = null; 
 
         private Texture2D compositionTexture = null;
 
         private Texture2D renderTexture = null;
-        SharpDX.Direct2D1.RenderTarget renderTarget = null;
+        Direct2D.RenderTarget renderTarget = null;
+
+        public Texture2D SharedTexture { get; private set; }
 
         public bool UseHwContext = true;
 
@@ -60,7 +65,7 @@ namespace MediaToolkit
 
         private void InitDx()
         {
-            logger.Debug("DXGIDesktopDuplicationCapture::InitDx(...) " + srcRect.ToString());
+            logger.Debug("DXGIDesktopDuplicationCapture::InitDx(...) " + SrcRect.ToString());
 
 
             SharpDX.DXGI.Factory1 dxgiFactory = null;
@@ -126,11 +131,11 @@ namespace MediaToolkit
                     var descr = _output.Description;
 
                     var desktopBounds = descr.DesktopBounds;
-                    if ((desktopBounds.Left > srcRect.Right) || (desktopBounds.Right < srcRect.X) ||
-                        (desktopBounds.Top > srcRect.Bottom) || (desktopBounds.Bottom < srcRect.Y))
+                    if ((desktopBounds.Left > SrcRect.Right) || (desktopBounds.Right < SrcRect.X) ||
+                        (desktopBounds.Top > SrcRect.Bottom) || (desktopBounds.Bottom < SrcRect.Y))
                     {
 
-                        logger.Debug("No common area: " + descr.DeviceName + " " + srcRect.ToString());
+                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
                         continue;
 
                     }
@@ -140,7 +145,7 @@ namespace MediaToolkit
 
                         DesktopDuplicator deskDupl = new DesktopDuplicator(device);
 
-                        deskDupl.Init(_output, srcRect);
+                        deskDupl.Init(_output, SrcRect);
                         deskDupl.CaptureMouse = this.CaptureMouse;
 
                         deskDupls.Add(deskDupl);
@@ -178,8 +183,8 @@ namespace MediaToolkit
                      CpuAccessFlags = CpuAccessFlags.None,
                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                      Format = Format.B8G8R8A8_UNorm,
-                     Width = destSize.Width,
-                     Height = destSize.Height,
+                     Width = DestSize.Width,
+                     Height = DestSize.Height,
 
                      MipLevels = 1,
                      ArraySize = 1,
@@ -197,8 +202,8 @@ namespace MediaToolkit
                    BindFlags = BindFlags.ShaderResource,
                    Format = Format.B8G8R8A8_UNorm,
 
-                   Width = srcRect.Width,
-                   Height = srcRect.Height,
+                   Width = SrcRect.Width,
+                   Height = SrcRect.Height,
                    MipLevels = 1,
                    ArraySize = 1,
                    SampleDescription = { Count = 1, Quality = 0 },
@@ -219,8 +224,8 @@ namespace MediaToolkit
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = Format.B8G8R8A8_UNorm,
 
-                    Width = destSize.Width,
-                    Height = destSize.Height,
+                    Width = DestSize.Width,
+                    Height = DestSize.Height,
                     MipLevels = 1,
                     ArraySize = 1,
                     SampleDescription = { Count = 1, Quality = 0 },
@@ -324,8 +329,8 @@ namespace MediaToolkit
                                 CpuAccessFlags = CpuAccessFlags.Read,
                                 BindFlags = BindFlags.None,
                                 Format = Format.B8G8R8A8_UNorm,
-                                Width = destSize.Width,
-                                Height = destSize.Height,
+                                Width = DestSize.Width,
+                                Height = DestSize.Height,
                                 MipLevels = 1,
                                 ArraySize = 1,
                                 SampleDescription = { Count = 1, Quality = 0 },
@@ -373,8 +378,8 @@ namespace MediaToolkit
 
                     float destX = 0;
                     float destY = 0;
-                    float destWidth = destSize.Width;
-                    float destHeight = destSize.Height;
+                    float destWidth = DestSize.Width;
+                    float destHeight = DestSize.Height;
 
                     float scaleX = destWidth / srcWidth;
                     float scaleY = destHeight / srcHeight;
@@ -441,45 +446,56 @@ namespace MediaToolkit
             {
                 logger.Debug("DesktopDuplicator::Init(...) " + srcRect.ToString());
 
-                RawRectangle screenRect = output.Description.DesktopBounds;
-                int width = screenRect.Right - screenRect.Left;
-                int height = screenRect.Bottom - screenRect.Top;
-
-                SetupRegions(screenRect, srcRect);
-
-                screenTexture = new Texture2D(device,
-                  new Texture2DDescription
-                  {
-                      CpuAccessFlags = CpuAccessFlags.None,
-                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                      Format = Format.B8G8R8A8_UNorm,
-                      Width = width,
-                      Height = height,
-                      MipLevels = 1,
-                      ArraySize = 1,
-                      SampleDescription = { Count = 1, Quality = 0 },
-                      Usage = ResourceUsage.Default,
-
-                      OptionFlags = ResourceOptionFlags.Shared,
-
-                  });
-
-                using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
+                try
                 {
-                    using (var surf = screenTexture.QueryInterface<Surface>())
+                    RawRectangle screenRect = output.Description.DesktopBounds;
+                    int width = screenRect.Right - screenRect.Left;
+                    int height = screenRect.Bottom - screenRect.Top;
+
+                    SetupRegions(screenRect, srcRect);
+
+                    screenTexture = new Texture2D(device,
+                      new Texture2DDescription
+                      {
+                          CpuAccessFlags = CpuAccessFlags.None,
+                          BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                          Format = Format.B8G8R8A8_UNorm,
+                          Width = width,
+                          Height = height,
+                          MipLevels = 1,
+                          ArraySize = 1,
+                          SampleDescription = { Count = 1, Quality = 0 },
+                          Usage = ResourceUsage.Default,
+
+                          OptionFlags = ResourceOptionFlags.Shared,
+
+                      });
+
+                    using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
                     {
-                        var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
-                        var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
-                        screenTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
+                        using (var surf = screenTexture.QueryInterface<Surface>())
+                        {
+                            var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
+                            var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
+                            screenTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
+                        }
+
                     }
 
+                    using (var output1 = output.QueryInterface<Output1>())
+                    {
+                        // Duplicate the output
+                        deskDupl = output1.DuplicateOutput(device);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                    Close();
+
+                    throw;
                 }
 
-                using (var output1 = output.QueryInterface<Output1>())
-                {
-                    // Duplicate the output
-                    deskDupl = output1.DuplicateOutput(device);
-                }
 
                 deviceReady = true;
 
@@ -1338,11 +1354,14 @@ namespace MediaToolkit
 
             deviceReady = false;
 
-            foreach(var dupl in deskDupls)
+            if (deskDupls != null)
             {
-                dupl.Close();
+                foreach (var dupl in deskDupls)
+                {
+                    dupl?.Close();
+                }
+                deskDupls = null;
             }
-            deskDupls = null;
 
             if (compositionTexture != null && !compositionTexture.IsDisposed)
             {

@@ -15,7 +15,7 @@ namespace MediaToolkit
 
         public override bool UpdateBuffer(int timeout = 10)
         {
-            return TryGetScreen(srcRect, ref videoBuffer, timeout);
+            return TryGetScreen(SrcRect, ref videoBuffer, timeout);
         }
 
         public static bool TryGetScreen(Rectangle bounds, ref VideoBuffer videoBuffer, int timeout = 10)

@@ -47,13 +47,13 @@ namespace MediaToolkit
                 new ArgumentException(destSize.ToString());
             }
 
-            this.srcRect = srcRect;
+            this.SrcRect = srcRect;
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format24bppRgb);
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppRgb);
 
             this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
-            this.destSize = new Size(destSize.Width, destSize.Height);
+            this.DestSize = new Size(destSize.Width, destSize.Height);
 
         }
 
@@ -85,8 +85,8 @@ namespace MediaToolkit
             return capture;
         }
 
-        protected Rectangle srcRect;
-        protected Size destSize;
+        public Rectangle SrcRect { get; protected set; }
+        public Size DestSize { get; protected set; }
 
         protected VideoBuffer videoBuffer = null;
 

@@ -99,7 +99,7 @@ namespace TestStreamer.Controls
         private void httpStopButton_Click(object sender, EventArgs e)
         {
             httpStreamer?.Close();
-            httpScreenSource?.Close();
+            httpScreenSource?.Stop();
 
             //statisticForm.Close();
         }
