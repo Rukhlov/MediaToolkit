@@ -16,10 +16,10 @@ namespace MediaToolkit
 {
 
 
-    public class RtpStreamer : IRtpSender
+    public class RtpUdpSender : IRtpSender
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        public RtpStreamer(RtpSession session)
+        public RtpUdpSender(RtpSession session)
         {
             this.session = session;
 
@@ -27,36 +27,34 @@ namespace MediaToolkit
 
         private RtpSession session;
         private Socket socket;
-        private IPEndPoint remoteEndpoint;
+        public IPEndPoint RemoteEndpoint { get; private set; }
 
 
         public void Start(NetworkStreamingParams streamingParams)
         {
             try
             {
-                logger.Debug("RtpStreamer::Open(...)");
-                var srcAddr = streamingParams.LocalAddr;
-                var srcPort = 0;//streamingParams.LocalPort;
+                logger.Debug("RtpUdpSender::Open(...)");
+                var localAddr = streamingParams.LocalAddr;
+                var localPort = 0;//streamingParams.LocalPort;
 
                 var localIp = IPAddress.Any;
-                if (string.IsNullOrEmpty(srcAddr))
+                if (string.IsNullOrEmpty(localAddr))
                 {
-                    if (IPAddress.TryParse(srcAddr, out IPAddress _localIp))
+                    if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
                     {
                         localIp = _localIp;
                     }
                 }
 
-                var localEndpoint = new IPEndPoint(localIp, srcPort);
+                var localEndpoint = new IPEndPoint(localIp, localPort);
 
                 var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
-                remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
+                RemoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
 
-                logger.Debug("RtpStreamer::Open(...) " + remoteEndpoint + " " + localEndpoint);
+                logger.Debug("RtpStreamer::Open(...) " + RemoteEndpoint + " " + localEndpoint);
 
-
-                var bytes = remoteIp.GetAddressBytes();
-                bool isMulicast = (bytes[0] >= 224 && bytes[0] <= 239);
+                bool isMulicast = NetTools.IsMulticastIpAddr(remoteIp);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -70,7 +68,7 @@ namespace MediaToolkit
 
                 running = true;
 
-                logger.Info("Server started " + remoteEndpoint.ToString());
+                logger.Info("Server started " + RemoteEndpoint.ToString());
 
 
                 Task.Run(() =>
@@ -135,7 +133,6 @@ namespace MediaToolkit
                 }
             }
 
-
             syncEvent.Set();
         }
 
@@ -168,7 +165,7 @@ namespace MediaToolkit
                         //var data = pkt;//.GetBytes();
                         var data = pkt.GetBytes();
                         //logger.Debug("pkt" + pkt.Sequence);
-                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, remoteEndpoint);
+                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, RemoteEndpoint);
                         //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += data.Length;
 
@@ -205,7 +202,7 @@ namespace MediaToolkit
                         //var data = pkt;//.GetBytes();
                         var data = pkt.GetBytes();
                         //logger.Debug("pkt" + pkt.Sequence);
-                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, remoteEndpoint);
+                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, RemoteEndpoint);
                         //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += data.Length;
 
@@ -221,7 +218,7 @@ namespace MediaToolkit
         public void Close()
         {
 
-            logger.Debug("RtpStreamer::Close()");
+            logger.Debug("RtpUdpSender::Close()");
 
             running = false;
             socket?.Close();

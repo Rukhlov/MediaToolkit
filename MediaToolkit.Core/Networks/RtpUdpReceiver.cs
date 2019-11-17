@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-    public class RtpReceiver :IRtpReceiver
+    public class RtpUdpReceiver :IRtpReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -22,7 +22,7 @@ namespace MediaToolkit
         public IPEndPoint LocalEndpoint { get; private set; }
 
         private MulticastOption mcastOption = null;
-        public RtpReceiver(RtpSession session)
+        public RtpUdpReceiver(RtpSession session)
         {
             this.session = session;
         }

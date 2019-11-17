@@ -111,7 +111,7 @@ namespace MediaToolkit.Core
                 }
                 else 
                 {
-                    rtpReceiver = new RtpReceiver(session);
+                    rtpReceiver = new RtpUdpReceiver(session);
                 }
                 
 

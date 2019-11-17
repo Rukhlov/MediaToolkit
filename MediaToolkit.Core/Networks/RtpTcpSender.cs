@@ -16,6 +16,7 @@ namespace MediaToolkit
 {
     public interface IRtpSender
     {
+        IPEndPoint RemoteEndpoint { get; }
         void Start(NetworkStreamingParams streamingParams);
         void Push(byte[] bytes, double sec);
         void Close();
@@ -34,7 +35,8 @@ namespace MediaToolkit
 
         private RtpSession session;
         private Socket socket;
-        private IPEndPoint remoteEndpoint;
+
+        public IPEndPoint RemoteEndpoint { get; private set; }
 
 
         public void Start(NetworkStreamingParams streamingParams)
@@ -44,7 +46,7 @@ namespace MediaToolkit
 
                 Task.Run(() =>
                 {
-                    logger.Debug("RtpStreamer::Open(...)");
+                    logger.Debug("RtpTcpSender::Open(...)");
 
                     var localAddr = streamingParams.LocalAddr;
                     var localPort = streamingParams.LocalPort;
@@ -61,9 +63,9 @@ namespace MediaToolkit
                     var localEndpoint = new IPEndPoint(localIp, localPort);
 
                     var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
-                    remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
+                    RemoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
 
-                    logger.Debug("RtpStreamer::Open(...) " + remoteEndpoint + " " + localEndpoint);
+                    logger.Debug("RtpStreamer::Open(...) " + RemoteEndpoint + " " + localEndpoint);
 
 
                     socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -275,7 +277,7 @@ namespace MediaToolkit
                         //var data = pkt;//.GetBytes();
                         var data = pkt.GetBytes();
                         //logger.Debug("pkt" + pkt.Sequence);
-                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, remoteEndpoint);
+                        socket?.SendTo(data, 0, data.Length, SocketFlags.None, RemoteEndpoint);
                         //socket?.BeginSendTo(data, 0, data.Length, SocketFlags.None, endpoint, null, null);
                         bytesSend += data.Length;
 
@@ -291,7 +293,7 @@ namespace MediaToolkit
         public void Close()
         {
 
-            logger.Debug("RtpStreamer::Close()");
+            logger.Debug("RtpTcpSender::Close()");
 
             running = false;
             socket?.Close();

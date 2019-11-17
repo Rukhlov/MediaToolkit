@@ -20,7 +20,7 @@ namespace TestStreamer.Controls
 
 
             LoadEncoderItems();
-            LoadTransportItems();
+           // LoadTransportItems();
 
         }
 
@@ -30,9 +30,9 @@ namespace TestStreamer.Controls
         {
 
             this.AudioSettings = settingsParams;
-            this.addressTextBox.Text = AudioSettings.Address;
-            this.portNumeric.Value = AudioSettings.Port;
-            this.transportComboBox.SelectedItem = AudioSettings.TransportMode;
+            //this.addressTextBox.Text = AudioSettings.Address;
+            //this.portNumeric.Value = AudioSettings.Port;
+            //this.transportComboBox.SelectedItem = AudioSettings.TransportMode;
 
             this.sampleRateNumeric.Value = AudioSettings.Samplerate;
             this.channelsNumeric.Value = AudioSettings.Channels;
@@ -41,10 +41,10 @@ namespace TestStreamer.Controls
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            AudioSettings.Address = this.addressTextBox.Text;
-            AudioSettings.Port = (int)this.portNumeric.Value;
+            //AudioSettings.Address = this.addressTextBox.Text;
+            //AudioSettings.Port = (int)this.portNumeric.Value;
 
-            AudioSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
+            //AudioSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
 
             AudioSettings.Samplerate = (int)this.sampleRateNumeric.Value;
             AudioSettings.Channels = (int)this.channelsNumeric.Value;
@@ -60,17 +60,17 @@ namespace TestStreamer.Controls
 
 
 
-        private void LoadTransportItems()
-        {
+        //private void LoadTransportItems()
+        //{
 
-            var items = new List<TransportMode>
-            {
-                TransportMode.Tcp,
-                TransportMode.Udp,
+        //    var items = new List<TransportMode>
+        //    {
+        //        TransportMode.Tcp,
+        //        TransportMode.Udp,
 
-            };
-            transportComboBox.DataSource = items;
-        }
+        //    };
+        //    transportComboBox.DataSource = items;
+        //}
 
         private void LoadEncoderItems()
         {

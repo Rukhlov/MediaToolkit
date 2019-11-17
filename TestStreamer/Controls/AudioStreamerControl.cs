@@ -234,21 +234,5 @@ namespace TestStreamer.Controls
     }
 
 
-    public class AudioSettingsParams
-    {
-        public string Address = "127.0.0.1";
-        public int Port = 1235;
-        public TransportMode TransportMode = TransportMode.Udp;
 
-        public AudioEncoderMode Encoder = AudioEncoderMode.G711;
-
-        public int Samplerate = 8000;
-        public int Channels = 1;
-
-
-        public AudioSettingsParams Clone()
-        {
-            return (AudioSettingsParams)this.MemberwiseClone();
-        }
-    }
 }

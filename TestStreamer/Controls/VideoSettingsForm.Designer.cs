@@ -28,13 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.addressTextBox = new System.Windows.Forms.TextBox();
-            this.transportComboBox = new System.Windows.Forms.ComboBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.portNumeric = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label6 = new System.Windows.Forms.Label();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
@@ -56,17 +49,15 @@
             this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
             this.snippingToolButton = new System.Windows.Forms.Button();
             this.srcRectGroupBox = new System.Windows.Forms.GroupBox();
-            this.applyButton = new System.Windows.Forms.Button();
-            this.cancelButton = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
+            this.displayTextBox = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
-            this.displayTextBox = new System.Windows.Forms.TextBox();
-            this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
             this.captureRegionTextBox = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
+            this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
+            this.applyButton = new System.Windows.Forms.Button();
+            this.cancelButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
@@ -75,85 +66,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).BeginInit();
             this.srcRectGroupBox.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.addressTextBox);
-            this.groupBox2.Controls.Add(this.transportComboBox);
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.portNumeric);
-            this.groupBox2.Location = new System.Drawing.Point(12, 12);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(449, 120);
-            this.groupBox2.TabIndex = 75;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "_NetworkSettings";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(15, 27);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 17);
-            this.label3.TabIndex = 58;
-            this.label3.Text = "Address:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // addressTextBox
-            // 
-            this.addressTextBox.Location = new System.Drawing.Point(99, 24);
-            this.addressTextBox.Name = "addressTextBox";
-            this.addressTextBox.Size = new System.Drawing.Size(344, 22);
-            this.addressTextBox.TabIndex = 56;
-            this.addressTextBox.Text = "0.0.0.0";
-            // 
-            // transportComboBox
-            // 
-            this.transportComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.transportComboBox.FormattingEnabled = true;
-            this.transportComboBox.Location = new System.Drawing.Point(99, 80);
-            this.transportComboBox.Name = "transportComboBox";
-            this.transportComboBox.Size = new System.Drawing.Size(107, 24);
-            this.transportComboBox.TabIndex = 63;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 54);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 17);
-            this.label2.TabIndex = 59;
-            this.label2.Text = "Port:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(14, 83);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(74, 17);
-            this.label5.TabIndex = 64;
-            this.label5.Text = "Transport:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // portNumeric
-            // 
-            this.portNumeric.Location = new System.Drawing.Point(99, 52);
-            this.portNumeric.Maximum = new decimal(new int[] {
-            100500,
-            0,
-            0,
-            0});
-            this.portNumeric.Name = "portNumeric";
-            this.portNumeric.Size = new System.Drawing.Size(107, 22);
-            this.portNumeric.TabIndex = 57;
-            this.portNumeric.Value = new decimal(new int[] {
-            1234,
-            0,
-            0,
-            0});
             // 
             // groupBox1
             // 
@@ -175,7 +87,7 @@
             this.groupBox1.Controls.Add(this.label7);
             this.groupBox1.Controls.Add(this.label1);
             this.groupBox1.Controls.Add(this.latencyModeCheckBox);
-            this.groupBox1.Location = new System.Drawing.Point(12, 283);
+            this.groupBox1.Location = new System.Drawing.Point(6, 157);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(449, 267);
             this.groupBox1.TabIndex = 74;
@@ -435,32 +347,38 @@
             this.srcRectGroupBox.Controls.Add(this.captureRegionTextBox);
             this.srcRectGroupBox.Controls.Add(this.captureMouseCheckBox);
             this.srcRectGroupBox.Controls.Add(this.snippingToolButton);
-            this.srcRectGroupBox.Location = new System.Drawing.Point(12, 138);
+            this.srcRectGroupBox.Location = new System.Drawing.Point(6, 12);
             this.srcRectGroupBox.Name = "srcRectGroupBox";
             this.srcRectGroupBox.Size = new System.Drawing.Size(449, 139);
             this.srcRectGroupBox.TabIndex = 70;
             this.srcRectGroupBox.TabStop = false;
             this.srcRectGroupBox.Text = "CaptureSettings";
             // 
-            // applyButton
+            // label9
             // 
-            this.applyButton.Location = new System.Drawing.Point(246, 565);
-            this.applyButton.Name = "applyButton";
-            this.applyButton.Size = new System.Drawing.Size(100, 23);
-            this.applyButton.TabIndex = 76;
-            this.applyButton.Text = "_Apply";
-            this.applyButton.UseVisualStyleBackColor = true;
-            this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(15, 24);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(57, 17);
+            this.label9.TabIndex = 81;
+            this.label9.Text = "Region:";
             // 
-            // cancelButton
+            // displayTextBox
             // 
-            this.cancelButton.Location = new System.Drawing.Point(355, 565);
-            this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(100, 23);
-            this.cancelButton.TabIndex = 77;
-            this.cancelButton.Text = "_Cancel";
-            this.cancelButton.UseVisualStyleBackColor = true;
-            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            this.displayTextBox.Location = new System.Drawing.Point(96, 50);
+            this.displayTextBox.Name = "displayTextBox";
+            this.displayTextBox.ReadOnly = true;
+            this.displayTextBox.Size = new System.Drawing.Size(244, 22);
+            this.displayTextBox.TabIndex = 80;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(15, 53);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(58, 17);
+            this.label8.TabIndex = 79;
+            this.label8.Text = "Display:";
             // 
             // label4
             // 
@@ -481,13 +399,13 @@
             this.captureTypesComboBox.Size = new System.Drawing.Size(244, 24);
             this.captureTypesComboBox.TabIndex = 77;
             // 
-            // displayTextBox
+            // captureRegionTextBox
             // 
-            this.displayTextBox.Location = new System.Drawing.Point(96, 50);
-            this.displayTextBox.Name = "displayTextBox";
-            this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(244, 22);
-            this.displayTextBox.TabIndex = 80;
+            this.captureRegionTextBox.Location = new System.Drawing.Point(96, 22);
+            this.captureRegionTextBox.Name = "captureRegionTextBox";
+            this.captureRegionTextBox.ReadOnly = true;
+            this.captureRegionTextBox.Size = new System.Drawing.Size(244, 22);
+            this.captureRegionTextBox.TabIndex = 76;
             // 
             // captureMouseCheckBox
             // 
@@ -501,49 +419,39 @@
             this.captureMouseCheckBox.Text = "_Capture Mouse";
             this.captureMouseCheckBox.UseVisualStyleBackColor = true;
             // 
-            // captureRegionTextBox
+            // applyButton
             // 
-            this.captureRegionTextBox.Location = new System.Drawing.Point(96, 22);
-            this.captureRegionTextBox.Name = "captureRegionTextBox";
-            this.captureRegionTextBox.ReadOnly = true;
-            this.captureRegionTextBox.Size = new System.Drawing.Size(244, 22);
-            this.captureRegionTextBox.TabIndex = 76;
+            this.applyButton.Location = new System.Drawing.Point(240, 430);
+            this.applyButton.Name = "applyButton";
+            this.applyButton.Size = new System.Drawing.Size(100, 23);
+            this.applyButton.TabIndex = 76;
+            this.applyButton.Text = "_Apply";
+            this.applyButton.UseVisualStyleBackColor = true;
+            this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
             // 
-            // label8
+            // cancelButton
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(15, 53);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(58, 17);
-            this.label8.TabIndex = 79;
-            this.label8.Text = "Display:";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 24);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(57, 17);
-            this.label9.TabIndex = 81;
-            this.label9.Text = "Region:";
+            this.cancelButton.Location = new System.Drawing.Point(349, 430);
+            this.cancelButton.Name = "cancelButton";
+            this.cancelButton.Size = new System.Drawing.Size(100, 23);
+            this.cancelButton.TabIndex = 77;
+            this.cancelButton.Text = "_Cancel";
+            this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // VideoSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 604);
+            this.ClientSize = new System.Drawing.Size(479, 474);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.applyButton);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.srcRectGroupBox);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VideoSettingsForm";
             this.Text = "_VideoSettings";
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).EndInit();
@@ -558,14 +466,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.ComboBox transportComboBox;
-        private System.Windows.Forms.NumericUpDown portNumeric;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox addressTextBox;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;

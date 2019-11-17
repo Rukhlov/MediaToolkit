@@ -28,11 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.addressTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.portNumeric = new System.Windows.Forms.NumericUpDown();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label7 = new System.Windows.Forms.Label();
             this.sampleRateNumeric = new System.Windows.Forms.NumericUpDown();
@@ -42,74 +37,10 @@
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.applyButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.label5 = new System.Windows.Forms.Label();
-            this.transportComboBox = new System.Windows.Forms.ComboBox();
-            this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.channelsNumeric)).BeginInit();
             this.SuspendLayout();
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Controls.Add(this.label3);
-            this.groupBox2.Controls.Add(this.addressTextBox);
-            this.groupBox2.Controls.Add(this.transportComboBox);
-            this.groupBox2.Controls.Add(this.label2);
-            this.groupBox2.Controls.Add(this.label5);
-            this.groupBox2.Controls.Add(this.portNumeric);
-            this.groupBox2.Location = new System.Drawing.Point(12, 12);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(449, 120);
-            this.groupBox2.TabIndex = 75;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "_NetworkSettings";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(15, 27);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 17);
-            this.label3.TabIndex = 58;
-            this.label3.Text = "Address:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // addressTextBox
-            // 
-            this.addressTextBox.Location = new System.Drawing.Point(108, 24);
-            this.addressTextBox.Name = "addressTextBox";
-            this.addressTextBox.Size = new System.Drawing.Size(332, 22);
-            this.addressTextBox.TabIndex = 56;
-            this.addressTextBox.Text = "0.0.0.0";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 54);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 17);
-            this.label2.TabIndex = 59;
-            this.label2.Text = "Port:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // portNumeric
-            // 
-            this.portNumeric.Location = new System.Drawing.Point(108, 52);
-            this.portNumeric.Maximum = new decimal(new int[] {
-            100500,
-            0,
-            0,
-            0});
-            this.portNumeric.Name = "portNumeric";
-            this.portNumeric.Size = new System.Drawing.Size(107, 22);
-            this.portNumeric.TabIndex = 57;
-            this.portNumeric.Value = new decimal(new int[] {
-            1234,
-            0,
-            0,
-            0});
             // 
             // groupBox1
             // 
@@ -119,7 +50,7 @@
             this.groupBox1.Controls.Add(this.channelsNumeric);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.encoderComboBox);
-            this.groupBox1.Location = new System.Drawing.Point(12, 138);
+            this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(449, 139);
             this.groupBox1.TabIndex = 74;
@@ -212,7 +143,7 @@
             // 
             // applyButton
             // 
-            this.applyButton.Location = new System.Drawing.Point(246, 294);
+            this.applyButton.Location = new System.Drawing.Point(244, 157);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(100, 23);
             this.applyButton.TabIndex = 76;
@@ -222,7 +153,7 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(355, 294);
+            this.cancelButton.Location = new System.Drawing.Point(353, 157);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 23);
             this.cancelButton.TabIndex = 77;
@@ -230,41 +161,18 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(14, 83);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(74, 17);
-            this.label5.TabIndex = 64;
-            this.label5.Text = "Transport:";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // transportComboBox
-            // 
-            this.transportComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.transportComboBox.FormattingEnabled = true;
-            this.transportComboBox.Location = new System.Drawing.Point(108, 80);
-            this.transportComboBox.Name = "transportComboBox";
-            this.transportComboBox.Size = new System.Drawing.Size(107, 24);
-            this.transportComboBox.TabIndex = 63;
-            // 
             // AudioSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 332);
+            this.ClientSize = new System.Drawing.Size(473, 194);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.applyButton);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AudioSettingsForm";
             this.Text = "_AudioSettings";
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.portNumeric)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).EndInit();
@@ -274,12 +182,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.NumericUpDown portNumeric;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox addressTextBox;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ComboBox encoderComboBox;
         private System.Windows.Forms.Label label6;
@@ -289,7 +191,5 @@
         private System.Windows.Forms.NumericUpDown sampleRateNumeric;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown channelsNumeric;
-        private System.Windows.Forms.ComboBox transportComboBox;
-        private System.Windows.Forms.Label label5;
     }
 }

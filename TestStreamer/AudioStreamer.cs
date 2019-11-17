@@ -94,7 +94,7 @@ namespace TestStreamer
                     }
                     else if (networkPars.TransportMode == TransportMode.Udp)
                     {
-                        streamer = new RtpStreamer(session);
+                        streamer = new RtpUdpSender(session);
                     }
                     else
                     {

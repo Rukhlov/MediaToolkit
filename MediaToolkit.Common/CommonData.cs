@@ -251,4 +251,124 @@ namespace MediaToolkit.Common
         [DataMember]
         public object[] Args { get; set; }
     }
+
+
+
+    [DataContract]
+    public class ScreencastChannelInfo
+    {
+        [DataMember]
+        public string Address { get; set; }
+
+        [DataMember]
+        public int Port { get; set; }
+
+        [DataMember]
+        public TransportMode Transport { get; set; }
+
+        [DataMember]
+        public bool IsMulticast { get; set; }
+
+        [DataMember]
+        public MediaChannelInfo MediaInfo { get; set; }
+
+    }
+
+    public enum MediaType
+    {
+        Video,
+        Audio,
+    }
+
+    [DataContract]
+    [KnownType(typeof(VideoChannelInfo))]
+    [KnownType(typeof(AudioChannelInfo))]
+    public abstract class MediaChannelInfo
+    {
+        [DataMember]
+        public string Id { get; set; }
+
+        //[DataMember]
+        //public abstract MediaType MediaType { get; }
+    }
+
+    [DataContract]
+    public class VideoChannelInfo : MediaChannelInfo
+    {
+        [DataMember]
+        public VideoEncoderMode VideoEncoder { get; set; }
+
+        [DataMember]
+        public int Bitrate { get; set; }
+
+        [DataMember]
+        public Size Resolution { get; set; }
+
+        [DataMember]
+        public int Fps { get; set; }
+
+        //[DataMember]
+        //public override MediaType MediaType => MediaType.Video;
+
+    }
+
+    [DataContract]
+    public class AudioChannelInfo: MediaChannelInfo
+    {
+        [DataMember]
+        public AudioEncoderMode AudioEncoder { get; set; }
+
+        [DataMember]
+        public int Bitrate { get; set; }
+
+        [DataMember]
+        public int Channels { get; set; }
+
+        [DataMember]
+        public int SampleRate { get; set; }
+
+        //[DataMember]
+        //public override MediaType MediaType => MediaType.Audio;
+
+    }
+
+    [DataContract]
+    public class ScreenCastResponse
+    {
+        [DataMember]
+        public int FaultCode { get; set; } = 0;
+
+        [DataMember]
+        public string FaultDescription { get; set; }
+
+        [DataMember]
+        public string ServerId { get; set; }
+
+        public bool IsSuccess
+        {
+            get
+            {
+                return (FaultCode == 0);
+            }
+        }
+
+    }
+
+    [ServiceContract(SessionMode = SessionMode.Required)]
+    public interface IScreenCastService
+    {
+        [OperationContract]
+        [ServiceKnownType(typeof(VideoChannelInfo))]
+        [ServiceKnownType(typeof(AudioChannelInfo))]
+        ScreencastChannelInfo[] GetChannelInfos();
+
+        [OperationContract]
+        ScreenCastResponse Play(ScreencastChannelInfo[] infos);
+
+        [OperationContract]
+        void Teardown();
+
+        [OperationContract(IsOneWay = true)]
+        void PostMessage(ServerRequest request);
+    }
 }

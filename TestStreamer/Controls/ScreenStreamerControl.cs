@@ -37,7 +37,7 @@ namespace TestStreamer.Controls
 
         }
 
-        private readonly MainForm mainForm = null;
+        private MainForm mainForm = null;
 
         private bool isStreaming = false;
         private ScreenStreamer videoStreamer = null;
@@ -46,93 +46,228 @@ namespace TestStreamer.Controls
 
         private StatisticForm statisticForm = new StatisticForm();
         private PreviewForm previewForm = null;
-
         private RegionForm regionForm = null;
 
 
         private AudioSource audioSource = null;
         private AudioStreamer audioStreamer = null;
-        
+
+        private TransportMode transportMode = TransportMode.Udp;
+        private VideoSettingsParams videoSettings = new VideoSettingsParams();
+        private AudioSettingsParams audioSettings = new AudioSettingsParams();
+
+        private ScreencastCommunicationService communicationService = null;
+
+        public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
+
+        public void Link(MainForm parent)
+        {
+            this.mainForm = parent;
+        }
+
+        public void UnLink()
+        {
+            //...
+            mainForm = null;
+        }
 
         private void startButton_Click(object sender, EventArgs e)
         {
-            logger.Debug("startButton_Click(...)");
+            logger.Debug("startButton_Click(...) ");
+
+            try
+            {
+                
+
+                Start();
+
+                UpdateControls();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                Stop();
+            }
+
+           
+        }
+
+
+        private void stopButton_Click(object sender, EventArgs e)
+        {
+            logger.Debug("stopButton_Click(...)");
+            try
+            {
+                Stop();
+
+                UpdateControls();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private void Start()
+        {
+            var networkIpAddr = "0.0.0.0";
+            var ipInfo = mainForm.GetCurrentIpAddrInfo();
+
+            if (ipInfo != null)
+            {
+                networkIpAddr = ipInfo.Address.ToString();
+            }
+
+            transportMode = (TransportMode)transportComboBox.SelectedItem;
+            if (isMulticastMode)
+            {
+                transportMode = TransportMode.Udp;
+            }
+
+            var videoEnabled = videoSettings.Enabled;
+            var audioEnabled = audioSettings.Enabled;
+
+            var multicastAddr = multicastAddressTextBox.Text;
+            var multicastVideoPort = 1234;
+            var multicastAudioPort = 1235;
+
+            int communicationPort = 0;
+            var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + Guid.NewGuid();
+
+            videoSettings.TransportMode = transportMode;
+            audioSettings.TransportMode = transportMode;
+
+            logger.Info("NetworkIP=" + networkIpAddr +
+                " MulticastMode=" + isMulticastMode +
+                " VideoEnabled=" + videoEnabled +
+                " AudioEnabled=" + audioEnabled +
+                " CommunicationAddress=" + communicationAddress);
 
             if (videoEnabled)
             {
-                StartVideo();
+                if (videoSettings.DisplayRegion.IsEmpty)
+                {
+                    logger.Debug("VideoSource Disabled");
+                    return;
+                }
+
+                StartVideoSource(videoSettings);
+
+                regionForm = new RegionForm(videoSettings.CaptureRegion);
+                regionForm.Visible = true;
+
+                statisticForm.Location = videoSettings.CaptureRegion.Location;//currentScreenRect.Location;
+                if (showStatistic)
+                {
+                    statisticForm.Start();
+                }
+
+                if (isMulticastMode)
+                {
+                    //videoAddr = multicastAddr;
+                    //videoPort = multicastVideoPort;
+                    videoSettings.Address = multicastAddr;
+                    videoSettings.Port = multicastVideoPort;
+                    StartVideoStream(videoSettings);
+                }
+                else
+                {
+                    if (transportMode == TransportMode.Tcp)
+                    {
+                        videoSettings.Address = networkIpAddr;
+                        videoSettings.Port = 1234;
+                        //videoAddr = networkIpAddr;
+                        //videoPort = 1234;
+                    }
+                }
+
+                VideoChannelInfo videoInfo = new VideoChannelInfo
+                {
+                    Id = videoSettings.SessionId,
+                    VideoEncoder = videoSettings.Encoder,
+                    Resolution = videoSettings.VideoResoulution,
+                    Bitrate = videoSettings.Bitrate,
+
+                    Fps = videoSettings.Fps
+                };
+
+                ScreencastChannelInfo videoChannelInfo = new ScreencastChannelInfo
+                {
+                    Address = videoSettings.Address,
+                    Port = videoSettings.Port,
+                    Transport = videoSettings.TransportMode,
+                    IsMulticast = isMulticastMode,
+                    MediaInfo = videoInfo,
+                };
+
+                ScreencastChannelsInfos.Add(videoChannelInfo);
+
             }
 
             if (audioEnabled)
             {
-                StartAudio();
+                var currentMMDeviceId = currentAudioDevice?.ID ?? "";
+
+                if (string.IsNullOrEmpty(audioSettings.AudioDeviceId))
+                {
+                    logger.Debug("Empty MMDeviceId...");
+                    return;
+                }
+
+                StartAudioSource(audioSettings);
+
+                if (isMulticastMode)
+                {
+                    //audioAddr = multicastAddr;
+                    //audioPort = multicastAudioPort;
+                    audioSettings.Address = multicastAddr;
+                    audioSettings.Port = multicastAudioPort;
+
+                    StartAudioStream(audioSettings);
+                }
+                else
+                {
+                    if (transportMode == TransportMode.Tcp)
+                    {
+                        audioSettings.Address = networkIpAddr;
+                        audioSettings.Port = 1235;
+                        //audioAddr = networkIpAddr;
+                        //audioPort = 1235;
+                    }
+                }
+
+                AudioChannelInfo audioInfo = new AudioChannelInfo
+                {
+                    Id = videoSettings.SessionId,
+                    AudioEncoder = audioSettings.Encoder,
+                    SampleRate = audioSettings.Samplerate,
+                    Channels = audioSettings.Channels,
+                };
+
+                ScreencastChannelInfo audioChannelInfo = new ScreencastChannelInfo
+                {
+                    Address = audioSettings.Address,
+                    Port = audioSettings.Port,
+                    IsMulticast = isMulticastMode,
+                    Transport = audioSettings.TransportMode,
+                    MediaInfo = audioInfo,
+                };
+                ScreencastChannelsInfos.Add(audioChannelInfo);
+
             }
-            
+
+            communicationService = new ScreencastCommunicationService(this);
+
+
+            communicationService.Open(communicationAddress);
+
             isStreaming = true;
 
-            UpdateControls();
+
         }
 
-        private void StartVideo()
-        {
-            logger.Debug("StartVideo()");
 
-            var localAddr = "0.0.0.0";
-
-            if (videoSettings.DisplayRegion.IsEmpty)
-            {
-                logger.Debug("VideoSource Disabled");
-                return;
-            }
-
-            StartVideoSource();
-
-            var cmdOptions = new CommandLineOptions();
-            cmdOptions.IpAddr = videoSettings.Address;
-            cmdOptions.Port = videoSettings.Port;
-
-            NetworkStreamingParams networkParams = new NetworkStreamingParams
-            {
-
-                LocalAddr = localAddr,
-                LocalPort = cmdOptions.Port,
-
-                RemoteAddr = cmdOptions.IpAddr,
-                RemotePort = cmdOptions.Port,
-
-                TransportMode = videoSettings.TransportMode,
-            };
-
-            VideoEncodingParams encodingParams = new VideoEncodingParams
-            {
-                Width = videoSettings.VideoResoulution.Width, // options.Width,
-                Height = videoSettings.VideoResoulution.Height, // options.Height,
-                FrameRate = cmdOptions.FrameRate,
-                EncoderName = "libx264", // "h264_nvenc", //
-                Bitrate = videoSettings.Bitrate,
-                LowLatency = videoSettings.LowLatency,
-                Profile = videoSettings.Profile,
-                BitrateMode = videoSettings.BitrateMode,
-                MaxBitrate = videoSettings.MaxBitrate,
-            };
-
-            videoStreamer = new ScreenStreamer(screenSource);
-
-            videoStreamer.Setup(encodingParams, networkParams);
-
-            regionForm = new RegionForm(videoSettings.CaptureRegion);
-            regionForm.Visible = true;
-
-            statisticForm.Location = videoSettings.CaptureRegion.Location;//currentScreenRect.Location;
-            if (showStatistic)
-            {
-                statisticForm.Start();
-            }
-
-            var streamerTask = videoStreamer.Start();
-        }
-
-        private bool StartVideoSource()
+        private bool StartVideoSource(VideoSettingsParams settings)
         {
             bool Result = false;
             try
@@ -149,20 +284,17 @@ namespace TestStreamer.Controls
 
                 ScreenCaptureParams captureParams = new ScreenCaptureParams
                 {
-                    SrcRect = videoSettings.CaptureRegion,
-                    DestSize = videoSettings.VideoResoulution,
+                    SrcRect = settings.CaptureRegion,
+                    DestSize = settings.VideoResoulution,
                     CaptureType = CaptureType.DXGIDeskDupl,
-                    Fps = videoSettings.Fps,
-                    CaptureMouse = videoSettings.CaptureMouse,
-                    AspectRatio = videoSettings.AspectRatio,
+                    Fps = settings.Fps,
+                    CaptureMouse = settings.CaptureMouse,
+                    AspectRatio = settings.AspectRatio,
 
                 };
 
                 screenSource.Setup(captureParams);
-
-                screenSource.Start();
-
-               
+                screenSource.Start();         
 
                 Result = true;
             }
@@ -180,28 +312,57 @@ namespace TestStreamer.Controls
 
             return Result;
         }
-
         private void ScreenSource_StateChanged(MediaToolkit.CaptureState state)
         {
 
             logger.Debug("ScreenSource_StateChanged(...) " + state);
 
-
         }
 
-        private void StartAudio()
+        private void StartVideoStream(VideoSettingsParams settings)
+        {
+            logger.Debug("StartVideo()");
+
+            var localAddr = "0.0.0.0";
+
+
+            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            {
+
+                LocalAddr = localAddr,
+                LocalPort = settings.Port,
+
+                RemoteAddr = settings.Address,
+                RemotePort = settings.Port,
+
+                TransportMode = settings.TransportMode,
+            };
+
+            VideoEncodingParams encodingParams = new VideoEncodingParams
+            {
+                Width = settings.VideoResoulution.Width, // options.Width,
+                Height = settings.VideoResoulution.Height, // options.Height,
+                FrameRate = settings.Fps,
+                Bitrate = settings.Bitrate,
+                LowLatency = settings.LowLatency,
+                Profile = settings.Profile,
+                BitrateMode = settings.BitrateMode,
+                MaxBitrate = settings.MaxBitrate,
+            };
+
+            videoStreamer = new ScreenStreamer(screenSource);
+
+            videoStreamer.Setup(encodingParams, networkParams);
+
+            var streamerTask = videoStreamer.Start();
+        }
+
+
+
+        private void StartAudioStream(AudioSettingsParams settings )
         {
             logger.Debug("StartAudio()");
 
-            var currentMMDeviceId = currentAudioDevice?.ID ?? "";
-
-            if (string.IsNullOrEmpty(currentMMDeviceId))
-            {
-                logger.Debug("Empty MMDeviceId...");
-                return;
-            }
-
-            StartAudioSource(currentMMDeviceId);
 
             var audioParams = new AudioEncodingParams
             {
@@ -214,11 +375,11 @@ namespace TestStreamer.Controls
 
             NetworkStreamingParams networkParams = new NetworkStreamingParams
             {
-                LocalPort = audioSettings.Port,
+                LocalPort = settings.Port,
                 LocalAddr = "",
-                RemoteAddr = audioSettings.Address,
-                RemotePort = audioSettings.Port,
-                TransportMode = audioSettings.TransportMode,
+                RemoteAddr = settings.Address,
+                RemotePort = settings.Port,
+                TransportMode = settings.TransportMode,
             };
 
             if (audioStreamer != null)
@@ -235,10 +396,11 @@ namespace TestStreamer.Controls
 
         }
 
-        private void StartAudioSource(string currentMMDeviceId)
+        private void StartAudioSource(AudioSettingsParams settings)
         {
             audioSource = new AudioSource();
-            audioSource.Setup(currentMMDeviceId);
+
+            audioSource.Setup(settings.AudioDeviceId);
 
             audioStreamer = new AudioStreamer(audioSource);
             audioSource.Start();
@@ -261,7 +423,15 @@ namespace TestStreamer.Controls
             }));
         }
 
-        private void StopAudio()
+        private void StopAudioSource()
+        {
+            if (audioSource != null)
+            {
+                audioSource.Stop();
+            }
+        }
+
+        private void StopAudioStream()
         {
             if (audioStreamer != null)
             {
@@ -270,31 +440,42 @@ namespace TestStreamer.Controls
             }
         }
 
-        private void stopButton_Click(object sender, EventArgs e)
+
+
+        private void Stop()
         {
-            logger.Debug("stopButton_Click(...)");
+            logger.Debug("ScreenStreamerControl::Stop()");
 
-            StopVideo();
+            StopVideoSource();
 
-            StopAudio();
+            StopVideoStream();
+
+            StopAudioSource();
+
+            StopAudioStream();
+
+            communicationService?.Close();
 
             isStreaming = false;
-
-            UpdateControls();
-
         }
 
-        private void StopVideo()
+        private void StopVideoStream()
         {
-            if (screenSource != null)
-            {
-                screenSource.Stop();
-              
-            }
-
+            logger.Debug("ScreenStreamerControl::StopVideoStream()");
             if (videoStreamer != null)
             {
                 videoStreamer.Close();
+
+            }
+        }
+
+        private void StopVideoSource()
+        {
+            logger.Debug("ScreenStreamerControl::StopVideoSource()");
+
+            if (screenSource != null)
+            {
+                screenSource.Stop();
 
             }
 
@@ -326,7 +507,7 @@ namespace TestStreamer.Controls
             }
             else
             {
-                if (StartVideoSource())
+                if (StartVideoSource(videoSettings))
                 {
                     //provider = new D3DImageProvider();
 
@@ -386,7 +567,6 @@ namespace TestStreamer.Controls
             videoSourcesComboBox.DataSource = screenItems;
         }
 
-        private bool videoEnabled = true;
 
         private void videoSourcesComboBox_SelectedValueChanged_1(object sender, EventArgs e)
         {
@@ -414,7 +594,7 @@ namespace TestStreamer.Controls
 
             videoSettings.CaptureRegion = displayRect;
 
-            videoEnabled = !displayRect.IsEmpty;
+            videoSettings.Enabled = !displayRect.IsEmpty;
 
             UpdateControls();
         }
@@ -429,12 +609,13 @@ namespace TestStreamer.Controls
 
             this.stopButton.Enabled = isStreaming;
 
-
+            var videoEnabled = videoSettings.Enabled;
             videoSettingsButton.Enabled = videoEnabled;
             videoSourcesComboBox.Enabled = videoEnabled;
 
             videoUpdateButton.Enabled = videoEnabled;
 
+            var audioEnabled = audioSettings.Enabled;
             audioSettingButton.Enabled = audioEnabled;
             audioSourcesComboBox.Enabled = audioEnabled;
             audioUpdateButton.Enabled = audioEnabled;
@@ -463,10 +644,61 @@ namespace TestStreamer.Controls
 
         }
 
-  
 
-        private void MaxBitrateNumeric_ValueChanged(object sender, EventArgs e)
+        public void Play(ScreencastChannelInfo[] infos)
         {
+            logger.Debug("ScreenStreamerControl::Play()");
+            //...
+
+            //videoSettings.Address = addr;
+            //videoSettings.Port = port;
+
+            if (isMulticastMode)
+            {
+                return;
+            }
+
+            if (videoSettings.Enabled)
+            {
+                if(transportMode == TransportMode.Udp)
+                {
+                    var clientInfo = infos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
+                    if (clientInfo != null)
+                    {
+                        videoSettings.Address = clientInfo.Address;
+                        videoSettings.Port = clientInfo.Port;
+                    }
+
+                }
+                StartVideoStream(videoSettings);
+            }
+
+            if (audioSettings.Enabled)
+            {
+                if (transportMode == TransportMode.Udp)
+                {
+                    var clientInfo = infos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
+                    if (clientInfo != null)
+                    {
+                        videoSettings.Address = clientInfo.Address;
+                        videoSettings.Port = clientInfo.Port;
+                    }
+                    //videoSettings.Address = 
+                }
+
+                StartAudioStream(audioSettings);
+            }
+
+        }
+  
+        public void Teardown()
+        {
+            logger.Debug("ScreenStreamerControl::Teardown()");
+            //...
+
+            StopVideoStream();
+
+            StopAudioStream();
 
         }
 
@@ -490,7 +722,6 @@ namespace TestStreamer.Controls
             }
         }
 
-        private VideoSettingsParams videoSettings = new VideoSettingsParams();
         private void videoSettingsButton_Click(object sender, EventArgs e)
         {
             //videoSettings.CaptureRegion = currentScreenRect;
@@ -504,6 +735,8 @@ namespace TestStreamer.Controls
             f.Setup(videoSettings);
 
             f.ShowDialog();
+
+            videoSettings.TransportMode = transportMode;
 
             //currentScreenRect = videoSettings.CaptureRegion;
         }
@@ -534,10 +767,10 @@ namespace TestStreamer.Controls
 
             var items = new List<TransportMode>
             {
-                TransportMode.Udp,
                 TransportMode.Tcp,
-
+                TransportMode.Udp,
             };
+
             transportComboBox.DataSource = items;
         }
 
@@ -634,18 +867,20 @@ namespace TestStreamer.Controls
 
         }
 
-        private bool audioEnabled = true;
+
         private MMDevice currentAudioDevice = null;
         private void audioSrcComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
             currentAudioDevice = GetCurrentAudioDevice();
-            audioEnabled = (currentAudioDevice != null);
+            audioSettings.Enabled = (currentAudioDevice != null);
 
-            audioSettingButton.Enabled = audioEnabled;
+            audioSettings.AudioDeviceId = currentAudioDevice?.ID ?? "";
+
+            audioSettingButton.Enabled = audioSettings.Enabled;
 
         }
 
-        private AudioSettingsParams audioSettings = new AudioSettingsParams();
+       
         private void audioSettingButton_Click(object sender, EventArgs e)
         {
             //videoSettings.CaptureRegion = currentScreenRect;
@@ -658,6 +893,8 @@ namespace TestStreamer.Controls
             f.Setup(audioSettings);
 
             f.ShowDialog();
+
+            audioSettings.TransportMode = transportMode;
 
             //currentScreenRect = videoSettings.CaptureRegion;
         }
@@ -674,13 +911,14 @@ namespace TestStreamer.Controls
 
         private void audioEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            audioEnabled = audioEnabledCheckBox.Checked;
+            audioSettings.Enabled = audioEnabledCheckBox.Checked;
+
             UpdateControls();
         }
 
         private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            videoEnabled = videoEnabledCheckBox.Checked;
+            videoSettings.Enabled = videoEnabledCheckBox.Checked;
             UpdateControls();
         }
 
@@ -701,12 +939,68 @@ namespace TestStreamer.Controls
 
             }
         }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void networkPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Play(ScreencastChannelsInfos.ToArray());
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Teardown();
+        }
+
+        private void transportComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var item = transportComboBox.SelectedItem;
+            if (item!=null)
+            {
+                this.transportMode = (TransportMode)transportComboBox.SelectedItem;
+            }
+          
+        }
+    }
+
+    public class AudioSettingsParams
+    {
+        public bool Enabled = true;
+
+        public string Address = "";
+        public int Port = -1;
+        public TransportMode TransportMode = TransportMode.Udp;
+
+        public AudioEncoderMode Encoder = AudioEncoderMode.G711;
+
+        public int Samplerate = 8000;
+        public int Channels = 1;
+
+        public string SessionId = "";
+
+        public string AudioDeviceId = "";
+
+        public AudioSettingsParams Clone()
+        {
+            return (AudioSettingsParams)this.MemberwiseClone();
+        }
     }
 
     public class VideoSettingsParams
     {
-        public string Address = "127.0.0.1";
-        public int Port = 1234;
+        public bool Enabled = true;
+        public string SessionId = "";
+
+        public string Address = "";
+        public int Port = -1;
         public TransportMode TransportMode = TransportMode.Udp;
         public Rectangle CaptureRegion = Rectangle.Empty;
         public string DisplayName = "";

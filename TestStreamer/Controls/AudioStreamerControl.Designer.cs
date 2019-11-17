@@ -50,7 +50,7 @@
             this.settingPanel.Controls.Add(this.audioSrcComboBox);
             this.settingPanel.Location = new System.Drawing.Point(3, 26);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(552, 409);
+            this.settingPanel.Size = new System.Drawing.Size(552, 210);
             this.settingPanel.TabIndex = 23;
             // 
             // settingButton
@@ -114,9 +114,10 @@
             // 
             // audioStartButton
             // 
-            this.audioStartButton.Location = new System.Drawing.Point(49, 460);
+            this.audioStartButton.AutoSize = true;
+            this.audioStartButton.Location = new System.Drawing.Point(17, 242);
             this.audioStartButton.Name = "audioStartButton";
-            this.audioStartButton.Size = new System.Drawing.Size(177, 35);
+            this.audioStartButton.Size = new System.Drawing.Size(111, 27);
             this.audioStartButton.TabIndex = 21;
             this.audioStartButton.Text = "_Start";
             this.audioStartButton.UseVisualStyleBackColor = true;
@@ -124,9 +125,10 @@
             // 
             // audioStopButton
             // 
-            this.audioStopButton.Location = new System.Drawing.Point(242, 460);
+            this.audioStopButton.AutoSize = true;
+            this.audioStopButton.Location = new System.Drawing.Point(146, 242);
             this.audioStopButton.Name = "audioStopButton";
-            this.audioStopButton.Size = new System.Drawing.Size(107, 35);
+            this.audioStopButton.Size = new System.Drawing.Size(107, 27);
             this.audioStopButton.TabIndex = 22;
             this.audioStopButton.Text = "_Stop";
             this.audioStopButton.UseVisualStyleBackColor = true;
@@ -140,10 +142,11 @@
             this.Controls.Add(this.audioStartButton);
             this.Controls.Add(this.audioStopButton);
             this.Name = "AudioStreamerControl";
-            this.Size = new System.Drawing.Size(628, 549);
+            this.Size = new System.Drawing.Size(585, 307);
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 

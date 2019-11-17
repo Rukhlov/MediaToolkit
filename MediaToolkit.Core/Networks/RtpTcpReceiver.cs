@@ -15,6 +15,9 @@ namespace MediaToolkit
     public interface IRtpReceiver
     {
         void Open(string address, int port, int ttl = 10);
+        IPEndPoint RemoteEndpoint { get; }
+        IPEndPoint LocalEndpoint { get; }
+
         Task Start();
         void Close();
 
@@ -39,7 +42,7 @@ namespace MediaToolkit
 
         public void Open(string address, int port, int ttl = 10)
         {
-            logger.Debug("RtpReceiver::Open(...) " + address + " " + port + " " + ttl);
+            logger.Debug("RtpTcpReceiver::Open(...) " + address + " " + port + " " + ttl);
             try
             {
                 IPAddress addr = IPAddress.Parse(address);
@@ -114,7 +117,7 @@ namespace MediaToolkit
                 }
                 catch (ObjectDisposedException)
                 {
-                    logger.Warn("RtpReceiver::ObjectDisposedException");
+                    logger.Warn("RtpTcpReceiver::ObjectDisposedException");
                 }
                 catch (Exception ex)
                 {
@@ -400,7 +403,7 @@ namespace MediaToolkit
 
         public void Close()
         {
-            logger.Debug("RtpReceiver::Close()");
+            logger.Debug("RtpTcpReceiver::Close()");
 
 
             if (socket != null)
@@ -417,6 +420,8 @@ namespace MediaToolkit
         private bool running = false;
         private void CleanUp()
         {
+            logger.Debug("RtpTcpReceiver::CleanUp()");
+
             running = false;
             if (socket != null)
             {

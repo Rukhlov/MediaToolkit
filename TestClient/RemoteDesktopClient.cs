@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Common;
+using MediaToolkit.Core;
 using MediaToolkit.UI;
 using MediaToolkit.Utils;
 using NLog;
@@ -16,6 +17,13 @@ using System.Threading.Tasks;
 
 namespace TestClient
 {
+
+    class ScreenCastClient 
+    {
+
+
+    }
+
     class RemoteDesktopClient : IRemoteDesktopClient
     {
 
@@ -82,11 +90,14 @@ namespace TestClient
                     Security = security,
                 };
 
+
                 factory = new ChannelFactory<IRemoteDesktopService>(binding, new EndpointAddress(uri));
                 var channel = factory.CreateChannel();
 
                 try
                 {
+
+
                     this.ClientId = RngProvider.GetRandomNumber().ToString();
 
                     var connectReq = new RemoteDesktopRequest
@@ -297,27 +308,32 @@ namespace TestClient
 
             if (factory != null)
             {
-                var channel = factory.CreateChannel();
-                try
-                {
-                    var request = new RemoteDesktopRequest
-                    {
-                        SenderId = ClientId,
-                    };
-
-                    var resp = channel.Stop(request);
-                    channel.Disconnect(request);
-
-                }
-                finally
-                {
-                    if (channel != null)
-                    {
-                        ((IClientChannel)channel).Close();
-                    }
-
-                }
+                factory.Close();
             }
+
+            //if (factory != null)
+            //{
+            //    var channel = factory.CreateChannel();
+            //    try
+            //    {
+            //        var request = new RemoteDesktopRequest
+            //        {
+            //            SenderId = ClientId,
+            //        };
+
+            //        var resp = channel.Stop(request);
+            //        channel.Disconnect(request);
+
+            //    }
+            //    finally
+            //    {
+            //        if (channel != null)
+            //        {
+            //            ((IClientChannel)channel).Close();
+            //        }
+
+            //    }
+            //}
 
         }
 

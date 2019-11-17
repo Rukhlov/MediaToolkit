@@ -53,7 +53,7 @@
             // 
             // volumeSlider
             // 
-            this.volumeSlider.Location = new System.Drawing.Point(109, 473);
+            this.volumeSlider.Location = new System.Drawing.Point(398, 245);
             this.volumeSlider.Name = "volumeSlider";
             this.volumeSlider.Size = new System.Drawing.Size(158, 16);
             this.volumeSlider.TabIndex = 32;
@@ -61,7 +61,7 @@
             // 
             // audioStopButton
             // 
-            this.audioStopButton.Location = new System.Drawing.Point(209, 305);
+            this.audioStopButton.Location = new System.Drawing.Point(177, 239);
             this.audioStopButton.Margin = new System.Windows.Forms.Padding(4);
             this.audioStopButton.Name = "audioStopButton";
             this.audioStopButton.Size = new System.Drawing.Size(100, 28);
@@ -73,7 +73,7 @@
             // waveformPainter1
             // 
             this.waveformPainter1.BackColor = System.Drawing.SystemColors.Info;
-            this.waveformPainter1.Location = new System.Drawing.Point(39, 373);
+            this.waveformPainter1.Location = new System.Drawing.Point(18, 274);
             this.waveformPainter1.Name = "waveformPainter1";
             this.waveformPainter1.Size = new System.Drawing.Size(467, 69);
             this.waveformPainter1.TabIndex = 31;
@@ -81,7 +81,7 @@
             // 
             // audioPlayButton
             // 
-            this.audioPlayButton.Location = new System.Drawing.Point(23, 305);
+            this.audioPlayButton.Location = new System.Drawing.Point(18, 239);
             this.audioPlayButton.Margin = new System.Windows.Forms.Padding(4);
             this.audioPlayButton.Name = "audioPlayButton";
             this.audioPlayButton.Size = new System.Drawing.Size(151, 28);
@@ -112,7 +112,7 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(21, 194);
+            this.label19.Location = new System.Drawing.Point(20, 170);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(89, 17);
             this.label19.TabIndex = 21;
@@ -131,7 +131,7 @@
             // sampleRateNumeric
             // 
             this.sampleRateNumeric.Enabled = false;
-            this.sampleRateNumeric.Location = new System.Drawing.Point(116, 194);
+            this.sampleRateNumeric.Location = new System.Drawing.Point(115, 170);
             this.sampleRateNumeric.Maximum = new decimal(new int[] {
             96000,
             0,
@@ -154,7 +154,7 @@
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(21, 223);
+            this.label20.Location = new System.Drawing.Point(20, 199);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(71, 17);
             this.label20.TabIndex = 19;
@@ -163,7 +163,7 @@
             // channelsNumeric
             // 
             this.channelsNumeric.Enabled = false;
-            this.channelsNumeric.Location = new System.Drawing.Point(116, 223);
+            this.channelsNumeric.Location = new System.Drawing.Point(115, 199);
             this.channelsNumeric.Maximum = new decimal(new int[] {
             8,
             0,
@@ -252,7 +252,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(36, 472);
+            this.label1.Location = new System.Drawing.Point(325, 245);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(67, 17);
             this.label1.TabIndex = 51;
@@ -281,7 +281,7 @@
             this.Controls.Add(this.label20);
             this.Controls.Add(this.channelsNumeric);
             this.Name = "AudioReceiverControl";
-            this.Size = new System.Drawing.Size(651, 587);
+            this.Size = new System.Drawing.Size(601, 365);
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.channelsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.audioPortNumeric)).EndInit();

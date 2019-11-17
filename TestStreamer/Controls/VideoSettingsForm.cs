@@ -20,7 +20,7 @@ namespace TestStreamer.Controls
 
             LoadEncoderProfilesItems();
 
-            LoadTransportItems();
+            //LoadTransportItems();
             LoadEncoderItems();
 
             LoadRateModeItems();
@@ -34,9 +34,9 @@ namespace TestStreamer.Controls
         {
 
             this.VideoSettings = settingsParams;
-            this.addressTextBox.Text = VideoSettings.Address;
-            this.portNumeric.Value = VideoSettings.Port;
-            this.transportComboBox.SelectedItem = VideoSettings.TransportMode;
+            //this.addressTextBox.Text = VideoSettings.Address;
+            //this.portNumeric.Value = VideoSettings.Port;
+            //this.transportComboBox.SelectedItem = VideoSettings.TransportMode;
 
             this.displayTextBox.Text = VideoSettings.DisplayName;
 
@@ -68,10 +68,10 @@ namespace TestStreamer.Controls
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            VideoSettings.Address = this.addressTextBox.Text;
-            VideoSettings.Port = (int)this.portNumeric.Value;
+            //VideoSettings.Address = this.addressTextBox.Text;
+            //VideoSettings.Port = (int)this.portNumeric.Value;
 
-            VideoSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
+            //VideoSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
 
             VideoSettings.CaptureRegion = this.CaptureRegion;
             VideoSettings.CaptureMouse = this.captureMouseCheckBox.Checked;
@@ -103,17 +103,17 @@ namespace TestStreamer.Controls
 
 
 
-        private void LoadTransportItems()
-        {
+        //private void LoadTransportItems()
+        //{
 
-            var items = new List<TransportMode>
-            {
-                TransportMode.Tcp,
-                TransportMode.Udp,
+        //    var items = new List<TransportMode>
+        //    {
+        //        TransportMode.Tcp,
+        //        TransportMode.Udp,
 
-            };
-            transportComboBox.DataSource = items;
-        }
+        //    };
+        //    transportComboBox.DataSource = items;
+        //}
 
         private void LoadRateModeItems()
         {
@@ -162,7 +162,7 @@ namespace TestStreamer.Controls
             captureTypes.Add(CaptureType.DXGIDeskDupl);
             captureTypes.Add(CaptureType.GDI);
             //captureTypes.Add(CaptureType.GDIPlus);
-            captureTypes.Add(CaptureType.Direct3D);
+            captureTypes.Add(CaptureType.Direct3D9);
             captureTypes.Add(CaptureType.Datapath);
 
             captureTypesComboBox.DataSource = captureTypes;

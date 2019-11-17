@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -497,5 +498,17 @@ namespace MediaToolkit.RTP
             packet[10] = ((byte)((ssrc >> 8) & 0xFF));
             packet[11] = ((byte)((ssrc >> 0) & 0xFF));
         }
+    }
+
+    public class NetTools
+    {
+        public static bool IsMulticastIpAddr(IPAddress remoteIp)
+        {
+            var bytes = remoteIp.GetAddressBytes();
+
+            return (bytes[0] >= 224 && bytes[0] <= 239);
+
+        }
+
     }
 }

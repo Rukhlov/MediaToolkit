@@ -64,7 +64,7 @@
             this.groupBox8.Controls.Add(this.label5);
             this.groupBox8.Controls.Add(this.srcWidthNumeric);
             this.groupBox8.Controls.Add(this.label6);
-            this.groupBox8.Location = new System.Drawing.Point(12, 163);
+            this.groupBox8.Location = new System.Drawing.Point(8, 125);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(227, 110);
             this.groupBox8.TabIndex = 46;
@@ -129,7 +129,7 @@
             this.groupBox6.Controls.Add(this.label8);
             this.groupBox6.Controls.Add(this.destWidthNumeric);
             this.groupBox6.Controls.Add(this.destHeightNumeric);
-            this.groupBox6.Location = new System.Drawing.Point(26, 288);
+            this.groupBox6.Location = new System.Drawing.Point(12, 241);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(239, 116);
             this.groupBox6.TabIndex = 45;
@@ -198,7 +198,7 @@
             this.groupBox4.Controls.Add(this.portNumeric);
             this.groupBox4.Location = new System.Drawing.Point(3, 3);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(451, 145);
+            this.groupBox4.Size = new System.Drawing.Size(451, 116);
             this.groupBox4.TabIndex = 43;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Receive From";
@@ -271,7 +271,7 @@
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(245, 433);
+            this.stopButton.Location = new System.Drawing.Point(221, 364);
             this.stopButton.Margin = new System.Windows.Forms.Padding(4);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(100, 28);
@@ -282,7 +282,7 @@
             // 
             // playButton
             // 
-            this.playButton.Location = new System.Drawing.Point(36, 433);
+            this.playButton.Location = new System.Drawing.Point(12, 364);
             this.playButton.Margin = new System.Windows.Forms.Padding(4);
             this.playButton.Name = "playButton";
             this.playButton.Size = new System.Drawing.Size(151, 28);
@@ -293,7 +293,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(335, 191);
+            this.button8.Location = new System.Drawing.Point(277, 125);
             this.button8.Margin = new System.Windows.Forms.Padding(4);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(138, 54);
@@ -313,7 +313,7 @@
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.button8);
             this.Name = "SimpleReceiverControl";
-            this.Size = new System.Drawing.Size(512, 500);
+            this.Size = new System.Drawing.Size(476, 419);
             this.groupBox8.ResumeLayout(false);
             this.groupBox8.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.srcHeightNumeric)).EndInit();

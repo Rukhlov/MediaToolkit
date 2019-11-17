@@ -111,6 +111,12 @@
     <Compile Include="Controls\AudioReceiverControl.Designer.cs">
       <DependentUpon>AudioReceiverControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ScreenCastReceiverControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\ScreenCastReceiverControl.Designer.cs">
+      <DependentUpon>ScreenCastReceiverControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\SimpleReceiverControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -153,6 +159,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Controls\AudioReceiverControl.resx">
       <DependentUpon>AudioReceiverControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\ScreenCastReceiverControl.resx">
+      <DependentUpon>ScreenCastReceiverControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\SimpleReceiverControl.resx">
       <DependentUpon>SimpleReceiverControl.cs</DependentUpon>

@@ -19,7 +19,7 @@ namespace TestStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private readonly ScreenSource screenSource = null;
+        public readonly ScreenSource screenSource = null;
         public ScreenStreamer(ScreenSource source)
         {
             this.screenSource = source;
@@ -29,8 +29,8 @@ namespace TestStreamer
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
-        private RtpSession h264Session = null;
-        private IRtpSender rtpSender = null;
+        public RtpSession H264Session { get; private set; }
+        public IRtpSender RtpSender { get; private set; }
         
 
         //private RtpStreamer rtpStreamer = null;
@@ -46,14 +46,14 @@ namespace TestStreamer
 
             try
             {
-                h264Session = new H264Session();
+                H264Session = new H264Session();
                 if(networkParams.TransportMode == TransportMode.Tcp)
                 {
-                    rtpSender = new RtpTcpSender(h264Session);
+                    RtpSender = new RtpTcpSender(H264Session);
                 }
                 else if(networkParams.TransportMode == TransportMode.Udp)
                 {
-                    rtpSender = new RtpStreamer(h264Session);
+                    RtpSender = new RtpUdpSender(H264Session);
                 }
                 else
                 {
@@ -61,7 +61,7 @@ namespace TestStreamer
                 }
 
                 //rtpStreamer = new RtpStreamer(h264Session);
-                rtpSender.Start(networkParams);
+                RtpSender.Start(networkParams);
 
 
                 //var hwContext = screenSource.hwContext;
@@ -171,7 +171,7 @@ namespace TestStreamer
             // var memo = new MemoryStream(buf);
             // memo.CopyTo(file);
 
-            rtpSender.Push(buf, time);
+            RtpSender.Push(buf, time);
 
             // rtpStreamer.Send(buf, time);
             var processingTime = sw.ElapsedMilliseconds;
@@ -255,7 +255,7 @@ namespace TestStreamer
 
             screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
-            rtpSender?.Close();
+            RtpSender?.Close();
         }
 
         class StreamStats : StatCounter

@@ -110,9 +110,9 @@
     <Compile Include="MediaFoundation\MfWriter.cs" />
     <Compile Include="HttpScreenStreamer.cs" />
     <Compile Include="Networks\RtpCommon.cs" />
-    <Compile Include="Networks\RtpReceiver.cs" />
+    <Compile Include="Networks\RtpUdpReceiver.cs" />
     <Compile Include="Networks\RtpSession.cs" />
-    <Compile Include="Networks\RtpStreamer.cs" />
+    <Compile Include="Networks\RtpUdpSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenCaptures\Direct3D9Capture.cs" />
     <Compile Include="ScreenCaptures\DatapathDesktopCapture.cs" />

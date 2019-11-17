@@ -389,11 +389,7 @@ namespace TestClient
             statisticForm.Visible = !statisticForm.Visible;
         }
 
-        class ComboBoxItem
-        {
-            public string Name { get; set; }
-            public object Tag { get; set; }
-        }
+
 
         private void hostsComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -425,9 +421,18 @@ namespace TestClient
             }
         }
 
+        private void hostsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
     }
 
+
+    class ComboBoxItem
+    {
+        public string Name { get; set; }
+        public object Tag { get; set; }
+    }
 
     //public class ProgressForm : Form
     //{

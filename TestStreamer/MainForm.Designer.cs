@@ -203,7 +203,7 @@
             this.tabPage3.Controls.Add(this.audioStreamerControl);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(542, 295);
+            this.tabPage3.Size = new System.Drawing.Size(482, 384);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "AudioStreamer";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -213,7 +213,7 @@
             this.audioStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioStreamerControl.Location = new System.Drawing.Point(0, 0);
             this.audioStreamerControl.Name = "audioStreamerControl";
-            this.audioStreamerControl.Size = new System.Drawing.Size(542, 295);
+            this.audioStreamerControl.Size = new System.Drawing.Size(482, 384);
             this.audioStreamerControl.TabIndex = 0;
             // 
             // tabPage4
@@ -221,7 +221,7 @@
             this.tabPage4.Controls.Add(this.httpStreamerControl1);
             this.tabPage4.Location = new System.Drawing.Point(4, 25);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(542, 295);
+            this.tabPage4.Size = new System.Drawing.Size(482, 384);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "HttpStreamer";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -239,7 +239,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(542, 295);
+            this.tabPage1.Size = new System.Drawing.Size(482, 384);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -248,8 +248,9 @@
             // 
             this.remoteServerControl1.Location = new System.Drawing.Point(3, 6);
             this.remoteServerControl1.Name = "remoteServerControl1";
-            this.remoteServerControl1.Size = new System.Drawing.Size(487, 462);
+            this.remoteServerControl1.Size = new System.Drawing.Size(473, 372);
             this.remoteServerControl1.TabIndex = 0;
+            this.remoteServerControl1.Load += new System.EventHandler(this.remoteServerControl1_Load);
             // 
             // panel1
             // 

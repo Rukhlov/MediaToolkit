@@ -130,7 +130,7 @@ namespace TestStreamer.Controls
             captureTypes.Add(CaptureType.DXGIDeskDupl);
             captureTypes.Add(CaptureType.GDI);
             //captureTypes.Add(CaptureType.GDIPlus);
-            captureTypes.Add(CaptureType.Direct3D);
+            captureTypes.Add(CaptureType.Direct3D9);
             captureTypes.Add(CaptureType.Datapath);
 
             captureTypesComboBox.DataSource = captureTypes;

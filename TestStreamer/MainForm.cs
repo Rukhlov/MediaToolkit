@@ -39,7 +39,7 @@ namespace TestStreamer
 
             LoadNetworks();
 
-  
+            screenStreamerControl.Link(this);
 
         }
 
@@ -247,6 +247,11 @@ namespace TestStreamer
         }
 
         private void screenStreamerControl_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void remoteServerControl1_Load(object sender, EventArgs e)
         {
 
         }

@@ -15,7 +15,7 @@ namespace MediaToolkit
     public enum CaptureType
     {
         GDI,
-        Direct3D,
+        Direct3D9,
         GDIPlus,
         Datapath,
         DXGIDeskDupl,
@@ -65,7 +65,7 @@ namespace MediaToolkit
             {
                 capture = new GDICapture();
             }
-            else if (type == CaptureType.Direct3D)
+            else if (type == CaptureType.Direct3D9)
             {
                 capture = new Direct3D9Capture(args);
             }

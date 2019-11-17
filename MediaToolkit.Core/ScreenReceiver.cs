@@ -31,7 +31,7 @@ namespace MediaToolkit
 
 
         private H264Session h264Session = null;
-        private IRtpReceiver rtpReceiver = null;
+        public IRtpReceiver rtpReceiver = null;
         
         //private RtpReceiver rtpReceiver = null;
 
@@ -131,7 +131,7 @@ namespace MediaToolkit
             }
             else if (networkPars.TransportMode == TransportMode.Udp)
             {
-                rtpReceiver = new RtpReceiver(null);
+                rtpReceiver = new RtpUdpReceiver(null);
             }
             else
             {
@@ -141,7 +141,7 @@ namespace MediaToolkit
             rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
-
+            
             receiverStats = new ReceiverStats();
 
         }
