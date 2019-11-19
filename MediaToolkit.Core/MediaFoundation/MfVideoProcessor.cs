@@ -24,6 +24,8 @@ namespace MediaToolkit.MediaFoundation
     {
         public readonly Guid CLSID_VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
+        public readonly Guid CLSID_CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
+
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private Transform processor = null;
 
@@ -46,26 +48,30 @@ namespace MediaToolkit.MediaFoundation
 
             logger.Debug("MfProcessor::Setup(...)");
 
-            Debug.Assert(device != null, "device != null");
+            //Debug.Assert(device != null, "device != null");
 
             try
             {
     
                 processor = new Transform(CLSID_VideoProcessorMFT);
-
-                using (var attr = processor.Attributes)
+               // processor = new Transform(CLSID_CColorConvertDMO);
+                if (device != null)
                 {
-                    bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
-                    if (d3d11Aware)
+                    using (var attr = processor.Attributes)
                     {
-                        DXGIDeviceManager devMan = new DXGIDeviceManager();
-                        devMan.ResetDevice(device);
+                        bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
+                        if (d3d11Aware)
+                        {
+                            DXGIDeviceManager devMan = new DXGIDeviceManager();
+                            devMan.ResetDevice(device);
 
-                        processor.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            processor.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                        }
                     }
+
                 }
 
-                
+
                 int inputStreamCount = -1;
                 int outputStreamsCount = -1;
                 processor.GetStreamCount(out inputStreamCount, out outputStreamsCount);
@@ -87,7 +93,7 @@ namespace MediaToolkit.MediaFoundation
 
                 InputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 InputMediaType.Set(MediaTypeAttributeKeys.Subtype, inputArgs.Format); //VideoFormatGuids.NV12 
-                // InputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.Argb32);
+
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(inputArgs.Width, inputArgs.Height));
                 // InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
 
@@ -177,7 +183,7 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
-        public bool ProcessSample(Sample inputSample, out Sample outputSample)
+        public unsafe bool ProcessSample(Sample inputSample, out Sample outputSample)
         {
             bool Result = false;
             outputSample = null;
@@ -202,13 +208,19 @@ namespace MediaToolkit.MediaFoundation
                 if (createSample)
                 {
                     outputSample = MediaFactory.CreateSample();
-                    var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize);
 
-                    outputSample.AddBuffer(mediaBuffer);
+                    outputSample.SampleTime = inputSample.SampleTime;
+                    outputSample.SampleDuration = inputSample.SampleDuration;
+                    outputSample.SampleFlags = inputSample.SampleFlags;
+
+                    using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize))
+                    {
+                        outputSample.AddBuffer(mediaBuffer);
+                    }
 
                 }
 
-                TOutputDataBuffer[] outputDataBuffer = new TOutputDataBuffer[3];
+                TOutputDataBuffer[] outputDataBuffer = new TOutputDataBuffer[1];
 
                 var data = new TOutputDataBuffer
                 {
@@ -221,11 +233,11 @@ namespace MediaToolkit.MediaFoundation
 
                 //bool res = true;
                 // processor.ProcessOutput(TransformProcessOutputFlags.None,  1, outputDataBuffer, out TransformProcessOutputStatus status);
-                //var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
-                
+                // var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
+
                 //((NAudio.MediaFoundation.IMFTransform)Marshal.GetObjectForIUnknown(processor.NativePointer)).ProcessOutput(0, 1, buf, out _);
 
-                var res = processor.TryProcessOutput(TransformProcessOutputFlags.None, 1, outputDataBuffer, out TransformProcessOutputStatus status);
+                var res = processor.TryProcessOutput(TransformProcessOutputFlags.None,  outputDataBuffer, out TransformProcessOutputStatus status);
 
                 if (res.Success)
                 {

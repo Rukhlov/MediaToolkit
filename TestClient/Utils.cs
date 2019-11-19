@@ -40,7 +40,12 @@ namespace TestClient
             }
 
             // Replace instances of 0.0.0.0 with actual remote endpoint address
-            messageBody = messageBody.Replace("0.0.0.0", remoteEndpointProperty.Address);
+            var remoteAddr = remoteEndpointProperty.Address;
+            var remotePort = remoteEndpointProperty.Port;
+            var remoteEndpoint = remoteAddr + ":" + remotePort;
+            messageBody = messageBody.Replace("0.0.0.0:0", remoteEndpoint);
+
+            //messageBody = messageBody.Replace("0.0.0.0", remoteEndpointProperty.Address);
 
             // NOTE: Do not close or dispose of this MemoryStream. It will be used by WCF down the line.
             var newMessageStream = new MemoryStream(Encoding.UTF8.GetBytes(messageBody));
@@ -52,6 +57,8 @@ namespace TestClient
             newMessage.Properties.CopyProperties(request.Properties);
             newMessage.Headers.CopyHeadersFrom(request.Headers);
             request = newMessage;
+
+
             return null;
         }
 

@@ -132,7 +132,9 @@ namespace TestStreamer.Controls
             var multicastAudioPort = 1235;
 
             int communicationPort = 0;
-            var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + Guid.NewGuid();
+            var communicationAddress = "net.tcp://" + networkIpAddr + ":" + communicationPort + "/ScreenCaster";
+
+            //var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + Guid.NewGuid();
 
             videoSettings.TransportMode = transportMode;
             audioSettings.TransportMode = transportMode;

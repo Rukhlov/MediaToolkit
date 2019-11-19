@@ -456,7 +456,7 @@ namespace TestClient.Controls
                                 var hostElement = extensions.FirstOrDefault(el => el.Name == "HostName");
                                 if (hostElement != null)
                                 {
-                                    hostName = hostElement.Value; // + " {" + address + "}";
+                                    hostName = hostElement.Value;// + " {" + address + "}";
                                 }
                             }
 
@@ -613,7 +613,7 @@ namespace TestClient.Controls
                         {
                             var builder = new UriBuilder(addr);
 
-                            remoteDesktopTextBox.Text = builder.Host;
+                            remoteDesktopTextBox.Text = builder.Host + ":" + builder.Port;
                         }
                         catch (Exception ex)
                         {

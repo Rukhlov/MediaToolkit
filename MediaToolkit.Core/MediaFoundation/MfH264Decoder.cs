@@ -353,7 +353,7 @@ namespace MediaToolkit.MediaFoundation
 
                 //logger.Debug("TryProcessOutput BEGIN");
 
-                var res = decoder.TryProcessOutput(TransformProcessOutputFlags.None, 1, outputDataBuffer, out TransformProcessOutputStatus status);
+                var res = decoder.TryProcessOutput(TransformProcessOutputFlags.None,  outputDataBuffer, out TransformProcessOutputStatus status);
 
                
                 //var res = decoder.ProcessOutput(TransformProcessOutputFlags.None, data, out TransformProcessOutputStatus status);

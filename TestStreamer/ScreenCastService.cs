@@ -80,12 +80,12 @@ namespace TestStreamer
                 endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
                 endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
-                var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
-                foreach (var addr in addrInfos)
-                {
-                    endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"ListenAddr/" + addr));
-                }
-                endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
+                //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
+                //foreach (var addr in addrInfos)
+                //{
+                //    endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"ListenAddr/" + addr.Address));
+                //}
+                //endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
 
 
                 ServiceDiscoveryBehavior serviceDiscoveryBehavior = new ServiceDiscoveryBehavior();
@@ -99,6 +99,11 @@ namespace TestStreamer
                 host.Closed += Host_Closed;
 
                 host.Open();
+
+                //foreach (var _channel in host.ChannelDispatchers)
+                //{
+                //    logger.Debug(_channel.Listener.Uri);
+                //}
 
                 logger.Debug("Service opened: " + uri.ToString());
 

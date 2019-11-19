@@ -607,7 +607,7 @@ namespace MediaToolkit.MediaFoundation
                 // processor.ProcessOutput(TransformProcessOutputFlags.None,  1, outputDataBuffer, out TransformProcessOutputStatus status);
                 //var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
 
-                var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, 1, outputDataBuffer, out TransformProcessOutputStatus status);
+                var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, outputDataBuffer, out TransformProcessOutputStatus status);
 
                 // var res = encoder.ProcessOutput(TransformProcessOutputFlags.None, data, out TransformProcessOutputStatus status);
                 if (res.Success)
