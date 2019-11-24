@@ -110,6 +110,10 @@ namespace TestStreamer.Controls
 
         private void Start()
         {
+            var sourceId = Guid.NewGuid().ToString();
+
+            var communicationPort = mainForm.CommunicationPort;
+
             var networkIpAddr = "0.0.0.0";
             var ipInfo = mainForm.GetCurrentIpAddrInfo();
 
@@ -131,10 +135,19 @@ namespace TestStreamer.Controls
             var multicastVideoPort = 1234;
             var multicastAudioPort = 1235;
 
-            int communicationPort = 0;
-            var communicationAddress = "net.tcp://" + networkIpAddr + ":" + communicationPort + "/ScreenCaster";
 
-            //var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + Guid.NewGuid();
+            // var communicationAddress = "net.tcp://" + networkIpAddr + ":" + communicationPort + "/ScreenCaster";
+
+            //var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + sourceId;
+            // var communicationAddress = "http://" + "RAS-HOME10:8080"+ "/ScreenCaster/" + sourceId;
+            // var communicationAddress = "net.tcp://" + "RAS-HOME10" + "/ScreenCaster/" + sourceId;
+
+            var communicationAddress = "net.tcp://" + networkIpAddr + "/ScreenCaster/";
+
+            if (communicationPort > 0)
+            {
+                communicationAddress = "net.tcp://" + networkIpAddr + ":" + communicationPort + "/ScreenCaster";
+            }
 
             videoSettings.TransportMode = transportMode;
             audioSettings.TransportMode = transportMode;

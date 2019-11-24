@@ -22,9 +22,6 @@ namespace MediaToolkit.MediaFoundation
 {
     public class MfVideoProcessor
     {
-        public readonly Guid CLSID_VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
-
-        public readonly Guid CLSID_CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
         private Transform processor = null;
@@ -52,9 +49,9 @@ namespace MediaToolkit.MediaFoundation
 
             try
             {
-    
-                processor = new Transform(CLSID_VideoProcessorMFT);
-               // processor = new Transform(CLSID_CColorConvertDMO);
+                //processor = new Transform(CLSID.MJPEGDecoderMFT);
+                processor = new Transform(CLSID.VideoProcessorMFT);
+                // processor = new Transform(CLSID.CColorConvertDMO);
                 if (device != null)
                 {
                     using (var attr = processor.Attributes)
@@ -71,14 +68,13 @@ namespace MediaToolkit.MediaFoundation
 
                 }
 
-
                 int inputStreamCount = -1;
                 int outputStreamsCount = -1;
                 processor.GetStreamCount(out inputStreamCount, out outputStreamsCount);
                 int[] inputStreamIDs = new int[inputStreamCount];
                 int[] outputStreamIDs = new int[outputStreamsCount];
 
-                if(processor.TryGetStreamIDs(inputStreamIDs, outputStreamIDs))
+                if (processor.TryGetStreamIDs(inputStreamIDs, outputStreamIDs))
                 {
                     inputStreamId = inputStreamIDs[0];
                     outputStreamId = outputStreamIDs[0];
@@ -103,7 +99,7 @@ namespace MediaToolkit.MediaFoundation
                 //InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, PackLong(30, 1));
 
                 processor.SetInputType(inputStreamId, InputMediaType, 0);
- 
+
 
                 try
                 {
@@ -153,7 +149,7 @@ namespace MediaToolkit.MediaFoundation
 
                 processor.SetOutputType(outputStreamId, OutputMediaType, 0);
 
- 
+
             }
             catch (Exception ex)
             {
@@ -166,6 +162,17 @@ namespace MediaToolkit.MediaFoundation
             return true;
         }
 
+        public void SetMirror(VideoProcessorMirror mirror)
+        {
+            if (processor != null)
+            {
+                using (VideoProcessorControl control = processor.QueryInterface<VideoProcessorControl>())
+                {
+                    control.Mirror = mirror;
+                }
+            }
+  
+        }
 
         public void Start()
         {

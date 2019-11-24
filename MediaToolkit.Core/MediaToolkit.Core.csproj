@@ -122,6 +122,7 @@
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />
     <Compile Include="Sources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
+    <Compile Include="Sources\VideoCaptureSource.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

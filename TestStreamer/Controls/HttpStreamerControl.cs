@@ -55,8 +55,7 @@ namespace TestStreamer.Controls
                 SrcRect = srcRect,
                 DestSize = destSize,
                 CaptureType = captureType,//CaptureType.DXGIDeskDupl,
-                //CaptureType = CaptureType.Direct3D,
-                //CaptureType = CaptureType.GDI,
+
                 Fps = (int)fps,
                 CaptureMouse = true,
                 AspectRatio = true,

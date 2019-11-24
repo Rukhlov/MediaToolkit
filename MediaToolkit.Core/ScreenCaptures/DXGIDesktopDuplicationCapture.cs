@@ -1266,7 +1266,7 @@ namespace MediaToolkit
                 Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
                 if (lockTaken)
                 {
-                    Result = TextureToBitmap(texture, videoBuffer.bitmap);
+                    Result = MediaFoundation.DxTool.TextureToBitmap(texture, videoBuffer.bitmap);
                 }
                 else
                 {
@@ -1285,58 +1285,6 @@ namespace MediaToolkit
 
 
             return Result;
-        }
-
-        private bool TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
-        {
-
-            bool success = false;
-            var descr = texture.Description;
-            if (bmp.Width != descr.Width || bmp.Height != descr.Height)
-            {
-                //...
-                logger.Warn(bmp.Width != descr.Width || bmp.Height != descr.Height);
-                return false;
-            }
-
-            try
-            {
-                var srcData = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
-
-                int width = bmp.Width;
-                int height = bmp.Height;
-                var rect = new GDI.Rectangle(0, 0, width, height);
-                var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
-                try
-                {
-                    IntPtr srcPtr = srcData.DataPointer;
-                    int srcOffset = rect.Top * srcData.RowPitch + rect.Left * 4;
-
-                    srcPtr = IntPtr.Add(srcPtr, srcOffset);
-
-                    var destPtr = destData.Scan0;
-                    for (int row = rect.Top; row < rect.Bottom; row++)
-                    {
-                        Utilities.CopyMemory(destPtr, srcPtr, width * 4);
-                        srcPtr = IntPtr.Add(srcPtr, srcData.RowPitch);
-                        destPtr = IntPtr.Add(destPtr, destData.Stride);
-
-                    }
-
-                    success = true;
-                }
-                finally
-                {
-                    bmp.UnlockBits(destData);
-                }
-
-            }
-            finally
-            {
-                device.ImmediateContext.UnmapSubresource(texture, 0);
-            }
-
-            return success;
         }
 
 
@@ -1423,32 +1371,7 @@ namespace MediaToolkit
             logger.Info(log);
         }
 
-        public static Texture2D GetTexture(GDI.Bitmap bitmap, Device device)
-        {
 
-            if (bitmap.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
-            {
-                bitmap = bitmap.Clone(new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height), GDI.Imaging.PixelFormat.Format32bppArgb);
-            }
-            var data = bitmap.LockBits(new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height), GDI.Imaging.ImageLockMode.ReadOnly, GDI.Imaging.PixelFormat.Format32bppArgb);
-            var texture = new SharpDX.Direct3D11.Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
-            {
-                Width = bitmap.Width,
-                Height = bitmap.Height,
-                ArraySize = 1,
-                //BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                //Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-                //CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                MipLevels = 1,
-                //OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-            }, new SharpDX.DataRectangle(data.Scan0, data.Stride));
-
-            bitmap.UnlockBits(data);
-
-            return texture;
-        }
     }
 
 

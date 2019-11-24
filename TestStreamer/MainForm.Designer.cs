@@ -52,6 +52,10 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.remoteServerControl1 = new TestStreamer.Controls.RemoteServerControl();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label23 = new System.Windows.Forms.Label();
+            this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.webCamStreamerControl1 = new TestStreamer.Controls.WebCamStreamerControl();
             this.contextMenu.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -59,6 +63,8 @@
             this.tabPage4.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).BeginInit();
+            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -170,12 +176,13 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Location = new System.Drawing.Point(12, 75);
+            this.tabControl1.Location = new System.Drawing.Point(12, 102);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(490, 413);
+            this.tabControl1.Size = new System.Drawing.Size(490, 386);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage2
@@ -184,7 +191,7 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 25);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(482, 384);
+            this.tabPage2.Size = new System.Drawing.Size(482, 357);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "RtpStreamer";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -194,7 +201,7 @@
             this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.screenStreamerControl.Location = new System.Drawing.Point(3, 3);
             this.screenStreamerControl.Name = "screenStreamerControl";
-            this.screenStreamerControl.Size = new System.Drawing.Size(476, 378);
+            this.screenStreamerControl.Size = new System.Drawing.Size(476, 351);
             this.screenStreamerControl.TabIndex = 0;
             this.screenStreamerControl.Load += new System.EventHandler(this.screenStreamerControl_Load);
             // 
@@ -203,7 +210,7 @@
             this.tabPage3.Controls.Add(this.audioStreamerControl);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(482, 384);
+            this.tabPage3.Size = new System.Drawing.Size(482, 357);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "AudioStreamer";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -213,7 +220,7 @@
             this.audioStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioStreamerControl.Location = new System.Drawing.Point(0, 0);
             this.audioStreamerControl.Name = "audioStreamerControl";
-            this.audioStreamerControl.Size = new System.Drawing.Size(482, 384);
+            this.audioStreamerControl.Size = new System.Drawing.Size(482, 357);
             this.audioStreamerControl.TabIndex = 0;
             // 
             // tabPage4
@@ -221,16 +228,17 @@
             this.tabPage4.Controls.Add(this.httpStreamerControl1);
             this.tabPage4.Location = new System.Drawing.Point(4, 25);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(482, 384);
+            this.tabPage4.Size = new System.Drawing.Size(482, 357);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "HttpStreamer";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // httpStreamerControl1
             // 
-            this.httpStreamerControl1.Location = new System.Drawing.Point(14, 13);
+            this.httpStreamerControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.httpStreamerControl1.Location = new System.Drawing.Point(0, 0);
             this.httpStreamerControl1.Name = "httpStreamerControl1";
-            this.httpStreamerControl1.Size = new System.Drawing.Size(495, 497);
+            this.httpStreamerControl1.Size = new System.Drawing.Size(482, 357);
             this.httpStreamerControl1.TabIndex = 0;
             // 
             // tabPage1
@@ -239,7 +247,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(482, 384);
+            this.tabPage1.Size = new System.Drawing.Size(482, 357);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -254,13 +262,64 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.label23);
+            this.panel1.Controls.Add(this.communicationPortNumeric);
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.updateNetworksButton);
             this.panel1.Controls.Add(this.networkComboBox);
             this.panel1.Location = new System.Drawing.Point(19, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(456, 57);
+            this.panel1.Size = new System.Drawing.Size(456, 84);
             this.panel1.TabIndex = 67;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(3, 41);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(46, 17);
+            this.label23.TabIndex = 20;
+            this.label23.Text = "_Port:";
+            // 
+            // communicationPortNumeric
+            // 
+            this.communicationPortNumeric.Location = new System.Drawing.Point(91, 39);
+            this.communicationPortNumeric.Maximum = new decimal(new int[] {
+            100500,
+            0,
+            0,
+            0});
+            this.communicationPortNumeric.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            this.communicationPortNumeric.Name = "communicationPortNumeric";
+            this.communicationPortNumeric.Size = new System.Drawing.Size(78, 22);
+            this.communicationPortNumeric.TabIndex = 19;
+            this.communicationPortNumeric.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.webCamStreamerControl1);
+            this.tabPage5.Location = new System.Drawing.Point(4, 25);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(482, 357);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "WebCamStreamer";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // webCamStreamerControl1
+            // 
+            this.webCamStreamerControl1.Location = new System.Drawing.Point(9, 6);
+            this.webCamStreamerControl1.Name = "webCamStreamerControl1";
+            this.webCamStreamerControl1.Size = new System.Drawing.Size(467, 345);
+            this.webCamStreamerControl1.TabIndex = 0;
             // 
             // MainForm
             // 
@@ -281,6 +340,8 @@
             this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).EndInit();
+            this.tabPage5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -309,6 +370,10 @@
         private Controls.HttpStreamerControl httpStreamerControl1;
         private Controls.RemoteServerControl remoteServerControl1;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.NumericUpDown communicationPortNumeric;
+        private System.Windows.Forms.TabPage tabPage5;
+        private Controls.WebCamStreamerControl webCamStreamerControl1;
     }
 }
 

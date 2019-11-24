@@ -134,6 +134,12 @@
     <Compile Include="Controls\VideoSettingsForm.Designer.cs">
       <DependentUpon>VideoSettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\WebCamStreamerControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\WebCamStreamerControl.Designer.cs">
+      <DependentUpon>WebCamStreamerControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -175,6 +181,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\VideoSettingsForm.resx">
       <DependentUpon>VideoSettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\WebCamStreamerControl.resx">
+      <DependentUpon>WebCamStreamerControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

@@ -43,9 +43,9 @@ namespace TestClient
             var remoteAddr = remoteEndpointProperty.Address;
             var remotePort = remoteEndpointProperty.Port;
             var remoteEndpoint = remoteAddr + ":" + remotePort;
-            messageBody = messageBody.Replace("0.0.0.0:0", remoteEndpoint);
+           // messageBody = messageBody.Replace("0.0.0.0:0", remoteEndpoint);
 
-            //messageBody = messageBody.Replace("0.0.0.0", remoteEndpointProperty.Address);
+            messageBody = messageBody.Replace("0.0.0.0", remoteEndpointProperty.Address);
 
             // NOTE: Do not close or dispose of this MemoryStream. It will be used by WCF down the line.
             var newMessageStream = new MemoryStream(Encoding.UTF8.GetBytes(messageBody));

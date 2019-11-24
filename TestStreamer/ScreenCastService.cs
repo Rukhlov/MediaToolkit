@@ -61,6 +61,12 @@ namespace TestStreamer
                 //    },
                 //};
 
+                //NetHttpBinding binding = new NetHttpBinding
+                //{
+                //    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
+                //    SendTimeout = TimeSpan.FromSeconds(10),
+                //};
+
                 NetTcpSecurity security = new NetTcpSecurity
                 {
                     Mode = SecurityMode.None,
@@ -71,13 +77,14 @@ namespace TestStreamer
                     ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
                     SendTimeout = TimeSpan.FromSeconds(10),
                     Security = security,
+                    // PortSharingEnabled = true,
                 };
 
                 host = new ServiceHost(this, uri);
 
                 var endpoint = host.AddServiceEndpoint(typeof(IScreenCastService), binding, uri);
                 var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
-                endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
+               // endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
                 endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
                 //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
@@ -85,7 +92,8 @@ namespace TestStreamer
                 //{
                 //    endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"ListenAddr/" + addr.Address));
                 //}
-                //endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
+
+                endpoint.EndpointBehaviors.Add(endpointDiscoveryBehavior);
 
 
                 ServiceDiscoveryBehavior serviceDiscoveryBehavior = new ServiceDiscoveryBehavior();

@@ -80,9 +80,25 @@ namespace TestClient.Controls
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            var addr = remoteDesktopTextBox.Text;
+            logger.Debug("connectButton_Click()");
 
-            Start(addr);
+            try
+            {
+
+                var uri = remoteDesktopTextBox.Text;
+                var uriBuilder = new UriBuilder(uri);
+
+                logger.Info("Connect to: " + uriBuilder.ToString());
+
+                var addr = uriBuilder.Host;
+                var port = uriBuilder.Port;
+
+                Start(addr, port);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
 
         private void disconnectButton_Click(object sender, EventArgs e)
@@ -98,17 +114,19 @@ namespace TestClient.Controls
         public string ServerId { get; private set; }
         public string ServerName { get; private set; }
         public string ServerAddr { get; private set; }
+        public int ServerPort { get; private set; }
         public ClientState State { get; private set; }
 
 
         private ChannelFactory<IScreenCastService> factory = null;
 
-        public void Start(string _addr)
+        public void Start(string _addr, int port)
         {
 
             logger.Debug("RemoteDesktopClient::Connect(...) " + _addr);
 
             this.ServerAddr = _addr;
+            this.ServerPort = port;
 
             Task.Run(() =>
             {
@@ -126,6 +144,12 @@ namespace TestClient.Controls
         private void ClientProc()
         {
             var address = "net.tcp://" + ServerAddr + "/ScreenCaster";
+
+            if (this.ServerPort > 0)
+            {
+                address = "net.tcp://" + ServerAddr + ":" + ServerPort + "/ScreenCaster";
+            }
+            
             try
             {
 
@@ -159,7 +183,7 @@ namespace TestClient.Controls
 
                 try
                 {
-                    channel.PostMessage(new ServerRequest { Command = "Ping" });
+                    //channel.PostMessage(new ServerRequest { Command = "Ping" });
 
                     var channelInfos = channel.GetChannelInfos();
 
@@ -469,8 +493,6 @@ namespace TestClient.Controls
                             });
                         }
                     }
-
-
 
                 }
 

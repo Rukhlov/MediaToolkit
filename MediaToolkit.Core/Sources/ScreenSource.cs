@@ -32,6 +32,11 @@ namespace MediaToolkit
         Stopping,
     }
 
+    public interface IVideoSource
+    {
+
+    }
+
     public class ScreenSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();

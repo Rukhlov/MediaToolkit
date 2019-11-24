@@ -112,7 +112,7 @@ namespace TestStreamer
         {
             var addr = "0.0.0.0";
             var ipInfo = GetCurrentIpAddrInfo();
-
+           
             if (ipInfo != null)
             {
                 addr = ipInfo.Address.ToString();
@@ -120,6 +120,14 @@ namespace TestStreamer
 
             //textBox1.Text = addr;
 
+        }
+
+        public int CommunicationPort
+        {
+            get
+            {
+                return (int)communicationPortNumeric.Value;
+            }
         }
 
         public IPAddressInformation GetCurrentIpAddrInfo()
