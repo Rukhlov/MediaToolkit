@@ -21,9 +21,9 @@ namespace MediaToolkit
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private readonly ScreenSource screenSource = null;
+        private readonly IVideoSource screenSource = null;
 
-        public HttpScreenStreamer(ScreenSource source)
+        public HttpScreenStreamer(IVideoSource source)
         {
             this.screenSource = source;
            

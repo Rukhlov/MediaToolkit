@@ -1,4 +1,5 @@
-﻿using MediaToolkit.MediaFoundation;
+﻿using MediaToolkit.Common;
+using MediaToolkit.MediaFoundation;
 
 using MediaToolkit.NativeAPIs;
 
@@ -18,13 +19,15 @@ using GDI = System.Drawing;
 
 namespace MediaToolkit
 {
-    public class VideoCaptureSource
+    public class VideoCaptureSource : IVideoSource
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
 
         public VideoCaptureSource() { }
 
         private Device device = null;
+
+        public VideoBuffer Buffer { get; private set; }
 
         public Texture2D SharedTexture { get; private set; }
 
@@ -34,21 +37,43 @@ namespace MediaToolkit
             BufferUpdated?.Invoke();
         }
 
+        public GDI.Size SrcSize
+        {
+            get
+            {
+                return new GDI.Size(320, 240);
+            }
+        }
+
+        public event Action<CaptureState> StateChanged;
+        private void OnStateChanged(CaptureState state)
+        {
+            StateChanged?.Invoke(state);
+        }
+
+        public CaptureState State { get; private set; } = CaptureState.Stopped;
+
         private Texture2D texture = null;
         private SourceReader sourceReader = null;
         private MediaSource mediaSource = null;
 
         private MfVideoProcessor processor = null;
 
-        public void Setup(int deviceIndex = 0)
+        public void Setup(object pars)
         {
+            VideoCaptureParams captureParams = pars as VideoCaptureParams;
+            var symLink = captureParams.Deviceid;
+
             logger.Debug("VideoCaptureSource::Setup()");
+
+            int deviceIndex = 1;
 
             Activate[] activates = null;
             using (var attributes = new MediaAttributes())
             {
-                MediaFactory.CreateAttributes(attributes, 1);
+                MediaFactory.CreateAttributes(attributes, 2);
                 attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+                attributes.Set(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink, symLink);
 
                 activates = MediaFactory.EnumDeviceSources(attributes);
 
@@ -57,25 +82,26 @@ namespace MediaToolkit
             if (activates == null || activates.Length == 0)
             {
                 logger.Error("SourceTypeVideoCapture not found");
-                Console.ReadKey();
+                return;
             }
 
-            foreach (var activate in activates)
-            {
-                Console.WriteLine("---------------------------------------------");
-                var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-                var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
-                //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
-                var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+            //foreach (var activate in activates)
+            //{
+            //    Console.WriteLine("---------------------------------------------");
+            //    var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+            //    var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+            //    //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+            //    var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
 
-                logger.Info("FriendlyName " + friendlyName + "\r\n" +
-                    "isHwSource " + isHwSource + "\r\n" +
-                    //"maxBuffers " + maxBuffers + 
-                    "symbolicLink " + symbolicLink);
-            }
+            //    logger.Info("FriendlyName " + friendlyName + "\r\n" +
+            //        "isHwSource " + isHwSource + "\r\n" +
+            //        //"maxBuffers " + maxBuffers + 
+            //        "symbolicLink " + symbolicLink);
+            //}
 
 
-            var currentActivator = activates[deviceIndex];
+            var currentActivator = activates.FirstOrDefault(); //activates[deviceIndex];
+
 
             mediaSource = currentActivator.ActivateObject<MediaSource>();
 
@@ -106,6 +132,8 @@ namespace MediaToolkit
             Console.WriteLine(MfTool.LogMediaType(mediaType));
 
             var frameSize = MfTool.GetFrameSize(mediaType);
+            var destSize = captureParams.DestSize;
+
             var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
 
 
@@ -136,8 +164,8 @@ namespace MediaToolkit
                      CpuAccessFlags = CpuAccessFlags.None,
                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                      Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                     Width = frameSize.Width,
-                     Height = frameSize.Height,
+                     Width = destSize.Width,
+                     Height = destSize.Height,
 
                      MipLevels = 1,
                      ArraySize = 1,
@@ -154,8 +182,8 @@ namespace MediaToolkit
                         CpuAccessFlags = CpuAccessFlags.Read,
                         BindFlags = BindFlags.None,
                         Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                        Width = frameSize.Width,
-                        Height = frameSize.Height,
+                        Width = destSize.Width,
+                        Height = destSize.Height,
                         MipLevels = 1,
                         ArraySize = 1,
                         SampleDescription = { Count = 1, Quality = 0 },
@@ -176,8 +204,8 @@ namespace MediaToolkit
 
             var outProcArgs = new MfVideoArgs
             {
-                Width = frameSize.Width,
-                Height = frameSize.Height,
+                Width = destSize.Width,
+                Height = destSize.Height,
                 Format = VideoFormatGuids.Argb32,
                 //Format = VideoFormatGuids.Rgb32,//VideoFormatGuids.Argb32,
             };
@@ -305,6 +333,8 @@ namespace MediaToolkit
             running = false;
         }
 
+
+
         public void Close()
         {
             logger.Debug("VideoCaptureSource::Close()");
@@ -348,6 +378,10 @@ namespace MediaToolkit
             }
         }
 
+        public void Dispose()
+        {
+
+        }
 
         private static void LogSourceTypes(SourceReader sourceReader)
         {

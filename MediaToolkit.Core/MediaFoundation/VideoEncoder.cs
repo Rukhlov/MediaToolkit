@@ -15,9 +15,9 @@ namespace MediaToolkit.Core
     public class VideoEncoder
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        private readonly ScreenSource videoSource = null;
+        private readonly IVideoSource videoSource = null;
 
-        public VideoEncoder(ScreenSource source)
+        public VideoEncoder(IVideoSource source)
         {
             this.videoSource = source;
         }
@@ -31,10 +31,10 @@ namespace MediaToolkit.Core
         {
             logger.Debug("VideoEncoder::Setup(...)");
 
-            var hwContext = videoSource.hwContext;
+            //var hwContext = videoSource.hwContext;
             // var hwDevice = hwContext.Device3D11;
 
-            var hwBuffer = hwContext.SharedTexture;
+            var hwBuffer = videoSource.SharedTexture;
             var hwDevice = hwBuffer.Device;
             var hwDescr = hwBuffer.Description;
             int srcWidth = hwDescr.Width;
@@ -131,7 +131,7 @@ namespace MediaToolkit.Core
 
         public void Encode()
         {
-            var texture = videoSource?.hwContext?.SharedTexture;
+            var texture = videoSource?.SharedTexture;
 
             Encode(texture);
         }

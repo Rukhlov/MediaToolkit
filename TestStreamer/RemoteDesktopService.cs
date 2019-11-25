@@ -322,8 +322,8 @@ namespace TestStreamer
 
         private bool isStreaming = false;
 
-        private ScreenStreamer videoStreamer = null;
-        private ScreenSource screenSource = null;
+        private VideoStreamer videoStreamer = null;
+        private IVideoSource videoSource = null;
         private DesktopManager desktopMan = null;
 
         public void StartStreaming(StartSessionRequest options)
@@ -366,7 +366,7 @@ namespace TestStreamer
                 destSize = new Size(destWidth, destHeight);
             }
 
-            screenSource = new ScreenSource();
+            videoSource = new ScreenSource();
             ScreenCaptureParams captureParams = new ScreenCaptureParams
             {
                 SrcRect = srcRect,
@@ -378,7 +378,7 @@ namespace TestStreamer
                 CaptureMouse = showMouse,
             };
 
-            screenSource.Setup(captureParams);
+            videoSource.Setup(captureParams);
 
 
 
@@ -396,10 +396,10 @@ namespace TestStreamer
                 EncoderName = "libx264", // "h264_nvenc", //
             };
 
-            videoStreamer = new ScreenStreamer(screenSource);
+            videoStreamer = new VideoStreamer(videoSource);
             videoStreamer.Setup(encodingParams, networkParams);
 
-            screenSource.Start();
+            videoSource.Start();
             var streamerTask = videoStreamer.Start();
 
             //previewForm = new PreviewForm();
@@ -418,9 +418,9 @@ namespace TestStreamer
         {
             logger.Debug("StopStreaming()");
 
-            if (screenSource != null)
+            if (videoSource != null)
             {
-                screenSource.Stop();
+                videoSource.Stop();
             }
 
             if (videoStreamer != null)

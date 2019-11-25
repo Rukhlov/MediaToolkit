@@ -69,9 +69,9 @@ namespace MediaToolkit.UI
             }
         }
 
-        private ScreenSource screenSource = null;
+        private IVideoSource screenSource = null;
 
-        public void Setup(ScreenSource source)
+        public void Setup(IVideoSource source)
         {
             logger.Debug("D3DImageProvider::Setup(...)");
 
@@ -80,7 +80,7 @@ namespace MediaToolkit.UI
                 Close();
 
                 this.screenSource = source;
-                var sharedTexture = screenSource.hwContext.SharedTexture;
+                var sharedTexture = screenSource.SharedTexture;
                 screenSource.BufferUpdated += ScreenSource_BufferUpdated;
 
                 ScreenView = new D3DImage();
@@ -111,7 +111,7 @@ namespace MediaToolkit.UI
             }
             else
             {
-                SetupDx(screenSource.hwContext.SharedTexture);
+                SetupDx(screenSource.SharedTexture);
             }
         }
 
@@ -168,7 +168,7 @@ namespace MediaToolkit.UI
         private void ScreenSource_BufferUpdated()
         {
 
-            var sharedTexture = screenSource.hwContext.SharedTexture;
+            var sharedTexture = screenSource.SharedTexture;
 
             Update(sharedTexture);
 

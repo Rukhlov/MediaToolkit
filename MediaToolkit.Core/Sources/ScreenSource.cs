@@ -12,6 +12,13 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
+    public class VideoCaptureParams
+    {
+        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
+        public Size DestSize = new Size(640, 480);
+        public string Deviceid = "";
+    }
+
     public class ScreenCaptureParams
     {
         public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
@@ -34,10 +41,22 @@ namespace MediaToolkit
 
     public interface IVideoSource
     {
+        VideoBuffer Buffer { get; }
+        SharpDX.Direct3D11.Texture2D SharedTexture { get; }
 
+        CaptureState State { get; }
+        event Action BufferUpdated;
+        event Action<CaptureState> StateChanged;
+
+        Size SrcSize { get; }
+        void Start();
+        void Stop();
+        void Setup(object pars);
+
+        void Dispose();
     }
 
-    public class ScreenSource
+    public class ScreenSource : IVideoSource
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -45,10 +64,22 @@ namespace MediaToolkit
 
         public VideoBuffer Buffer { get; private set; }
 
+        public SharpDX.Direct3D11.Texture2D SharedTexture
+        {
+            get { return hwContext?.SharedTexture; }
+        }
+
+        public Size SrcSize
+        {
+            get
+            {
+                return new Size(Buffer.bitmap.Width, Buffer.bitmap.Height);
+            }
+        }
 
         public CaptureState State { get; private set; } = CaptureState.Stopped;
 
-        public DXGIDesktopDuplicationCapture hwContext = null;
+        private DXGIDesktopDuplicationCapture hwContext = null;
 
         public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -69,9 +100,13 @@ namespace MediaToolkit
         public ScreenCaptureParams CaptureParams { get; private set; }
 
         private bool initialized = false;
-        public void Setup(ScreenCaptureParams captureParams)
+        public void Setup(object pars)//ScreenCaptureParams captureParams)
         {
+
             logger.Debug("ScreenSource::Setup()");
+
+            ScreenCaptureParams captureParams = pars as ScreenCaptureParams;
+
 
             this.CaptureParams = captureParams;
 

@@ -289,6 +289,7 @@
             this.videoSourcesComboBox.Name = "videoSourcesComboBox";
             this.videoSourcesComboBox.Size = new System.Drawing.Size(390, 24);
             this.videoSourcesComboBox.TabIndex = 2;
+            this.videoSourcesComboBox.SelectedIndexChanged += new System.EventHandler(this.videoSourcesComboBox_SelectedIndexChanged);
             this.videoSourcesComboBox.SelectedValueChanged += new System.EventHandler(this.videoSourcesComboBox_SelectedValueChanged_1);
             // 
             // startButton

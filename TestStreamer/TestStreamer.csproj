@@ -150,7 +150,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteDesktopService.cs" />
     <Compile Include="ScreenCastService.cs" />
-    <Compile Include="ScreenStreamer.cs" />
+    <Compile Include="VideoStreamer.cs" />
     <Compile Include="StreamingForm.cs">
       <SubType>Form</SubType>
     </Compile>

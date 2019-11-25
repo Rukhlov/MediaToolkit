@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace TestStreamer
 {
-    public class ScreenStreamer
+    public class VideoStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public readonly ScreenSource screenSource = null;
-        public ScreenStreamer(ScreenSource source)
+        public readonly IVideoSource screenSource = null;
+        public VideoStreamer(IVideoSource source)
         {
             this.screenSource = source;
 
@@ -66,8 +66,8 @@ namespace TestStreamer
 
                 //var hwContext = screenSource.hwContext;
                 //var hwDevice = hwContext.device;
-                
-                var srcSize = new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
+
+                var srcSize = screenSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
                 var destSize = new Size(encodingParams.Width, encodingParams.Height);
 
@@ -112,7 +112,7 @@ namespace TestStreamer
 
                     Statistic.RegisterCounter(streamStats);
 
-                    var hwContext = screenSource.hwContext;
+                    //var hwContext = screenSource.hwContext;
                     //mfEncoder.Start();
 
 

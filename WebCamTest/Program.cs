@@ -31,7 +31,13 @@ namespace WebCamTest
                 MediaManager.Startup();
 
                 VideoCaptureSource videoCaptureSource = new VideoCaptureSource();
-                videoCaptureSource.Setup();
+
+                ScreenCaptureParams captureParams = new ScreenCaptureParams
+                {
+                    DestSize = new GDI.Size(1920, 1080),
+                };
+
+                videoCaptureSource.Setup(captureParams);
 
 
                 PreviewForm previewForm = null;

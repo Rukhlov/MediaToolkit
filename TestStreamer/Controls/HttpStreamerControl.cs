@@ -26,7 +26,7 @@ namespace TestStreamer.Controls
         private StatisticForm statisticForm = new StatisticForm();
 
         private HttpScreenStreamer httpStreamer = null;
-        private ScreenSource httpScreenSource = null;
+        private IVideoSource httpScreenSource = null;
         private Screen currentScreen = null;
 
 
