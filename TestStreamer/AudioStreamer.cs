@@ -35,8 +35,10 @@ namespace TestStreamer
 
         private AudioEncoder audioResampler = null;
 
-        private IRtpSender streamer = null;
 
+        public IRtpSender RtpSender { get; private set; }
+
+        private PCMUSession session = null;
 
         public bool IsStreaming { get; private set; }
         private int sampleByteSize = 0;
@@ -55,68 +57,75 @@ namespace TestStreamer
 
         }
 
-        public void Start(AudioEncodingParams outputParams, NetworkStreamingParams networkPars)
+
+        public void Setup(AudioEncodingParams outputParams, NetworkStreamingParams networkPars)
         {
             logger.Debug("AudioLoopbackSource::Start(...) ");
 
             //FileStream fs = new FileStream("d:\\test_audio_4", FileMode.Create, FileAccess.ReadWrite);
-            Task.Run(() =>
+
+            try
             {
-                try
+
+                var capture = audioSource.Capture;
+
+                bufferedWaveProvider = new BufferedWaveProvider(capture.WaveFormat);
+                bufferedWaveProvider.DiscardOnBufferOverflow = true;
+
+                sampleChannel = new SampleChannel(bufferedWaveProvider);
+                sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
+
+                audioResampler = new AudioEncoder();
+
+                var waveFormat = capture.WaveFormat;
+                var captureParams = new AudioEncodingParams
                 {
-                    
-                    var capture = audioSource.Capture;
+                    SampleRate = waveFormat.SampleRate,
+                    Channels = waveFormat.Channels,
 
-                    bufferedWaveProvider = new BufferedWaveProvider(capture.WaveFormat);
-                    bufferedWaveProvider.DiscardOnBufferOverflow = true;
-
-                    sampleChannel = new SampleChannel(bufferedWaveProvider);
-                    sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
-
-                    audioResampler = new AudioEncoder();
-
-                    var waveFormat = capture.WaveFormat;
-                    var captureParams = new AudioEncodingParams
-                    {
-                        SampleRate = waveFormat.SampleRate,
-                        Channels = waveFormat.Channels,
-
-                    };
+                };
 
 
-                    audioResampler.Open(captureParams, outputParams);
+                audioResampler.Open(captureParams, outputParams);
 
-                    PCMUSession session = new PCMUSession();
+                session = new PCMUSession();
 
-                    if (networkPars.TransportMode == TransportMode.Tcp)
-                    {
-                        streamer = new RtpTcpSender(session);
-                    }
-                    else if (networkPars.TransportMode == TransportMode.Udp)
-                    {
-                        streamer = new RtpUdpSender(session);
-                    }
-                    else
-                    {
-                        throw new FormatException("NotSupportedFormat " + networkPars.TransportMode);
-                    }
-
-
-                    audioSource.DataAvailable += AudioSource_DataAvailable;
-                    streamer.Start(networkPars);
-                   
-
-
-                    IsStreaming = true;
-                    OnStateChanged();
-                }
-                catch (Exception ex)
+                if (networkPars.TransportMode == TransportMode.Tcp)
                 {
-                    logger.Error(ex);
-
-                    Close();
+                    RtpSender = new RtpTcpSender(session);
                 }
-            });
+                else if (networkPars.TransportMode == TransportMode.Udp)
+                {
+                    RtpSender = new RtpUdpSender(session);
+                }
+                else
+                {
+                    throw new FormatException("NotSupportedFormat " + networkPars.TransportMode);
+                }
+
+
+                audioSource.DataAvailable += AudioSource_DataAvailable;
+                RtpSender.Setup(networkPars);
+
+                RtpSender.Start();
+
+
+
+                IsStreaming = true;
+                OnStateChanged();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+                Close();
+            }
+
+        }
+
+        public void Start()
+        {
+
         }
 
         private uint rtpTimestamp = 0;
@@ -128,7 +137,7 @@ namespace TestStreamer
                 return;
             }
 
-            if (data.Length> 0)
+            if (data.Length > 0)
             {
 
                 bufferedWaveProvider.AddSamples(data, 0, data.Length);
@@ -151,7 +160,7 @@ namespace TestStreamer
 
                     // streamer.Push(dest, ralativeTime);
 
-                    streamer.Push(dest, ralativeTime);
+                    RtpSender.Push(dest, ralativeTime);
 
                     //fs.Write(dest, 0, dest.Length);
                     //fs.Write(a.Buffer, 0, a.BytesRecorded);
@@ -203,10 +212,10 @@ namespace TestStreamer
             logger.Debug("AudioLoopbackSource::Close()");
             closing = true;
 
-            if (streamer != null)
+            if (RtpSender != null)
             {
-                streamer.Close();
-                streamer = null;
+                RtpSender.Close();
+                RtpSender = null;
             }
 
             if (audioSource != null)

@@ -31,8 +31,6 @@ namespace MediaToolkit.Common
         private long length = -1;
         public long DataLength { get => length; }
 
-        public object HwContext = null;
-
         public void Dispose()
         {
             lock (syncRoot)
@@ -86,7 +84,43 @@ namespace MediaToolkit.Common
         public int BlockAlign = 0;
         public string Encoding = "";
         public string DeviceId = "";
+        public AudioEncoderMode Encoder = AudioEncoderMode.G711;
     }
+
+    public class AudioCaptureParams
+    {
+        public string DeviceId = "";
+    }
+
+    public class VideoCaptureParams
+    {
+        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
+        public Size DestSize = new Size(640, 480);
+    }
+
+    public class MfVideoCaptureParams: VideoCaptureParams
+    {
+        public string DeviceId = "";
+    }
+
+    public enum CaptureType
+    {
+        GDI,
+        Direct3D9,
+        GDIPlus,
+        Datapath,
+        DXGIDeskDupl,
+    }
+
+    public class ScreenCaptureParams: VideoCaptureParams
+    {
+        public CaptureType CaptureType = CaptureType.GDI;
+        public int Fps = 10;
+        public bool CaptureMouse = false;
+        public bool AspectRatio = true;
+        public bool UseHardware = true;
+    }
+
 
     public class NetworkStreamingParams
     {

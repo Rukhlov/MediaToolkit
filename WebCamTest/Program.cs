@@ -1,4 +1,5 @@
 ﻿using MediaToolkit;
+using MediaToolkit.Common;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.UI;
@@ -30,11 +31,15 @@ namespace WebCamTest
             {
                 MediaManager.Startup();
 
+                var device = GetVideoCaptureDevices();
+                var d = device[1];
                 VideoCaptureSource videoCaptureSource = new VideoCaptureSource();
 
-                ScreenCaptureParams captureParams = new ScreenCaptureParams
+                MfVideoCaptureParams captureParams = new MfVideoCaptureParams
                 {
                     DestSize = new GDI.Size(1920, 1080),
+                    DeviceId = d.SymLink,
+
                 };
 
                 videoCaptureSource.Setup(captureParams);
@@ -93,6 +98,64 @@ namespace WebCamTest
 
         }
 
+        public class VideoCaptureDevice
+        {
+            public string Name = "";
+            public string SymLink = "";
+        }
+
+        public static List<VideoCaptureDevice> GetVideoCaptureDevices()
+        {
+            List<VideoCaptureDevice> devices = new List<VideoCaptureDevice>();
+
+            Activate[] activates = null;
+            try
+            {
+                using (var attributes = new MediaAttributes())
+                {
+                    MediaFactory.CreateAttributes(attributes, 1);
+                    attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+
+                    activates = MediaFactory.EnumDeviceSources(attributes);
+
+                    foreach (var activate in activates)
+                    {
+                        var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+                        var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+                        //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+                        var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+
+                        //var mediaTypes = activate.Get(TransformAttributeKeys.MftOutputTypesAttributes);
+
+                        devices.Add(new VideoCaptureDevice { Name = friendlyName, SymLink = symbolicLink });
+
+                        Console.WriteLine("FriendlyName " + friendlyName + "\r\n" +
+                            "isHwSource " + isHwSource + "\r\n" +
+                            //"maxBuffers " + maxBuffers + 
+                            "symbolicLink " + symbolicLink);
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
+            {
+                if (activates != null)
+                {
+                    foreach (var act in activates)
+                    {
+                        act.Dispose();
+                    }
+                }
+            }
+
+            return devices;
+
+        }
 
 
         //[STAThread]

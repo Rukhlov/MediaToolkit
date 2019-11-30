@@ -47,9 +47,10 @@ namespace MediaToolkit.Core
             long adapterLuid = -1;
             using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
             {
-                var adapter = dxgiDevice.Adapter;
-                adapterLuid = adapter.Description.Luid;
-
+                using (var adapter = dxgiDevice.Adapter)
+                {
+                    adapterLuid = adapter.Description.Luid;
+                }
             }
 
             var profile = eAVEncH264VProfile.eAVEncH264VProfile_Main;

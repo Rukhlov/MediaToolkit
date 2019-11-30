@@ -85,7 +85,7 @@ namespace MediaToolkit
                                 break;
                             }
 
-                            var buffer = screenSource.Buffer;
+                            var buffer = screenSource.SharedBitmap;
 
                             encoder.Encode(buffer);
                         }

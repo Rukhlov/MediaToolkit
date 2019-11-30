@@ -268,6 +268,26 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
+        public static double GetFrameRate(MediaType mediaType)
+        {
+            double fps = 0;
+            if (mediaType != null)
+            {
+                var sizeLong = mediaType.Get(MediaTypeAttributeKeys.FrameRate);
+                var sizeInts = MfTool.UnPackLongToInts(sizeLong);
+                if (sizeInts != null && sizeInts.Length == 2)
+                {
+                    fps = sizeInts[0] / (double)sizeInts[1];
+                }
+                else
+                {
+                    //...
+                }
+            }
+
+            return fps;
+        }
+
         public static GDI.Size GetFrameSize(MediaType mediaType)
         {
             GDI.Size frameSize = GDI.Size.Empty;

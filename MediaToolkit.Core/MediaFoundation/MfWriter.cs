@@ -63,9 +63,11 @@ namespace MediaToolkit.MediaFoundation
                     attr.Set(SinkWriterAttributeKeys.LowLatency, true);
                     attr.Set(SinkWriterAttributeKeys.DisableThrottling, 1);
 
-                    var devMan = new DXGIDeviceManager();
-                    devMan.ResetDevice(device);
-                    attr.Set(SinkWriterAttributeKeys.D3DManager, devMan);
+                    using (var devMan = new DXGIDeviceManager())
+                    {
+                        devMan.ResetDevice(device);
+                        attr.Set(SinkWriterAttributeKeys.D3DManager, devMan);
+                    }
 
                     sinkWriter = MediaFactory.CreateSinkWriterFromURL(fileName, null, attr);
                 }

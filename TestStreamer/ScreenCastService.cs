@@ -39,7 +39,7 @@ namespace TestStreamer
         public string ServerId { get; private set; }
 
 
-        public void Open(string address)
+        public void Open(string address, string hostName)
         {
             logger.Debug("ScreenCastService::Open(...) " + address);
 
@@ -48,7 +48,7 @@ namespace TestStreamer
  
                 var uri = new Uri(address);
 
-                this.HostName = Dns.GetHostName();
+                this.HostName = hostName; 
                 this.ServerId = MediaToolkit.Utils.RngProvider.GetRandomNumber().ToString();
 
                 //NetTcpSecurity security = new NetTcpSecurity

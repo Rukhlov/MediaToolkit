@@ -12,27 +12,10 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-    public class VideoCaptureParams
-    {
-        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
-        public Size DestSize = new Size(640, 480);
-        public string Deviceid = "";
-    }
-
-    public class ScreenCaptureParams
-    {
-        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
-        public Size DestSize = new Size(640, 480);
-        public CaptureType CaptureType = CaptureType.GDI;
-        public int Fps = 10;
-        public bool CaptureMouse = false;
-        public bool AspectRatio = true;
-        public bool UseHardware = true;
-    }
 
     public enum CaptureState
     {
-       
+        Initialized,
         Stopped,
         Starting,
         Capturing,
@@ -41,7 +24,7 @@ namespace MediaToolkit
 
     public interface IVideoSource
     {
-        VideoBuffer Buffer { get; }
+        VideoBuffer SharedBitmap { get; }
         SharpDX.Direct3D11.Texture2D SharedTexture { get; }
 
         CaptureState State { get; }
@@ -53,7 +36,7 @@ namespace MediaToolkit
         void Stop();
         void Setup(object pars);
 
-        void Dispose();
+        void Close();
     }
 
     public class ScreenSource : IVideoSource
@@ -62,7 +45,7 @@ namespace MediaToolkit
 
         public ScreenSource() { }
 
-        public VideoBuffer Buffer { get; private set; }
+        public VideoBuffer SharedBitmap { get; private set; }
 
         public SharpDX.Direct3D11.Texture2D SharedTexture
         {
@@ -73,7 +56,7 @@ namespace MediaToolkit
         {
             get
             {
-                return new Size(Buffer.bitmap.Width, Buffer.bitmap.Height);
+                return new Size(SharedBitmap.bitmap.Width, SharedBitmap.bitmap.Height);
             }
         }
 
@@ -93,18 +76,24 @@ namespace MediaToolkit
             StateChanged?.Invoke(state);
         }
 
-        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private AutoResetEvent syncEvent = null;
 
         private ScreenCapture screenCapture = null;
 
         public ScreenCaptureParams CaptureParams { get; private set; }
 
-        private bool initialized = false;
+        private bool deviceReady = false;
         public void Setup(object pars)//ScreenCaptureParams captureParams)
         {
 
             logger.Debug("ScreenSource::Setup()");
 
+            if (State != CaptureState.Stopped)
+            {
+                throw new InvalidOperationException("Invalid capture state " + State);
+            }
+
+            syncEvent = new AutoResetEvent(false);
             ScreenCaptureParams captureParams = pars as ScreenCaptureParams;
 
 
@@ -131,16 +120,19 @@ namespace MediaToolkit
                     this.hwContext = capture;
                 }
 
-                this.Buffer = screenCapture.VideoBuffer;
+                this.SharedBitmap = screenCapture.VideoBuffer;
 
-                initialized = true;
+                deviceReady = true;
+
+                State = CaptureState.Initialized;
+                OnStateChanged(State);
 
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
 
-                screenCapture?.Close();
+                CleanUp();
 
                 throw;
             }
@@ -150,9 +142,9 @@ namespace MediaToolkit
         {
             logger.Debug("ScreenSource::Start()");
 
-            if (State == CaptureState.Capturing)
+            if (State != CaptureState.Initialized)
             {
-                return;
+                throw new InvalidOperationException("Invalid capture state " + State);
             }
 
             State = CaptureState.Starting;
@@ -187,7 +179,7 @@ namespace MediaToolkit
                 Stopwatch sw = Stopwatch.StartNew();
                 State = CaptureState.Capturing;
 
-                while (State == CaptureState.Capturing && initialized)
+                while (State == CaptureState.Capturing && deviceReady)
                 {
                     sw.Restart();
 
@@ -195,7 +187,7 @@ namespace MediaToolkit
                     {
                         var res = screenCapture.UpdateBuffer(30);
 
-                        if (State != CaptureState.Capturing || !initialized)
+                        if (State != CaptureState.Capturing || !deviceReady)
                         {
                             break;
                         }
@@ -204,15 +196,15 @@ namespace MediaToolkit
                         {
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
-                            Buffer.time = time; //MediaTimer.GetRelativeTime() 
+                            SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
 
                             //var diff = time - lastTime;
 
-                            lastTime = Buffer.time;
+                            lastTime = SharedBitmap.time;
 
                             OnBufferUpdated();
 
-                            captureStats.UpdateFrameStats(Buffer.time, (int)Buffer.DataLength);
+                            captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
 
                         }
                         else
@@ -260,7 +252,6 @@ namespace MediaToolkit
                 Statistic.UnregisterCounter(captureStats);
 
                 this.State = CaptureState.Stopped;
-
                 OnStateChanged(this.State);
             }
 
@@ -273,14 +264,24 @@ namespace MediaToolkit
             logger.Debug("ScreenSource::Close()");
 
             State = CaptureState.Stopping;
+            OnStateChanged(this.State);
+
             syncEvent.Set();
+
+
         }
 
-        public void Dispose()
+        public void Close()
         {
             logger.Debug("ScreenSource::Dispose()");
 
-            initialized = false;
+            deviceReady = false;
+
+            CleanUp();
+        }
+
+        private void CleanUp()
+        {
             if (screenCapture != null)
             {
                 screenCapture.Close();
@@ -293,8 +294,6 @@ namespace MediaToolkit
                 syncEvent = null;
             }
         }
-
-
     }
 
 

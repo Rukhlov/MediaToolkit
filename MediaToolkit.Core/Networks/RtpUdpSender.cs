@@ -27,44 +27,53 @@ namespace MediaToolkit
 
         private RtpSession session;
         private Socket socket;
+
         public IPEndPoint RemoteEndpoint { get; private set; }
+        public IPEndPoint LocalEndpoint { get; private set; }
 
-
-        public void Start(NetworkStreamingParams streamingParams)
+        public void Setup(NetworkStreamingParams streamingParams)
         {
+            logger.Debug("RtpUdpSender::Setup(...)");
+
+
+            var localAddr = streamingParams.LocalAddr;
+            var localPort = 0;//streamingParams.LocalPort;
+
+            var localIp = IPAddress.Any;
+            if (string.IsNullOrEmpty(localAddr))
+            {
+                if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
+                {
+                    localIp = _localIp;
+                }
+            }
+
+            var localEndpoint = new IPEndPoint(localIp, localPort);
+
+            var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
+            RemoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
+
+            logger.Debug("RtpStreamer::Open(...) " + RemoteEndpoint + " " + localEndpoint);
+
+            bool isMulicast = NetTools.IsMulticastIpAddr(remoteIp);
+
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            if (isMulicast)
+            {
+                var ttl = streamingParams.MulticastTimeToLive;
+                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
+            }
+
+            socket.Bind(localEndpoint);
+
+        }
+
+        public void Start()
+        {
+            logger.Debug("RtpUdpSender::Start()");
             try
             {
-                logger.Debug("RtpUdpSender::Open(...)");
-                var localAddr = streamingParams.LocalAddr;
-                var localPort = 0;//streamingParams.LocalPort;
-
-                var localIp = IPAddress.Any;
-                if (string.IsNullOrEmpty(localAddr))
-                {
-                    if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
-                    {
-                        localIp = _localIp;
-                    }
-                }
-
-                var localEndpoint = new IPEndPoint(localIp, localPort);
-
-                var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
-                RemoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
-
-                logger.Debug("RtpStreamer::Open(...) " + RemoteEndpoint + " " + localEndpoint);
-
-                bool isMulicast = NetTools.IsMulticastIpAddr(remoteIp);
-
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                //socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                if (isMulicast)
-                {
-                    var ttl = streamingParams.MulticastTimeToLive;
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
-                }
-
-                socket.Bind(localEndpoint);
 
                 running = true;
 

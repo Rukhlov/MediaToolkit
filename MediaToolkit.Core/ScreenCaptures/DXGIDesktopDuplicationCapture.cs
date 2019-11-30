@@ -98,7 +98,7 @@ namespace MediaToolkit
 
                 if (adapter == null)
                 {// первым идет адаптер с которому подключен primary монитор
-                    adapter = dxgiFactory.Adapters1.FirstOrDefault();
+                    adapter = dxgiFactory.GetAdapter1(0);
                 }
 
                 //if (output == null)
@@ -150,6 +150,8 @@ namespace MediaToolkit
 
                         deskDupls.Add(deskDupl);
                     }
+
+                    _output.Dispose();
                 }
 
             }
@@ -1366,7 +1368,11 @@ namespace MediaToolkit
                     };
 
                     log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+
+                    _output.Dispose();
                 }
+
+                _adapter.Dispose();
             }
             logger.Info(log);
         }

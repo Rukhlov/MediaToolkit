@@ -61,15 +61,16 @@ namespace TestStreamer.Controls
 
             };
 
+            NetworkStreamingParams networkParams = audioSettings.NetworkParams;
 
-            NetworkStreamingParams networkParams = new NetworkStreamingParams
-            {
-                LocalPort = audioSettings.Port,
-                LocalAddr = "",
-                RemoteAddr = audioSettings.Address,
-                RemotePort = audioSettings.Port,
-                TransportMode = audioSettings.TransportMode,
-            };
+            //NetworkStreamingParams networkParams = new NetworkStreamingParams
+            //{
+            //    LocalPort = audioSettings.Port,
+            //    LocalAddr = "",
+            //    RemoteAddr = audioSettings.Address,
+            //    RemotePort = audioSettings.Port,
+            //    TransportMode = audioSettings.TransportMode,
+            //};
 
             if (audioStreamer != null)
             {
@@ -79,7 +80,7 @@ namespace TestStreamer.Controls
             audioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
 
             audioStreamer.StateChanged += AudioStreamer_StateChanged;
-            audioStreamer.Start(audioParams, networkParams);
+            audioStreamer.Setup(audioParams, networkParams);
         }
 
         private void audioStopButton_Click(object sender, EventArgs e)

@@ -12,14 +12,6 @@ using System.Threading.Tasks;
 namespace MediaToolkit
 {
 
-    public enum CaptureType
-    {
-        GDI,
-        Direct3D9,
-        GDIPlus,
-        Datapath,
-        DXGIDeskDupl,
-    }
 
 
     public abstract class ScreenCapture

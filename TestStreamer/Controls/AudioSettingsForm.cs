@@ -34,8 +34,9 @@ namespace TestStreamer.Controls
             //this.portNumeric.Value = AudioSettings.Port;
             //this.transportComboBox.SelectedItem = AudioSettings.TransportMode;
 
-            this.sampleRateNumeric.Value = AudioSettings.Samplerate;
-            this.channelsNumeric.Value = AudioSettings.Channels;
+            var encoder = AudioSettings.EncodingParams;
+            this.sampleRateNumeric.Value = encoder.SampleRate;
+            this.channelsNumeric.Value = encoder.Channels;
 
         }
 
@@ -46,8 +47,8 @@ namespace TestStreamer.Controls
 
             //AudioSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
 
-            AudioSettings.Samplerate = (int)this.sampleRateNumeric.Value;
-            AudioSettings.Channels = (int)this.channelsNumeric.Value;
+            AudioSettings.EncodingParams.SampleRate = (int)this.sampleRateNumeric.Value;
+            AudioSettings.EncodingParams.Channels = (int)this.channelsNumeric.Value;
 
 
             this.Close();

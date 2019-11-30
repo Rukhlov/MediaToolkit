@@ -29,11 +29,8 @@ namespace MediaToolkit
         private MfH264Decoder decoder = null;
         private MfVideoProcessor processor = null;
 
-
         private H264Session h264Session = null;
         public IRtpReceiver rtpReceiver = null;
-        
-        //private RtpReceiver rtpReceiver = null;
 
         public void Setup(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
         {
@@ -58,16 +55,17 @@ namespace MediaToolkit
             int adapterIndex = 0;
             using (var dxgiFactory = new SharpDX.DXGI.Factory1())
             {
-                var adapter = dxgiFactory.Adapters1[adapterIndex];
-
-                device = new Device(adapter,
-                                    //DeviceCreationFlags.Debug |
-                                    DeviceCreationFlags.VideoSupport |
-                                    DeviceCreationFlags.BgraSupport);
-
-                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
                 {
-                    multiThread.SetMultithreadProtected(true);
+                    device = new Device(adapter,
+                            //DeviceCreationFlags.Debug |
+                            DeviceCreationFlags.VideoSupport |
+                            DeviceCreationFlags.BgraSupport);
+
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
                 }
             }
 

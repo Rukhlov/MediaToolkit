@@ -61,8 +61,9 @@ namespace TestStreamer
                 }
 
                 //rtpStreamer = new RtpStreamer(h264Session);
-                RtpSender.Start(networkParams);
+                RtpSender.Setup(networkParams);
 
+                RtpSender.Start();
 
                 //var hwContext = screenSource.hwContext;
                 //var hwDevice = hwContext.device;

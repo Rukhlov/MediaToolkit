@@ -115,7 +115,7 @@
             this.networkPanel.Name = "networkPanel";
             this.networkPanel.Size = new System.Drawing.Size(466, 49);
             this.networkPanel.TabIndex = 76;
-            this.networkPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.networkPanel_Paint);
+
             // 
             // unicastRadioButton
             // 
@@ -279,7 +279,7 @@
             this.label4.Size = new System.Drawing.Size(97, 17);
             this.label4.TabIndex = 14;
             this.label4.Text = "Video Source:";
-            this.label4.Click += new System.EventHandler(this.label4_Click);
+
             // 
             // videoSourcesComboBox
             // 

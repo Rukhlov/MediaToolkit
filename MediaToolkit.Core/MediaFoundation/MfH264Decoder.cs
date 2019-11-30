@@ -63,18 +63,22 @@ namespace MediaToolkit.MediaFoundation
                 //device = new Device(adapter, DeviceCreationFlags.BgraSupport);
                 if (device == null)
                 {
-                    var dxgiFactory = new SharpDX.DXGI.Factory1();
-                    var adapter = dxgiFactory.Adapters1[0];
-
-                    device = new Device(adapter,
-                        //DeviceCreationFlags.Debug |
-                        DeviceCreationFlags.VideoSupport |
-                        DeviceCreationFlags.BgraSupport);
-
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    using (var dxgiFactory = new SharpDX.DXGI.Factory1())
                     {
-                        multiThread.SetMultithreadProtected(true);
+                        using (var adapter = dxgiFactory.GetAdapter1(0))
+                        {
+                            device = new Device(adapter,
+                               //DeviceCreationFlags.Debug |
+                               DeviceCreationFlags.VideoSupport |
+                               DeviceCreationFlags.BgraSupport);
+
+                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                            {
+                                multiThread.SetMultithreadProtected(true);
+                            }
+                        }
                     }
+
                 }
 
 

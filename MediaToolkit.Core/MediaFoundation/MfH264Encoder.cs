@@ -13,7 +13,7 @@ using Direct2D = SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
-using Device = SharpDX.Direct3D11.Device;
+
 using System.IO;
 
 namespace MediaToolkit.MediaFoundation
@@ -27,7 +27,7 @@ namespace MediaToolkit.MediaFoundation
         private SharpDX.DXGI.Factory1 dxgiFactory = null;
         private SharpDX.DXGI.Adapter1 adapter = null;
 
-        public Device device = null;
+        public SharpDX.Direct3D11.Device device = null;
 
         private Transform encoder = null;
 
@@ -105,19 +105,31 @@ namespace MediaToolkit.MediaFoundation
             var adapterId = args.AdapterId;
             if (adapterId > 0)
             {
-                adapter = dxgiFactory.Adapters1.FirstOrDefault(a => a.Description1.Luid == adapterId);
+                //adapter = dxgiFactory.Adapters1.FirstOrDefault(a => a.Description1.Luid == adapterId);
+                var adapters = dxgiFactory.Adapters1;
+                for (int i =0; i< adapters.Length; i++)
+                {
+                    var _adapter = adapters[i];
+                    if(_adapter.Description1.Luid == adapterId)
+                    {
+                        adapter = _adapter;
+                        continue;
+                    }
+
+                    _adapter.Dispose();
+                }
             }
 
             if (adapter == null)
             {
-                adapter = dxgiFactory.Adapters1.FirstOrDefault();
+                adapter = dxgiFactory.GetAdapter1(0);//Adapters1.FirstOrDefault();
             }
 
             var descr = adapter.Description;
 
             logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
 
-            device = new Device(adapter,
+            device = new SharpDX.Direct3D11.Device(adapter,
                 // DeviceCreationFlags.Debug | 
                 DeviceCreationFlags.VideoSupport |
                 DeviceCreationFlags.BgraSupport);
@@ -643,7 +655,7 @@ namespace MediaToolkit.MediaFoundation
                             buffer.Unlock();
                         }
 
-                        // logger.Info(outputSample.SampleTime + " " + buffer.CurrentLength);
+                        //// logger.Info(outputSample.SampleTime + " " + buffer.CurrentLength);
                     }
                     finally
                     {
@@ -803,7 +815,7 @@ namespace MediaToolkit.MediaFoundation
                 deviceManager = null;
             }
             
-            logger.Debug(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+            
 
 
         }

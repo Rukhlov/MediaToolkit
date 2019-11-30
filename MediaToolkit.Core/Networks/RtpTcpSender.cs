@@ -17,7 +17,10 @@ namespace MediaToolkit
     public interface IRtpSender
     {
         IPEndPoint RemoteEndpoint { get; }
-        void Start(NetworkStreamingParams streamingParams);
+        IPEndPoint LocalEndpoint { get; }
+        void Setup(NetworkStreamingParams streamingParams);
+        void Start();
+
         void Push(byte[] bytes, double sec);
         void Close();
 
@@ -38,39 +41,48 @@ namespace MediaToolkit
 
         public IPEndPoint RemoteEndpoint { get; private set; }
 
+        public IPEndPoint LocalEndpoint { get; private set; }
 
-        public void Start(NetworkStreamingParams streamingParams)
+        public void Setup(NetworkStreamingParams streamingParams)
         {
+
+
+            var localAddr = streamingParams.LocalAddr;
+            var localPort = streamingParams.LocalPort;
+
+            var localIp = IPAddress.Any;
+            if (!string.IsNullOrEmpty(localAddr))
+            {
+                if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
+                {
+                    localIp = _localIp;
+                }
+            }
+
+            var localEndpoint = new IPEndPoint(localIp, localPort);
+
+            //var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
+            //var remoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
+
+            logger.Debug("RtpStreamer::Open(...) " + localEndpoint);
+
+
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            socket.Bind(localEndpoint);
+            socket.Listen(10);
+            this.LocalEndpoint = (IPEndPoint)socket.LocalEndPoint;
+            //this.RemoteEndpoint = (IPEndPoint)socket.RemoteEndPoint;
+        }
+
+        public void Start()
+        {
+            logger.Debug("RtpTcpSender::Start(...)");
+
             try
             {
-
                 Task.Run(() =>
                 {
-                    logger.Debug("RtpTcpSender::Open(...)");
-
-                    var localAddr = streamingParams.LocalAddr;
-                    var localPort = streamingParams.LocalPort;
-
-                    var localIp = IPAddress.Any;
-                    if (!string.IsNullOrEmpty(localAddr))
-                    {
-                        if (IPAddress.TryParse(localAddr, out IPAddress _localIp))
-                        {
-                            localIp = _localIp;
-                        }
-                    }
-
-                    var localEndpoint = new IPEndPoint(localIp, localPort);
-
-                    var remoteIp = IPAddress.Parse(streamingParams.RemoteAddr);
-                    RemoteEndpoint = new IPEndPoint(remoteIp, streamingParams.RemotePort);
-
-                    logger.Debug("RtpStreamer::Open(...) " + RemoteEndpoint + " " + localEndpoint);
-
-
-                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    socket.Bind(localEndpoint);
-                    socket.Listen(10);
+  
 
                     running = true;
 
@@ -80,7 +92,7 @@ namespace MediaToolkit
 
                         try
                         {
-                            logger.Info("Waiting for a connection " + localEndpoint.ToString());
+                            logger.Info("Waiting for a connection " + LocalEndpoint.ToString());
 
                             var _socket = socket.Accept();
                             

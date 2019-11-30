@@ -95,7 +95,13 @@ namespace TestStreamer
             Shcore.SetDpiAwareness();
 
             SharpDX.MediaFoundation.MediaManager.Startup();
-            SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+
+            //SharpDX.Configuration.EnableReleaseOnFinalizer = true;
+
+            SharpDX.Configuration.EnableObjectTracking = true;
+            SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
+
+            //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
 
             MediaToolkit.NativeAPIs.WinMM.timeBeginPeriod(1);
 

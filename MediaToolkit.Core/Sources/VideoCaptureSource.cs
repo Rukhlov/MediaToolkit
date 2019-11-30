@@ -21,15 +21,14 @@ namespace MediaToolkit
 {
     public class VideoCaptureSource : IVideoSource
     {
-        private Logger logger = LogManager.GetCurrentClassLogger();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public VideoCaptureSource() { }
 
-        private Device device = null;
-
-        public VideoBuffer Buffer { get; private set; }
-
+        private SharpDX.Direct3D11.Device device = null;
         public Texture2D SharedTexture { get; private set; }
+
+        public VideoBuffer SharedBitmap { get; private set; }
 
         public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -37,13 +36,17 @@ namespace MediaToolkit
             BufferUpdated?.Invoke();
         }
 
+        private GDI.Size srcSize = GDI.Size.Empty;
         public GDI.Size SrcSize
         {
             get
             {
-                return new GDI.Size(320, 240);
+                return srcSize;
             }
         }
+
+    
+        public CaptureState State { get; private set; } = CaptureState.Stopped;
 
         public event Action<CaptureState> StateChanged;
         private void OnStateChanged(CaptureState state)
@@ -51,29 +54,186 @@ namespace MediaToolkit
             StateChanged?.Invoke(state);
         }
 
-        public CaptureState State { get; private set; } = CaptureState.Stopped;
-
         private Texture2D texture = null;
         private SourceReader sourceReader = null;
-        private MediaSource mediaSource = null;
 
         private MfVideoProcessor processor = null;
 
         public void Setup(object pars)
         {
-            VideoCaptureParams captureParams = pars as VideoCaptureParams;
-            var symLink = captureParams.Deviceid;
-
             logger.Debug("VideoCaptureSource::Setup()");
 
-            int deviceIndex = 1;
+            MfVideoCaptureParams captureParams = pars as MfVideoCaptureParams;
 
+            var deviceId = captureParams.DeviceId;
+
+            try
+            {
+                sourceReader = CreateSourceReaderByDeviceId(deviceId);
+
+                logger.Debug("------------------CurrentMediaType-------------------");
+                var mediaType = sourceReader.GetCurrentMediaType(SourceReaderIndex.FirstVideoStream);
+                logger.Debug(MfTool.LogMediaType(mediaType));
+
+                srcSize = MfTool.GetFrameSize(mediaType);
+
+                var destSize = captureParams.DestSize;
+
+                var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+
+
+                mediaType?.Dispose();
+
+                int adapterIndex = 0;
+                using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+                {
+                    using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
+                    {
+                        var deviceCreationFlags = DeviceCreationFlags.Debug |
+                                                  DeviceCreationFlags.VideoSupport |
+                                                  DeviceCreationFlags.BgraSupport;
+
+                        device = new Device(adapter, deviceCreationFlags);
+
+                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                        {
+                            multiThread.SetMultithreadProtected(true);
+                        }
+                    }
+  
+                }
+
+
+                SharedTexture = new Texture2D(device,
+                     new Texture2DDescription
+                     {
+
+                         CpuAccessFlags = CpuAccessFlags.None,
+                         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                         Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                         Width = destSize.Width,
+                         Height = destSize.Height,
+
+                         MipLevels = 1,
+                         ArraySize = 1,
+                         SampleDescription = { Count = 1, Quality = 0 },
+                         Usage = ResourceUsage.Default,
+                         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                         OptionFlags = ResourceOptionFlags.Shared,
+
+                     });
+
+                texture = new Texture2D(device,
+                        new Texture2DDescription
+                        {
+                            CpuAccessFlags = CpuAccessFlags.Read,
+                            //BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                            BindFlags = BindFlags.None,
+                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                            Width = destSize.Width,
+                            Height = destSize.Height,
+                            MipLevels = 1,
+                            ArraySize = 1,
+                            SampleDescription = { Count = 1, Quality = 0 },
+                            Usage = ResourceUsage.Staging,
+                            //OptionFlags = ResourceOptionFlags.Shared,
+                            OptionFlags = ResourceOptionFlags.None,
+                        });
+
+
+                processor = new MfVideoProcessor(null);
+                var inProcArgs = new MfVideoArgs
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    // Format = VideoFormatGuids.Rgb24,
+                    Format = subtype,//VideoFormatGuids.NV12,
+                };
+
+
+                var outProcArgs = new MfVideoArgs
+                {
+                    Width = destSize.Width,
+                    Height = destSize.Height,
+                    Format = VideoFormatGuids.Argb32,
+                    //Format = VideoFormatGuids.Rgb32,//VideoFormatGuids.Argb32,
+                };
+
+                processor.Setup(inProcArgs, outProcArgs);
+
+
+                //processor.SetMirror(VideoProcessorMirror.MirrorHorizontal);
+                processor.SetMirror(VideoProcessorMirror.MirrorVertical);
+
+
+                State = CaptureState.Initialized;
+                OnStateChanged(State);
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+                CleanUp();
+
+                throw;
+            }
+
+        }
+
+        public static SourceReader CreateSourceReaderByDeviceId(string symLink)
+        {
+
+            Activate activate = GetActivateBySymLink(symLink);
+
+            return CreateSourceReader(activate);
+        }
+
+        public static SourceReader CreateSourceReader(Activate activate)
+        {
+            SourceReader reader = null;
+            try
+            {
+                if (activate == null)
+                {
+                    //..
+                    return null;
+                }
+
+                using (var source = activate.ActivateObject<MediaSource>())
+                {
+                    using (var mediaAttributes = new MediaAttributes(IntPtr.Zero))
+                    {
+                        //MediaFactory.CreateAttributes(mediaAttributes, 2);
+                        //mediaAttributes.Set(SourceReaderAttributeKeys.EnableVideoProcessing, 1);
+
+                        //var devMan = new DXGIDeviceManager();
+                        //devMan.ResetDevice(device);
+                        //mediaAttributes.Set(SourceReaderAttributeKeys.D3DManager, devMan);
+
+                        reader = new SourceReader(source, mediaAttributes);
+                    }
+                }
+
+            }
+            finally
+            {
+                activate?.Dispose();
+                // mediaSource?.Dispose();
+            }
+
+            return reader;
+        }
+
+        private static Activate GetActivateBySymLink(string symLink)
+        {
+            Activate activate = null;
             Activate[] activates = null;
             using (var attributes = new MediaAttributes())
             {
                 MediaFactory.CreateAttributes(attributes, 2);
                 attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
-                attributes.Set(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink, symLink);
+                //attributes.Set(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink, symLink);
 
                 activates = MediaFactory.EnumDeviceSources(attributes);
 
@@ -82,147 +242,48 @@ namespace MediaToolkit
             if (activates == null || activates.Length == 0)
             {
                 logger.Error("SourceTypeVideoCapture not found");
-                return;
+                return null ;
             }
 
-            //foreach (var activate in activates)
-            //{
-            //    Console.WriteLine("---------------------------------------------");
-            //    var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-            //    var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
-            //    //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
-            //    var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
 
-            //    logger.Info("FriendlyName " + friendlyName + "\r\n" +
-            //        "isHwSource " + isHwSource + "\r\n" +
-            //        //"maxBuffers " + maxBuffers + 
-            //        "symbolicLink " + symbolicLink);
-            //}
-
-
-            var currentActivator = activates.FirstOrDefault(); //activates[deviceIndex];
-
-
-            mediaSource = currentActivator.ActivateObject<MediaSource>();
-
-            foreach (var a in activates)
+            foreach (var _activate in activates)
             {
-                a.Dispose();
-            }
-
-            using (var mediaAttributes = new MediaAttributes(IntPtr.Zero))
-            {
-                MediaFactory.CreateAttributes(mediaAttributes, 2);
-                mediaAttributes.Set(SourceReaderAttributeKeys.EnableVideoProcessing, 1);
+                Console.WriteLine("---------------------------------------------");
+                var friendlyName = _activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+                var isHwSource = _activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+                //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+                var symbolicLink = _activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
 
 
-                //var devMan = new DXGIDeviceManager();
-                //devMan.ResetDevice(device);
+                logger.Info("FriendlyName " + friendlyName + "\r\n" +
+                "isHwSource " + isHwSource + "\r\n" +
+                //"maxBuffers " + maxBuffers + 
+                "symbolicLink " + symbolicLink);
 
-                //mediaAttributes.Set(SourceReaderAttributeKeys.D3DManager, devMan);
-
-
-                //MediaFactory.CreateSourceReaderFromMediaSource(mediaSource, mediaAttributes, sourceReader);
-
-                sourceReader = new SourceReader(mediaSource, mediaAttributes);
-            }
-
-            Console.WriteLine("------------------CurrentMediaType-------------------");
-            var mediaType = sourceReader.GetCurrentMediaType(SourceReaderIndex.FirstVideoStream);
-            Console.WriteLine(MfTool.LogMediaType(mediaType));
-
-            var frameSize = MfTool.GetFrameSize(mediaType);
-            var destSize = captureParams.DestSize;
-
-            var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-
-
-            mediaType?.Dispose();
-
-            //Device device = null;
-            int adapterIndex = 0;
-            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-            {
-                var adapter = dxgiFactory.Adapters1[adapterIndex];
-
-                device = new Device(adapter,
-                                    //DeviceCreationFlags.Debug |
-                                    DeviceCreationFlags.VideoSupport |
-                                    DeviceCreationFlags.BgraSupport);
-
-                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                if (symbolicLink == symLink)
                 {
-                    multiThread.SetMultithreadProtected(true);
+                    activate = _activate;
+
+                    continue;
                 }
+
+                _activate?.Dispose();
             }
 
-
-            SharedTexture = new Texture2D(device,
-                 new Texture2DDescription
-                 {
-
-                     CpuAccessFlags = CpuAccessFlags.None,
-                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                     Width = destSize.Width,
-                     Height = destSize.Height,
-
-                     MipLevels = 1,
-                     ArraySize = 1,
-                     SampleDescription = { Count = 1, Quality = 0 },
-                     Usage = ResourceUsage.Default,
-                     //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                     OptionFlags = ResourceOptionFlags.Shared,
-
-                 });
-
-            texture = new Texture2D(device,
-                    new Texture2DDescription
-                    {
-                        CpuAccessFlags = CpuAccessFlags.Read,
-                        BindFlags = BindFlags.None,
-                        Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                        Width = destSize.Width,
-                        Height = destSize.Height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = { Count = 1, Quality = 0 },
-                        Usage = ResourceUsage.Staging,
-                        OptionFlags = ResourceOptionFlags.None,
-                    });
-
-
-            processor = new MfVideoProcessor(null);
-            var inProcArgs = new MfVideoArgs
-            {
-                Width = frameSize.Width,
-                Height = frameSize.Height,
-                // Format = VideoFormatGuids.Rgb24,
-                Format = subtype,//VideoFormatGuids.NV12,
-            };
-
-
-            var outProcArgs = new MfVideoArgs
-            {
-                Width = destSize.Width,
-                Height = destSize.Height,
-                Format = VideoFormatGuids.Argb32,
-                //Format = VideoFormatGuids.Rgb32,//VideoFormatGuids.Argb32,
-            };
-
-            processor.Setup(inProcArgs, outProcArgs);
-
-
-            //processor.SetMirror(VideoProcessorMirror.MirrorHorizontal);
-            processor.SetMirror(VideoProcessorMirror.MirrorVertical);
-
-
+            return activate;
         }
 
         public void Start()
         {
             logger.Debug("VideoCaptureSource::Start()");
-            running = true;
+
+            if(State != CaptureState.Initialized)
+            {
+                throw new InvalidOperationException("Invalid capture state " + State);
+            }
+
+            State = CaptureState.Starting;
+            OnStateChanged(State);
 
             Task.Run(() =>
             {
@@ -232,71 +293,26 @@ namespace MediaToolkit
 
                 try
                 {
+                    State = CaptureState.Capturing;
+                    OnStateChanged(State);
 
-                    while (running)
+                    while (State == CaptureState.Capturing)
                     {
-                        int actualIndex = 0;
-                        SourceReaderFlags flags = SourceReaderFlags.None;
-                        long timestamp = 0;
-                        var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None, out actualIndex, out flags, out timestamp);
 
+                        var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None, 
+                            out int actualIndex, out SourceReaderFlags flags, out long timestamp);
                         try
                         {
                             //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
 
+                            if (flags != SourceReaderFlags.None)
+                            {
+                                logger.Debug("sourceReader.ReadSample(...) " + flags);
+                            }
+
                             if (sample != null)
                             {
-                                //Console.WriteLine("SampleTime " + sample.SampleTime + " SampleDuration " + sample.SampleDuration + " SampleFlags " + sample.SampleFlags);
-                                Sample outputSample = null;
-                                try
-                                {
-                                    var res = processor.ProcessSample(sample, out outputSample);
-
-                                    if (res)
-                                    {
-                                        //Console.WriteLine("outputSample!=null" + (outputSample != null));
-
-                                        var mediaBuffer = outputSample.ConvertToContiguousBuffer();
-                                        try
-                                        {
-                                            var ptr = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
-
-                                            //var width = outProcArgs.Width;
-                                            //var height = outProcArgs.Height;
-
-                                            var dataBox = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
-
-                                            Kernel32.CopyMemory(dataBox.DataPointer, ptr, (uint)cbCurrentLengthRef);
-
-                                            device.ImmediateContext.UnmapSubresource(texture, 0);
-
-
-                                            device.ImmediateContext.CopyResource(texture, SharedTexture);
-                                            device.ImmediateContext.Flush();
-
-                                            OnBufferUpdated();
-
-                                            mediaBuffer.Unlock();
-
-                                        }
-                                        finally
-                                        {
-                                            mediaBuffer?.Dispose();
-                                        }
-                                    }
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.Error(ex);
-                                }
-                                finally
-                                {
-                                    if (outputSample != null)
-                                    {
-                                        outputSample.Dispose();
-                                    }
-                                }
+                                ProcessSample(sample);
                             }
                         }
                         finally
@@ -319,18 +335,77 @@ namespace MediaToolkit
                         processor.Stop();
                     }
 
+                    CleanUp();
+
+                    State = CaptureState.Stopped;
+                    OnStateChanged(State);
                 }
 
             });
 
         }
 
-        private volatile bool running = false;
+        private void ProcessSample(Sample sample)
+        {
+            Sample outputSample = null;
+            try
+            {
+                var res = processor.ProcessSample(sample, out outputSample);
+
+                if (res)
+                {
+                   // Console.WriteLine("outputSample!=null" + (outputSample != null));
+
+                    var mediaBuffer = outputSample.ConvertToContiguousBuffer();
+                    try
+                    {
+                        var ptr = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
+
+                        ////var width = outProcArgs.Width;
+                        ////var height = outProcArgs.Height;
+
+                        var dataBox = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
+
+                        Kernel32.CopyMemory(dataBox.DataPointer, ptr, (uint)cbCurrentLengthRef);
+
+                        device.ImmediateContext.UnmapSubresource(texture, 0);
+
+
+                        device.ImmediateContext.CopyResource(texture, SharedTexture);
+                        device.ImmediateContext.Flush();
+
+                        OnBufferUpdated();
+
+                        mediaBuffer.Unlock();
+
+                    }
+                    finally
+                    {
+                        mediaBuffer?.Dispose();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+            finally
+            {
+                if (outputSample != null)
+                {
+                    outputSample.Dispose();
+                    outputSample = null;
+                }
+            }
+        }
+
         public void Stop()
         {
             logger.Debug("VideoCaptureSource::Stop()");
 
-            running = false;
+            State = CaptureState.Stopping;
+           
         }
 
 
@@ -339,16 +414,15 @@ namespace MediaToolkit
         {
             logger.Debug("VideoCaptureSource::Close()");
 
-            if (mediaSource != null)
-            {
-                //mediaSource?.Shutdown();
+            CleanUp();
+        }
 
-                mediaSource.Dispose();
-                mediaSource = null;
-            }
-
+        private void CleanUp()
+        {
             if (sourceReader != null)
             {
+                //sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
+
                 sourceReader.Dispose();
                 sourceReader = null;
             }
@@ -376,14 +450,12 @@ namespace MediaToolkit
                 processor.Close();
                 processor = null;
             }
-        }
 
-        public void Dispose()
-        {
+            State = CaptureState.Stopped;
 
         }
 
-        private static void LogSourceTypes(SourceReader sourceReader)
+        public static void LogSourceTypes(SourceReader sourceReader)
         {
             int streamIndex = 0;
             while (true)

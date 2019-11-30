@@ -13,7 +13,7 @@ using Direct2D = SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
-using Device = SharpDX.Direct3D11.Device;
+
 using System.IO;
 using MediaToolkit.MediaFoundation;
 using System.Drawing;
@@ -29,9 +29,9 @@ namespace MediaToolkit.MediaFoundation
         private int inputStreamId = -1;
         private int outputStreamId = -1;
 
-        public readonly Device device = null;
+        public readonly SharpDX.Direct3D11.Device device = null;
 
-        public MfVideoProcessor(Device d)
+        public MfVideoProcessor(SharpDX.Direct3D11.Device d)
         {
             this.device = d;
         }
@@ -59,10 +59,14 @@ namespace MediaToolkit.MediaFoundation
                         bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                         if (d3d11Aware)
                         {
-                            DXGIDeviceManager devMan = new DXGIDeviceManager();
-                            devMan.ResetDevice(device);
+                            using (DXGIDeviceManager devMan = new DXGIDeviceManager())
+                            {
+                                devMan.ResetDevice(device);
 
-                            processor.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                                processor.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            }
+
+                            
                         }
                     }
 
@@ -212,6 +216,7 @@ namespace MediaToolkit.MediaFoundation
 
                 // Create output sample
 
+
                 if (createSample)
                 {
                     outputSample = MediaFactory.CreateSample();
@@ -246,8 +251,13 @@ namespace MediaToolkit.MediaFoundation
 
                 var res = processor.TryProcessOutput(TransformProcessOutputFlags.None,  outputDataBuffer, out TransformProcessOutputStatus status);
 
+                //sample?.Dispose();
+                //sample = null;
+
                 if (res.Success)
                 {
+                    //outputSample = outputDataBuffer[0].PSample;
+                    //s.Dispose();
 
                     if (outputSample == null)
                     {

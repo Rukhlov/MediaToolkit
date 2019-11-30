@@ -85,15 +85,16 @@ namespace TestClient.Controls
             try
             {
 
-                var uri = remoteDesktopTextBox.Text;
-                var uriBuilder = new UriBuilder(uri);
+                var addrStr = remoteDesktopTextBox.Text;
+                //var uriBuilder = new UriBuilder(uri);
+                var uri = new Uri("net.tcp://" + addrStr);
 
-                logger.Info("Connect to: " + uriBuilder.ToString());
+                logger.Info("Connect to: " + uri.ToString());
 
-                var addr = uriBuilder.Host;
-                var port = uriBuilder.Port;
+                var host = uri.Host;//uriBuilder.Host;
+                var port = uri.Port;//uriBuilder.Port;
 
-                Start(addr, port);
+                Start(host, port);
             }
             catch(Exception ex)
             {
