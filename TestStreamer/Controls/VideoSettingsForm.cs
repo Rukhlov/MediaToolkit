@@ -200,5 +200,24 @@ namespace TestStreamer.Controls
             //regionForm = null;
             snippingTool.Snip(VideoSettings.DisplayRegion, areaSelected);
         }
+
+        private void adjustAspectRatioButton_Click(object sender, EventArgs e)
+        {
+            var srcSize = new Size (this.CaptureRegion.Width, this.CaptureRegion.Height);
+            var destSize= new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
+
+  
+            var ratio = srcSize.Width / (double)srcSize.Height;
+            int destWidth = destSize.Width;
+            int destHeight = (int)(destWidth / ratio);
+            if (ratio < 1)
+            {
+                destHeight = destSize.Height;
+                destWidth = (int)(destHeight * ratio);
+            }
+            this.destWidthNumeric.Value = destWidth;
+            this.destHeightNumeric.Value = destHeight;
+            
+        }
     }
 }

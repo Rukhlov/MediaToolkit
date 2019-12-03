@@ -46,13 +46,13 @@
             this.panel2.Controls.Add(this.connectButton);
             this.panel2.Location = new System.Drawing.Point(3, 3);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(489, 275);
+            this.panel2.Size = new System.Drawing.Size(499, 287);
             this.panel2.TabIndex = 25;
             // 
             // disconnectButton
             // 
             this.disconnectButton.AutoSize = true;
-            this.disconnectButton.Location = new System.Drawing.Point(228, 73);
+            this.disconnectButton.Location = new System.Drawing.Point(228, 76);
             this.disconnectButton.Name = "disconnectButton";
             this.disconnectButton.Size = new System.Drawing.Size(105, 27);
             this.disconnectButton.TabIndex = 19;
@@ -83,16 +83,17 @@
             // 
             // remoteDesktopTextBox
             // 
-            this.remoteDesktopTextBox.Location = new System.Drawing.Point(3, 45);
+            this.remoteDesktopTextBox.Location = new System.Drawing.Point(3, 48);
             this.remoteDesktopTextBox.Name = "remoteDesktopTextBox";
             this.remoteDesktopTextBox.Size = new System.Drawing.Size(330, 22);
             this.remoteDesktopTextBox.TabIndex = 17;
             this.remoteDesktopTextBox.Text = "192.168.1.135";
+            this.remoteDesktopTextBox.TextChanged += new System.EventHandler(this.remoteDesktopTextBox_TextChanged);
             // 
             // connectButton
             // 
             this.connectButton.AutoSize = true;
-            this.connectButton.Location = new System.Drawing.Point(120, 73);
+            this.connectButton.Location = new System.Drawing.Point(120, 76);
             this.connectButton.Name = "connectButton";
             this.connectButton.Size = new System.Drawing.Size(102, 27);
             this.connectButton.TabIndex = 18;

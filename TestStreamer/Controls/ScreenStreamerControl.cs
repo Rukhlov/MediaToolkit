@@ -68,8 +68,23 @@ namespace TestStreamer.Controls
 
         public void UnLink()
         {
+            StopStreaming();
+
+            if (statisticForm != null)
+            {
+                statisticForm.Stop();
+                statisticForm.Visible = false;
+            }
+
+            if (previewForm != null && !previewForm.IsDisposed)
+            {
+                previewForm.Close();
+                previewForm = null;
+            }
+
             //...
             mainForm = null;
+
         }
 
         private void startButton_Click(object sender, EventArgs e)
@@ -96,6 +111,10 @@ namespace TestStreamer.Controls
                     transportMode = TransportMode.Udp;
                 }
 
+                if(!isMulticastMode && transportMode == TransportMode.Udp)
+                {
+                    throw new NotSupportedException("TransportMode.Udp currently not supported...");
+                }
                 videoSettings.NetworkParams.TransportMode = transportMode;
                 audioSettings.NetworkParams.TransportMode = transportMode;
 
@@ -540,8 +559,7 @@ namespace TestStreamer.Controls
         {
             logger.Debug("StartAudio()");
 
-
-            var audioParams = new AudioEncodingParams
+            audioSettings.EncodingParams = new AudioEncodingParams
             {
                 SampleRate = 8000,
                 Channels = 1,
@@ -569,7 +587,7 @@ namespace TestStreamer.Controls
 
             audioStreamer.StateChanged += AudioStreamer_StateChanged;
 
-            audioStreamer.Setup(audioParams, networkParams);
+            audioStreamer.Setup(audioSettings.EncodingParams, networkParams);
 
             var rtpSender = audioStreamer.RtpSender;
 
@@ -792,10 +810,11 @@ namespace TestStreamer.Controls
                             var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
                             var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
 
-                            using (var sourceReader = VideoCaptureSource.CreateSourceReader(activate))
+                            using (var mediaSource = activate.ActivateObject<MediaSource>())
                             {
-                                using (var mediaType = sourceReader.GetCurrentMediaType(SourceReaderIndex.FirstVideoStream))
+                                using (var mediaType = GetCurrentMediaType(mediaSource))
                                 {
+
                                     var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
                                     var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
 
@@ -804,9 +823,26 @@ namespace TestStreamer.Controls
                                     var deviceDescription = friendlyName + " (" + frameSize.Width + "x" + frameSize.Height + " " + frameRate.ToString("0") + " fps)";
 
                                     devices.Add(new VideoCaptureDevice { Name = deviceDescription, SymLink = symbolicLink });
-
                                 }
-                            }       
+
+                            }
+
+
+                            //using (var sourceReader = VideoCaptureSource.CreateSourceReader(activate))
+                            //{
+                            //    using (var mediaType = sourceReader.GetCurrentMediaType(SourceReaderIndex.FirstVideoStream))
+                            //    {
+                            //        var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
+                            //        var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
+
+                            //        var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+
+                            //        var deviceDescription = friendlyName + " (" + frameSize.Width + "x" + frameSize.Height + " " + frameRate.ToString("0") + " fps)";
+
+                            //        devices.Add(new VideoCaptureDevice { Name = deviceDescription, SymLink = symbolicLink });
+
+                            //    }
+                            //}       
                         }
                         catch(Exception ex)
                         {
@@ -836,7 +872,36 @@ namespace TestStreamer.Controls
 
         }
 
+        private static SharpDX.MediaFoundation.MediaType GetCurrentMediaType(MediaSource mediaSource)
+        {
+            SharpDX.MediaFoundation.MediaType mediaType = null;
+            PresentationDescriptor presentationDescriptor = null;
+            try
+            {
+                mediaSource.CreatePresentationDescriptor(out presentationDescriptor);
 
+                for (int streamIndex = 0; streamIndex < presentationDescriptor.StreamDescriptorCount; streamIndex++)
+                {
+                    using (var steamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(streamIndex, out SharpDX.Mathematics.Interop.RawBool selected))
+                    {
+                        if (selected)
+                        {
+                            using (var mediaHandler = steamDescriptor.MediaTypeHandler)
+                            {
+                                 mediaType = mediaHandler.CurrentMediaType;
+
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                presentationDescriptor?.Dispose();
+            }
+
+            return mediaType;
+        }
 
         private void videoSourcesComboBox_SelectedValueChanged_1(object sender, EventArgs e)
         {
@@ -926,6 +991,22 @@ namespace TestStreamer.Controls
 
         }
 
+        public ScreencastChannelInfo[] GetScreencastInfo()
+        {
+            var vci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
+            if (vci != null)
+            {
+                vci.ClientsCount = videoStreamer?.ClientsCount ?? 0;
+            }
+
+            var aci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is AudioChannelInfo);
+            if (aci != null)
+            {
+                vci.ClientsCount = videoStreamer?.ClientsCount ?? 0;
+            }
+
+            return ScreencastChannelsInfos?.ToArray();
+        }
 
         public void Play(ScreencastChannelInfo[] infos)
         {

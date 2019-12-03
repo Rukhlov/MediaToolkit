@@ -22,6 +22,55 @@ namespace WebCamTest
     class Program
     {
 
+        public static void EnumerateCaptureSources()
+        {
+
+            Activate[] activates = null;
+            using (var attributes = new MediaAttributes())
+            {
+                MediaFactory.CreateAttributes(attributes, 1);
+                attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+                activates = MediaFactory.EnumDeviceSources(attributes);
+            }
+
+            if (activates == null || activates.Length == 0)
+            {
+                Console.WriteLine("SourceTypeVideoCapture not found");
+                return;
+            }
+
+
+            foreach (var _activate in activates)
+            {
+                Console.WriteLine("---------------------------------------------");
+                var friendlyName = _activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+                var isHwSource = _activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+                //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+                var symbolicLink = _activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+
+
+                Console.WriteLine("FriendlyName " + friendlyName + "\r\n" +
+                "isHwSource " + isHwSource + "\r\n" +
+                //"maxBuffers " + maxBuffers + 
+                "symbolicLink " + symbolicLink);
+
+
+
+                var mediaSource = _activate.ActivateObject<MediaSource>();
+
+                var log = MfTool.LogMediaSource(mediaSource);
+
+                Console.WriteLine(log);
+  
+                mediaSource?.Dispose();
+
+                _activate?.Dispose();
+            }
+
+
+        }
+
+
         [STAThread]
         static void Main(string[] args)
         {
@@ -30,6 +79,10 @@ namespace WebCamTest
             try
             {
                 MediaManager.Startup();
+
+                //EnumerateCaptureSources();
+                //Console.ReadKey();
+                //return;
 
                 var device = GetVideoCaptureDevices();
                 var d = device[1];
@@ -70,7 +123,7 @@ namespace WebCamTest
 
                 uiThread.Start();
 
-                videoCaptureSource.BufferUpdated += () => 
+                videoCaptureSource.BufferUpdated += () =>
                 {
                     provider?.Update();
                 };

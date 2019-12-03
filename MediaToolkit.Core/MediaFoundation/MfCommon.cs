@@ -232,7 +232,7 @@ namespace MediaToolkit.MediaFoundation
         {
             return PackToLong(size.Width, size.Height);
         }
-        public static GDI.Size GetFrameSize(long val)
+        public static GDI.Size LongToSize(long val)
         {
             var pars = UnPackLongToInts(val);
             return new GDI.Size(pars[0], pars[1]);
@@ -310,6 +310,48 @@ namespace MediaToolkit.MediaFoundation
             }
 
             return frameSize;
+        }
+
+
+        public static string LogMediaSource(MediaSource mediaSource)
+        {
+            StringBuilder log = new StringBuilder();
+            PresentationDescriptor presentationDescriptor = null;
+            try
+            {
+                mediaSource.CreatePresentationDescriptor(out presentationDescriptor);
+
+                for (int streamIndex = 0; streamIndex < presentationDescriptor.StreamDescriptorCount; streamIndex++)
+                {
+                    
+                    log.AppendLine("StreamIndex " + streamIndex + "---------------------------------------");
+
+                    using (var steamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(streamIndex, out SharpDX.Mathematics.Interop.RawBool selected))
+                    {
+
+                        using (var mediaHandler = steamDescriptor.MediaTypeHandler)
+                        {
+                            for (int mediaIndex = 0; mediaIndex < mediaHandler.MediaTypeCount; mediaIndex++)
+                            {
+                                using (var mediaType = mediaHandler.GetMediaTypeByIndex(mediaIndex))
+                                {
+                                    var mediaTypeLog = LogMediaType(mediaType);
+
+                                    log.AppendLine(mediaTypeLog);
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+            }
+            finally
+            {
+                presentationDescriptor?.Dispose();
+            }
+
+            return log.ToString();
         }
 
     }

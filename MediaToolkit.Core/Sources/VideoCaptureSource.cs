@@ -69,6 +69,25 @@ namespace MediaToolkit
 
             try
             {
+                int adapterIndex = 0;
+                using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+                {
+                    using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
+                    {
+                        var deviceCreationFlags = //DeviceCreationFlags.Debug |
+                                                  DeviceCreationFlags.VideoSupport |
+                                                  DeviceCreationFlags.BgraSupport;
+
+                        device = new Device(adapter, deviceCreationFlags);
+
+                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                        {
+                            multiThread.SetMultithreadProtected(true);
+                        }
+                    }
+
+                }
+
                 sourceReader = CreateSourceReaderByDeviceId(deviceId);
 
                 logger.Debug("------------------CurrentMediaType-------------------");
@@ -83,25 +102,6 @@ namespace MediaToolkit
 
 
                 mediaType?.Dispose();
-
-                int adapterIndex = 0;
-                using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-                {
-                    using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
-                    {
-                        var deviceCreationFlags = DeviceCreationFlags.Debug |
-                                                  DeviceCreationFlags.VideoSupport |
-                                                  DeviceCreationFlags.BgraSupport;
-
-                        device = new Device(adapter, deviceCreationFlags);
-
-                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                        {
-                            multiThread.SetMultithreadProtected(true);
-                        }
-                    }
-  
-                }
 
 
                 SharedTexture = new Texture2D(device,
@@ -181,46 +181,55 @@ namespace MediaToolkit
 
         }
 
-        public static SourceReader CreateSourceReaderByDeviceId(string symLink)
+        private SourceReader CreateSourceReaderByDeviceId(string symLink)
         {
-
-            Activate activate = GetActivateBySymLink(symLink);
-
-            return CreateSourceReader(activate);
-        }
-
-        public static SourceReader CreateSourceReader(Activate activate)
-        {
+            Activate activate = null;
             SourceReader reader = null;
             try
             {
-                if (activate == null)
+                activate = GetActivateBySymLink(symLink);
+                if (activate != null)
                 {
-                    //..
-                    return null;
+                    reader = CreateSourceReader(activate);
                 }
-
-                using (var source = activate.ActivateObject<MediaSource>())
-                {
-                    using (var mediaAttributes = new MediaAttributes(IntPtr.Zero))
-                    {
-                        //MediaFactory.CreateAttributes(mediaAttributes, 2);
-                        //mediaAttributes.Set(SourceReaderAttributeKeys.EnableVideoProcessing, 1);
-
-                        //var devMan = new DXGIDeviceManager();
-                        //devMan.ResetDevice(device);
-                        //mediaAttributes.Set(SourceReaderAttributeKeys.D3DManager, devMan);
-
-                        reader = new SourceReader(source, mediaAttributes);
-                    }
-                }
-
+                
             }
             finally
             {
                 activate?.Dispose();
-                // mediaSource?.Dispose();
             }
+            return reader;
+        }
+
+        private SourceReader CreateSourceReader(Activate activate)
+        {
+            SourceReader reader = null;
+
+            using (var source = activate.ActivateObject<MediaSource>())
+            {
+                using (var mediaAttributes = new MediaAttributes(IntPtr.Zero))
+                {
+                    /* //Не все камеры поддерживают!
+                    MediaFactory.CreateAttributes(mediaAttributes, 10);
+                    //mediaAttributes.Set(SourceReaderAttributeKeys.EnableVideoProcessing, 1);
+
+                    mediaAttributes.Set(SinkWriterAttributeKeys.LowLatency, true);
+
+                    mediaAttributes.Set(SourceReaderAttributeKeys.EnableAdvancedVideoProcessing, true);
+                    mediaAttributes.Set(SinkWriterAttributeKeys.ReadwriteDisableConverters, 0);
+
+                    mediaAttributes.Set(SinkWriterAttributeKeys.ReadwriteEnableHardwareTransforms, 1);
+                    using (var devMan = new DXGIDeviceManager())
+                    {
+                        devMan.ResetDevice(device);
+                        mediaAttributes.Set(SourceReaderAttributeKeys.D3DManager, devMan);
+                    }
+                    */
+
+                    reader = new SourceReader(source, mediaAttributes);
+                }
+            }
+
 
             return reader;
         }

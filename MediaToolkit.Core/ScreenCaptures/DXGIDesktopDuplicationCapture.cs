@@ -75,7 +75,7 @@ namespace MediaToolkit
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
-                LogDxAdapters(dxgiFactory.Adapters1);
+                logger.Info(LogDxAdapters(dxgiFactory.Adapters1));
 
                 //var hMonitor = NativeAPIs.User32.GetMonitorFromRect(this.srcRect);
                 //if (hMonitor != IntPtr.Zero)
@@ -174,7 +174,6 @@ namespace MediaToolkit
                     dxgiFactory.Dispose();
                     dxgiFactory = null;
                 }
-
             }
 
 
@@ -1345,7 +1344,7 @@ namespace MediaToolkit
 
         }
 
-        public static void LogDxAdapters(Adapter1[] adapters)
+        public static string LogDxAdapters(Adapter1[] adapters)
         {
             StringBuilder log = new StringBuilder();
             log.AppendLine("");
@@ -1374,7 +1373,8 @@ namespace MediaToolkit
 
                 _adapter.Dispose();
             }
-            logger.Info(log);
+
+            return log.ToString();
         }
 
 

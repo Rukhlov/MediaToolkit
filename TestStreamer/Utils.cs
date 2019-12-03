@@ -4,12 +4,18 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace TestStreamer
 {
+
     public class SnippingTool
     {
         private SnippingForm form;
@@ -181,7 +187,7 @@ namespace TestStreamer
                 }
             }
 
-            protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+            protected override bool ProcessCmdKey(ref System.Windows.Forms.Message msg, Keys keyData)
             {
                 if (keyData == Keys.Escape)
                 {

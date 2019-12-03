@@ -31,7 +31,20 @@ namespace TestStreamer
 
         public RtpSession H264Session { get; private set; }
         public IRtpSender RtpSender { get; private set; }
-        
+
+        public int ClientsCount
+        {
+            get
+            {
+                int count = 0;
+                if (RtpSender != null)
+                {
+                    count = RtpSender.ClientsCount;
+                }
+
+                return count;
+            }
+        }
 
         //private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;

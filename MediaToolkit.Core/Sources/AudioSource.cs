@@ -56,7 +56,7 @@ namespace MediaToolkit
                     Capture = new WasapiLoopbackCapture(device);
                 }
 
-                Capture.DataAvailable += Capture_DataAvailable; ;
+                Capture.DataAvailable += Capture_DataAvailable; 
                 Capture.RecordingStopped += Capture_RecordingStopped;
 
 

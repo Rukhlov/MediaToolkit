@@ -18,6 +18,7 @@ namespace MediaToolkit
     {
         IPEndPoint RemoteEndpoint { get; }
         IPEndPoint LocalEndpoint { get; }
+        int ClientsCount { get; }
         void Setup(NetworkStreamingParams streamingParams);
         void Start();
 
@@ -38,6 +39,8 @@ namespace MediaToolkit
 
         private RtpSession session;
         private Socket socket;
+
+        public int ClientsCount { get; private set; }
 
         public IPEndPoint RemoteEndpoint { get; private set; }
 
@@ -86,7 +89,9 @@ namespace MediaToolkit
 
                     running = true;
 
-                    int clientsCount = 0;
+
+                    ClientsCount = 0;
+
                     while (running)
                     {
 
@@ -105,7 +110,8 @@ namespace MediaToolkit
 
                             try
                             {
-                                clientsCount++;
+                                ClientsCount++;
+
                                 if (!running)
                                 {
                                     break;
@@ -134,8 +140,10 @@ namespace MediaToolkit
                             }
                             finally
                             {
-                                clientsCount--;
+                                
                                 _socket?.Close();
+
+                                ClientsCount--;
                             }
                         }
                         catch(Exception ex)
@@ -151,6 +159,7 @@ namespace MediaToolkit
             {
                 logger.Error(ex);
                 Close();
+                ClientsCount = 0;
             }
         }
 

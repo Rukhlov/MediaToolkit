@@ -78,8 +78,8 @@ namespace MediaToolkit.Common
 
     public class AudioEncodingParams
     {
-        public int SampleRate = 0;
-        public int Channels = 0;
+        public int SampleRate = 8000;
+        public int Channels = 1;
         public int BitsPerSample = 0;
         public int BlockAlign = 0;
         public string Encoding = "";
@@ -305,6 +305,9 @@ namespace MediaToolkit.Common
 
         [DataMember]
         public MediaChannelInfo MediaInfo { get; set; }
+
+        [DataMember]
+        public int ClientsCount { get; set; }
 
     }
 

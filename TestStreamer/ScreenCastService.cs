@@ -165,7 +165,7 @@ namespace TestStreamer
         {
             logger.Debug("ScreenCastService::GetChannels()");
 
-            var infos = streamerControl?.ScreencastChannelsInfos?.ToArray();
+            var infos = streamerControl?.GetScreencastInfo();
 
             return infos;
 

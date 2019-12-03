@@ -28,6 +28,8 @@ namespace MediaToolkit
         private RtpSession session;
         private Socket socket;
 
+        public int ClientsCount { get; private set; } = 0;
+
         public IPEndPoint RemoteEndpoint { get; private set; }
         public IPEndPoint LocalEndpoint { get; private set; }
 

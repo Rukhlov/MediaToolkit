@@ -35,6 +35,19 @@ namespace TestStreamer
 
         private AudioEncoder audioResampler = null;
 
+        public int ClientsCount
+        {
+            get
+            {
+                int count = 0;
+                if (RtpSender != null)
+                {
+                    count = RtpSender.ClientsCount;
+                }
+
+                return count;
+            }
+        }
 
         public IRtpSender RtpSender { get; private set; }
 

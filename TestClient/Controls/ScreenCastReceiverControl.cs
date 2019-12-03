@@ -104,7 +104,47 @@ namespace TestClient.Controls
 
         private void disconnectButton_Click(object sender, EventArgs e)
         {
-            Close();
+            if (running)
+            {
+                running = false;
+            }
+            else
+            {
+                Close();
+            }
+
+            //Close();
+        }
+
+
+        private void hostsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var obj = hostsComboBox.SelectedItem;
+
+            if (obj != null)
+            {
+                var item = obj as ComboBoxItem;
+                if (item != null)
+                {
+                    var tag = item.Tag;
+                    if (tag != null)
+                    {
+                        var addr = tag.ToString();
+                        try
+                        {
+                            var builder = new UriBuilder(addr);
+
+                            remoteDesktopTextBox.Text = builder.Host + ":" + builder.Port;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Debug(ex);
+                        }
+
+                    }
+
+                }
+            }
         }
 
         public ScreenReceiver VideoReceiver { get; private set; }
@@ -202,6 +242,14 @@ namespace TestClient.Controls
                     {
                         transportMode = videoChannelInfo.Transport;
 
+                        if(transportMode == TransportMode.Tcp)
+                        {
+                            if (videoChannelInfo.ClientsCount > 0)
+                            {
+                                throw new Exception("Server is busy");
+                            }
+                        }
+
                         var videoAddr = videoChannelInfo.Address;
 
                         if(transportMode == TransportMode.Tcp)
@@ -216,10 +264,10 @@ namespace TestClient.Controls
                         //    //channel.Play()
                         //}
 
-                        if (transportMode == TransportMode.Tcp)
-                        {
-                           var res = channel.Play(channelInfos);
-                        }
+                        //if (transportMode == TransportMode.Tcp)
+                        //{
+                        //   var res = channel.Play(channelInfos);
+                        //}
 
                         var videoInfo = videoChannelInfo.MediaInfo as VideoChannelInfo;
                         if (videoInfo != null)
@@ -235,11 +283,37 @@ namespace TestClient.Controls
                             {
                                 //Width = 640,//2560,
                                 //Height = 480,//1440,
-                                Width = 1920,
-                                Height = 1080,
+                                //Width = 1920,
+                                //Height = 1080,
 
-                                FrameRate = 30,
+                                //FrameRate = 30,
+
+                                Width = videoInfo.Resolution.Width,
+                                Height = videoInfo.Resolution.Height,
+                                FrameRate = videoInfo.Fps,
+
                             };
+
+                            //bool keepRatio = true;
+                            //if (keepRatio)
+                            //{
+                            //    var srcSize = new Size(inputPars.Width, inputPars.Height);
+                            //    var destSize = new Size(outputPars.Width, outputPars.Height);
+
+
+                            //    var ratio = srcSize.Width / (double)srcSize.Height;
+                            //    int destWidth = destSize.Width;
+                            //    int destHeight = (int)(destWidth / ratio);
+                            //    if (ratio < 1)
+                            //    {
+                            //        destHeight = destSize.Height;
+                            //        destWidth = (int)(destHeight * ratio);
+                            //    }
+                            //    outputPars.Width = destWidth;
+                            //    outputPars.Height = destHeight;
+                            //}
+
+
 
                             var networkPars = new NetworkStreamingParams
                             {
@@ -269,6 +343,14 @@ namespace TestClient.Controls
                             if (transportMode == TransportMode.Tcp)
                             {
                                 audioAddr = ServerAddr;
+                            }
+
+                            if (transportMode == TransportMode.Tcp)
+                            {
+                                if (videoChannelInfo.ClientsCount > 0)
+                                {
+                                    throw new Exception("Server is busy");
+                                }
                             }
 
                             var audioPort = audioChannelInfo.Port;
@@ -382,9 +464,15 @@ namespace TestClient.Controls
                 State = ClientState.Faulted;
                 OnStateChanged(State);
 
+                //Close();
+            }
+            finally
+            {
                 Close();
             }
         }
+
+
         private D3DImageProvider2 imageProvider = null;
         private VideoForm testForm = null;
         private void ShowVideoForm(string title)
@@ -619,34 +707,11 @@ namespace TestClient.Controls
             syncEvent.Set();
         }
 
-        private void hostsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+
+
+        private void remoteDesktopTextBox_TextChanged(object sender, EventArgs e)
         {
-            var obj = hostsComboBox.SelectedItem;
 
-            if (obj != null)
-            {
-                var item = obj as ComboBoxItem;
-                if (item != null)
-                {
-                    var tag = item.Tag;
-                    if (tag != null)
-                    {
-                        var addr = tag.ToString();
-                        try
-                        {
-                            var builder = new UriBuilder(addr);
-
-                            remoteDesktopTextBox.Text = builder.Host + ":" + builder.Port;
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Debug(ex);
-                        }
-
-                    }
-
-                }
-            }
         }
 
 

@@ -115,15 +115,16 @@
             this.networkPanel.Name = "networkPanel";
             this.networkPanel.Size = new System.Drawing.Size(466, 49);
             this.networkPanel.TabIndex = 76;
-
             // 
             // unicastRadioButton
             // 
             this.unicastRadioButton.AutoSize = true;
+            this.unicastRadioButton.Checked = true;
             this.unicastRadioButton.Location = new System.Drawing.Point(5, 15);
             this.unicastRadioButton.Name = "unicastRadioButton";
             this.unicastRadioButton.Size = new System.Drawing.Size(76, 21);
             this.unicastRadioButton.TabIndex = 67;
+            this.unicastRadioButton.TabStop = true;
             this.unicastRadioButton.Text = "Unicast";
             this.unicastRadioButton.UseVisualStyleBackColor = true;
             this.unicastRadioButton.CheckedChanged += new System.EventHandler(this.unicastRadioButton_CheckedChanged);
@@ -131,12 +132,10 @@
             // multicastRadioButton
             // 
             this.multicastRadioButton.AutoSize = true;
-            this.multicastRadioButton.Checked = true;
             this.multicastRadioButton.Location = new System.Drawing.Point(266, 17);
             this.multicastRadioButton.Name = "multicastRadioButton";
             this.multicastRadioButton.Size = new System.Drawing.Size(84, 21);
             this.multicastRadioButton.TabIndex = 68;
-            this.multicastRadioButton.TabStop = true;
             this.multicastRadioButton.Text = "Multicast";
             this.multicastRadioButton.UseVisualStyleBackColor = true;
             this.multicastRadioButton.CheckedChanged += new System.EventHandler(this.multicastRadioButton_CheckedChanged);
@@ -279,7 +278,6 @@
             this.label4.Size = new System.Drawing.Size(97, 17);
             this.label4.TabIndex = 14;
             this.label4.Text = "Video Source:";
-
             // 
             // videoSourcesComboBox
             // 

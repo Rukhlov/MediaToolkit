@@ -70,9 +70,11 @@ namespace TestStreamer
         {
 
             closing = true;
+
+            screenStreamerControl.UnLink();
             this.Close();
 
-            //Application.Exit();
+           // Environment.Exit(0);
 
         }
 

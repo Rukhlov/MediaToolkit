@@ -58,6 +58,7 @@
             this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
             this.applyButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
+            this.adjustAspectRatioButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
@@ -69,6 +70,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.adjustAspectRatioButton);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.encoderComboBox);
             this.groupBox1.Controls.Add(this.label16);
@@ -439,6 +441,16 @@
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
+            // adjustAspectRatioButton
+            // 
+            this.adjustAspectRatioButton.Location = new System.Drawing.Point(349, 25);
+            this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
+            this.adjustAspectRatioButton.Size = new System.Drawing.Size(94, 23);
+            this.adjustAspectRatioButton.TabIndex = 74;
+            this.adjustAspectRatioButton.Text = "_Adjust";
+            this.adjustAspectRatioButton.UseVisualStyleBackColor = true;
+            this.adjustAspectRatioButton.Click += new System.EventHandler(this.adjustAspectRatioButton_Click);
+            // 
             // VideoSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -496,5 +508,6 @@
         private System.Windows.Forms.TextBox captureRegionTextBox;
         private System.Windows.Forms.CheckBox captureMouseCheckBox;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Button adjustAspectRatioButton;
     }
 }
