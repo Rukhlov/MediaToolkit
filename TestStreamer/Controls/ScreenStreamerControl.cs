@@ -14,6 +14,8 @@ using System.Diagnostics;
 using NAudio.CoreAudioApi;
 using MediaToolkit.UI;
 using SharpDX.MediaFoundation;
+using MediaToolkit.Utils;
+using MediaToolkit.NativeAPIs;
 
 namespace TestStreamer.Controls
 {
@@ -24,6 +26,8 @@ namespace TestStreamer.Controls
         public ScreenStreamerControl()
         {
             InitializeComponent();
+
+            UsbManager.RegisterNotification(this.Handle);
 
             UpdateVideoSources();
             LoadTransportItems();
@@ -37,6 +41,7 @@ namespace TestStreamer.Controls
             statInfoCheckBox.Checked = showStatistic;
 
         }
+
 
         private MainForm mainForm = null;
 
@@ -1328,6 +1333,66 @@ namespace TestStreamer.Controls
         {
 
         }
+
+
+
+
+
+        private readonly UsbDeviceManager UsbManager = new UsbDeviceManager();
+
+        protected override void WndProc(ref Message m)
+        {
+            if (this.Disposing)
+            {
+                base.WndProc(ref m);
+                return;
+            }
+
+            switch ((uint)m.Msg)
+            {
+                case WM.DEVICECHANGE:
+                    {
+                        uint eventCode = (uint)m.WParam;
+
+                        if (eventCode == DBT.DEVICEARRIVAL || eventCode == DBT.DEVICEREMOVECOMPLETE)
+                        {
+                            if (UsbDeviceManager.TryPtrToDeviceName(m.LParam, out string deviceName))
+                            {   // получили информацию о подключенном устройстве в виде:
+                                // \\?\USB#VID_0A89&PID_000C#6&2c24ce2e&0&4#{a5dcbf10-6530-11d2-901f-00c04fb951ed}
+                                if (eventCode == DBT.DEVICEARRIVAL)
+                                {
+                                    OnUsbDeviceArrival(deviceName);
+                                }
+                                else
+                                {
+                                    OnUsbDeviceMoveComplete(deviceName);
+                                }
+                            }
+                            else
+                            {//TODO:
+                                //...
+
+                            }
+                        }
+
+                        //logger.Debug("WM_DEVICECHANGE");
+                        return;
+                    }
+            }
+
+            base.WndProc(ref m);
+        }
+
+        private void OnUsbDeviceArrival(string deviceName)
+        {
+            logger.Debug("OnUsbDeviceArrival(...) " + deviceName);
+        }
+
+        private void OnUsbDeviceMoveComplete(string deviceName)
+        {
+            logger.Debug("OnUsbDeviceMoveComplete(...) " + deviceName);
+        }
+
     }
 
     public class AudioSettingsParams

@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using static MediaToolkit.NativeAPIs.MediaFoundation;
 using GDI = System.Drawing;
 
 namespace MediaToolkit
@@ -45,7 +45,7 @@ namespace MediaToolkit
             }
         }
 
-    
+
         public CaptureState State { get; private set; } = CaptureState.Stopped;
 
         public event Action<CaptureState> StateChanged;
@@ -192,7 +192,7 @@ namespace MediaToolkit
                 {
                     reader = CreateSourceReader(activate);
                 }
-                
+
             }
             finally
             {
@@ -201,18 +201,37 @@ namespace MediaToolkit
             return reader;
         }
 
+        private bool asyncMode = false;
+
+        private SourceReaderCallback sourceReaderCallback = null;
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+
         private SourceReader CreateSourceReader(Activate activate)
         {
             SourceReader reader = null;
 
             using (var source = activate.ActivateObject<MediaSource>())
             {
-                using (var mediaAttributes = new MediaAttributes(IntPtr.Zero))
-                {
-                    /* //Не все камеры поддерживают!
-                    MediaFactory.CreateAttributes(mediaAttributes, 10);
+                using (var mediaAttributes = new MediaAttributes())
+                { 
+                    if (asyncMode)
+                    {
+                        sourceReaderCallback = new SourceReaderCallback();
+                        sourceReaderCallback.OnReadSample += SourceReaderCallback_OnReadSample;
+
+                        var pUnk = Marshal.GetIUnknownForObject(sourceReaderCallback);
+                        using (var comObj = new SharpDX.ComObject(pUnk))
+                        {
+                            mediaAttributes.Set(SourceReaderAttributeKeys.AsyncCallback, comObj);
+
+                        }
+                        Marshal.Release(pUnk);
+
+                    }
+
                     //mediaAttributes.Set(SourceReaderAttributeKeys.EnableVideoProcessing, 1);
 
+                    /* //Не все камеры поддерживают!
                     mediaAttributes.Set(SinkWriterAttributeKeys.LowLatency, true);
 
                     mediaAttributes.Set(SourceReaderAttributeKeys.EnableAdvancedVideoProcessing, true);
@@ -226,13 +245,46 @@ namespace MediaToolkit
                     }
                     */
 
+
                     reader = new SourceReader(source, mediaAttributes);
+
                 }
             }
 
 
             return reader;
         }
+
+        private int SourceReaderCallback_OnReadSample(SharpDX.Result result, int index, SourceReaderFlags flags, long timestamp, IntPtr pSample)
+        {
+           // logger.Debug(timestamp + " " + " " + flags + " " + result);
+
+            if (pSample != IntPtr.Zero)
+            {
+                var sample = new Sample(pSample);
+                if (sample != null)
+                {
+                    //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
+
+                    if (flags != SourceReaderFlags.None)
+                    {
+                        logger.Debug("sourceReader.ReadSample(...) " + flags);
+                    }
+
+                    if (sample != null)
+                    {
+                        ProcessSample(sample);
+                    }
+                }
+
+            }
+
+            syncEvent.Set();
+
+            return 0;
+        }
+
+
 
         private static Activate GetActivateBySymLink(string symLink)
         {
@@ -251,7 +303,7 @@ namespace MediaToolkit
             if (activates == null || activates.Length == 0)
             {
                 logger.Error("SourceTypeVideoCapture not found");
-                return null ;
+                return null;
             }
 
 
@@ -286,7 +338,7 @@ namespace MediaToolkit
         {
             logger.Debug("VideoCaptureSource::Start()");
 
-            if(State != CaptureState.Initialized)
+            if (State != CaptureState.Initialized)
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
@@ -305,29 +357,50 @@ namespace MediaToolkit
                     State = CaptureState.Capturing;
                     OnStateChanged(State);
 
+                    if (asyncMode)
+                    {
+                        //var comObj = Marshal.GetObjectForIUnknown(sourceReader.NativePointer);
+                        //readerAsync = (IMFSourceReaderAsync)comObj;
+                        // readerAsync.ReadSample(0, MF_SOURCE_READER_CONTROL_FLAG.None, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+
+                        sourceReader.ReadSampleAsync(0, SourceReaderControlFlags.None);
+
+                    }
+
                     while (State == CaptureState.Capturing)
                     {
-
-                        var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None, 
-                            out int actualIndex, out SourceReaderFlags flags, out long timestamp);
-                        try
+                      
+                        if (asyncMode)
                         {
-                            //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
+                            syncEvent.WaitOne();
+                            sourceReader.ReadSampleAsync(0, SourceReaderControlFlags.None);
+                            // readerAsync.ReadSample(0, MF_SOURCE_READER_CONTROL_FLAG.None, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
-                            if (flags != SourceReaderFlags.None)
+                        }
+                        else
+                        {
+                            var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None,
+                                out int actualIndex, out SourceReaderFlags flags, out long timestamp);
+                            try
                             {
-                                logger.Debug("sourceReader.ReadSample(...) " + flags);
+                                //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
+
+                                if (flags != SourceReaderFlags.None)
+                                {
+                                    logger.Debug("sourceReader.ReadSample(...) " + flags);
+                                }
+
+                                if (sample != null)
+                                {
+                                    ProcessSample(sample);
+                                }
                             }
-
-                            if (sample != null)
+                            finally
                             {
-                                ProcessSample(sample);
+                                sample?.Dispose();
                             }
                         }
-                        finally
-                        {
-                            sample?.Dispose();
-                        }
+
 
                         sampleCount++;
 
@@ -363,7 +436,7 @@ namespace MediaToolkit
 
                 if (res)
                 {
-                   // Console.WriteLine("outputSample!=null" + (outputSample != null));
+                    // Console.WriteLine("outputSample!=null" + (outputSample != null));
 
                     var mediaBuffer = outputSample.ConvertToContiguousBuffer();
                     try
@@ -412,9 +485,17 @@ namespace MediaToolkit
         public void Stop()
         {
             logger.Debug("VideoCaptureSource::Stop()");
+            if (asyncMode)
+            {
+                if (sourceReader != null)
+                {
+                    sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
+                }
+            }
+
 
             State = CaptureState.Stopping;
-           
+
         }
 
 
@@ -434,6 +515,11 @@ namespace MediaToolkit
 
                 sourceReader.Dispose();
                 sourceReader = null;
+            }
+
+            if (sourceReaderCallback != null)
+            {
+                sourceReaderCallback.OnReadSample -= SourceReaderCallback_OnReadSample;
             }
 
             if (device != null)
@@ -517,6 +603,45 @@ namespace MediaToolkit
             }
         }
 
-    }
+        [ComImport, System.Security.SuppressUnmanagedCodeSecurity, 
+            InterfaceType(ComInterfaceType.InterfaceIsIUnknown), 
+            Guid("deec8d99-fa1d-4d82-84c2-2c8969944867")]
+        interface IMFSourceReaderCallback
+        {
+            [PreserveSig]
+            int OnReadSample(SharpDX.Result hrStatus, int dwStreamIndex, SourceReaderFlags dwStreamFlags, long llTimestamp, IntPtr pSample);
 
+            [PreserveSig]
+            int OnFlush(int dwStreamIndex);
+
+            [PreserveSig]
+            int OnEvent(int dwStreamIndex, IntPtr pEvent);
+        }
+
+
+        class SourceReaderCallback : IMFSourceReaderCallback
+        {
+            public event Func<SharpDX.Result,  int, SourceReaderFlags, long, IntPtr, int> OnReadSample;
+            public event Func<int, int> OnFlush;
+            public event Func<int, IntPtr, int> OnEvent;
+
+            int IMFSourceReaderCallback.OnReadSample(SharpDX.Result hrStatus, int dwStreamIndex, SourceReaderFlags dwStreamFlags, long llTimestamp, IntPtr pSample)
+            {
+
+                return OnReadSample?.Invoke(hrStatus, dwStreamIndex, dwStreamFlags, llTimestamp, pSample) ?? 0;
+
+                //return (int)HResult.S_OK;
+            }
+
+            int IMFSourceReaderCallback.OnFlush(int dwStreamIndex)
+            {
+                return OnFlush?.Invoke(dwStreamIndex) ?? 0;
+            }
+
+            int IMFSourceReaderCallback.OnEvent(int dwStreamIndex, IntPtr pEvent)
+            {
+                return OnEvent?.Invoke(dwStreamIndex, pEvent) ?? 0;
+            }
+        }
+    }
 }

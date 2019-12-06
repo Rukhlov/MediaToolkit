@@ -44,6 +44,8 @@
     <Compile Include="DwmApi.cs" />
     <Compile Include="Gdi32.cs" />
     <Compile Include="Kernel32.cs" />
+    <Compile Include="MediaFoundation.cs" />
+    <Compile Include="SetupApi.cs" />
     <Compile Include="Types.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shcore.cs" />

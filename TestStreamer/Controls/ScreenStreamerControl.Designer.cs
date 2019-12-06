@@ -17,6 +17,8 @@
             {
                 components.Dispose();
             }
+
+            UsbManager.UnregisterNotification();
             base.Dispose(disposing);
         }
 

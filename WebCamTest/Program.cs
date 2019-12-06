@@ -115,6 +115,7 @@ namespace WebCamTest
                     Application.Run();
                 });
 
+                uiThread.IsBackground = true;
                 uiThread.SetApartmentState(ApartmentState.STA);
 
 
@@ -135,9 +136,11 @@ namespace WebCamTest
                 videoCaptureSource.Stop();
                 videoCaptureSource.Close();
 
+                Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+
                 MediaManager.Shutdown();
 
-                previewForm?.Close();
+                //previewForm?.Close();
             }
             catch (Exception ex)
             {
