@@ -80,6 +80,8 @@ namespace WebCamTest
             {
                 MediaManager.Startup();
 
+                //SharpDX.MediaFoundation.DirectX.VideoProcessorService videoProcessorService = new SharpDX.MediaFoundation.DirectX.VideoProcessorService(IntPtr.Zero);
+                //videoProcessorService.GetVideoProcessorCaps()
                 //EnumerateCaptureSources();
                 //Console.ReadKey();
                 //return;
@@ -88,9 +90,9 @@ namespace WebCamTest
                 var d = device[1];
                 VideoCaptureSource videoCaptureSource = new VideoCaptureSource();
 
-                MfVideoCaptureParams captureParams = new MfVideoCaptureParams
+                VideoCaptureDeviceDescription captureParams = new VideoCaptureDeviceDescription
                 {
-                    DestSize = new GDI.Size(1920, 1080),
+                    Resolution = new GDI.Size(1920, 1080),
                     DeviceId = d.SymLink,
 
                 };

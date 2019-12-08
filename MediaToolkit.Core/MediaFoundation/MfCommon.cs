@@ -1,30 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Diagnostics;
-
-using System.IO;
-
-using System.Threading;
-
-using SharpDX;
+﻿using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-//using SharpDX.Direct2D1;
-using Device = SharpDX.Direct3D11.Device;
-using MapFlags = SharpDX.Direct3D11.MapFlags;
+using SharpDX.MediaFoundation;
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 
 using GDI = System.Drawing;
-using Direct2D = SharpDX.Direct2D1;
-using MediaToolkit.Utils;
-using System.Runtime.InteropServices;
-using SharpDX.Mathematics.Interop;
-using SharpDX.MediaFoundation;
-using System.Reflection;
 
 namespace MediaToolkit.MediaFoundation
 {
@@ -354,6 +341,37 @@ namespace MediaToolkit.MediaFoundation
             return log.ToString();
         }
 
+        public static SharpDX.MediaFoundation.MediaType GetCurrentMediaType(MediaSource mediaSource)
+        {
+            SharpDX.MediaFoundation.MediaType mediaType = null;
+            PresentationDescriptor presentationDescriptor = null;
+            try
+            {
+                mediaSource.CreatePresentationDescriptor(out presentationDescriptor);
+
+                for (int streamIndex = 0; streamIndex < presentationDescriptor.StreamDescriptorCount; streamIndex++)
+                {
+                    using (var steamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(streamIndex, out SharpDX.Mathematics.Interop.RawBool selected))
+                    {
+                        if (selected)
+                        {
+                            using (var mediaHandler = steamDescriptor.MediaTypeHandler)
+                            {
+                                mediaType = mediaHandler.CurrentMediaType;
+
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                presentationDescriptor?.Dispose();
+            }
+
+            return mediaType;
+        }
+
     }
 
     public class DxTool
@@ -386,7 +404,7 @@ namespace MediaToolkit.MediaFoundation
             var device = texture.Device;
             try
             {
-                var srcData = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
+                var srcData = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
 
                 int width = bmp.Width;
                 int height = bmp.Height;
@@ -424,29 +442,46 @@ namespace MediaToolkit.MediaFoundation
             return success;
         }
 
-        public static Texture2D GetTexture(GDI.Bitmap bitmap, Device device)
+        public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
         {
+            Texture2D texture = null;
+
+            var rect = new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height);
 
             if (bitmap.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
             {
-                bitmap = bitmap.Clone(new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height), GDI.Imaging.PixelFormat.Format32bppArgb);
-            }
-            var data = bitmap.LockBits(new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height), GDI.Imaging.ImageLockMode.ReadOnly, GDI.Imaging.PixelFormat.Format32bppArgb);
-            var texture = new SharpDX.Direct3D11.Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
-            {
-                Width = bitmap.Width,
-                Height = bitmap.Height,
-                ArraySize = 1,
-                //BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                //Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-                //CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                MipLevels = 1,
-                //OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-            }, new SharpDX.DataRectangle(data.Scan0, data.Stride));
+                var _bitmap = bitmap.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
 
-            bitmap.UnlockBits(data);
+                bitmap.Dispose();
+                bitmap = _bitmap;
+            }
+
+ 
+            var data = bitmap.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+            try
+            {
+                var descr = new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = bitmap.Width,
+                    Height = bitmap.Height,
+                    ArraySize = 1,
+                    //BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                    //Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                    //CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    MipLevels = 1,
+                    //OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                };
+
+                var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
+
+                texture = new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
+            }
+            finally
+            {
+                bitmap.UnlockBits(data);
+            }
 
             return texture;
         }

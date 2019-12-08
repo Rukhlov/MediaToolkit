@@ -50,21 +50,23 @@ namespace TestStreamer.Controls
             CaptureType captureType = (CaptureType)captureTypesComboBox.SelectedItem;
 
             httpScreenSource = new ScreenSource();
-            ScreenCaptureParams captureParams = new ScreenCaptureParams
+            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
             {
-                SrcRect = srcRect,
-                DestSize = destSize,
-                CaptureType = captureType,//CaptureType.DXGIDeskDupl,
+                CaptureRegion = srcRect,
+                Resolution = destSize,
 
-                Fps = (int)fps,
-                CaptureMouse = true,
-                AspectRatio = true,
-                UseHardware = false,
             };
 
-            if(captureType == CaptureType.GDI || captureType == CaptureType.GDIPlus)
+            captureParams.CaptureType = captureType;//CaptureType.DXGIDeskDupl,
+
+            captureParams.Fps = (int)fps;
+            captureParams.CaptureMouse = true;
+            captureParams.AspectRatio = true;
+            captureParams.UseHardware = false;
+
+            if (captureType == CaptureType.GDI || captureType == CaptureType.GDIPlus)
             {// масштабируем на энкодере
-                captureParams.DestSize = new Size(srcRect.Width, srcRect.Height);
+                captureParams.Resolution = new Size(srcRect.Width, srcRect.Height);
             }
 
             httpScreenSource.Setup(captureParams);

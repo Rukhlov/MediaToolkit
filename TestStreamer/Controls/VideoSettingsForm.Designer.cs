@@ -28,7 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.EncoderSettingsGroup = new System.Windows.Forms.GroupBox();
+            this.adjustAspectRatioButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.label16 = new System.Windows.Forms.Label();
@@ -48,7 +49,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
             this.snippingToolButton = new System.Windows.Forms.Button();
-            this.srcRectGroupBox = new System.Windows.Forms.GroupBox();
+            this.ScreenCaptureGroup = new System.Windows.Forms.GroupBox();
             this.label9 = new System.Windows.Forms.Label();
             this.displayTextBox = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
@@ -58,43 +59,64 @@
             this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
             this.applyButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
-            this.adjustAspectRatioButton = new System.Windows.Forms.Button();
-            this.groupBox1.SuspendLayout();
+            this.WebCamGroup = new System.Windows.Forms.GroupBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.CaptureDeviceProfilesComboBox = new System.Windows.Forms.ComboBox();
+            this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.EncoderSettingsGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.destHeightNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).BeginInit();
-            this.srcRectGroupBox.SuspendLayout();
+            this.ScreenCaptureGroup.SuspendLayout();
+            this.WebCamGroup.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // groupBox1
+            // EncoderSettingsGroup
             // 
-            this.groupBox1.Controls.Add(this.adjustAspectRatioButton);
-            this.groupBox1.Controls.Add(this.label6);
-            this.groupBox1.Controls.Add(this.encoderComboBox);
-            this.groupBox1.Controls.Add(this.label16);
-            this.groupBox1.Controls.Add(this.label14);
-            this.groupBox1.Controls.Add(this.label13);
-            this.groupBox1.Controls.Add(this.encProfileComboBox);
-            this.groupBox1.Controls.Add(this.label15);
-            this.groupBox1.Controls.Add(this.destWidthNumeric);
-            this.groupBox1.Controls.Add(this.MaxBitrateNumeric);
-            this.groupBox1.Controls.Add(this.bitrateModeComboBox);
-            this.groupBox1.Controls.Add(this.aspectRatioCheckBox);
-            this.groupBox1.Controls.Add(this.label12);
-            this.groupBox1.Controls.Add(this.destHeightNumeric);
-            this.groupBox1.Controls.Add(this.fpsNumeric);
-            this.groupBox1.Controls.Add(this.bitrateNumeric);
-            this.groupBox1.Controls.Add(this.label7);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Controls.Add(this.latencyModeCheckBox);
-            this.groupBox1.Location = new System.Drawing.Point(6, 157);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(449, 267);
-            this.groupBox1.TabIndex = 74;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "VideoSettings";
+            this.EncoderSettingsGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.EncoderSettingsGroup.Controls.Add(this.adjustAspectRatioButton);
+            this.EncoderSettingsGroup.Controls.Add(this.label6);
+            this.EncoderSettingsGroup.Controls.Add(this.encoderComboBox);
+            this.EncoderSettingsGroup.Controls.Add(this.label16);
+            this.EncoderSettingsGroup.Controls.Add(this.label14);
+            this.EncoderSettingsGroup.Controls.Add(this.label13);
+            this.EncoderSettingsGroup.Controls.Add(this.encProfileComboBox);
+            this.EncoderSettingsGroup.Controls.Add(this.label15);
+            this.EncoderSettingsGroup.Controls.Add(this.destWidthNumeric);
+            this.EncoderSettingsGroup.Controls.Add(this.MaxBitrateNumeric);
+            this.EncoderSettingsGroup.Controls.Add(this.bitrateModeComboBox);
+            this.EncoderSettingsGroup.Controls.Add(this.aspectRatioCheckBox);
+            this.EncoderSettingsGroup.Controls.Add(this.label12);
+            this.EncoderSettingsGroup.Controls.Add(this.destHeightNumeric);
+            this.EncoderSettingsGroup.Controls.Add(this.fpsNumeric);
+            this.EncoderSettingsGroup.Controls.Add(this.bitrateNumeric);
+            this.EncoderSettingsGroup.Controls.Add(this.label7);
+            this.EncoderSettingsGroup.Controls.Add(this.label1);
+            this.EncoderSettingsGroup.Controls.Add(this.latencyModeCheckBox);
+            this.EncoderSettingsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.EncoderSettingsGroup.Location = new System.Drawing.Point(3, 291);
+            this.EncoderSettingsGroup.Name = "EncoderSettingsGroup";
+            this.EncoderSettingsGroup.Size = new System.Drawing.Size(379, 268);
+            this.EncoderSettingsGroup.TabIndex = 74;
+            this.EncoderSettingsGroup.TabStop = false;
+            this.EncoderSettingsGroup.Text = "EncoderSettings";
+            // 
+            // adjustAspectRatioButton
+            // 
+            this.adjustAspectRatioButton.Location = new System.Drawing.Point(269, 26);
+            this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
+            this.adjustAspectRatioButton.Size = new System.Drawing.Size(94, 23);
+            this.adjustAspectRatioButton.TabIndex = 74;
+            this.adjustAspectRatioButton.Text = "_Adjust";
+            this.adjustAspectRatioButton.UseVisualStyleBackColor = true;
+            this.adjustAspectRatioButton.Click += new System.EventHandler(this.adjustAspectRatioButton_Click);
             // 
             // label6
             // 
@@ -113,7 +135,7 @@
             this.encoderComboBox.FormattingEnabled = true;
             this.encoderComboBox.Location = new System.Drawing.Point(99, 81);
             this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(214, 24);
+            this.encoderComboBox.Size = new System.Drawing.Size(264, 24);
             this.encoderComboBox.TabIndex = 47;
             // 
             // label16
@@ -152,13 +174,13 @@
             this.encProfileComboBox.FormattingEnabled = true;
             this.encProfileComboBox.Location = new System.Drawing.Point(99, 111);
             this.encProfileComboBox.Name = "encProfileComboBox";
-            this.encProfileComboBox.Size = new System.Drawing.Size(214, 24);
+            this.encProfileComboBox.Size = new System.Drawing.Size(264, 24);
             this.encProfileComboBox.TabIndex = 53;
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(199, 175);
+            this.label15.Location = new System.Drawing.Point(249, 175);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(37, 17);
             this.label15.TabIndex = 55;
@@ -189,7 +211,7 @@
             // 
             // MaxBitrateNumeric
             // 
-            this.MaxBitrateNumeric.Location = new System.Drawing.Point(243, 173);
+            this.MaxBitrateNumeric.Location = new System.Drawing.Point(293, 173);
             this.MaxBitrateNumeric.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -210,7 +232,7 @@
             this.bitrateModeComboBox.FormattingEnabled = true;
             this.bitrateModeComboBox.Location = new System.Drawing.Point(99, 141);
             this.bitrateModeComboBox.Name = "bitrateModeComboBox";
-            this.bitrateModeComboBox.Size = new System.Drawing.Size(214, 24);
+            this.bitrateModeComboBox.Size = new System.Drawing.Size(264, 24);
             this.bitrateModeComboBox.TabIndex = 55;
             // 
             // aspectRatioCheckBox
@@ -331,30 +353,31 @@
             // 
             // snippingToolButton
             // 
-            this.snippingToolButton.Location = new System.Drawing.Point(349, 21);
+            this.snippingToolButton.Location = new System.Drawing.Point(17, 147);
             this.snippingToolButton.Name = "snippingToolButton";
-            this.snippingToolButton.Size = new System.Drawing.Size(94, 23);
+            this.snippingToolButton.Size = new System.Drawing.Size(170, 27);
             this.snippingToolButton.TabIndex = 73;
-            this.snippingToolButton.Text = "_Select";
+            this.snippingToolButton.Text = "_SelectRegion";
             this.snippingToolButton.UseVisualStyleBackColor = true;
             this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
             // 
-            // srcRectGroupBox
+            // ScreenCaptureGroup
             // 
-            this.srcRectGroupBox.Controls.Add(this.label9);
-            this.srcRectGroupBox.Controls.Add(this.displayTextBox);
-            this.srcRectGroupBox.Controls.Add(this.label8);
-            this.srcRectGroupBox.Controls.Add(this.label4);
-            this.srcRectGroupBox.Controls.Add(this.captureTypesComboBox);
-            this.srcRectGroupBox.Controls.Add(this.captureRegionTextBox);
-            this.srcRectGroupBox.Controls.Add(this.captureMouseCheckBox);
-            this.srcRectGroupBox.Controls.Add(this.snippingToolButton);
-            this.srcRectGroupBox.Location = new System.Drawing.Point(6, 12);
-            this.srcRectGroupBox.Name = "srcRectGroupBox";
-            this.srcRectGroupBox.Size = new System.Drawing.Size(449, 139);
-            this.srcRectGroupBox.TabIndex = 70;
-            this.srcRectGroupBox.TabStop = false;
-            this.srcRectGroupBox.Text = "CaptureSettings";
+            this.ScreenCaptureGroup.Controls.Add(this.label9);
+            this.ScreenCaptureGroup.Controls.Add(this.displayTextBox);
+            this.ScreenCaptureGroup.Controls.Add(this.label8);
+            this.ScreenCaptureGroup.Controls.Add(this.label4);
+            this.ScreenCaptureGroup.Controls.Add(this.captureTypesComboBox);
+            this.ScreenCaptureGroup.Controls.Add(this.captureRegionTextBox);
+            this.ScreenCaptureGroup.Controls.Add(this.captureMouseCheckBox);
+            this.ScreenCaptureGroup.Controls.Add(this.snippingToolButton);
+            this.ScreenCaptureGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ScreenCaptureGroup.Location = new System.Drawing.Point(3, 100);
+            this.ScreenCaptureGroup.Name = "ScreenCaptureGroup";
+            this.ScreenCaptureGroup.Size = new System.Drawing.Size(379, 185);
+            this.ScreenCaptureGroup.TabIndex = 70;
+            this.ScreenCaptureGroup.TabStop = false;
+            this.ScreenCaptureGroup.Text = "CaptureSettings";
             // 
             // label9
             // 
@@ -370,7 +393,7 @@
             this.displayTextBox.Location = new System.Drawing.Point(96, 50);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(244, 22);
+            this.displayTextBox.Size = new System.Drawing.Size(267, 22);
             this.displayTextBox.TabIndex = 80;
             // 
             // label8
@@ -385,7 +408,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(14, 81);
+            this.label4.Location = new System.Drawing.Point(78, 2);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(62, 17);
             this.label4.TabIndex = 78;
@@ -398,7 +421,7 @@
             this.captureTypesComboBox.FormattingEnabled = true;
             this.captureTypesComboBox.Location = new System.Drawing.Point(96, 78);
             this.captureTypesComboBox.Name = "captureTypesComboBox";
-            this.captureTypesComboBox.Size = new System.Drawing.Size(244, 24);
+            this.captureTypesComboBox.Size = new System.Drawing.Size(267, 24);
             this.captureTypesComboBox.TabIndex = 77;
             // 
             // captureRegionTextBox
@@ -406,7 +429,7 @@
             this.captureRegionTextBox.Location = new System.Drawing.Point(96, 22);
             this.captureRegionTextBox.Name = "captureRegionTextBox";
             this.captureRegionTextBox.ReadOnly = true;
-            this.captureRegionTextBox.Size = new System.Drawing.Size(244, 22);
+            this.captureRegionTextBox.Size = new System.Drawing.Size(267, 22);
             this.captureRegionTextBox.TabIndex = 76;
             // 
             // captureMouseCheckBox
@@ -414,7 +437,7 @@
             this.captureMouseCheckBox.AutoSize = true;
             this.captureMouseCheckBox.Checked = true;
             this.captureMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.captureMouseCheckBox.Location = new System.Drawing.Point(17, 108);
+            this.captureMouseCheckBox.Location = new System.Drawing.Point(18, 108);
             this.captureMouseCheckBox.Name = "captureMouseCheckBox";
             this.captureMouseCheckBox.Size = new System.Drawing.Size(134, 21);
             this.captureMouseCheckBox.TabIndex = 69;
@@ -423,9 +446,9 @@
             // 
             // applyButton
             // 
-            this.applyButton.Location = new System.Drawing.Point(240, 430);
+            this.applyButton.Location = new System.Drawing.Point(37, 3);
             this.applyButton.Name = "applyButton";
-            this.applyButton.Size = new System.Drawing.Size(100, 23);
+            this.applyButton.Size = new System.Drawing.Size(100, 27);
             this.applyButton.TabIndex = 76;
             this.applyButton.Text = "_Apply";
             this.applyButton.UseVisualStyleBackColor = true;
@@ -433,52 +456,133 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(349, 430);
+            this.cancelButton.Location = new System.Drawing.Point(146, 3);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(100, 23);
+            this.cancelButton.Size = new System.Drawing.Size(100, 27);
             this.cancelButton.TabIndex = 77;
             this.cancelButton.Text = "_Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
-            // adjustAspectRatioButton
+            // WebCamGroup
             // 
-            this.adjustAspectRatioButton.Location = new System.Drawing.Point(349, 25);
-            this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
-            this.adjustAspectRatioButton.Size = new System.Drawing.Size(94, 23);
-            this.adjustAspectRatioButton.TabIndex = 74;
-            this.adjustAspectRatioButton.Text = "_Adjust";
-            this.adjustAspectRatioButton.UseVisualStyleBackColor = true;
-            this.adjustAspectRatioButton.Click += new System.EventHandler(this.adjustAspectRatioButton_Click);
+            this.WebCamGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.WebCamGroup.Controls.Add(this.label2);
+            this.WebCamGroup.Controls.Add(this.label3);
+            this.WebCamGroup.Controls.Add(this.CaptureDeviceProfilesComboBox);
+            this.WebCamGroup.Controls.Add(this.CaptureDeviceTextBox);
+            this.WebCamGroup.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.WebCamGroup.Location = new System.Drawing.Point(3, 3);
+            this.WebCamGroup.Name = "WebCamGroup";
+            this.WebCamGroup.Size = new System.Drawing.Size(379, 91);
+            this.WebCamGroup.TabIndex = 78;
+            this.WebCamGroup.TabStop = false;
+            this.WebCamGroup.Text = "CaptureSettings";
+            this.WebCamGroup.Visible = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(15, 24);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(55, 17);
+            this.label2.TabIndex = 81;
+            this.label2.Text = "Device:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(15, 53);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(52, 17);
+            this.label3.TabIndex = 79;
+            this.label3.Text = "Profile:";
+            // 
+            // CaptureDeviceProfilesComboBox
+            // 
+            this.CaptureDeviceProfilesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CaptureDeviceProfilesComboBox.Enabled = false;
+            this.CaptureDeviceProfilesComboBox.FormattingEnabled = true;
+            this.CaptureDeviceProfilesComboBox.Location = new System.Drawing.Point(96, 50);
+            this.CaptureDeviceProfilesComboBox.Name = "CaptureDeviceProfilesComboBox";
+            this.CaptureDeviceProfilesComboBox.Size = new System.Drawing.Size(267, 24);
+            this.CaptureDeviceProfilesComboBox.TabIndex = 77;
+            // 
+            // CaptureDeviceTextBox
+            // 
+            this.CaptureDeviceTextBox.Location = new System.Drawing.Point(96, 22);
+            this.CaptureDeviceTextBox.Name = "CaptureDeviceTextBox";
+            this.CaptureDeviceTextBox.ReadOnly = true;
+            this.CaptureDeviceTextBox.Size = new System.Drawing.Size(267, 22);
+            this.CaptureDeviceTextBox.TabIndex = 76;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.AutoSize = true;
+            this.tableLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel1.ColumnCount = 1;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.WebCamGroup, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.ScreenCaptureGroup, 0, 1);
+            this.tableLayoutPanel1.Controls.Add(this.EncoderSettingsGroup, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 3);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 12);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 3, 11, 11);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 4;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(385, 601);
+            this.tableLayoutPanel1.TabIndex = 79;
+            // 
+            // panel1
+            // 
+            this.panel1.AutoSize = true;
+            this.panel1.Controls.Add(this.cancelButton);
+            this.panel1.Controls.Add(this.applyButton);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panel1.Location = new System.Drawing.Point(133, 565);
+            this.panel1.Name = "panel1";
+            this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.panel1.Size = new System.Drawing.Size(249, 33);
+            this.panel1.TabIndex = 80;
             // 
             // VideoSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(479, 474);
-            this.Controls.Add(this.cancelButton);
-            this.Controls.Add(this.applyButton);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.srcRectGroupBox);
+            this.AutoSize = true;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ClientSize = new System.Drawing.Size(482, 657);
+            this.Controls.Add(this.tableLayoutPanel1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VideoSettingsForm";
             this.Text = "_VideoSettings";
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.EncoderSettingsGroup.ResumeLayout(false);
+            this.EncoderSettingsGroup.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.destHeightNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bitrateNumeric)).EndInit();
-            this.srcRectGroupBox.ResumeLayout(false);
-            this.srcRectGroupBox.PerformLayout();
+            this.ScreenCaptureGroup.ResumeLayout(false);
+            this.ScreenCaptureGroup.PerformLayout();
+            this.WebCamGroup.ResumeLayout(false);
+            this.WebCamGroup.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
+            this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox EncoderSettingsGroup;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.NumericUpDown MaxBitrateNumeric;
@@ -498,7 +602,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.NumericUpDown destWidthNumeric;
         private System.Windows.Forms.NumericUpDown destHeightNumeric;
-        private System.Windows.Forms.GroupBox srcRectGroupBox;
+        private System.Windows.Forms.GroupBox ScreenCaptureGroup;
         private System.Windows.Forms.Button applyButton;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.TextBox displayTextBox;
@@ -509,5 +613,12 @@
         private System.Windows.Forms.CheckBox captureMouseCheckBox;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Button adjustAspectRatioButton;
+        private System.Windows.Forms.GroupBox WebCamGroup;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox CaptureDeviceProfilesComboBox;
+        private System.Windows.Forms.TextBox CaptureDeviceTextBox;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.Panel panel1;
     }
 }

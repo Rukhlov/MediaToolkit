@@ -76,6 +76,18 @@ namespace MediaToolkit.Common
         Quality,
     }
 
+    public enum AudioEncoderMode
+    {
+        AAC,
+        G711,
+    }
+
+    public enum VideoEncoderMode
+    {
+        H264,
+        JPEG
+    }
+
     public class AudioEncodingParams
     {
         public int SampleRate = 8000;
@@ -89,18 +101,63 @@ namespace MediaToolkit.Common
 
     public class AudioCaptureParams
     {
+        public string Name = "";
         public string DeviceId = "";
+
+        public int SampleRate = 0;
+        public int Channels = 0;
     }
 
-    public class VideoCaptureParams
+    public class VideoCaptureDescription
     {
-        public Rectangle SrcRect = new Rectangle(0, 0, 640, 480);
-        public Size DestSize = new Size(640, 480);
+        public string Name = "";
+        public Size Resolution = new Size(640, 480);
+
     }
 
-    public class MfVideoCaptureParams: VideoCaptureParams
+    public class VideoCaptureDeviceDescription: VideoCaptureDescription
     {
         public string DeviceId = "";
+
+        public VideoCaptureDeviceProfile CurrentProfile = null;
+
+
+    }
+
+    public class VideoCaptureDeviceProfile
+    {
+        public Size FrameSize = Size.Empty;
+        public double FrameRate = 0;
+        public string Format = "";
+
+        public override string ToString()
+        {
+            return FrameSize.Width + "x" + FrameSize.Height + " " + FrameRate.ToString("0.0") + " fps " + Format; 
+        }
+    }
+
+    public class ScreenCaptureDeviceDescription: VideoCaptureDescription
+    {
+        public string DisplayName = "";
+        public Rectangle CaptureRegion = new Rectangle(0, 0, 640, 480);
+        public Rectangle DisplayRegion = new Rectangle(0, 0, 640, 480);
+
+        //public ScreenCaptureDescription CaptureDescription = new ScreenCaptureDescription();
+
+        public CaptureType CaptureType = CaptureType.GDI;
+        public int Fps = 10;
+        public bool CaptureMouse = false;
+        public bool AspectRatio = true;
+        public bool UseHardware = true;
+    }
+
+    public class ScreenCaptureDescription
+    {
+        public CaptureType CaptureType = CaptureType.GDI;
+        public int Fps = 10;
+        public bool CaptureMouse = false;
+        public bool AspectRatio = true;
+        public bool UseHardware = true;
     }
 
     public enum CaptureType
@@ -110,15 +167,6 @@ namespace MediaToolkit.Common
         GDIPlus,
         Datapath,
         DXGIDeskDupl,
-    }
-
-    public class ScreenCaptureParams: VideoCaptureParams
-    {
-        public CaptureType CaptureType = CaptureType.GDI;
-        public int Fps = 10;
-        public bool CaptureMouse = false;
-        public bool AspectRatio = true;
-        public bool UseHardware = true;
     }
 
 
@@ -143,17 +191,6 @@ namespace MediaToolkit.Common
         Unknown,
     }
 
-    public enum AudioEncoderMode
-    {
-        AAC,
-        G711,
-    }
-
-    public enum VideoEncoderMode
-    {
-        H264,
-        JPEG
-    }
 
     [ServiceContract(SessionMode = SessionMode.Required)]
     public interface IRemoteDesktopService

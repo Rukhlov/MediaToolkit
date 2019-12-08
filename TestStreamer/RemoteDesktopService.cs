@@ -367,16 +367,15 @@ namespace TestStreamer
             }
 
             videoSource = new ScreenSource();
-            ScreenCaptureParams captureParams = new ScreenCaptureParams
+            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
             {
-                SrcRect = srcRect,
-                DestSize = destSize,
-                CaptureType = CaptureType.DXGIDeskDupl,
-                //CaptureType = CaptureType.Direct3D,
-                //CaptureType = CaptureType.GDI,
-                Fps = fps,
-                CaptureMouse = showMouse,
+                CaptureRegion = srcRect,
+                Resolution = destSize,
             };
+
+            captureParams.CaptureType = CaptureType.DXGIDeskDupl;
+            captureParams.Fps = fps;
+            captureParams.CaptureMouse = showMouse;
 
             videoSource.Setup(captureParams);
 

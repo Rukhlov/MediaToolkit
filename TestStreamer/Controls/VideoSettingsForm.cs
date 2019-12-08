@@ -30,19 +30,61 @@ namespace TestStreamer.Controls
 
         public VideoSettingsParams VideoSettings { get; private set; }
 
+
         public void Setup(VideoSettingsParams settingsParams)
         {
 
             this.VideoSettings = settingsParams;
+
             //this.addressTextBox.Text = VideoSettings.Address;
             //this.portNumeric.Value = VideoSettings.Port;
             //this.transportComboBox.SelectedItem = VideoSettings.TransportMode;
 
-            this.displayTextBox.Text = VideoSettings.DisplayName;
+            var screenCaptureParams = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            if (screenCaptureParams != null)
+            {
+               // var captureDescr = screenCaptureParams.CaptureDescription;
+                this.displayTextBox.Text = screenCaptureParams.DisplayName;
 
-            this.CaptureRegion = VideoSettings.CaptureRegion;
+                this.CaptureRegion = screenCaptureParams.CaptureRegion;
+                this.captureMouseCheckBox.Checked = screenCaptureParams.CaptureMouse;
+
+                this.aspectRatioCheckBox.Checked = screenCaptureParams.AspectRatio;
+
+                WebCamGroup.Visible = false;
+                ScreenCaptureGroup.Visible = true;
+
+                adjustAspectRatioButton.Visible = true;
+            }
+
+            var webCamCaptureParams = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
+            if (webCamCaptureParams != null)
+            {
+                CaptureDeviceTextBox.Text = webCamCaptureParams.Name;
+
+                var profile = webCamCaptureParams?.CurrentProfile;
+                List<ComboBoxItem> profileItems = new List<ComboBoxItem>
+                {
+                    new ComboBoxItem
+                    {
+                        Name = profile?.ToString() ?? "",
+                        Tag = profile,
+                    },
+                };
+                CaptureDeviceProfilesComboBox.DataSource = profileItems;
+                CaptureDeviceProfilesComboBox.DisplayMember = "Name";
+                CaptureDeviceProfilesComboBox.ValueMember = "Tag";
+
+                WebCamGroup.Visible = true;
+                ScreenCaptureGroup.Visible = false;
+
+                adjustAspectRatioButton.Visible = false;
+            }
+
+            
+
             this.captureRegionTextBox.Text =  CaptureRegion.ToString();
-            this.captureMouseCheckBox.Checked = VideoSettings.CaptureMouse;
+           
 
             var resolution = VideoSettings.VideoResoulution;
 
@@ -54,8 +96,8 @@ namespace TestStreamer.Controls
             {
                 this.destHeightNumeric.Value = resolution.Height;
             }
-                
-            this.aspectRatioCheckBox.Checked = VideoSettings.AspectRatio;
+     
+
             this.encoderComboBox.SelectedItem = VideoSettings.Encoder;
             this.encProfileComboBox.SelectedItem = VideoSettings.Profile;
             this.bitrateModeComboBox.SelectedItem = VideoSettings.BitrateMode;
@@ -73,14 +115,22 @@ namespace TestStreamer.Controls
 
             //VideoSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
 
-            VideoSettings.CaptureRegion = this.CaptureRegion;
-            VideoSettings.CaptureMouse = this.captureMouseCheckBox.Checked;
+            var screenCaptureParams = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            if (screenCaptureParams != null)
+            {
+                screenCaptureParams.CaptureRegion = this.CaptureRegion;
+                screenCaptureParams.CaptureMouse = this.captureMouseCheckBox.Checked;
+                screenCaptureParams.AspectRatio = this.aspectRatioCheckBox.Checked;
+            }
+
+            var deviceDescr = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
+            if (deviceDescr != null)
+            {
+
+            }
 
             VideoSettings.VideoResoulution = new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
-            var resolution = VideoSettings.VideoResoulution;
 
-
-            VideoSettings.AspectRatio = this.aspectRatioCheckBox.Checked;
             VideoSettings.Encoder = (VideoEncoderMode)this.encoderComboBox.SelectedItem;
             VideoSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
             VideoSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
@@ -101,16 +151,12 @@ namespace TestStreamer.Controls
             this.Close();
         }
 
-
-
         //private void LoadTransportItems()
         //{
-
         //    var items = new List<TransportMode>
         //    {
         //        TransportMode.Tcp,
         //        TransportMode.Udp,
-
         //    };
         //    transportComboBox.DataSource = items;
         //}
@@ -172,6 +218,12 @@ namespace TestStreamer.Controls
         private SnippingTool snippingTool = new SnippingTool();
         private void snippingToolButton_Click(object sender, EventArgs e)
         {
+            var captureDescr = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            if (captureDescr == null)
+            {
+                return;
+            }
+
             if (snippingTool != null)
             {
                 snippingTool.Dispose();
@@ -198,7 +250,9 @@ namespace TestStreamer.Controls
 
             //regionForm?.Close();
             //regionForm = null;
-            snippingTool.Snip(VideoSettings.DisplayRegion, areaSelected);
+
+            
+            snippingTool.Snip(captureDescr.DisplayRegion, areaSelected);
         }
 
         private void adjustAspectRatioButton_Click(object sender, EventArgs e)

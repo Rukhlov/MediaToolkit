@@ -203,7 +203,7 @@
             this.screenStreamerControl.Name = "screenStreamerControl";
             this.screenStreamerControl.Size = new System.Drawing.Size(476, 351);
             this.screenStreamerControl.TabIndex = 0;
-            this.screenStreamerControl.Load += new System.EventHandler(this.screenStreamerControl_Load);
+
             // 
             // tabPage3
             // 
@@ -258,7 +258,7 @@
             this.remoteServerControl1.Name = "remoteServerControl1";
             this.remoteServerControl1.Size = new System.Drawing.Size(473, 372);
             this.remoteServerControl1.TabIndex = 0;
-            this.remoteServerControl1.Load += new System.EventHandler(this.remoteServerControl1_Load);
+
             // 
             // panel1
             // 

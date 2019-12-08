@@ -80,7 +80,7 @@ namespace MediaToolkit
 
         private ScreenCapture screenCapture = null;
 
-        public ScreenCaptureParams CaptureParams { get; private set; }
+        public ScreenCaptureDeviceDescription CaptureParams { get; private set; }
 
         private bool deviceReady = false;
         public void Setup(object pars)//ScreenCaptureParams captureParams)
@@ -94,17 +94,18 @@ namespace MediaToolkit
             }
 
             syncEvent = new AutoResetEvent(false);
-            ScreenCaptureParams captureParams = pars as ScreenCaptureParams;
+            ScreenCaptureDeviceDescription captureParams = pars as ScreenCaptureDeviceDescription;
 
 
             this.CaptureParams = captureParams;
 
-            var srcRect = captureParams.SrcRect;
-            var destSize = captureParams.DestSize;
+            var srcRect = captureParams.CaptureRegion;
+            var destSize = captureParams.Resolution;
 
 
             try
             {
+                //var captureDescr = captureParams.CaptureDescription;
                 screenCapture = ScreenCapture.Create(captureParams.CaptureType);
                 screenCapture.CaptureMouse = captureParams.CaptureMouse;
                 screenCapture.AspectRatio = captureParams.AspectRatio;
