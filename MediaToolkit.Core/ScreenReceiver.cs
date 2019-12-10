@@ -32,21 +32,21 @@ namespace MediaToolkit
         private H264Session h264Session = null;
         public IRtpReceiver rtpReceiver = null;
 
-        public void Setup(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
+        public void Setup(VideoEncoderSettings inputPars, VideoEncoderSettings outputPars, NetworkSettings networkPars)
         {
             logger.Debug("ScreenReceiver::Setup(...)");
             var inputArgs = new MfVideoArgs
             {
-                Width = inputPars.Width,
-                Height = inputPars.Height,
+                Width = inputPars.Resolution.Width,
+                Height = inputPars.Resolution.Height,
                 FrameRate = inputPars.FrameRate,
             };
 
             var outputArgs = new MfVideoArgs
             {
 
-                Width = outputPars.Width,
-                Height = outputPars.Height,
+                Width = outputPars.Resolution.Width,
+                Height = outputPars.Resolution.Height,
 
                 FrameRate = outputPars.FrameRate,
             };

@@ -47,6 +47,8 @@
             this.screenStreamerControl = new TestStreamer.Controls.ScreenStreamerControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.audioStreamerControl = new TestStreamer.Controls.AudioStreamerControl();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.webCamStreamerControl1 = new TestStreamer.Controls.WebCamStreamerControl();
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.httpStreamerControl1 = new TestStreamer.Controls.HttpStreamerControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -54,17 +56,15 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.label23 = new System.Windows.Forms.Label();
             this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.webCamStreamerControl1 = new TestStreamer.Controls.WebCamStreamerControl();
             this.contextMenu.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).BeginInit();
-            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -223,6 +223,24 @@
             this.audioStreamerControl.Size = new System.Drawing.Size(482, 357);
             this.audioStreamerControl.TabIndex = 0;
             // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.webCamStreamerControl1);
+            this.tabPage5.Location = new System.Drawing.Point(4, 25);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage5.Size = new System.Drawing.Size(482, 357);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "WebCamStreamer";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // webCamStreamerControl1
+            // 
+            this.webCamStreamerControl1.Location = new System.Drawing.Point(9, 6);
+            this.webCamStreamerControl1.Name = "webCamStreamerControl1";
+            this.webCamStreamerControl1.Size = new System.Drawing.Size(467, 345);
+            this.webCamStreamerControl1.TabIndex = 0;
+            // 
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.httpStreamerControl1);
@@ -258,7 +276,6 @@
             this.remoteServerControl1.Name = "remoteServerControl1";
             this.remoteServerControl1.Size = new System.Drawing.Size(473, 372);
             this.remoteServerControl1.TabIndex = 0;
-
             // 
             // panel1
             // 
@@ -303,24 +320,6 @@
             0,
             -2147483648});
             // 
-            // tabPage5
-            // 
-            this.tabPage5.Controls.Add(this.webCamStreamerControl1);
-            this.tabPage5.Location = new System.Drawing.Point(4, 25);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(482, 357);
-            this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "WebCamStreamer";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // webCamStreamerControl1
-            // 
-            this.webCamStreamerControl1.Location = new System.Drawing.Point(9, 6);
-            this.webCamStreamerControl1.Name = "webCamStreamerControl1";
-            this.webCamStreamerControl1.Size = new System.Drawing.Size(467, 345);
-            this.webCamStreamerControl1.TabIndex = 0;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
@@ -336,12 +335,12 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
             this.tabPage4.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).EndInit();
-            this.tabPage5.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

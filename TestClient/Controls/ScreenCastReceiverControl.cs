@@ -29,6 +29,7 @@ namespace TestClient.Controls
         public ScreenCastReceiverControl()
         {
             InitializeComponent();
+            syncContext = SynchronizationContext.Current;
 
             //LoadMMDevicesCombo();
             this.StateChanged += ScreenCastControl_StateChanged;
@@ -36,6 +37,7 @@ namespace TestClient.Controls
             UpdateControls();
         }
 
+        private SynchronizationContext syncContext = null;
 
         private void UpdateControls()
         {
@@ -50,22 +52,21 @@ namespace TestClient.Controls
 
         private void ScreenCastControl_StateChanged(ClientState obj)
         {
-           if(obj == ClientState.Connected)
+            syncContext.Send(_ => 
             {
-                this.Invoke((Action)(() => 
+                if (obj == ClientState.Connected)
                 {
                     ShowVideoForm("");
                     UpdateControls();
-                }));
-            }
-            else
-            {
-                this.Invoke((Action)(() =>
+                }
+                else
                 {
                     CloseVideoForm();
                     UpdateControls();
-                }));
-            }
+
+                }
+            }, null);
+
         }
 
         private void findServiceButton_Click(object sender, EventArgs e)
@@ -272,14 +273,15 @@ namespace TestClient.Controls
                         var videoInfo = videoChannelInfo.MediaInfo as VideoChannelInfo;
                         if (videoInfo != null)
                         {
-                            var inputPars = new VideoEncodingParams
+                            var inputPars = new VideoEncoderSettings
                             {
-                                Width = videoInfo.Resolution.Width,
-                                Height = videoInfo.Resolution.Height,
+                                Resolution = videoInfo.Resolution,
+                                //Width = videoInfo.Resolution.Width,
+                                //Height = videoInfo.Resolution.Height,
                                 FrameRate = videoInfo.Fps,
                             };
 
-                            var outputPars = new VideoEncodingParams
+                            var outputPars = new VideoEncoderSettings
                             {
                                 //Width = 640,//2560,
                                 //Height = 480,//1440,
@@ -288,8 +290,9 @@ namespace TestClient.Controls
 
                                 //FrameRate = 30,
 
-                                Width = videoInfo.Resolution.Width,
-                                Height = videoInfo.Resolution.Height,
+                                //Width = videoInfo.Resolution.Width,
+                                //Height = videoInfo.Resolution.Height,
+                                Resolution = videoInfo.Resolution,
                                 FrameRate = videoInfo.Fps,
 
                             };
@@ -315,7 +318,7 @@ namespace TestClient.Controls
 
 
 
-                            var networkPars = new NetworkStreamingParams
+                            var networkPars = new NetworkSettings
                             {
                                 LocalAddr = videoAddr,
                                 LocalPort = videoPort,
@@ -339,6 +342,7 @@ namespace TestClient.Controls
                         {
 
                             var audioAddr = audioChannelInfo.Address;
+                            transportMode = audioChannelInfo.Transport;
 
                             if (transportMode == TransportMode.Tcp)
                             {
@@ -347,7 +351,7 @@ namespace TestClient.Controls
 
                             if (transportMode == TransportMode.Tcp)
                             {
-                                if (videoChannelInfo.ClientsCount > 0)
+                                if (audioChannelInfo.ClientsCount > 0)
                                 {
                                     throw new Exception("Server is busy");
                                 }
@@ -357,7 +361,7 @@ namespace TestClient.Controls
 
                             AudioReceiver = new AudioReceiver();
 
-                            var networkPars = new NetworkStreamingParams
+                            var networkPars = new NetworkSettings
                             {
                                 LocalAddr = audioAddr,
                                 LocalPort = audioPort,
@@ -378,7 +382,7 @@ namespace TestClient.Controls
                             }
 
 
-                            var audioPars = new AudioEncodingParams
+                            var audioPars = new AudioEncoderSettings
                             {
                                 SampleRate = audioInfo.SampleRate,
                                 Channels = audioInfo.Channels,
@@ -490,13 +494,16 @@ namespace TestClient.Controls
 
                 imageProvider?.Close();
 
-                imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
-                var reciver = this.VideoReceiver;
+               
+                var texture = VideoReceiver?.sharedTexture;
+                if (texture != null)
+                {
+                    imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
+                    imageProvider.Start(VideoReceiver.sharedTexture);
 
-                imageProvider.Start(reciver.sharedTexture);
-
-                var video = testForm.userControl11;
-                video.DataContext = imageProvider;
+                    var video = testForm.userControl11;
+                    video.DataContext = imageProvider;
+                }
 
                 testForm.FormClosed += TestForm_FormClosed;
             }

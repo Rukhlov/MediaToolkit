@@ -27,7 +27,7 @@ namespace MediaToolkit.Core
 
         private Texture2D bufTexture = null;
 
-        public void Open( VideoEncodingParams destParams)
+        public void Open( VideoEncoderSettings destParams)
         {
             logger.Debug("VideoEncoder::Setup(...)");
 
@@ -42,7 +42,7 @@ namespace MediaToolkit.Core
 
             var srcSize = new Size(srcWidth, srcHeight);
 
-            var destSize = new Size(destParams.Width, destParams.Height);
+            var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
 
             long adapterLuid = -1;
             using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())

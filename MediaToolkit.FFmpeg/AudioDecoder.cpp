@@ -43,7 +43,7 @@ namespace FFmpegLib {
 			CleanUp();
 		}
 
-		void Open(AudioEncodingParams^ srcParams) {
+		void Open(AudioEncoderSettings^ srcParams) {
 			//av_log(NULL, AV_LOG_DEBUG, "AudioDecoder::Open()");
 			logger->Debug("AudioDecoder::Open()");
 			int res;

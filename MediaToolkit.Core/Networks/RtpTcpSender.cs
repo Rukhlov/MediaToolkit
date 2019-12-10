@@ -19,7 +19,7 @@ namespace MediaToolkit
         IPEndPoint RemoteEndpoint { get; }
         IPEndPoint LocalEndpoint { get; }
         int ClientsCount { get; }
-        void Setup(NetworkStreamingParams streamingParams);
+        void Setup(NetworkSettings streamingParams);
         void Start();
 
         void Push(byte[] bytes, double sec);
@@ -46,12 +46,11 @@ namespace MediaToolkit
 
         public IPEndPoint LocalEndpoint { get; private set; }
 
-        public void Setup(NetworkStreamingParams streamingParams)
+        public void Setup(NetworkSettings networkSettings)
         {
 
-
-            var localAddr = streamingParams.LocalAddr;
-            var localPort = streamingParams.LocalPort;
+            var localAddr = networkSettings.LocalAddr;
+            var localPort = networkSettings.LocalPort;
 
             var localIp = IPAddress.Any;
             if (!string.IsNullOrEmpty(localAddr))
@@ -75,6 +74,11 @@ namespace MediaToolkit
             socket.Listen(10);
             this.LocalEndpoint = (IPEndPoint)socket.LocalEndPoint;
             //this.RemoteEndpoint = (IPEndPoint)socket.RemoteEndPoint;
+
+
+            networkSettings.LocalPort = LocalEndpoint.Port;
+            networkSettings.LocalAddr = LocalEndpoint.Address.ToString();
+            
         }
 
         public void Start()

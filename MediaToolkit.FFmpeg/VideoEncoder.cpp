@@ -40,10 +40,10 @@ namespace FFmpegLib {
 
 		event Action<IntPtr, int, double>^ DataEncoded;
 
-		void Open(VideoEncodingParams^ encodingParams) {
+		void Open(VideoEncoderSettings^ encodingParams) {
 
 			logger->Debug("FFmpegVideoEncoder::Open(...) " +
-				encodingParams->Width + "x" + encodingParams->Height + " " + encodingParams->EncoderName);
+				encodingParams->Resolution.Width + "x" + encodingParams->Resolution.Height + " " + encodingParams->EncoderName);
 
 			try {
 
@@ -91,8 +91,8 @@ namespace FFmpegLib {
 				int den = (encodingParams->FrameRate > 0 && encodingParams->FrameRate <= 60) ? encodingParams->FrameRate : 30;
 				encoder_ctx->time_base = { 1, den };
 
-				encoder_ctx->width = encodingParams->Width;
-				encoder_ctx->height = encodingParams->Height;
+				encoder_ctx->width = encodingParams->Resolution.Width;
+				encoder_ctx->height = encodingParams->Resolution.Height;
 
 				encoder_ctx->gop_size = 60;
 				encoder_ctx->max_b_frames = 0;

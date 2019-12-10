@@ -33,10 +33,10 @@ namespace MediaToolkit
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
         private HttpStreamer httpStreamer = null;
 
-        public Task Start(VideoEncodingParams encPars, NetworkStreamingParams networkParams)
+        public Task Start(VideoEncoderSettings encPars, NetworkSettings networkParams)
         {
             logger.Debug("MJpegOverHttpStreamer::Start(...) " 
-                + encPars.Width + "x" + encPars.Height + " "+ encPars.EncoderName );
+                + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " "+ encPars.EncoderName );
 
             return Task.Run(() =>
             {

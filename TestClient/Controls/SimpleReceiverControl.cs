@@ -52,34 +52,41 @@ namespace TestClient.Controls
 
                 remoteClient.UpdateBuffer += RemoteClient_UpdateBuffer;
 
-                var inputPars = new VideoEncodingParams
+                var w = (int)srcWidthNumeric.Value;
+                var h = (int)srcHeightNumeric.Value;
+
+                var inputPars = new VideoEncoderSettings
                 {
-                    Width = (int)srcWidthNumeric.Value,
-                    Height = (int)srcHeightNumeric.Value,
+                    //Width = (int)srcWidthNumeric.Value,
+                    //Height = (int)srcHeightNumeric.Value,
 
                     //Width = 2560,
                     //Height = 1440,
 
                     //Width = 640,//2560,
                     //Height = 480,//1440,
+
+                    Resolution = new Size(w, h),
                     FrameRate = 30,
                 };
 
-                var outputPars = new VideoEncodingParams
+                var _w = (int)destWidthNumeric.Value;
+                var _h = (int)destHeightNumeric.Value;
+                var outputPars = new VideoEncoderSettings
                 {
                     //Width = 640,//2560,
                     //Height = 480,//1440,
                     //Width = 2560,
                     //Height = 1440,
 
-                    Width = (int)destWidthNumeric.Value,
-                    Height = (int)destHeightNumeric.Value,
-
+                    //Width = (int)destWidthNumeric.Value,
+                    //Height = (int)destHeightNumeric.Value,
+                    Resolution = new Size(_w, _h),
                     FrameRate = 30,
                 };
                 var transport = GetTransportMode();
 
-                var networkPars = new NetworkStreamingParams
+                var networkPars = new NetworkSettings
                 {
                     LocalAddr = address,
                     LocalPort = port,

@@ -53,7 +53,7 @@ namespace TestStreamer
         private VideoEncoder videoEncoder = null;
 
 
-        public void Setup(VideoEncodingParams encodingParams, NetworkStreamingParams networkParams)
+        public void Setup(VideoEncoderSettings encodingParams, NetworkSettings networkParams)
         {
             logger.Debug("ScreenStreamer::Setup()");
 
@@ -83,7 +83,7 @@ namespace TestStreamer
 
                 var srcSize = screenSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-                var destSize = new Size(encodingParams.Width, encodingParams.Height);
+                var destSize = encodingParams.Resolution;//new Size(encodingParams.Width, encodingParams.Height);
 
 
                 //encoder = new FFmpegVideoEncoder();

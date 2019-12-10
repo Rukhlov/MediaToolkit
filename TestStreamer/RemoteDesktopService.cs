@@ -381,16 +381,17 @@ namespace TestStreamer
 
 
 
-            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            NetworkSettings networkParams = new NetworkSettings
             {
                 RemoteAddr = options.DestAddr,
                 RemotePort = options.DestPort,
             };
 
-            VideoEncodingParams encodingParams = new VideoEncodingParams
+            VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
-                Width = destSize.Width, // options.Width,
-                Height = destSize.Height, // options.Height,
+                //Width = destSize.Width, // options.Width,
+                //Height = destSize.Height, // options.Height,
+                Resolution = destSize,
                 FrameRate = options.FrameRate,
                 EncoderName = "libx264", // "h264_nvenc", //
             };

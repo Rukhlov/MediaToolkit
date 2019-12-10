@@ -36,7 +36,7 @@ namespace TestClient.Controls
 
             var sampleRate = (int)sampleRateNumeric.Value;
             var channels = (int)channelsNumeric.Value;
-            var networkPars = new NetworkStreamingParams
+            var networkPars = new NetworkSettings
             {
                 LocalAddr = addr,
                 LocalPort = port,
@@ -44,7 +44,7 @@ namespace TestClient.Controls
 
             };
 
-            var audioPars = new AudioEncodingParams
+            var audioPars = new AudioEncoderSettings
             {
                 SampleRate = sampleRate,
                 Channels = channels,

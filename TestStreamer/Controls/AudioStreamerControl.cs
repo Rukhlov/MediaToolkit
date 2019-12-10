@@ -52,7 +52,7 @@ namespace TestStreamer.Controls
             //audioStreamer = new AudioStreamer();
 
 
-            var audioParams = new AudioEncodingParams
+            var audioParams = new AudioEncoderSettings
             {
                 SampleRate = 8000,
                 Channels = 1,
@@ -61,7 +61,7 @@ namespace TestStreamer.Controls
 
             };
 
-            NetworkStreamingParams networkParams = audioSettings.NetworkParams;
+            NetworkSettings networkParams = audioSettings.NetworkParams;
 
             //NetworkStreamingParams networkParams = new NetworkStreamingParams
             //{
@@ -216,7 +216,7 @@ namespace TestStreamer.Controls
             settingPanel.Enabled = !isStreaming;
         }
 
-        private AudioSettingsParams audioSettings = new AudioSettingsParams();
+        private AudioStreamSettings audioSettings = new AudioStreamSettings();
         private void settingButton_Click(object sender, EventArgs e)
         {
             //videoSettings.CaptureRegion = currentScreenRect;

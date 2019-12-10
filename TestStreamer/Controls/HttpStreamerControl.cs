@@ -74,17 +74,18 @@ namespace TestStreamer.Controls
 
             httpStreamer = new HttpScreenStreamer(httpScreenSource);
 
-            NetworkStreamingParams networkParams = new NetworkStreamingParams
+            NetworkSettings networkParams = new NetworkSettings
             {
                 RemoteAddr = addr,
                 RemotePort = port,
             };
 
 
-            VideoEncodingParams encodingParams = new VideoEncodingParams
+            VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
-                Width = destSize.Width, // options.Width,
-                Height = destSize.Height, // options.Height,
+                //Width = destSize.Width, // options.Width,
+                //Height = destSize.Height, // options.Height,
+                Resolution = destSize,
                 FrameRate = (int)fps,
                 EncoderName = "mjpeg",
             };

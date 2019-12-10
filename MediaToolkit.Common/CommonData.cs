@@ -19,7 +19,7 @@ namespace MediaToolkit.Common
 
             this.FrameSize = new Size(width, height);
         }
-    
+
         public readonly object syncRoot = new object();
 
         public Size FrameSize { get; private set; } = Size.Empty;
@@ -44,10 +44,13 @@ namespace MediaToolkit.Common
         }
     }
 
-    public class VideoEncodingParams
+    public class VideoEncoderSettings
     {
-        public int Width = 0;
-        public int Height = 0;
+        public VideoEncoderMode Encoder = VideoEncoderMode.H264;
+
+        public Size Resolution = Size.Empty;
+        //public int Width = 0;
+        //public int Height = 0;
         public int FrameRate = 0;
         public string EncoderName = "";
 
@@ -88,7 +91,7 @@ namespace MediaToolkit.Common
         JPEG
     }
 
-    public class AudioEncodingParams
+    public class AudioEncoderSettings
     {
         public int SampleRate = 8000;
         public int Channels = 1;
@@ -99,7 +102,7 @@ namespace MediaToolkit.Common
         public AudioEncoderMode Encoder = AudioEncoderMode.G711;
     }
 
-    public class AudioCaptureParams
+    public class AudioCaptureSettings
     {
         public string Name = "";
         public string DeviceId = "";
@@ -108,15 +111,23 @@ namespace MediaToolkit.Common
         public int Channels = 0;
     }
 
-    public class VideoCaptureDescription
+    public enum CaptureMode
+    {
+        Screen,
+        CaptDevice,
+    }
+
+    public abstract class VideoCaptureDescription
     {
         public string Name = "";
         public Size Resolution = new Size(640, 480);
+        public abstract CaptureMode CaptureMode { get; }
 
     }
 
     public class VideoCaptureDeviceDescription: VideoCaptureDescription
     {
+        public override CaptureMode CaptureMode => CaptureMode.CaptDevice;
         public string DeviceId = "";
 
         public VideoCaptureDeviceProfile CurrentProfile = null;
@@ -138,6 +149,7 @@ namespace MediaToolkit.Common
 
     public class ScreenCaptureDeviceDescription: VideoCaptureDescription
     {
+        public override CaptureMode CaptureMode => CaptureMode.Screen;
         public string DisplayName = "";
         public Rectangle CaptureRegion = new Rectangle(0, 0, 640, 480);
         public Rectangle DisplayRegion = new Rectangle(0, 0, 640, 480);
@@ -170,7 +182,7 @@ namespace MediaToolkit.Common
     }
 
 
-    public class NetworkStreamingParams
+    public class NetworkSettings
     {
         public string LocalAddr = "";
         public int LocalPort = 0;

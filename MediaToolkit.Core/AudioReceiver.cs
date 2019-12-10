@@ -36,7 +36,7 @@ namespace MediaToolkit.Core
         private AudioDecoder decoder = null;
          
 
-        public void Setup(AudioEncodingParams inputPars, NetworkStreamingParams networkPars)
+        public void Setup(AudioEncoderSettings inputPars, NetworkSettings networkPars)
         {
             logger.Debug("AudioReceiver::Setup(...)");
 

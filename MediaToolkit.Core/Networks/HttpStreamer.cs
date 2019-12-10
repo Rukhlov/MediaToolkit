@@ -28,7 +28,7 @@ namespace MediaToolkit.Core.Networks
 
         private TcpListener listener = null;
 
-        public Task Start(NetworkStreamingParams networkParams)
+        public Task Start(NetworkSettings networkParams)
         {
             logger.Debug("HttpStreamer::Start()");
 

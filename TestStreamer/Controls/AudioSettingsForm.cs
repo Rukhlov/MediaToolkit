@@ -24,9 +24,9 @@ namespace TestStreamer.Controls
 
         }
 
-        public AudioSettingsParams AudioSettings { get; private set; }
+        public AudioStreamSettings AudioSettings { get; private set; }
 
-        public void Setup(AudioSettingsParams settingsParams)
+        public void Setup(AudioStreamSettings settingsParams)
         {
 
             this.AudioSettings = settingsParams;

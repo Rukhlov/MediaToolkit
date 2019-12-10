@@ -71,7 +71,7 @@ namespace TestStreamer
         }
 
 
-        public void Setup(AudioEncodingParams outputParams, NetworkStreamingParams networkPars)
+        public void Setup(AudioEncoderSettings outputParams, NetworkSettings networkPars)
         {
             logger.Debug("AudioLoopbackSource::Start(...) ");
 
@@ -91,7 +91,7 @@ namespace TestStreamer
                 audioResampler = new AudioEncoder();
 
                 var waveFormat = capture.WaveFormat;
-                var captureParams = new AudioEncodingParams
+                var captureParams = new AudioEncoderSettings
                 {
                     SampleRate = waveFormat.SampleRate,
                     Channels = waveFormat.Channels,
@@ -119,6 +119,8 @@ namespace TestStreamer
 
                 audioSource.DataAvailable += AudioSource_DataAvailable;
                 RtpSender.Setup(networkPars);
+
+   
 
                 RtpSender.Start();
 
@@ -233,7 +235,7 @@ namespace TestStreamer
 
             if (audioSource != null)
             {
-                audioSource.DataAvailable += AudioSource_DataAvailable;
+                audioSource.DataAvailable -= AudioSource_DataAvailable;
             }
 
             if (audioResampler != null)

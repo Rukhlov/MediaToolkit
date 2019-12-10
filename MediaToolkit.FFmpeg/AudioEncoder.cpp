@@ -38,7 +38,7 @@ namespace FFmpegLib {
 			CleanUp();
 		}
 
-		void Open(AudioEncodingParams^ srcParams, AudioEncodingParams^ dstParams) {
+		void Open(AudioEncoderSettings^ srcParams, AudioEncoderSettings^ dstParams) {
 
 			logger->Debug("AudioEncoder::Open(...)");
 			closing = false;

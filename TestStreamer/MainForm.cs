@@ -248,15 +248,6 @@ namespace TestStreamer
             this.notifyIcon.ShowBalloonTip(10000, "TEST_TITLE", "TEST_TEXT", ToolTipIcon.Info);
         }
 
-
-
-
-        private void multicastAddressTextBox_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-
     }
 
 

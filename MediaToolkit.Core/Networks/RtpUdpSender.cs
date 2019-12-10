@@ -33,7 +33,7 @@ namespace MediaToolkit
         public IPEndPoint RemoteEndpoint { get; private set; }
         public IPEndPoint LocalEndpoint { get; private set; }
 
-        public void Setup(NetworkStreamingParams streamingParams)
+        public void Setup(NetworkSettings streamingParams)
         {
             logger.Debug("RtpUdpSender::Setup(...)");
 

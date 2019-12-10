@@ -138,28 +138,30 @@ namespace TestClient
                         return;
                     }
 
-                    var inputPars = new VideoEncodingParams
+                    var inputPars = new VideoEncoderSettings
                     {
-                        Width = startRequest.DstSize.Width,
-                        Height = startRequest.DstSize.Height,
+                        Resolution = startRequest.DstSize,
+                        //Width = startRequest.DstSize.Width,
+                        //Height = startRequest.DstSize.Height,
 
                         //Width = 640,//2560,
                         //Height = 480,//1440,
                         FrameRate = 30,
                     };
 
-                    var outputPars = new VideoEncodingParams
+                    var outputPars = new VideoEncoderSettings
                     {
                         //Width = 640,//2560,
                         //Height = 480,//1440,
-                        Width = startRequest.DstSize.Width,
-                        Height = startRequest.DstSize.Height,
+                        //Width = startRequest.DstSize.Width,
+                        //Height = startRequest.DstSize.Height,
 
+                        Resolution = startRequest.DstSize,
                         FrameRate = 30,
                     };
                     var transport = TransportMode.Udp;
 
-                    var networkPars = new NetworkStreamingParams
+                    var networkPars = new NetworkSettings
                     {
                         LocalAddr = ServerAddr,
                         LocalPort = 1234,
@@ -254,7 +256,7 @@ namespace TestClient
 
 
 
-        internal void Play(VideoEncodingParams inputPars, VideoEncodingParams outputPars, NetworkStreamingParams networkPars)
+        internal void Play(VideoEncoderSettings inputPars, VideoEncoderSettings outputPars, NetworkSettings networkPars)
         {
             logger.Debug("RemoteDesktopClient::Play(...)");
             VideoReceiver = new ScreenReceiver();
