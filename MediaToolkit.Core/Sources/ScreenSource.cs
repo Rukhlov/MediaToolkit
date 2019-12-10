@@ -20,23 +20,27 @@ namespace MediaToolkit
         Starting,
         Capturing,
         Stopping,
+        Closed,
     }
 
     public interface IVideoSource
     {
         VideoBuffer SharedBitmap { get; }
         SharpDX.Direct3D11.Texture2D SharedTexture { get; }
-
+        int ErrorCode { get; }
         CaptureState State { get; }
         event Action BufferUpdated;
-        event Action<CaptureState> StateChanged;
+       // event Action<CaptureState> StateChanged;
+
+        event Action<object> CaptureStopped;
+        event Action CaptureStarted;
 
         Size SrcSize { get; }
+
+        void Setup(object pars);
         void Start();
         void Stop();
-        void Setup(object pars);
-
-        void Close();
+        void Close(bool force = false);
     }
 
     public class ScreenSource : IVideoSource
@@ -60,7 +64,8 @@ namespace MediaToolkit
             }
         }
 
-        public CaptureState State { get; private set; } = CaptureState.Stopped;
+        public CaptureState State { get; private set; } = CaptureState.Closed;
+        public int ErrorCode { get; private set; } = 0;
 
         private DXGIDesktopDuplicationCapture hwContext = null;
 
@@ -70,11 +75,9 @@ namespace MediaToolkit
             BufferUpdated?.Invoke();
         }
 
-        public event Action<CaptureState> StateChanged;
-        private void OnStateChanged(CaptureState state)
-        {
-            StateChanged?.Invoke(state);
-        }
+        public event Action CaptureStarted;
+        public event Action<object> CaptureStopped;
+
 
         private AutoResetEvent syncEvent = null;
 
@@ -88,7 +91,7 @@ namespace MediaToolkit
 
             logger.Debug("ScreenSource::Setup()");
 
-            if (State != CaptureState.Stopped)
+            if (State != CaptureState.Closed)
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
@@ -126,7 +129,7 @@ namespace MediaToolkit
                 deviceReady = true;
 
                 State = CaptureState.Initialized;
-                OnStateChanged(State);
+
 
             }
             catch (Exception ex)
@@ -138,38 +141,54 @@ namespace MediaToolkit
                 throw;
             }
         }
-
+        private Task captureTask = null;
         public void Start()
         {
             logger.Debug("ScreenSource::Start()");
-
-            if (State != CaptureState.Initialized)
+            if (!(State == CaptureState.Stopped || State == CaptureState.Initialized))
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-            State = CaptureState.Starting;
+           // State = CaptureState.Starting;
 
-            Task.Run(() =>
+            captureTask = Task.Run(() =>
             {
-                CaptureProc();
+                try
+                {
+                    logger.Info("Capture thread started...");
+                    CaptureStarted?.Invoke();
 
+                    DoCapture();
+
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+
+                    this.ErrorCode = 100500;
+                }
+                finally
+                {
+                    CaptureStopped?.Invoke(null);
+
+                    logger.Info("Capture thread stopped...");
+                }
             });
 
         }
 
-        private void CaptureProc()
+        private void DoCapture()
         {
-            logger.Info("Capturing thread started...");
-
-            var frameRate = CaptureParams.Fps;
+            State = CaptureState.Capturing;
 
             CaptureStats captureStats = new CaptureStats();
-
             try
-            {
+            {                
+
                 Statistic.RegisterCounter(captureStats);
 
+                var frameRate = CaptureParams.Fps;
                 var frameInterval = (1000.0 / frameRate);
                 captureStats.frameInterval = frameInterval;
 
@@ -178,7 +197,7 @@ namespace MediaToolkit
                 double jitter = 0;
 
                 Stopwatch sw = Stopwatch.StartNew();
-                State = CaptureState.Capturing;
+
 
                 while (State == CaptureState.Capturing && deviceReady)
                 {
@@ -242,21 +261,16 @@ namespace MediaToolkit
                 }
 
             }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
             finally
             {
-                screenCapture?.Close();
+                //screenCapture?.Close();
 
                 Statistic.UnregisterCounter(captureStats);
 
                 this.State = CaptureState.Stopped;
-                OnStateChanged(this.State);
+
             }
 
-            logger.Info("Capturing thread stopped...");
         }
 
   
@@ -265,20 +279,42 @@ namespace MediaToolkit
             logger.Debug("ScreenSource::Close()");
 
             State = CaptureState.Stopping;
-            OnStateChanged(this.State);
+            //OnStateChanged(this.State);
 
-            syncEvent.Set();
-
+            syncEvent?.Set();
 
         }
 
-        public void Close()
+        public void Close(bool force = false)
         {
-            logger.Debug("ScreenSource::Dispose()");
+            logger.Debug("ScreenSource::Close()");
 
+            Stop();
             deviceReady = false;
 
+            if (!force)
+            {
+                if (captureTask != null)
+                {
+                    if (captureTask.Status == TaskStatus.Running)
+                    {
+                        bool waitResult = false;
+                        do
+                        {
+                            waitResult = captureTask.Wait(1000);
+                            if (!waitResult)
+                            {
+                                logger.Warn("ScreenSource::Close() " + waitResult);
+                            }
+                        } while (!waitResult);
+
+                    }
+                }
+            }
+
             CleanUp();
+
+            State = CaptureState.Closed;
         }
 
         private void CleanUp()

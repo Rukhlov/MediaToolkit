@@ -21,6 +21,13 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Dictionary<Guid, string> AttrsDict= new Dictionary<Guid, string>();
         public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();
 
+        public static readonly Dictionary<Guid, Format> DxgiFormatsDict = new Dictionary<Guid, Format>
+        {
+            { VideoFormatGuids.NV12, Format.NV12},
+            { VideoFormatGuids.Argb32, Format.B8G8R8A8_UNorm},
+            //...
+        };
+
         static MfTool()
         {
               
@@ -240,16 +247,14 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
+
+
+        public static Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
         {
             Format format = Format.Unknown;
-            if (guid == VideoFormatGuids.NV12)
+            if (DxgiFormatsDict.ContainsKey(guid))
             {
-                format = Format.NV12;
-            }
-            else if (guid == VideoFormatGuids.Argb32)
-            {
-                format = Format.B8G8R8A8_UNorm;
+                format = DxgiFormatsDict[guid];
             }
             return format;
         }
@@ -371,6 +376,86 @@ namespace MediaToolkit.MediaFoundation
 
             return mediaType;
         }
+
+        public static string LogSourceReaderTypes(SourceReader sourceReader)
+        {
+            StringBuilder log = new StringBuilder();
+
+            int streamIndex = 0;
+            while (true)
+            {
+                bool invalidStreamNumber = false;
+
+                int _streamIndex = -1;
+
+                for (int mediaIndex = 0; ; mediaIndex++)
+                {
+                    try
+                    {
+                        var nativeMediaType = sourceReader.GetNativeMediaType(streamIndex, mediaIndex);
+
+                        if (_streamIndex != streamIndex)
+                        {
+                            _streamIndex = streamIndex;
+                            log.AppendLine("====================== StreamIndex#" + streamIndex + "=====================");
+                        }
+
+                        log.AppendLine(MfTool.LogMediaType(nativeMediaType));
+                        nativeMediaType?.Dispose();
+
+                    }
+                    catch (SharpDX.SharpDXException ex)
+                    {
+                        if (ex.ResultCode == SharpDX.MediaFoundation.ResultCode.NoMoreTypes)
+                        {
+                            //Console.WriteLine("");
+                            break;
+                        }
+                        else if (ex.ResultCode == SharpDX.MediaFoundation.ResultCode.InvalidStreamNumber)
+                        {
+                            invalidStreamNumber = true;
+                            break;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                }
+
+                if (invalidStreamNumber)
+                {
+                    break;
+                }
+
+                streamIndex++;
+            }
+
+            return log.ToString();
+        }
+
+        public static bool TryGetVendorId(string venIdStr, out int vendorId)
+        {
+            bool result = false;
+            vendorId = -1;
+
+            const string VEN = "VEN_";
+
+            var index = venIdStr.IndexOf(VEN);
+            if (index >= 0)
+            {
+                var startIndex = VEN.Length - index;
+                var venid = venIdStr.Substring(startIndex, venIdStr.Length - startIndex);
+
+                if (!string.IsNullOrEmpty(venid))
+                {
+                    result = int.TryParse(venid, System.Globalization.NumberStyles.HexNumber, null, out vendorId);
+                }
+            }
+            return result;
+        }
+
+
 
     }
 

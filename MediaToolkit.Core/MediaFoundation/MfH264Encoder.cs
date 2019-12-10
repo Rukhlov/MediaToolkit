@@ -23,15 +23,13 @@ namespace MediaToolkit.MediaFoundation
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private DXGIDeviceManager deviceManager = null;
-        private SharpDX.DXGI.Factory1 dxgiFactory = null;
-        private SharpDX.DXGI.Adapter1 adapter = null;
 
         public SharpDX.Direct3D11.Device device = null;
 
         private Transform encoder = null;
 
         private Sample bufSample = null;
+        private Texture2D bufTexture = null;
 
         private int inputStreamId = -1;
         private int outputStreamId = -1;
@@ -54,30 +52,40 @@ namespace MediaToolkit.MediaFoundation
 
             if (!isCompatibleOSVersion)
             {
-                //logger.Warn("Windows versions earlier than 8 are not supported.");
                 throw new NotSupportedException("Windows versions earlier than 8 are not supported.");
             }
 
-            var inputFormat = VideoFormatGuids.Argb32;
-
-
-
             try
             {
-                SetupDx(args);
+                var adapterId = args.AdapterId;
 
+                using (var adapter = FindAdapter(adapterId))
+                {
+                    var descr = adapter.Description;
+                    int adapterVenId = descr.VendorId;
+                    long adapterLuid = descr.Luid;
 
-                int adapterVenId = adapter.Description.VendorId;
-                long adapterLuid = adapter.Description.Luid;
+                    logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-                encoder = FindEncoder(adapterVenId);
+                    var flags = //DeviceCreationFlags.Debug |
+                        DeviceCreationFlags.VideoSupport |
+                        DeviceCreationFlags.BgraSupport;
+
+                    device = new SharpDX.Direct3D11.Device(adapter, flags);
+
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
+
+                    SetupSampleBuffer(args);
+
+                    encoder = FindEncoder(adapterVenId);
+                }
 
                 if (encoder == null)
                 {
-
                     throw new NotSupportedException("Hardware encode acceleration is not available on this platform.");
-                    //logger.Warn("Encoder not found");
-                    //return;
                 }
 
                 SetupEncoder(args);
@@ -92,61 +100,53 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-
-        private void SetupDx(MfVideoArgs args)
+        private Adapter1 FindAdapter(long adapterId)
         {
-            logger.Debug("SetupDx(...)");
-
-            int width = args.Width;
-            int height = args.Height;
-
-            dxgiFactory = new SharpDX.DXGI.Factory1();
-
-            var adapterId = args.AdapterId;
-            if (adapterId > 0)
+            Adapter1 adapter1 = null;
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
             {
-                //adapter = dxgiFactory.Adapters1.FirstOrDefault(a => a.Description1.Luid == adapterId);
-                var adapters = dxgiFactory.Adapters1;
-                for (int i =0; i< adapters.Length; i++)
-                {
-                    var _adapter = adapters[i];
-                    if(_adapter.Description1.Luid == adapterId)
-                    {
-                        adapter = _adapter;
-                        continue;
-                    }
 
-                    _adapter.Dispose();
+                if (adapterId > 0)
+                {
+                    var adapters = dxgiFactory.Adapters1;
+                    for (int i = 0; i < adapters.Length; i++)
+                    {
+                        var _adapter = adapters[i];
+                        if (_adapter.Description1.Luid == adapterId)
+                        {
+                            adapter1 = _adapter;
+                            continue;
+                        }
+
+                        _adapter.Dispose();
+                    }
+                }
+
+                if (adapter1 == null)
+                {
+                    adapter1 = dxgiFactory.GetAdapter1(0);
                 }
             }
 
-            if (adapter == null)
+            return adapter1;
+        }
+
+        private void SetupSampleBuffer(MfVideoArgs args)
+        {
+            logger.Debug("SetupSampleBuffer(...)");
+
+            int width = args.Width;
+            int height = args.Height;
+            Format format = MfTool.GetDXGIFormatFromVideoFormatGuid(args.Format);
+
+            if(format == Format.Unknown)
             {
-                adapter = dxgiFactory.GetAdapter1(0);//Adapters1.FirstOrDefault();
+                throw new NotSupportedException("Format not suppored " + args.Format);
             }
-
-            var descr = adapter.Description;
-
-            logger.Info("Adapter: " + descr.Description + " " + descr.DeviceId + " " + descr.VendorId);
-
-            device = new SharpDX.Direct3D11.Device(adapter,
-                // DeviceCreationFlags.Debug | 
-                DeviceCreationFlags.VideoSupport |
-                DeviceCreationFlags.BgraSupport);
-
-
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-
-            deviceManager = new DXGIDeviceManager();
-            deviceManager.ResetDevice(device);
 
             var _descr = new Texture2DDescription
             {
-                Format = Format.NV12,
-                //Format = Format.B8G8R8A8_UNorm,
+                Format = format,
                 Width = width,
                 Height = height,
                 MipLevels = 1,
@@ -169,6 +169,7 @@ namespace MediaToolkit.MediaFoundation
                 mediaBuffer.Dispose();
             }
         }
+
 
         private Transform FindEncoder(int adapterVenId)
         {
@@ -199,15 +200,9 @@ namespace MediaToolkit.MediaFoundation
                 Activate preferActivator = null;
                 foreach (var activator in transformActivators)
                 {
-
                     var actLog = MfTool.LogMediaAttributes(activator);
 
                     logger.Debug("\r\nActivator:\r\n-----------------\r\n" + actLog);
-
-
-                    //bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
-                    //bool isAsync = flags.HasFlag(TransformEnumFlag.Asyncmft);
-                    //Guid clsid = activator.Get(TransformAttributeKeys.);
 
                     string name = activator.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
                     Guid clsid = activator.Get(TransformAttributeKeys.MftTransformClsidAttribute);
@@ -215,24 +210,17 @@ namespace MediaToolkit.MediaFoundation
 
                     bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
                     isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
-                    bool isHardware = (flags.HasFlag(TransformEnumFlag.Hardware));
+                    bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
 
                     if (isHardware)
                     {
                         string venIdStr = activator.Get(TransformAttributeKeys.MftEnumHardwareVendorIdAttribute);
-                        var index = venIdStr.IndexOf("VEN_");
-                        if (index >= 0)
-                        {
-                            var startIndex = "VEN_".Length - index;
-                            var venid = venIdStr.Substring(startIndex, venIdStr.Length - startIndex);
 
-                            if (!string.IsNullOrEmpty(venid))
+                        if (MfTool.TryGetVendorId(venIdStr, out int activatorVendId))
+                        {
+                            if (activatorVendId == adapterVenId)
                             {
-                                int.TryParse(venid, System.Globalization.NumberStyles.HexNumber, null, out int activatorVendorId);
-                                if (activatorVendorId == adapterVenId)
-                                {
-                                    preferActivator = activator;
-                                }
+                                preferActivator = activator;
                             }
                         }
                     }
@@ -291,7 +279,7 @@ namespace MediaToolkit.MediaFoundation
             var height = args.Height;
 
             //var inputFormat = VideoFormatGuids.Argb32;
-            var inputFormat = VideoFormatGuids.NV12;
+            var inputFormat = args.Format; //VideoFormatGuids.NV12;
 
             logger.Info("Encoder input params: " + width + "x" + height + " fps=" + fps + " {" + inputFormat + "}");
             using (var attr = encoder.Attributes)
@@ -308,7 +296,12 @@ namespace MediaToolkit.MediaFoundation
                     bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                     if (d3d11Aware)
                     {
-                        encoder.ProcessMessage(TMessageType.SetD3DManager, deviceManager.NativePointer);
+                        using (var devMan = new DXGIDeviceManager())
+                        {
+                            devMan.ResetDevice(device);
+                            encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                        }
+
                     }
 
                     attr.Set(MFAttributeKeys.CODECAPI_AVLowLatencyMode, args.LowLatency);
@@ -354,7 +347,7 @@ namespace MediaToolkit.MediaFoundation
                     break;
                 }
 
-               
+
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
@@ -614,14 +607,8 @@ namespace MediaToolkit.MediaFoundation
                 };
                 outputDataBuffer[0] = data;
 
-
-                //bool res = true;
-                // processor.ProcessOutput(TransformProcessOutputFlags.None,  1, outputDataBuffer, out TransformProcessOutputStatus status);
-                //var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
-
                 var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, outputDataBuffer, out TransformProcessOutputStatus status);
 
-                // var res = encoder.ProcessOutput(TransformProcessOutputFlags.None, data, out TransformProcessOutputStatus status);
                 if (res.Success)
                 {
 
@@ -706,7 +693,7 @@ namespace MediaToolkit.MediaFoundation
         private volatile int inputRequests = 0;
 
         private static object syncRoot = new object();
-        private Texture2D bufTexture = null;
+
         private volatile bool needUpdate = false;
 
         public void WriteTexture(Texture2D texture)
@@ -785,7 +772,7 @@ namespace MediaToolkit.MediaFoundation
                 bufSample = null;
             }
 
-            if(bufTexture!=null)
+            if (bufTexture != null)
             {
                 bufTexture.Dispose();
                 bufTexture = null;
@@ -796,27 +783,6 @@ namespace MediaToolkit.MediaFoundation
                 device.Dispose();
                 device = null;
             }
-
-            if (adapter != null)
-            {
-                adapter.Dispose();
-                adapter = null;
-            }
-
-            if (dxgiFactory != null)
-            {
-                dxgiFactory.Dispose();
-                dxgiFactory = null;
-            }
-
-            if (deviceManager != null)
-            {
-                deviceManager.Dispose();
-                deviceManager = null;
-            }
-            
-            
-
 
         }
 
