@@ -27,10 +27,10 @@ namespace MediaToolkit
     {
         VideoBuffer SharedBitmap { get; }
         SharpDX.Direct3D11.Texture2D SharedTexture { get; }
+
         int ErrorCode { get; }
         CaptureState State { get; }
         event Action BufferUpdated;
-       // event Action<CaptureState> StateChanged;
 
         event Action<object> CaptureStopped;
         event Action CaptureStarted;
@@ -99,6 +99,10 @@ namespace MediaToolkit
             syncEvent = new AutoResetEvent(false);
             ScreenCaptureDeviceDescription captureParams = pars as ScreenCaptureDeviceDescription;
 
+            if(captureParams == null)
+            {
+                throw new ArgumentException();
+            }
 
             this.CaptureParams = captureParams;
 
@@ -194,7 +198,6 @@ namespace MediaToolkit
 
                 double lastTime = 0;
                 double monotonicTime = 0;
-                double jitter = 0;
 
                 Stopwatch sw = Stopwatch.StartNew();
 
@@ -253,11 +256,8 @@ namespace MediaToolkit
                         //logger.Warn("delay " + delay);
                     }
 
-
                     monotonicTime += sw.ElapsedMilliseconds / 1000.0;
                     captureStats.Update(monotonicTime);
-
-
                 }
 
             }
@@ -279,7 +279,6 @@ namespace MediaToolkit
             logger.Debug("ScreenSource::Close()");
 
             State = CaptureState.Stopping;
-            //OnStateChanged(this.State);
 
             syncEvent?.Set();
 
@@ -287,7 +286,7 @@ namespace MediaToolkit
 
         public void Close(bool force = false)
         {
-            logger.Debug("ScreenSource::Close()");
+            logger.Debug("ScreenSource::Close(...) " + force);
 
             Stop();
             deviceReady = false;

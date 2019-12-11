@@ -57,24 +57,7 @@ namespace MediaToolkit
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
 
-        private void OnCaptureStarted()
-        {
-            CaptureStarted?.Invoke();
-        }
-
-        private void OnCaptureStopped(object obj)
-        {
-            CaptureStopped?.Invoke(obj);
-        }
-
-
-        //public event Action<CaptureState> StateChanged;
-        //private void OnStateChanged(CaptureState state)
-        //{
-        //    StateChanged?.Invoke(state);
-        //}
-
-        private Texture2D texture = null;
+        private Texture2D stagingTexture = null;
         private SourceReader sourceReader = null;
 
         private MfVideoProcessor processor = null;
@@ -115,8 +98,14 @@ namespace MediaToolkit
 
                 sourceReader = CreateSourceReaderByDeviceId(deviceId);
 
-                logger.Debug("------------------CurrentMediaType-------------------");
+                if(sourceReader == null)
+                {
+                    throw new Exception("Unable to create media source reader " + deviceId);
+                }
+     
                 var mediaType = sourceReader.GetCurrentMediaType(SourceReaderIndex.FirstVideoStream);
+
+                logger.Debug("------------------CurrentMediaType-------------------");
                 logger.Debug(MfTool.LogMediaType(mediaType));
 
                 srcSize = MfTool.GetFrameSize(mediaType);
@@ -138,17 +127,15 @@ namespace MediaToolkit
                          Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                          Width = destSize.Width,
                          Height = destSize.Height,
-
                          MipLevels = 1,
                          ArraySize = 1,
                          SampleDescription = { Count = 1, Quality = 0 },
                          Usage = ResourceUsage.Default,
-                         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
                          OptionFlags = ResourceOptionFlags.Shared,
 
                      });
 
-                texture = new Texture2D(device,
+                stagingTexture = new Texture2D(device,
                         new Texture2DDescription
                         {
                             CpuAccessFlags = CpuAccessFlags.Read,
@@ -161,33 +148,27 @@ namespace MediaToolkit
                             ArraySize = 1,
                             SampleDescription = { Count = 1, Quality = 0 },
                             Usage = ResourceUsage.Staging,
-                            //OptionFlags = ResourceOptionFlags.Shared,
                             OptionFlags = ResourceOptionFlags.None,
                         });
 
 
                 processor = new MfVideoProcessor(null);
-                var inProcArgs = new MfVideoArgs
+                var intupArgs = new MfVideoArgs
                 {
                     Width = srcSize.Width,
                     Height = srcSize.Height,
-                    // Format = VideoFormatGuids.Rgb24,
                     Format = subtype,//VideoFormatGuids.NV12,
                 };
 
 
-                var outProcArgs = new MfVideoArgs
+                var outputArgs = new MfVideoArgs
                 {
                     Width = destSize.Width,
                     Height = destSize.Height,
                     Format = VideoFormatGuids.Argb32,
-                    //Format = VideoFormatGuids.Rgb32,//VideoFormatGuids.Argb32,
                 };
 
-                processor.Setup(inProcArgs, outProcArgs);
-
-
-                //processor.SetMirror(VideoProcessorMirror.MirrorHorizontal);
+                processor.Setup(intupArgs, outputArgs);
                 processor.SetMirror(VideoProcessorMirror.MirrorVertical);
 
                 State = CaptureState.Initialized;
@@ -538,19 +519,16 @@ namespace MediaToolkit
                     var mediaBuffer = outputSample.ConvertToContiguousBuffer();
                     try
                     {
-                        var ptr = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
+                        var pBuffer = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
 
-                        ////var width = outProcArgs.Width;
-                        ////var height = outProcArgs.Height;
+                        var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
 
-                        var dataBox = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, MapFlags.None);
+                        Kernel32.CopyMemory(dataBox.DataPointer, pBuffer, (uint)cbCurrentLengthRef);
 
-                        Kernel32.CopyMemory(dataBox.DataPointer, ptr, (uint)cbCurrentLengthRef);
-
-                        device.ImmediateContext.UnmapSubresource(texture, 0);
+                        device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
 
 
-                        device.ImmediateContext.CopyResource(texture, SharedTexture);
+                        device.ImmediateContext.CopyResource(stagingTexture, SharedTexture);
                         device.ImmediateContext.Flush();
 
                         OnBufferUpdated();
@@ -590,11 +568,19 @@ namespace MediaToolkit
 
             if (asyncMode)
             {
-                if (sourceReader != null)
+                try
                 {
-                    sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
-                    syncEvent.Set();
+                    if (sourceReader != null)
+                    {
+                        sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
+                    }
                 }
+                catch(Exception ex)
+                {
+                    logger.Debug(ex);
+                }
+
+                syncEvent.Set();
             }
 
         }
@@ -659,10 +645,10 @@ namespace MediaToolkit
                 SharedTexture = null;
             }
 
-            if (texture != null)
+            if (stagingTexture != null)
             {
-                texture.Dispose();
-                texture = null;
+                stagingTexture.Dispose();
+                stagingTexture = null;
             }
 
             if (processor != null)

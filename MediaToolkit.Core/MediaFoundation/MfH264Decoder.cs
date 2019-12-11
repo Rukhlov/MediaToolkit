@@ -146,10 +146,12 @@ namespace MediaToolkit.MediaFoundation
                     bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                     if (d3d11Aware)
                     {
-                        DXGIDeviceManager devMan = new DXGIDeviceManager();
-                        devMan.ResetDevice(device);
+                        using (DXGIDeviceManager devMan = new DXGIDeviceManager())
+                        {
+                            devMan.ResetDevice(device);
+                            decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                        }
 
-                        decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                     }
 
                     attr.Set(SinkWriterAttributeKeys.LowLatency, true);

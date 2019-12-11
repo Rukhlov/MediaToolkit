@@ -19,10 +19,10 @@ namespace TestStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public readonly IVideoSource screenSource = null;
+        public readonly IVideoSource videoSource = null;
         public VideoStreamer(IVideoSource source)
         {
-            this.screenSource = source;
+            this.videoSource = source;
 
         }
 
@@ -81,7 +81,7 @@ namespace TestStreamer
                 //var hwContext = screenSource.hwContext;
                 //var hwDevice = hwContext.device;
 
-                var srcSize = screenSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
+                var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
                 var destSize = encodingParams.Resolution;//new Size(encodingParams.Width, encodingParams.Height);
 
@@ -90,11 +90,11 @@ namespace TestStreamer
                 //encoder.Open(encodingParams);
                 //encoder.DataEncoded += Encoder_DataEncoded;
 
-                videoEncoder = new VideoEncoder(screenSource);
+                videoEncoder = new VideoEncoder(videoSource);
                 videoEncoder.Open(encodingParams);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
-                screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+                videoSource.BufferUpdated += ScreenSource_BufferUpdated;
             }
             catch (Exception ex)
             {
@@ -145,7 +145,7 @@ namespace TestStreamer
                             }
 
                             sw.Restart();
-
+                            
                             videoEncoder.Encode();
 
                         }
@@ -197,26 +197,6 @@ namespace TestStreamer
             streamStats.Update(time, buf.Length, processingTime);
         }
 
-        //private void Encoder_DataEncoded(IntPtr ptr, int len, double time)
-        //{
-        //    if (closing)
-        //    {
-        //        return;
-        //    }
-
-        //    if (ptr != IntPtr.Zero && len > 0)
-        //    {
-        //        // получили данные от энкодера 
-        //        byte[] frame = new byte[len];
-        //        Marshal.Copy(ptr, frame, 0, len);
-
-        //        rtpStreamer.Send(frame, time);
-
-        //        streamStats.Update(time, frame.Length);
-        //        // streamer.Send(frame, rtpTimestamp);
-        //    }
-
-        //}
 
         private void ScreenSource_BufferUpdated()
         {
@@ -242,32 +222,8 @@ namespace TestStreamer
                 videoEncoder = null;
             }
 
-            //if (mfEncoder != null)
-            //{
-            //    mfEncoder.DataReady -= MfEncoder_DataReady;
-            //    mfEncoder.Stop();
-            //    //mfEncoder.Close();
-            //}
 
-            //if (processor != null)
-            //{
-            //    processor.Close();
-            //    processor = null;
-            //}
-
-            //if (SharedTexture != null)
-            //{
-            //    SharedTexture.Dispose();
-            //    SharedTexture = null;
-            //}
-
-            //if (encoder != null)
-            //{
-            //    encoder.DataEncoded -= Encoder_DataEncoded;
-            //    encoder.Close();
-            //}
-
-            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            videoSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
             RtpSender?.Close();
         }

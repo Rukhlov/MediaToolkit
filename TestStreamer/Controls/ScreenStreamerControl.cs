@@ -30,7 +30,7 @@ namespace TestStreamer.Controls
 
             syncContext = SynchronizationContext.Current;
 
-            UsbManager.RegisterNotification(this.Handle);
+            UsbManager.RegisterNotification(this.Handle, KS.KSCATEGORY_VIDEO_CAMERA);
 
             InitMediaSettings();
 
@@ -495,7 +495,6 @@ namespace TestStreamer.Controls
                 throw;
             }
 
-            //audioSource.Start();
         }
 
 
@@ -552,8 +551,6 @@ namespace TestStreamer.Controls
 
                 throw;
             }
-
-            //audioStreamer.Start();
 
         }
 
@@ -632,7 +629,14 @@ namespace TestStreamer.Controls
         private void VideoSource_CaptureStopped(object obj)
         {
             logger.Debug("VideoSource_CaptureStopped(...)");
-            //...
+
+            var errorCode = videoSource.ErrorCode;
+            if (errorCode > 0)
+            {
+                //...
+                logger.Error("VideoSource_CaptureStopped(...) " + errorCode);
+            }
+
         }
 
 
@@ -1286,7 +1290,7 @@ namespace TestStreamer.Controls
         {
             logger.Debug("OnUsbDeviceArrival(...) " + deviceId);
 
-
+            //TODO: Update devices list..
         }
 
         private void OnUsbDeviceMoveComplete(string deviceId)
@@ -1298,19 +1302,18 @@ namespace TestStreamer.Controls
             {
                 if (captureDescr.CaptureMode == CaptureMode.CaptDevice)
                 {
-                    var _deviceId = ((VideoCaptureDeviceDescription)captureDescr).DeviceId;
-                    if (deviceId == _deviceId)
+                    var videoDeviceDescr = (VideoCaptureDeviceDescription)captureDescr;
+                    var _deviceId = videoDeviceDescr.DeviceId;
+                    if (deviceId.Equals(_deviceId, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        //if (isStreaming)
-                        //{
-                        //    StopStreaming();
-                        //}
+                        logger.Warn("Capture device disconnected " + videoDeviceDescr.Name + " " + videoDeviceDescr.DeviceId);
+                        //TODO: Close if capturing or update device list...
+
+                        stopButton.PerformClick(); //!!!!!
                     }
                 }
             }
         }
-
-
 
 
         private void UpdateControls()

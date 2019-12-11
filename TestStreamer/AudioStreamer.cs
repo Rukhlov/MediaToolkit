@@ -80,9 +80,9 @@ namespace TestStreamer
             try
             {
 
-                var capture = audioSource.Capture;
-
-                bufferedWaveProvider = new BufferedWaveProvider(capture.WaveFormat);
+                // var capture = audioSource.Capture;
+                var waveFormat = audioSource.WaveFormat;
+                bufferedWaveProvider = new BufferedWaveProvider(waveFormat);
                 bufferedWaveProvider.DiscardOnBufferOverflow = true;
 
                 sampleChannel = new SampleChannel(bufferedWaveProvider);
@@ -90,7 +90,6 @@ namespace TestStreamer
 
                 audioResampler = new AudioEncoder();
 
-                var waveFormat = capture.WaveFormat;
                 var captureParams = new AudioEncoderSettings
                 {
                     SampleRate = waveFormat.SampleRate,

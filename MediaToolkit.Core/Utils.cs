@@ -504,18 +504,19 @@ namespace MediaToolkit.Utils
         }
     }
 
+
     public class UsbDeviceManager
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public static readonly Guid GuidDevinterfaceUSBDevice = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
+        public static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
-
+        
         private IntPtr notificationHandle = IntPtr.Zero;
 
-        public bool RegisterNotification(IntPtr handle)
+        public bool RegisterNotification(IntPtr handle, Guid classGuid)
         {
-            logger.Debug("RegisterNotification() " + handle);
+            logger.Debug("RegisterNotification() " + handle + " " + classGuid);
 
             if (notificationHandle != IntPtr.Zero)
             {
@@ -530,7 +531,7 @@ namespace MediaToolkit.Utils
                 {
                     DeviceType = DBT.DEVTYP_DEVICEINTERFACE,
                     Reserved = 0,
-                    ClassGuid = GuidDevinterfaceUSBDevice,
+                    ClassGuid = classGuid, //KSCATEGORY_VIDEO, // KSCATEGORY_CAPTURE,// GUID_CLASS_USB_DEVICE,
                 };
 
                 broadcastInterface.Size = Marshal.SizeOf(broadcastInterface);

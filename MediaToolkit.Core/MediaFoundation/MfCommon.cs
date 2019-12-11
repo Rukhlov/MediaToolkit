@@ -21,10 +21,10 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Dictionary<Guid, string> AttrsDict= new Dictionary<Guid, string>();
         public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();
 
-        public static readonly Dictionary<Guid, Format> DxgiFormatsDict = new Dictionary<Guid, Format>
+        public static readonly Dictionary<Guid, SharpDX.DXGI.Format> DxgiFormatsDict = new Dictionary<Guid, SharpDX.DXGI.Format>
         {
-            { VideoFormatGuids.NV12, Format.NV12},
-            { VideoFormatGuids.Argb32, Format.B8G8R8A8_UNorm},
+            { VideoFormatGuids.NV12, SharpDX.DXGI.Format.NV12},
+            { VideoFormatGuids.Argb32, SharpDX.DXGI.Format.B8G8R8A8_UNorm},
             //...
         };
 
