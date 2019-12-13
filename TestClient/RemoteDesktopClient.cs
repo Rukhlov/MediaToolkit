@@ -29,7 +29,7 @@ namespace TestClient
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public ScreenReceiver VideoReceiver { get; private set; }
+        public VideoReceiver VideoReceiver { get; private set; }
         public InputManager InputManager { get; private set; } 
 
 
@@ -259,7 +259,7 @@ namespace TestClient
         internal void Play(VideoEncoderSettings inputPars, VideoEncoderSettings outputPars, NetworkSettings networkPars)
         {
             logger.Debug("RemoteDesktopClient::Play(...)");
-            VideoReceiver = new ScreenReceiver();
+            VideoReceiver = new VideoReceiver();
 
             VideoReceiver.Setup(inputPars, outputPars, networkPars);
             VideoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;

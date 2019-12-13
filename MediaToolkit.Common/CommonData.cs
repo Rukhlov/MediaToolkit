@@ -107,8 +107,13 @@ namespace MediaToolkit.Common
         public string Name = "";
         public string DeviceId = "";
 
+        public int BitsPerSample = 0;
         public int SampleRate = 0;
         public int Channels = 0;
+
+        public string Description = "";
+
+        public AudioCapturesTypes CapturesTypes = AudioCapturesTypes.Wasapi;
     }
 
     public enum CaptureMode
@@ -156,7 +161,7 @@ namespace MediaToolkit.Common
 
         //public ScreenCaptureDescription CaptureDescription = new ScreenCaptureDescription();
 
-        public CaptureType CaptureType = CaptureType.GDI;
+        public VideoCaptureType CaptureType = VideoCaptureType.GDI;
         public int Fps = 10;
         public bool CaptureMouse = false;
         public bool AspectRatio = true;
@@ -165,14 +170,14 @@ namespace MediaToolkit.Common
 
     public class ScreenCaptureDescription
     {
-        public CaptureType CaptureType = CaptureType.GDI;
+        public VideoCaptureType CaptureType = VideoCaptureType.GDI;
         public int Fps = 10;
         public bool CaptureMouse = false;
         public bool AspectRatio = true;
         public bool UseHardware = true;
     }
 
-    public enum CaptureType
+    public enum VideoCaptureType
     {
         GDI,
         Direct3D9,
@@ -181,6 +186,12 @@ namespace MediaToolkit.Common
         DXGIDeskDupl,
     }
 
+    public enum AudioCapturesTypes
+    {
+        Wasapi,
+        WasapiLoopback,
+        WaveIn
+    }
 
     public class NetworkSettings
     {
@@ -193,6 +204,8 @@ namespace MediaToolkit.Common
         public int MulticastTimeToLive = 10;
 
         public TransportMode TransportMode = TransportMode.Udp;
+
+        public uint SSRC = 0;
 
     }
 
@@ -357,6 +370,9 @@ namespace MediaToolkit.Common
 
         [DataMember]
         public int ClientsCount { get; set; }
+
+        [DataMember]
+        public uint SSRC { get; set; }
 
     }
 

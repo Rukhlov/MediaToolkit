@@ -17,7 +17,7 @@ using SharpDX.MediaFoundation;
 
 namespace MediaToolkit
 {
-    public class ScreenReceiver
+    public class VideoReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -125,16 +125,18 @@ namespace MediaToolkit
 
             if (networkPars.TransportMode == TransportMode.Tcp)
             {
-                rtpReceiver = new RtpTcpReceiver(null);
+                rtpReceiver = new RtpTcpReceiver(h264Session);
             }
             else if (networkPars.TransportMode == TransportMode.Udp)
             {
-                rtpReceiver = new RtpUdpReceiver(null);
+                rtpReceiver = new RtpUdpReceiver(h264Session);
             }
             else
             {
                 throw new Exception("networkPars.TransportMode");
             }
+
+            h264Session.SSRC = networkPars.SSRC;
 
             rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
@@ -160,6 +162,11 @@ namespace MediaToolkit
         private Stopwatch sw = new Stopwatch();
         private void RtpReceiver_RtpPacketReceived(RtpPacket packet)
         {
+            if(h264Session.SSRC != packet.SSRC)
+            {
+                logger.Warn("Invalid SSRC " + h264Session.SSRC + " != " + packet.SSRC);
+                return;
+            }
 
             var time = MediaTimer.GetRelativeTime();
 

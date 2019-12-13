@@ -28,6 +28,7 @@ namespace TestStreamer.Controls
         {
             InitializeComponent();
 
+
             syncContext = SynchronizationContext.Current;
 
             UsbManager.RegisterNotification(this.Handle, KS.KSCATEGORY_VIDEO_CAMERA);
@@ -81,7 +82,7 @@ namespace TestStreamer.Controls
                 Resolution = new Size(1920, 1080),
                 CaptureMouse = true,
                 AspectRatio = true,
-                CaptureType = CaptureType.DXGIDeskDupl,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
                 UseHardware = true,
                 Fps = 30,
             };
@@ -481,7 +482,11 @@ namespace TestStreamer.Controls
             try
             {
                 audioSource = new AudioSource();
-                audioSource.Setup(settings.CaptureParams.DeviceId);
+                var deviceId = settings.CaptureParams.DeviceId;
+                var eventSyncMode = true;
+                var audioBufferMilliseconds = 50;
+                var exclusiveMode = false;
+                audioSource.Setup(deviceId, eventSyncMode, audioBufferMilliseconds, exclusiveMode);
             }
             catch (Exception ex)
             {
@@ -562,6 +567,7 @@ namespace TestStreamer.Controls
                 AudioEncoder = settings.EncodingParams.Encoder,
                 SampleRate = settings.EncodingParams.SampleRate,
                 Channels = settings.EncodingParams.Channels,
+                
             };
 
 
@@ -581,6 +587,7 @@ namespace TestStreamer.Controls
                 IsMulticast = isMulticastMode,
                 Transport = _transportMode,
                 MediaInfo = audioInfo,
+                SSRC = settings.NetworkParams.SSRC,
             };
             ScreencastChannelsInfos.Add(audioChannelInfo);
         }
@@ -615,6 +622,7 @@ namespace TestStreamer.Controls
                 Transport = _transportMode,
                 IsMulticast = isMulticastMode,
                 MediaInfo = videoInfo,
+                SSRC = settings.NetworkParams.SSRC,
             };
 
             ScreencastChannelsInfos.Add(videoChannelInfo);
@@ -1045,17 +1053,21 @@ namespace TestStreamer.Controls
             transportComboBox.SelectedItem = transportMode;
         }
 
-        private string GetCurrentAudioDeviceId()
+        private AudioCaptureSettings GetCurrentAudioCaptureSettings()
         {
-            string deviceId = null;
+            AudioCaptureSettings captureSettings = null;
 
             var item = audioSourcesComboBox.SelectedItem;
             if (item != null)
             {
-                deviceId = (string)((item as ComboBoxItem)?.Tag) ?? null;
+                var tag = ((item as ComboBoxItem)?.Tag);
+                if (tag != null)
+                {
+                    captureSettings = tag as AudioCaptureSettings;
+                }
             }
 
-            return deviceId;
+            return captureSettings;
         }
 
         private void UpdateAudioSources()
@@ -1129,10 +1141,37 @@ namespace TestStreamer.Controls
                 logger.Error(ex);
             }
 
-            var dataSource = new BindingList<ComboBoxItem>(mmdevices.Select(d => new ComboBoxItem { Name = d.FriendlyName, Tag = d.ID }).ToList());
-
+            //var dataSource = new BindingList<ComboBoxItem>(mmdevices.Select(d => new ComboBoxItem { Name = d.FriendlyName, Tag = d.ID }).ToList());
+            var dataSource = new BindingList<ComboBoxItem>();
             foreach (var d in mmdevices)
             {
+                //$"{bitsPerSample} bit PCM: {sampleRate / 1000}kHz {channels} channels"
+                AudioCaptureSettings captureSettings = null;
+                var client = d.AudioClient;
+                if (client != null)
+                {
+                    var mixFormat = client.MixFormat;
+                    if (mixFormat != null)
+                    {
+                        captureSettings = new AudioCaptureSettings
+                        {
+                            Name = d.FriendlyName,
+                            BitsPerSample = mixFormat.BitsPerSample,
+                            SampleRate = mixFormat.SampleRate,
+                            Channels = mixFormat.Channels,
+                            Description = $"{mixFormat.BitsPerSample} bit PCM: {mixFormat.SampleRate / 1000}kHz {mixFormat.Channels} channels",
+                        };
+                        
+                    }
+                }
+
+                ComboBoxItem item = new ComboBoxItem
+                {
+                    Name = d.FriendlyName,
+                    Tag = captureSettings,
+                };
+
+                dataSource.Add(item);
                 d?.Dispose();
             }
             mmdevices.Clear();
@@ -1150,11 +1189,11 @@ namespace TestStreamer.Controls
         {
             //using (var audioDevice = GetCurrentAudioDevice())
 
-            var audioDeviceId = GetCurrentAudioDeviceId();
+            var captureSettings = GetCurrentAudioCaptureSettings();
 
-            audioSettings.Enabled = (audioDeviceId != null);
+            audioSettings.Enabled = (captureSettings != null);
 
-            audioSettings.CaptureParams.DeviceId = audioDeviceId ?? "";
+            audioSettings.CaptureParams = captureSettings;
 
             UpdateControls();
 

@@ -47,7 +47,7 @@ namespace TestStreamer.Controls
             var addr = httpAddrTextBox.Text;
             var port = (int)httpPortNumeric.Value;
 
-            CaptureType captureType = (CaptureType)captureTypesComboBox.SelectedItem;
+            VideoCaptureType captureType = (VideoCaptureType)captureTypesComboBox.SelectedItem;
 
             httpScreenSource = new ScreenSource();
             ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
@@ -64,7 +64,7 @@ namespace TestStreamer.Controls
             captureParams.AspectRatio = true;
             captureParams.UseHardware = false;
 
-            if (captureType == CaptureType.GDI || captureType == CaptureType.GDIPlus)
+            if (captureType == VideoCaptureType.GDI || captureType == VideoCaptureType.GDIPlus)
             {// масштабируем на энкодере
                 captureParams.Resolution = new Size(srcRect.Width, srcRect.Height);
             }
@@ -128,12 +128,12 @@ namespace TestStreamer.Controls
         private void HttpUpdateCaptures()
         {
 
-            List<CaptureType> captureTypes = new List<CaptureType>();
-            captureTypes.Add(CaptureType.DXGIDeskDupl);
-            captureTypes.Add(CaptureType.GDI);
+            List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
+            captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
+            captureTypes.Add(VideoCaptureType.GDI);
             //captureTypes.Add(CaptureType.GDIPlus);
-            captureTypes.Add(CaptureType.Direct3D9);
-            captureTypes.Add(CaptureType.Datapath);
+            captureTypes.Add(VideoCaptureType.Direct3D9);
+            captureTypes.Add(VideoCaptureType.Datapath);
 
             captureTypesComboBox.DataSource = captureTypes;
         }

@@ -132,12 +132,7 @@ namespace MediaToolkit
                 else
                 {
                     // Normal setup for both sharedMode
-                    audioClient.Initialize(ShareMode,
-                    streamFlags,
-                    requestedDuration,
-                    0,
-                    waveFormat,
-                    Guid.Empty);
+                    audioClient.Initialize(ShareMode, streamFlags, requestedDuration, 0, waveFormat, Guid.Empty);
                 }
 
                 int bufferFrameCount = audioClient.BufferSize;

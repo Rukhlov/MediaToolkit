@@ -155,12 +155,12 @@ namespace MediaToolkit.RTP
             return packetBytes;
         }
 
-        public static RtpPacket Create(byte[] data)
-        {
-            return Create(data, data.Length);
-        }
+        //public static RtpPacket Create(byte[] data)
+        //{
+        //    return Create(data, data.Length);
+        //}
 
-        public static RtpPacket Create(byte[] data, int len)
+        public static RtpPacket Create(byte[] data, int len, RtpSession session)
         {
             if (len < RtpConst.MinRtpLength)
             {
@@ -213,6 +213,11 @@ namespace MediaToolkit.RTP
 
             packet.SSRC = BigEndian.ReadUInt32(data, offset);
             offset += 4;
+
+            if(packet.SSRC != session.SSRC)
+            {
+                return null;
+            }
 
             offset += packet.CSRCCount * 4;
 

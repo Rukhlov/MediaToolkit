@@ -53,28 +53,30 @@ namespace TestStreamer
         private VideoEncoder videoEncoder = null;
 
 
-        public void Setup(VideoEncoderSettings encodingParams, NetworkSettings networkParams)
+        public void Setup(VideoEncoderSettings encodingSettings, NetworkSettings networkSettings)
         {
             logger.Debug("ScreenStreamer::Setup()");
 
             try
             {
                 H264Session = new H264Session();
-                if(networkParams.TransportMode == TransportMode.Tcp)
+                if(networkSettings.TransportMode == TransportMode.Tcp)
                 {
                     RtpSender = new RtpTcpSender(H264Session);
                 }
-                else if(networkParams.TransportMode == TransportMode.Udp)
+                else if(networkSettings.TransportMode == TransportMode.Udp)
                 {
                     RtpSender = new RtpUdpSender(H264Session);
                 }
                 else
                 {
-                    throw new FormatException("NotSupportedFormat " +  networkParams.TransportMode);
+                    throw new FormatException("NotSupportedFormat " +  networkSettings.TransportMode);
                 }
 
                 //rtpStreamer = new RtpStreamer(h264Session);
-                RtpSender.Setup(networkParams);
+                RtpSender.Setup(networkSettings);
+
+                networkSettings.SSRC = H264Session.SSRC;
 
                 RtpSender.Start();
 
@@ -83,7 +85,7 @@ namespace TestStreamer
 
                 var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-                var destSize = encodingParams.Resolution;//new Size(encodingParams.Width, encodingParams.Height);
+                var destSize = encodingSettings.Resolution;//new Size(encodingParams.Width, encodingParams.Height);
 
 
                 //encoder = new FFmpegVideoEncoder();
@@ -91,7 +93,7 @@ namespace TestStreamer
                 //encoder.DataEncoded += Encoder_DataEncoded;
 
                 videoEncoder = new VideoEncoder(videoSource);
-                videoEncoder.Open(encodingParams);
+                videoEncoder.Open(encodingSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
                 videoSource.BufferUpdated += ScreenSource_BufferUpdated;

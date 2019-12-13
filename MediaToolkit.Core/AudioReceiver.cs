@@ -75,6 +75,7 @@ namespace MediaToolkit.Core
                     logger.Info(deviceInfo.Description + " " + deviceInfo.ModuleName + " " + deviceInfo.Guid);
 
                     wavePlayer = new NAudio.Wave.DirectSoundOut(deviceInfo.Guid);
+                    //wavePlayer = new NAudio.Wave.WaveOut();
 
                     wavePlayer.PlaybackStopped += WavePlayer_PlaybackStopped;
 
@@ -83,6 +84,8 @@ namespace MediaToolkit.Core
                     waveBuffer = new BufferedWaveProvider(waveFormat)
                     {
                         BufferDuration = TimeSpan.FromMilliseconds(300),
+
+                        //BufferDuration = TimeSpan.FromMilliseconds(300),
                         DiscardOnBufferOverflow = true
                     };
 
@@ -113,8 +116,8 @@ namespace MediaToolkit.Core
                 {
                     rtpReceiver = new RtpUdpReceiver(session);
                 }
-                
 
+                session.SSRC = networkPars.SSRC;
 
 
                 rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);

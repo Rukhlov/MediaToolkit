@@ -71,7 +71,7 @@ namespace TestStreamer
         }
 
 
-        public void Setup(AudioEncoderSettings outputParams, NetworkSettings networkPars)
+        public void Setup(AudioEncoderSettings encoderSettings, NetworkSettings networkSettings)
         {
             logger.Debug("AudioLoopbackSource::Start(...) ");
 
@@ -98,28 +98,29 @@ namespace TestStreamer
                 };
 
 
-                audioResampler.Open(captureParams, outputParams);
+                audioResampler.Open(captureParams, encoderSettings);
 
                 session = new PCMUSession();
 
-                if (networkPars.TransportMode == TransportMode.Tcp)
+                if (networkSettings.TransportMode == TransportMode.Tcp)
                 {
                     RtpSender = new RtpTcpSender(session);
                 }
-                else if (networkPars.TransportMode == TransportMode.Udp)
+                else if (networkSettings.TransportMode == TransportMode.Udp)
                 {
                     RtpSender = new RtpUdpSender(session);
                 }
                 else
                 {
-                    throw new FormatException("NotSupportedFormat " + networkPars.TransportMode);
+                    throw new FormatException("NotSupportedFormat " + networkSettings.TransportMode);
                 }
 
 
                 audioSource.DataAvailable += AudioSource_DataAvailable;
-                RtpSender.Setup(networkPars);
+                RtpSender.Setup(networkSettings);
+                networkSettings.SSRC = session.SSRC;
 
-   
+
 
                 RtpSender.Start();
 

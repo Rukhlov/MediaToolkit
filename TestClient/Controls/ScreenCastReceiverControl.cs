@@ -148,7 +148,7 @@ namespace TestClient.Controls
             }
         }
 
-        public ScreenReceiver VideoReceiver { get; private set; }
+        public VideoReceiver VideoReceiver { get; private set; }
         public AudioReceiver AudioReceiver { get; private set; }
 
 
@@ -323,9 +323,11 @@ namespace TestClient.Controls
                                 LocalAddr = videoAddr,
                                 LocalPort = videoPort,
                                 TransportMode = transportMode,
+
+                                SSRC = videoChannelInfo.SSRC,
                             };
 
-                            VideoReceiver = new ScreenReceiver();
+                            VideoReceiver = new VideoReceiver();
                             
                             VideoReceiver.Setup(inputPars, outputPars, networkPars);
                             VideoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
@@ -366,6 +368,8 @@ namespace TestClient.Controls
                                 LocalAddr = audioAddr,
                                 LocalPort = audioPort,
                                 TransportMode = transportMode,
+
+                                SSRC = audioChannelInfo.SSRC,
 
                             };
 

@@ -16,7 +16,7 @@ namespace MediaToolkit.RTP
 
         public const int MTU = 1300;
 
-        public uint SSRC { get; protected set; } = 0;
+        public uint SSRC { get;  set; } = 0;
         public int CSRC { get; protected set; } = 0;
 
         public ushort Sequence { get; protected set; } = 0;
@@ -334,6 +334,7 @@ namespace MediaToolkit.RTP
                 // TODO:
                 // Добавляем в буфер и пытаемся упорядочить  
             }
+
             lastSequence = pkt.Sequence;
 
 

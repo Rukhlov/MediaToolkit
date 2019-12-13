@@ -91,9 +91,12 @@ namespace MediaToolkit
                             //Array.Copy(buf, udp, bytesReceived);
                             //DataReceived(buf, bytesReceived);
 
-                            RtpPacket rtpPacket = RtpPacket.Create(buf, bytesReceived);
-
-                            OnRtpPacketReceived(rtpPacket);
+                            RtpPacket rtpPacket = RtpPacket.Create(buf, bytesReceived, session);
+                            if (rtpPacket != null)
+                            {
+                                OnRtpPacketReceived(rtpPacket);
+                            }
+                            
                         }
 
                     }

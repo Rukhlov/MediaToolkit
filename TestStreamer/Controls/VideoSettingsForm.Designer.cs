@@ -53,7 +53,6 @@
             this.label9 = new System.Windows.Forms.Label();
             this.displayTextBox = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
             this.captureRegionTextBox = new System.Windows.Forms.TextBox();
             this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
@@ -66,6 +65,7 @@
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label5 = new System.Windows.Forms.Label();
             this.EncoderSettingsGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
@@ -363,10 +363,10 @@
             // 
             // ScreenCaptureGroup
             // 
+            this.ScreenCaptureGroup.Controls.Add(this.label5);
             this.ScreenCaptureGroup.Controls.Add(this.label9);
             this.ScreenCaptureGroup.Controls.Add(this.displayTextBox);
             this.ScreenCaptureGroup.Controls.Add(this.label8);
-            this.ScreenCaptureGroup.Controls.Add(this.label4);
             this.ScreenCaptureGroup.Controls.Add(this.captureTypesComboBox);
             this.ScreenCaptureGroup.Controls.Add(this.captureRegionTextBox);
             this.ScreenCaptureGroup.Controls.Add(this.captureMouseCheckBox);
@@ -404,15 +404,6 @@
             this.label8.Size = new System.Drawing.Size(58, 17);
             this.label8.TabIndex = 79;
             this.label8.Text = "Display:";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(78, 2);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(62, 17);
-            this.label4.TabIndex = 78;
-            this.label4.Text = "Capture:";
             // 
             // captureTypesComboBox
             // 
@@ -549,6 +540,15 @@
             this.panel1.Size = new System.Drawing.Size(249, 33);
             this.panel1.TabIndex = 80;
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(15, 81);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(62, 17);
+            this.label5.TabIndex = 82;
+            this.label5.Text = "Capture:";
+            // 
             // VideoSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -607,7 +607,6 @@
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.TextBox displayTextBox;
         private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox captureTypesComboBox;
         private System.Windows.Forms.TextBox captureRegionTextBox;
         private System.Windows.Forms.CheckBox captureMouseCheckBox;
@@ -620,5 +619,6 @@
         private System.Windows.Forms.TextBox CaptureDeviceTextBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label5;
     }
 }

@@ -49,27 +49,27 @@ namespace MediaToolkit
 
         }
 
-        public static ScreenCapture Create(CaptureType type, object[] args = null)
+        public static ScreenCapture Create(VideoCaptureType type, object[] args = null)
         {
             ScreenCapture capture = null;
 
-            if (type == CaptureType.GDI)
+            if (type == VideoCaptureType.GDI)
             {
                 capture = new GDICapture();
             }
-            else if (type == CaptureType.Direct3D9)
+            else if (type == VideoCaptureType.Direct3D9)
             {
                 capture = new Direct3D9Capture(args);
             }
-            else if (type == CaptureType.GDIPlus)
+            else if (type == VideoCaptureType.GDIPlus)
             {
                 capture = new GDIPlusCapture();
             }
-            else if (type == CaptureType.Datapath)
+            else if (type == VideoCaptureType.Datapath)
             {
                 capture = new DatapathDesktopCapture();
             }
-            else if (type == CaptureType.DXGIDeskDupl)
+            else if (type == VideoCaptureType.DXGIDeskDupl)
             {
                 capture = new DXGIDesktopDuplicationCapture(args);
             }

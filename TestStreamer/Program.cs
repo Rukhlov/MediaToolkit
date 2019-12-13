@@ -111,7 +111,7 @@ namespace TestStreamer
             Application.SetCompatibleTextRenderingDefault(false);
 
 
-
+            //MainForm2 form = new MainForm2();
             MainForm form = new MainForm();
             //StreamingForm form = new StreamingForm();
 

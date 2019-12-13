@@ -1,47 +1,41 @@
 ﻿namespace TestStreamer.Controls
 {
-    partial class ScreenStreamerControl
+    partial class MainForm2
     {
-        /// <summary> 
-        /// Обязательная переменная конструктора.
+        /// <summary>
+        /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
-        /// Освободить все используемые ресурсы.
+        /// <summary>
+        /// Clean up any resources being used.
         /// </summary>
-        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
-
-            UsbManager.UnregisterNotification();
             base.Dispose(disposing);
         }
 
-        #region Код, автоматически созданный конструктором компонентов
+        #region Windows Form Designer generated code
 
-        /// <summary> 
-        /// Требуемый метод для поддержки конструктора — не изменяйте 
-        /// содержимое этого метода с помощью редактора кода.
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
             this.settingPanel = new System.Windows.Forms.Panel();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
             this.networkPanel = new System.Windows.Forms.Panel();
             this.unicastRadioButton = new System.Windows.Forms.RadioButton();
             this.multicastRadioButton = new System.Windows.Forms.RadioButton();
             this.transportComboBox = new System.Windows.Forms.ComboBox();
             this.multicastAddressTextBox = new System.Windows.Forms.TextBox();
-            this.audioPreviewButton = new System.Windows.Forms.Button();
             this.videoEnabledCheckBox = new System.Windows.Forms.CheckBox();
             this.audioEnabledCheckBox = new System.Windows.Forms.CheckBox();
-            this.videoPreviewButton = new System.Windows.Forms.Button();
             this.audioUpdateButton = new System.Windows.Forms.Button();
             this.videoUpdateButton = new System.Windows.Forms.Button();
             this.audioSettingButton = new System.Windows.Forms.Button();
@@ -52,22 +46,23 @@
             this.videoSourcesComboBox = new System.Windows.Forms.ComboBox();
             this.startButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
-            this.statInfoCheckBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label23 = new System.Windows.Forms.Label();
+            this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.updateNetworksButton = new System.Windows.Forms.Button();
+            this.networkComboBox = new System.Windows.Forms.ComboBox();
+            this.exitButton = new System.Windows.Forms.Button();
             this.settingPanel.SuspendLayout();
             this.networkPanel.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).BeginInit();
             this.SuspendLayout();
             // 
             // settingPanel
             // 
-            this.settingPanel.Controls.Add(this.button2);
-            this.settingPanel.Controls.Add(this.button1);
-            this.settingPanel.Controls.Add(this.networkPanel);
-            this.settingPanel.Controls.Add(this.audioPreviewButton);
             this.settingPanel.Controls.Add(this.videoEnabledCheckBox);
             this.settingPanel.Controls.Add(this.audioEnabledCheckBox);
-            this.settingPanel.Controls.Add(this.videoPreviewButton);
             this.settingPanel.Controls.Add(this.audioUpdateButton);
             this.settingPanel.Controls.Add(this.videoUpdateButton);
             this.settingPanel.Controls.Add(this.audioSettingButton);
@@ -76,35 +71,10 @@
             this.settingPanel.Controls.Add(this.videoSettingsButton);
             this.settingPanel.Controls.Add(this.label4);
             this.settingPanel.Controls.Add(this.videoSourcesComboBox);
-            this.settingPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.settingPanel.Location = new System.Drawing.Point(0, 0);
+            this.settingPanel.Location = new System.Drawing.Point(6, 156);
             this.settingPanel.Name = "settingPanel";
-            this.settingPanel.Size = new System.Drawing.Size(466, 412);
-            this.settingPanel.TabIndex = 20;
-            // 
-            // button2
-            // 
-            this.button2.AutoSize = true;
-            this.button2.Location = new System.Drawing.Point(275, 301);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(89, 27);
-            this.button2.TabIndex = 78;
-            this.button2.Text = "_Teardown";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Visible = false;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button1
-            // 
-            this.button1.AutoSize = true;
-            this.button1.Location = new System.Drawing.Point(192, 301);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(77, 27);
-            this.button1.TabIndex = 77;
-            this.button1.Text = "_Play";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Visible = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.settingPanel.Size = new System.Drawing.Size(489, 242);
+            this.settingPanel.TabIndex = 21;
             // 
             // networkPanel
             // 
@@ -112,8 +82,7 @@
             this.networkPanel.Controls.Add(this.multicastRadioButton);
             this.networkPanel.Controls.Add(this.transportComboBox);
             this.networkPanel.Controls.Add(this.multicastAddressTextBox);
-            this.networkPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            this.networkPanel.Location = new System.Drawing.Point(0, 0);
+            this.networkPanel.Location = new System.Drawing.Point(6, 77);
             this.networkPanel.Name = "networkPanel";
             this.networkPanel.Size = new System.Drawing.Size(466, 49);
             this.networkPanel.TabIndex = 76;
@@ -129,7 +98,6 @@
             this.unicastRadioButton.TabStop = true;
             this.unicastRadioButton.Text = "Unicast";
             this.unicastRadioButton.UseVisualStyleBackColor = true;
-            this.unicastRadioButton.CheckedChanged += new System.EventHandler(this.unicastRadioButton_CheckedChanged);
             // 
             // multicastRadioButton
             // 
@@ -140,7 +108,6 @@
             this.multicastRadioButton.TabIndex = 68;
             this.multicastRadioButton.Text = "Multicast";
             this.multicastRadioButton.UseVisualStyleBackColor = true;
-            this.multicastRadioButton.CheckedChanged += new System.EventHandler(this.multicastRadioButton_CheckedChanged);
             // 
             // transportComboBox
             // 
@@ -151,7 +118,6 @@
             this.transportComboBox.Name = "transportComboBox";
             this.transportComboBox.Size = new System.Drawing.Size(96, 24);
             this.transportComboBox.TabIndex = 69;
-            this.transportComboBox.SelectedIndexChanged += new System.EventHandler(this.transportComboBox_SelectedIndexChanged);
             // 
             // multicastAddressTextBox
             // 
@@ -161,90 +127,63 @@
             this.multicastAddressTextBox.TabIndex = 70;
             this.multicastAddressTextBox.Text = "239.0.0.1";
             // 
-            // audioPreviewButton
-            // 
-            this.audioPreviewButton.AutoSize = true;
-            this.audioPreviewButton.Enabled = false;
-            this.audioPreviewButton.Location = new System.Drawing.Point(247, 212);
-            this.audioPreviewButton.Name = "audioPreviewButton";
-            this.audioPreviewButton.Size = new System.Drawing.Size(77, 27);
-            this.audioPreviewButton.TabIndex = 75;
-            this.audioPreviewButton.Text = "_Preview";
-            this.audioPreviewButton.UseVisualStyleBackColor = true;
-            this.audioPreviewButton.Click += new System.EventHandler(this.audioPreviewButton_Click);
-            // 
             // videoEnabledCheckBox
             // 
             this.videoEnabledCheckBox.AutoSize = true;
             this.videoEnabledCheckBox.Checked = true;
             this.videoEnabledCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.videoEnabledCheckBox.Location = new System.Drawing.Point(6, 107);
+            this.videoEnabledCheckBox.Location = new System.Drawing.Point(11, 67);
             this.videoEnabledCheckBox.Name = "videoEnabledCheckBox";
             this.videoEnabledCheckBox.Size = new System.Drawing.Size(82, 21);
             this.videoEnabledCheckBox.TabIndex = 74;
             this.videoEnabledCheckBox.Text = "Enabled";
             this.videoEnabledCheckBox.UseVisualStyleBackColor = true;
-            this.videoEnabledCheckBox.CheckedChanged += new System.EventHandler(this.videoEnabledCheckBox_CheckedChanged);
             // 
             // audioEnabledCheckBox
             // 
             this.audioEnabledCheckBox.AutoSize = true;
             this.audioEnabledCheckBox.Checked = true;
             this.audioEnabledCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.audioEnabledCheckBox.Location = new System.Drawing.Point(6, 216);
+            this.audioEnabledCheckBox.Location = new System.Drawing.Point(11, 176);
             this.audioEnabledCheckBox.Name = "audioEnabledCheckBox";
             this.audioEnabledCheckBox.Size = new System.Drawing.Size(82, 21);
             this.audioEnabledCheckBox.TabIndex = 73;
             this.audioEnabledCheckBox.Text = "Enabled";
             this.audioEnabledCheckBox.UseVisualStyleBackColor = true;
-            this.audioEnabledCheckBox.CheckedChanged += new System.EventHandler(this.audioEnabledCheckBox_CheckedChanged);
-            // 
-            // videoPreviewButton
-            // 
-            this.videoPreviewButton.AutoSize = true;
-            this.videoPreviewButton.Location = new System.Drawing.Point(247, 103);
-            this.videoPreviewButton.Name = "videoPreviewButton";
-            this.videoPreviewButton.Size = new System.Drawing.Size(77, 27);
-            this.videoPreviewButton.TabIndex = 19;
-            this.videoPreviewButton.Text = "_Preview";
-            this.videoPreviewButton.UseVisualStyleBackColor = true;
-            this.videoPreviewButton.Click += new System.EventHandler(this.previewButton_Click);
             // 
             // audioUpdateButton
             // 
-            this.audioUpdateButton.Location = new System.Drawing.Point(402, 180);
+            this.audioUpdateButton.AutoSize = true;
+            this.audioUpdateButton.Location = new System.Drawing.Point(407, 140);
             this.audioUpdateButton.Name = "audioUpdateButton";
             this.audioUpdateButton.Size = new System.Drawing.Size(30, 27);
             this.audioUpdateButton.TabIndex = 72;
             this.audioUpdateButton.Text = "...";
             this.audioUpdateButton.UseVisualStyleBackColor = true;
-            this.audioUpdateButton.Click += new System.EventHandler(this.audioUpdateButton_Click);
             // 
             // videoUpdateButton
             // 
             this.videoUpdateButton.AutoSize = true;
-            this.videoUpdateButton.Location = new System.Drawing.Point(402, 70);
+            this.videoUpdateButton.Location = new System.Drawing.Point(407, 30);
             this.videoUpdateButton.Name = "videoUpdateButton";
             this.videoUpdateButton.Size = new System.Drawing.Size(30, 27);
             this.videoUpdateButton.TabIndex = 71;
             this.videoUpdateButton.Text = "...";
             this.videoUpdateButton.UseVisualStyleBackColor = true;
-            this.videoUpdateButton.Click += new System.EventHandler(this.videoUpdateButton_Click);
             // 
             // audioSettingButton
             // 
-            this.audioSettingButton.Location = new System.Drawing.Point(330, 212);
+            this.audioSettingButton.Location = new System.Drawing.Point(335, 172);
             this.audioSettingButton.Name = "audioSettingButton";
             this.audioSettingButton.Size = new System.Drawing.Size(102, 27);
             this.audioSettingButton.TabIndex = 59;
             this.audioSettingButton.Text = "_Settings";
             this.audioSettingButton.UseVisualStyleBackColor = true;
-            this.audioSettingButton.Click += new System.EventHandler(this.audioSettingButton_Click);
             // 
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(3, 162);
+            this.label16.Location = new System.Drawing.Point(8, 122);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(97, 17);
             this.label16.TabIndex = 58;
@@ -254,27 +193,25 @@
             // 
             this.audioSourcesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.audioSourcesComboBox.FormattingEnabled = true;
-            this.audioSourcesComboBox.Location = new System.Drawing.Point(6, 182);
+            this.audioSourcesComboBox.Location = new System.Drawing.Point(11, 142);
             this.audioSourcesComboBox.Name = "audioSourcesComboBox";
             this.audioSourcesComboBox.Size = new System.Drawing.Size(390, 24);
             this.audioSourcesComboBox.TabIndex = 57;
-            this.audioSourcesComboBox.SelectedValueChanged += new System.EventHandler(this.audioSrcComboBox_SelectedValueChanged);
             // 
             // videoSettingsButton
             // 
             this.videoSettingsButton.AutoSize = true;
-            this.videoSettingsButton.Location = new System.Drawing.Point(330, 103);
+            this.videoSettingsButton.Location = new System.Drawing.Point(335, 63);
             this.videoSettingsButton.Name = "videoSettingsButton";
             this.videoSettingsButton.Size = new System.Drawing.Size(102, 27);
             this.videoSettingsButton.TabIndex = 55;
             this.videoSettingsButton.Text = "_Settings";
             this.videoSettingsButton.UseVisualStyleBackColor = true;
-            this.videoSettingsButton.Click += new System.EventHandler(this.videoSettingsButton_Click);
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 52);
+            this.label4.Location = new System.Drawing.Point(8, 12);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(97, 17);
             this.label4.TabIndex = 14;
@@ -284,73 +221,131 @@
             // 
             this.videoSourcesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.videoSourcesComboBox.FormattingEnabled = true;
-            this.videoSourcesComboBox.Location = new System.Drawing.Point(6, 72);
+            this.videoSourcesComboBox.Location = new System.Drawing.Point(11, 32);
             this.videoSourcesComboBox.Name = "videoSourcesComboBox";
             this.videoSourcesComboBox.Size = new System.Drawing.Size(390, 24);
             this.videoSourcesComboBox.TabIndex = 2;
-            this.videoSourcesComboBox.SelectedValueChanged += new System.EventHandler(this.videoSourcesComboBox_SelectedValueChanged);
             // 
             // startButton
             // 
             this.startButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.startButton.Location = new System.Drawing.Point(3, 7);
+            this.startButton.Location = new System.Drawing.Point(17, 457);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(115, 27);
-            this.startButton.TabIndex = 17;
+            this.startButton.TabIndex = 77;
             this.startButton.Text = "_Start";
             this.startButton.UseVisualStyleBackColor = true;
-            this.startButton.Click += new System.EventHandler(this.startButton_Click);
             // 
             // stopButton
             // 
             this.stopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.stopButton.Location = new System.Drawing.Point(124, 7);
+            this.stopButton.Location = new System.Drawing.Point(138, 457);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(76, 27);
-            this.stopButton.TabIndex = 18;
+            this.stopButton.TabIndex = 78;
             this.stopButton.Text = "_Stop";
             this.stopButton.UseVisualStyleBackColor = true;
-            this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
-            // 
-            // statInfoCheckBox
-            // 
-            this.statInfoCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.statInfoCheckBox.Appearance = System.Windows.Forms.Appearance.Button;
-            this.statInfoCheckBox.Checked = true;
-            this.statInfoCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.statInfoCheckBox.Location = new System.Drawing.Point(363, 7);
-            this.statInfoCheckBox.Name = "statInfoCheckBox";
-            this.statInfoCheckBox.Size = new System.Drawing.Size(100, 27);
-            this.statInfoCheckBox.TabIndex = 55;
-            this.statInfoCheckBox.Text = "_DebugInfo";
-            this.statInfoCheckBox.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.statInfoCheckBox.UseVisualStyleBackColor = true;
-            this.statInfoCheckBox.CheckedChanged += new System.EventHandler(this.statInfoCheckBox_CheckedChanged);
             // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.startButton);
-            this.panel1.Controls.Add(this.statInfoCheckBox);
-            this.panel1.Controls.Add(this.stopButton);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 375);
+            this.panel1.Controls.Add(this.label23);
+            this.panel1.Controls.Add(this.communicationPortNumeric);
+            this.panel1.Controls.Add(this.label5);
+            this.panel1.Controls.Add(this.networkPanel);
+            this.panel1.Controls.Add(this.updateNetworksButton);
+            this.panel1.Controls.Add(this.networkComboBox);
+            this.panel1.Location = new System.Drawing.Point(6, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(466, 37);
-            this.panel1.TabIndex = 56;
+            this.panel1.Size = new System.Drawing.Size(489, 138);
+            this.panel1.TabIndex = 79;
             // 
-            // ScreenStreamerControl
+            // label23
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(3, 41);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(46, 17);
+            this.label23.TabIndex = 20;
+            this.label23.Text = "_Port:";
+            // 
+            // communicationPortNumeric
+            // 
+            this.communicationPortNumeric.Location = new System.Drawing.Point(91, 39);
+            this.communicationPortNumeric.Maximum = new decimal(new int[] {
+            100500,
+            0,
+            0,
+            0});
+            this.communicationPortNumeric.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            this.communicationPortNumeric.Name = "communicationPortNumeric";
+            this.communicationPortNumeric.Size = new System.Drawing.Size(78, 22);
+            this.communicationPortNumeric.TabIndex = 19;
+            this.communicationPortNumeric.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 12);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(78, 17);
+            this.label5.TabIndex = 17;
+            this.label5.Text = "_Networks:";
+            // 
+            // updateNetworksButton
+            // 
+            this.updateNetworksButton.Location = new System.Drawing.Point(366, 9);
+            this.updateNetworksButton.Name = "updateNetworksButton";
+            this.updateNetworksButton.Size = new System.Drawing.Size(75, 23);
+            this.updateNetworksButton.TabIndex = 18;
+            this.updateNetworksButton.Text = "_Update";
+            this.updateNetworksButton.UseVisualStyleBackColor = true;
+            // 
+            // networkComboBox
+            // 
+            this.networkComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.networkComboBox.FormattingEnabled = true;
+            this.networkComboBox.Location = new System.Drawing.Point(91, 9);
+            this.networkComboBox.Name = "networkComboBox";
+            this.networkComboBox.Size = new System.Drawing.Size(269, 24);
+            this.networkComboBox.TabIndex = 16;
+            // 
+            // exitButton
+            // 
+            this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.exitButton.Location = new System.Drawing.Point(327, 469);
+            this.exitButton.Name = "exitButton";
+            this.exitButton.Size = new System.Drawing.Size(157, 33);
+            this.exitButton.TabIndex = 80;
+            this.exitButton.Text = "_Exit";
+            this.exitButton.UseVisualStyleBackColor = true;
+            // 
+            // MainForm2
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(519, 514);
+            this.Controls.Add(this.exitButton);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.startButton);
+            this.Controls.Add(this.stopButton);
             this.Controls.Add(this.settingPanel);
-            this.Name = "ScreenStreamerControl";
-            this.Size = new System.Drawing.Size(466, 412);
+            this.Name = "MainForm2";
+            this.Text = "MainForm2";
             this.settingPanel.ResumeLayout(false);
             this.settingPanel.PerformLayout();
             this.networkPanel.ResumeLayout(false);
             this.networkPanel.PerformLayout();
             this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -358,28 +353,29 @@
         #endregion
 
         private System.Windows.Forms.Panel settingPanel;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox videoSourcesComboBox;
-        private System.Windows.Forms.Button startButton;
-        private System.Windows.Forms.Button stopButton;
-        private System.Windows.Forms.Button videoPreviewButton;
-        private System.Windows.Forms.CheckBox statInfoCheckBox;
-        private System.Windows.Forms.Button videoSettingsButton;
+        private System.Windows.Forms.CheckBox videoEnabledCheckBox;
+        private System.Windows.Forms.CheckBox audioEnabledCheckBox;
+        private System.Windows.Forms.Button audioUpdateButton;
+        private System.Windows.Forms.Button videoUpdateButton;
         private System.Windows.Forms.Button audioSettingButton;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.ComboBox audioSourcesComboBox;
-        private System.Windows.Forms.TextBox multicastAddressTextBox;
-        private System.Windows.Forms.RadioButton unicastRadioButton;
-        private System.Windows.Forms.ComboBox transportComboBox;
-        private System.Windows.Forms.RadioButton multicastRadioButton;
-        private System.Windows.Forms.Button audioUpdateButton;
-        private System.Windows.Forms.Button videoUpdateButton;
-        private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.CheckBox videoEnabledCheckBox;
-        private System.Windows.Forms.CheckBox audioEnabledCheckBox;
-        private System.Windows.Forms.Button audioPreviewButton;
+        private System.Windows.Forms.Button videoSettingsButton;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.ComboBox videoSourcesComboBox;
         private System.Windows.Forms.Panel networkPanel;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.RadioButton unicastRadioButton;
+        private System.Windows.Forms.RadioButton multicastRadioButton;
+        private System.Windows.Forms.ComboBox transportComboBox;
+        private System.Windows.Forms.TextBox multicastAddressTextBox;
+        private System.Windows.Forms.Button startButton;
+        private System.Windows.Forms.Button stopButton;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.NumericUpDown communicationPortNumeric;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button updateNetworksButton;
+        private System.Windows.Forms.ComboBox networkComboBox;
+        private System.Windows.Forms.Button exitButton;
     }
 }

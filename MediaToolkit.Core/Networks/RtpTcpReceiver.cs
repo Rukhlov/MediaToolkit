@@ -99,16 +99,18 @@ namespace MediaToolkit
 
                         if (bytesReceived > 0)
                         {
-                            var frames = tcpHanlder.ProcessData(buf, bytesReceived);
+                            var frames = tcpHanlder.ProcessData(buf, bytesReceived, session);
 
                             if(frames!=null && frames.Count > 0)
                             {
                                 foreach(var frame in frames)
                                 {
                                     var rtpData = frame.Data;
-                                    RtpPacket rtpPacket = RtpPacket.Create(rtpData, rtpData.Length);
-
-                                    OnRtpPacketReceived(rtpPacket);
+                                    RtpPacket rtpPacket = RtpPacket.Create(rtpData, rtpData.Length, session);
+                                    if (rtpPacket != null)
+                                    {
+                                        OnRtpPacketReceived(rtpPacket);
+                                    }
                                 }
                             }
                         }
@@ -148,7 +150,7 @@ namespace MediaToolkit
             int tcpBufferOffset = 0;
             RtspFrame rtspFrame = null;
 
-            public List<RtspFrame> ProcessData(byte[] buf, int length)
+            public List<RtspFrame> ProcessData(byte[] buf, int length, RtpSession session)
             {
 
                 List<RtspFrame> frames = new List<RtspFrame>();
@@ -280,7 +282,7 @@ namespace MediaToolkit
                                 //Console.WriteLine(rtspFrame.ToString());
 
                                 var rtpData = rtspFrame.Data;
-                                RtpPacket rtpPacket = RtpPacket.Create(rtpData, rtpData.Length);
+                                RtpPacket rtpPacket = RtpPacket.Create(rtpData, rtpData.Length, session);
 
                                 // OnRtpPacketReceived(rtpPacket);
 

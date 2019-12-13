@@ -373,7 +373,7 @@ namespace TestStreamer
                 Resolution = destSize,
             };
 
-            captureParams.CaptureType = CaptureType.DXGIDeskDupl;
+            captureParams.CaptureType = VideoCaptureType.DXGIDeskDupl;
             captureParams.Fps = fps;
             captureParams.CaptureMouse = showMouse;
 

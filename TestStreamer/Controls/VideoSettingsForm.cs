@@ -205,12 +205,12 @@ namespace TestStreamer.Controls
         private void LoadCaptureTypes()
         {
 
-            List<CaptureType> captureTypes = new List<CaptureType>();
-            captureTypes.Add(CaptureType.DXGIDeskDupl);
-            captureTypes.Add(CaptureType.GDI);
+            List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
+            captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
+            captureTypes.Add(VideoCaptureType.GDI);
             //captureTypes.Add(CaptureType.GDIPlus);
-            captureTypes.Add(CaptureType.Direct3D9);
-            captureTypes.Add(CaptureType.Datapath);
+            captureTypes.Add(VideoCaptureType.Direct3D9);
+            captureTypes.Add(VideoCaptureType.Datapath);
 
             captureTypesComboBox.DataSource = captureTypes;
         }

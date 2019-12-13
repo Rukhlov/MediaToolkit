@@ -20,6 +20,8 @@ namespace TestStreamer.Controls
 
 
             LoadEncoderItems();
+            LoadCaptureItems();
+
            // LoadTransportItems();
 
         }
@@ -30,6 +32,10 @@ namespace TestStreamer.Controls
         {
 
             this.AudioSettings = settingsParams;
+            var captureSettings = AudioSettings.CaptureParams;
+
+            this.captFormatTextBox.Text = captureSettings.Description;
+
             //this.addressTextBox.Text = AudioSettings.Address;
             //this.portNumeric.Value = AudioSettings.Port;
             //this.transportComboBox.SelectedItem = AudioSettings.TransportMode;
@@ -82,7 +88,22 @@ namespace TestStreamer.Controls
             };
 
             encoderComboBox.DataSource = items;
-
         }
+
+
+        private void LoadCaptureItems()
+        {
+            var items = new List<AudioCapturesTypes>
+            {
+                AudioCapturesTypes.Wasapi,
+                AudioCapturesTypes.WasapiLoopback,
+                AudioCapturesTypes.WaveIn,
+            };
+
+            captureComboBox.DataSource = items;
+        }
+
     }
+
+
 }
