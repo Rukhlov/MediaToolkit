@@ -21,7 +21,7 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 using MediaToolkit.UI;
 
-using Vlc.DotNet.Core;
+//using Vlc.DotNet.Core;
 using System.ServiceModel.Discovery;
 using MediaToolkit.Common;
 using System.ServiceModel;

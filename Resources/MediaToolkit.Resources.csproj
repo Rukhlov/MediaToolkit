@@ -250,6 +250,15 @@
     <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
+    <Content Include="SharpDX.4.2.1\ReadMe.txt" />
+    <Content Include="vc_redist\Debug\mscoree.dll" />
+    <Content Include="vc_redist\Debug\ucrtbase.dll" />
+    <Content Include="vc_redist\Debug\ucrtbased.dll" />
+    <Content Include="vc_redist\Debug\ucrtbase_clr0400.dll" />
+    <Content Include="vc_redist\Debug\vcamp140d.dll" />
+    <Content Include="vc_redist\Debug\vcruntime140.dll" />
+    <Content Include="vc_redist\Debug\vcruntime140d.dll" />
+    <Content Include="vc_redist\Debug\vcruntime140_clr0400.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />

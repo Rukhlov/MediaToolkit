@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Vlc.DotNet.Core;
+//using Vlc.DotNet.Core;
 using System.IO;
 using NLog;
 

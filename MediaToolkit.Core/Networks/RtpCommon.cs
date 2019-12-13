@@ -215,7 +215,7 @@ namespace MediaToolkit.RTP
             offset += 4;
 
             if(packet.SSRC != session.SSRC)
-            {
+            {// Invalid session id
                 return null;
             }
 

@@ -9,40 +9,6 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Common
 {
-    public class VideoBuffer
-    {
-        public VideoBuffer(int width, int height, System.Drawing.Imaging.PixelFormat fmt)
-        {
-            this.bitmap = new Bitmap(width, height, fmt);
-            var channels = Image.GetPixelFormatSize(fmt) / 8;
-            this.length = channels * width * height;
-
-            this.FrameSize = new Size(width, height);
-        }
-
-        public readonly object syncRoot = new object();
-
-        public Size FrameSize { get; private set; } = Size.Empty;
-
-        public Bitmap bitmap { get; private set; }
-
-        public double time = 0;
-
-        private long length = -1;
-        public long DataLength { get => length; }
-
-        public void Dispose()
-        {
-            lock (syncRoot)
-            {
-                if (bitmap != null)
-                {
-                    bitmap.Dispose();
-                    bitmap = null;
-                }
-            }
-        }
-    }
 
     public class VideoEncoderSettings
     {
@@ -65,6 +31,12 @@ namespace MediaToolkit.Common
 
     }
 
+    public enum VideoEncoderMode
+    {
+        H264,
+        JPEG
+    }
+
     public enum H264Profile
     {
         Base,
@@ -79,17 +51,6 @@ namespace MediaToolkit.Common
         Quality,
     }
 
-    public enum AudioEncoderMode
-    {
-        AAC,
-        G711,
-    }
-
-    public enum VideoEncoderMode
-    {
-        H264,
-        JPEG
-    }
 
     public class AudioEncoderSettings
     {
@@ -100,6 +61,11 @@ namespace MediaToolkit.Common
         public string Encoding = "";
         public string DeviceId = "";
         public AudioEncoderMode Encoder = AudioEncoderMode.G711;
+    }
+    public enum AudioEncoderMode
+    {
+        AAC,
+        G711,
     }
 
     public class AudioCaptureSettings
@@ -116,10 +82,11 @@ namespace MediaToolkit.Common
         public AudioCapturesTypes CapturesTypes = AudioCapturesTypes.Wasapi;
     }
 
-    public enum CaptureMode
+    public enum AudioCapturesTypes
     {
-        Screen,
-        CaptDevice,
+        Wasapi,
+        WasapiLoopback,
+        WaveIn
     }
 
     public abstract class VideoCaptureDescription
@@ -130,14 +97,18 @@ namespace MediaToolkit.Common
 
     }
 
+    public enum CaptureMode
+    {
+        Screen,
+        CaptDevice,
+    }
+
     public class VideoCaptureDeviceDescription: VideoCaptureDescription
     {
         public override CaptureMode CaptureMode => CaptureMode.CaptDevice;
         public string DeviceId = "";
 
         public VideoCaptureDeviceProfile CurrentProfile = null;
-
-
     }
 
     public class VideoCaptureDeviceProfile
@@ -186,12 +157,7 @@ namespace MediaToolkit.Common
         DXGIDeskDupl,
     }
 
-    public enum AudioCapturesTypes
-    {
-        Wasapi,
-        WasapiLoopback,
-        WaveIn
-    }
+
 
     public class NetworkSettings
     {
@@ -473,4 +439,41 @@ namespace MediaToolkit.Common
         [OperationContract(IsOneWay = true)]
         void PostMessage(ServerRequest request);
     }
+
+
+    public class VideoBuffer
+    {
+        public VideoBuffer(int width, int height, System.Drawing.Imaging.PixelFormat fmt)
+        {
+            this.bitmap = new Bitmap(width, height, fmt);
+            var channels = Image.GetPixelFormatSize(fmt) / 8;
+            this.length = channels * width * height;
+
+            this.FrameSize = new Size(width, height);
+        }
+
+        public readonly object syncRoot = new object();
+
+        public Size FrameSize { get; private set; } = Size.Empty;
+
+        public Bitmap bitmap { get; private set; }
+
+        public double time = 0;
+
+        private long length = -1;
+        public long DataLength { get => length; }
+
+        public void Dispose()
+        {
+            lock (syncRoot)
+            {
+                if (bitmap != null)
+                {
+                    bitmap.Dispose();
+                    bitmap = null;
+                }
+            }
+        }
+    }
+
 }
