@@ -38,10 +38,14 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SharedInfo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SharedInfo.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -236,6 +240,10 @@
     <Content Include="FFmpeg4\lib\swscale-5.def" />
     <Content Include="FFmpeg4\LICENSE.txt" />
     <Content Include="FFmpeg4\README.txt" />
+    <Content Include="SharedInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SharedInfo.cs</LastGenOutput>
+    </Content>
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll" />
@@ -295,6 +303,9 @@
     <None Include="FFmpeg4\presets\libvpx-720p50_60.ffpreset" />
     <None Include="Files\AV_10Sec_30Fps_Click_Sin.mkv" />
     <None Include="Files\AV_60Sec_30Fps_Click_Sin.mkv" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

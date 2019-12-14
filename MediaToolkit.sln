@@ -3,23 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Core", "MediaToolkit.Core\MediaToolkit.Core.csproj", "{D93A9D01-3409-48BB-B1EB-860EFE0397F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit", "MediaToolkit\MediaToolkit.csproj", "{D93A9D01-3409-48BB-B1EB-860EFE0397F1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MediaToolkit.FFmpeg", "MediaToolkit.FFmpeg\FFmpegWrapper.vcxproj", "{F83157FD-4E1F-4F55-BED8-F4F138824FFD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Resources", "Resources\MediaToolkit.Resources.csproj", "{53677E3B-7880-4C45-8EA9-95DB9FCB2D8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{81B60AC9-5A76-4515-AFAD-07094336A314}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Client", "Test.Client\Test.Client.csproj", "{81B60AC9-5A76-4515-AFAD-07094336A314}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Common", "MediaToolkit.Common\MediaToolkit.Common.csproj", "{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Core", "MediaToolkit.Core\MediaToolkit.Core.csproj", "{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestStreamer", "TestStreamer\TestStreamer.csproj", "{FB9EA9CE-8052-4CAF-A85A-89A41B62C7A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Streamer", "Test.Streamer\Test.Streamer.csproj", "{FB9EA9CE-8052-4CAF-A85A-89A41B62C7A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.UI", "MediaToolkit.UI\MediaToolkit.UI.csproj", "{6EC45781-0060-4F0A-AD0E-1452704F0740}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.NativeAPIs", "MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj", "{4B001D0F-817D-4075-9714-9A192AF5C0A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebCamTest", "WebCamTest\WebCamTest.csproj", "{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.WebCam", "Test.WebCam\Test.WebCam.csproj", "{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.SharedTypes", "MediaToolkit.SharedTypes\MediaToolkit.SharedTypes.csproj", "{626D1D9B-FCC5-4799-899D-37B8F6AE366F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{762A0890-DAD6-4F12-806F-33DF38E80B7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.PolywallClient", "Test.PolywallClient\Test.PolywallClient.csproj", "{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,9 +143,39 @@ Global
 		{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}.Release|x64.Build.0 = Release|Any CPU
 		{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}.Release|x86.ActiveCfg = Release|Any CPU
 		{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}.Release|x86.Build.0 = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|x64.Build.0 = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Debug|x86.Build.0 = Debug|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|x64.ActiveCfg = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|x64.Build.0 = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|x86.ActiveCfg = Release|Any CPU
+		{626D1D9B-FCC5-4799-899D-37B8F6AE366F}.Release|x86.Build.0 = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|x64.Build.0 = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Debug|x86.Build.0 = Debug|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|x64.ActiveCfg = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|x64.Build.0 = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|x86.ActiveCfg = Release|Any CPU
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{81B60AC9-5A76-4515-AFAD-07094336A314} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
+		{FB9EA9CE-8052-4CAF-A85A-89A41B62C7A0} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
+		{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
+		{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {691ACD75-ACCB-4862-BC19-0302DCE83B4A}

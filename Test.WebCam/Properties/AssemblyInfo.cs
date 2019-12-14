@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
-[assembly: AssemblyTitle("MediaToolkit.Core")]
+[assembly: AssemblyTitle("Test.WebCam")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MediaToolkit.Core")]
+[assembly: AssemblyProduct("Test.WebCam")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
-[assembly: Guid("53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe")]
+[assembly: Guid("a05a73c9-27ff-45cf-be8d-3838e2ce0d80")]
 
 // Сведения о версии сборки состоят из следующих четырех значений:
 //

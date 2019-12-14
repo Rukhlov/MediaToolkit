@@ -166,7 +166,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Common\MediaToolkit.Common.csproj">
+    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
     </ProjectReference>
   </ItemGroup>

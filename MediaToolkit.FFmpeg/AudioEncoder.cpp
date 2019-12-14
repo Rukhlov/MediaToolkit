@@ -24,7 +24,7 @@ using namespace System::Diagnostics;
 using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
-using namespace MediaToolkit::Common;
+using namespace MediaToolkit::Core;
 using namespace System::Threading;
 using namespace NLog;
 
