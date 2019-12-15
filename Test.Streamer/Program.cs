@@ -92,7 +92,6 @@ namespace TestStreamer
             }
 
 
-            Shcore.SetDpiAwareness();
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
@@ -107,6 +106,8 @@ namespace TestStreamer
 
             //Utils.DwmApi.DisableAero(true);
 
+
+            Shcore.SetDpiAwareness();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 

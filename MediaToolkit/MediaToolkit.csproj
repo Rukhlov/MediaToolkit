@@ -143,6 +143,10 @@
       <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.SharedTypes\MediaToolkit.SharedTypes.csproj">
+      <Project>{626D1D9B-FCC5-4799-899D-37B8F6AE366F}</Project>
+      <Name>MediaToolkit.SharedTypes</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

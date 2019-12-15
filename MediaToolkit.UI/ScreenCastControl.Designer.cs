@@ -174,13 +174,13 @@
             this.elementHost1.Text = "elementHost1";
             this.elementHost1.Child = this.wpfRemoteControl;
             // 
-            // RemoteDesktopControl
+            // ScreenCastControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.elementHost1);
-            this.Name = "RemoteDesktopControl";
+            this.Name = "ScreenCastControl";
             this.Size = new System.Drawing.Size(750, 539);
             this.mainPanel.ResumeLayout(false);
             this.mainPanel.PerformLayout();

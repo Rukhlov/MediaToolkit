@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.SharedTypes
 {
-    public interface IMediaToolkit
+    public interface IMediaToolkitBootstrapper
     {
         void Startup();
         void Shutdown();
-        T CreateInstance<T>(object[] args = null) where T : class;
+       
     }
 
     public interface IScreenCasterControl

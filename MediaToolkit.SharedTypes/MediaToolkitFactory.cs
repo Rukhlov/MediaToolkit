@@ -9,6 +9,75 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.SharedTypes
 {
+    public class MediaToolkitFactory
+    {
+        private static IMediaToolkitBootstrapper mediaToolkit = null;
+        public static bool IsStarted { get; private set; }
+
+        public static bool Startup(string assemblyPath = "", bool throwExceptions = false)
+        {
+            if (IsStarted)
+            {
+                if (!throwExceptions)
+                {
+                    return false;
+                }
+
+                throw new InvalidOperationException("IsStarted  " + IsStarted);
+            }
+
+            try
+            {
+                InstanceFactory.AssemblyPath = assemblyPath;
+
+                InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
+                InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll");
+                //...
+
+                mediaToolkit = InstanceFactory.CreateInstance<IMediaToolkitBootstrapper>();
+
+                mediaToolkit.Startup();
+
+                IsStarted = true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                Debug.Fail(ex.Message);
+                if (throwExceptions)
+                {
+                    throw;
+                }
+            }
+
+            return IsStarted;
+        }
+
+        public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
+        {
+            if (!IsStarted)
+            {
+                if (!throwExceptions)
+                {
+                    return null;
+                }
+
+                throw new InvalidOperationException("IsStarted  " + IsStarted);
+            }
+
+            return InstanceFactory.CreateInstance<T>(args, throwExceptions);
+        }
+
+        public static void Shutdown()
+        {
+            if (mediaToolkit != null)
+            {
+                mediaToolkit.Shutdown();
+            }
+        }
+
+    }
+
     public class InstanceFactory
     {
         //private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -24,7 +93,7 @@ namespace MediaToolkit.SharedTypes
 
         private static Dictionary<Type, Type> Dict = new Dictionary<Type, Type>();
 
-        public static bool RegisterType<T>(string assemblyFileName) where T : class
+        public static bool RegisterType<T>(string assemblyFileName, bool throwExceptions = false) where T : class
         {
             Debug.WriteLine("RegisterType: " + typeof(T).ToString() + " AssemblyFileName " + assemblyFileName);
 
@@ -93,6 +162,11 @@ namespace MediaToolkit.SharedTypes
                 Result = false;
                 Debug.Fail(ex.Message);
                 Debug.WriteLine(ex);
+
+                if (throwExceptions)
+                {
+                    throw;
+                }
             };
             return Result;
         }
@@ -142,7 +216,7 @@ namespace MediaToolkit.SharedTypes
 
         }
 
-        public static T CreateInstance<T>(object[] args = null) where T : class
+        public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
         {
             Debug.WriteLine("CreateInstance(...) " + typeof(T).ToString());
 
@@ -164,6 +238,10 @@ namespace MediaToolkit.SharedTypes
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
+                if (throwExceptions)
+                {
+                    throw;
+                }
             }
 
             return instance;

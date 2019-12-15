@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.NativeAPIs;
+using MediaToolkit.SharedTypes;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,10 +21,21 @@ using System.Xml;
 namespace MediaToolkit.Utils
 {
 
-    public class MediaLib
+    public class MediaToolkitBootstrapper : IMediaToolkitBootstrapper
     {
-        public static void Startup()
+        public void Startup()
         {
+            var winVersion = Environment.OSVersion.Version;
+            bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
+
+            if (!isCompatibleOSVersion)
+            {
+                throw new Exception("Windows versions earlier than 8 are not supported.");
+            }
+
+            // TODO:
+            // Validate directx, medaiafoundations... 
+
             SharpDX.MediaFoundation.MediaManager.Startup();
 
             //SharpDX.Configuration.EnableReleaseOnFinalizer = true;
@@ -34,10 +46,10 @@ namespace MediaToolkit.Utils
             //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
 
             MediaToolkit.NativeAPIs.WinMM.timeBeginPeriod(1);
-
         }
 
-        public static void Shutdown()
+
+        public void Shutdown()
         {
 
             MediaToolkit.NativeAPIs.WinMM.timeEndPeriod(1);

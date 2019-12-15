@@ -20,27 +20,26 @@ namespace Test.PolywallClient
             InitializeComponent();
         }
 
+        public Form1(Control control) :this()
+        {
+            control.Dock = DockStyle.Fill;
+
+            this.panel1.Controls.Add(control);
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-            var pluginPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-            var fileFullName = pluginPath + @"\MediaToolkit.UI.dll";
-            InstanceFactory.AssemblyPath = pluginPath;
-            InstanceFactory.RegisterType<IScreenCasterControl>(fileFullName);
+
+
+
         }
 
+        private IScreenCasterControl screenCasterControl = null;
         private void button2_Click(object sender, EventArgs e)
-        {
-            var screenCasterControl = InstanceFactory.CreateInstance<IScreenCasterControl>();
-
-            if (screenCasterControl != null)
-            {
-                this.panel1.Controls.Add((Control)screenCasterControl);
-            }
-        }
-
-        private void button3_Click(object sender, EventArgs e)
         {
             Process.Start(@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug\Test.Streamer.exe");
         }
+
+
     }
 }
