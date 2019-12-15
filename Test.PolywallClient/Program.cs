@@ -29,7 +29,21 @@ namespace Test.PolywallClient
 
             var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
 
-            MediaToolkitFactory.Startup(mediaToolkitPath);
+            if (!System.IO.Directory.Exists(mediaToolkitPath))
+            {
+                FolderBrowserDialog dlg = new FolderBrowserDialog();
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    mediaToolkitPath = dlg.SelectedPath;
+                }
+            }
+
+            if (!MediaToolkitFactory.Startup(mediaToolkitPath))
+            {
+                MessageBox.Show("Error at MediaToolkit startup:\r\n\r\n" + mediaToolkitPath);
+
+                return;
+            }
 
             //var fileFullName = pluginPath + @"\MediaToolkit.UI.dll";
 

@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TestStreamer
+namespace MediaToolkit
 {
     public class VideoStreamer
     {

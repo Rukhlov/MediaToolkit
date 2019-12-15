@@ -17,13 +17,13 @@ using MediaToolkit.Networks;
 namespace MediaToolkit
 {
 
-    public class HttpScreenStreamer
+    public class VideoHttpStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly IVideoSource screenSource = null;
 
-        public HttpScreenStreamer(IVideoSource source)
+        public VideoHttpStreamer(IVideoSource source)
         {
             this.screenSource = source;
            
@@ -31,7 +31,7 @@ namespace MediaToolkit
 
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        private HttpStreamer httpStreamer = null;
+        private Networks.HttpStreamer httpStreamer = null;
 
         public Task Start(VideoEncoderSettings encPars, NetworkSettings networkParams)
         {
@@ -44,8 +44,8 @@ namespace MediaToolkit
 
 
                 FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
-               
-                httpStreamer = new HttpStreamer();
+
+                httpStreamer = new Networks.HttpStreamer();
                 try
                 {
                     logger.Debug("Start main streaming loop...");

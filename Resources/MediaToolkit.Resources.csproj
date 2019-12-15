@@ -41,10 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SharedInfo.cs">
+    <Compile Include="SharedAssemblyInfo.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SharedInfo.tt</DependentUpon>
+      <DependentUpon>SharedAssemblyInfo.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -240,9 +240,9 @@
     <Content Include="FFmpeg4\lib\swscale-5.def" />
     <Content Include="FFmpeg4\LICENSE.txt" />
     <Content Include="FFmpeg4\README.txt" />
-    <Content Include="SharedInfo.tt">
+    <Content Include="SharedAssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SharedInfo.cs</LastGenOutput>
+      <LastGenOutput>SharedAssemblyInfo.cs</LastGenOutput>
     </Content>
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.pdb" />

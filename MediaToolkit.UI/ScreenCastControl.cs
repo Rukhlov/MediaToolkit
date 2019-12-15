@@ -33,7 +33,6 @@ namespace MediaToolkit.UI
         {
             InitializeComponent();
 
-           // MediaToolkit.Utils.MediaLib.Startup();
 
             syncContext = SynchronizationContext.Current;
 

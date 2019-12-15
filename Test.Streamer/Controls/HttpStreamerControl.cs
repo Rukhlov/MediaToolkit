@@ -25,7 +25,7 @@ namespace TestStreamer.Controls
 
         private StatisticForm statisticForm = new StatisticForm();
 
-        private HttpScreenStreamer httpStreamer = null;
+        private VideoHttpStreamer httpStreamer = null;
         private IVideoSource httpScreenSource = null;
         private Screen currentScreen = null;
 
@@ -72,7 +72,7 @@ namespace TestStreamer.Controls
             httpScreenSource.Setup(captureParams);
 
 
-            httpStreamer = new HttpScreenStreamer(httpScreenSource);
+            httpStreamer = new VideoHttpStreamer(httpScreenSource);
 
             NetworkSettings networkParams = new NetworkSettings
             {

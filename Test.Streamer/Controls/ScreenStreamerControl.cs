@@ -17,6 +17,7 @@ using SharpDX.MediaFoundation;
 using MediaToolkit.Utils;
 using MediaToolkit.NativeAPIs;
 using System.Threading;
+using MediaToolkit.Managers;
 
 namespace TestStreamer.Controls
 {

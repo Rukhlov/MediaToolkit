@@ -67,63 +67,42 @@ namespace TestStreamer
 
             logger.Info("========== START ============");
 
-            CommandLineOptions options = null;
-            if (args != null)
+            try
             {
-                logger.Info("Command Line String: " + string.Join(" ", args));
-
-                options = new CommandLineOptions();
-                var res = Parser.Default.ParseArguments(args, options);
-                if (!res)
+                CommandLineOptions options = null;
+                if (args != null)
                 {
-                    //...
+                    logger.Info("Command Line String: " + string.Join(" ", args));
+
+                    options = new CommandLineOptions();
+                    var res = Parser.Default.ParseArguments(args, options);
+                    if (!res)
+                    {
+                        //...
+                    }
                 }
+
+                MediaToolkitManager.Startup();
+
+                //DwmApi.DisableAero(true);
+                Shcore.SetDpiAwareness();
+
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+
+
+                //MainForm2 form = new MainForm2();
+                MainForm form = new MainForm();
+                //StreamingForm form = new StreamingForm();
+
+                Application.Run(form);
             }
-
-            var winVersion = Environment.OSVersion.Version;
-            bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
-
-            if (!isCompatibleOSVersion)
+            finally
             {
-                logger.Fatal("Windows versions earlier than 8 are not supported.");
+                MediaToolkitManager.Shutdown();
 
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+                logger.Info("========== THE END ============");
             }
-
-
-
-            SharpDX.MediaFoundation.MediaManager.Startup();
-
-            //SharpDX.Configuration.EnableReleaseOnFinalizer = true;
-
-            SharpDX.Configuration.EnableObjectTracking = true;
-            SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
-
-            //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
-
-            MediaToolkit.NativeAPIs.WinMM.timeBeginPeriod(1);
-
-            //Utils.DwmApi.DisableAero(true);
-
-
-            Shcore.SetDpiAwareness();
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
-
-            //MainForm2 form = new MainForm2();
-            MainForm form = new MainForm();
-            //StreamingForm form = new StreamingForm();
-
-            Application.Run(form);
-            
-
-            MediaToolkit.NativeAPIs.WinMM.timeEndPeriod(1);
-
-            SharpDX.MediaFoundation.MediaManager.Shutdown();
-
-            logger.Info("========== THE END ============");
 
         }
 

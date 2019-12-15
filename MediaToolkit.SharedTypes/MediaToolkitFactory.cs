@@ -43,7 +43,7 @@ namespace MediaToolkit.SharedTypes
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                Debug.Fail(ex.Message);
+                //Debug.Fail(ex.Message);
                 if (throwExceptions)
                 {
                     throw;
@@ -160,7 +160,7 @@ namespace MediaToolkit.SharedTypes
             catch (Exception ex)
             {
                 Result = false;
-                Debug.Fail(ex.Message);
+               // Debug.Fail(ex.Message);
                 Debug.WriteLine(ex);
 
                 if (throwExceptions)
