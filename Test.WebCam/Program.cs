@@ -78,7 +78,7 @@ namespace WebCamTest
             Console.WriteLine("==============START=============");
             try
             {
-                MediaManager.Startup();
+                MediaToolkitManager.Startup();
 
                 //SharpDX.MediaFoundation.DirectX.VideoProcessorService videoProcessorService = new SharpDX.MediaFoundation.DirectX.VideoProcessorService(IntPtr.Zero);
                 //videoProcessorService.GetVideoProcessorCaps()
@@ -87,7 +87,7 @@ namespace WebCamTest
                 //return;
 
                 var device = GetVideoCaptureDevices();
-                var d = device[1];
+                var d = device[0];
                 VideoCaptureSource videoCaptureSource = new VideoCaptureSource();
 
                 VideoCaptureDeviceDescription captureParams = new VideoCaptureDeviceDescription
@@ -140,7 +140,8 @@ namespace WebCamTest
 
                 Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
-                MediaManager.Shutdown();
+                MediaToolkitManager.Shutdown();
+                //MediaManager.Shutdown();
 
                 //previewForm?.Close();
             }

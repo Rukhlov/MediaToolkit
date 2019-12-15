@@ -91,11 +91,21 @@ namespace MediaToolkit.SharedTypes
 
         public static string AssemblyPath { get; set; } = @".\Plugins";
 
+        public static bool EnableLog { get; set; } = false;
+        public static event Action<string> Log;
+        private static void OnLog(string log)
+        {
+            if (EnableLog)
+            {
+                Log?.Invoke(log);
+            }
+        }
+
         private static Dictionary<Type, Type> Dict = new Dictionary<Type, Type>();
 
         public static bool RegisterType<T>(string assemblyFileName, bool throwExceptions = false) where T : class
         {
-            Debug.WriteLine("RegisterType: " + typeof(T).ToString() + " AssemblyFileName " + assemblyFileName);
+            OnLog("RegisterType: " + typeof(T).ToString() + " AssemblyFileName " + assemblyFileName);
 
             Type TargetType = typeof(T);
 
@@ -119,7 +129,7 @@ namespace MediaToolkit.SharedTypes
                     //}
 
 
-                    Debug.WriteLine("Try to find: " + assemblyName.ToString());
+                    OnLog("Try to find: " + assemblyName.ToString());
 
                     Assembly assembly = AppDomain.CurrentDomain.GetAssemblies()
                         .Where(a => AssemblyName.ReferenceMatchesDefinition(assemblyName, a.GetName()))
@@ -127,7 +137,7 @@ namespace MediaToolkit.SharedTypes
 
                     if (assembly == null)
                     {
-                        Debug.WriteLine("Try to load assembly: " + assemblyName.FullName);
+                        OnLog("Try to load assembly: " + assemblyName.FullName);
 
                         assembly = AppDomain.CurrentDomain.Load(assemblyName.FullName);
 
@@ -160,8 +170,8 @@ namespace MediaToolkit.SharedTypes
             catch (Exception ex)
             {
                 Result = false;
-               // Debug.Fail(ex.Message);
-                Debug.WriteLine(ex);
+                // Debug.Fail(ex.Message);
+                OnLog(ex.ToString());
 
                 if (throwExceptions)
                 {
@@ -175,7 +185,7 @@ namespace MediaToolkit.SharedTypes
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            Debug.WriteLine("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "");
+            OnLog("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "");
             var asmName = args.Name;
 
             if (asmName.Contains(".resources"))
@@ -204,13 +214,13 @@ namespace MediaToolkit.SharedTypes
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine(ex);
+                    OnLog(ex.ToString());
                     return null;
                 }
             }
             else
             {
-                Debug.WriteLine("Assembly not found: " + asmFileFullName);
+                OnLog("Assembly not found: " + asmFileFullName);
                 return null;
             }
 
@@ -218,7 +228,7 @@ namespace MediaToolkit.SharedTypes
 
         public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
         {
-            Debug.WriteLine("CreateInstance(...) " + typeof(T).ToString());
+            OnLog("CreateInstance(...) " + typeof(T).ToString());
 
             Type targetType = typeof(T);
             T instance = null;
@@ -232,12 +242,12 @@ namespace MediaToolkit.SharedTypes
                 }
                 else
                 {
-                    Debug.WriteLine("TargetType not registered: " + targetType.ToString());
+                    OnLog("TargetType not registered: " + targetType.ToString());
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                OnLog(ex.ToString());
                 if (throwExceptions)
                 {
                     throw;
