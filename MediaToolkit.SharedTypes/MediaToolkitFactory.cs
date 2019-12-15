@@ -76,6 +76,33 @@ namespace MediaToolkit.SharedTypes
             }
         }
 
+
+        public const string MediaToolkitPathKey = "MediaToolkitPath";
+        public const string SoftwareVisiologyPolywallPathKey = "Software\\Visiology\\Polywall\\Path\\MediaToolkitPath";
+
+        public static string GetMediaToolkitInstalledPath(string value)
+        {
+            string path = string.Empty;
+            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(SoftwareVisiologyPolywallPathKey);
+            if (rk != null)
+            {
+                var names = rk.GetValueNames();
+                if (names != null)
+                {
+                    if (names.Contains(value))
+                    {
+                        path = rk.GetValue(value)?.ToString();
+                    }
+                }
+            }
+            return path;
+        }
+
+        public static string GetMediaToolkitInstalledPath()
+        {
+            return GetMediaToolkitInstalledPath(MediaToolkitPathKey);
+        }
+
     }
 
     public class InstanceFactory
@@ -89,7 +116,7 @@ namespace MediaToolkit.SharedTypes
 
         public static Version Version { get; private set; }
 
-        public static string AssemblyPath { get; set; } = @".\Plugins";
+        public static string AssemblyPath { get; set; } = @".\MediaToolkit";
 
         public static bool EnableLog { get; set; } = false;
         public static event Action<string> Log;

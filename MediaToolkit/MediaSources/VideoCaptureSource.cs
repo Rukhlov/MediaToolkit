@@ -396,7 +396,6 @@ namespace MediaToolkit
                         {
                             sourceReader.ReadSampleAsync((int)SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None);
                         }
-
                     }
                     else
                     {
@@ -405,27 +404,12 @@ namespace MediaToolkit
                         try
                         {
                             //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
-
                             if (flags != SourceReaderFlags.None)
                             {
                                 logger.Debug("sourceReader.ReadSample(...) " + flags);
                             }
 
-                            if (flags.HasFlag(SourceReaderFlags.StreamTick))
-                            {
-                                firstTimestamp = timestamp;
-
-                            }
-                            if (sample != null)
-                            {
-                                var sampleDuration = timestamp - prevTimestamp;
-                                var sampleTimestamp = timestamp - firstTimestamp;
-
-                                sample.SampleTime = sampleTimestamp;
-                                sample.SampleDuration = sampleDuration;
-
-                                ProcessSample(sample);
-                            }
+                            PrepareSample(flags, timestamp, sample);
                         }
                         finally
                         {
@@ -453,41 +437,22 @@ namespace MediaToolkit
         private int SourceReaderCallback_OnReadSample(SharpDX.Result result, int index, SourceReaderFlags flags, long timestamp, IntPtr pSample)
         {
             // logger.Debug(timestamp + " " + " " + flags + " " + result);
+            if (result.Failure)
+            {
+                //...
+            }
 
             if (State != CaptureState.Capturing)
             {
                 return 0;
             }
 
-            if (flags!= SourceReaderFlags.None)
+            if (flags != SourceReaderFlags.None)
             {
                 logger.Debug(timestamp + " " + " " + flags + " " + result);
             }
 
-            if (flags.HasFlag(SourceReaderFlags.StreamTick))
-            {
-                firstTimestamp = timestamp;
-               
-            }
-
-
-            if (pSample != IntPtr.Zero)
-            {
-                var sample = new Sample(pSample);
-                if (sample != null)
-                {
-                    //Console.WriteLine("time " + time + " Timestamp " + timestamp + " Flags " + flags);
-                    var sampleDuration = timestamp - prevTimestamp;
-                    var sampleTimestamp = timestamp - firstTimestamp;
-
-                    sample.SampleTime = sampleTimestamp;
-                    sample.SampleDuration = sampleDuration;
-
-                    ProcessSample(sample);
-                }
-            }
-
-            prevTimestamp = timestamp;
+            PrepareSample(flags, timestamp, (Sample)pSample);
 
             syncEvent.Set();
 
@@ -498,6 +463,27 @@ namespace MediaToolkit
         {
             logger.Debug("SourceReaderCallback_OnFlush(...) " + arg);
             return 0;
+        }
+
+        private void PrepareSample(SourceReaderFlags flags, long timestamp, Sample sample)
+        {
+            if (flags.HasFlag(SourceReaderFlags.StreamTick))
+            {
+                firstTimestamp = timestamp;
+            }
+
+            if (sample != null)
+            {
+                //Console.WriteLine("time " + time + " Timestamp " + timestamp + " Flags " + flags);
+                var sampleDuration = timestamp - prevTimestamp;
+                var sampleTimestamp = timestamp - firstTimestamp;
+
+                sample.SampleTime = sampleTimestamp;
+                sample.SampleDuration = sampleDuration;
+
+                ProcessSample(sample);
+            }
+            prevTimestamp = timestamp;
         }
 
         private void ProcessSample(Sample sample)
@@ -684,9 +670,7 @@ namespace MediaToolkit
 
             int IMFSourceReaderCallback.OnReadSample(SharpDX.Result hrStatus, int dwStreamIndex, SourceReaderFlags dwStreamFlags, long llTimestamp, IntPtr pSample)
             {
-
                 return OnReadSample?.Invoke(hrStatus, dwStreamIndex, dwStreamFlags, llTimestamp, pSample) ?? 0;
-
                 //return (int)HResult.S_OK;
             }
 
