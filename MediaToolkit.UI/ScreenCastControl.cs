@@ -38,12 +38,15 @@ namespace MediaToolkit.UI
 
             controlPanel.Visible = false;
 
-
-            showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
+  
+            imageProvider = new D3DImageProvider2();
+           // this.wpfRemoteControl.DataContext = imageProvider;
 
             UpdateControls();
 
         }
+
+
         private readonly SynchronizationContext syncContext = null;
 
         public VideoReceiver VideoReceiver { get; private set; }
@@ -178,6 +181,7 @@ namespace MediaToolkit.UI
             labelStatus.Text = "_Not Connected";
         }
 
+
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             if (discoveryClient != null)
@@ -196,8 +200,6 @@ namespace MediaToolkit.UI
 
             try
             {
-
-
                 if (!running)
                 {
                     var addrStr = hostAddressTextBox.Text;
@@ -209,22 +211,12 @@ namespace MediaToolkit.UI
                     var host = uri.Host;
                     var port = uri.Port;
 
-                    Connecting(host, port);
+                    Connect(host, port);
                 }
                 else
                 {
-                    if (running)
-                    {
-                        running = false;
-                        State = ClientState.Closing;
-                    }
-                    else
-                    {
-                        Close();
-                    }
+                    Disconnect();
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -234,51 +226,21 @@ namespace MediaToolkit.UI
         }
 
 
-        private void hostsComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var obj = hostsComboBox.SelectedItem;
-
-            if (obj != null)
-            {
-                var item = obj as ComboBoxItem;
-                if (item != null)
-                {
-                    var tag = item.Tag;
-                    if (tag != null)
-                    {
-                        var addr = tag.ToString();
-                        try
-                        {
-                            var builder = new UriBuilder(addr);
-
-                            hostAddressTextBox.Text = builder.Host + ":" + builder.Port;
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Debug(ex);
-                        }
-
-                    }
-
-                }
-            }
-        }
-
-
         private D3DImageProvider2 imageProvider = null;
         private void ShowVideo()
         {
             if (VideoReceiver != null)
             {
-                imageProvider?.Close();
+                //imageProvider?.Close();
 
-                imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
-                var reciver = this.VideoReceiver;
+                //wpfRemoteControl.d3dimg = imageProvider.ScreenView;
 
-                imageProvider.Start(reciver.sharedTexture);
+               
+                imageProvider.Setup(VideoReceiver.sharedTexture);
 
+                wpfRemoteControl.DataContext = imageProvider;
 
-                this.wpfRemoteControl.DataContext = imageProvider;
+                imageProvider.Start();
             }
 
         }
@@ -290,17 +252,9 @@ namespace MediaToolkit.UI
             wpfRemoteControl.DataContext = null;
         }
 
-        public void Connect(string addr)
-        {
 
-        }
 
-        public void Disconnect()
-        {
-
-        }
-
-        public void Connecting(string addr, int port)
+        public void Connect(string addr, int port)
         {
 
             logger.Debug("RemoteDesktopClient::Connecting(...) " + addr);
@@ -320,6 +274,19 @@ namespace MediaToolkit.UI
                 ClientProc();
             });
 
+        }
+
+        public void Disconnect()
+        {
+            if (running)
+            {
+                running = false;
+                State = ClientState.Closing;
+            }
+            else
+            {
+                Close();
+            }
         }
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
@@ -366,7 +333,7 @@ namespace MediaToolkit.UI
 
                 factory = new ChannelFactory<IScreenCastService>(binding, new EndpointAddress(uri));
                 var channel = factory.CreateChannel();
-                bool isBusy = false;
+
                 try
                 {
 
@@ -377,7 +344,6 @@ namespace MediaToolkit.UI
                         logger.Error("channelInfos == null");
                         return;
                     }
-
 
                     //TransportMode transportMode = TransportMode.Udp;
                     var videoChannelInfo = channelInfos.FirstOrDefault(c => c.MediaInfo is VideoChannelInfo);
@@ -436,10 +402,7 @@ namespace MediaToolkit.UI
                         }
                         catch (Exception ex)
                         {
-
                             errorMessage = "_Server Disconnected";
-                            
-
                             running = false;
                         }
 
@@ -575,11 +538,7 @@ namespace MediaToolkit.UI
                 var outputPars = new VideoEncoderSettings
                 {
                     Resolution = videoInfo.Resolution,
-                    //Resolution = new System.Drawing.Size(1920, 1080),
-                    ////Width = 640,//2560,
-                    ////Height = 480,//1440,
-                    //Width = 1920,
-                    //Height = 1080,
+                    //Resolution = new System.Drawing.Size(1920, 1080);
 
                     FrameRate = videoInfo.Fps,
                 };
@@ -652,6 +611,38 @@ namespace MediaToolkit.UI
             State = ClientState.Closed;
         }
 
+
+
+        private void hostsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var obj = hostsComboBox.SelectedItem;
+
+            if (obj != null)
+            {
+                var item = obj as ComboBoxItem;
+                if (item != null)
+                {
+                    var tag = item.Tag;
+                    if (tag != null)
+                    {
+                        var addr = tag.ToString();
+                        try
+                        {
+                            var builder = new UriBuilder(addr);
+
+                            hostAddressTextBox.Text = builder.Host + ":" + builder.Port;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Debug(ex);
+                        }
+
+                    }
+
+                }
+            }
+        }
+
         private void UpdateControls()
         {
             bool isConnected = (this.State == ClientState.Started);
@@ -673,6 +664,10 @@ namespace MediaToolkit.UI
             {
                 labelStatus.Text = isConnected ? "_Connected" : "_Not Connected";
             }
+
+
+            showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
+
 
             //labelInfo.Text = errorMessage;
         }

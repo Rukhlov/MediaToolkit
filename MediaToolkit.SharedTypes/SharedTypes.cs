@@ -15,7 +15,8 @@ namespace MediaToolkit.SharedTypes
 
     public interface IScreenCasterControl
     {
-        void Connect(string addr);
+        void Connect(string addr, int port);
+
         void Disconnect();
         //...
     }

@@ -503,7 +503,9 @@ namespace TestClient.Controls
                 if (texture != null)
                 {
                     imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
-                    imageProvider.Start(VideoReceiver.sharedTexture);
+
+                    imageProvider.Setup(VideoReceiver.sharedTexture);
+                    imageProvider.Start();
 
                     var video = testForm.userControl11;
                     video.DataContext = imageProvider;

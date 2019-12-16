@@ -39,9 +39,17 @@ namespace Test.PolywallClient
             }
 
             InstanceFactory.EnableLog = true;
-            InstanceFactory.Log += (log) => 
+            InstanceFactory.Log += (log, level) => 
             {
-                logger.Debug(log);
+                if(level == InstanceFactory.LogLevel.Error)
+                {
+                    logger.Error(log);
+                }
+                else
+                {
+                    logger.Debug(log);
+                }
+                
             };
 
             if (!MediaToolkitFactory.Startup(mediaToolkitPath))

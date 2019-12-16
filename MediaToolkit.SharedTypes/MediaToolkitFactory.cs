@@ -78,7 +78,7 @@ namespace MediaToolkit.SharedTypes
 
 
         public const string MediaToolkitPathKey = "MediaToolkitPath";
-        public const string SoftwareVisiologyPolywallPathKey = "Software\\Visiology\\Polywall\\Path\\MediaToolkitPath";
+        public const string SoftwareVisiologyPolywallPathKey = "Software\\Visiology\\Polywall\\Path";
 
         public static string GetMediaToolkitInstalledPath(string value)
         {
@@ -98,7 +98,7 @@ namespace MediaToolkit.SharedTypes
             return path;
         }
 
-        public static string GetMediaToolkitInstalledPath()
+        public static string GetMediaToolkitDirectory()
         {
             return GetMediaToolkitInstalledPath(MediaToolkitPathKey);
         }
@@ -112,6 +112,8 @@ namespace MediaToolkit.SharedTypes
         static InstanceFactory()
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            //Assembly currentAssem = Assembly.GetExecutingAssembly();
+            //Version = currentAssem.GetName().Version;
         }
 
         public static Version Version { get; private set; }
@@ -119,13 +121,19 @@ namespace MediaToolkit.SharedTypes
         public static string AssemblyPath { get; set; } = @".\MediaToolkit";
 
         public static bool EnableLog { get; set; } = false;
-        public static event Action<string> Log;
-        private static void OnLog(string log)
+        public static event Action<string, LogLevel> Log;
+        private static void OnLog(string log, LogLevel level = LogLevel.Debug)
         {
             if (EnableLog)
             {
-                Log?.Invoke(log);
+                Log?.Invoke(log, level);
             }
+        }
+
+        public enum LogLevel
+        {
+            Debug,
+            Error,
         }
 
         private static Dictionary<Type, Type> Dict = new Dictionary<Type, Type>();
@@ -198,7 +206,7 @@ namespace MediaToolkit.SharedTypes
             {
                 Result = false;
                 // Debug.Fail(ex.Message);
-                OnLog(ex.ToString());
+                OnLog(ex.ToString(), LogLevel.Error);
 
                 if (throwExceptions)
                 {
@@ -241,13 +249,13 @@ namespace MediaToolkit.SharedTypes
                 }
                 catch (Exception ex)
                 {
-                    OnLog(ex.ToString());
+                    OnLog(ex.ToString(), LogLevel.Error);
                     return null;
                 }
             }
             else
             {
-                OnLog("Assembly not found: " + asmFileFullName);
+                OnLog("Assembly not found: " + asmFileFullName, LogLevel.Error);
                 return null;
             }
 
@@ -274,7 +282,7 @@ namespace MediaToolkit.SharedTypes
             }
             catch (Exception ex)
             {
-                OnLog(ex.ToString());
+                OnLog(ex.ToString(), LogLevel.Error);
                 if (throwExceptions)
                 {
                     throw;

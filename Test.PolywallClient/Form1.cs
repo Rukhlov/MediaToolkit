@@ -34,7 +34,6 @@ namespace Test.PolywallClient
 
         }
 
-        private IScreenCasterControl screenCasterControl = null;
         private void button2_Click(object sender, EventArgs e)
         {
             Process.Start(@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug\Test.Streamer.exe");

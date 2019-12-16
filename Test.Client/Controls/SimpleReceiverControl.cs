@@ -139,10 +139,11 @@ namespace TestClient.Controls
 
                 imageProvider?.Close();
 
-                imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
+                imageProvider = new D3DImageProvider2();
                 var reciver = remoteClient.VideoReceiver;
 
-                imageProvider.Start(reciver.sharedTexture);
+                imageProvider.Setup(reciver.sharedTexture);
+                imageProvider.Start();
 
                 var video = testForm.userControl11;
                 video.DataContext = imageProvider;

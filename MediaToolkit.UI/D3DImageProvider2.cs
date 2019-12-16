@@ -23,17 +23,32 @@ namespace MediaToolkit.UI
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly Dispatcher dispatcher = null;
-        public D3DImageProvider2(System.Windows.Threading.Dispatcher dispatcher)
+        public D3DImageProvider2()
+        {
+            this.dispatcher = Dispatcher.CurrentDispatcher;
+            //ScreenView = new D3DImage();
+        }
+
+        public D3DImageProvider2(Dispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
         }
 
-        private SharpDX.Direct3D9.Direct3DEx direct3D = null;
-        private SharpDX.Direct3D9.DeviceEx device = null;
+        private AutoResetEvent waitEvent = null;
+
+        private Direct3DEx direct3D = null;
+        private DeviceEx device = null;
         private Surface surface = null;
 
-        private System.Windows.Interop.D3DImage screenView = null;
-        public System.Windows.Interop.D3DImage ScreenView
+        private volatile RendererState state = RendererState.Closed;
+        public RendererState State { get => state; }
+
+        public int ErrorCode { get; private set; } = 0;
+
+        //public D3DImage ScreenView = null;
+
+        private D3DImage screenView = new D3DImage();
+        public D3DImage ScreenView
         {
             get { return screenView; }
             private set
@@ -47,69 +62,34 @@ namespace MediaToolkit.UI
         }
 
 
-        private AutoResetEvent waitEvent = null;
-        public void Start(Texture2D sharedTexture)
-        {
-            logger.Debug("D3DImageProvider::Start()");
+        public event Action RenderStarted;
+        public event Action<object> RenderStopped;
 
-            if (sharedTexture == null)
+        public void Setup(Texture2D sharedTexture)
+        {
+            logger.Debug("D3DImageProvider::Setup()");
+
+            if (state != RendererState.Closed)
             {
-                return;
+                throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-            //ScreenView = new System.Windows.Interop.D3DImage();
-
-
-            Task.Run(() =>
-            {
-                waitEvent = new AutoResetEvent(false);
-                Stopwatch sw = new Stopwatch();
-
-                try
-                {
-                    StartUp(sharedTexture);
-
-                    while (running)
-                    {
-
-                        Draw();
-
-                        waitEvent.WaitOne(1000);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-                }
-                finally
-                {
-                 
-                    CleanUp();
-                }
-            });
-        }
-
-        public void Update()
-        {
-            waitEvent?.Set();
-        }
-
-
-        private void StartUp(Texture2D sharedTexture)
-        {
             try
             {
-                logger.Debug("D3DImageProvider::Setup()");
-
                 //System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
                 var descr = sharedTexture.Description;
 
-                direct3D = new SharpDX.Direct3D9.Direct3DEx();
+                if (descr.Format != SharpDX.DXGI.Format.B8G8R8A8_UNorm)
+                {
+                    throw new InvalidOperationException("Invalid renderer state " + State);
+                }
 
-                var hWnd = MediaToolkit.NativeAPIs.User32.GetDesktopWindow();
+                direct3D = new Direct3DEx();
 
-                var presentParams = new SharpDX.Direct3D9.PresentParameters
+                var hWnd = NativeAPIs.User32.GetDesktopWindow();
+
+                var presentParams = new PresentParameters
                 {
                     //Windowed = true,
                     //SwapEffect = SharpDX.Direct3D9.SwapEffect.Discard,
@@ -118,18 +98,18 @@ namespace MediaToolkit.UI
                     //BackBufferCount = 1,
 
                     Windowed = true,
-                    MultiSampleType = SharpDX.Direct3D9.MultisampleType.None,
-                    SwapEffect = SharpDX.Direct3D9.SwapEffect.Discard,
-                    PresentFlags = SharpDX.Direct3D9.PresentFlags.None,
+                    MultiSampleType = MultisampleType.None,
+                    SwapEffect = SwapEffect.Discard,
+                    PresentFlags = PresentFlags.None,
                 };
 
-                var flags = SharpDX.Direct3D9.CreateFlags.HardwareVertexProcessing |
-                            SharpDX.Direct3D9.CreateFlags.Multithreaded |
-                            SharpDX.Direct3D9.CreateFlags.FpuPreserve;
+                var flags = CreateFlags.HardwareVertexProcessing |
+                            CreateFlags.Multithreaded |
+                            CreateFlags.FpuPreserve;
 
                 int adapterIndex = 0;
 
-                device = new SharpDX.Direct3D9.DeviceEx(direct3D, adapterIndex, SharpDX.Direct3D9.DeviceType.Hardware, hWnd, flags, presentParams);
+                device = new DeviceEx(direct3D, adapterIndex, DeviceType.Hardware, hWnd, flags, presentParams);
 
                 using (var resource = sharedTexture.QueryInterface<SharpDX.DXGI.Resource>())
                 {
@@ -140,20 +120,27 @@ namespace MediaToolkit.UI
                         throw new ArgumentNullException(nameof(handle));
                     }
 
+                    // D3DFMT_A8R8G8B8 или D3DFMT_X8R8G8B8
+                    // D3DUSAGE_RENDERTARGET
+                    // D3DPOOL_DEFAULT
                     using (var texture3d9 = new SharpDX.Direct3D9.Texture(device,
-                            descr.Width,
-                            descr.Height,
-                            1,
-                            SharpDX.Direct3D9.Usage.RenderTarget,
-                            SharpDX.Direct3D9.Format.A8R8G8B8,
-                            SharpDX.Direct3D9.Pool.Default,
+                            descr.Width, descr.Height, 1, Usage.RenderTarget, Format.A8R8G8B8, Pool.Default,
                             ref handle))
                     {
                         surface = texture3d9.GetSurfaceLevel(0);
                     };
                 }
 
-                running = true;
+                waitEvent = new AutoResetEvent(false);
+
+                //ScreenView = new D3DImage();
+
+                ScreenView.Lock();
+                ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                ScreenView.Unlock();
+
+                state = RendererState.Initialized;
+
             }
             catch (Exception ex)
             {
@@ -165,6 +152,59 @@ namespace MediaToolkit.UI
 
         }
 
+        private Task renderTask = null;
+        public void Start()
+        {
+            logger.Debug("D3DImageProvider::Start()");
+
+            if (!(state == RendererState.Stopped || state == RendererState.Initialized))
+            {
+                throw new InvalidOperationException("Invalid renderer state " + State);
+            }
+           // OnPropertyChanged(nameof(ScreenView));
+            renderTask = Task.Run(() =>
+            {
+                state = RendererState.Rendering;
+                RenderStarted?.Invoke();
+
+                //OnPropertyChanged(nameof(ScreenView));
+                try
+                {
+                    while (State == RendererState.Rendering)
+                    {
+
+                        Draw();
+
+                        waitEvent.WaitOne(1000);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                    ErrorCode = 100500;
+                }
+                finally
+                {
+                    state = RendererState.Stopped;
+                    RenderStopped?.Invoke(null);
+                }
+            });
+        }
+
+        public void Stop()
+        {
+            logger.Debug("D3DImageProvider::Stop()");
+
+            state = RendererState.Stopping;
+
+            waitEvent?.Set();
+        }
+
+        public void Update()
+        {
+            waitEvent?.Set();
+        }
+
 
         private void Draw()
         {
@@ -172,47 +212,67 @@ namespace MediaToolkit.UI
             dispatcher.Invoke(() =>
             {
                 // if (_D3DImage.IsFrontBufferAvailable)
+                if(state == RendererState.Rendering)
                 {
                     if (surface == null)
                     {
                         return;
                     }
 
-                    if (ScreenView == null)
+                    var pSurface = surface.NativePointer;
+                    if (pSurface != IntPtr.Zero)
                     {
-                        ScreenView = new D3DImage();
-                    }
-
-                    var ptr = surface.NativePointer;
-
-                    ScreenView.Lock();
-                    ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, ptr);
-
-                    if (ptr != IntPtr.Zero)
-                    {
+                        ScreenView.Lock();
+                        // Repeatedly calling SetBackBuffer with the same IntPtr is 
+                        // a no-op. There is no performance penalty.
+                        ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
                         ScreenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
+
+                        ScreenView.Unlock();
                     }
 
-                    ScreenView.Unlock();
                 }
 
-            }, System.Windows.Threading.DispatcherPriority.Render);
+            }, DispatcherPriority.Render);
 
 
         }
 
-        public bool running = true;
-        public void Close()
+        public void Close(bool force = false)
         {
             logger.Debug("D3DImageProvider::Close()");
-            running = false;
 
-            waitEvent?.Set();
+            Stop();
+
+            if (!force)
+            {
+                if (renderTask != null)
+                {
+                    if (renderTask.Status == TaskStatus.Running)
+                    {
+                        bool waitResult = false;
+                        do
+                        {
+                            waitResult = renderTask.Wait(1000);
+                            if (!waitResult)
+                            {
+                                logger.Warn("D3DImageProvider::Close() " + waitResult);
+                                state = RendererState.Stopping;
+                            }
+                        } while (!waitResult);
+
+                    }
+                }
+            }
+
+            CleanUp();
 
         }
 
         private void CleanUp()
         {
+            logger.Debug("D3DImageProvider::CleanUp()");
+
             //System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
             if (surface != null)
@@ -233,11 +293,13 @@ namespace MediaToolkit.UI
                 device = null;
             }
 
-            //if (waitEvent != null)
-            //{
-            //    waitEvent.Dispose();
-            //    waitEvent = null;
-            //}
+            if (waitEvent != null)
+            {
+                waitEvent.Dispose();
+                waitEvent = null;
+            }
+
+            state = RendererState.Closed;
 
         }
 
@@ -248,6 +310,16 @@ namespace MediaToolkit.UI
         }
 
 
+    }
+
+    public enum RendererState
+    {
+        Initialized,
+        Stopped,
+        Starting,
+        Rendering,
+        Stopping,
+        Closed,
     }
 
 }

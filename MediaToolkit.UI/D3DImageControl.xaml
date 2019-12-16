@@ -5,8 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MediaToolkit.UI"
              mc:Ignorable="d" 
+             xmlns:i="clr-namespace:System.Windows.Interop;assembly=PresentationCore"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Background="Blue">
+        
+        <!--<Image x:Name="imgelt">
+            <Image.Source>
+                <i:D3DImage x:Name="d3dimg" />
+            </Image.Source>
+        </Image>-->
         <Image Source="{Binding Path=ScreenView}"/>
+        
     </Grid>
 </UserControl>

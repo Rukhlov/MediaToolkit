@@ -105,14 +105,16 @@ namespace WebCamTest
                 var uiThread = new Thread(() =>
                 {
 
-                    provider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
+                    provider = new D3DImageProvider2();
+                    provider.Setup(videoCaptureSource.SharedTexture);
+
                     previewForm = new PreviewForm();
 
                     previewForm.d3DImageControl1.DataContext = provider;
 
                     previewForm.Show();
-
-                    provider.Start(videoCaptureSource.SharedTexture);
+   
+                    provider.Start();
 
                     Application.Run();
                 });
