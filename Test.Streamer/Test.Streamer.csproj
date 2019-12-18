@@ -103,6 +103,12 @@
     <Compile Include="Controls\MainForm2.Designer.cs">
       <DependentUpon>MainForm2.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\NetworkSettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\NetworkSettingsForm.Designer.cs">
+      <DependentUpon>NetworkSettingsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PreviewForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -173,6 +179,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\MainForm2.resx">
       <DependentUpon>MainForm2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\NetworkSettingsForm.resx">
+      <DependentUpon>NetworkSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\RemoteServerControl.resx">
       <DependentUpon>RemoteServerControl.cs</DependentUpon>
@@ -254,6 +263,45 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\cross_128x128.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\iconfinder_redo_forward_62667.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\iconfinder_tool_62671.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8-available-updates-32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_autorenew_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_build_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_replay_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_cached_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_menu_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_settings_applications_black_18dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Record.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\baseline_play_circle_outline_black_18dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

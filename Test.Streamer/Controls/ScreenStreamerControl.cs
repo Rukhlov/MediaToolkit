@@ -36,9 +36,10 @@ namespace TestStreamer.Controls
 
             InitMediaSettings();
 
-            UpdateVideoSources();
+            
             LoadTransportItems();
 
+            UpdateVideoSources();
             UpdateAudioSources();
 
             SetupRoutingSchema();
