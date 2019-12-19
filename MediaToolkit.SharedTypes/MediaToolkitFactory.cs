@@ -31,6 +31,8 @@ namespace MediaToolkit.SharedTypes
                 InstanceFactory.AssemblyPath = assemblyPath;
 
                 InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
+
+                InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
                 InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll");
                 //...
 

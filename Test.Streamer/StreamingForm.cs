@@ -31,7 +31,20 @@ namespace TestStreamer
             UpdateVideoSources();
             UpdateAudioSources();
 
-        
+
+            //            base.OnPaintBackground(e);
+            //using (var brush = new SolidBrush(BackColor))
+            //{
+            //    e.Graphics.FillRectangle(brush, ClientRectangle);
+            //    e.Graphics.DrawRectangle(Pens.DarkGray, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+            //}
+            //groupBox4.Paint += (o, a) => 
+            //{
+            //    var rect = a.ClipRectangle;
+            //    a.Graphics.Clear(Color.FromArgb(128, 34, 32, 63));
+
+            //    a.Graphics.DrawLine(new Pen(new SolidBrush(Color.Blue)), new Point(rect.X, rect.Bottom), new Point(rect.Width, rect.Bottom));
+            //};
 
             //updateNetworksButton.Text = "\u2630";
         }
@@ -126,7 +139,7 @@ namespace TestStreamer
 
         private void exitButton_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
         private void networkSettingsButton_Click(object sender, EventArgs e)
@@ -539,6 +552,25 @@ namespace TestStreamer
             //this.screensComboBox2.Enabled = !ServiceHostOpened;
             //this.screensUpdateButton2.Enabled = !ServiceHostOpened;
 
+        }
+
+        private void StreamingForm_Load(object sender, EventArgs e)
+        {
+
+        }
+    }
+
+
+    public class ColoredCombo : ComboBox
+    {
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            base.OnPaintBackground(e);
+            using (var brush = new SolidBrush(BackColor))
+            {
+                e.Graphics.FillRectangle(brush, ClientRectangle);
+                e.Graphics.DrawRectangle(Pens.Red, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
+            }
         }
     }
 }

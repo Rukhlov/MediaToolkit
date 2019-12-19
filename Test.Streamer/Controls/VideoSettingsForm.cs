@@ -270,6 +270,7 @@ namespace TestStreamer.Controls
                 destHeight = destSize.Height;
                 destWidth = (int)(destHeight * ratio);
             }
+
             this.destWidthNumeric.Value = destWidth;
             this.destHeightNumeric.Value = destHeight;
             

@@ -101,6 +101,7 @@
     <Compile Include="Managers\DesktopManager.cs" />
     <Compile Include="Managers\UsbDeviceManager.cs" />
     <Compile Include="MediaSources\IVideoSource.cs" />
+    <Compile Include="MediaStreamers\HttpScreenStreamer.cs" />
     <Compile Include="MediaToolkitManager.cs" />
     <Compile Include="Networks\HttpStreamer.cs" />
     <Compile Include="Networks\RtpTcpReceiver.cs" />

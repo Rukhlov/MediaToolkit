@@ -41,7 +41,7 @@ namespace MediaToolkit
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
 
-        private Device device = null; 
+        private Device device = null;
 
         private Texture2D compositionTexture = null;
 
@@ -236,21 +236,23 @@ namespace MediaToolkit
 
                 });
 
-
-            using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
+            if (DestSize.Width != SrcRect.Width && DestSize.Height != SrcRect.Height)
             {
-                using (var surf = renderTexture.QueryInterface<Surface>())
+                using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
                 {
-                    //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
+                    using (var surf = renderTexture.QueryInterface<Surface>())
+                    {
+                        //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
 
-                    var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
-                    var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
+                        var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
+                        var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
 
-                    renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
+                        renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
 
-                    //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+                        //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+                    }
+
                 }
-
             }
 
             deviceReady = true;
@@ -268,8 +270,6 @@ namespace MediaToolkit
                 {
                     InitDx();
                 }
-
-                //Texture2D test = null;
 
                 foreach (var dupl in deskDupls)
                 {
@@ -298,60 +298,22 @@ namespace MediaToolkit
 
                     device.ImmediateContext.CopySubresourceRegion(screenTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
 
-                    //test = screenTexture;
                 }
 
-                renderTarget.BeginDraw();
-                renderTarget.Clear(Color.Red);
+                Texture2D finalTexture = compositionTexture;
+                if (renderTarget != null)
+                {// масштабируем текстуру если нужно
+                    renderTarget.BeginDraw();
+                    renderTarget.Clear(Color.Black);//(Color.Red);
 
-                DrawScreen(renderTarget, compositionTexture);
+                    DrawScreen(renderTarget, compositionTexture);
 
-                renderTarget.EndDraw();
-
-
-                if (UseHwContext)
-                {
-                    //device.ImmediateContext.CopyResource(test, SharedTexture);
-
-                    device.ImmediateContext.CopyResource(renderTexture, SharedTexture);
-                    device.ImmediateContext.Flush();
-                    Result = true;
+                    renderTarget.EndDraw();
+                    finalTexture = renderTexture;
                 }
-                else
-                {
 
-                    Texture2D stagingTexture = null;
-                    try
-                    {
-                        // Create Staging texture CPU-accessible
-                        stagingTexture = new Texture2D(device,
-                            new Texture2DDescription
-                            {
-                                CpuAccessFlags = CpuAccessFlags.Read,
-                                BindFlags = BindFlags.None,
-                                Format = Format.B8G8R8A8_UNorm,
-                                Width = DestSize.Width,
-                                Height = DestSize.Height,
-                                MipLevels = 1,
-                                ArraySize = 1,
-                                SampleDescription = { Count = 1, Quality = 0 },
-                                Usage = ResourceUsage.Staging,
-                                OptionFlags = ResourceOptionFlags.None,
-                            });
-                        device.ImmediateContext.CopyResource(renderTexture, stagingTexture);
-                        //device.ImmediateContext.CopyResource(test, stagingTexture);
-                        device.ImmediateContext.Flush();
+                Result = FinalyzeTexture(finalTexture);
 
-                        Result = CopyToGdiBuffer(stagingTexture);
-
-                    }
-                    finally
-                    {
-                        stagingTexture?.Dispose();
-                    }
-
-                    
-                }
             }
             catch (SharpDXException ex)
             {
@@ -360,6 +322,53 @@ namespace MediaToolkit
                 //throw;
                 Thread.Sleep(100);
 
+            }
+
+            return Result;
+        }
+
+        private bool FinalyzeTexture(Texture2D texture)
+        {
+            bool Result;
+            if (UseHwContext)
+            {
+
+                device.ImmediateContext.CopyResource(texture, SharedTexture);
+                device.ImmediateContext.Flush();
+
+                Result = true;
+            }
+            else
+            {
+                Texture2D stagingTexture = null;
+                try
+                {
+                    // Create Staging texture CPU-accessible
+                    stagingTexture = new Texture2D(device,
+                        new Texture2DDescription
+                        {
+                            CpuAccessFlags = CpuAccessFlags.Read,
+                            BindFlags = BindFlags.None,
+                            Format = Format.B8G8R8A8_UNorm,
+                            Width = DestSize.Width,
+                            Height = DestSize.Height,
+                            MipLevels = 1,
+                            ArraySize = 1,
+                            SampleDescription = { Count = 1, Quality = 0 },
+                            Usage = ResourceUsage.Staging,
+                            OptionFlags = ResourceOptionFlags.None,
+                        });
+
+                    device.ImmediateContext.CopyResource(texture, stagingTexture);
+                    device.ImmediateContext.Flush();
+
+                    Result = CopyToGdiBuffer(stagingTexture);
+
+                }
+                finally
+                {
+                    stagingTexture?.Dispose();
+                }
             }
 
             return Result;
@@ -406,7 +415,7 @@ namespace MediaToolkit
                     {
                         Left = destX,
                         Right = destX + destWidth,
-                        Top =destY,
+                        Top = destY,
                         Bottom = destY + destHeight,
                     };
 
@@ -489,14 +498,13 @@ namespace MediaToolkit
                         deskDupl = output1.DuplicateOutput(device);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.Error(ex);
                     Close();
 
                     throw;
                 }
-
 
                 deviceReady = true;
 
@@ -588,7 +596,7 @@ namespace MediaToolkit
                     SharpDX.DXGI.Resource desktopResource = null;
                     try
                     {
-                           var acquireResult = deskDupl.TryAcquireNextFrame(timeout, out OutputDuplicateFrameInformation frameInfo, out desktopResource);
+                        var acquireResult = deskDupl.TryAcquireNextFrame(timeout, out OutputDuplicateFrameInformation frameInfo, out desktopResource);
 
                         if (acquireResult.Failure)
                         {
@@ -860,7 +868,7 @@ namespace MediaToolkit
                     cursorInfo.LastTimeStamp = frameInfo.LastMouseUpdateTime;
                     cursorInfo.Position = pointerPosition.Position;
                     cursorInfo.Visible = pointerPosition.Visible;
-                    
+
                     // logger.Debug("mouseInfo " + mouseInfo.Position.X + " " +  mouseInfo.Position.Y);
 
                     if (frameInfo.PointerShapeBufferSize > 0)
@@ -888,7 +896,7 @@ namespace MediaToolkit
                                 out OutputDuplicatePointerShapeInformation pointerShapeInfo);
 
                             cursorInfo.ShapeInfo = pointerShapeInfo;
-           
+
                             //logger.Debug("pointerShapeInfo " + pointerShapeInfo.Type);
                         }
                         catch (SharpDXException ex)
@@ -908,13 +916,13 @@ namespace MediaToolkit
                     }
                     else
                     {// No new shape
-                        
+
                     }
                 }
 
             }
 
-   
+
             #region CursorInfo
 
             private unsafe void DrawCursor(SharpDX.Direct2D1.RenderTarget renderTarger, CursorInfo cursor)
@@ -1330,7 +1338,7 @@ namespace MediaToolkit
                 renderTarget = null;
             }
 
-             if (SharedTexture != null && !SharedTexture.IsDisposed)
+            if (SharedTexture != null && !SharedTexture.IsDisposed)
             {
                 SharedTexture.Dispose();
                 SharedTexture = null;

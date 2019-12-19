@@ -90,10 +90,10 @@ namespace TestStreamer
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                StreamingForm form = new StreamingForm();
+               // StreamingForm form = new StreamingForm();
                 //MainForm2 form = new MainForm2();
-                //MainForm form = new MainForm();
-                //StreamingForm form = new StreamingForm();
+                MainForm form = new MainForm();
+               // StreamingForm form = new StreamingForm();
 
                 Application.Run(form);
             }

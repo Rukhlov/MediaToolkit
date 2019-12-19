@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using MediaToolkit;
 using MediaToolkit.Core;
+using System.Diagnostics;
+using NLog;
 
 namespace TestStreamer.Controls
 {
     public partial class HttpStreamerControl : UserControl
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public HttpStreamerControl()
         {
             InitializeComponent();
@@ -27,20 +31,32 @@ namespace TestStreamer.Controls
 
         private VideoHttpStreamer httpStreamer = null;
         private IVideoSource httpScreenSource = null;
-        private Screen currentScreen = null;
+       // private Screen currentScreen = null;
 
 
         private void httpStartButton_Click(object sender, EventArgs e)
         {
-            currentScreen = HttpGetCurrentScreen();
+            //currentScreen = HttpGetCurrentScreen();
 
-            var srcRect = currentScreen.Bounds;
+            var srcRect = HttpGetCurrentScreen(); //currentScreen.Bounds;
             //var srcRect = currentScreen.Bounds;
 
             var _destWidth = (int)httpDestWidthNumeric.Value;
             var _destHeight = (int)httpDestHeightNumeric.Value;
 
             var destSize = new Size(_destWidth, _destHeight);
+
+            var ratio = srcRect.Width / (double)srcRect.Height;
+            int destWidth = destSize.Width;
+            int destHeight = (int)(destWidth / ratio);
+            if (ratio < 1)
+            {
+                destHeight = destSize.Height;
+                destWidth = (int)(destHeight * ratio);
+            }
+
+            destSize = new Size(destWidth, destHeight);
+
 
             var fps = httpFpsNumeric.Value;
 
@@ -90,18 +106,21 @@ namespace TestStreamer.Controls
                 EncoderName = "mjpeg",
             };
 
-            httpStreamer.Start(encodingParams, networkParams);
+            httpStreamer.Setup(encodingParams, networkParams);
+
+
+            httpStreamer.Start();
             httpScreenSource.Start();
 
 
-            statisticForm.Location = currentScreen.Bounds.Location;
+            statisticForm.Location = srcRect.Location;
             statisticForm.Start();
         }
 
         private void httpStopButton_Click(object sender, EventArgs e)
         {
             httpStreamer?.Close();
-            httpScreenSource?.Stop();
+            httpScreenSource?.Close();
 
             //statisticForm.Close();
         }
@@ -116,7 +135,15 @@ namespace TestStreamer.Controls
         private BindingList<ComboBoxItem> screenItems2 = null;
         private void HttpUpdateScreens()
         {
-            var screens = Screen.AllScreens.Select(s => new ComboBoxItem { Name = s.DeviceName, Tag = s }).ToList();
+
+            var screens = Screen.AllScreens.Select(s => new ComboBoxItem { Name = s.DeviceName, Tag = s.Bounds }).ToList();
+
+            screens.Add(new ComboBoxItem
+            {
+                Name = "_AllScreen",
+                Tag = SystemInformation.VirtualScreen
+            });
+
 
             screenItems2 = new BindingList<ComboBoxItem>(screens);
 
@@ -138,9 +165,9 @@ namespace TestStreamer.Controls
             captureTypesComboBox.DataSource = captureTypes;
         }
 
-        private Screen HttpGetCurrentScreen()
+        private Rectangle HttpGetCurrentScreen()
         {
-            Screen screen = null;
+            Rectangle rect = Rectangle.Empty;
             var obj = httpDisplayComboBox.SelectedItem;
             if (obj != null)
             {
@@ -148,14 +175,30 @@ namespace TestStreamer.Controls
                 if (item != null)
                 {
                     var tag = item.Tag;
-                    if (tag != null)
+                    if (tag != null && tag is Rectangle)
                     {
-                        screen = tag as Screen;
+                        rect = (Rectangle)tag;
                     }
                 }
             }
 
-            return screen;
+            return rect;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var port = (int)httpPortNumeric.Value;
+                string url = @"http://127.0.0.1" + ":" + port;
+
+                Process.Start(url);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
     }
+
 }

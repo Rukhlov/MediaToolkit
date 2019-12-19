@@ -23,101 +23,129 @@ namespace MediaToolkit
 
         private readonly IVideoSource screenSource = null;
 
+
         public VideoHttpStreamer(IVideoSource source)
         {
             this.screenSource = source;
            
         }
 
-
-        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private FFmpegVideoEncoder encoder = null;
         private Networks.HttpStreamer httpStreamer = null;
 
-        public Task Start(VideoEncoderSettings encPars, NetworkSettings networkParams)
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
+        private Task streamingTask = null;
+
+        NetworkSettings networkParams = null;
+
+        public void Setup(VideoEncoderSettings encPars, NetworkSettings networkParams)
         {
-            logger.Debug("MJpegOverHttpStreamer::Start(...) " 
-                + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " "+ encPars.EncoderName );
+            logger.Debug("VideoHttpStreamer::Setup(...) "
+                + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " " + encPars.EncoderName);
 
-            return Task.Run(() =>
+            try
             {
-                running = true;
-
-
-                FFmpegVideoEncoder encoder = new FFmpegVideoEncoder();
+                this.networkParams = networkParams;
 
                 httpStreamer = new Networks.HttpStreamer();
+
+                encoder = new FFmpegVideoEncoder();
+                encoder.Open(encPars);
+                encoder.DataEncoded += Encoder_DataEncoded;
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+
+                if (encoder != null)
+                {
+                    encoder.DataEncoded -= Encoder_DataEncoded;
+                    encoder.Close();
+                    encoder = null;
+                }
+
+                throw;
+            }
+
+
+        }
+
+        public void Start()
+        {
+            logger.Debug("MJpegOverHttpStreamer::Start(...)");
+            streamingTask = Task.Run(() =>
+            {
+                running = true;
+                screenSource.BufferUpdated += ScreenSource_BufferUpdated;
                 try
                 {
                     logger.Debug("Start main streaming loop...");
 
-                    encoder.Open(encPars);
-                    encoder.DataEncoded += Encoder_DataEncoded;
+                    DoStream(networkParams);
 
-                    screenSource.BufferUpdated += ScreenSource_BufferUpdated;
-
-                    var streamerTask = httpStreamer.Start(networkParams);
-
-                    streamerTask.ContinueWith(t => 
-                    {
-                        if (t.IsFaulted) { }
-                        var ex = t.Exception;
-                        if (ex != null)
-                        {
-                            logger.Error(ex);
-                            running = false;
-                        }
-                    });
-
-                    Stopwatch sw = Stopwatch.StartNew();
-                    while (running)
-                    {
-                        sw.Restart();
-
-                        try
-                        {
-                            if (!syncEvent.WaitOne(1000))
-                            {
-                                continue;
-                            }
-
-                            if (!running)
-                            {
-                                break;
-                            }
-
-                            var buffer = screenSource.SharedBitmap;
-
-                            encoder.Encode(buffer);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                            Thread.Sleep(1000);
-                        }
-
-                        //rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
-
-                        var mSec = sw.ElapsedMilliseconds;
-
-                    }
                 }
                 finally
                 {
                     logger.Debug("Stop main streaming loop...");
 
-                    screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
-                    if (encoder != null)
-                    {
-                        encoder.DataEncoded -= Encoder_DataEncoded;
-                        encoder.Close();
-                    }
-
-                    httpStreamer?.Stop();
+                    this.Close();
 
                 }
 
             });
         }
+
+
+        private void DoStream(NetworkSettings networkParams)
+        {
+
+            var streamerTask = httpStreamer.Start(networkParams);
+
+            streamerTask.ContinueWith(t =>
+            {
+                if (t.IsFaulted) { }
+                var ex = t.Exception;
+                if (ex != null)
+                {
+                    logger.Error(ex);
+                    running = false;
+                }
+            });
+
+            Stopwatch sw = Stopwatch.StartNew();
+            while (running)
+            {
+                sw.Restart();
+
+                try
+                {
+                    if (!syncEvent.WaitOne(1000))
+                    {
+                        continue;
+                    }
+
+                    if (!running)
+                    {
+                        break;
+                    }
+
+                    var buffer = screenSource.SharedBitmap;
+
+                    encoder.Encode(buffer);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                    Thread.Sleep(1000);
+                }
+
+                //rtpTimestamp += (uint)(sw.ElapsedMilliseconds * 90.0);
+
+                var mSec = sw.ElapsedMilliseconds;
+
+            }
+        }
+
 
         private void Encoder_DataEncoded(IntPtr ptr, int len, double sec)
         {
@@ -128,20 +156,38 @@ namespace MediaToolkit
 
         private void ScreenSource_BufferUpdated()
         {
-            syncEvent.Set();
+            syncEvent?.Set();
         }
 
         private bool running = false;
 
-        public void Close()
+
+        public void Stop()
         {
-            logger.Debug("MJpegOverHttpStreamer::Close()");
+            logger.Debug("VideoHttpStreamer::Stop()");
 
             running = false;
 
             this.screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
             syncEvent.Set();
         }
+
+
+        public void Close()
+        {
+            logger.Debug("VideoHttpStreamer::Close()");
+
+            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            if (encoder != null)
+            {
+                encoder.DataEncoded -= Encoder_DataEncoded;
+                encoder.Close();
+            }
+
+            httpStreamer?.Stop();
+        }
+
+
 
 
     }
