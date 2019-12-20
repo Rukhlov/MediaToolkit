@@ -108,10 +108,13 @@ namespace MediaToolkit
             }
             catch (Exception ex)
             {
+  
                 logger.Error(ex);
+                ErrorCode = 100504;
 
                 CleanUp();
 
+                State = CaptureState.Closed;
                 throw;
             }
         }

@@ -55,10 +55,9 @@
             // stopStreamingButton
             // 
             this.stopStreamingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.stopStreamingButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(123)))), ((int)(((byte)(226)))));
+            this.stopStreamingButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.stopStreamingButton.FlatAppearance.BorderSize = 0;
-            this.stopStreamingButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.stopStreamingButton.ForeColor = System.Drawing.Color.White;
+            this.stopStreamingButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.stopStreamingButton.Location = new System.Drawing.Point(175, 426);
             this.stopStreamingButton.Name = "stopStreamingButton";
             this.stopStreamingButton.Size = new System.Drawing.Size(85, 32);
@@ -72,7 +71,7 @@
             // 
             this.streamNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.streamNameTextBox.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.streamNameTextBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.streamNameTextBox.Location = new System.Drawing.Point(131, 51);
             this.streamNameTextBox.Name = "streamNameTextBox";
             this.streamNameTextBox.Size = new System.Drawing.Size(425, 22);
@@ -82,10 +81,9 @@
             // exitButton
             // 
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.exitButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(123)))), ((int)(((byte)(226)))));
+            this.exitButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.exitButton.FlatAppearance.BorderSize = 0;
-            this.exitButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.exitButton.ForeColor = System.Drawing.Color.White;
+            this.exitButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.exitButton.Location = new System.Drawing.Point(463, 426);
             this.exitButton.Name = "exitButton";
             this.exitButton.Size = new System.Drawing.Size(96, 32);
@@ -97,10 +95,9 @@
             // videoSourceDetailsButton
             // 
             this.videoSourceDetailsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.videoSourceDetailsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(123)))), ((int)(((byte)(226)))));
+            this.videoSourceDetailsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.videoSourceDetailsButton.FlatAppearance.BorderSize = 0;
-            this.videoSourceDetailsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.videoSourceDetailsButton.ForeColor = System.Drawing.Color.White;
+            this.videoSourceDetailsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.videoSourceDetailsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.videoSourceDetailsButton.Location = new System.Drawing.Point(464, 184);
             this.videoSourceDetailsButton.Margin = new System.Windows.Forms.Padding(1);
@@ -114,10 +111,9 @@
             // networkSettingsButton
             // 
             this.networkSettingsButton.AutoSize = true;
-            this.networkSettingsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(123)))), ((int)(((byte)(226)))));
+            this.networkSettingsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.networkSettingsButton.FlatAppearance.BorderSize = 0;
-            this.networkSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.networkSettingsButton.ForeColor = System.Drawing.Color.White;
+            this.networkSettingsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.networkSettingsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.networkSettingsButton.Location = new System.Drawing.Point(30, 79);
             this.networkSettingsButton.Name = "networkSettingsButton";
@@ -132,7 +128,7 @@
             this.videoSourceEnableCheckBox.AutoSize = true;
             this.videoSourceEnableCheckBox.Checked = true;
             this.videoSourceEnableCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.videoSourceEnableCheckBox.ForeColor = System.Drawing.Color.White;
+            this.videoSourceEnableCheckBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.videoSourceEnableCheckBox.Location = new System.Drawing.Point(30, 188);
             this.videoSourceEnableCheckBox.Name = "videoSourceEnableCheckBox";
             this.videoSourceEnableCheckBox.Size = new System.Drawing.Size(159, 21);
@@ -143,7 +139,7 @@
             // audioSourceEnableCheckBox
             // 
             this.audioSourceEnableCheckBox.AutoSize = true;
-            this.audioSourceEnableCheckBox.ForeColor = System.Drawing.Color.White;
+            this.audioSourceEnableCheckBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.audioSourceEnableCheckBox.Location = new System.Drawing.Point(30, 308);
             this.audioSourceEnableCheckBox.Name = "audioSourceEnableCheckBox";
             this.audioSourceEnableCheckBox.Size = new System.Drawing.Size(160, 21);
@@ -156,7 +152,7 @@
             this.audioSourceComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.audioSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.audioSourceComboBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(133)))), ((int)(((byte)(151)))), ((int)(((byte)(162)))));
+            this.audioSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.audioSourceComboBox.FormattingEnabled = true;
             this.audioSourceComboBox.Location = new System.Drawing.Point(30, 276);
             this.audioSourceComboBox.Margin = new System.Windows.Forms.Padding(3, 3, 1, 3);
@@ -168,10 +164,9 @@
             // audioSourceDetailsButton
             // 
             this.audioSourceDetailsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.audioSourceDetailsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(20)))), ((int)(((byte)(123)))), ((int)(((byte)(226)))));
+            this.audioSourceDetailsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.audioSourceDetailsButton.FlatAppearance.BorderSize = 0;
-            this.audioSourceDetailsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.audioSourceDetailsButton.ForeColor = System.Drawing.Color.White;
+            this.audioSourceDetailsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.audioSourceDetailsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.audioSourceDetailsButton.Location = new System.Drawing.Point(464, 304);
             this.audioSourceDetailsButton.Margin = new System.Windows.Forms.Padding(1);
@@ -185,7 +180,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label2.Location = new System.Drawing.Point(17, 248);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(148, 17);
@@ -195,7 +190,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.ForeColor = System.Drawing.Color.White;
+            this.label3.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label3.Location = new System.Drawing.Point(17, 128);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(148, 17);
@@ -217,7 +212,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.ForeColor = System.Drawing.Color.White;
+            this.label4.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label4.Location = new System.Drawing.Point(17, 23);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(114, 17);
@@ -227,7 +222,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label1.Location = new System.Drawing.Point(27, 54);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(98, 17);
@@ -250,10 +245,9 @@
             // startStreamingButton
             // 
             this.startStreamingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.startStreamingButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(231)))), ((int)(((byte)(68)))), ((int)(((byte)(68)))));
+            this.startStreamingButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.startStreamingButton.FlatAppearance.BorderSize = 0;
-            this.startStreamingButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.startStreamingButton.ForeColor = System.Drawing.Color.White;
+            this.startStreamingButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.startStreamingButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.startStreamingButton.Location = new System.Drawing.Point(11, 426);
             this.startStreamingButton.Name = "startStreamingButton";
@@ -314,7 +308,7 @@
             this.videoSourceComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.videoSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.videoSourceComboBox.ForeColor = System.Drawing.Color.Black;
+            this.videoSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.videoSourceComboBox.FormattingEnabled = true;
             this.videoSourceComboBox.Location = new System.Drawing.Point(30, 156);
             this.videoSourceComboBox.Name = "videoSourceComboBox";
@@ -325,7 +319,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(25)))), ((int)(((byte)(49)))));
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(571, 470);
             this.Controls.Add(this.videoSourceComboBox);
             this.Controls.Add(this.groupBox2);
@@ -348,7 +342,7 @@
             this.Controls.Add(this.stopStreamingButton);
             this.Controls.Add(this.audioSourceUpdateButton);
             this.Controls.Add(this.audioSourceDetailsButton);
-            this.ForeColor = System.Drawing.Color.White;
+            this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(133)))), ((int)(((byte)(151)))), ((int)(((byte)(162)))));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(450, 450);

@@ -476,4 +476,14 @@ namespace MediaToolkit.Core
         }
     }
 
+    public enum MediaState
+    {
+        Initialized,
+        Stopped,
+        Starting,
+        Started,
+        Stopping,
+        Closed,
+    }
+
 }

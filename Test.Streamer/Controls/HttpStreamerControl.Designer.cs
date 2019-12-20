@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.panel3 = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -47,7 +48,8 @@
             this.httpAddrTextBox = new System.Windows.Forms.TextBox();
             this.httpStartButton = new System.Windows.Forms.Button();
             this.httpStopButton = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.panel3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.httpDestWidthNumeric)).BeginInit();
@@ -58,6 +60,8 @@
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.button2);
+            this.panel3.Controls.Add(this.button3);
             this.panel3.Controls.Add(this.button1);
             this.panel3.Controls.Add(this.label1);
             this.panel3.Controls.Add(this.captureTypesComboBox);
@@ -75,6 +79,16 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(461, 278);
             this.panel3.TabIndex = 23;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(341, 243);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 41;
+            this.button1.Text = "Browser";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // label1
             // 
@@ -288,15 +302,27 @@
             this.httpStopButton.UseVisualStyleBackColor = true;
             this.httpStopButton.Click += new System.EventHandler(this.httpStopButton_Click);
             // 
-            // button1
+            // button2
             // 
-            this.button1.Location = new System.Drawing.Point(341, 243);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 41;
-            this.button1.Text = "Browser";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button2.AutoSize = true;
+            this.button2.Location = new System.Drawing.Point(295, 147);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(121, 27);
+            this.button2.TabIndex = 42;
+            this.button2.Text = "_Start";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button3
+            // 
+            this.button3.AutoSize = true;
+            this.button3.Location = new System.Drawing.Point(295, 180);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(107, 27);
+            this.button3.TabIndex = 43;
+            this.button3.Text = "_Stop";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // HttpStreamerControl
             // 
@@ -342,5 +368,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox captureTypesComboBox;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
     }
 }

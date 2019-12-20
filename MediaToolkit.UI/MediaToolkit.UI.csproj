@@ -139,10 +139,6 @@
       <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.SharedTypes\MediaToolkit.SharedTypes.csproj">
-      <Project>{626d1d9b-fcc5-4799-899d-37b8f6ae366f}</Project>
-      <Name>MediaToolkit.SharedTypes</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Page Include="D3DImageControl.xaml">

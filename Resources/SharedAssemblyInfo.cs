@@ -11,7 +11,7 @@ namespace MediaToolkit.Resources
 {     
 	public partial class AssemblyInfo
 	{
-		public const int Day = 15;  
+		public const int Day = 20;  
 		public const int Month = 12; 
 		public const int Year = 2019;
 

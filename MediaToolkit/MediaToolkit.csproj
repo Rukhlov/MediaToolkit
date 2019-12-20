@@ -106,7 +106,6 @@
     <Compile Include="Networks\HttpStreamer.cs" />
     <Compile Include="Networks\RtpTcpReceiver.cs" />
     <Compile Include="Networks\RtpTcpSender.cs" />
-    <Compile Include="Properties\SharedInfo.cs" />
     <Compile Include="MediaReceivers\VideoReceiver.cs" />
     <Compile Include="MediaFoundation\MfCommon.cs" />
     <Compile Include="MediaFoundation\MfH264Encoder.cs" />
@@ -129,6 +128,7 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
+    <Compile Include="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="MediaStreamers\VideoStreamer.cs" />
   </ItemGroup>
@@ -148,10 +148,6 @@
     <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.SharedTypes\MediaToolkit.SharedTypes.csproj">
-      <Project>{626D1D9B-FCC5-4799-899D-37B8F6AE366F}</Project>
-      <Name>MediaToolkit.SharedTypes</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -30,11 +30,20 @@ namespace MediaToolkit
            
         }
 
+        public MediaState State { get; private set; } = MediaState.Closed;
+
+        //public bool isStopped = false;
+
+        public int ErrorCode { get; private set; } = 0;
+
+        public event Action<object> StreamerStopped;
+        public event Action StreamerStarted;
+
         private FFmpegVideoEncoder encoder = null;
         private Networks.HttpStreamer httpStreamer = null;
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        private Task streamingTask = null;
+        private Task streamTask = null;
 
         NetworkSettings networkParams = null;
 
@@ -42,6 +51,11 @@ namespace MediaToolkit
         {
             logger.Debug("VideoHttpStreamer::Setup(...) "
                 + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " " + encPars.EncoderName);
+
+            if (State != MediaState.Closed)
+            {
+                throw new InvalidOperationException("Invalid state " + State);
+            }
 
             try
             {
@@ -52,11 +66,14 @@ namespace MediaToolkit
                 encoder = new FFmpegVideoEncoder();
                 encoder.Open(encPars);
                 encoder.DataEncoded += Encoder_DataEncoded;
+
+                State = MediaState.Initialized;
             }
             catch(Exception ex)
             {
                 logger.Error(ex);
 
+                ErrorCode = 100503;
                 if (encoder != null)
                 {
                     encoder.DataEncoded -= Encoder_DataEncoded;
@@ -64,6 +81,7 @@ namespace MediaToolkit
                     encoder = null;
                 }
 
+                State = MediaState.Closed;
                 throw;
             }
 
@@ -73,22 +91,41 @@ namespace MediaToolkit
         public void Start()
         {
             logger.Debug("MJpegOverHttpStreamer::Start(...)");
-            streamingTask = Task.Run(() =>
+
+            if (running)
             {
-                running = true;
+                throw new InvalidOperationException();
+            }
+
+            streamTask = Task.Run(() =>
+            {
+                if (!(State == MediaState.Initialized || State == MediaState.Stopped))
+                {
+                    throw new InvalidOperationException("Invalid state " + State);
+                }
+
                 screenSource.BufferUpdated += ScreenSource_BufferUpdated;
                 try
                 {
                     logger.Debug("Start main streaming loop...");
+                    StreamerStarted?.Invoke();
+
+                    State = MediaState.Started;
 
                     DoStream(networkParams);
 
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                    ErrorCode = 100502; 
                 }
                 finally
                 {
                     logger.Debug("Stop main streaming loop...");
 
-                    this.Close();
+                    State = MediaState.Stopped;
+                    StreamerStopped?.Invoke(null);
 
                 }
 
@@ -107,13 +144,14 @@ namespace MediaToolkit
                 var ex = t.Exception;
                 if (ex != null)
                 {
+                    ErrorCode = 100501;
                     logger.Error(ex);
                     running = false;
                 }
             });
 
             Stopwatch sw = Stopwatch.StartNew();
-            while (running)
+            while (State == MediaState.Started)
             {
                 sw.Restart();
 
@@ -124,7 +162,7 @@ namespace MediaToolkit
                         continue;
                     }
 
-                    if (!running)
+                    if (State != MediaState.Started)
                     {
                         break;
                     }
@@ -144,6 +182,9 @@ namespace MediaToolkit
                 var mSec = sw.ElapsedMilliseconds;
 
             }
+
+            streamerTask.Wait();
+
         }
 
 
@@ -159,32 +200,58 @@ namespace MediaToolkit
             syncEvent?.Set();
         }
 
-        private bool running = false;
+        private volatile bool running = false;
 
 
         public void Stop()
         {
             logger.Debug("VideoHttpStreamer::Stop()");
 
-            running = false;
+            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
-            this.screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            httpStreamer?.Stop();
+
+            State = MediaState.Stopping;
             syncEvent.Set();
         }
 
 
-        public void Close()
+        public void Close(bool force = false)
         {
             logger.Debug("VideoHttpStreamer::Close()");
 
+            Stop();
+
+            if (!force)
+            {
+                if (streamTask != null)
+                {
+                    if (streamTask.Status == TaskStatus.Running)
+                    {
+                        bool waitResult = false;
+                        do
+                        {
+                            waitResult = streamTask.Wait(1000);
+                            if (!waitResult)
+                            {
+                                logger.Warn("VideoHttpStreamer::Close() " + waitResult);
+                            }
+                        } while (!waitResult);
+
+                    }
+                }
+            }
+
             screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+
             if (encoder != null)
             {
                 encoder.DataEncoded -= Encoder_DataEncoded;
                 encoder.Close();
             }
 
-            httpStreamer?.Stop();
+            State = MediaState.Closed;
+
         }
 
 

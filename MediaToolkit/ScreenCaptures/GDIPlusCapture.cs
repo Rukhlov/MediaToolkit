@@ -57,7 +57,8 @@ namespace MediaToolkit
                             Graphics g = Graphics.FromImage(buf);
                             try
                             {
-                                g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy | CopyPixelOperation.CaptureBlt);
+                                g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize,
+                                    CopyPixelOperation.SourceCopy | CopyPixelOperation.CaptureBlt);
 
                                 Graphics _g = Graphics.FromImage(bmp);
                                 try

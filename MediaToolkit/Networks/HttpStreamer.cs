@@ -30,6 +30,7 @@ namespace MediaToolkit.Networks
 
         public Task Start(NetworkSettings networkParams)
         {
+           
             logger.Debug("HttpStreamer::Start()");
 
             return Task.Run(() =>
@@ -59,7 +60,7 @@ namespace MediaToolkit.Networks
                     //listener.AllowNatTraversal(true);
                     listener.Start();
 
-
+                   // List<Task> clientTasks = new List<Task>();
                     while (running)
                     {
                         try
@@ -75,16 +76,24 @@ namespace MediaToolkit.Networks
                             }
 
                             var mjpegClient = new MJpegClientHandler(this);
-                            clients.Add(mjpegClient);
+                            lock (syncRoot)
+                            {
+                                clients.Add(mjpegClient);
+                            }
+      
 
                             logger.Debug("Clients count: " + clients.Count);
 
                             // Start response task...
                             var clientTask = mjpegClient.StartClientTask(tcpClient);
+                            //clientTasks.Add(clientTask);
 
                             clientTask.ContinueWith((t) =>
                             {
-                                clients.Remove(mjpegClient);
+                                lock (syncRoot)
+                                {
+                                    clients.Remove(mjpegClient);
+                                }
 
                                 var ex = t.Exception;
                                 if (ex != null)
@@ -96,15 +105,28 @@ namespace MediaToolkit.Networks
                                 logger.Debug("Clients count: " + clients.Count);
                             });
 
-
                         }
                         catch (Exception ex)
                         {
-                            logger.Error(ex);
+                            var socketException = ex as SocketException;
+                            if (socketException != null)
+                            {
+                                var code = socketException.SocketErrorCode;
+                                if (code == SocketError.ConnectionAborted ||
+                                code == SocketError.ConnectionReset || 
+                                code == SocketError.Interrupted)
+                                {
+                                    logger.Warn("Socket closed: " + code);
+                                    break;
+                                }
+                            }
 
+                            logger.Error(ex);
                             Thread.Sleep(1000);
+                            //throw;
                         }
                     }
+                    //Task.WaitAll(clientTasks.ToArray());
                 }
                 finally
                 {
@@ -127,7 +149,7 @@ namespace MediaToolkit.Networks
 
         class MJpegClientHandler
         {
-            private readonly HttpStreamer streamer = null;
+            private HttpStreamer streamer = null;
             internal MJpegClientHandler(HttpStreamer streamer)
             {
                 this.streamer = streamer;
@@ -178,7 +200,7 @@ namespace MediaToolkit.Networks
                         if (request != null)
                         {
 
-                            logger.Debug("Client request: " + request);
+                            logger.Debug("Client request:\r\n" + request);
                         }
 
                         if (streamer.clients.Count > 5)
@@ -224,15 +246,32 @@ namespace MediaToolkit.Networks
 
                                 // Statistic.RtpStats.Update(MediaTimer.GetRelativeTime(), bytesToSend.Length);
 
-
                                 //logger.Debug("stream.Write(...) " + remoteAddr.ToString() + " "+ frameCount);
 
                             }
 
                             if (stream.CanRead && stream.DataAvailable)
-                            {
-                                //...
-                                logger.Warn("stream.CanRead && stream.DataAvailable");
+                            { // Получаем от клиента запрос х.з что с ним делать...
+
+                                string _request = "";
+                                byte[] buf = new byte[1024];
+                                StringBuilder sb = new StringBuilder();
+                                int bytesRead = 0;
+                                do
+                                {
+                                    bytesRead = stream.Read(buf, 0, buf.Length);
+                                    var str = Encoding.ASCII.GetString(buf, 0, bytesRead);
+                                    sb.Append(str);
+                                }
+                                while (stream.DataAvailable);
+
+                                _request = sb.ToString();
+
+                                if (_request != null)
+                                {
+                                    logger.Debug("Client request:\r\n" + _request);
+                                }
+
                             }
 
                         }// next frame...
@@ -289,6 +328,8 @@ namespace MediaToolkit.Networks
 
             public void Dispose()
             {
+                streamer = null;
+
                 if (syncEvent != null)
                 {
                     syncEvent.Dispose();
@@ -395,7 +436,7 @@ namespace MediaToolkit.Networks
             return responseByte;
         }
 
-
+        private object syncRoot = new object();
         private bool running = false;
         public void Stop()
         {
@@ -403,10 +444,15 @@ namespace MediaToolkit.Networks
 
             running = false;
 
-            foreach (var client in clients)
+            lock (syncRoot)
             {
-                client.Stop();
+                for (int i = 0; i < clients.Count; i++)
+                {
+                    var c = clients[i];
+                    c?.Stop();
+                }
             }
+
 
             listener?.Stop();
 

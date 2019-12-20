@@ -11,6 +11,9 @@ using MediaToolkit;
 using MediaToolkit.Core;
 using System.Diagnostics;
 using NLog;
+using MediaToolkit.SharedTypes;
+using MediaToolkit.MediaStreamers;
+using System.Threading;
 
 namespace TestStreamer.Controls
 {
@@ -25,6 +28,8 @@ namespace TestStreamer.Controls
             HttpUpdateScreens();
 
             HttpUpdateCaptures();
+
+            syncContext = SynchronizationContext.Current;
         }
 
         private StatisticForm statisticForm = new StatisticForm();
@@ -198,6 +203,113 @@ namespace TestStreamer.Controls
             {
                 logger.Error(ex);
             }
+        }
+
+        IHttpScreenStreamer httpScreenStreamer = null;
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (httpScreenStreamer == null)
+                {
+                    httpScreenStreamer = new HttpScreenStreamer();
+
+                    httpScreenStreamer.StreamerStarted += HttpScreenStreamer_StreamerStarted;
+                    httpScreenStreamer.StreamerStopped += HttpScreenStreamer_StreamerStopped;
+
+                }
+
+                var srcRect = HttpGetCurrentScreen(); //currentScreen.Bounds;
+                var _destWidth = (int)httpDestWidthNumeric.Value;
+                var _destHeight = (int)httpDestHeightNumeric.Value;
+
+                var destSize = new Size(_destWidth, _destHeight);
+                VideoCaptureType captureType = (VideoCaptureType)captureTypesComboBox.SelectedItem;
+
+
+                HttpScreenStreamerArgs args = new HttpScreenStreamerArgs
+                {
+                    Addres = httpAddrTextBox.Text,
+                    Port = (int)httpPortNumeric.Value,
+                    CaptureRegion = srcRect,
+                    Resolution = destSize,
+
+                    Fps = (int)httpFpsNumeric.Value,
+                    CaptureTypes = captureType,
+                    CaptureMouse = true,
+                    //UseDesktopDuplApi = (captureType == VideoCaptureType.DXGIDeskDupl),
+                };
+
+                httpScreenStreamer.Setup(args);
+
+                httpScreenStreamer.Start();
+
+                this.Cursor = Cursors.WaitCursor;
+
+                this.Enabled = false;
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+
+                MessageBox.Show(ex.ToString());
+            }
+
+        }
+
+        private SynchronizationContext syncContext = null;
+
+        private void HttpScreenStreamer_StreamerStopped(object obj)
+        {
+            logger.Debug("HttpScreenStreamer_StreamerStopped(...)");
+
+            if (obj != null)
+            {
+                var error = obj.ToString();
+                MessageBox.Show(error);
+            }
+
+            if (httpScreenStreamer != null)
+            {
+                httpScreenStreamer.Close(true);
+            }
+
+            //logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+        }
+
+        private void HttpScreenStreamer_StreamerStarted()
+        {
+            logger.Debug("HttpScreenStreamer_StreamerStarted(...)");
+
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (httpScreenStreamer.State == MediaState.Started)
+                {
+                    if (httpScreenStreamer != null)
+                    {
+                        httpScreenStreamer.Stop();
+                    }
+                    this.Cursor = Cursors.WaitCursor;
+                    this.Enabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+                MessageBox.Show(ex.ToString());
+            }
+
         }
     }
 
