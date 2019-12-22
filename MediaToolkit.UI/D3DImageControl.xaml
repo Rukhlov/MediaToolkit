@@ -6,15 +6,16 @@
              xmlns:local="clr-namespace:MediaToolkit.UI"
              mc:Ignorable="d" 
              xmlns:i="clr-namespace:System.Windows.Interop;assembly=PresentationCore"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="Blue">
-        
+             d:DesignHeight="394.8" d:DesignWidth="574.4">
+    <Grid Background="Black">
+
         <!--<Image x:Name="imgelt">
             <Image.Source>
                 <i:D3DImage x:Name="d3dimg" />
             </Image.Source>
         </Image>-->
         <Image Source="{Binding Path=ScreenView}"/>
-        
+        <!--<Label Content="{Binding Path=Status, FallbackValue='...'}" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="#FFFF0101"/>-->
+
     </Grid>
 </UserControl>

@@ -36,17 +36,21 @@ namespace MediaToolkit.UI
 
             syncContext = SynchronizationContext.Current;
 
-            controlPanel.Visible = false;
+            debugPanel.Visible = false;
 
-            imageProvider = new D3DImageProvider2();
+            videoRenderer = new D3DImageRenderer();
+            videoRenderer.RenderStarted += videoRenderer_RenderStarted;
+            videoRenderer.RenderStopped += videoRenderer_RenderStopped;
 
-            imageProvider.RenderStarted += ImageProvider_RenderStarted;
-            imageProvider.RenderStopped += ImageProvider_RenderStopped;
+            d3dImageControl.DataContext = videoRenderer;
 
-            UpdateControls();
+            //imageProvider.Status = "_TEST";
+
+            _UpdateControls();
         }
 
-        private D3DImageProvider2 imageProvider = null;
+
+        private D3DImageRenderer videoRenderer = null;
 
         private volatile ClientState state = ClientState.Disconnected;
         public ClientState State => state;
@@ -72,6 +76,21 @@ namespace MediaToolkit.UI
         public int ServerPort { get; private set; }
 
         private ChannelFactory<IScreenCastService> factory = null;
+
+        public bool ShowDebugPanel
+        {
+            get
+            {
+                return debugPanel.Visible;
+            }
+            set
+            {
+                if (debugPanel.Visible != value)
+                {
+                    debugPanel.Visible = value;
+                }
+            }
+        }
 
         private void connectButton_Click(object sender, EventArgs e)
         {
@@ -110,14 +129,14 @@ namespace MediaToolkit.UI
         }
 
 
-        private void ImageProvider_RenderStarted()
+        private void videoRenderer_RenderStarted()
         {
-            logger.Debug("ImageProvider_RenderStarted()");
+            logger.Debug("videoRenderer_RenderStarted()");
         }
 
-        private void ImageProvider_RenderStopped(object obj)
+        private void videoRenderer_RenderStopped(object obj)
         {
-            logger.Debug("ImageProvider_RenderStopped(...) ");
+            logger.Debug("videoRenderer_RenderStopped(...) ");
         }
 
         private Task mainTask = null;
@@ -145,7 +164,7 @@ namespace MediaToolkit.UI
 
             mainTask = Task.Run(() =>
             {
-                int maxTryCount = 3;
+                int maxTryCount = 10;
                 int tryCount = 0;
 
                 while (tryCount <= maxTryCount && !cancelled)
@@ -217,7 +236,7 @@ namespace MediaToolkit.UI
                             if (VideoReceiver != null)
                             {
                                 VideoReceiver.Play();
-                                imageProvider.Start();
+                                videoRenderer.Start();
                             }
 
                             if (AudioReceiver != null)
@@ -236,11 +255,14 @@ namespace MediaToolkit.UI
                                 try
                                 {
                                     channel.PostMessage(new ServerRequest { Command = "Ping" });
-                                    if (imageProvider.ErrorCode != 0)
+                                    if (videoRenderer.ErrorCode != 0)
                                     {
-                                        logger.Debug("imageProvider.ErrorCode: " + imageProvider.ErrorCode);
-                                        //...
+                                        logger.Debug("imageProvider.ErrorCode: " + videoRenderer.ErrorCode);
+                                        //Process render error...
                                     }
+
+                                    //TODO::
+                                    // Receivers errors...
 
                                     syncEvent.WaitOne(1000);
                                 }
@@ -283,7 +305,10 @@ namespace MediaToolkit.UI
                             UpdateControls();
 
                             tryCount++;
-                            SetStatus("Connection error try next " + tryCount + " of " + maxTryCount);
+
+                            var statusStr = "Attempting to connect: " + tryCount + " of " + maxTryCount;
+
+                            SetStatus(statusStr);
                         }
 
                     }
@@ -409,26 +434,29 @@ namespace MediaToolkit.UI
 
             VideoReceiver.Setup(inputPars, outputPars, networkPars);
 
-            syncContext.Send(_ =>
-            {
-                imageProvider.Setup(VideoReceiver.sharedTexture);
+            videoRenderer.Setup(VideoReceiver.sharedTexture);
 
-                //wpfRemoteControl.DataContext = imageProvider;
 
-            }, null);
+            //syncContext.Send(_ =>
+            //{
+            //    imageProvider.Setup(VideoReceiver.sharedTexture);
+
+            //    //wpfRemoteControl.DataContext = imageProvider;
+
+            //}, null);
         }
 
         private void VideoReceiver_UpdateBuffer()
         {
-            imageProvider?.Update();
+            videoRenderer?.Update();
         }
 
 
         public void Close()
         {
-            if (imageProvider != null)
+            if (videoRenderer != null)
             {
-                imageProvider.Close();
+                videoRenderer.Close();
 
             }
 
@@ -622,6 +650,10 @@ namespace MediaToolkit.UI
             syncContext.Send(_ =>
             {
                 labelStatus.Text = text;
+                statusLabel.Text = "Connecting...";
+                //imageProvider.Status = "Connecting...";
+                //statusLabel.Text = text;
+
             }, null);
         }
 
@@ -636,17 +668,35 @@ namespace MediaToolkit.UI
             {
                 connectButton.Text = "_Connect";
 
-                wpfRemoteControl.DataContext = null;
+                //wpfRemoteControl.DataContext = null;
 
-                string _statusStr = "_Not Connected";
+                string _statusStr = "";
 
                 if (errorCode!= ErrorCode.Ok)
                 {
-                    _statusStr = errorCode.ToString();
+                    //_statusStr = errorCode.ToString();
+
+                    _statusStr = "Connection error";
+                    if (errorCode == ErrorCode.Interrupted)
+                    {
+                        _statusStr = "The connection has been lost";
+                    }
+                    else if (errorCode == ErrorCode.EndpointNotFound)
+                    {
+                        _statusStr = "Server not found";
+                    }
+                    else if (errorCode == ErrorCode.NotСonfigured)
+                    {
+                        _statusStr = "Server not configured";
+                    }
+
 
                     //Server Disconnected
                     //_Connection Error
                 }
+
+                statusLabel.Text = _statusStr;
+                //imageProvider.Status = "_statusStr";
 
                 labelStatus.Text = _statusStr;
             }
@@ -657,11 +707,20 @@ namespace MediaToolkit.UI
                     connectButton.Text = "_Disconnect";
                     labelStatus.Text = "_Connected";
 
-                    wpfRemoteControl.DataContext = imageProvider;
+                    //imageProvider.Status = "";
+                    statusLabel.Text = "";
+                    //wpfRemoteControl.DataContext = imageProvider;
                 }
                 else if(state == ClientState.Connecting)
                 {
+                    //wpfRemoteControl.DataContext = imageProvider;
+
                     labelStatus.Text = "_Connecting...";
+
+                    statusLabel.Text = "Connecting...";
+
+                   // imageProvider.Status = "Connecting...";
+                    //imageProvider.Status = "_Connecting...";
 
                     //controlPanel.Enabled = false;
                     this.hostAddressTextBox.Text = ServerAddr + ":" + ServerPort;
@@ -683,6 +742,9 @@ namespace MediaToolkit.UI
             {
                 labelStatus.Text = "_Cancelling...";
 
+                statusLabel.Text = "Cancelling...";
+
+                videoRenderer.Status = "Cancelling...";
             }
 
             //controlPanel.Enabled = true;
@@ -694,6 +756,7 @@ namespace MediaToolkit.UI
 
             showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
 
+           
             //labelInfo.Text = errorMessage;
         }
 

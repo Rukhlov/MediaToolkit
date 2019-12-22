@@ -52,6 +52,8 @@ namespace MediaToolkit.SharedTypes
         void Connect(string addr, int port);
         void Disconnect();
 
+        bool ShowDebugPanel { get; set; }
+
         ClientState State { get; }
         ErrorCode Code { get; }
 

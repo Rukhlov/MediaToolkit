@@ -1,7 +1,7 @@
 #include "ISPPBuiltins.iss"
 
-#define ApplicationName "MediaToolkit"
-#define ApplicationPublisher "Visiology Co Ltd"
+#define ApplicationName "Polywall Mediakit"
+#define ApplicationPublisher "Polywall"
 #define ApplicationURL "visiology.com"
 #define ApplicationExeName "MediaToolkit.dll"
 
@@ -28,9 +28,9 @@
 #define AppicationVersionFile Copy(AVF2,1, Pos(".", AVF2) - 1) ;+ "b" + Copy(AVF2, Pos(".",AVF2) + 1)
 
 ;Название выходного файла инсталлятора
-#define OutputBaseFilenameVervion "MediaToolkit_v" + ApplicationVersion
+#define OutputBaseFilenameVervion "PolywallMediakit_v" + ApplicationVersion
 #ifdef DEBUG 
-  #define OutputBaseFilenameVervion "MediaToolkit_v" + ApplicationVersion + "_Debug"
+  #define OutputBaseFilenameVervion "PolywallMediakit_v" + ApplicationVersion + "_Debug"
 #endif
 
 [Setup]
@@ -65,7 +65,7 @@ AllowCancelDuringInstall=no
 
 WizardSmallImageFile=Resources\logo_48x48.bmp
 SetupIconFile=Resources\logo.ico
-
+UninstallDisplayIcon = {app}\MediaToolkit.Resources.dll
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl, CustomMessage\Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl, CustomMessage\Russian.isl"
@@ -87,6 +87,7 @@ Source: "{#CurrentSourcePath}\avformat-58.dll"; DestDir: "{app}"; Flags: replace
 Source: "{#CurrentSourcePath}\avutil-56.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\CommandLine.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\CommandLine.xml"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentSourcePath}\MediaToolkit.Resources.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.Core.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.Core.pdb"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.dll"; DestDir: "{app}"; Flags: replacesameversion
@@ -151,7 +152,7 @@ Source: "{#CurrentSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replac
 ;Type: files; Name: "{app}\unins000.dat"
 
 [Registry]
-Root: HKLM; Subkey: "Software\Visiology\Polywall\Path"; ValueType: string; ValueName: "MediaToolkitPath"; ValueData: "{app}"
+Root: HKLM; Subkey: "Software\Visiology\Polywall\Path"; ValueType: string; ValueName: "MediaToolkitPath"; ValueData: "{app}"; Flags: uninsdeletekey
 
 [Icons]
 ;Name: "{group}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"
@@ -162,10 +163,6 @@ Root: HKLM; Subkey: "Software\Visiology\Polywall\Path"; ValueType: string; Value
 ;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: quicklaunchicon
 
 [Run]
-;Запускаем батник создания базы
-;Filename: "{app}\run.bat" ;Flags:  runhidden runascurrentuser
-;Filename: "{app}\DBUpdater.v12.2.exe"; Parameters: "-silent MitsarDataStudio.Win.exe.config" ; Flags: runhidden runasoriginaluser   
-;Filename: "{app}\{#ApplicationExeName}"; Description: "{cm:LaunchProgram,{#StringChange(ApplicationName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 

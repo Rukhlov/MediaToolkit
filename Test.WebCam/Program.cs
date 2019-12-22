@@ -101,11 +101,11 @@ namespace WebCamTest
 
 
                 PreviewForm previewForm = null;
-                D3DImageProvider2 provider = null;
+                D3DImageRenderer provider = null;
                 var uiThread = new Thread(() =>
                 {
 
-                    provider = new D3DImageProvider2();
+                    provider = new D3DImageRenderer();
                     provider.Setup(videoCaptureSource.SharedTexture);
 
                     previewForm = new PreviewForm();

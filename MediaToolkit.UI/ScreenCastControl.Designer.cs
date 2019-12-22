@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.mainPanel = new System.Windows.Forms.Panel();
+            this.debugPanel = new System.Windows.Forms.Panel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.controlPanel = new System.Windows.Forms.Panel();
             this.hostsComboBox = new System.Windows.Forms.ComboBox();
@@ -38,24 +38,26 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.showDetailsButton = new System.Windows.Forms.Button();
             this.labelStatus = new System.Windows.Forms.Label();
+            this.statusLabel = new System.Windows.Forms.Label();
             this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.wpfRemoteControl = new MediaToolkit.UI.D3DImageControl();
-            this.mainPanel.SuspendLayout();
+            this.d3dImageControl = new MediaToolkit.UI.D3DImageControl();
+            this.debugPanel.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.controlPanel.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
-            // mainPanel
+            // debugPanel
             // 
-            this.mainPanel.AutoSize = true;
-            this.mainPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.mainPanel.BackColor = System.Drawing.Color.PeachPuff;
-            this.mainPanel.Controls.Add(this.flowLayoutPanel1);
-            this.mainPanel.Location = new System.Drawing.Point(3, 3);
-            this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(378, 118);
-            this.mainPanel.TabIndex = 1;
+            this.debugPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.debugPanel.AutoSize = true;
+            this.debugPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.debugPanel.BackColor = System.Drawing.Color.PeachPuff;
+            this.debugPanel.Controls.Add(this.flowLayoutPanel1);
+            this.debugPanel.Location = new System.Drawing.Point(3, 418);
+            this.debugPanel.Name = "debugPanel";
+            this.debugPanel.Size = new System.Drawing.Size(378, 118);
+            this.debugPanel.TabIndex = 1;
             // 
             // flowLayoutPanel1
             // 
@@ -161,6 +163,17 @@
             this.labelStatus.Text = "__STATUS___";
             this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // statusLabel
+            // 
+            this.statusLabel.AutoSize = true;
+            this.statusLabel.BackColor = System.Drawing.Color.Transparent;
+            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 7.8F);
+            this.statusLabel.Location = new System.Drawing.Point(0, 0);
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(18, 19);
+            this.statusLabel.TabIndex = 2;
+            this.statusLabel.Text = "...";
+            // 
             // elementHost1
             // 
             this.elementHost1.BackColor = System.Drawing.Color.Cyan;
@@ -171,18 +184,19 @@
             this.elementHost1.Size = new System.Drawing.Size(750, 539);
             this.elementHost1.TabIndex = 0;
             this.elementHost1.Text = "elementHost1";
-            this.elementHost1.Child = this.wpfRemoteControl;
+            this.elementHost1.Child = this.d3dImageControl;
             // 
             // ScreenCastControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.mainPanel);
+            this.Controls.Add(this.statusLabel);
+            this.Controls.Add(this.debugPanel);
             this.Controls.Add(this.elementHost1);
             this.Name = "ScreenCastControl";
             this.Size = new System.Drawing.Size(750, 539);
-            this.mainPanel.ResumeLayout(false);
-            this.mainPanel.PerformLayout();
+            this.debugPanel.ResumeLayout(false);
+            this.debugPanel.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
             this.flowLayoutPanel1.PerformLayout();
             this.controlPanel.ResumeLayout(false);
@@ -196,8 +210,8 @@
 
         #endregion
         public System.Windows.Forms.Integration.ElementHost elementHost1;
-        public D3DImageControl wpfRemoteControl;
-        private System.Windows.Forms.Panel mainPanel;
+        public D3DImageControl d3dImageControl;
+        private System.Windows.Forms.Panel debugPanel;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Panel controlPanel;
         private System.Windows.Forms.ComboBox hostsComboBox;
@@ -207,5 +221,6 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label labelStatus;
         private System.Windows.Forms.Button showDetailsButton;
+        private System.Windows.Forms.Label statusLabel;
     }
 }

@@ -32,7 +32,7 @@ namespace TestClient.Controls
         private RemoteDesktopClient remoteClient = null;
 
         private VideoForm testForm = null;
-        private D3DImageProvider2 imageProvider = null;
+        private D3DImageRenderer imageProvider = null;
 
         private void playButton_Click(object sender, EventArgs e)
         {
@@ -139,7 +139,7 @@ namespace TestClient.Controls
 
                 imageProvider?.Close();
 
-                imageProvider = new D3DImageProvider2();
+                imageProvider = new D3DImageRenderer();
                 var reciver = remoteClient.VideoReceiver;
 
                 imageProvider.Setup(reciver.sharedTexture);

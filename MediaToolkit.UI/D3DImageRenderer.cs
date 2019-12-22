@@ -17,19 +17,19 @@ using System.Windows.Threading;
 
 namespace MediaToolkit.UI
 {
-    public class D3DImageProvider2 : INotifyPropertyChanged
+    public class D3DImageRenderer : INotifyPropertyChanged
     {
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly Dispatcher dispatcher = null;
-        public D3DImageProvider2()
+        public D3DImageRenderer()
         {
             this.dispatcher = Dispatcher.CurrentDispatcher;
             //ScreenView = new D3DImage();
         }
 
-        public D3DImageProvider2(Dispatcher dispatcher)
+        public D3DImageRenderer(Dispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
         }
@@ -47,7 +47,8 @@ namespace MediaToolkit.UI
 
         //public D3DImage ScreenView = null;
 
-        private D3DImage screenView = new D3DImage();
+        //private D3DImage screenView = new D3DImage();
+        private D3DImage screenView = null;
         public D3DImage ScreenView
         {
             get { return screenView; }
@@ -57,6 +58,20 @@ namespace MediaToolkit.UI
                 {
                     screenView = value;
                     OnPropertyChanged(nameof(ScreenView));
+                }
+            }
+        }
+
+        private string status = "_NotConnected";
+        public string Status
+        {
+            get { return status; }
+            set
+            {
+                if (status != value)
+                {
+                    status = value;
+                    OnPropertyChanged(nameof(Status));
                 }
             }
         }
@@ -133,11 +148,16 @@ namespace MediaToolkit.UI
 
                 waitEvent = new AutoResetEvent(false);
 
-                //ScreenView = new D3DImage();
+                dispatcher.Invoke(() =>
+                {
+                    ScreenView = new D3DImage();
+                    
+                    ScreenView.Lock();
+                    ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                    ScreenView.Unlock();
 
-                ScreenView.Lock();
-                ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
-                ScreenView.Unlock();
+
+                }, DispatcherPriority.Send);
 
                 state = RendererState.Initialized;
 
@@ -200,7 +220,7 @@ namespace MediaToolkit.UI
             logger.Debug("D3DImageProvider::Stop()");
 
             state = RendererState.Stopping;
-
+            ScreenView = null;
             waitEvent?.Set();
         }
 

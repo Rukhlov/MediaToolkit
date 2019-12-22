@@ -90,7 +90,7 @@
       <DependentUpon>D3DImageControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="D3DImageProvider.cs" />
-    <Compile Include="D3DImageProvider2.cs" />
+    <Compile Include="D3DImageRenderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

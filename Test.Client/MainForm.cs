@@ -72,7 +72,7 @@ namespace TestClient
         }
 
         private VideoForm testForm = null;
-        private D3DImageProvider2 imageProvider = null;
+        private D3DImageRenderer imageProvider = null;
 
 
         private void ShowVideoForm(string title)
@@ -88,7 +88,7 @@ namespace TestClient
                     Text = title,
                 };
 
-                imageProvider = new D3DImageProvider2();
+                imageProvider = new D3DImageRenderer();
                 var reciver = remoteClient.VideoReceiver;
 
                 imageProvider.Setup(reciver.sharedTexture);

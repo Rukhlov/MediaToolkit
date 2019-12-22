@@ -481,7 +481,7 @@ namespace TestClient.Controls
         }
 
 
-        private D3DImageProvider2 imageProvider = null;
+        private D3DImageRenderer imageProvider = null;
         private VideoForm testForm = null;
         private void ShowVideoForm(string title)
         {
@@ -502,7 +502,7 @@ namespace TestClient.Controls
                 var texture = VideoReceiver?.sharedTexture;
                 if (texture != null)
                 {
-                    imageProvider = new D3DImageProvider2(Dispatcher.CurrentDispatcher);
+                    imageProvider = new D3DImageRenderer(Dispatcher.CurrentDispatcher);
 
                     imageProvider.Setup(VideoReceiver.sharedTexture);
                     imageProvider.Start();

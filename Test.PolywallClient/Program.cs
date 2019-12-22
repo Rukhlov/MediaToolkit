@@ -27,7 +27,10 @@ namespace Test.PolywallClient
 
             logger.Info("========== START ============");
 
-            var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
+            var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
+            //@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
 
             if (!System.IO.Directory.Exists(mediaToolkitPath))
             {
@@ -63,6 +66,7 @@ namespace Test.PolywallClient
             Application.SetCompatibleTextRenderingDefault(false);
 
             var control = MediaToolkitFactory.CreateInstance<IScreenCasterControl>();
+            control.ShowDebugPanel = true;
 
             var form = new Form1((Control)control);
 
