@@ -14,7 +14,9 @@ namespace MediaToolkit.RTP
     {
         protected static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public const int MTU = 1300;
+        //public const int MTU = 1300;
+
+        public int MTU { get; set; } = Configuration.MaximumTransmissionUnit;
 
         public uint SSRC { get;  set; } = 0;
         public int CSRC { get; protected set; } = 0;

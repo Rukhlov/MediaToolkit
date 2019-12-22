@@ -279,7 +279,8 @@ namespace MediaToolkit.SharedTypes
                 }
                 else
                 {
-                    OnLog("TargetType not registered: " + targetType.ToString());
+                    throw new Exception("TargetType not registered: " + targetType.ToString());
+                   // OnLog("TargetType not registered: " + targetType.ToString());
                 }
             }
             catch (Exception ex)

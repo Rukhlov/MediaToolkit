@@ -42,6 +42,12 @@ namespace MediaToolkit
         }
     }
 
+    public static class Configuration
+    {
+        public static int  MaximumTransmissionUnit = 1300;
+        //...
+    }
+
     public class MediaToolkitBootstrapper : SharedTypes.IMediaToolkitBootstrapper
     {
         public void Startup()

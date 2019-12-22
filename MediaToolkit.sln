@@ -24,6 +24,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{762A0890-DAD6-4F12-806F-33DF38E80B7D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.PolywallClient", "Test.PolywallClient\Test.PolywallClient.csproj", "{5CB46F56-265E-41D1-B01D-D7D23B6BF9E7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D93A9D01-3409-48BB-B1EB-860EFE0397F1} = {D93A9D01-3409-48BB-B1EB-860EFE0397F1}
+		{4B001D0F-817D-4075-9714-9A192AF5C0A0} = {4B001D0F-817D-4075-9714-9A192AF5C0A0}
+		{6EC45781-0060-4F0A-AD0E-1452704F0740} = {6EC45781-0060-4F0A-AD0E-1452704F0740}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -19,12 +19,15 @@ namespace MediaToolkit.MediaStreamers
         private VideoHttpStreamer httpStreamer = null;
         private IVideoSource httpScreenSource = null;
 
-        public int ErrorCode { get; private set; } = 0;
 
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;
 
-        public MediaState State { get; private set; } = MediaState.Closed;
+        private volatile MediaState state = MediaState.Closed;
+        public MediaState State => state;
+
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
 
         private SynchronizationContext syncContext = null;
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
@@ -39,12 +42,12 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("HttpScreenStreamer::Setup() " + args.ToString());
 
-            if(State!= MediaState.Closed)
+            if(state!= MediaState.Closed)
             {
                 throw new InvalidOperationException("Invalid state " + State);
             }
 
-            this.ErrorCode = 0;
+            errorCode = 0;
 
             //var srcRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
             //var destSize = new Size(1920, 1080);
@@ -105,13 +108,13 @@ namespace MediaToolkit.MediaStreamers
                 httpStreamer.Setup(encodingParams, networkParams);
                 httpStreamer.StreamerStopped += HttpStreamer_StreamerStopped;
 
-                State = MediaState.Initialized;
+                state = MediaState.Initialized;
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
 
-                this.ErrorCode = 100503;
+                errorCode = 100503;
 
                 Close();
                 throw;
@@ -124,12 +127,12 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("HttpScreenStreamer::Start()");
 
-            if (!(State == MediaState.Initialized || State == MediaState.Stopped))
+            if (!(state == MediaState.Initialized || state == MediaState.Stopped))
             {
                 throw new InvalidOperationException("Invalid state " + State);
             }
 
-            State = MediaState.Starting;
+            state = MediaState.Starting;
             streamerTask = Task.Run(() => 
             {
                 try
@@ -137,7 +140,7 @@ namespace MediaToolkit.MediaStreamers
                     httpScreenSource.Start();
                     httpStreamer.Start();
 
-                    State = MediaState.Started;
+                    state = MediaState.Started;
                     OnStreamerStarted();
 
                     while (State == MediaState.Started)
@@ -151,7 +154,7 @@ namespace MediaToolkit.MediaStreamers
                             httpScreenSource.Stop();
                             httpStreamer.Stop();
 
-                            ErrorCode = 100500;
+                            errorCode = 100500;
                             break;
                         }
 
@@ -186,7 +189,7 @@ namespace MediaToolkit.MediaStreamers
                     obj = ErrorCode;
                 }
 
-                State = MediaState.Stopped;
+                state = MediaState.Stopped;
                 OnStreamerStopped(obj);
 
             });
@@ -236,7 +239,7 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("HttpScreenStreamer::Stop()");
 
-            if(!(State == MediaState.Starting || State== MediaState.Started))
+            if(!(state == MediaState.Starting || state == MediaState.Started))
             {
                 throw new InvalidOperationException("Invalid state " + State);
             }
@@ -251,7 +254,7 @@ namespace MediaToolkit.MediaStreamers
                 httpStreamer.Stop();
             }
 
-            State = MediaState.Stopping;
+            state = MediaState.Stopping;
 
         }
 
@@ -263,7 +266,7 @@ namespace MediaToolkit.MediaStreamers
             //    return;
             //}
 
-            if (State == MediaState.Started || State == MediaState.Starting)
+            if (state == MediaState.Started || state == MediaState.Starting)
             {
                 Stop();
             }
@@ -282,7 +285,7 @@ namespace MediaToolkit.MediaStreamers
                             if (!waitResult)
                             {
                                 logger.Warn("HttpScreenStreamer::Close() " + waitResult);
-                                State = MediaState.Stopping;
+                                state = MediaState.Stopping;
 
                             }
 
@@ -310,7 +313,7 @@ namespace MediaToolkit.MediaStreamers
                 httpScreenSource.Close(force);
             }
 
-            State = MediaState.Closed;
+            state = MediaState.Closed;
 
 
         }

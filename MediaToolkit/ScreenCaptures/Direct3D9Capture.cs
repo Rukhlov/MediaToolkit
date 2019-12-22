@@ -162,7 +162,7 @@ namespace MediaToolkit
                 if (CaptureMouse)
                 {
                     var hDc = srcSurface.GetDC();
-                    User32.DrawCursorEx(hDc);
+                    User32.DrawCursorEx(hDc, SrcRect.X, SrcRect.Y);
                     srcSurface.ReleaseDC(hDc);
                 }
                 

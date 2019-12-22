@@ -50,17 +50,37 @@ namespace MediaToolkit.SharedTypes
     public interface IScreenCasterControl
     {
         void Connect(string addr, int port);
-
         void Disconnect();
+
+        ClientState State { get; }
+        ErrorCode Code { get; }
+
+        event Action Connected;
+        event Action<object> Disconnected;
+
         //...
     }
 
-    public enum ErrorCode: int
+    public enum ErrorCode : int
     {
-        OK = 0,
-
+        Ok = 0,
+        ServerIsBusy = 1,
+        Interrupted = 2,
+        EndpointNotFound = 4,
+        NotСonfigured = 8,
         //...
-        UnknownError = 1,
+        UnknownError = 256,
+    }
+
+    public enum ClientState
+    {
+        Connecting,
+        Connected,
+        Running,
+        Interrupted,
+        Disconnecting,
+        Disconnected,
 
     }
+
 }

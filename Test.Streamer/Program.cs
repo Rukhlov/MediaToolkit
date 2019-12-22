@@ -85,7 +85,7 @@ namespace TestStreamer
                 MediaToolkitManager.Startup();
 
                 //DwmApi.DisableAero(true);
-                Shcore.SetDpiAwareness();
+                Shcore.SetProcessPerMonitorDpiAwareness();
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);

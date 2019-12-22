@@ -61,7 +61,7 @@ namespace TestClient
             }
             InitMediaLib();
 
-            Shcore.SetDpiAwareness();
+            Shcore.SetProcessPerMonitorDpiAwareness();
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

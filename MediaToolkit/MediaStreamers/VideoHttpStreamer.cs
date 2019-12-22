@@ -30,11 +30,11 @@ namespace MediaToolkit
            
         }
 
-        public MediaState State { get; private set; } = MediaState.Closed;
+        private volatile MediaState state = MediaState.Closed;
+        public MediaState State => state;
 
-        //public bool isStopped = false;
-
-        public int ErrorCode { get; private set; } = 0;
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
 
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;
@@ -67,13 +67,13 @@ namespace MediaToolkit
                 encoder.Open(encPars);
                 encoder.DataEncoded += Encoder_DataEncoded;
 
-                State = MediaState.Initialized;
+                state = MediaState.Initialized;
             }
             catch(Exception ex)
             {
                 logger.Error(ex);
 
-                ErrorCode = 100503;
+                errorCode = 100503;
                 if (encoder != null)
                 {
                     encoder.DataEncoded -= Encoder_DataEncoded;
@@ -81,7 +81,7 @@ namespace MediaToolkit
                     encoder = null;
                 }
 
-                State = MediaState.Closed;
+                state = MediaState.Closed;
                 throw;
             }
 
@@ -110,7 +110,7 @@ namespace MediaToolkit
                     logger.Debug("Start main streaming loop...");
                     StreamerStarted?.Invoke();
 
-                    State = MediaState.Started;
+                    state = MediaState.Started;
 
                     DoStream(networkParams);
 
@@ -118,13 +118,13 @@ namespace MediaToolkit
                 catch(Exception ex)
                 {
                     logger.Error(ex);
-                    ErrorCode = 100502; 
+                    errorCode = 100502; 
                 }
                 finally
                 {
                     logger.Debug("Stop main streaming loop...");
 
-                    State = MediaState.Stopped;
+                    state = MediaState.Stopped;
                     StreamerStopped?.Invoke(null);
 
                 }
@@ -144,7 +144,7 @@ namespace MediaToolkit
                 var ex = t.Exception;
                 if (ex != null)
                 {
-                    ErrorCode = 100501;
+                    errorCode = 100501;
                     logger.Error(ex);
                     running = false;
                 }
@@ -211,7 +211,7 @@ namespace MediaToolkit
 
             httpStreamer?.Stop();
 
-            State = MediaState.Stopping;
+            state = MediaState.Stopping;
             syncEvent.Set();
         }
 
@@ -250,7 +250,7 @@ namespace MediaToolkit
                 encoder.Close();
             }
 
-            State = MediaState.Closed;
+            state = MediaState.Closed;
 
         }
 

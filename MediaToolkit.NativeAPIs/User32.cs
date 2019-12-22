@@ -31,7 +31,7 @@ namespace MediaToolkit.NativeAPIs
         internal static extern bool GetCursorInfo(out CURSORINFO pci);
 
 
-        public static void DrawCursorEx(IntPtr hDc)
+        public static void DrawCursorEx(IntPtr hDc, int screenX, int screenY)
         {
             CURSORINFO pci;
             pci.cbSize = Marshal.SizeOf(typeof(CURSORINFO));
@@ -46,8 +46,8 @@ namespace MediaToolkit.NativeAPIs
                     {
 
                         var pos = pci.ptScreenPos;
-                        int x = pos.x - pIconInfo.xHotspot;
-                        int y = pos.y - pIconInfo.yHotspot;
+                        int x = pos.x - pIconInfo.xHotspot - screenX;
+                        int y = pos.y - pIconInfo.yHotspot - screenY;
                         DrawIconEx(hDc, x, y, hIcon, 0, 0, 0, IntPtr.Zero, DI_NORMAL);
 
                         //DrawIcon(hDc, x, y, pci.hCursor);

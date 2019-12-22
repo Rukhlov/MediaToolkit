@@ -483,6 +483,7 @@ namespace MediaToolkit.Core
         Starting,
         Started,
         Stopping,
+        Closing,
         Closed,
     }
 

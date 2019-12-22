@@ -164,6 +164,8 @@ namespace MediaToolkit.UI
            // OnPropertyChanged(nameof(ScreenView));
             renderTask = Task.Run(() =>
             {
+                logger.Debug("Render thread started...");
+
                 state = RendererState.Rendering;
                 RenderStarted?.Invoke();
 
@@ -187,6 +189,8 @@ namespace MediaToolkit.UI
                 {
                     state = RendererState.Stopped;
                     RenderStopped?.Invoke(null);
+
+                    logger.Debug("Render thread stopped...)");
                 }
             });
         }

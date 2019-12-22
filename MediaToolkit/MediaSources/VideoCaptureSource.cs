@@ -25,7 +25,7 @@ namespace MediaToolkit
 
         public VideoCaptureSource()
         {
-            this.State = CaptureState.Closed;
+            this.state = CaptureState.Closed;
 
         }
 
@@ -49,10 +49,11 @@ namespace MediaToolkit
             }
         }
 
+        private volatile CaptureState state = CaptureState.Closed;
+        public CaptureState State => state;
 
-        public CaptureState State { get; private set; } = CaptureState.Closed;
-
-        public int ErrorCode { get; private set; } = 0;
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
 
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
@@ -171,7 +172,7 @@ namespace MediaToolkit
                 processor.Setup(intupArgs, outputArgs);
                 processor.SetMirror(VideoProcessorMirror.MirrorVertical);
 
-                State = CaptureState.Initialized;
+                state = CaptureState.Initialized;
 
 
             }
@@ -328,7 +329,7 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-            State = CaptureState.Starting;
+            state = CaptureState.Starting;
 
             captureTask = Task.Run(() =>
             {
@@ -344,7 +345,7 @@ namespace MediaToolkit
                 {
                     logger.Error(ex);
 
-                    this.ErrorCode = 100500;
+                    this.errorCode = 100500;
                 }
                 finally
                 {
@@ -367,7 +368,7 @@ namespace MediaToolkit
 
             try
             {
-                State = CaptureState.Capturing;
+                state = CaptureState.Capturing;
 
                 MediaToolkit.Utils.Statistic.RegisterCounter(captureStats);
 
@@ -429,7 +430,7 @@ namespace MediaToolkit
                     processor.Stop();
                 }
 
-                State = CaptureState.Stopped;
+                state = CaptureState.Stopped;
                 MediaToolkit.Utils.Statistic.UnregisterCounter(captureStats);
             }
         }
@@ -550,7 +551,7 @@ namespace MediaToolkit
         {
             logger.Debug("VideoCaptureSource::Stop()");
 
-            State = CaptureState.Stopping;
+            state = CaptureState.Stopping;
 
             if (asyncMode)
             {
@@ -600,7 +601,7 @@ namespace MediaToolkit
 
             CleanUp();
 
-            State = CaptureState.Closed;
+            state = CaptureState.Closed;
         }
 
         private void CleanUp()

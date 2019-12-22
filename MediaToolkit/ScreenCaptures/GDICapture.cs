@@ -95,7 +95,7 @@ namespace MediaToolkit
 
                         if (captureMouse)
                         {
-                            User32.DrawCursorEx(hdcDest);
+                            User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
                         }
 
                     }

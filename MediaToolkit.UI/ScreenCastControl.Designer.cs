@@ -160,7 +160,6 @@
             this.labelStatus.TabIndex = 37;
             this.labelStatus.Text = "__STATUS___";
             this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.labelStatus.Click += new System.EventHandler(this.labelStatus_Click);
             // 
             // elementHost1
             // 
