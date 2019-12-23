@@ -505,15 +505,5 @@ namespace MediaToolkit.RTP
         }
     }
 
-    public class NetTools
-    {
-        public static bool IsMulticastIpAddr(IPAddress remoteIp)
-        {
-            var bytes = remoteIp.GetAddressBytes();
 
-            return (bytes[0] >= 224 && bytes[0] <= 239);
-
-        }
-
-    }
 }

@@ -28,6 +28,11 @@ namespace MediaToolkit.NativeAPIs
         ERROR_INVALID_ACCESS = 12,
         ERROR_INVALID_DATA = 13,
         ERROR_OUTOFMEMORY = 14,
+
+        ERROR_NOT_READY = 21,
+
+        ERROR_NOT_SUPPORTED = 50,
+
         ERROR_INSUFFICIENT_BUFFER = 122,
 
         ERROR_MORE_DATA = 234,

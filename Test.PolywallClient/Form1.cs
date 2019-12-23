@@ -36,7 +36,9 @@ namespace Test.PolywallClient
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Process.Start(@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug\Test.Streamer.exe");
+            var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + "Test.Streamer.exe");
+
+            Process.Start(file);
         }
 
 

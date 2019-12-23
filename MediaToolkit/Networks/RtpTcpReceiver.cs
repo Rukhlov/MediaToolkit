@@ -8,22 +8,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaToolkit.Core;
+using MediaToolkit.SharedTypes;
 
-namespace MediaToolkit
+
+namespace MediaToolkit.Networks
 {
-
-    public interface IRtpReceiver
-    {
-        void Open(string address, int port, int ttl = 10);
-        IPEndPoint RemoteEndpoint { get; }
-        IPEndPoint LocalEndpoint { get; }
-
-        Task Start();
-        void Close();
-
-        event Action<RtpPacket> RtpPacketReceived;
-    }
-
     public class RtpTcpReceiver : IRtpReceiver
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -34,14 +24,29 @@ namespace MediaToolkit
         public IPEndPoint RemoteEndpoint { get; private set; }
         public IPEndPoint LocalEndpoint { get; private set; }
 
-        private MulticastOption mcastOption = null;
+
+        private volatile ErrorCode errorCode = ErrorCode.Ok;
+        public ErrorCode ErrorCode => errorCode;
+
+        private volatile ReceiverState state = ReceiverState.Closed;
+        public ReceiverState State => state;
+
         public RtpTcpReceiver(RtpSession session)
         {
             this.session = session;
         }
 
-        public void Open(string address, int port, int ttl = 10)
+        public void Open(NetworkSettings settings)//string address, int port, int ttl = 10)
         {
+            if (state != ReceiverState.Closed)
+            {
+                throw new InvalidOperationException("Invalid receiver state " + state);
+            }
+
+            var address = settings.LocalAddr;
+            var port = settings.LocalPort;
+            var ttl = 10;
+
             logger.Debug("RtpTcpReceiver::Open(...) " + address + " " + port + " " + ttl);
             try
             {
@@ -60,13 +65,15 @@ namespace MediaToolkit
 
                 socket.Connect(RemoteEndpoint);
 
+                state = ReceiverState.Initialized;
+
                 logger.Info("Client started: " + LocalEndpoint.ToString() + " " + RemoteEndpoint.ToString());
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
 
-                CleanUp();
+                Close();
                 throw;
             }
         }
@@ -75,27 +82,30 @@ namespace MediaToolkit
 
         public Task Start()
         {
-            if (running)
+
+            logger.Debug("TcpReceiver::Start()");
+
+            if (state != ReceiverState.Initialized)
             {
-                //...
+                throw new InvalidOperationException("Invalid state " + state);
             }
 
             return Task.Run(() =>
             {
+                state = ReceiverState.Running;
+
                 try
                 {
-                    running = true;
+                    logger.Debug("TcpReceiver thread started...");
 
-                    
                     byte[] buf = new byte[16256];
 
                     var tcpHanlder = new TcpHandler();
 
-                    while (running)
+                    while (state == ReceiverState.Running)
                     {
 
                         int bytesReceived = socket.Receive(buf, SocketFlags.None);
-
 
                         if (bytesReceived > 0)
                         {
@@ -124,8 +134,14 @@ namespace MediaToolkit
                 catch (Exception ex)
                 {
                     logger.Error(ex);
-                    CleanUp();
+
                 }
+                finally
+                {
+                    Close();
+                    logger.Debug("TcpReceiver thread stopped...");
+                }
+ 
             });
 
         }
@@ -403,33 +419,25 @@ namespace MediaToolkit
         }
 
 
-        public void Close()
+        public void Stop()
+        {
+            logger.Debug("RtpTcpReceiver::Stop()");
+
+            state = ReceiverState.Closing;
+        }
+
+
+        private void Close()
         {
             logger.Debug("RtpTcpReceiver::Close()");
 
-
-            if (socket != null)
-            {
-                if (mcastOption != null)
-                {
-                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership, mcastOption);
-                }
-
-                CleanUp();
-            }
-        }
-
-        private bool running = false;
-        private void CleanUp()
-        {
-            logger.Debug("RtpTcpReceiver::CleanUp()");
-
-            running = false;
             if (socket != null)
             {
                 socket.Close();
                 socket = null;
             }
+
+            state = ReceiverState.Closed;
         }
 
     }

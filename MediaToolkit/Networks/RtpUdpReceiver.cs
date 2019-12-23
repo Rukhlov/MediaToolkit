@@ -8,8 +8,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaToolkit.Core;
+using MediaToolkit.SharedTypes;
 
-namespace MediaToolkit
+namespace MediaToolkit.Networks
 {
     public class RtpUdpReceiver :IRtpReceiver
     {
@@ -21,28 +23,43 @@ namespace MediaToolkit
         public IPEndPoint RemoteEndpoint { get; private set; }
         public IPEndPoint LocalEndpoint { get; private set; }
 
+        private volatile ErrorCode errorCode = ErrorCode.Ok;
+        public ErrorCode ErrorCode => errorCode;
+
+        private volatile ReceiverState state = ReceiverState.Closed;
+        public ReceiverState State => state;
+
         private MulticastOption mcastOption = null;
         public RtpUdpReceiver(RtpSession session)
         {
             this.session = session;
         }
 
-        public void Open(string address, int port, int ttl = 10)
+        public void Open(NetworkSettings settings) 
         {
-            logger.Debug("RtpReceiver::Open(...) " + address + " " + port + " " + ttl);
+            if (state!= ReceiverState.Closed)
+            {
+                throw new InvalidOperationException("Invalid receiver state " + state);
+            }
+
+            var address = settings.LocalAddr;
+            var port = settings.LocalPort;
+            var ttl = settings.MulticastTimeToLive;
+
+            logger.Debug("RtpUdpReceiver::Open(...) " + address + " " + port + " " + ttl);
+
             try
             {
-                IPAddress addr = IPAddress.Parse(address);
+                IPAddress localAddress = IPAddress.Parse(address);
 
-                var bytes = addr.GetAddressBytes();
-                bool isMulicast = (bytes[0] >= 224 && bytes[0] <= 239);
+                bool isMulicast = Utils.NetTools.IsMulticastIpAddr(localAddress);
 
-                RemoteEndpoint = new IPEndPoint(addr, port);
+
+                RemoteEndpoint = new IPEndPoint(localAddress, port);
                 LocalEndpoint = new IPEndPoint(IPAddress.Any, port);
 
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-                socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                 socket.ReceiveBufferSize = 100 * 1024;//int.MaxValue;//32 * 1024 * 1024;
 
@@ -50,9 +67,14 @@ namespace MediaToolkit
 
                 if (isMulicast)
                 {
+
                     mcastOption = new MulticastOption(RemoteEndpoint.Address, LocalEndpoint.Address);
                     socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, mcastOption);
+
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, ttl);
                 }
+
+                state = ReceiverState.Initialized;
 
                 logger.Info("Client started: " + LocalEndpoint.ToString() + " " + RemoteEndpoint.ToString());
             }
@@ -60,28 +82,28 @@ namespace MediaToolkit
             {
                 logger.Error(ex);
 
-                CleanUp();
+                Close();
                 throw;
             }
         }
 
-
-
         public Task Start()
         {
-            if (running)
+            logger.Debug("RtpUdpReceiver::Start()");
+
+            if (state != ReceiverState.Initialized)
             {
-                //...
+                throw new InvalidOperationException("Invalid state " + state);
             }
 
-            return Task.Run(() => 
+            return Task.Run(() =>
             {
+                logger.Debug("UdpReceiver thread started...");
+                state = ReceiverState.Running;
                 try
                 {
-                    running = true;
-
                     byte[] buf = new byte[16256];
-                    while (running)
+                    while (state == ReceiverState.Running)
                     {
                         int bytesReceived = socket.Receive(buf, SocketFlags.None);
 
@@ -98,17 +120,21 @@ namespace MediaToolkit
                             }
                             
                         }
-
                     }
                 }
                 catch (ObjectDisposedException)
                 {
-                    logger.Warn("RtpReceiver::ObjectDisposedException");
+                    logger.Warn("UdpReceiver::ObjectDisposedException");
                 }
                 catch (Exception ex)
+                {                   
+                    logger.Error(ex);               
+                }
+                finally
                 {
-                    logger.Error(ex);
-                    CleanUp();
+                    Close();
+
+                    logger.Debug("UdpReceiver thread stopped...");
                 }
             });
 
@@ -126,12 +152,17 @@ namespace MediaToolkit
             DataReceived?.Invoke(buf, len);
         }
 
+        public void Stop()
+        {
+            logger.Debug("RtpReceiver::Stop()");
+            if(state == ReceiverState.Running)
+            {
+                state = ReceiverState.Closing;
+            }
+        }
 
         public void Close()
         {
-            logger.Debug("RtpReceiver::Close()");
-
-
             if (socket != null)
             {
                 if (mcastOption != null)
@@ -139,21 +170,15 @@ namespace MediaToolkit
                     socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.DropMembership, mcastOption);
                 }
 
-                CleanUp();
-            }
-        }
-
-        private bool running = false;
-        private void CleanUp()
-        {
-            running = false;
-            if (socket != null)
-            {
                 socket.Close();
                 socket = null;
             }
+
+            state = ReceiverState.Closed;
         }
 
     }
+
+
 
 }

@@ -27,10 +27,9 @@ namespace MediaToolkit.RTP
 
         // public abstract List<byte[]> Packetize(byte[] data, double sec);
         public abstract List<RtpPacket> Packetize(byte[] data, double sec);
-        public abstract byte[] Depacketize(RtpPacket pkt);
+        public abstract MediaFrame Depacketize(RtpPacket pkt);
 
     }
-
 
     public class PCMUSession : RtpSession
     {
@@ -41,7 +40,6 @@ namespace MediaToolkit.RTP
             PayloadType = 0;
             ClockRate = 8000;
         }
-
 
         public override List<RtpPacket> Packetize(byte[] data, double sec)
         {
@@ -55,15 +53,19 @@ namespace MediaToolkit.RTP
             return packets;
         }
 
-        public override byte[] Depacketize(RtpPacket pkt)
+        public override MediaFrame Depacketize(RtpPacket pkt)
         {
-            byte[] payload = null;
+            MediaFrame frame = null;
+ 
             if (pkt != null)
             {
-                payload = pkt.Payload.ToArray();
+                frame = new MediaFrame
+                {
+                    Data = pkt.Payload.ToArray()
+                };
             }
 
-            return payload;
+            return frame;
         }
 
         public List<RtpPacket> CratePackets(byte[] data, uint timestamp)
@@ -128,6 +130,7 @@ namespace MediaToolkit.RTP
             logger.Debug("H264Session() " + SSRC);
         }
 
+ 
         public override List<RtpPacket> Packetize(byte[] data, double sec)
         {
             //file.Write(data, 0, data.Length);
@@ -327,18 +330,34 @@ namespace MediaToolkit.RTP
 
         }
 
+        private long lastTimestamp = RtpConst.NoTimestamp;
+        private double monotonicTime = 0;
         private ushort lastSequence = 0;
-        public override byte[] Depacketize(RtpPacket pkt)
-        {
 
+        public override MediaFrame Depacketize(RtpPacket pkt)
+        {
+            MediaFrame frame = null;
             if (pkt.Sequence != (lastSequence + 1))
             {
                 logger.Warn("Bad sequence " + lastSequence + " != " + pkt.Sequence);
                 // TODO:
                 // Добавляем в буфер и пытаемся упорядочить  
             }
-
             lastSequence = pkt.Sequence;
+
+            var timestamp = pkt.Timestamp;
+            if (timestamp != RtpConst.NoTimestamp && timestamp != lastTimestamp)
+            {
+                if (lastTimestamp != RtpConst.NoTimestamp)
+                {
+                    var diff = (timestamp - lastTimestamp);
+                    monotonicTime += (diff / (double)ClockRate);
+
+                    //logger.Trace("monotonicTime " + monotonicTime + " " + diff);
+
+                }
+                lastTimestamp = timestamp;
+            }
 
 
             byte[] data = null;
@@ -350,7 +369,16 @@ namespace MediaToolkit.RTP
                 data = HandleH264NalUnit(payload, 0);
             }
 
-            return data;
+            if (data != null)
+            {
+                frame = new MediaFrame
+                {
+                    Data = data,
+                    Time = monotonicTime,
+                };
+            }
+
+            return frame;
         }
 
         private List<byte[]> payloadBuffer = new List<byte[]>();
@@ -583,5 +611,11 @@ namespace MediaToolkit.RTP
 
             return null;
         }
+    }
+
+    public class MediaFrame
+    {
+        public double Time = double.NaN;
+        public byte[] Data = null;
     }
 }

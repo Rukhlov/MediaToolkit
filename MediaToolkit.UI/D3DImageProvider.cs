@@ -55,16 +55,16 @@ namespace MediaToolkit.UI
             }
         }
 
-        private D3DImage screenView = null;
-        public D3DImage ScreenView
+        private D3DImage videoSource = null;
+        public D3DImage VideoSource
         {
-            get { return screenView; }
+            get { return videoSource; }
             private set
             {
-                if (screenView != value)
+                if (videoSource != value)
                 {
-                    screenView = value;
-                    OnPropertyChanged(nameof(ScreenView));
+                    videoSource = value;
+                    OnPropertyChanged(nameof(VideoSource));
                 }
             }
         }
@@ -83,8 +83,8 @@ namespace MediaToolkit.UI
                 var sharedTexture = screenSource.SharedTexture;
                 screenSource.BufferUpdated += ScreenSource_BufferUpdated;
 
-                ScreenView = new D3DImage();
-                ScreenView.IsFrontBufferAvailableChanged += ScreenView_IsFrontBufferAvailableChanged;
+                VideoSource = new D3DImage();
+                VideoSource.IsFrontBufferAvailableChanged += ScreenView_IsFrontBufferAvailableChanged;
 
                 SetupDx(sharedTexture);
                 Update(sharedTexture);
@@ -105,7 +105,7 @@ namespace MediaToolkit.UI
         {
             logger.Debug("ScreenView_IsFrontBufferAvailableChanged(...) ");
 
-            if (!ScreenView.IsFrontBufferAvailable)
+            if (!VideoSource.IsFrontBufferAvailable)
             {
                 ClosDx();
             }
@@ -188,7 +188,7 @@ namespace MediaToolkit.UI
 
            dispatcher.Invoke(() =>
            {
-               if (screenView.IsFrontBufferAvailable)
+               if (videoSource.IsFrontBufferAvailable)
                {
                    if (!deviceReady)
                    {
@@ -201,11 +201,11 @@ namespace MediaToolkit.UI
 
                        if (surfPtr != IntPtr.Zero)
                        {
-                           ScreenView.Lock();
-                           ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
+                           VideoSource.Lock();
+                           VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
 
-                           ScreenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
-                           ScreenView.Unlock();
+                           VideoSource.AddDirtyRect(new Int32Rect(0, 0, VideoSource.PixelWidth, VideoSource.PixelHeight));
+                           VideoSource.Unlock();
                        }
                    }
 
@@ -258,9 +258,9 @@ namespace MediaToolkit.UI
 
             }
 
-            if (ScreenView != null)
+            if (VideoSource != null)
             {
-                ScreenView.IsFrontBufferAvailableChanged -= ScreenView_IsFrontBufferAvailableChanged;
+                VideoSource.IsFrontBufferAvailableChanged -= ScreenView_IsFrontBufferAvailableChanged;
             }
 
             ClosDx();

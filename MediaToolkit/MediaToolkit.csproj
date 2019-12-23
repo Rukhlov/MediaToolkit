@@ -104,6 +104,7 @@
     <Compile Include="MediaStreamers\HttpScreenStreamer.cs" />
     <Compile Include="MediaToolkitManager.cs" />
     <Compile Include="Networks\HttpStreamer.cs" />
+    <Compile Include="Networks\IRtpReceiver.cs" />
     <Compile Include="Networks\RtpTcpReceiver.cs" />
     <Compile Include="Networks\RtpTcpSender.cs" />
     <Compile Include="MediaReceivers\VideoReceiver.cs" />

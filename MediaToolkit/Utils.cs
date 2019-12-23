@@ -509,6 +509,16 @@ namespace MediaToolkit.Utils
         }
     }
 
+    public class NetTools
+    {
+        public static bool IsMulticastIpAddr(System.Net.IPAddress remoteIp)
+        {
+            var bytes = remoteIp.GetAddressBytes();
+
+            return (bytes[0] >= 224 && bytes[0] <= 239);
+
+        }
+    }
 
 
     public class WcfDiscoveryAddressCustomEndpointBehavior : IEndpointBehavior, IDispatchMessageInspector

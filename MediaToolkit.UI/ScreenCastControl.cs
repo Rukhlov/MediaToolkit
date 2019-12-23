@@ -206,7 +206,7 @@ namespace MediaToolkit.UI
 
                             if (channelInfos == null)
                             {
-                                errorCode = ErrorCode.NotСonfigured;
+                                errorCode = ErrorCode.NotReady;
                                 throw new Exception("Server not configured");
                             }
 
@@ -215,7 +215,7 @@ namespace MediaToolkit.UI
                             {
                                 if (videoChannelInfo.Transport == TransportMode.Tcp && videoChannelInfo.ClientsCount > 0)
                                 {
-                                    errorCode = ErrorCode.ServerIsBusy;
+                                    errorCode = ErrorCode.IsBusy;
                                     throw new Exception("Server is busy");
                                 }
                                 SetupVideo(videoChannelInfo);
@@ -226,7 +226,7 @@ namespace MediaToolkit.UI
                             {
                                 if (audioChannelInfo.Transport == TransportMode.Tcp && videoChannelInfo.ClientsCount > 0)
                                 {
-                                    errorCode = ErrorCode.ServerIsBusy;
+                                    errorCode = ErrorCode.IsBusy;
                                     throw new Exception("Server is busy");
                                 }
 
@@ -280,7 +280,7 @@ namespace MediaToolkit.UI
                     }
                     catch (EndpointNotFoundException ex)
                     {
-                        errorCode = ErrorCode.EndpointNotFound;
+                        errorCode = ErrorCode.NotFound;
                         logger.Error(ex.Message);
                     }
                     catch (Exception ex)
@@ -289,7 +289,7 @@ namespace MediaToolkit.UI
 
                         if (errorCode == ErrorCode.Ok)
                         {
-                            errorCode = ErrorCode.UnknownError;
+                            errorCode = ErrorCode.Unknown;
                         }
                     }
                     finally
@@ -436,14 +436,6 @@ namespace MediaToolkit.UI
 
             videoRenderer.Setup(VideoReceiver.sharedTexture);
 
-
-            //syncContext.Send(_ =>
-            //{
-            //    imageProvider.Setup(VideoReceiver.sharedTexture);
-
-            //    //wpfRemoteControl.DataContext = imageProvider;
-
-            //}, null);
         }
 
         private void VideoReceiver_UpdateBuffer()
@@ -681,11 +673,11 @@ namespace MediaToolkit.UI
                     {
                         _statusStr = "The connection has been lost";
                     }
-                    else if (errorCode == ErrorCode.EndpointNotFound)
+                    else if (errorCode == ErrorCode.NotFound)
                     {
                         _statusStr = "Server not found";
                     }
-                    else if (errorCode == ErrorCode.NotСonfigured)
+                    else if (errorCode == ErrorCode.NotReady)
                     {
                         _statusStr = "Server not configured";
                     }

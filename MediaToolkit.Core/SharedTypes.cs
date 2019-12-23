@@ -66,12 +66,15 @@ namespace MediaToolkit.SharedTypes
     public enum ErrorCode : int
     {
         Ok = 0,
-        ServerIsBusy = 1,
-        Interrupted = 2,
-        EndpointNotFound = 4,
-        NotСonfigured = 8,
+        Unknown = 1,
+        Cancelled = 2,
+        Interrupted = 3,
+        IsBusy = 4,
+        NotFound = 5,
+        NotReady = 6,
+        
         //...
-        UnknownError = 256,
+
     }
 
     public enum ClientState

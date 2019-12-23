@@ -1,5 +1,6 @@
 ﻿using FFmpegLib;
 using MediaToolkit.Core;
+using MediaToolkit.Networks;
 using MediaToolkit.RTP;
 using NAudio.Codecs;
 using NAudio.Gui;
@@ -120,7 +121,7 @@ namespace MediaToolkit
                 session.SSRC = networkPars.SSRC;
 
 
-                rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
+                rtpReceiver.Open(networkPars);
                 rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
             }
@@ -222,29 +223,33 @@ namespace MediaToolkit
             }
             //byte[] rtpPayload = packet.Payload.ToArray();
 
-            var data = session.Depacketize(packet);
-            if (data != null)
+            var frame = session.Depacketize(packet);
+            //var data = session.Depacketize(packet);
+            if (frame != null)
             {
-               //fileStream.Write(data, 0, data.Length);
-
-
-                byte[] decoded = new byte[2 * data.Length];
-                int j = 0;
-                for (int i = 0; i < data.Length; i++)
+                //fileStream.Write(data, 0, data.Length);
+                var data = frame.Data;
+                var time = frame.Time;
+                if (data != null)
                 {
-                    short sample = MuLawDecoder.MuLawToLinearSample(data[i]);
-                    decoded[j++] = (byte)(sample & 0xFF);
-                    decoded[j++] = (byte)(sample >> 8);
-                }
+                    byte[] decoded = new byte[2 * data.Length];
+                    int j = 0;
+                    for (int i = 0; i < data.Length; i++)
+                    {
+                        short sample = MuLawDecoder.MuLawToLinearSample(data[i]);
+                        decoded[j++] = (byte)(sample & 0xFF);
+                        decoded[j++] = (byte)(sample >> 8);
+                    }
 
-                //decoder.Decode(data, out byte[] decoded);
+                    //decoder.Decode(data, out byte[] decoded);
 
 
-                //fileStream1.Write(decoded, 0, decoded.Length);
+                    //fileStream1.Write(decoded, 0, decoded.Length);
 
-                if (decoded != null && decoded.Length > 0)
-                {
-                    waveBuffer.AddSamples(decoded, 0, decoded.Length);
+                    if (decoded != null && decoded.Length > 0)
+                    {
+                        waveBuffer.AddSamples(decoded, 0, decoded.Length);
+                    }
                 }
             }
         }
@@ -273,7 +278,7 @@ namespace MediaToolkit
             if (rtpReceiver != null)
             {
                 rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
-                rtpReceiver.Close();
+                rtpReceiver.Stop();
             }
 
             if (wavePlayer != null)
@@ -293,7 +298,7 @@ namespace MediaToolkit
             if (rtpReceiver != null)
             {
                 rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
-                rtpReceiver.Close();
+                rtpReceiver.Stop();
             }
 
             if (wavePlayer != null)

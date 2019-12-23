@@ -14,7 +14,7 @@
                 <i:D3DImage x:Name="d3dimg" />
             </Image.Source>
         </Image>-->
-        <Image Source="{Binding Path=ScreenView}"/>
+        <Image Source="{Binding Path=VideoSource}"/>
         <!--<Label Content="{Binding Path=Status, FallbackValue='...'}" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="#FFFF0101"/>-->
 
     </Grid>

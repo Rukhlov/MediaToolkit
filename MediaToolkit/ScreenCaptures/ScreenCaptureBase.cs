@@ -11,9 +11,6 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-
-
-
     public abstract class ScreenCapture
     {
         protected static Logger logger =  LogManager.GetCurrentClassLogger();

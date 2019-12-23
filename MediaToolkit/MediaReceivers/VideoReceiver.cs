@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using MediaToolkit;
 using MediaToolkit.Core;
 using MediaToolkit.MediaFoundation;
+using MediaToolkit.Networks;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
 using NLog;
@@ -138,7 +139,7 @@ namespace MediaToolkit
 
             h264Session.SSRC = networkPars.SSRC;
 
-            rtpReceiver.Open(networkPars.LocalAddr, networkPars.LocalPort);
+            rtpReceiver.Open(networkPars);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
             
@@ -168,30 +169,35 @@ namespace MediaToolkit
                 return;
             }
 
-            var time = MediaTimer.GetRelativeTime();
+            var currentTime = MediaTimer.GetRelativeTime();
 
             byte[] rtpPayload = packet.Payload.ToArray();
 
             //totalPayloadReceivedSize += rtpPayload.Length;
             // logger.Debug("totalPayloadReceivedSize " + totalPayloadReceivedSize);
 
-            var nal = h264Session.Depacketize(packet);
-            if (nal != null)
+
+            var frame = h264Session.Depacketize(packet);
+            if (frame != null)
             {
                 sw.Restart();
 
-                Decode(nal);
+                var frameData = frame.Data;
+                var frameTime = frame.Time;
+                if (frameData != null)
+                {
+                    
+                    Decode(frameData, frameTime);
 
-                receiverStats.Update(time, nal.Length, sw.ElapsedMilliseconds);
-
+                    receiverStats.Update(currentTime, frameData.Length, sw.ElapsedMilliseconds);
+                }
             }
 
         }
 
-
-        int sampleCount = 0;
+        private readonly static Guid uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
         private static object syncRoot = new object();
-        private void Decode(byte[] nal)
+        private void Decode(byte[] nal, double time)
         {
             try
             {
@@ -208,6 +214,12 @@ namespace MediaToolkit
                         mb.Unlock();
 
                         encodedSample.AddBuffer(mb);
+
+                        if (!double.IsNaN(time))
+                        {
+                            var sampleTime = (long)(time * 10_000_000);
+                            encodedSample.SampleTime = sampleTime;
+                        }
                     }
 
                     var res = decoder.ProcessSample(encodedSample, out Sample decodedSample);
@@ -222,28 +234,31 @@ namespace MediaToolkit
                             {
                                 if (rgbSample != null)
                                 {
-                                    var buffer = rgbSample.ConvertToContiguousBuffer();
-                                    using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
+                                    var rgbBuffer = rgbSample.ConvertToContiguousBuffer();
+                                    try
                                     {
-                                        var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                                        dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
-                                        using (Texture2D rgbTexture = new Texture2D(intPtr))
+                                        using (var dxgiBuffer = rgbBuffer.QueryInterface<DXGIBuffer>())
                                         {
-                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
-                                            device.ImmediateContext.Flush();
-                                        };
+                                            //var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+                                            dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
+                                            using (Texture2D rgbTexture = new Texture2D(intPtr))
+                                            {
+                                                device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
+                                                device.ImmediateContext.Flush();
+                                            };
 
-                                        OnUpdateBuffer();
-
-                                        //ImageProvider?.Update();
+                                            OnUpdateBuffer();
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        rgbBuffer?.Dispose();
                                     }
 
-                                    buffer?.Dispose();
                                 }
                             }
 
                             rgbSample?.Dispose();
-
                         }
                     }
 
@@ -253,8 +268,6 @@ namespace MediaToolkit
                 {
                     encodedSample?.Dispose();
                 }
-
-                sampleCount++;
             }
             catch (Exception ex)
             {
@@ -277,7 +290,7 @@ namespace MediaToolkit
             if (rtpReceiver != null)
             {
                 rtpReceiver.RtpPacketReceived -= RtpReceiver_RtpPacketReceived;
-                rtpReceiver.Close();
+                rtpReceiver.Stop();
             }
 
             if (decoder != null)

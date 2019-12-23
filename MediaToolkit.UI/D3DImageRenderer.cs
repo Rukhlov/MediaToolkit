@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using MediaToolkit.SharedTypes;
+using NLog;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 using System;
@@ -19,14 +20,12 @@ namespace MediaToolkit.UI
 {
     public class D3DImageRenderer : INotifyPropertyChanged
     {
-
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly Dispatcher dispatcher = null;
         public D3DImageRenderer()
         {
             this.dispatcher = Dispatcher.CurrentDispatcher;
-            //ScreenView = new D3DImage();
         }
 
         public D3DImageRenderer(Dispatcher dispatcher)
@@ -41,28 +40,26 @@ namespace MediaToolkit.UI
         private Surface surface = null;
 
         private volatile RendererState state = RendererState.Closed;
-        public RendererState State { get => state; }
+        public RendererState State => state;
 
-        public int ErrorCode { get; private set; } = 0;
+        private volatile ErrorCode errorCode = ErrorCode.Ok;
+        public ErrorCode ErrorCode => errorCode;
 
-        //public D3DImage ScreenView = null;
-
-        //private D3DImage screenView = new D3DImage();
-        private D3DImage screenView = null;
-        public D3DImage ScreenView
+        private D3DImage videoSource = null;
+        public D3DImage VideoSource
         {
-            get { return screenView; }
+            get { return videoSource; }
             private set
             {
-                if (screenView != value)
+                if (videoSource != value)
                 {
-                    screenView = value;
-                    OnPropertyChanged(nameof(ScreenView));
+                    videoSource = value;
+                    OnPropertyChanged(nameof(VideoSource));
                 }
             }
         }
 
-        private string status = "_NotConnected";
+        private string status = "...";
         public string Status
         {
             get { return status; }
@@ -76,13 +73,12 @@ namespace MediaToolkit.UI
             }
         }
 
-
         public event Action RenderStarted;
         public event Action<object> RenderStopped;
 
         public void Setup(Texture2D sharedTexture)
         {
-            logger.Debug("D3DImageProvider::Setup()");
+            logger.Debug("D3DImageRenderer::Setup()");
 
             if (state != RendererState.Closed)
             {
@@ -150,12 +146,11 @@ namespace MediaToolkit.UI
 
                 dispatcher.Invoke(() =>
                 {
-                    ScreenView = new D3DImage();
+                    VideoSource = new D3DImage();
                     
-                    ScreenView.Lock();
-                    ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
-                    ScreenView.Unlock();
-
+                    VideoSource.Lock();
+                    VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                    VideoSource.Unlock();
 
                 }, DispatcherPriority.Send);
 
@@ -175,7 +170,7 @@ namespace MediaToolkit.UI
         private Task renderTask = null;
         public void Start()
         {
-            logger.Debug("D3DImageProvider::Start()");
+            logger.Debug("D3DImageRenderer::Start()");
 
             if (!(state == RendererState.Stopped || state == RendererState.Initialized))
             {
@@ -203,7 +198,7 @@ namespace MediaToolkit.UI
                 catch (Exception ex)
                 {
                     logger.Error(ex);
-                    ErrorCode = 100500;
+                    errorCode = MediaToolkit.SharedTypes.ErrorCode.Unknown;
                 }
                 finally
                 {
@@ -217,10 +212,10 @@ namespace MediaToolkit.UI
 
         public void Stop()
         {
-            logger.Debug("D3DImageProvider::Stop()");
+            logger.Debug("D3DImageRenderer::Stop()");
 
             state = RendererState.Stopping;
-            ScreenView = null;
+            VideoSource = null;
             waitEvent?.Set();
         }
 
@@ -246,13 +241,13 @@ namespace MediaToolkit.UI
                     var pSurface = surface.NativePointer;
                     if (pSurface != IntPtr.Zero)
                     {
-                        ScreenView.Lock();
+                        VideoSource.Lock();
                         // Repeatedly calling SetBackBuffer with the same IntPtr is 
                         // a no-op. There is no performance penalty.
-                        ScreenView.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
-                        ScreenView.AddDirtyRect(new Int32Rect(0, 0, ScreenView.PixelWidth, ScreenView.PixelHeight));
+                        VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                        VideoSource.AddDirtyRect(new Int32Rect(0, 0, VideoSource.PixelWidth, VideoSource.PixelHeight));
 
-                        ScreenView.Unlock();
+                        VideoSource.Unlock();
                     }
 
                 }
@@ -264,7 +259,7 @@ namespace MediaToolkit.UI
 
         public void Close(bool force = false)
         {
-            logger.Debug("D3DImageProvider::Close()");
+            logger.Debug("D3DImageRenderer::Close(...) " + force);
 
             Stop();
 
@@ -295,7 +290,7 @@ namespace MediaToolkit.UI
 
         private void CleanUp()
         {
-            logger.Debug("D3DImageProvider::CleanUp()");
+            logger.Trace("D3DImageRenderer::CleanUp()");
 
             //System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
