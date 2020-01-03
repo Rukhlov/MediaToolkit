@@ -36,9 +36,24 @@ namespace Test.VideoRenderer
 
         long globalTime = 0;
 
+        private List<byte[]> testBitmapSequence = new List<byte[]>();
         private void buttonSetup_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonSetup_Click(...)");
+
+
+
+            var testSeqDir = @"D:\testBMP\";
+            var di = new DirectoryInfo(testSeqDir);
+            var files = di.GetFiles().Take(60);
+            foreach (var f in files)
+            {
+                var bytes = File.ReadAllBytes(f.FullName);
+                testBitmapSequence.Add(bytes);
+            }
+
+
+
 
             var testFile5 = @".\Test\1920x1080_bmdFormat10BitYUV.raw";
             var testFile2 = @".\Test\1920x1080_bmdFormat8BitYUV.raw";
@@ -132,9 +147,15 @@ namespace Test.VideoRenderer
                     }
 
                     {
+                        int index = _count % testBitmapSequence.Count;
+                        var bytes = testBitmapSequence[index];
+
+
                         var _pBuffer = mb.Lock(out int _cbMaxLen, out int _cbCurLen);
 
-                        Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
+                        Marshal.Copy(bytes, 0, _pBuffer, bytes.Length);
+
+
 
                         //if (_count % 10 != 0)
                         //{
