@@ -36,9 +36,20 @@ namespace Test.VideoRenderer
 
         long globalTime = 0;
 
+        private List<byte[]> testBitmapSequence = new List<byte[]>();
         private void buttonSetup_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonSetup_Click(...)");
+
+            var testSeqDir = @".\Test\Sequence";
+            var di = new DirectoryInfo(testSeqDir);
+            var files = di.GetFiles();
+            foreach (var f in files)
+            {
+                var bytes = File.ReadAllBytes(f.FullName);
+                testBitmapSequence.Add(bytes);
+            }
+
 
             var testFile5 = @".\Test\1920x1080_bmdFormat10BitYUV.raw";
             var testFile2 = @".\Test\1920x1080_bmdFormat8BitYUV.raw";
@@ -107,7 +118,7 @@ namespace Test.VideoRenderer
             int interval = (int)(1000.0 / fps);
 
             int _count = 100000;
-       
+
 
             producerTask = Task.Run(() =>
             {
@@ -131,49 +142,54 @@ namespace Test.VideoRenderer
                         break;
                     }
 
+                    int index = _count % testBitmapSequence.Count;
+                    var bytes = testBitmapSequence[index];
+
+
+                    var _pBuffer = mb.Lock(out int _cbMaxLen, out int _cbCurLen);
+
+                    Marshal.Copy(bytes, 0, _pBuffer, bytes.Length);
+
+                    // Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
+
+                    //if (_count % 10 != 0)
+                    //{
+                    //    Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
+                    //}
+                    //else
+                    //{
+                    //    Marshal.Copy(testBytes5, 0, _pBuffer, testBytes.Length);
+                    //}
+
+                    _count++;
+                    sw.Restart();
+
+
+                    mb.CurrentLength = testBytes.Length;
+                    mb.Unlock();
+
+                    globalTime += sw.ElapsedMilliseconds;
+                    sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
+                    sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+
+                    renderer.ProcessSample(sample);
+
+                    var msec = sw.ElapsedMilliseconds;
+
+                    var delay = interval - msec;
+                    if (delay < 0)
                     {
-                        var _pBuffer = mb.Lock(out int _cbMaxLen, out int _cbCurLen);
-
-                        Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
-
-                        //if (_count % 10 != 0)
-                        //{
-                        //    Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
-                        //}
-                        //else
-                        //{
-                        //    Marshal.Copy(testBytes5, 0, _pBuffer, testBytes.Length);
-                        //}
-
-                        _count++;
-                        sw.Restart();
-
-
-                        mb.CurrentLength = testBytes.Length;
-                        mb.Unlock();
-
-                        globalTime += sw.ElapsedMilliseconds;
-                        sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
-                        sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
-
-                        renderer.ProcessSample(sample);
-
-                        var msec = sw.ElapsedMilliseconds;
-
-                        var delay = interval - msec;
-                        if (delay < 0)
-                        {
-                            delay = 1;
-                        }
-
-                        Thread.Sleep((int)delay);
-
-                        globalTime += sw.ElapsedMilliseconds;
-
-                        
-
-                        // Console.WriteLine(msec);
+                        delay = 1;
                     }
+
+                    Thread.Sleep((int)delay);
+
+                    globalTime += sw.ElapsedMilliseconds;
+
+
+
+                    // Console.WriteLine(msec);
+
 
                 }
 
@@ -225,7 +241,7 @@ namespace Test.VideoRenderer
 
             if (renderer != null)
             {
-               var time =  MfTool.SecToMfTicks((globalTime / 1000.0));
+                var time = MfTool.SecToMfTicks((globalTime / 1000.0));
                 logger.Debug("renderer.Start(...) " + time);
                 renderer.Start(time);
 
@@ -270,7 +286,7 @@ namespace Test.VideoRenderer
 
                 //renderer.Close();
 
-                
+
             }
         }
     }
