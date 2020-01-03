@@ -105,11 +105,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Test\Sequence.zip" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Test\1920x1080_Argb32.raw" />
     <Content Include="Test\1920x1080_bmdFormat10BitYUV.raw">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
