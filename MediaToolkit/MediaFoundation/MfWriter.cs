@@ -52,7 +52,6 @@ namespace MediaToolkit.MediaFoundation
             var bufSize = width * height * 4;
 
 
-
             try
             {
                 using (var attr = new MediaAttributes(6))

@@ -10,6 +10,163 @@ namespace MediaToolkit.NativeAPIs
 {
     public class MediaFoundation
     {
+
+        [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+         Guid("6AB0000C-FECE-4d1f-A2AC-A9573530656E")]
+        public interface IMFVideoProcessor
+        {
+            [PreserveSig]
+            HResult GetAvailableVideoProcessorModes(
+                out int lpdwNumProcessingModes,
+                [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] out Guid[] ppVideoProcessingModes);
+
+            [PreserveSig]
+            HResult GetVideoProcessorCaps(
+                [In, MarshalAs(UnmanagedType.LPStruct)] Guid lpVideoProcessorMode,
+                out DXVA2VideoProcessorCaps lpVideoProcessorCaps);
+
+            [PreserveSig]
+            HResult GetVideoProcessorMode(
+                out Guid lpMode);
+
+            [PreserveSig]
+            HResult SetVideoProcessorMode(
+                [In, MarshalAs(UnmanagedType.LPStruct)] Guid lpMode);
+
+            [PreserveSig]
+            HResult GetProcAmpRange(
+                DXVA2ProcAmp dwProperty,
+                out DXVA2ValueRange pPropRange);
+
+            [PreserveSig]
+            HResult GetProcAmpValues(
+                DXVA2ProcAmp dwFlags,
+                [Out, MarshalAs(UnmanagedType.LPStruct)] DXVA2ProcAmpValues Values);
+
+            [PreserveSig]
+            HResult SetProcAmpValues(
+                DXVA2ProcAmp dwFlags,
+                [In] DXVA2ProcAmpValues pValues);
+
+            [PreserveSig]
+            HResult GetFilteringRange(
+                DXVA2Filters dwProperty,
+                out DXVA2ValueRange pPropRange);
+
+            [PreserveSig]
+            HResult GetFilteringValue(
+                DXVA2Filters dwProperty,
+                out int pValue);
+
+            [PreserveSig]
+            HResult SetFilteringValue(
+                DXVA2Filters dwProperty,
+                [In] ref int pValue);
+
+            [PreserveSig]
+            HResult GetBackgroundColor(
+                out int lpClrBkg);
+
+            [PreserveSig]
+            HResult SetBackgroundColor(
+                int ClrBkg);
+        }
+
+        [Flags, UnmanagedName("DXVA2_ProcAmp_* defines")]
+        public enum DXVA2ProcAmp
+        {
+            None = 0,
+            Brightness = 0x0001,
+            Contrast = 0x0002,
+            Hue = 0x0004,
+            Saturation = 0x0008
+        }
+
+        [UnmanagedName("Unnamed enum")]
+        public enum DXVA2Filters
+        {
+            None = 0,
+            NoiseFilterLumaLevel = 1,
+            NoiseFilterLumaThreshold = 2,
+            NoiseFilterLumaRadius = 3,
+            NoiseFilterChromaLevel = 4,
+            NoiseFilterChromaThreshold = 5,
+            NoiseFilterChromaRadius = 6,
+            DetailFilterLumaLevel = 7,
+            DetailFilterLumaThreshold = 8,
+            DetailFilterLumaRadius = 9,
+            DetailFilterChromaLevel = 10,
+            DetailFilterChromaThreshold = 11,
+            DetailFilterChromaRadius = 12
+        }
+
+        [Flags, UnmanagedName("MFVideoAlphaBitmapFlags")]
+        public enum MFVideoAlphaBitmapFlags
+        {
+            None = 0,
+            EntireDDS = 0x00000001,
+            SrcColorKey = 0x00000002,
+            SrcRect = 0x00000004,
+            DestRect = 0x00000008,
+            FilterMode = 0x00000010,
+            Alpha = 0x00000020,
+            BitMask = 0x0000003f
+        }
+
+        [Flags, UnmanagedName("MFVideoMixPrefs")]
+        public enum MFVideoMixPrefs
+        {
+            None = 0,
+            ForceHalfInterlace = 0x00000001,
+            AllowDropToHalfInterlace = 0x00000002,
+            AllowDropToBob = 0x00000004,
+            ForceBob = 0x00000008,
+            Mask = 0x0000000f
+        }
+
+        [Flags, UnmanagedName("EVRFilterConfigPrefs")]
+        public enum EVRFilterConfigPrefs
+        {
+            None = 0,
+            EnableQoS = 0x1,
+            Mask = 0x1
+        }
+
+        [StructLayout(LayoutKind.Sequential), UnmanagedName("DXVA2_VideoProcessorCaps")]
+        public struct DXVA2VideoProcessorCaps
+        {
+            public int DeviceCaps;
+            public int InputPool;
+            public int NumForwardRefSamples;
+            public int NumBackwardRefSamples;
+            public int Reserved;
+            public int DeinterlaceTechnology;
+            public int ProcAmpControlCaps;
+            public int VideoProcessorOperations;
+            public int NoiseFilterTechnology;
+            public int DetailFilterTechnology;
+        }
+
+        [StructLayout(LayoutKind.Sequential), UnmanagedName("DXVA2_ValueRange")]
+        public struct DXVA2ValueRange
+        {
+            public int MinValue;
+            public int MaxValue;
+            public int DefaultValue;
+            public int StepSize;
+        }
+
+        [StructLayout(LayoutKind.Sequential), UnmanagedName("DXVA2_ProcAmpValues")]
+        public class DXVA2ProcAmpValues
+        {
+            public int Brightness;
+            public int Contrast;
+            public int Hue;
+            public int Saturation;
+        }
+
+
         [UnmanagedName("MF_SOURCE_READER_CONTROL_FLAG")]
         public enum MF_SOURCE_READER_CONTROL_FLAG
         {

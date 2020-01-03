@@ -52,8 +52,6 @@ namespace MediaToolkit.Networks
             {
                 IPAddress addr = IPAddress.Parse(address);
 
-                var bytes = addr.GetAddressBytes();
-
                 RemoteEndpoint = new IPEndPoint(addr, port);
                 LocalEndpoint = new IPEndPoint(IPAddress.Any, 0);
 

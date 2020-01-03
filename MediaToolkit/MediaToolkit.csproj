@@ -96,6 +96,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MediaFoundation\DXVADecoder.cs" />
+    <Compile Include="MediaFoundation\MfVideoRenderer.cs" />
     <Compile Include="MediaReceivers\AudioReceiver.cs" />
     <Compile Include="MediaStreamers\AudioStreamer.cs" />
     <Compile Include="Managers\DesktopManager.cs" />

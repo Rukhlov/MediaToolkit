@@ -27,11 +27,15 @@ namespace MediaToolkit
 
         public Texture2D sharedTexture { get; private set; }
 
+        //private DXVADecoder decoder = null;
+
         private MfH264Decoder decoder = null;
+
         private MfVideoProcessor processor = null;
 
         private H264Session h264Session = null;
         public IRtpReceiver rtpReceiver = null;
+        //public IntPtr hWnd = IntPtr.Zero;
 
         public void Setup(VideoEncoderSettings inputPars, VideoEncoderSettings outputPars, NetworkSettings networkPars)
         {
@@ -91,6 +95,7 @@ namespace MediaToolkit
 
             //ImageProvider = new D3DImageProvider(dispatcher);
 
+            //decoder = new DXVADecoder(IntPtr.Zero);
 
             decoder = new MfH264Decoder(device);
 
@@ -195,7 +200,7 @@ namespace MediaToolkit
 
         }
 
-        private readonly static Guid uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+        private readonly static Guid GuidTexture2D= SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
         private static object syncRoot = new object();
         private void Decode(byte[] nal, double time)
         {
@@ -217,7 +222,7 @@ namespace MediaToolkit
 
                         if (!double.IsNaN(time))
                         {
-                            var sampleTime = (long)(time * 10_000_000);
+                            var sampleTime = MfTool.SecToMfTicks(time); //(long)(time * 10_000_000);
                             encodedSample.SampleTime = sampleTime;
                         }
                     }
@@ -239,8 +244,7 @@ namespace MediaToolkit
                                     {
                                         using (var dxgiBuffer = rgbBuffer.QueryInterface<DXGIBuffer>())
                                         {
-                                            //var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                                            dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
+                                            dxgiBuffer.GetResource(GuidTexture2D, out IntPtr intPtr);
                                             using (Texture2D rgbTexture = new Texture2D(intPtr))
                                             {
                                                 device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);

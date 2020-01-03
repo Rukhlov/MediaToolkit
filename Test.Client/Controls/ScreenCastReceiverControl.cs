@@ -328,7 +328,8 @@ namespace TestClient.Controls
                             };
 
                             VideoReceiver = new VideoReceiver();
-                            
+
+
                             VideoReceiver.Setup(inputPars, outputPars, networkPars);
                             VideoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
                         }

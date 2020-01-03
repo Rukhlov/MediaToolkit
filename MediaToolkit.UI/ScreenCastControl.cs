@@ -430,6 +430,7 @@ namespace MediaToolkit.UI
             };
 
             VideoReceiver = new VideoReceiver();
+
             VideoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
 
             VideoReceiver.Setup(inputPars, outputPars, networkPars);

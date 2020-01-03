@@ -136,10 +136,11 @@ namespace MediaToolkit.RTP
             //file.Write(data, 0, data.Length);
 
             List<RtpPacket> packets = new List<RtpPacket>();
-            uint timestamp = (uint)(sec * ClockRate);
+
             var nals = HandleH264AnnexbFrames(data);
             if (nals.Count > 0)
             {
+                uint timestamp = (uint)(sec * this.ClockRate);
                 packets = CreatePackets(nals, timestamp);
             }
 

@@ -520,7 +520,9 @@ namespace MediaToolkit
 
                         OnBufferUpdated();
 
-                        var time = (double)(sample.SampleTime) / 10_000_000;
+                        //var time = (double)(sample.SampleTime) / 10_000_000;
+
+                        var time = MfTool.MfTicksToSec(sample.SampleTime);
                         captureStats.UpdateFrameStats(time, cbCurrentLengthRef);
 
                         mediaBuffer.Unlock();

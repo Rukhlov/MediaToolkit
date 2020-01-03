@@ -50,7 +50,7 @@ namespace MediaToolkit.MediaFoundation
 
 
             var frameRate = inputArgs.FrameRate;
-            frameDuration = 10_000_000 / inputArgs.FrameRate;
+            frameDuration = MfTool.TicksPerSecond / frameRate;
 
             var width = inputArgs.Width;
             var height = inputArgs.Height;
@@ -78,13 +78,11 @@ namespace MediaToolkit.MediaFoundation
                             }
                         }
                     }
-
                 }
 
 
                 var transformFlags = //TransformEnumFlag.Hardware |
                                      TransformEnumFlag.SortAndFilter;
-
                 var inputType = new TRegisterTypeInformation
                 {
                     GuidMajorType = MediaTypeGuids.Video,
@@ -306,8 +304,7 @@ namespace MediaToolkit.MediaFoundation
 
         public bool ProcessSample(Sample inputSample, out Sample outputSample)
         {
-            
-
+ 
             bool Result = false;
             outputSample = null;
 
@@ -316,8 +313,9 @@ namespace MediaToolkit.MediaFoundation
                 return false;
             }
 
+            //FIXME:
             frameNumber++;
-            inputSample.SampleTime = frameNumber * frameDuration;
+            inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
             inputSample.SampleDuration = frameDuration;
 
             decoder.ProcessInput(0, inputSample, 0);
