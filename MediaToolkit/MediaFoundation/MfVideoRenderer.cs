@@ -421,7 +421,7 @@ namespace MediaToolkit.MediaFoundation
                 else
                 {
                     logger.Error(ex);
-                    throw;
+                    //throw;
                 }
 
             }
