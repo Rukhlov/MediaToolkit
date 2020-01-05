@@ -303,18 +303,6 @@ namespace Test.VideoRenderer
 
             try
             {
-
-
-                //var testSeqDir = @"D:\testPCM\";
-                //var di = new DirectoryInfo(testSeqDir);
-                //var files = di.GetFiles();
-                //foreach (var f in files)
-                //{
-                //    var bytes = File.ReadAllBytes(f.FullName);
-                //    testPCMSequence.Add(bytes);
-                //}
-
-
                 MMDevice device = null;
                 var deviceEnum = new MMDeviceEnumerator();
                 if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
@@ -379,50 +367,56 @@ namespace Test.VideoRenderer
             }
         }
 
-        private int sampleIndex = 0;
+
         private void buttonProcessSample_Click(object sender, EventArgs e)
         {
+            logger.Debug("buttonProcessSample_Click(...)");
+
             try
             {
-                SignalGenerator signalGenerator = new SignalGenerator(48000, 2);
 
-                //var index = sampleIndex % testPCMSequence.Count;
-
-                // var testBytes = testPCMSequence[index];
-
-
-         
-                var sample = MediaFactory.CreateSample();
-                var mb = MediaFactory.CreateMemoryBuffer(512);
+                Task.Run(() =>
                 {
-                    sample.AddBuffer(mb);
-                }
-                sample.SampleDuration = 0;
-                sample.SampleTime = 0;
+
+                    logger.Debug("signal generator start...");
+
+                    SignalGenerator signalGenerator = new SignalGenerator(48000, 2);
 
 
-                Task.Run(() => 
-                {
-                    while (true)
+                    var testBytes = new float[1024*1024];
+                    int dataSize = testBytes.Length * sizeof(float);
+                    var sample = MediaFactory.CreateSample();
+                    var mb = MediaFactory.CreateMemoryBuffer(dataSize);
                     {
-                        var testBytes = new float[1024];
+                        sample.AddBuffer(mb);
+                    }
+
+                    sample.SampleDuration = 0;
+                    sample.SampleTime = 0;
+                    int count = 10;
+                    while (count-->0)
+                    {
+                        //var testBytes = new float[1024];
                         signalGenerator.Read(testBytes, 0, testBytes.Length);
-                        var bytes = GetSamplesWaveData(testBytes, testBytes.Length / 4);
 
                         var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
 
-                        Marshal.Copy(bytes, 0, pBuffer, bytes.Length);
+                        Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
 
-                        mb.CurrentLength = bytes.Length;
+                        mb.CurrentLength = dataSize;
                         mb.Unlock();
+
                         audioRenderer?.ProcessSample(sample);
-                        Thread.Sleep(10);
+                        Thread.Sleep(2000);
                     }
 
+                    mb.Dispose();
+                    sample.Dispose();
+
+                    logger.Debug("Signal generator stop...");
                 });
 
 
-                
 
                //index++;
             }

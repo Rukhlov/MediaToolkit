@@ -19,18 +19,13 @@ namespace MediaToolkit.MediaFoundation
 
         public MfAudioRenderer()
         { }
-
  
         private PresentationClock presentationClock = null;
 
         private StreamSink streamSink = null;
-        private Sample videoSample = null;
-
         private MediaSink audioSink = null;
         private SimpleAudioVolume simpleAudioVolume = null;
         private volatile int streamSinkRequestSample = 0;
-
-        byte[] videoBuffer = new byte[1024];
 
         private MediaEventHandler streamSinkEventHandler = null;
 
@@ -108,7 +103,6 @@ namespace MediaToolkit.MediaFoundation
                 }
 
 
-
                 if (audioSink.StreamSinkCount == 0)
                 {
                     //TODO:..
@@ -124,36 +118,53 @@ namespace MediaToolkit.MediaFoundation
                     //    logger.Debug("SARStreamSinkAttrubutes:\r\n" + attrLog);
                     //}
 
+                    //MediaType supportedMediaType = null;
                     for (int i = 0; i < handler.MediaTypeCount; i++)
                     {
                         using (var mediaType = handler.GetMediaTypeByIndex(i))
                         {
-                            logger.Debug(MfTool.LogMediaType(mediaType));
+                            var result = handler._IsMediaTypeSupported(mediaType, out MediaType m);
+                            if (result.Failure)
+                            {
+                                string log = "Media type not supported:\r\n" +
+                                            MfTool.LogMediaType(mediaType) +
+                                            "\r\n--------------------------------------";
+
+                                logger.Info(log);
+                                continue;
+                               
+                            }
+                            handler.CurrentMediaType = mediaType;
+                            logger.Info("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
+
+                            break;
+                           // logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
                         }
-                            
-                    }
-
-                    using (var mediaType = new MediaType())
-                    {
-                        mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Audio);
-
-                        mediaType.Set(MediaTypeAttributeKeys.Subtype, AudioFormatGuids.Float);
-                        mediaType.Set(MediaTypeAttributeKeys.AudioSamplesPerSecond, 44100);
-                        mediaType.Set(MediaTypeAttributeKeys.AudioNumChannels, 2);
-                        mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
-
-
-                        handler.IsMediaTypeSupported(mediaType, out MediaType _mediaType); //не работает!
-
-                        handler.CurrentMediaType = mediaType;
-                    }
-                    
-
-                    using (var currentMediaType = handler.CurrentMediaType)
-                    {
-                        logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(currentMediaType));
 
                     }
+
+                    //using (var mediaType = new MediaType())
+                    //{
+                    //    mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Audio);
+                    //    mediaType.Set(MediaTypeAttributeKeys.Subtype, AudioFormatGuids.Pcm);
+                    //    mediaType.Set(MediaTypeAttributeKeys.AudioSamplesPerSecond, 48000);
+                    //    mediaType.Set(MediaTypeAttributeKeys.AudioNumChannels, 2);
+                    //    mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+                    //    var Result = handler._IsMediaTypeSupported(mediaType, out MediaType _mediaType);
+                    //    if (Result.Success)
+                    //    {
+                    //    }
+                    //    handler.CurrentMediaType = mediaType;
+                    //}
+
+                    //var _mediaType = handler.GetMediaTypeByIndex(0);
+                    //handler.CurrentMediaType = _mediaType;
+
+                    //using (var currentMediaType = handler.CurrentMediaType)
+                    //{
+                    //    logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(currentMediaType));
+
+                    //}
 
 
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
@@ -289,9 +300,7 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-
-
-        public void ProcessSample(Sample sample)
+         public void ProcessSample(Sample sample)
         {
             if (!IsRunning)
             {
@@ -316,7 +325,7 @@ namespace MediaToolkit.MediaFoundation
                 Monitor.TryEnter(syncLock, 10, ref lockTacken);
                 if (lockTacken)
                 {
-                    if (streamSinkRequestSample > 0)
+                    //if (streamSinkRequestSample > 0)
                     {
                         streamSink.ProcessSample(sample);
 
@@ -520,13 +529,6 @@ namespace MediaToolkit.MediaFoundation
                 streamSink.Dispose();
                 streamSink = null;
             }
-
-            if (videoSample != null)
-            {
-                videoSample.Dispose();
-                videoSample = null;
-            }
-
         }
 
 
