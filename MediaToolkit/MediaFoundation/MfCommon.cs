@@ -727,8 +727,9 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
 
         public static readonly Guid MJPEGDecoderMFT = new Guid("CB17E772-E1CC-4633-8450-5617AF577905");
-    }
 
+           
+    }
 
     public enum RateControlMode
     {

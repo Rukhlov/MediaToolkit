@@ -38,14 +38,22 @@ namespace Test.DeckLink
                 deckLinkInput = (IDeckLinkInput)this.deckLink;
                 deckLinkStatus = (IDeckLinkStatus)this.deckLink;
 
-                this.deckLink.GetDisplayName(out deviceName);
+                bool videoInputSignalLocked = false;
+                deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
+                videoInputSignalLocked = (videoInputSignalLockedFlag != 0);
 
-                this.deckLink?.GetModelName(out modelName);
+                if (videoInputSignalLocked)
+                {
+                    throw new Exception("Video input locked"); 
+                }
+
+                this.deckLink.GetDisplayName(out deviceName);
+                this.deckLink.GetModelName(out modelName);
 
 
                 var deckLinkAttributes = (IDeckLinkProfileAttributes)deckLink;
                 deckLinkAttributes.GetFlag(_BMDDeckLinkAttributeID.BMDDeckLinkSupportsInputFormatDetection, out int supportsFormatDetectionFlag);
-                supportsFormatDetection = supportsFormatDetectionFlag != 0;
+                supportsFormatDetection = (supportsFormatDetectionFlag != 0);
               
 
                 logger.Debug("------------------------- " + deviceName + " -------------------------");

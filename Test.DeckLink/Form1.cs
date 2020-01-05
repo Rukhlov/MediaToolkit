@@ -13,6 +13,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,18 +47,39 @@ namespace Test.DeckLink
         {
             logger.Debug("buttonStart_Click(...)");
 
-            deckLinkInput = new DeckLinkInput();
-            deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
-            deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
-            deckLinkInput.InputFormatChanged += CurrentDevice_InputFormatChanged;
+            var deviceIndex = 0;
+
+            var item = comboBoxDevices.SelectedItem;
+            if (item != null)
+            {
+                var device = item as DeckLinkDeviceDescription;
+                if (device != null)
+                {
+                    deviceIndex = device.DeviceIndex;
+                }
+            }
+
+            try
+            {
+                deckLinkInput = new DeckLinkInput();
+                deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
+                deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
+                deckLinkInput.InputFormatChanged += CurrentDevice_InputFormatChanged;
 
 
-            //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-            //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
-            deckLinkInput.StartCapture(0);
+                //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
+                //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
 
-            buttonStart.Enabled = false;
-            buttonStop.Enabled = true;
+                deckLinkInput.StartCapture(deviceIndex);
+
+                buttonStart.Enabled = false;
+                buttonStop.Enabled = true;
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
 
         }
 
@@ -115,7 +137,7 @@ namespace Test.DeckLink
                 renderer.Resize(videoForm.ClientRectangle);
 
                 deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-                deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
+                deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
 
             }));
                
@@ -143,8 +165,14 @@ namespace Test.DeckLink
                     videoForm = null;
                 }
 
+                var errorCode = deckLinkInput.ErrorCode;
+                if (errorCode != 0)
+                {
+                    MessageBox.Show("DeckLink unknown error: " + errorCode);
+                }
+
                 deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
-                deckLinkInput.AudioDataArrived -= _selectedDevice_AudioDataArrived;
+                deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
 
                 buttonStart.Enabled = true;
                 buttonStop.Enabled = false;
@@ -159,25 +187,25 @@ namespace Test.DeckLink
 
         Stopwatch sw = new Stopwatch();
         long _time = 0;
-        private void CurrentDevice_VideoDataArrived(IntPtr ptr, int len, long time)
+        private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
         {
             _time += sw.ElapsedMilliseconds;
 
             var sample = MediaFactory.CreateSample();
 
-            sample.SampleTime = 0;//MfTool.SecToMfTicks((_time / 1000.0));
-            sample.SampleDuration = 0;//MfTool.SecToMfTicks(((int)33 / 1000.0));
+            sample.SampleTime = MfTool.SecToMfTicks(frameTime);
+            sample.SampleDuration = MfTool.SecToMfTicks(frameDuration);
 
 
-            var mb = MediaFactory.CreateMemoryBuffer(len);
+            var mb = MediaFactory.CreateMemoryBuffer(frameLength);
             {
                 var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
 
-                Kernel32.CopyMemory(pBuffer, ptr, (uint)len);
+                Kernel32.CopyMemory(pBuffer, frameData, (uint)frameLength);
 
                 //Marshal.Copy(testBytes, 0, pBuffer, len);
 
-                mb.CurrentLength = len;
+                mb.CurrentLength = frameLength;
                 mb.Unlock();
 
                 sample.AddBuffer(mb);
@@ -204,17 +232,25 @@ namespace Test.DeckLink
         {
             logger.Debug("buttonStop_Click(...)");
 
-            if (deckLinkInput != null)
+            try
             {
-                //deckLinkInput.CaptureStarted -= DeckLinkInput_CaptureStarted;
-                //deckLinkInput.CaptureStopped -= DeckLinkInput_CaptureStopped;
-                //deckLinkInput.InputFormatChanged -= CurrentDevice_InputFormatChanged;
+                if (deckLinkInput != null)
+                {
+                    //deckLinkInput.CaptureStarted -= DeckLinkInput_CaptureStarted;
+                    //deckLinkInput.CaptureStopped -= DeckLinkInput_CaptureStopped;
+                    //deckLinkInput.InputFormatChanged -= CurrentDevice_InputFormatChanged;
 
-                deckLinkInput.AudioDataArrived -= _selectedDevice_AudioDataArrived;
-                deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
+                    deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+                    deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
 
-                deckLinkInput.StopCapture();
+                    deckLinkInput.StopCapture();
+                }
             }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
 
 
         }
@@ -250,7 +286,7 @@ namespace Test.DeckLink
 
                     var shareMode = AudioClientShareMode.Shared;
                     var useSyncEvent = false;
-                    var latency = 100;
+                    var latency = 50;//100;
 
                     var deviceLog = string.Join(" ", device.FriendlyName, sampleRate, channelsCount, bitsPerSample,
                         shareMode, useSyncEvent, latency, BufferMilliseconds);
@@ -345,16 +381,25 @@ namespace Test.DeckLink
             var ex = e.Exception;
             if (ex != null)
             {
-
+               
                 var comExeption = ex as System.Runtime.InteropServices.COMException;
                 if (comExeption != null)
                 {
-                    //https://msdn.microsoft.com/en-us/library/windows/desktop/ee416776(v=vs.85).aspx
-                    if (comExeption.ErrorCode == -2005401450) // 0x88780096 DSERR_BUFFERLOST 
+                    var code = comExeption.HResult;
+                    if(code == AUDCLNT.E_DEVICE_INVALIDATED)
                     {
+                        logger.Warn("AUDCLNT.E_DEVICE_INVALIDATED");
+
+                        //https://docs.microsoft.com/en-us/windows/win32/coreaudio/recovering-from-an-invalid-device-error
                         // TODO: перезапустить девайс...
-                        return;
                     }
+
+                    ////https://msdn.microsoft.com/en-us/library/windows/desktop/ee416776(v=vs.85).aspx
+                    //if (comExeption.ErrorCode == -2005401450) // 0x88780096 DSERR_BUFFERLOST 
+                    //{
+                    //    // TODO: перезапустить девайс...
+                    //    return;
+                    //}
                 }
 
                 logger.Error(ex);
@@ -368,7 +413,7 @@ namespace Test.DeckLink
 
         private bool _muteAudio = false;
 
-        private void _selectedDevice_AudioDataArrived(byte[] data, long time)
+        private void CurrentDevice_AudioDataArrived(byte[] data, double time)
         {// Получили аудио данные кладем их в буфер
             if (!_muteAudio)
             {
@@ -385,91 +430,126 @@ namespace Test.DeckLink
 
         }
 
+        private DeckLinkDeviceDescription currentDevice = null;
         private void comboBoxDevices_SelectedValueChanged(object sender, EventArgs e)
         {
             logger.Debug("comboBoxDevices_SelectedValueChanged(...)");
 
-            //var selectedItem = comboBoxDevices.SelectedItem;
-            //if (selectedItem != null)
-            //{
-            //    var selectedDevice = selectedItem as DeckLinkDevice;
-            //    if (selectedDevice != null)
-            //    {
-            //        currentDevice = selectedDevice;
+            var selectedItem = comboBoxDevices.SelectedItem;
+            if (selectedItem != null)
+            {
+                var selectedDevice = selectedItem as DeckLinkDeviceDescription;
+                if (selectedDevice != null)
+                {
+                    currentDevice = selectedDevice;
 
 
-            //    }
-            //}
+                }
+            }
         }
 
 
 
-        private List<DeckLinkDevice> decklinkDevices = new List<DeckLinkDevice>();
+        private List<DeckLinkDeviceDescription> decklinkDevices = new List<DeckLinkDeviceDescription>();
 
-        SynchronizationContext synchronizationContext = null;
+        class DeckLinkDeviceDescription
+        {
+            public int DeviceIndex = -1;
+            public string DeviceName = "";
+            public bool Available = false;
+
+            public override string ToString()
+            {
+                return DeviceName + " " + (Available ? "(Available)" : "(Not Available)");
+            }
+        }
 
         private void buttonFind_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonFind_Click(...)");
 
-            Thread thread = new Thread(() =>
+
+            decklinkDevices = new List<DeckLinkDeviceDescription>();
+            IDeckLinkIterator deckLinkIterator = null;
+            try
             {
+                deckLinkIterator = new CDeckLinkIterator();
 
-                IDeckLinkIterator deckLinkIterator = null;
-                try
+                int index = 0;
+                IDeckLink deckLink = null;
+                do
                 {
-                    deckLinkIterator = new CDeckLinkIterator();
-
-                    IDeckLink deckLink = null;
-                    do
+                    if (deckLink != null)
                     {
-                        deckLinkIterator.Next(out deckLink);
+                        Marshal.ReleaseComObject(deckLink);
+                        deckLink = null;
+                    }
 
-                        if (deckLink != null)
+                    deckLinkIterator.Next(out deckLink);
+
+                    if(deckLink == null)
+                    {
+                        break;
+                    }
+
+                    deckLink.GetDisplayName(out string deviceName);
+
+                    try
+                    {
+                        var deckLinkInput = (IDeckLinkInput)deckLink;
+                        var deckLinkStatus = (IDeckLinkStatus)deckLink;
+
+                        bool available = false;
+                        deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
+                        available = (videoInputSignalLockedFlag != 0);
+
+                        DeckLinkDeviceDescription deviceDescription = new DeckLinkDeviceDescription
                         {
-                            DeckLinkDevice device = new DeckLinkDevice(deckLink);
-                            if (device.DeckLinkInput != null)
-                            {
-                                decklinkDevices.Add(device);
-                            }
-                        }
+                            DeviceIndex = index,
+                            DeviceName = deviceName,
+                            Available = available
+                        };
+
+                        decklinkDevices.Add(deviceDescription);
+
+                        //Marshal.ReleaseComObject(deckLinkInput);
+                        //Marshal.ReleaseComObject(deckLinkStatus);
 
                     }
-                    while (deckLink != null);
-
-                }
-                catch (Exception ex)
-                {
-                    var errorMessage = ex.Message;
-                    if (deckLinkIterator == null)
+                    catch (InvalidCastException)
                     {
-                        errorMessage = "This application requires the DeckLink drivers installed.\n" +
-                            "Please install the Blackmagic DeckLink drivers to use the features of this application";
+
                     }
 
+                    index++;
 
-                    MessageBox.Show(errorMessage, "Error");
                 }
+                while (deckLink != null);
 
-
-                if (decklinkDevices.Count == 0)
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message;
+                if (deckLinkIterator == null)
                 {
-                    MessageBox.Show("This application requires a DeckLink PCI card.\n" +
-                        "You will not be able to use the features of this application until a DeckLink PCI card is installed.");
-
+                    errorMessage = "This application requires the DeckLink drivers installed.\n" +
+                        "Please install the Blackmagic DeckLink drivers to use the features of this application";
                 }
 
 
-            });
+                MessageBox.Show(errorMessage, "Error");
+            }
 
 
-            //thread.SetApartmentState(ApartmentState.MTA);
-            thread.Start();
+            if (decklinkDevices.Count == 0)
+            {
+                MessageBox.Show("This application requires a DeckLink PCI card.\n" +
+                    "You will not be able to use the features of this application until a DeckLink PCI card is installed.");
 
-            thread.Join();
+            }
 
             comboBoxDevices.DataSource = decklinkDevices;
-            comboBoxDevices.DisplayMember = "DeviceName";
+           //comboBoxDevices.DisplayMember = "DeviceName";
         }
 
     }

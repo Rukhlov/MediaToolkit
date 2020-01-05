@@ -1,5 +1,7 @@
 ﻿using MediaToolkit.MediaFoundation;
-
+using NAudio.CoreAudioApi;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using NLog;
 using SharpDX.MediaFoundation;
 using SharpDX.Multimedia;
@@ -293,6 +295,164 @@ namespace Test.VideoRenderer
 
                 
             }
+        }
+        List<byte[]> testPCMSequence = new List<byte[]>();
+        MfAudioRenderer audioRenderer = null;
+        private void buttonAudioSetup_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+
+
+                //var testSeqDir = @"D:\testPCM\";
+                //var di = new DirectoryInfo(testSeqDir);
+                //var files = di.GetFiles();
+                //foreach (var f in files)
+                //{
+                //    var bytes = File.ReadAllBytes(f.FullName);
+                //    testPCMSequence.Add(bytes);
+                //}
+
+
+                MMDevice device = null;
+                var deviceEnum = new MMDeviceEnumerator();
+                if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
+                {
+                    device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                }
+                var deviceId = device.ID;
+                device.Dispose();
+
+                audioRenderer = new MfAudioRenderer();
+
+
+                audioRenderer.Setup(deviceId, null);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+
+
+        }
+
+        private void buttonAudioStart_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                audioRenderer?.Start(0);
+
+                audioRenderer.SetMute(false);
+                audioRenderer.SetVolume(1f);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+            
+        }
+
+        private void buttonAudioStop_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                audioRenderer?.Stop();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+        }
+
+        private void buttonCloseAudio_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                audioRenderer?.Close();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+        }
+
+        private int sampleIndex = 0;
+        private void buttonProcessSample_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SignalGenerator signalGenerator = new SignalGenerator(48000, 2);
+
+                //var index = sampleIndex % testPCMSequence.Count;
+
+                // var testBytes = testPCMSequence[index];
+
+
+         
+                var sample = MediaFactory.CreateSample();
+                var mb = MediaFactory.CreateMemoryBuffer(512);
+                {
+                    sample.AddBuffer(mb);
+                }
+                sample.SampleDuration = 0;
+                sample.SampleTime = 0;
+
+
+                Task.Run(() => 
+                {
+                    while (true)
+                    {
+                        var testBytes = new float[1024];
+                        signalGenerator.Read(testBytes, 0, testBytes.Length);
+                        var bytes = GetSamplesWaveData(testBytes, testBytes.Length / 4);
+
+                        var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+
+                        Marshal.Copy(bytes, 0, pBuffer, bytes.Length);
+
+                        mb.CurrentLength = bytes.Length;
+                        mb.Unlock();
+                        audioRenderer?.ProcessSample(sample);
+                        Thread.Sleep(10);
+                    }
+
+                });
+
+
+                
+
+               //index++;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+
+
+        }
+
+
+        public static byte[] GetSamplesWaveData(float[] samples, int samplesCount)
+        {
+            var pcm = new byte[samplesCount * 2];
+            int sampleIndex = 0,
+                pcmIndex = 0;
+
+            while (sampleIndex < samplesCount)
+            {
+                var outsample = (short)(samples[sampleIndex] * short.MaxValue);
+                pcm[pcmIndex] = (byte)(outsample & 0xff);
+                pcm[pcmIndex + 1] = (byte)((outsample >> 8) & 0xff);
+
+                sampleIndex++;
+                pcmIndex += 2;
+            }
+
+            return pcm;
         }
     }
 }

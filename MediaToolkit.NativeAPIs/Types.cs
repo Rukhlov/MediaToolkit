@@ -402,4 +402,61 @@ namespace MediaToolkit.NativeAPIs
     }
 
 
+    public static class AUDCLNT
+    {   // AUDCLNT_ERR(n) MAKE_HRESULT(SEVERITY_ERROR, FACILITY_AUDCLNT, n)
+        // AUDCLNT_SUCCESS(n) MAKE_SCODE(SEVERITY_SUCCESS, FACILITY_AUDCLNT, n)
+
+        public const int SEVERITY_ERROR = 1;
+        public const int FACILITY_AUDCLNT = 0x889;
+        public static readonly int E_NOT_INITIALIZED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x001);
+        public static readonly int E_ALREADY_INITIALIZED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x002);
+        public static readonly int E_WRONG_ENDPOINT_TYPE = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x003);
+
+
+
+        /// <summary>
+        /// The audio endpoint device has been unplugged, 
+        /// or the audio hardware or associated hardware resources have been reconfigured,
+        /// disabled, removed, or otherwise made unavailable for use. 
+        /// </summary>
+        public static readonly int E_DEVICE_INVALIDATED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x004);
+
+        public static readonly int E_NOT_STOPPED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x005);
+        public static readonly int E_BUFFER_TOO_LARGE = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x006);
+        public static readonly int E_OUT_OF_ORDER = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x007);
+        public static readonly int E_UNSUPPORTED_FORMAT = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x008);
+        public static readonly int E_INVALID_SIZE = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x009);
+        public static readonly int E_DEVICE_IN_USE = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x00A);
+        public static readonly int E_BUFFER_OPERATION_PENDING = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x00B);
+        public static readonly int E_THREAD_NOT_REGISTERED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x00C);
+        public static readonly int E_EXCLUSIVE_MODE_NOT_ALLOWED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x00E);
+        public static readonly int E_ENDPOINT_CREATE_FAILED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x00F);
+        public static readonly int E_SERVICE_NOT_RUNNING = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x010);
+        public static readonly int E_EVENTHANDLE_NOT_EXPECTED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x011);
+        public static readonly int E_EXCLUSIVE_MODE_ONLY = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x0012);
+        public static readonly int E_BUFDURATION_PERIOD_NOT_EQUAL = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x013);
+        public static readonly int E_EVENTHANDLE_NOT_SET = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x014);
+        public static readonly int E_INCORRECT_BUFFER_SIZE = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x015);
+        public static readonly int E_BUFFER_SIZE_ERROR = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x016);
+        public static readonly int E_CPUUSAGE_EXCEEDED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x017);
+        public static readonly int E_BUFFER_SIZE_NOT_ALIGNED = MakeHResult(SEVERITY_ERROR, FACILITY_AUDCLNT, 0x019);
+        public static readonly int E_RESOURCES_INVALIDATED = unchecked((int)0x88890026);
+
+        //static readonly int S_BUFFER_EMPTY              SUCCESS(0x001)
+        //static readonly int S_THREAD_ALREADY_REGISTERED SUCCESS(0x002)
+        //static readonly int S_POSITION_STALLED		   SUCCESS(0x003)
+
+        public static int MakeHResult(uint ser, uint fac, uint code)
+        {
+
+            uint result = ser << 31;
+            result |= fac << 16;
+            result |= code;
+
+            return unchecked((int)result);
+        }
+
+    }
+
+
 }
