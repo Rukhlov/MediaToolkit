@@ -1,4 +1,6 @@
-﻿using MediaToolkit.MediaFoundation;
+﻿using MediaToolkit.Core;
+using MediaToolkit.MediaFoundation;
+using MediaToolkit.SharedTypes;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -323,11 +325,21 @@ namespace Test.VideoRenderer
 
                 device.Dispose();
 
-                signalGenerator = new SignalGenerator(48000, 2);
+                signalGenerator = new SignalGenerator(16000, 2);
                 var signalFormat = signalGenerator.WaveFormat;
 
                 audioRenderer = new MfAudioRenderer();
-                audioRenderer.Setup(deviceId, deviceFormat, signalFormat);
+                AudioRendererArgs audioArgs = new AudioRendererArgs
+                {
+                    DeviceId = "",
+                    SampleRate = signalFormat.SampleRate,
+                    BitsPerSample = signalFormat.BitsPerSample,
+                    Encoding = (WaveEncodingTag)signalFormat.Encoding,
+                    Channels = signalFormat.Channels,
+
+                };
+
+                audioRenderer.Setup(audioArgs);
 
             }
             catch(Exception ex)
@@ -345,8 +357,8 @@ namespace Test.VideoRenderer
             {
                 audioRenderer?.Start(0);
 
-                audioRenderer.SetMute(false);
-                audioRenderer.SetVolume(1f);
+                audioRenderer.Mute = false;
+                audioRenderer.Volume = 1f;
             }
             catch (Exception ex)
             {
@@ -477,7 +489,7 @@ namespace Test.VideoRenderer
             if (audioRenderer != null)
             {
                 var vol = trackBarVolume.Value / 100.0;
-                audioRenderer.SetVolume((float)vol);
+                audioRenderer.Volume = (float)vol;
             }
         }
 
@@ -485,7 +497,7 @@ namespace Test.VideoRenderer
         {
             if (audioRenderer != null)
             {
-                audioRenderer.SetMute(checkBoxMute.Checked);
+                audioRenderer.Mute = (checkBoxMute.Checked);
             }
         }
     }

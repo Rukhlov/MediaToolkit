@@ -62,11 +62,20 @@ namespace MediaToolkit.Core
         public string DeviceId = "";
         public AudioEncoderMode Encoder = AudioEncoderMode.G711;
     }
+
     public enum AudioEncoderMode
     {
         AAC,
         G711,
+
     }
+
+    public enum WaveEncodingTag
+    {
+        PCM = 0x0001,
+        IeeeFloat = 0x0003,
+    }
+
 
     public class AudioCaptureSettings
     {

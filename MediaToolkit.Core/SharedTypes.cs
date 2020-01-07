@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaToolkit.Core;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -62,6 +63,38 @@ namespace MediaToolkit.SharedTypes
 
         //...
     }
+
+
+    public class AudioRendererArgs
+    {
+        public string DeviceId { get; set; } = "";
+
+        //Input wave format...
+        public int SampleRate { get; set; } = 44100;
+        public int Channels { get; set; } = 2;
+        public WaveEncodingTag Encoding { get; set; } = WaveEncodingTag.PCM;
+        public int BitsPerSample { get; set; } = 32;
+
+        public override string ToString()
+        {
+            return string.Join(";" , DeviceId ?? "", SampleRate, Encoding, BitsPerSample, Channels);
+        }
+
+    }
+
+    public interface IAudioRenderer
+    {
+        bool Mute { get; set; }
+        float Volume { get; set; }
+
+        void Setup(AudioRendererArgs args);
+        void Start(long time);
+        void Stop();
+        void Close();
+
+        int ErrorCode { get; }
+    }
+
 
     public enum ErrorCode : int
     {

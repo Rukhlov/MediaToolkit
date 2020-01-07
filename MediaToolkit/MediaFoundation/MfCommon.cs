@@ -65,7 +65,7 @@ namespace MediaToolkit.MediaFoundation
             return typeName;
         }
 
-        public static string GetMediaTypeSubtypeName(MediaType mediaType, bool GetFullName = false)
+        public static string GetMediaSubtypeName(MediaType mediaType, bool GetFullName = false)
         {
             string typeName = "UnknownType";
             var guid = mediaType.Get(MediaTypeAttributeKeys.Subtype);
@@ -900,8 +900,6 @@ namespace MediaToolkit.MediaFoundation
         public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.eAVEncH264VProfile_Main;
 
 
-
     }
-
 
 }

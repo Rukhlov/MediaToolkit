@@ -1,4 +1,6 @@
-﻿using NLog;
+﻿using MediaToolkit.SharedTypes;
+
+using NLog;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
@@ -15,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.MediaFoundation
 {
-    public class MfAudioRenderer
+    public class MfAudioRenderer: IAudioRenderer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -33,6 +35,7 @@ namespace MediaToolkit.MediaFoundation
 
         public event Action RendererStarted;
         public event Action RendererStopped;
+        private event Action<int> EventOccured;
 
         private volatile RendererState rendererState = RendererState.Closed;
         public RendererState State { get => rendererState; }
@@ -47,11 +50,47 @@ namespace MediaToolkit.MediaFoundation
         private MediaType inputMediaType = null;
         private MediaType deviceMediaType = null;
 
+        public void Setup(AudioRendererArgs args)
+        {
+            logger.Debug("MfAudioRenderer::Setup(...) " + args.ToString());
+
+            var deviceId = args.DeviceId;
+            var sampleRate = args.SampleRate;
+            var channelsNum = args.Channels;
+            var bitsPerSample = args.BitsPerSample;
+
+            NAudio.CoreAudioApi.MMDevice device = GetAudioDevice(deviceId);
+
+            NAudio.Wave.WaveFormat mixWaveFormat = null;
+            if (device != null)
+            {
+                deviceId = device.ID;
+                mixWaveFormat = device.AudioClient.MixFormat;
+                device.Dispose();
+            }
+            else
+            {
+                throw new Exception("Audio render device not found...");
+            }
+
+            NAudio.Wave.WaveFormat inputWaveFormat = new NAudio.Wave.WaveFormat(sampleRate, bitsPerSample, channelsNum);
+            if (args.Encoding == Core.WaveEncodingTag.IeeeFloat)
+            {
+                inputWaveFormat = NAudio.Wave.WaveFormat.CreateIeeeFloatWaveFormat(args.SampleRate, args.Channels);
+            }
+
+            Setup(deviceId, mixWaveFormat, inputWaveFormat);
+
+        }
+
+
+
         public void Setup(string endpointId, NAudio.Wave.WaveFormat mixWaveFormat, NAudio.Wave.WaveFormat inputWaveFormat)
         {
-            logger.Debug("Setup(...) " + endpointId);
-
             
+            logger.Debug("MfAudioRenderer::Setup(...) " + endpointId);
+
+
             if (rendererState != RendererState.Closed)
             {
                 throw new InvalidOperationException("Invalid state: " + rendererState);
@@ -106,6 +145,8 @@ namespace MediaToolkit.MediaFoundation
                 { //MR_POLICY_VOLUME_SERVICE
 
                     simpleAudioVolume = service.GetService<SimpleAudioVolume>(MediaServiceKeys.PolicyVolume);
+                    volume = simpleAudioVolume.MasterVolume;
+                    mute = simpleAudioVolume.Mute;
                 }
 
 
@@ -113,28 +154,7 @@ namespace MediaToolkit.MediaFoundation
                 using (var handler = streamSink.MediaTypeHandler)
                 {
 
-                    //for (int i = 0; i < handler.MediaTypeCount; i++)
-                    //{
-                    //    using (var mediaType = handler.GetMediaTypeByIndex(i))
-                    //    {
-                    //        var result = handler._IsMediaTypeSupported(mediaType, out MediaType m);
-                    //        if (result.Failure)
-                    //        {
-                    //            string log = "Media type not supported:\r\n" +
-                    //                        MfTool.LogMediaType(mediaType) +
-                    //                        "\r\n--------------------------------------";
-
-                    //            logger.Info(log);
-                    //            continue;
-
-                    //        }
-                    //        //handler.CurrentMediaType = mediaType;
-                    //        logger.Info("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
-
-                    //        break;
-                    //        // logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
-                    //    }
-                    //}
+                    //LogMediaTypeHanldler(handler);
 
                     var rest = handler._IsMediaTypeSupported(inputMediaType, out MediaType _mediaType);
                     if (rest.Success)
@@ -150,8 +170,8 @@ namespace MediaToolkit.MediaFoundation
 
                         //внутненний формат девайса должен поддерживатся
                         handler.IsMediaTypeSupported(deviceMediaType, out MediaType _deviceMediaType);
-                        handler.CurrentMediaType = deviceMediaType; 
-                        
+                        handler.CurrentMediaType = deviceMediaType;
+
                         logger.Debug("Resapmler input type:\r\n" + MfTool.LogMediaType(inputMediaType));
                         logger.Debug("Resapmler output type:\r\n" + MfTool.LogMediaType(deviceMediaType));
 
@@ -196,7 +216,25 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public void SetMute(bool mute)
+
+        private bool mute = false;
+        public bool Mute
+        {
+            get
+            {
+                return mute;
+            }
+            set
+            {
+                if (mute != value)
+                {
+                    mute = value;
+                    SetMute(mute);
+                }
+            }
+        }
+
+        private void SetMute(bool mute)
         {
             if (!IsRunning)
             {
@@ -206,13 +244,33 @@ namespace MediaToolkit.MediaFoundation
 
             lock (syncLock)
             {
-                simpleAudioVolume.Mute = mute;
+                if (simpleAudioVolume != null)
+                {
+                    simpleAudioVolume.Mute = mute;
+                }
+                
             }
 
         }
 
+        private float volume = 1f;
+        public float Volume
+        {
+            get
+            {
+                return volume;
+            }
+            set
+            {
+                if(volume != value )
+                {
+                    volume = value;
+                    SetVolume(volume);
+                }
+            }
+        }
 
-        public void SetVolume(float volume)
+        private void SetVolume(float volume)
         {
             if (rendererState == RendererState.Closed)
             {
@@ -222,14 +280,18 @@ namespace MediaToolkit.MediaFoundation
 
             lock (syncLock)
             {
-                simpleAudioVolume.MasterVolume = volume;
+                if (simpleAudioVolume != null)
+                {
+                    simpleAudioVolume.MasterVolume = volume;
+                }
+                
             }
 
         }
 
         public void Start(long time)
         {
-            logger.Debug("Start(...) " + time);
+            logger.Debug("MfAudioRenderer::Start(...) " + time);
 
             if (rendererState == RendererState.Closed || rendererState == RendererState.Started)
             {
@@ -267,7 +329,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Stop()
         {
-            logger.Debug("Stop()");
+            logger.Debug("MfAudioRenderer::Stop()");
 
             if (!IsRunning)
             {
@@ -305,7 +367,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Pause()
         { // не работает!!
-            logger.Debug("Pause()");
+            logger.Debug("MfAudioRenderer::Pause()");
             if (!IsRunning)
             {
                 logger.Warn("Pause() return invalid render state: " + rendererState);
@@ -384,6 +446,16 @@ namespace MediaToolkit.MediaFoundation
                     logger.Debug(typeInfo);
 
                    
+                }
+                else if (typeInfo == MediaEventTypes.AudioSessionVolumeChanged)
+                {
+                    logger.Debug(typeInfo);
+
+                    volume = simpleAudioVolume.MasterVolume;
+                    mute = simpleAudioVolume.Mute;
+
+                    EventOccured?.Invoke((int)typeInfo);
+                    
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkFormatChanged)
                 {
@@ -510,7 +582,7 @@ namespace MediaToolkit.MediaFoundation
  
             resampler.ProcessInput(0, inputSample, 0);
 
-            //if (resampler.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
+           // if (resampler.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady) //E_NOTIMPL
             {
 
                 resampler.GetOutputStreamInfo(0, out TOutputStreamInformation streamInfo);
@@ -527,7 +599,7 @@ namespace MediaToolkit.MediaFoundation
                 long totalDuration = 0;
                 int totalLength = 0;
 
-                List<MediaBuffer> processedBuffers = new List<MediaBuffer>();
+                List<MediaBuffer> resampledBuffers = new List<MediaBuffer>();
 
                 Sample sampleBuffer = null;
 
@@ -571,10 +643,10 @@ namespace MediaToolkit.MediaFoundation
 
                             Debug.Assert(sampleBuffer != null, "res.Success && outputSample != null");
 
-                            var resapledBuffer = sampleBuffer.ConvertToContiguousBuffer();
-                            totalLength += resapledBuffer.CurrentLength;
+                            var resampledBuffer = sampleBuffer.ConvertToContiguousBuffer();
+                            totalLength += resampledBuffer.CurrentLength;
                             totalDuration += sampleBuffer.SampleDuration;
-                            processedBuffers.Add(resapledBuffer);
+                            resampledBuffers.Add(resampledBuffer);
 
                             sampleBuffer.RemoveBufferByIndex(0);
 
@@ -583,8 +655,10 @@ namespace MediaToolkit.MediaFoundation
                         }
                         else if (res == ResultCode.TransformNeedMoreInput)
                         {
+                            Debug.Assert(resampledBuffers.Count > 0, "processedBuffers.Count > 0");
+                            Debug.Assert(totalLength > 0, " totalLength > 0");
 
-                            if (processedBuffers.Count > 0 && totalLength > 0)
+                            if (resampledBuffers.Count > 0 && totalLength > 0)
                             {
                                 outputSample = MediaFactory.CreateSample();
 
@@ -595,9 +669,9 @@ namespace MediaToolkit.MediaFoundation
                                 {
                                     int offset = 0;
                                     var pDest = destBuffer.Lock(out int maxLen, out int curLen);
-                                    for (int i = 0; i < processedBuffers.Count; i++)
+                                    for (int i = 0; i < resampledBuffers.Count; i++)
                                     {
-                                        MediaBuffer srcBuffer = processedBuffers[i];
+                                        MediaBuffer srcBuffer = resampledBuffers[i];
                                         if (srcBuffer != null)
                                         {
                                             IntPtr pSrc = srcBuffer.Lock(out int srcMaxLen, out int srcCurLen);
@@ -618,18 +692,18 @@ namespace MediaToolkit.MediaFoundation
                             }
                             else
                             {
-                                logger.Warn(res.ToString() + totalLength + " " + processedBuffers.Count);
+
+                                logger.Warn(res.ToString() + totalLength + " " + resampledBuffers.Count);
                             }
 
                             Result = true;
                             break;
 
                         }
-                        else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
-                        {
-                            // х.з может ли быть такое!?
-                            logger.Warn(res.ToString() + " TransformStreamChange");
-                        }
+                        //else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
+                        //{
+                        //    logger.Warn(res.ToString() + " TransformStreamChange");
+                        //}
                         else
                         {
                             res.CheckError();
@@ -654,13 +728,13 @@ namespace MediaToolkit.MediaFoundation
 
         private void OnFormatChanged()
         {
-            logger.Debug("OnFormatChanged()");
+            logger.Debug("MfAudioRenderer::OnFormatChanged()");
             //TODO:
         }
 
         private void OnDeviceChanged()
         {
-            logger.Debug("OnDeviceChanged() " + streamSinkRequestSample);
+            logger.Debug("MfAudioRenderer::OnDeviceChanged() " + streamSinkRequestSample);
             lock (syncLock)
             {
 
@@ -671,7 +745,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Close()
         {
-            logger.Debug("Close()");
+            logger.Debug("MfAudioRenderer::Close()");
             try
             {
                 //lock (syncLock)
@@ -692,7 +766,7 @@ namespace MediaToolkit.MediaFoundation
 
         private void CleanUp()
         {
-            logger.Debug("CleanUp()");
+            logger.Debug("MfAudioRenderer::CleanUp()");
 
             if (audioSink != null)
             {
@@ -741,72 +815,71 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
+        private static NAudio.CoreAudioApi.MMDevice GetAudioDevice(string deviceId)
+        {
+            NAudio.CoreAudioApi.MMDevice device = null;
+            var deviceEnum = new NAudio.CoreAudioApi.MMDeviceEnumerator();
+            if (string.IsNullOrEmpty(deviceId))
+            {// default render...
+                if (deviceEnum.HasDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Console))
+                {
+                    device = deviceEnum.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Console);
+                }
+            }
+            else
+            {
+                device = deviceEnum.GetDevice(deviceId);
+            }
+            NAudio.CoreAudioApi.MMDeviceCollection devices = null;
+            if (device == null)
+            {
+                devices = deviceEnum.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.DeviceState.Active);
+                if (devices.Count > 0)
+                {
+                    device = devices[0];
+                    for(int i= 1; i< devices.Count; i++)
+                    {
+                        device = devices[i];
+                        device.Dispose();
+                        device = null;
+                    }
+                }
+                
+            }
 
+            return device;
+        }
+
+        private static void LogMediaTypeHanldler(MediaTypeHandler handler)
+        {
+            for (int i = 0; i < handler.MediaTypeCount; i++)
+            {
+                using (var mediaType = handler.GetMediaTypeByIndex(i))
+                {
+                    var result = handler._IsMediaTypeSupported(mediaType, out MediaType m);
+                    if (result.Failure)
+                    {
+                        string log = "Media type not supported:\r\n" +
+                                    MfTool.LogMediaType(mediaType) +
+                                    "\r\n--------------------------------------";
+
+                        logger.Info(log);
+                        continue;
+
+                    }
+                    //handler.CurrentMediaType = mediaType;
+                    logger.Info("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
+
+                    break;
+                    // logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
+                }
+            }
+        }
     }
 
 
 }
 
-//using (MediaAttributes attributes = new MediaAttributes(1))
-//{
-//    /*
-//     * If this attribute is set, do not set the MF_AUDIO_RENDERER_ATTRIBUTE_ENDPOINT_ROLE attribute.
-//     * If both attributes are set, a failure will occur when the audio renderer is created.
-//     */
-//    attributes.Set(AudioRendererAttributeKeys.EndpointId, endpointId);
-//    //attributes.Set(AudioRendererAttributeKeys.EndpointRole, 0);
-
-//    MediaFactory.CreateAudioRenderer(attributes, out MediaSink sink);
-//    this.audioSink = sink;
-//}
-
-//using (var mediaType = new MediaType())
-//{
-//    ///https://docs.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatex
-//    ///
-//    Guid format = AudioFormatGuids.Pcm;
-//    //Guid format = AudioFormatGuids.Float;
-//    int sampleRate = 44100;// 48000;
-//    int channelsNum = 2;
-//    int bitsPerSample = 32;
-//    int bytesPerSample = bitsPerSample / 8;
-
-//    //This attribute corresponds to the nAvgBytesPerSec member of the WAVEFORMATEX structure. 
-//    var avgBytesPerSecond = sampleRate * channelsNum * bytesPerSample; // х.з зачем это нужно, но без этого не работает!!!
-
-//    var blockAlignment = 8;
-//    if (format == AudioFormatGuids.Pcm || format == AudioFormatGuids.Float)
-//    {
-//        // If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, 
-//        //set nBlockAlign to (nChannels*wBitsPerSample)/8, 
-//        //which is the size of a single audio frame. 
-//        blockAlignment = channelsNum * bytesPerSample;
-//    }
-//    else
-//    {
-//        //not supported...
-//    }
-
-//    mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Audio);
-//    mediaType.Set(MediaTypeAttributeKeys.Subtype, format);
-//    mediaType.Set(MediaTypeAttributeKeys.AudioSamplesPerSecond, sampleRate);
-//    mediaType.Set(MediaTypeAttributeKeys.AudioBitsPerSample, bitsPerSample);
-//    mediaType.Set(MediaTypeAttributeKeys.AudioNumChannels, channelsNum);
-//    mediaType.Set(MediaTypeAttributeKeys.AudioAvgBytesPerSecond, avgBytesPerSecond);
-//    mediaType.Set(MediaTypeAttributeKeys.AudioBlockAlignment, blockAlignment);
 
 
-//    var rest = handler._IsMediaTypeSupported(mediaType, out MediaType _mediaType);
-//    if (rest.Success)
-//    {
-//        logger.Debug("CurrentMediaType:\r\n" + MfTool.LogMediaType(mediaType));
-
-//        handler.CurrentMediaType = mediaType;
-//    }
-//    else
-//    {
-
-//    }
-
-//}
 
