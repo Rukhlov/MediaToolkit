@@ -38,14 +38,17 @@
             this.buttonAudioStop = new System.Windows.Forms.Button();
             this.buttonCloseAudio = new System.Windows.Forms.Button();
             this.buttonProcessSample = new System.Windows.Forms.Button();
+            this.checkBoxMute = new System.Windows.Forms.CheckBox();
+            this.trackBarVolume = new System.Windows.Forms.TrackBar();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(82, 75);
-            this.buttonStart.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonStart.Location = new System.Drawing.Point(109, 92);
+            this.buttonStart.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(76, 24);
+            this.buttonStart.Size = new System.Drawing.Size(101, 30);
             this.buttonStart.TabIndex = 0;
             this.buttonStart.Text = "Start";
             this.buttonStart.UseVisualStyleBackColor = true;
@@ -53,10 +56,10 @@
             // 
             // buttonStop
             // 
-            this.buttonStop.Location = new System.Drawing.Point(280, 75);
-            this.buttonStop.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonStop.Location = new System.Drawing.Point(373, 92);
+            this.buttonStop.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonStop.Name = "buttonStop";
-            this.buttonStop.Size = new System.Drawing.Size(62, 24);
+            this.buttonStop.Size = new System.Drawing.Size(83, 30);
             this.buttonStop.TabIndex = 1;
             this.buttonStop.Text = "Stop";
             this.buttonStop.UseVisualStyleBackColor = true;
@@ -64,10 +67,10 @@
             // 
             // buttonPause
             // 
-            this.buttonPause.Location = new System.Drawing.Point(175, 75);
-            this.buttonPause.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonPause.Location = new System.Drawing.Point(233, 92);
+            this.buttonPause.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonPause.Name = "buttonPause";
-            this.buttonPause.Size = new System.Drawing.Size(76, 24);
+            this.buttonPause.Size = new System.Drawing.Size(101, 30);
             this.buttonPause.TabIndex = 2;
             this.buttonPause.Text = "Pause";
             this.buttonPause.UseVisualStyleBackColor = true;
@@ -75,10 +78,10 @@
             // 
             // buttonSetup
             // 
-            this.buttonSetup.Location = new System.Drawing.Point(82, 20);
-            this.buttonSetup.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonSetup.Location = new System.Drawing.Point(109, 25);
+            this.buttonSetup.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonSetup.Name = "buttonSetup";
-            this.buttonSetup.Size = new System.Drawing.Size(76, 24);
+            this.buttonSetup.Size = new System.Drawing.Size(101, 30);
             this.buttonSetup.TabIndex = 3;
             this.buttonSetup.Text = "Setup";
             this.buttonSetup.UseVisualStyleBackColor = true;
@@ -86,10 +89,10 @@
             // 
             // buttonClose
             // 
-            this.buttonClose.Location = new System.Drawing.Point(280, 161);
-            this.buttonClose.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonClose.Location = new System.Drawing.Point(373, 198);
+            this.buttonClose.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(76, 24);
+            this.buttonClose.Size = new System.Drawing.Size(101, 30);
             this.buttonClose.TabIndex = 4;
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
@@ -97,10 +100,10 @@
             // 
             // buttonAudioSetup
             // 
-            this.buttonAudioSetup.Location = new System.Drawing.Point(18, 227);
-            this.buttonAudioSetup.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonAudioSetup.Location = new System.Drawing.Point(29, 261);
+            this.buttonAudioSetup.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonAudioSetup.Name = "buttonAudioSetup";
-            this.buttonAudioSetup.Size = new System.Drawing.Size(88, 24);
+            this.buttonAudioSetup.Size = new System.Drawing.Size(117, 30);
             this.buttonAudioSetup.TabIndex = 5;
             this.buttonAudioSetup.Text = "SetupAudio";
             this.buttonAudioSetup.UseVisualStyleBackColor = true;
@@ -108,10 +111,10 @@
             // 
             // buttonAudioStart
             // 
-            this.buttonAudioStart.Location = new System.Drawing.Point(19, 265);
-            this.buttonAudioStart.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonAudioStart.Location = new System.Drawing.Point(30, 308);
+            this.buttonAudioStart.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonAudioStart.Name = "buttonAudioStart";
-            this.buttonAudioStart.Size = new System.Drawing.Size(87, 24);
+            this.buttonAudioStart.Size = new System.Drawing.Size(116, 30);
             this.buttonAudioStart.TabIndex = 6;
             this.buttonAudioStart.Text = "AudioStart";
             this.buttonAudioStart.UseVisualStyleBackColor = true;
@@ -119,10 +122,10 @@
             // 
             // buttonAudioStop
             // 
-            this.buttonAudioStop.Location = new System.Drawing.Point(127, 265);
-            this.buttonAudioStop.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonAudioStop.Location = new System.Drawing.Point(325, 308);
+            this.buttonAudioStop.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonAudioStop.Name = "buttonAudioStop";
-            this.buttonAudioStop.Size = new System.Drawing.Size(88, 24);
+            this.buttonAudioStop.Size = new System.Drawing.Size(117, 30);
             this.buttonAudioStop.TabIndex = 7;
             this.buttonAudioStop.Text = "AudioStop";
             this.buttonAudioStop.UseVisualStyleBackColor = true;
@@ -130,10 +133,10 @@
             // 
             // buttonCloseAudio
             // 
-            this.buttonCloseAudio.Location = new System.Drawing.Point(127, 310);
-            this.buttonCloseAudio.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonCloseAudio.Location = new System.Drawing.Point(325, 368);
+            this.buttonCloseAudio.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonCloseAudio.Name = "buttonCloseAudio";
-            this.buttonCloseAudio.Size = new System.Drawing.Size(88, 24);
+            this.buttonCloseAudio.Size = new System.Drawing.Size(117, 25);
             this.buttonCloseAudio.TabIndex = 8;
             this.buttonCloseAudio.Text = "CloseAudio";
             this.buttonCloseAudio.UseVisualStyleBackColor = true;
@@ -141,20 +144,44 @@
             // 
             // buttonProcessSample
             // 
-            this.buttonProcessSample.Location = new System.Drawing.Point(268, 289);
-            this.buttonProcessSample.Margin = new System.Windows.Forms.Padding(2);
+            this.buttonProcessSample.Location = new System.Drawing.Point(165, 308);
+            this.buttonProcessSample.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.buttonProcessSample.Name = "buttonProcessSample";
-            this.buttonProcessSample.Size = new System.Drawing.Size(100, 24);
+            this.buttonProcessSample.Size = new System.Drawing.Size(133, 30);
             this.buttonProcessSample.TabIndex = 9;
             this.buttonProcessSample.Text = "ProcessSample";
             this.buttonProcessSample.UseVisualStyleBackColor = true;
             this.buttonProcessSample.Click += new System.EventHandler(this.buttonProcessSample_Click);
             // 
+            // checkBoxMute
+            // 
+            this.checkBoxMute.AutoSize = true;
+            this.checkBoxMute.Location = new System.Drawing.Point(165, 383);
+            this.checkBoxMute.Name = "checkBoxMute";
+            this.checkBoxMute.Size = new System.Drawing.Size(61, 21);
+            this.checkBoxMute.TabIndex = 10;
+            this.checkBoxMute.Text = "Mute";
+            this.checkBoxMute.UseVisualStyleBackColor = true;
+            this.checkBoxMute.CheckedChanged += new System.EventHandler(this.checkBoxMute_CheckedChanged);
+            // 
+            // trackBarVolume
+            // 
+            this.trackBarVolume.AutoSize = false;
+            this.trackBarVolume.Location = new System.Drawing.Point(165, 359);
+            this.trackBarVolume.Maximum = 100;
+            this.trackBarVolume.Name = "trackBarVolume";
+            this.trackBarVolume.Size = new System.Drawing.Size(104, 18);
+            this.trackBarVolume.TabIndex = 11;
+            this.trackBarVolume.TickFrequency = 10;
+            this.trackBarVolume.Scroll += new System.EventHandler(this.trackBarVolume_Scroll);
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(600, 366);
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.trackBarVolume);
+            this.Controls.Add(this.checkBoxMute);
             this.Controls.Add(this.buttonProcessSample);
             this.Controls.Add(this.buttonCloseAudio);
             this.Controls.Add(this.buttonAudioStop);
@@ -165,10 +192,12 @@
             this.Controls.Add(this.buttonPause);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -184,6 +213,8 @@
         private System.Windows.Forms.Button buttonAudioStop;
         private System.Windows.Forms.Button buttonCloseAudio;
         private System.Windows.Forms.Button buttonProcessSample;
+        private System.Windows.Forms.CheckBox checkBoxMute;
+        private System.Windows.Forms.TrackBar trackBarVolume;
     }
 }
 

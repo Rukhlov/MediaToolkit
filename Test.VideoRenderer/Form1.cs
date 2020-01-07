@@ -316,20 +316,18 @@ namespace Test.VideoRenderer
                 {
                     device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
 
-                    //var format = new NAudio.Wave.WaveFormat(44100, 2);
-                    //var res = device.AudioClient.IsFormatSupported(AudioClientShareMode.Shared, format);
                 }
 
                 string deviceId = device.ID;
-                NAudio.Wave.WaveFormat mixFormat = device.AudioClient.MixFormat;
+                NAudio.Wave.WaveFormat deviceFormat = device.AudioClient.MixFormat;
 
                 device.Dispose();
 
                 signalGenerator = new SignalGenerator(48000, 2);
-                var inputWaveFormat = signalGenerator.WaveFormat;
+                var signalFormat = signalGenerator.WaveFormat;
 
                 audioRenderer = new MfAudioRenderer();
-                audioRenderer.Setup(deviceId, mixFormat, inputWaveFormat);
+                audioRenderer.Setup(deviceId, deviceFormat, signalFormat);
 
             }
             catch(Exception ex)
@@ -396,42 +394,51 @@ namespace Test.VideoRenderer
                     logger.Debug("signal generator start...");
 
                    
-                    //var waveSignalGen = signalGenerator.ToWaveProvider();
-                    
-                    var testBytes = new float[100* 1024];
-                    int dataSize = testBytes.Length * sizeof(float);
-                    var sample = MediaFactory.CreateSample();
-                    var mb = MediaFactory.CreateMemoryBuffer(dataSize);
-                    {
-                        sample.AddBuffer(mb);
-                    }
+                    var waveSignalGen = signalGenerator.ToWaveProvider();
+                    var signalFormat = waveSignalGen.WaveFormat;
+                    var bytesPerSecond = signalFormat.AverageBytesPerSecond;
+                    var buffer = new byte[bytesPerSecond];
 
-                    sample.SampleDuration = 0;
-                    sample.SampleTime = 0;
                     int count = 10;
-                    //while (count-- > 0)
+                    while (count--> 0)
                     {
-                        
-                        //var testBytes = new float[1024];
-                        signalGenerator.Read(testBytes, 0, testBytes.Length);
+
+                        var sample = MediaFactory.CreateSample();
+                        var mb = MediaFactory.CreateMemoryBuffer(buffer.Length);
+                        {
+                            sample.AddBuffer(mb);
+                        }
+
+                        sample.SampleDuration = 0;
+                        sample.SampleTime = 0;
 
                         var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
-
-                        Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
-
-                        mb.CurrentLength = dataSize;
+                        var bytesRead = waveSignalGen.Read(buffer, 0, buffer.Length);
+                        if (bytesRead > 0)
+                        {
+                            Marshal.Copy(buffer, 0, pBuffer, bytesRead);
+                        }
+                        
+                        mb.CurrentLength = bytesRead;
                         mb.Unlock();
 
                         audioRenderer?.ProcessSample(sample);
-                        //Thread.Sleep(2000);
+                        mb?.Dispose();
+                        sample?.Dispose();
+
+                        Thread.Sleep(900);
+
+                        logger.Debug("Next sample...");
+
                     }
 
-                    mb.Dispose();
-                    sample.Dispose();
+
+
 
                     logger.Debug("Signal generator stop...");
                 });
 
+  
                 //index++;
             }
             catch (Exception ex)
@@ -461,6 +468,25 @@ namespace Test.VideoRenderer
             }
 
             return pcm;
+        }
+
+
+
+        private void trackBarVolume_Scroll(object sender, EventArgs e)
+        {
+            if (audioRenderer != null)
+            {
+                var vol = trackBarVolume.Value / 100.0;
+                audioRenderer.SetVolume((float)vol);
+            }
+        }
+
+        private void checkBoxMute_CheckedChanged(object sender, EventArgs e)
+        {
+            if (audioRenderer != null)
+            {
+                audioRenderer.SetMute(checkBoxMute.Checked);
+            }
         }
     }
 }

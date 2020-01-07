@@ -61,13 +61,22 @@ namespace MediaToolkit.MediaFoundation
             try
             {
                 //TODO: validate wave formats
+                if (!(mixWaveFormat.Encoding == NAudio.Wave.WaveFormatEncoding.Pcm || 
+                    mixWaveFormat.Encoding == NAudio.Wave.WaveFormatEncoding.IeeeFloat || 
+                    mixWaveFormat.Encoding == NAudio.Wave.WaveFormatEncoding.Extensible))
+                {
+                    throw new FormatException("Invalid device format "+ mixWaveFormat.Encoding);
+                }
+
+                if (!(inputWaveFormat.Encoding == NAudio.Wave.WaveFormatEncoding.Pcm ||
+                        inputWaveFormat.Encoding == NAudio.Wave.WaveFormatEncoding.IeeeFloat))
+                {
+                    throw new FormatException("Invalid input format " + inputWaveFormat.Encoding);
+                }
+
                 deviceMediaType = MfTool.CreateMediaTypeFromWaveFormat(mixWaveFormat);
-                logger.Debug("AudioEndpointId: " + endpointId + "\r\n" + MfTool.LogMediaType(deviceMediaType));
-
-
+                
                 inputMediaType = MfTool.CreateMediaTypeFromWaveFormat(inputWaveFormat);
-                logger.Debug("InputMediaType:\r\n" + MfTool.LogMediaType(inputMediaType));
-
 
                 Activate activate = null;
                 try
@@ -97,12 +106,6 @@ namespace MediaToolkit.MediaFoundation
                 { //MR_POLICY_VOLUME_SERVICE
 
                     simpleAudioVolume = service.GetService<SimpleAudioVolume>(MediaServiceKeys.PolicyVolume);
-                }
-
-
-                if (audioSink.StreamSinkCount == 0)
-                {
-                    //TODO:..
                 }
 
 
@@ -143,16 +146,20 @@ namespace MediaToolkit.MediaFoundation
                     else
                     {// рендерер не поддерживает данный формат - создаем ресемплер
 
-                        logger.Info("Input not supported, try to create resampler...");
+                        logger.Debug("Input not supported, try to create resampler...");
 
+                        //внутненний формат девайса должен поддерживатся
                         handler.IsMediaTypeSupported(deviceMediaType, out MediaType _deviceMediaType);
-                        handler.CurrentMediaType = deviceMediaType;
+                        handler.CurrentMediaType = deviceMediaType; 
+                        
+                        logger.Debug("Resapmler input type:\r\n" + MfTool.LogMediaType(inputMediaType));
+                        logger.Debug("Resapmler output type:\r\n" + MfTool.LogMediaType(deviceMediaType));
 
                         resampler = new Transform(CLSID.CResamplerMediaObject);
 
                         resampler.SetInputType(0, inputMediaType, 0);
-
                         resampler.SetOutputType(0, deviceMediaType, 0);
+
                     }
 
 
@@ -416,8 +423,6 @@ namespace MediaToolkit.MediaFoundation
             }
 
 
-
-
             var sampleTime = sample.SampleTime;
             var sampleDuration = sample.SampleDuration;
 
@@ -445,12 +450,12 @@ namespace MediaToolkit.MediaFoundation
                     sample?.Dispose();
 
 
-                    //if (streamSinkRequestSample > 0)
-                    {
-                        //streamSink.ProcessSample(sample);
+                    ////if (streamSinkRequestSample > 0)
+                    //{
+                    //    //streamSink.ProcessSample(sample);
 
-                        streamSinkRequestSample--;
-                    }
+                    //    streamSinkRequestSample--;
+                    //}
                 }
             }
             catch (SharpDXException ex)
@@ -569,8 +574,8 @@ namespace MediaToolkit.MediaFoundation
                             var resapledBuffer = sampleBuffer.ConvertToContiguousBuffer();
                             totalLength += resapledBuffer.CurrentLength;
                             totalDuration += sampleBuffer.SampleDuration;
-
                             processedBuffers.Add(resapledBuffer);
+
                             sampleBuffer.RemoveBufferByIndex(0);
 
                             continue;

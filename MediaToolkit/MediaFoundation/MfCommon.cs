@@ -505,18 +505,18 @@ namespace MediaToolkit.MediaFoundation
         public static MediaType CreateMediaTypeFromWaveFormat(NAudio.Wave.WaveFormat mixWaveFormat)
         {
             MediaType mediaType = null;
-            object pMediaType = null;
+            object comObj = null;
             try
             {
-                pMediaType = NAudio.MediaFoundation.MediaFoundationApi.CreateMediaTypeFromWaveFormat(mixWaveFormat);
-                var pUnk = Marshal.GetIUnknownForObject(pMediaType);
+                comObj = NAudio.MediaFoundation.MediaFoundationApi.CreateMediaTypeFromWaveFormat(mixWaveFormat);
+                var pUnk = Marshal.GetIUnknownForObject(comObj);
                 mediaType = new MediaType(pUnk);
             }
             finally
             {
-                if (pMediaType != null)
+                if (comObj != null)
                 {
-                    Marshal.ReleaseComObject(pMediaType);
+                    Marshal.ReleaseComObject(comObj);
                 }
             }
 
