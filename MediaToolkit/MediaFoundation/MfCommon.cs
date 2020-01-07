@@ -500,6 +500,68 @@ namespace MediaToolkit.MediaFoundation
             return result;
         }
 
+
+
+        public static MediaType CreateMediaTypeFromWaveFormat(NAudio.Wave.WaveFormat mixWaveFormat)
+        {
+            MediaType mediaType = null;
+            object pMediaType = null;
+            try
+            {
+                pMediaType = NAudio.MediaFoundation.MediaFoundationApi.CreateMediaTypeFromWaveFormat(mixWaveFormat);
+                var pUnk = Marshal.GetIUnknownForObject(pMediaType);
+                mediaType = new MediaType(pUnk);
+            }
+            finally
+            {
+                if (pMediaType != null)
+                {
+                    Marshal.ReleaseComObject(pMediaType);
+                }
+            }
+
+            return mediaType;
+        }
+
+        private static MediaType CreateAudioType(Guid format, int sampleRate, int channelsNum, int bitsPerSample)
+        {
+            var inputMediaType = new MediaType();
+            {
+
+                int bytesPerSample = bitsPerSample / 8;
+
+                //This attribute corresponds to the nAvgBytesPerSec member of the WAVEFORMATEX structure. 
+                var avgBytesPerSecond = sampleRate * channelsNum * bytesPerSample; // х.з зачем это нужно, но без этого не работает!!!
+
+                var blockAlignment = 8;
+                if (format == AudioFormatGuids.Pcm || format == AudioFormatGuids.Float)
+                {
+                    // If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, 
+                    //set nBlockAlign to (nChannels*wBitsPerSample)/8, 
+                    //which is the size of a single audio frame. 
+                    blockAlignment = channelsNum * bytesPerSample;
+                }
+                else
+                {
+                    //not supported...
+                }
+
+                inputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Audio);
+                inputMediaType.Set(MediaTypeAttributeKeys.Subtype, format);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioSamplesPerSecond, sampleRate);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioBitsPerSample, bitsPerSample);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioNumChannels, channelsNum);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioAvgBytesPerSecond, avgBytesPerSecond);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioBlockAlignment, blockAlignment);
+                inputMediaType.Set(MediaTypeAttributeKeys.AudioChannelMask, 3);
+
+
+            }
+
+            return inputMediaType;
+        }
+
+
     }
 
     public class DxTool
@@ -748,7 +810,10 @@ namespace MediaToolkit.MediaFoundation
 
         public static readonly Guid MJPEGDecoderMFT = new Guid("CB17E772-E1CC-4633-8450-5617AF577905");
 
-           
+        public static readonly Guid CResamplerMediaObject = new Guid("f447b69e-1884-4a7e-8055-346f74d6edb3");
+        
+
+
     }
 
     public enum RateControlMode

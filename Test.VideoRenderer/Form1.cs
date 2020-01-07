@@ -296,26 +296,41 @@ namespace Test.VideoRenderer
                 
             }
         }
-        List<byte[]> testPCMSequence = new List<byte[]>();
+
+
+
         MfAudioRenderer audioRenderer = null;
+        private SignalGenerator signalGenerator = null;
+
         private void buttonAudioSetup_Click(object sender, EventArgs e)
         {
 
+
             try
             {
+                
                 MMDevice device = null;
+                
                 var deviceEnum = new MMDeviceEnumerator();
                 if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
                 {
                     device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+
+                    //var format = new NAudio.Wave.WaveFormat(44100, 2);
+                    //var res = device.AudioClient.IsFormatSupported(AudioClientShareMode.Shared, format);
                 }
-                var deviceId = device.ID;
+
+                string deviceId = device.ID;
+                NAudio.Wave.WaveFormat mixFormat = device.AudioClient.MixFormat;
+
                 device.Dispose();
 
+                signalGenerator = new SignalGenerator(48000, 2);
+                var inputWaveFormat = signalGenerator.WaveFormat;
+
                 audioRenderer = new MfAudioRenderer();
+                audioRenderer.Setup(deviceId, mixFormat, inputWaveFormat);
 
-
-                audioRenderer.Setup(deviceId, null);
             }
             catch(Exception ex)
             {
@@ -380,10 +395,10 @@ namespace Test.VideoRenderer
 
                     logger.Debug("signal generator start...");
 
-                    SignalGenerator signalGenerator = new SignalGenerator(48000, 2);
-
-
-                    var testBytes = new float[1024*1024];
+                   
+                    //var waveSignalGen = signalGenerator.ToWaveProvider();
+                    
+                    var testBytes = new float[100* 1024];
                     int dataSize = testBytes.Length * sizeof(float);
                     var sample = MediaFactory.CreateSample();
                     var mb = MediaFactory.CreateMemoryBuffer(dataSize);
@@ -394,8 +409,9 @@ namespace Test.VideoRenderer
                     sample.SampleDuration = 0;
                     sample.SampleTime = 0;
                     int count = 10;
-                    while (count-->0)
+                    //while (count-- > 0)
                     {
+                        
                         //var testBytes = new float[1024];
                         signalGenerator.Read(testBytes, 0, testBytes.Length);
 
@@ -407,7 +423,7 @@ namespace Test.VideoRenderer
                         mb.Unlock();
 
                         audioRenderer?.ProcessSample(sample);
-                        Thread.Sleep(2000);
+                        //Thread.Sleep(2000);
                     }
 
                     mb.Dispose();
@@ -416,9 +432,7 @@ namespace Test.VideoRenderer
                     logger.Debug("Signal generator stop...");
                 });
 
-
-
-               //index++;
+                //index++;
             }
             catch (Exception ex)
             {

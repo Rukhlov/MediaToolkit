@@ -363,7 +363,7 @@ namespace Test.DeckLink
                 int sampleSize = ((int)AudioSampleType / 8); //32bit
                 int samplesCount = audioPacket.GetSampleFrameCount();
                 int dataLength = sampleSize * AudioChannelsCount * samplesCount;
-
+               
                 if (dataLength > 0)
                 {
                     audioPacket.GetBytes(out IntPtr pBuffer);
@@ -375,12 +375,12 @@ namespace Test.DeckLink
 
 
 
-                        var f = File.Create(@"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw");
+                        //var f = File.Create(@"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw");
 
    
-                        Marshal.Copy(pBuffer, data, 0, data.Length);
-                        f.Write(data, 0, data.Length);
-                        f.Close();
+                        //Marshal.Copy(pBuffer, data, 0, data.Length);
+                        //f.Write(data, 0, data.Length);
+                        //f.Close();
 
                         double timeSec = packetTime / timeScale;
                         AudioDataArrived?.Invoke(data, timeSec);
