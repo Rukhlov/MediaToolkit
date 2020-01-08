@@ -114,8 +114,8 @@ namespace Test.DeckLink
 
                 //};
 
-                var videoResoulution = deckLinkInput.VideoResoulion;
-                var pixelFormat = deckLinkInput.GetPixelFormatFourCC();
+                var videoResoulution = deckLinkInput.FrameSize;
+                var pixelFormat = DeckLinkTools.GetPixelFormatFourCC(deckLinkInput.PixelFormat);
 
                 videoForm = new Form
                 {
@@ -144,9 +144,26 @@ namespace Test.DeckLink
                 });
 
                 videoRenderer.Start(0);
+                var frameRate = deckLinkInput.FrameRate;
 
+                var fps = frameRate.Item2 / frameRate.Item1;
+
+                string videoLog = "";
+                if (deckLinkInput.VideoEnabled)
+                {
+                    videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
+                }
+                   
+                string audioLog = "";
+                if (deckLinkInput.AudioEnabled)
+                {
+                    audioLog = (int)deckLinkInput.AudioSampleRate + "/" + (int)deckLinkInput.AudioSampleType + "/" +  deckLinkInput.AudioChannelsCount  ;
+                }
+                
+                videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " +  audioLog;
                 videoForm.Visible = true;
 
+                
                 videoRenderer.Resize(videoForm.ClientRectangle);
 
                 deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
