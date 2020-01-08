@@ -79,8 +79,8 @@ namespace MediaToolkit.SharedTypes
         {
             return string.Join(";" , DeviceId ?? "", SampleRate, Encoding, BitsPerSample, Channels);
         }
-
     }
+
 
     public interface IAudioRenderer
     {
@@ -91,6 +91,35 @@ namespace MediaToolkit.SharedTypes
         void Start(long time);
         void Stop();
         void Close();
+
+
+        int ErrorCode { get; }
+    }
+
+    public class VideoRendererArgs
+    {
+        public IntPtr hWnd { get; set; }
+
+        public Size Resolution { get; set; } = Size.Empty;
+        public string PixelFormat { get; set; } = "RGBA"; //UYVY //FourCC code
+        public int BitsPerPixel { get; set; } = 32;
+
+        public override string ToString()
+        {
+            return string.Join(";", hWnd, Resolution, PixelFormat, BitsPerPixel);
+        }
+    }
+
+    public interface IVideoRenderer
+    {
+
+        void Setup(VideoRendererArgs args);
+        void Start(long time);
+        void Stop();
+        void Close();
+
+        void Resize(System.Drawing.Rectangle rect);
+        void Repaint();
 
         int ErrorCode { get; }
     }

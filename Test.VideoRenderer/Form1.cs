@@ -47,14 +47,14 @@ namespace Test.VideoRenderer
 
 
 
-            var testSeqDir = @"D:\testBMP\";
-            var di = new DirectoryInfo(testSeqDir);
-            var files = di.GetFiles().Take(60);
-            foreach (var f in files)
-            {
-                var bytes = File.ReadAllBytes(f.FullName);
-                testBitmapSequence.Add(bytes);
-            }
+            //var testSeqDir = @"D:\testBMP\";
+            //var di = new DirectoryInfo(testSeqDir);
+            //var files = di.GetFiles().Take(60);
+            //foreach (var f in files)
+            //{
+            //    var bytes = File.ReadAllBytes(f.FullName);
+            //    testBitmapSequence.Add(bytes);
+            //}
 
 
 
@@ -114,7 +114,12 @@ namespace Test.VideoRenderer
 
             videoForm.Visible = true;
 
-            renderer.Setup(videoForm.Handle, sampleArgs);
+            renderer.Setup(new VideoRendererArgs
+            {
+                hWnd = videoForm.Handle,
+                PixelFormat = "UYVY",
+                Resolution = new Size(1920, 1080),
+            });
 
             renderer.Resize(videoForm.ClientRectangle);
 
@@ -151,8 +156,8 @@ namespace Test.VideoRenderer
                     }
 
                     {
-                        int index = _count % testBitmapSequence.Count;
-                        var bytes = testBitmapSequence[index];
+                        //int index = _count % testBitmapSequence.Count;
+                        var bytes = testBytes;// testBitmapSequence[index];
 
 
                         var _pBuffer = mb.Lock(out int _cbMaxLen, out int _cbCurLen);

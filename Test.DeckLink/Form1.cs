@@ -1,6 +1,7 @@
 ﻿using DeckLinkAPI;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
+using MediaToolkit.SharedTypes;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -100,40 +101,48 @@ namespace Test.DeckLink
 
                 StartAudio();
 
-                var UYVYFourCC = new SharpDX.Multimedia.FourCC(0x59565955);
+                //var UYVYFourCC = new SharpDX.Multimedia.FourCC(0x59565955);
+                //// var format = VideoFormatGuids.FromFourCC(v210FourCC);
+                //var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
 
+                ////var format = VideoFormatGuids.NV12;
+                //var sampleArgs = new MfVideoArgs
+                //{
+                //    Width = 1920,
+                //    Height = 1080,
+                //    Format = format, //VideoFormatGuids.Uyvy, //VideoFormatGuids.NV12,//MFVideoFormat_v210,
 
-                // var format = VideoFormatGuids.FromFourCC(v210FourCC);
-                var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+                //};
 
-                //var format = VideoFormatGuids.NV12;
-                var sampleArgs = new MfVideoArgs
-                {
-                    Width = 1920,
-                    Height = 1080,
-                    Format = format, //VideoFormatGuids.Uyvy, //VideoFormatGuids.NV12,//MFVideoFormat_v210,
-
-                };
+                var videoResoulution = deckLinkInput.VideoResoulion;
+                var pixelFormat = deckLinkInput.GetPixelFormatFourCC();
 
                 videoForm = new Form
                 {
                     BackColor = Color.Black,
                     StartPosition = FormStartPosition.CenterScreen,
-                    ClientSize = new Size(sampleArgs.Width, sampleArgs.Height)
+                    ClientSize = videoResoulution,
                 };
 
                 videoRenderer = new MfVideoRenderer();
                 videoForm.Paint += (o, a) =>
                 {
-                    videoRenderer.Repaint();
+                    videoRenderer?.Repaint();
                 };
 
                 videoForm.SizeChanged += (o, a) =>
                 {
-                    videoRenderer.Resize(videoForm.ClientRectangle);
+                    videoRenderer?.Resize(videoForm.ClientRectangle);
                 };
 
-                videoRenderer.Setup(videoForm.Handle, sampleArgs);
+                videoRenderer.Setup(new VideoRendererArgs
+                {
+                    hWnd = videoForm.Handle,
+                    Resolution = videoResoulution,
+                    PixelFormat = pixelFormat,
+
+                });
+
                 videoRenderer.Start(0);
 
                 videoForm.Visible = true;
@@ -227,6 +236,10 @@ namespace Test.DeckLink
         private void CurrentDevice_InputFormatChanged(IDeckLinkDisplayMode newDisplayMode)
         {
             logger.Debug("CurrentDevice_InputFormatChanged(...)");
+            //var bmdPixelFormat = deckLinkInput.VideoPixelFormat;
+
+
+           // videoMode == _BMDDisplayMode.
         }
 
 

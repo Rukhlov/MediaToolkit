@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using MediaToolkit.SharedTypes;
+using NLog;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.MediaFoundation
 {
-    public class MfVideoRenderer
+    public class MfVideoRenderer: IVideoRenderer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -51,9 +52,29 @@ namespace MediaToolkit.MediaFoundation
 
         private object syncLock = new object();
 
-        public void Setup(IntPtr hWnd, MfVideoArgs videoArgs)
+        public void Setup(VideoRendererArgs videoArgs)
         {
-            logger.Debug("Setup(...) " + hWnd);
+
+            logger.Debug("MfVideoRenderer::Setup(...) " + videoArgs.ToString());
+
+            var pixFmt = videoArgs.PixelFormat;
+            var videoFormat = VideoFormatGuids.FromFourCC(new SharpDX.Multimedia.FourCC(pixFmt));
+            var resolution = videoArgs.Resolution;
+            var hWnd = videoArgs.hWnd;
+
+            MfVideoArgs mfVideoArgs = new MfVideoArgs
+            {
+                Format = videoFormat,
+                Width = resolution.Width,
+                Height = resolution.Height,
+            };
+
+            Setup(hWnd, videoFormat, resolution);
+        }
+
+        public void Setup(IntPtr hWnd, Guid videoFormat, System.Drawing.Size videoResolution)
+        {
+            logger.Debug("MfVideoRenderer::Setup(...) " + hWnd);
 
             if (rendererState != RendererState.Closed)
             {
@@ -150,8 +171,8 @@ namespace MediaToolkit.MediaFoundation
                     using (var mediaType = new MediaType())
                     {
                         mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
-                        mediaType.Set(MediaTypeAttributeKeys.Subtype, videoArgs.Format); //VideoFormatGuids.NV12 
-                        mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoArgs.Width, videoArgs.Height));
+                        mediaType.Set(MediaTypeAttributeKeys.Subtype, videoFormat); //VideoFormatGuids.NV12 
+                        mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoResolution.Width, videoResolution.Height));
                         mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                         //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
@@ -199,7 +220,7 @@ namespace MediaToolkit.MediaFoundation
 
         private void InitSampleAllocator()
         {
-            logger.Debug("InitSampleAllocator");
+            logger.Debug("MfVideoRenderer::InitSampleAllocator()");
             using (var handler = streamSink.MediaTypeHandler)
             {
                 using (var mediaType = handler.CurrentMediaType)
@@ -442,7 +463,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Start(long time)
         {
-            logger.Debug("Start(...) " + time);
+            logger.Debug("MfVideoRenderer::Start(...) " + time);
 
             if (rendererState == RendererState.Closed || rendererState == RendererState.Started)
             {
@@ -468,7 +489,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Stop()
         {
-            logger.Debug("Stop()");
+            logger.Debug("MfVideoRenderer::Stop()");
 
             if (!IsRunning)
             {
@@ -497,7 +518,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Pause()
         {
-            logger.Debug("Pause()");
+            logger.Debug("MfVideoRenderer::Pause()");
             if (!IsRunning)
             {
                 logger.Warn("Pause() return invalid render state: " + rendererState);
@@ -525,13 +546,13 @@ namespace MediaToolkit.MediaFoundation
 
         private void OnFormatChanged()
         {
-            logger.Debug("OnFormatChanged()");
+            logger.Debug("MfVideoRenderer::OnFormatChanged()");
             //TODO:
         }
 
         private void OnDeviceChanged()
         {
-            logger.Debug("OnDeviceChanged() " + streamSinkRequestSample);
+            logger.Debug("MfVideoRenderer::OnDeviceChanged() " + streamSinkRequestSample);
             lock (syncLock)
             {
 
@@ -557,7 +578,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Close()
         {
-            logger.Debug("Close()");
+            logger.Debug("MfVideoRenderer::Close()");
             try
             {
                 //lock (syncLock)
@@ -578,7 +599,7 @@ namespace MediaToolkit.MediaFoundation
 
         private void CleanUp()
         {
-            logger.Debug("CleanUp()");
+            logger.Debug("MfVideoRenderer::CleanUp()");
 
             if (videoSink != null)
             {

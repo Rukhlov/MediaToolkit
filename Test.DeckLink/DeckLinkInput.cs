@@ -11,15 +11,15 @@ using System.Threading.Tasks;
 
 namespace Test.DeckLink
 {
-    public class DeckLinkInput : IDeckLinkInputCallback
+    public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
- 
         private IDeckLinkInput deckLinkInput = null;
         private IDeckLink deckLink = null;
         private IDeckLinkStatus deckLinkStatus;
 
+        private IDeckLinkNotification deckLinkNotification;
 
         public string DisplayName { get; private set; } = "";
         public string ModelName { get; private set; } = "";
@@ -27,9 +27,22 @@ namespace Test.DeckLink
         public _BMDDisplayMode VideoDisplayMode { get; private set; } = _BMDDisplayMode.bmdModeHD1080p5994;
         public _BMDPixelFormat VideoPixelFormat { get; private set; } = _BMDPixelFormat.bmdFormat8BitYUV;
 
+        public string GetPixelFormatFourCC()
+        {
+            string fourCC = "";
+            var pixFormat = this.VideoPixelFormat;
+            if (BMDPixelFormatsDict.ContainsKey(pixFormat))
+            {
+                fourCC = BMDPixelFormatsDict[VideoPixelFormat];
+            }
+          
+            return fourCC;
+        }
+
         public bool VideoEnabled { get; private set; } = true;
-        public int VideoFrameWidth { get; private set; } = 1920;
-        public int VideoFrameHeigth { get; private set; } = 1080;
+
+        public System.Drawing.Size VideoResoulion { get; private set; } = new System.Drawing.Size(1920, 1080);
+
         public Tuple<long, long> FrameRate { get; private set; } = new Tuple<long, long>(1001, 60000);
 
 
@@ -105,7 +118,7 @@ namespace Test.DeckLink
 
                 if (_deckLink == null)
                 {
-                    throw new Exception("Device not found");
+                    throw new Exception("Device not found " + inputIndex);
                 }
 
                 StartUp(_deckLink);
@@ -116,7 +129,7 @@ namespace Test.DeckLink
                 while (isCapturing)
                 { 
                     //TODO:
-                    //Control device state...
+                    //Control device status...
                     
                     syncEvent.WaitOne(1000);
                 }
@@ -132,16 +145,25 @@ namespace Test.DeckLink
             }
             finally
             {
-                deckLinkInput.FlushStreams();
-
-                if (isCapturing)
+  
+                if (deckLinkInput != null)
                 {
-                    deckLinkInput.StopStreams();
+                    deckLinkInput.FlushStreams();
+
+                    if (isCapturing)
+                    {
+                        deckLinkInput.StopStreams();
+                    }
+
+                    // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
+
+                    deckLinkInput.SetCallback(null);
                 }
 
-                // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
-
-                deckLinkInput.SetCallback(null);
+                if (deckLinkNotification != null)
+                {
+                    deckLinkNotification.Unsubscribe(_BMDNotifications.bmdDeviceRemoved | _BMDNotifications.bmdStatusChanged, this);
+                }
 
                 isCapturing = false;
 
@@ -213,11 +235,18 @@ namespace Test.DeckLink
             this.deckLink = _deckLink;
             this.deckLinkInput = (IDeckLinkInput)deckLink;
             this.deckLinkStatus = (IDeckLinkStatus)deckLink;
+            this.deckLinkNotification = (IDeckLinkNotification)deckLink;
 
+            deckLinkNotification.Subscribe(_BMDNotifications.bmdStatusChanged | _BMDNotifications.bmdDeviceRemoved, this);
 
             bool videoInputSignalLocked = false;
             deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
             videoInputSignalLocked = (videoInputSignalLockedFlag != 0);
+
+         
+            //bool deviceBusyState = false;
+            //deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusBusy, out long deviceBusyStateFlag);
+            //deviceBusyState = (deviceBusyStateFlag != 0);
 
             if (!videoInputSignalLocked)
             {
@@ -260,22 +289,31 @@ namespace Test.DeckLink
 
             }
 
-
             if (AudioEnabled)
             {
                 deckLinkInput.EnableAudioInput(AudioSampleRate, AudioSampleType, (uint)AudioChannelsCount);
 
             }
-
-
+         
             deckLinkInput.GetDisplayMode(VideoDisplayMode, out IDeckLinkDisplayMode displayMode);
             displayMode.GetFrameRate(out long frameDuration, out long timeScale);
-            FrameRate = new Tuple<long, long>(frameDuration, timeScale);
+
+            int width = displayMode.GetWidth();
+            int height = displayMode.GetHeight();
+
+            this.VideoResoulion = new System.Drawing.Size(width, height);
+            this.FrameRate = new Tuple<long, long>(frameDuration, timeScale);
 
             deckLinkInput.StartStreams();
 
             isCapturing = true;
 
+        }
+
+        void IDeckLinkNotificationCallback.Notify(_BMDNotifications topic, ulong param1, ulong param2)
+        {
+            logger.Debug("IDeckLinkNotificationCallback.Notify(...) " + topic + " " + param1 + " " + " "+ param2);
+            //...
         }
 
         void IDeckLinkInputCallback.VideoInputFormatChanged(_BMDVideoInputFormatChangedEvents notificationEvents, IDeckLinkDisplayMode newDisplayMode, _BMDDetectedVideoInputFormatFlags detectedSignalFlags)
@@ -295,13 +333,22 @@ namespace Test.DeckLink
             }
 
             VideoPixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
+            if (detectedSignalFlags.HasFlag(_BMDDetectedVideoInputFormatFlags.bmdDetectedVideoInputRGB444))
+            {// не понятно, что значит эта хрень - изменилась цветовая схема или поменялся формат на r210 ?!?!?
+                VideoPixelFormat = _BMDPixelFormat.bmdFormat8BitARGB; //_BMDPixelFormat.bmdFormat10BitRGB;
+            }
+
             VideoDisplayMode = newDisplayMode.GetDisplayMode();
 
             var videoConnection = _BMDVideoConnection.bmdVideoConnectionHDMI;
             var videoModeFlags = _BMDSupportedVideoModeFlags.bmdSupportedVideoModeDefault;
             deckLinkInput.DoesSupportVideoMode(videoConnection, VideoDisplayMode, VideoPixelFormat, videoModeFlags, out int supported);
-
             logger.Debug(VideoPixelFormat + " " + supported);
+            if (supported == 0)
+            {
+                logger.Error("Format not supported: " + VideoPixelFormat + " " + VideoDisplayMode + " "+ videoConnection);
+                //TODO: выбираем другой формат х.з какой
+            }
 
             //// Stop the capture
             //deckLinkInput.StopStreams();
@@ -313,7 +360,12 @@ namespace Test.DeckLink
 
             deckLinkInput.GetDisplayMode(VideoDisplayMode, out IDeckLinkDisplayMode displayMode);
             displayMode.GetFrameRate(out long frameDuration, out long timeScale);
-            FrameRate = new Tuple<long, long>(frameDuration, timeScale);
+            int width = displayMode.GetWidth();
+            int height = displayMode.GetHeight();
+
+
+            this.VideoResoulion = new System.Drawing.Size(width, height);
+            this.FrameRate = new Tuple<long, long>(frameDuration, timeScale);
 
             deckLinkInput.StartStreams();
 
@@ -373,11 +425,7 @@ namespace Test.DeckLink
                         byte[] data = new byte[dataLength];
                         Marshal.Copy(pBuffer, data, 0, data.Length);
 
-
-
                         //var f = File.Create(@"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw");
-
-   
                         //Marshal.Copy(pBuffer, data, 0, data.Length);
                         //f.Write(data, 0, data.Length);
                         //f.Close();
@@ -388,6 +436,10 @@ namespace Test.DeckLink
                     }
                 }
             }
+            //catch (Exception ex)
+            //{
+            //    logger.Error(ex);
+            //}
             finally
             {
                 Marshal.ReleaseComObject(audioPacket);
@@ -410,7 +462,7 @@ namespace Test.DeckLink
                 bool inputSignal = frameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource);
 
                 if (inputSignal != validInputSignal)
-                { // х.з что это
+                { //
                     validInputSignal = inputSignal;
                     InputSignalChanged?.Invoke(validInputSignal);
                 }
@@ -455,6 +507,10 @@ namespace Test.DeckLink
                 }
 
             }
+            //catch(Exception ex)
+            //{
+            //    logger.Error(ex);
+            //}
             finally
             {
                 Marshal.ReleaseComObject(videoFrame);
@@ -526,6 +582,14 @@ namespace Test.DeckLink
             }
         }
 
+
+
+        public static readonly Dictionary<_BMDPixelFormat, string> BMDPixelFormatsDict = new Dictionary<_BMDPixelFormat, string>
+        {
+            { _BMDPixelFormat.bmdFormat8BitYUV, "UYVY" },
+            { _BMDPixelFormat.bmdFormat8BitARGB, "RGBA" },
+            //{ _BMDPixelFormat.bmdFormat10BitYUV, "v210" }, //не поддерживает рендерер, и конвертится только софтверно
+        };
     }
 
 
