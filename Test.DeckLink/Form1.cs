@@ -116,7 +116,7 @@ namespace Test.DeckLink
                 //};
 
                 var videoResoulution = deckLinkInput.FrameSize;
-                var pixelFormat = DeckLinkTools.GetPixelFormatFourCC(deckLinkInput.PixelFormat);
+                var pixelFormat = deckLinkInput.PixelFormatCode;
 
                 videoForm = new Form
                 {
@@ -158,7 +158,7 @@ namespace Test.DeckLink
                 string audioLog = "";
                 if (deckLinkInput.AudioEnabled)
                 {
-                    audioLog = (int)deckLinkInput.AudioSampleRate + "/" + (int)deckLinkInput.AudioSampleType + "/" +  deckLinkInput.AudioChannelsCount  ;
+                    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" +  deckLinkInput.AudioChannelsCount  ;
                 }
                 
                 videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " +  audioLog;
@@ -293,9 +293,9 @@ namespace Test.DeckLink
 
             try
             {
-                var sampleRate = (int)deckLinkInput.AudioSampleRate;
+                var sampleRate = deckLinkInput.AudioSampleRate;
                 var channelsCount = deckLinkInput.AudioChannelsCount;
-                var bitsPerSample = (int)deckLinkInput.AudioSampleType;
+                var bitsPerSample = (int)deckLinkInput.AudioBitsPerSample;
                 const int BufferMilliseconds = 100;
 
                 MMDevice device = null;

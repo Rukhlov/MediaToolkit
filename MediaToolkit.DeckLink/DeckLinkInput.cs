@@ -30,12 +30,16 @@ namespace MediaToolkit.DeckLink
         public _BMDDisplayMode DisplayMode { get; private set; } = _BMDDisplayMode.bmdModeUnknown;//bmdModeHD1080p30;//_BMDDisplayMode.bmdModeHD1080p5994;
 
         public _BMDPixelFormat PixelFormat { get; private set; } = _BMDPixelFormat.bmdFormatUnspecified;
+        public string PixelFormatCode => DeckLinkTools.GetPixelFormatFourCC(this.PixelFormat);
         public System.Drawing.Size FrameSize { get; private set; } = System.Drawing.Size.Empty;
         public Tuple<long, long> FrameRate { get; private set; }
 
         public bool AudioEnabled { get; private set; } = true;
-        public _BMDAudioSampleType AudioSampleType { get; private set; } = _BMDAudioSampleType.bmdAudioSampleType32bitInteger;
-        public _BMDAudioSampleRate AudioSampleRate { get; private set; } = _BMDAudioSampleRate.bmdAudioSampleRate48kHz;
+        private _BMDAudioSampleType audioSampleType  = _BMDAudioSampleType.bmdAudioSampleType32bitInteger;
+        public int AudioBitsPerSample => (int)audioSampleType;
+
+        private _BMDAudioSampleRate audioSampleRate = _BMDAudioSampleRate.bmdAudioSampleRate48kHz;
+        public int AudioSampleRate => (int)audioSampleRate;
         public int AudioChannelsCount { get; private set; } = 2;
         private double audioBytesPerSeconds = 0;
 
@@ -257,8 +261,8 @@ namespace MediaToolkit.DeckLink
 
             if (AudioEnabled)
             {
-                deckLinkInput.EnableAudioInput(AudioSampleRate, AudioSampleType, (uint)AudioChannelsCount);
-                audioBytesPerSeconds = ((int)AudioSampleRate * (int)AudioChannelsCount * (int)AudioSampleType) / 8;
+                deckLinkInput.EnableAudioInput(audioSampleRate, audioSampleType, (uint)AudioChannelsCount);
+                audioBytesPerSeconds = ((int)audioSampleRate * (int)AudioChannelsCount * (int)audioSampleType) / 8;
             }
 
             deckLinkInput.GetDisplayMode(DisplayMode, out IDeckLinkDisplayMode displayMode);
@@ -384,14 +388,18 @@ namespace MediaToolkit.DeckLink
                 logger.Warn("No video frame...");
             }
 
-            if (audioPacket != null)
+            if (AudioEnabled)
             {
-                ProcessAudioPacket(audioPacket);
+                if (audioPacket != null)
+                {
+                    ProcessAudioPacket(audioPacket);
+                }
+                else
+                {
+                    logger.Warn("No audio packet...");
+                }
             }
-            else
-            {
-                logger.Warn("No audio packet...");
-            }
+
         }
 
 
@@ -411,7 +419,7 @@ namespace MediaToolkit.DeckLink
 
                 audioPacket.GetPacketTime(out long packetTime, timeScale);
 
-                int sampleSize = ((int)AudioSampleType / 8); //32bit
+                int sampleSize = ((int)audioSampleType / 8); //32bit
                 int samplesCount = audioPacket.GetSampleFrameCount();
                 int dataLength = sampleSize * AudioChannelsCount * samplesCount;
 
