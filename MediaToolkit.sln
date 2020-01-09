@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.VideoRenderer", "Test.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DeckLink", "Test.DeckLink\Test.DeckLink.csproj", "{1057CB86-09C6-44B4-AC28-1EBC767E9A1F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.DeckLink", "MediaToolkit.DeckLink\MediaToolkit.DeckLink.csproj", "{707B5F56-5B9B-4453-9058-7F9B8195C3E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,14 @@ Global
 		{1057CB86-09C6-44B4-AC28-1EBC767E9A1F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1057CB86-09C6-44B4-AC28-1EBC767E9A1F}.Release|x86.ActiveCfg = Release|Any CPU
 		{1057CB86-09C6-44B4-AC28-1EBC767E9A1F}.Release|x86.Build.0 = Release|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

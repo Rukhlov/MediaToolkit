@@ -87,7 +87,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeckLinkDevice.cs" />
-    <Compile Include="DeckLinkInput.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -129,6 +128,10 @@
     <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
       <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.DeckLink\MediaToolkit.DeckLink.csproj">
+      <Project>{707b5f56-5b9b-4453-9058-7f9b8195c3e4}</Project>
+      <Name>MediaToolkit.DeckLink</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>

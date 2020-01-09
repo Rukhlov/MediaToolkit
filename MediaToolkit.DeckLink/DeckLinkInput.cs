@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Test.DeckLink
+namespace MediaToolkit.DeckLink
 {
     public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback
     {
@@ -29,11 +29,9 @@ namespace Test.DeckLink
         // как включать другие форматы?!?  
         public _BMDDisplayMode DisplayMode { get; private set; } = _BMDDisplayMode.bmdModeUnknown;//bmdModeHD1080p30;//_BMDDisplayMode.bmdModeHD1080p5994;
 
-
-        public bool VideoEnabled { get; private set; } = true; // видео не выключается 
         public _BMDPixelFormat PixelFormat { get; private set; } = _BMDPixelFormat.bmdFormatUnspecified;
         public System.Drawing.Size FrameSize { get; private set; } = System.Drawing.Size.Empty;
-        public Tuple<long, long> FrameRate { get; private set; } 
+        public Tuple<long, long> FrameRate { get; private set; }
 
         public bool AudioEnabled { get; private set; } = true;
         public _BMDAudioSampleType AudioSampleType { get; private set; } = _BMDAudioSampleType.bmdAudioSampleType32bitInteger;
@@ -56,8 +54,9 @@ namespace Test.DeckLink
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
         private Thread captureThread = null;
 
-        public event DeckLinkInputSignalHandler InputSignalChanged;
-        public event DeckLinkFormatChangedHandler InputFormatChanged;
+
+        public event Action<bool> InputSignalChanged;
+        public event Action<object> InputFormatChanged;
 
         public event Action<byte[], double> AudioDataArrived;
         public event Action<IntPtr, int, double, double> VideoDataArrived;
@@ -83,7 +82,7 @@ namespace Test.DeckLink
                 throw new ObjectDisposedException(this.ToString());
             }
 
-            if (isCapturing )
+            if (isCapturing)
             {
                 return;
             }
@@ -132,7 +131,7 @@ namespace Test.DeckLink
                 while (isCapturing)
                 {
                     //TODO:
-                    ////Control device state, A/V sync, errors....
+                    //Control device state, A/V sync, errors....
 
                     //logger.Debug("PacketTime: " + lastVideoFrameTimeSec.ToString("0.000") +
                     //    " - " + lastAudioPacketTimeSec.ToString("0.000") +
@@ -141,6 +140,22 @@ namespace Test.DeckLink
                     //logger.Debug("DurationTime: " + videoDurationSeconds.ToString("0.000") +
                     //    " - " + audioDurationSeconds.ToString("0.000") +
                     //    " = " + (videoDurationSeconds - audioDurationSeconds).ToString("0.000") + "\r\n");
+
+
+                    //var diff1 = (videoDurationSeconds - audioDurationSeconds).ToString("0.000");
+                    //var diff2 = (lastVideoFrameTimeSec - lastAudioPacketTimeSec).ToString("0.000");
+                    //var audioTime1 = TimeSpan.FromSeconds(audioDurationSeconds).ToString("hh\\:mm\\:ss\\.fff");
+                    //var audioTime2 = TimeSpan.FromSeconds(lastAudioPacketTimeSec).ToString("hh\\:mm\\:ss\\.fff"); 
+
+                    //var videoTime1 = TimeSpan.FromSeconds(videoDurationSeconds).ToString("hh\\:mm\\:ss\\.fff");
+                    //var videoTime2 = TimeSpan.FromSeconds(lastVideoFrameTimeSec).ToString("hh\\:mm\\:ss\\.fff");
+                    //var adiff1 = (audioDurationSeconds - lastAudioPacketTimeSec).ToString("0.000");
+                    //var vdiff1 = (videoDurationSeconds - lastVideoFrameTimeSec).ToString("0.000");
+                    //Console.WriteLine("AVDiff: " + diff1 + " " + diff2
+                    //    + "| at " + audioTime1 + " - " + audioTime2 + " " + adiff1  
+                    //    + "| vt " + videoTime1 + " - " + videoTime2 + " " +  adiff1);
+
+                    //Console.SetCursorPosition(0, Console.CursorTop - 1);
 
                     syncEvent.WaitOne(1000);
                 }
@@ -156,7 +171,7 @@ namespace Test.DeckLink
             }
             finally
             {
-  
+
                 if (deckLinkInput != null)
                 {
                     deckLinkInput.FlushStreams();
@@ -166,9 +181,11 @@ namespace Test.DeckLink
                         deckLinkInput.StopStreams();
                     }
 
-                    // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
+                   // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
+
 
                     deckLinkInput.SetCallback(null);
+
                 }
 
                 //if (deckLinkNotification != null)
@@ -225,25 +242,18 @@ namespace Test.DeckLink
             supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
-            // memoryAllocator = new MemoryAllocator();
+            //memoryAllocator = new MemoryAllocator();
             //deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
 
             deckLinkInput.SetCallback(this);
 
-            if (VideoEnabled)
-            { // видео не выключается 
-
-                var videoInputFlags = _BMDVideoInputFlags.bmdVideoInputFlagDefault;
-
-                if (supportsFormatDetection && applyDetectedInputMode)
-                {
-                    videoInputFlags |= _BMDVideoInputFlags.bmdVideoInputEnableFormatDetection;
-                }
-
-                deckLinkInput.EnableVideoInput(DisplayMode, PixelFormat, videoInputFlags);
-
+            var videoInputFlags = _BMDVideoInputFlags.bmdVideoInputFlagDefault;
+            if (supportsFormatDetection && applyDetectedInputMode)
+            {
+                videoInputFlags |= _BMDVideoInputFlags.bmdVideoInputEnableFormatDetection;
             }
+            deckLinkInput.EnableVideoInput(DisplayMode, PixelFormat, videoInputFlags);
 
             if (AudioEnabled)
             {
@@ -275,7 +285,7 @@ namespace Test.DeckLink
 
         void IDeckLinkNotificationCallback.Notify(_BMDNotifications topic, ulong param1, ulong param2)
         {
-            logger.Debug("IDeckLinkNotificationCallback.Notify(...) " + topic + " " + param1 + " " + " "+ param2);
+            logger.Debug("IDeckLinkNotificationCallback.Notify(...) " + topic + " " + param1 + " " + " " + param2);
             //...
         }
 
@@ -321,11 +331,10 @@ namespace Test.DeckLink
 
             deckLinkInput.DoesSupportVideoMode(videoConnection, newVideoDisplayMode, newPixelFormat, videoModeFlags, out int supported);
 
-            logger.Debug(PixelFormat + " " + supported);
             if (supported == 0)
             {
-                logger.Error("Format not supported: " + newPixelFormat + " " + newVideoDisplayMode + " "+ videoConnection);
-                //TODO: выбираем другой формат ...
+                logger.Error("Format not supported: " + string.Join(" ", videoConnection, newVideoDisplayMode, newPixelFormat, videoModeFlags));
+                //TODO: что то пошло не так... закрываем стрим
             }
 
             this.PixelFormat = newPixelFormat;
@@ -343,7 +352,6 @@ namespace Test.DeckLink
             displayMode.GetFrameRate(out long frameDuration, out long timeScale);
             int width = displayMode.GetWidth();
             int height = displayMode.GetHeight();
-
 
             this.FrameSize = new System.Drawing.Size(width, height);
             this.FrameRate = new Tuple<long, long>(frameDuration, timeScale);
@@ -371,12 +379,19 @@ namespace Test.DeckLink
             {
                 ProcessVideoFrame(videoFrame);
             }
+            else
+            {
+                logger.Warn("No video frame...");
+            }
 
             if (audioPacket != null)
             {
                 ProcessAudioPacket(audioPacket);
             }
-
+            else
+            {
+                logger.Warn("No audio packet...");
+            }
         }
 
 
@@ -391,14 +406,15 @@ namespace Test.DeckLink
 
             try
             {
+
                 long timeScale = FrameRate.Item2;
-           
+
                 audioPacket.GetPacketTime(out long packetTime, timeScale);
-                
+
                 int sampleSize = ((int)AudioSampleType / 8); //32bit
                 int samplesCount = audioPacket.GetSampleFrameCount();
                 int dataLength = sampleSize * AudioChannelsCount * samplesCount;
-               
+
                 if (dataLength > 0)
                 {
                     audioPacket.GetBytes(out IntPtr pBuffer);
@@ -408,15 +424,13 @@ namespace Test.DeckLink
                         byte[] data = new byte[dataLength];
                         Marshal.Copy(pBuffer, data, 0, data.Length);
 
-                        //var f = File.Create(@"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw");
-                        //Marshal.Copy(pBuffer, data, 0, data.Length);
-                        //f.Write(data, 0, data.Length);
-                        //f.Close();
+                        //var fileName = @"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
+                        //MediaToolkit.Utils.TestTools.WriteFile(data, fileName);
 
                         lastAudioPacketTimeSec = packetTime / timeScale;
 
                         double dataDurationSec = dataLength / audioBytesPerSeconds;
-                        audioDurationSeconds += dataDurationSec; 
+                        audioDurationSeconds += dataDurationSec;
 
                         AudioDataArrived?.Invoke(data, lastAudioPacketTimeSec);
 
@@ -448,9 +462,13 @@ namespace Test.DeckLink
                 var frameFlags = videoFrame.GetFlags();
 
                 bool inputSignal = frameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource); // no signal !!!
+                if (inputSignal)
+                {
+                    logger.Warn("Video no signal...");
+                }
 
                 if (inputSignal != validInputSignal)
-                { 
+                {
                     validInputSignal = inputSignal;
                     InputSignalChanged?.Invoke(validInputSignal);
                 }
@@ -475,7 +493,7 @@ namespace Test.DeckLink
                     int width = videoFrame.GetWidth();
                     int height = videoFrame.GetHeight();
                     int stride = videoFrame.GetRowBytes();
-                    //_BMDPixelFormat format = videoFrame.GetPixelFormat();
+                    _BMDPixelFormat format = videoFrame.GetPixelFormat();
 
                     var bufferLength = stride * height;
                     videoFrame.GetBytes(out IntPtr pBuffer);
@@ -483,18 +501,13 @@ namespace Test.DeckLink
                     lastVideoFrameTimeSec = (double)frameTime / timeScale;
 
                     double frameDurationSec = (double)frameDuration / timeScale;
-                    videoDurationSeconds += frameDurationSec; 
+                    videoDurationSeconds += frameDurationSec;
 
 
                     VideoDataArrived?.Invoke(pBuffer, bufferLength, lastVideoFrameTimeSec, frameDurationSec);
 
-
-                    //var f = File.Create(@"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw");
-
-                    //byte[] data = new byte[bufferLength];
-                    //Marshal.Copy(pBuffer, data, 0, data.Length);
-                    //f.Write(data, 0, data.Length);
-                    //f.Close();
+                    //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
+                    //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
                 }
 
             }
@@ -507,6 +520,7 @@ namespace Test.DeckLink
                 Marshal.ReleaseComObject(videoFrame);
             }
         }
+
 
         public void StopCapture()
         {
@@ -613,124 +627,6 @@ namespace Test.DeckLink
 
         }
 
-        class MemoryAllocator : IDeckLinkMemoryAllocator
-        {
-            public void AllocateBuffer(uint bufferSize, out IntPtr allocatedBuffer)
-            {
-                allocatedBuffer = Marshal.AllocCoTaskMem((int)bufferSize);
-            }
-
-            public void Commit()
-            {
-            }
-
-            public void Decommit()
-            {
-            }
-
-            public void ReleaseBuffer(IntPtr buffer)
-            {
-                Marshal.FreeCoTaskMem(buffer);
-            }
-        }
-
     }
-
-    public class DeckLinkTools
-    {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-
-        public static bool GetDeviceByIndex(int inputIndex, out IDeckLink _deckLink)
-        {
-            logger.Trace("GetDeviceByIndex(...) " + inputIndex);
-
-            bool Success = false;
-
-            _deckLink = null;
-            IDeckLinkIterator deckLinkIterator = null;
-            try
-            {
-                deckLinkIterator = new CDeckLinkIterator();
-
-                int index = 0;
-                do
-                {
-                    if (_deckLink != null)
-                    {
-                        Marshal.ReleaseComObject(_deckLink);
-                        _deckLink = null;
-                    }
-
-                    deckLinkIterator.Next(out _deckLink);
-                    if (index == inputIndex)
-                    {
-                        Success = true;
-                        break;
-                    }
-
-                    index++;
-                }
-                while (_deckLink != null);
-
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-
-            }
-            finally
-            {
-                if (deckLinkIterator != null)
-                {
-                    Marshal.ReleaseComObject(deckLinkIterator);
-                    deckLinkIterator = null;
-                }
-
-            }
-
-            return Success;
-        }
-
-        public static string LogDisplayMode(IDeckLinkDisplayMode deckLinkDisplayMode)
-        {
-            string log = "";
-
-            if (deckLinkDisplayMode != null)
-            {
-                var displayMode = deckLinkDisplayMode.GetDisplayMode();
-                int width = deckLinkDisplayMode.GetWidth();
-                int height = deckLinkDisplayMode.GetHeight();
-                deckLinkDisplayMode.GetName(out string name);
-
-                deckLinkDisplayMode.GetFrameRate(out long frameDuration, out long timeScale);
-                var fps = ((double)timeScale / frameDuration);
-                log = displayMode + " " + width + "x" + height + " " + fps.ToString("0.00") + "fps";
-
-            }
-
-            return log;
-        }
-
-        public static string GetPixelFormatFourCC(_BMDPixelFormat pixFormat)
-        {
-            string fourCC = "";
-            if (BMDPixelFormatsToFourCCDict.ContainsKey(pixFormat))
-            {
-                fourCC = BMDPixelFormatsToFourCCDict[pixFormat];
-            }
-
-            return fourCC;
-        }
-
-        private static readonly Dictionary<_BMDPixelFormat, string> BMDPixelFormatsToFourCCDict = new Dictionary<_BMDPixelFormat, string>
-        {
-             { _BMDPixelFormat.bmdFormat8BitYUV, "UYVY" },
-             { _BMDPixelFormat.bmdFormat10BitYUV, "v210" }, //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
-            
-            // остальные форматы не проверялись....
-            // { _BMDPixelFormat.bmdFormat8BitARGB, "RGBA" },
-        };
-    }
-
 
 }

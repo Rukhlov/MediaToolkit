@@ -32,6 +32,7 @@
             this.buttonStart = new System.Windows.Forms.Button();
             this.comboBoxDevices = new System.Windows.Forms.ComboBox();
             this.buttonFind = new System.Windows.Forms.Button();
+            this.FullScreenCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonStop
@@ -75,11 +76,23 @@
             this.buttonFind.UseVisualStyleBackColor = true;
             this.buttonFind.Click += new System.EventHandler(this.buttonFind_Click);
             // 
+            // FullScreenCheckBox
+            // 
+            this.FullScreenCheckBox.AutoSize = true;
+            this.FullScreenCheckBox.Location = new System.Drawing.Point(55, 159);
+            this.FullScreenCheckBox.Name = "FullScreenCheckBox";
+            this.FullScreenCheckBox.Size = new System.Drawing.Size(76, 17);
+            this.FullScreenCheckBox.TabIndex = 8;
+            this.FullScreenCheckBox.Text = "FullScreen";
+            this.FullScreenCheckBox.UseVisualStyleBackColor = true;
+            this.FullScreenCheckBox.CheckedChanged += new System.EventHandler(this.FullScreenCheckBox_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(430, 225);
+            this.Controls.Add(this.FullScreenCheckBox);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.comboBoxDevices);
@@ -87,6 +100,7 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -96,6 +110,7 @@
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.ComboBox comboBoxDevices;
         private System.Windows.Forms.Button buttonFind;
+        private System.Windows.Forms.CheckBox FullScreenCheckBox;
     }
 }
 

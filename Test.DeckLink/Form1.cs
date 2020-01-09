@@ -1,4 +1,5 @@
 ﻿using DeckLinkAPI;
+using MediaToolkit.DeckLink;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
@@ -69,7 +70,7 @@ namespace Test.DeckLink
                 deckLinkInput = new DeckLinkInput();
                 deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
                 deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
-                deckLinkInput.InputFormatChanged += CurrentDevice_InputFormatChanged;
+                deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
 
 
                 //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
@@ -149,7 +150,7 @@ namespace Test.DeckLink
                 var fps = frameRate.Item2 / frameRate.Item1;
 
                 string videoLog = "";
-                if (deckLinkInput.VideoEnabled)
+           
                 {
                     videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
                 }
@@ -247,16 +248,13 @@ namespace Test.DeckLink
             sw.Restart();
         }
 
-
-
-
-        private void CurrentDevice_InputFormatChanged(IDeckLinkDisplayMode newDisplayMode)
+        private void DeckLinkInput_InputFormatChanged(object obj) //IDeckLinkDisplayMode newDisplayMode
         {
-            logger.Debug("CurrentDevice_InputFormatChanged(...)");
+            logger.Debug("DeckLinkInput_InputFormatChanged(...)");
             //var bmdPixelFormat = deckLinkInput.VideoPixelFormat;
 
 
-           // videoMode == _BMDDisplayMode.
+            // videoMode == _BMDDisplayMode.
         }
 
 
@@ -616,5 +614,19 @@ namespace Test.DeckLink
            //comboBoxDevices.DisplayMember = "DeviceName";
         }
 
+        private void FullScreenCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (FullScreenCheckBox.Checked)
+            {
+                this.videoForm.FormBorderStyle = FormBorderStyle.None;
+                this.videoForm.Location = new Point(0, 0);
+                this.videoForm.Size = new Size(1920, 1080);
+            }
+            else
+            {
+                this.videoForm.FormBorderStyle = FormBorderStyle.Sizable;
+            }
+            
+        }
     }
 }

@@ -588,4 +588,31 @@ namespace MediaToolkit.Utils
         }
     }
 
+    public class TestTools
+    {
+
+        public unsafe static void WriteFile(IntPtr pBuffer, long bufferLength, string fileName)
+        {
+            FileStream file = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+            UnmanagedMemoryStream ustream = new UnmanagedMemoryStream((byte*)pBuffer, bufferLength);
+            ustream.CopyTo(file);
+            ustream.Close();
+            file.Close();
+
+            //var f = File.Create(fileName);
+
+            //byte[] data = new byte[bufferLength];
+            //Marshal.Copy(pBuffer, data, 0, data.Length);
+            //f.Write(data, 0, data.Length);
+            //f.Close();
+        }
+
+        public static void WriteFile(byte[] buffer, string fileName)
+        {
+            using (var f = File.Create(fileName))
+            {
+                f.Write(buffer, 0, buffer.Length);
+            }
+        }
+    }
 }

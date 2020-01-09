@@ -422,6 +422,10 @@ namespace MediaToolkit.MediaFoundation
                         }
                     }
                 }
+                else
+                {
+                    logger.Warn("Drop sample at " + sampleTime + " " + sampleDuration);
+                }
             }
             catch (SharpDXException ex)
             {

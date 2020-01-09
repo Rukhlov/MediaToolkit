@@ -501,7 +501,7 @@ namespace MediaToolkit.MediaFoundation
             bool lockTacken = false;
             try
             {
-                Monitor.TryEnter(syncLock, 100, ref lockTacken);
+                Monitor.TryEnter(syncLock, 10, ref lockTacken);
                 if (lockTacken)
                 {
                     if (resampler != null)
@@ -528,6 +528,10 @@ namespace MediaToolkit.MediaFoundation
 
                     //    streamSinkRequestSample--;
                     //}
+                }
+                else
+                {
+                    logger.Warn("Drop audio sample at: " + sampleTime + " " + sampleDuration);
                 }
             }
             catch (SharpDXException ex)
