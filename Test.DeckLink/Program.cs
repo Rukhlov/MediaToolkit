@@ -12,7 +12,7 @@ namespace Test.DeckLink
         /// Главная точка входа для приложения.
         /// </summary>
         [STAThread]
-        //[MTAThread]
+        // [MTAThread]
         static void Main()
         {
             Application.EnableVisualStyles();

@@ -37,7 +37,7 @@
             // 
             // buttonStop
             // 
-            this.buttonStop.Location = new System.Drawing.Point(137, 114);
+            this.buttonStop.Location = new System.Drawing.Point(123, 57);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(75, 23);
             this.buttonStop.TabIndex = 7;
@@ -47,7 +47,7 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(56, 114);
+            this.buttonStart.Location = new System.Drawing.Point(42, 57);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(75, 23);
             this.buttonStart.TabIndex = 6;
@@ -79,7 +79,7 @@
             // FullScreenCheckBox
             // 
             this.FullScreenCheckBox.AutoSize = true;
-            this.FullScreenCheckBox.Location = new System.Drawing.Point(55, 159);
+            this.FullScreenCheckBox.Location = new System.Drawing.Point(41, 102);
             this.FullScreenCheckBox.Name = "FullScreenCheckBox";
             this.FullScreenCheckBox.Size = new System.Drawing.Size(76, 17);
             this.FullScreenCheckBox.TabIndex = 8;
@@ -91,7 +91,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(430, 225);
+            this.ClientSize = new System.Drawing.Size(418, 165);
             this.Controls.Add(this.FullScreenCheckBox);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);

@@ -1,10 +1,12 @@
 ﻿using DeckLinkAPI;
 using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaToolkit.DeckLink
@@ -13,13 +15,13 @@ namespace MediaToolkit.DeckLink
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static bool GetDeviceByIndex(int inputIndex, out IDeckLink _deckLink)
+        public static bool GetDeviceByIndex(int inputIndex, out IDeckLink deckLink)
         {
             logger.Trace("GetDeviceByIndex(...) " + inputIndex);
 
             bool Success = false;
 
-            _deckLink = null;
+            deckLink = null;
             IDeckLinkIterator deckLinkIterator = null;
             try
             {
@@ -28,13 +30,13 @@ namespace MediaToolkit.DeckLink
                 int index = 0;
                 do
                 {
-                    if (_deckLink != null)
+                    if (deckLink != null)
                     {
-                        Marshal.ReleaseComObject(_deckLink);
-                        _deckLink = null;
+                        Marshal.ReleaseComObject(deckLink);
+                        deckLink = null;
                     }
 
-                    deckLinkIterator.Next(out _deckLink);
+                    deckLinkIterator.Next(out deckLink);
                     if (index == inputIndex)
                     {
                         Success = true;
@@ -43,7 +45,7 @@ namespace MediaToolkit.DeckLink
 
                     index++;
                 }
-                while (_deckLink != null);
+                while (deckLink != null);
 
             }
             catch (Exception ex)
@@ -63,6 +65,60 @@ namespace MediaToolkit.DeckLink
 
             return Success;
         }
+
+        public static bool GetDeviceByName(string deviceName, out IDeckLink deckLink)
+        {
+            logger.Trace("GetDeviceByName(...) " + deviceName);
+
+            bool Success = false;
+
+            deckLink = null;
+            IDeckLinkIterator deckLinkIterator = null;
+            try
+            {
+                deckLinkIterator = new CDeckLinkIterator();
+
+                int index = 0;
+                do
+                {
+                    if (deckLink != null)
+                    {
+                        Marshal.ReleaseComObject(deckLink);
+                        deckLink = null;
+                    }
+
+                    deckLinkIterator.Next(out deckLink);
+                    if (deckLink != null)
+                    {
+                        deckLink.GetDisplayName( out string name);
+                        if(deviceName == name)
+                        {
+                            break;
+                        }
+                    }
+                    index++;
+                }
+                while (deckLink != null);
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+            }
+            finally
+            {
+                if (deckLinkIterator != null)
+                {
+                    Marshal.ReleaseComObject(deckLinkIterator);
+                    deckLinkIterator = null;
+                }
+
+            }
+
+            return Success;
+        }
+
 
         public static string LogDisplayMode(IDeckLinkDisplayMode deckLinkDisplayMode)
         {
@@ -128,5 +184,4 @@ namespace MediaToolkit.DeckLink
             Marshal.FreeCoTaskMem(buffer);
         }
     }
-
 }

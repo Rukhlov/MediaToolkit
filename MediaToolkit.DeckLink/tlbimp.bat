@@ -1,0 +1,1 @@
+"%programfiles(x86)%\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\TlbImp.exe" DeckLinkAPI.dll /namespace:DeckLinkAPI /out:DeckLinkDotNetAPI.dll

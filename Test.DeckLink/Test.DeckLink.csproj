@@ -86,6 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PreviewWindow.cs" />
     <Compile Include="DeckLinkDevice.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

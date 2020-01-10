@@ -695,6 +695,12 @@ namespace MediaToolkit.MediaFoundation
 
         public void Invoke(AsyncResult asyncResultRef)
         {
+            if (eventGenerator == null || eventGenerator.IsDisposed)
+            {
+                Console.WriteLine("eventGenerator == null || eventGenerator.IsDisposed");
+                return;
+            }
+
             if (IsDisposed)
             {
                 return;
@@ -712,11 +718,17 @@ namespace MediaToolkit.MediaFoundation
                     mediaEvent?.Dispose();
                 }
 
+                if(eventGenerator == null || eventGenerator.IsDisposed)
+                {
+                    Console.WriteLine("eventGenerator == null || eventGenerator.IsDisposed");
+                    return;
+                }
+
                 if (IsDisposed)
                 {
                     return;
                 }
-
+                
                 eventGenerator?.BeginGetEvent(this, null);
             }
             catch (Exception ex)

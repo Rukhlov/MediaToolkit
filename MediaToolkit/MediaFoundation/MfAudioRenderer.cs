@@ -188,22 +188,6 @@ namespace MediaToolkit.MediaFoundation
 
                 }
 
-                MediaFactory.CreatePresentationClock(out presentationClock);
-                PresentationTimeSource timeSource = null;
-                try
-                {
-                    MediaFactory.CreateSystemTimeSource(out timeSource);
-
-                    presentationClock.TimeSource = timeSource;
-
-                    audioSink.PresentationClock = presentationClock;
-
-                }
-                finally
-                {
-                    timeSource?.Dispose();
-                }
-
                 rendererState = RendererState.Initialized;
             }
             catch (Exception ex)
@@ -214,6 +198,24 @@ namespace MediaToolkit.MediaFoundation
                 throw;
             }
 
+        }
+
+        public void SetPresentationClock(PresentationClock clock)
+        {
+            PresentationTimeSource timeSource = null;
+            try
+            {
+                MediaFactory.CreateSystemTimeSource(out timeSource);
+
+                clock.TimeSource = timeSource;
+
+                audioSink.PresentationClock = clock;
+
+            }
+            finally
+            {
+                timeSource?.Dispose();
+            }
         }
 
 
@@ -289,110 +291,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public void Start(long time)
-        {
-            logger.Debug("MfAudioRenderer::Start(...) " + time);
-
-            if (rendererState == RendererState.Closed || rendererState == RendererState.Started)
-            {
-                logger.Warn("Start(...) return invalid render state: " + rendererState);
-                return;
-            }
-
-
-            lock (syncLock)
-            {
-                if (resampler != null)
-                {
-                    resampler.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
-                    resampler.ProcessMessage(TMessageType.NotifyBeginStreaming, IntPtr.Zero);
-                    resampler.ProcessMessage(TMessageType.NotifyStartOfStream, IntPtr.Zero);
-
-                    resampler.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
-
-                }
-
-
-                presentationClock.GetState(0, out ClockState state);
-                if (state != ClockState.Running)
-                {
-                    //var time = presentationClock.Time;
-
-                    presentationClock.Start(time);
-                }
-                else
-                {
-                    logger.Warn("Start(...) return invalid clock state: " + state);
-                }
-            }
-        }
-
-        public void Stop()
-        {
-            logger.Debug("MfAudioRenderer::Stop()");
-
-            if (!IsRunning)
-            {
-                logger.Warn("Stop() return invalid render state: " + rendererState);
-
-                return;
-            }
-
-            lock (syncLock)
-            {
-
-                if (resampler != null)
-                {
-
-                    resampler.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
-                    resampler.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
-                    resampler.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
-                }
-
-                streamSinkRequestSample = 0;
-
-                presentationClock.GetState(0, out ClockState state);
-                if (state != ClockState.Stopped)
-                {
-                    presentationClock.Stop();
-                }
-                else
-                {
-                    logger.Warn("Stop() return invalid clock state: " + state);
-                }
-            }
-        }
-
-        private const long PRESENTATION_CURRENT_POSITION = 0x7fffffffffffffff;
-
-        public void Pause()
-        { // не работает!!
-            logger.Debug("MfAudioRenderer::Pause()");
-            if (!IsRunning)
-            {
-                logger.Warn("Pause() return invalid render state: " + rendererState);
-                return;
-            }
-
-            lock (syncLock)
-            {
-                presentationClock.GetState(0, out ClockState state);
-                if (state == ClockState.Running)
-                {
-                    presentationClock.Pause();
-                }
-                else if (state == ClockState.Paused)
-                {
-                    presentationClock.Start(PRESENTATION_CURRENT_POSITION);
-                }
-                else
-                {
-                    logger.Warn("Pause() return invalid clock state: " + state);
-                }
-            }
-
-        }
-
         Stopwatch sw = new Stopwatch();
         private void StreamSinkEventHandler_EventReceived(MediaEvent mediaEvent)
         {
@@ -414,12 +312,30 @@ namespace MediaToolkit.MediaFoundation
                 {
                     logger.Debug(typeInfo);
 
+                    if (resampler != null)
+                    {
+                        resampler.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+                        resampler.ProcessMessage(TMessageType.NotifyBeginStreaming, IntPtr.Zero);
+                        resampler.ProcessMessage(TMessageType.NotifyStartOfStream, IntPtr.Zero);
+
+                        resampler.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
+
+                    }
+
                     rendererState = RendererState.Started;
                     RendererStarted?.Invoke();
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkStopped)
                 {
                     logger.Debug(typeInfo);
+
+                    if (resampler != null)
+                    {
+
+                        resampler.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
+                        resampler.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
+                        resampler.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+                    }
 
                     rendererState = RendererState.Stopped;
 
@@ -482,17 +398,17 @@ namespace MediaToolkit.MediaFoundation
         {
             if (!IsRunning)
             {
-                //logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
+                logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
                 return;
             }
 
-            ClockState state = ClockState.Invalid;
-            presentationClock?.GetState(0, out state);
-            if (state != ClockState.Running)
-            {
-                //logger.Debug("ProcessSample(...) return invalid clock state: " + state);
-                return;
-            }
+            //ClockState state = ClockState.Invalid;
+            //presentationClock?.GetState(0, out state);
+            //if (state != ClockState.Running)
+            //{
+            //    //logger.Debug("ProcessSample(...) return invalid clock state: " + state);
+            //    return;
+            //}
 
 
             var sampleTime = sample.SampleTime;
@@ -520,18 +436,10 @@ namespace MediaToolkit.MediaFoundation
                     }
 
                     sample?.Dispose();
-
-
-                    ////if (streamSinkRequestSample > 0)
-                    //{
-                    //    //streamSink.ProcessSample(sample);
-
-                    //    streamSinkRequestSample--;
-                    //}
                 }
                 else
                 {
-                    logger.Warn("Drop audio sample at: " + sampleTime + " " + sampleDuration);
+                    logger.Warn("Drop audio sample at: " + sampleTime + " + " + sampleDuration);
                 }
             }
             catch (SharpDXException ex)
@@ -744,6 +652,102 @@ namespace MediaToolkit.MediaFoundation
 
 
             }
+        }
+
+
+
+        public void Start(long time)
+        {
+            logger.Debug("MfAudioRenderer::Start(...) " + time);
+
+            if (rendererState == RendererState.Closed || rendererState == RendererState.Started)
+            {
+                logger.Warn("Start(...) return invalid render state: " + rendererState);
+                return;
+            }
+
+
+            lock (syncLock)
+            {
+                if (presentationClock != null)
+                {
+                    presentationClock.Dispose();
+                    presentationClock = null;
+                }
+
+                MediaFactory.CreatePresentationClock(out presentationClock);
+
+                SetPresentationClock(presentationClock);
+
+                presentationClock.GetState(0, out ClockState state);
+                if (state != ClockState.Running)
+                {
+                    //var time = presentationClock.Time;
+
+                    presentationClock.Start(time);
+                }
+                else
+                {
+                    logger.Warn("Start(...) return invalid clock state: " + state);
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            logger.Debug("MfAudioRenderer::Stop()");
+
+            if (!IsRunning)
+            {
+                logger.Warn("Stop() return invalid render state: " + rendererState);
+
+                return;
+            }
+
+            lock (syncLock)
+            {
+                streamSinkRequestSample = 0;
+
+                presentationClock.GetState(0, out ClockState state);
+                if (state != ClockState.Stopped)
+                {
+                    presentationClock.Stop();
+                }
+                else
+                {
+                    logger.Warn("Stop() return invalid clock state: " + state);
+                }
+            }
+        }
+
+        private const long PRESENTATION_CURRENT_POSITION = 0x7fffffffffffffff;
+
+        public void Pause()
+        { // не работает!!
+            logger.Debug("MfAudioRenderer::Pause()");
+            if (!IsRunning)
+            {
+                logger.Warn("Pause() return invalid render state: " + rendererState);
+                return;
+            }
+
+            lock (syncLock)
+            {
+                presentationClock.GetState(0, out ClockState state);
+                if (state == ClockState.Running)
+                {
+                    presentationClock.Pause();
+                }
+                else if (state == ClockState.Paused)
+                {
+                    presentationClock.Start(PRESENTATION_CURRENT_POSITION);
+                }
+                else
+                {
+                    logger.Warn("Pause() return invalid clock state: " + state);
+                }
+            }
+
         }
 
 

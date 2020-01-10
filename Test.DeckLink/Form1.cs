@@ -34,7 +34,7 @@ namespace Test.DeckLink
 
             //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
             SharpDX.Configuration.EnableObjectTracking = true;
-            SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
+            //SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
         }
 
 
@@ -44,6 +44,7 @@ namespace Test.DeckLink
 
         private MfVideoRenderer videoRenderer = null;
         private MfAudioRenderer audioRenderer = null;
+        private PresentationClock presentationClock = null;
 
         private WasapiOut audioPlayer = null;
         private BufferedWaveProvider audioBuffer = null;
@@ -51,6 +52,7 @@ namespace Test.DeckLink
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
+           
             logger.Debug("buttonStart_Click(...)");
 
             var deviceIndex = 0;
@@ -67,6 +69,8 @@ namespace Test.DeckLink
 
             try
             {
+                MediaFactory.CreatePresentationClock(out presentationClock);
+
                 deckLinkInput = new DeckLinkInput();
                 deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
                 deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
@@ -76,7 +80,8 @@ namespace Test.DeckLink
                 //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
                 //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
 
-                deckLinkInput.StartCapture(deviceIndex);
+                //previewWindow1.InitD3D();
+                deckLinkInput.StartCapture(deviceIndex);//this.Handle);
 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
@@ -98,22 +103,55 @@ namespace Test.DeckLink
             this.Invoke((Action)(() =>
             {
 
-                InitAudio();
+                if (deckLinkInput.AudioEnabled)
+                {
+                    MMDevice device = null;
+                    var deviceEnum = new MMDeviceEnumerator();
+                    if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
+                    {
+                        device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                    }
 
-                StartAudio();
 
-                //var UYVYFourCC = new SharpDX.Multimedia.FourCC(0x59565955);
-                //// var format = VideoFormatGuids.FromFourCC(v210FourCC);
-                //var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+                    audioRenderer = new MfAudioRenderer();
 
-                ////var format = VideoFormatGuids.NV12;
-                //var sampleArgs = new MfVideoArgs
-                //{
-                //    Width = 1920,
-                //    Height = 1080,
-                //    Format = format, //VideoFormatGuids.Uyvy, //VideoFormatGuids.NV12,//MFVideoFormat_v210,
+                    var sampleRate = deckLinkInput.AudioSampleRate;
+                    var bitsPerSample = deckLinkInput.AudioBitsPerSample;
+                    var channelsCount = deckLinkInput.AudioChannelsCount;
 
-                //};
+
+                    //if (device == null)
+                    //{// если дефолтного девайса нет, берем первый активный
+                    //    var devices = deviceEnum.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
+                    //    device = devices.FirstOrDefault();
+                    //}
+
+                    //if (device != null)
+                    //{
+                    //    audioRenderer = new MfAudioRenderer();
+                    //    var mixFormat = device.AudioClient.MixFormat;
+                    //    var deckLinkWaveFormat = new NAudio.Wave.WaveFormat(sampleRate, bitsPerSample, channelsCount);
+                    //    audioRenderer.Setup(device.ID, mixFormat, deckLinkWaveFormat);
+                    //}
+
+
+                    var audioArgs = new AudioRendererArgs
+                    {
+                        DeviceId = "",
+                        SampleRate = sampleRate,
+                        BitsPerSample = bitsPerSample,
+                        Channels = channelsCount,
+                        Encoding = MediaToolkit.Core.WaveEncodingTag.PCM,
+                    };
+
+                    audioRenderer.Setup(audioArgs);
+                    audioRenderer.SetPresentationClock(presentationClock);
+
+                    //InitAudio();
+
+                    //StartAudio();
+                }
+
 
                 var videoResoulution = deckLinkInput.FrameSize;
                 var pixelFormat = deckLinkInput.PixelFormatCode;
@@ -144,31 +182,36 @@ namespace Test.DeckLink
 
                 });
 
-                videoRenderer.Start(0);
+                videoRenderer.SetPresentationClock(presentationClock);
+
+               // videoRenderer.Start(0);
                 var frameRate = deckLinkInput.FrameRate;
 
                 var fps = frameRate.Item2 / frameRate.Item1;
 
                 string videoLog = "";
-           
+
                 {
                     videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
                 }
-                   
+
                 string audioLog = "";
                 if (deckLinkInput.AudioEnabled)
                 {
-                    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" +  deckLinkInput.AudioChannelsCount  ;
+                    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
                 }
-                
-                videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " +  audioLog;
+
+                videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
                 videoForm.Visible = true;
 
-                
+
                 videoRenderer.Resize(videoForm.ClientRectangle);
 
                 deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
                 deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
+
+                presentationClock.Start(0);
+
 
             }));
                
@@ -181,8 +224,16 @@ namespace Test.DeckLink
 
             this.Invoke((Action)(() => 
             {
+                presentationClock.Stop();
 
-                StopAudio();
+                // StopAudio();
+
+                // previewWindow1.CloseD3D();
+
+                if (audioRenderer != null)
+                {
+                    audioRenderer.Close();
+                }
 
                 if (videoRenderer != null)
                 {
@@ -313,37 +364,32 @@ namespace Test.DeckLink
 
                 if (device != null)
                 {
-                    audioRenderer = new MfAudioRenderer();
-                    var mixFormat = device.AudioClient.MixFormat;
-                    var deckLinkWaveFormat = new NAudio.Wave.WaveFormat(sampleRate, bitsPerSample, channelsCount);
-                    audioRenderer.Setup(device.ID, mixFormat, deckLinkWaveFormat);
+                    var shareMode = AudioClientShareMode.Shared;
+                    var useSyncEvent = false;
+                    var latency = 50;//100;
 
-                    //var shareMode = AudioClientShareMode.Shared;
-                    //var useSyncEvent = false;
-                    //var latency = 50;//100;
+                    var deviceLog = string.Join(" ", device.FriendlyName, sampleRate, channelsCount, bitsPerSample,
+                        shareMode, useSyncEvent, latency, BufferMilliseconds);
 
-                    //var deviceLog = string.Join(" ", device.FriendlyName, sampleRate, channelsCount, bitsPerSample,
-                    //    shareMode, useSyncEvent, latency, BufferMilliseconds);
-
-                    //logger.Debug("Audio device: " + deviceLog);
+                    logger.Debug("Audio device: " + deviceLog);
 
 
-                    //audioPlayer = new WasapiOut(device, shareMode, useSyncEvent, latency);
-                    //var audioFormat = new WaveFormat(sampleRate, bitsPerSample, channelsCount);
-                    //audioBuffer = new BufferedWaveProvider(audioFormat)
-                    //{
-                    //    BufferDuration = TimeSpan.FromMilliseconds(BufferMilliseconds),
-                    //    DiscardOnBufferOverflow = true,
-                    //};
+                    audioPlayer = new WasapiOut(device, shareMode, useSyncEvent, latency);
+                    var audioFormat = new WaveFormat(sampleRate, bitsPerSample, channelsCount);
+                    audioBuffer = new BufferedWaveProvider(audioFormat)
+                    {
+                        BufferDuration = TimeSpan.FromMilliseconds(BufferMilliseconds),
+                        DiscardOnBufferOverflow = true,
+                    };
 
 
-                    //volumeProvider = new VolumeSampleProvider(audioBuffer.ToSampleProvider());
-                    ////SetVolume();
+                    volumeProvider = new VolumeSampleProvider(audioBuffer.ToSampleProvider());
+                    //SetVolume();
 
-                    //audioPlayer.Init(volumeProvider);
-                    //audioPlayer.PlaybackStopped += AudioPlayer_PlaybackStopped;
+                    audioPlayer.Init(volumeProvider);
+                    audioPlayer.PlaybackStopped += AudioPlayer_PlaybackStopped;
 
-                    ////testFile = new FileStream(@"d:\BlackMagicAudio" + DateTime.Now.ToString("HH_mm_ss_fff") + ".pcm", FileMode.Create);
+                    //testFile = new FileStream(@"d:\BlackMagicAudio" + DateTime.Now.ToString("HH_mm_ss_fff") + ".pcm", FileMode.Create);
 
                     audioEnabled = true;
                 }
@@ -382,15 +428,13 @@ namespace Test.DeckLink
                 return;
             }
 
-            audioRenderer?.Start(0);
-
-            //if (audioPlayer != null)
-            //{
-            //    if (audioPlayer.PlaybackState == PlaybackState.Stopped)
-            //    {
-            //        audioPlayer.Play();
-            //    }
-            //}
+            if (audioPlayer != null)
+            {
+                if (audioPlayer.PlaybackState == PlaybackState.Stopped)
+                {
+                    audioPlayer.Play();
+                }
+            }
         }
         private bool audioEnabled = true;
         private void StopAudio()
@@ -403,13 +447,11 @@ namespace Test.DeckLink
                 return;
             }
 
-             audioRenderer?.Stop();
+            if (audioPlayer != null)
+            {
+                audioPlayer.Stop();
 
-            ////if (audioPlayer != null)
-            ////{
-            ////    audioPlayer.Stop();
-
-            ////}
+            }
         }
 
         private void AudioPlayer_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -461,28 +503,42 @@ namespace Test.DeckLink
                 //}
 
 
-                var sample = MediaFactory.CreateSample();
-                var mb = MediaFactory.CreateMemoryBuffer(data.Length);
+                Sample sample = null;
+                try
                 {
-                    sample.AddBuffer(mb);
+                    sample = MediaFactory.CreateSample();
+
+                    MediaBuffer mediaBuffer = null;
+                    try
+                    {
+                        mediaBuffer = MediaFactory.CreateMemoryBuffer(data.Length);
+                        {
+                            sample.AddBuffer(mediaBuffer);
+                        }
+
+                        sample.SampleDuration = MfTool.SecToMfTicks(time);
+                        sample.SampleTime = MfTool.SecToMfTicks(time);
+
+                        var pBuffer = mediaBuffer.Lock(out int cbMaxLen, out int cbCurLen);
+
+                        Marshal.Copy(data, 0, pBuffer, data.Length);
+
+                        mediaBuffer.CurrentLength = data.Length;
+                        mediaBuffer.Unlock();
+                        audioRenderer.ProcessSample(sample);
+     
+                    }
+                    finally
+                    {
+                        mediaBuffer?.Dispose();
+                    }
+                }
+                finally
+                {
+                    sample?.Dispose();
                 }
 
-                sample.SampleDuration = MfTool.SecToMfTicks(time);
-                sample.SampleTime = MfTool.SecToMfTicks(time);
 
-                var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
-
-                Marshal.Copy(data, 0, pBuffer, data.Length);
-
-                mb.CurrentLength = data.Length;
-                mb.Unlock();
-
-
-                audioRenderer.ProcessSample(sample);
-                mb.Dispose();
-
-
-                sample.Dispose();
             }
 
             //if (testFile != null)

@@ -94,15 +94,15 @@ namespace MediaToolkit.MediaFoundation
                     activate?.Dispose();
                 }
 
-                var characteristics = videoSink.Characteristics;
-                var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
-                logger.Debug("VideoSinkCharacteristics: " + logCharacts);
+                //var characteristics = videoSink.Characteristics;
+                //var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
+                //logger.Debug("VideoSinkCharacteristics: " + logCharacts);
 
-                using (var attrs = videoSink.QueryInterface<MediaAttributes>())
-                {
-                    var attrLog = MfTool.LogMediaAttributes(attrs);
-                    logger.Debug("EVRSinkAttrubutes:\r\n" + attrLog);
-                }
+                //using (var attrs = videoSink.QueryInterface<MediaAttributes>())
+                //{
+                //    var attrLog = MfTool.LogMediaAttributes(attrs);
+                //    logger.Debug("EVRSinkAttrubutes:\r\n" + attrLog);
+                //}
 
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
                 videoRenderer.InitializeRenderer(null, null);
@@ -190,22 +190,6 @@ namespace MediaToolkit.MediaFoundation
 
                 InitSampleAllocator();
 
-                MediaFactory.CreatePresentationClock(out presentationClock);
-                PresentationTimeSource timeSource = null;
-                try
-                {
-                    MediaFactory.CreateSystemTimeSource(out timeSource);
-
-                    presentationClock.TimeSource = timeSource;
-
-                    videoSink.PresentationClock = presentationClock;
-
-                }
-                finally
-                {
-                    timeSource?.Dispose();
-                }
-
                 rendererState = RendererState.Initialized;
             }
             catch (Exception ex)
@@ -216,6 +200,24 @@ namespace MediaToolkit.MediaFoundation
                 throw;
             }
 
+        }
+
+        public void SetPresentationClock(PresentationClock clock)
+        {
+            PresentationTimeSource timeSource = null;
+            try
+            {
+                MediaFactory.CreateSystemTimeSource(out timeSource);
+
+                clock.TimeSource = timeSource;
+
+                videoSink.PresentationClock = clock;
+
+            }
+            finally
+            {
+                timeSource?.Dispose();
+            }
         }
 
         private void InitSampleAllocator()
@@ -361,17 +363,10 @@ namespace MediaToolkit.MediaFoundation
         {
             if (!IsRunning)
             {
-                //logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
+                logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
                 return;
             }
 
-            ClockState state = ClockState.Invalid;
-            presentationClock?.GetState(0, out state);
-            if (state != ClockState.Running)
-            {
-                //logger.Debug("ProcessSample(...) return invalid clock state: " + state);
-                return;
-            }
 
             var sampleTime = sample.SampleTime;
             var sampleDuration = sample.SampleDuration;
@@ -477,6 +472,17 @@ namespace MediaToolkit.MediaFoundation
 
             lock (syncLock)
             {
+
+                if (presentationClock != null)
+                {
+                    presentationClock.Dispose();
+                    presentationClock = null;
+                }
+
+                MediaFactory.CreatePresentationClock(out presentationClock);
+
+                SetPresentationClock(presentationClock);
+
                 presentationClock.GetState(0, out ClockState state);
                 if (state != ClockState.Running)
                 {
@@ -490,6 +496,8 @@ namespace MediaToolkit.MediaFoundation
                 }
             }
         }
+
+
 
         public void Stop()
         {
