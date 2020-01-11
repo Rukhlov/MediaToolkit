@@ -1,4 +1,5 @@
 ﻿using DeckLinkAPI;
+using MediaToolkit;
 using MediaToolkit.DeckLink;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
@@ -30,26 +31,26 @@ namespace Test.DeckLink
         {
             InitializeComponent();
 
-            MediaManager.Startup();
+            // MediaManager.Startup();
 
             //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
-            SharpDX.Configuration.EnableObjectTracking = true;
+            //SharpDX.Configuration.EnableObjectTracking = true;
             //SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
+
+            MediaToolkit.MediaToolkitManager.Startup();
+
+            syncContext = SynchronizationContext.Current;
         }
 
 
-        private Form videoForm = null;
+        private SynchronizationContext syncContext = null;
+
         private DeckLinkInput deckLinkInput = null;
 
+        private MediaRenderSession renderSession = null;
 
-        private MfVideoRenderer videoRenderer = null;
-        private MfAudioRenderer audioRenderer = null;
-        private PresentationClock presentationClock = null;
-
-        private WasapiOut audioPlayer = null;
-        private BufferedWaveProvider audioBuffer = null;
-        private VolumeSampleProvider volumeProvider = null;
-
+        private IntPtr windowHandle = IntPtr.Zero;
+        private Form videoForm = null;
         private void buttonStart_Click(object sender, EventArgs e)
         {
            
@@ -69,245 +70,59 @@ namespace Test.DeckLink
 
             try
             {
-                MediaFactory.CreatePresentationClock(out presentationClock);
-
-                deckLinkInput = new DeckLinkInput();
-                deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
-                deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
-                deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
-
-
-                //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-                //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
-
-                //previewWindow1.InitD3D();
-                deckLinkInput.StartCapture(deviceIndex);//this.Handle);
-
+                
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
 
-
-        }
-
-
-
-        private void DeckLinkInput_CaptureStarted()
-        {
-            logger.Debug("DeckLinkInput_CaptureStarted(...)");
-
-            this.Invoke((Action)(() =>
-            {
-
-                if (deckLinkInput.AudioEnabled)
-                {
-                    MMDevice device = null;
-                    var deviceEnum = new MMDeviceEnumerator();
-                    if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
-                    {
-                        device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
-                    }
-
-
-                    audioRenderer = new MfAudioRenderer();
-
-                    var sampleRate = deckLinkInput.AudioSampleRate;
-                    var bitsPerSample = deckLinkInput.AudioBitsPerSample;
-                    var channelsCount = deckLinkInput.AudioChannelsCount;
-
-
-                    //if (device == null)
-                    //{// если дефолтного девайса нет, берем первый активный
-                    //    var devices = deviceEnum.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-                    //    device = devices.FirstOrDefault();
-                    //}
-
-                    //if (device != null)
-                    //{
-                    //    audioRenderer = new MfAudioRenderer();
-                    //    var mixFormat = device.AudioClient.MixFormat;
-                    //    var deckLinkWaveFormat = new NAudio.Wave.WaveFormat(sampleRate, bitsPerSample, channelsCount);
-                    //    audioRenderer.Setup(device.ID, mixFormat, deckLinkWaveFormat);
-                    //}
-
-
-                    var audioArgs = new AudioRendererArgs
-                    {
-                        DeviceId = "",
-                        SampleRate = sampleRate,
-                        BitsPerSample = bitsPerSample,
-                        Channels = channelsCount,
-                        Encoding = MediaToolkit.Core.WaveEncodingTag.PCM,
-                    };
-
-                    audioRenderer.Setup(audioArgs);
-                    audioRenderer.SetPresentationClock(presentationClock);
-
-                    //InitAudio();
-
-                    //StartAudio();
-                }
-
-
-                var videoResoulution = deckLinkInput.FrameSize;
-                var pixelFormat = deckLinkInput.PixelFormatCode;
+                renderSession = new MediaRenderSession();
 
                 videoForm = new Form
                 {
                     BackColor = Color.Black,
                     StartPosition = FormStartPosition.CenterScreen,
-                    ClientSize = videoResoulution,
+                    //ClientSize = videoResoulution,
                 };
+                windowHandle = videoForm.Handle;
 
-                videoRenderer = new MfVideoRenderer();
                 videoForm.Paint += (o, a) =>
                 {
-                    videoRenderer?.Repaint();
+                    renderSession?.Repaint();
                 };
 
                 videoForm.SizeChanged += (o, a) =>
                 {
-                    videoRenderer?.Resize(videoForm.ClientRectangle);
+                    renderSession?.Resize(videoForm.ClientRectangle);
                 };
 
-                videoRenderer.Setup(new VideoRendererArgs
+                videoForm.FormClosed += (o, a) =>
                 {
-                    hWnd = videoForm.Handle,
-                    Resolution = videoResoulution,
-                    PixelFormat = pixelFormat,
-
-                });
-
-                videoRenderer.SetPresentationClock(presentationClock);
-
-               // videoRenderer.Start(0);
-                var frameRate = deckLinkInput.FrameRate;
-
-                var fps = frameRate.Item2 / frameRate.Item1;
-
-                string videoLog = "";
-
-                {
-                    videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
-                }
-
-                string audioLog = "";
-                if (deckLinkInput.AudioEnabled)
-                {
-                    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
-                }
-
-                videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
+                    deckLinkInput?.StopCapture();
+                };
                 videoForm.Visible = true;
 
+                deckLinkInput = new DeckLinkInput();
+                deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
+                deckLinkInput.ReadyToStart += DeckLinkInput_ReadyToStart;
+                deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
+                deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
 
-                videoRenderer.Resize(videoForm.ClientRectangle);
+                //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
+                //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
 
-                deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-                deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
+                
+                deckLinkInput.StartCapture(deviceIndex);//this.Handle);
 
-                presentationClock.Start(0);
-
-
-            }));
-               
-
-        }
-
-        private void DeckLinkInput_CaptureStopped(object obj)
-        {
-            logger.Debug("DeckLinkInput_CaptureStopped(...)");
-
-            this.Invoke((Action)(() => 
+            }
+            catch (Exception ex)
             {
-                presentationClock.Stop();
+                MessageBox.Show(ex.Message);
 
-                // StopAudio();
-
-                // previewWindow1.CloseD3D();
-
-                if (audioRenderer != null)
-                {
-                    audioRenderer.Close();
-                }
-
-                if (videoRenderer != null)
-                {
-                    videoRenderer.Close();
-
-                }
-
-                if (videoForm != null)
-                {
-                    videoForm.Close();
-                    videoForm = null;
-                }
-
-                var errorCode = deckLinkInput.ErrorCode;
-                if (errorCode != 0)
-                {
-                    MessageBox.Show("DeckLink unknown error: " + errorCode);
-                }
-
-                deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
-                deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+                CloseVideo();
 
                 buttonStart.Enabled = true;
                 buttonStop.Enabled = false;
-            }));
-
-        }
-
-       
-
-
-        Stopwatch sw = new Stopwatch();
-        long _time = 0;
-        private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
-        {
-            _time += sw.ElapsedMilliseconds;
-
-            var sample = MediaFactory.CreateSample();
-
-            sample.SampleTime = MfTool.SecToMfTicks(frameTime);
-            sample.SampleDuration = MfTool.SecToMfTicks(frameDuration);
-
-
-            var mb = MediaFactory.CreateMemoryBuffer(frameLength);
-            {
-                var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
-
-                Kernel32.CopyMemory(pBuffer, frameData, (uint)frameLength);
-
-                //Marshal.Copy(testBytes, 0, pBuffer, len);
-
-                mb.CurrentLength = frameLength;
-                mb.Unlock();
-
-                sample.AddBuffer(mb);
             }
-
-            videoRenderer.ProcessSample(sample);
-
-            sample.Dispose();
-            mb?.Dispose();
-
-            sw.Restart();
         }
-
-        private void DeckLinkInput_InputFormatChanged(object obj) //IDeckLinkDisplayMode newDisplayMode
-        {
-            logger.Debug("DeckLinkInput_InputFormatChanged(...)");
-            //var bmdPixelFormat = deckLinkInput.VideoPixelFormat;
-
-
-            // videoMode == _BMDDisplayMode.
-        }
-
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
@@ -317,9 +132,6 @@ namespace Test.DeckLink
             {
                 if (deckLinkInput != null)
                 {
-                    //deckLinkInput.CaptureStarted -= DeckLinkInput_CaptureStarted;
-                    //deckLinkInput.CaptureStopped -= DeckLinkInput_CaptureStopped;
-                    //deckLinkInput.InputFormatChanged -= CurrentDevice_InputFormatChanged;
 
                     deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
                     deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
@@ -327,225 +139,148 @@ namespace Test.DeckLink
                     deckLinkInput.StopCapture();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-
-
-
         }
 
 
-
-        public void InitAudio()
+        private void DeckLinkInput_ReadyToStart()
         {
-            logger.Debug("InitAudio()");
-
-            try
+            AudioRendererArgs audioArgs = null;
+            if (deckLinkInput.AudioEnabled)
             {
+
                 var sampleRate = deckLinkInput.AudioSampleRate;
+                var bitsPerSample = deckLinkInput.AudioBitsPerSample;
                 var channelsCount = deckLinkInput.AudioChannelsCount;
-                var bitsPerSample = (int)deckLinkInput.AudioBitsPerSample;
-                const int BufferMilliseconds = 100;
 
-                MMDevice device = null;
-                var deviceEnum = new MMDeviceEnumerator();
-                if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
+                audioArgs = new AudioRendererArgs
                 {
-                    device = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
-                }
-
-                if (device == null)
-                {// если дефолтного девайса нет, берем первый активный
-                    var devices = deviceEnum.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-                    device = devices.FirstOrDefault();
-                }
-
-                if (device != null)
-                {
-                    var shareMode = AudioClientShareMode.Shared;
-                    var useSyncEvent = false;
-                    var latency = 50;//100;
-
-                    var deviceLog = string.Join(" ", device.FriendlyName, sampleRate, channelsCount, bitsPerSample,
-                        shareMode, useSyncEvent, latency, BufferMilliseconds);
-
-                    logger.Debug("Audio device: " + deviceLog);
-
-
-                    audioPlayer = new WasapiOut(device, shareMode, useSyncEvent, latency);
-                    var audioFormat = new WaveFormat(sampleRate, bitsPerSample, channelsCount);
-                    audioBuffer = new BufferedWaveProvider(audioFormat)
-                    {
-                        BufferDuration = TimeSpan.FromMilliseconds(BufferMilliseconds),
-                        DiscardOnBufferOverflow = true,
-                    };
-
-
-                    volumeProvider = new VolumeSampleProvider(audioBuffer.ToSampleProvider());
-                    //SetVolume();
-
-                    audioPlayer.Init(volumeProvider);
-                    audioPlayer.PlaybackStopped += AudioPlayer_PlaybackStopped;
-
-                    //testFile = new FileStream(@"d:\BlackMagicAudio" + DateTime.Now.ToString("HH_mm_ss_fff") + ".pcm", FileMode.Create);
-
-                    audioEnabled = true;
-                }
-                else
-                {
-                    logger.Warn("Audio device not found");
-                    audioEnabled = false;
-                    return;
-                }
-
+                    DeviceId = "",
+                    SampleRate = sampleRate,
+                    BitsPerSample = bitsPerSample,
+                    Channels = channelsCount,
+                    Encoding = MediaToolkit.Core.WaveEncodingTag.PCM,
+                };
             }
-            catch (Exception ex)
+
+
+            var videoResoulution = deckLinkInput.FrameSize;
+            var pixelFormat = deckLinkInput.PixelFormatCode;
+
+            var videoArgs = new VideoRendererArgs
             {
-                logger.Error(ex);
+                hWnd = windowHandle,
+                Resolution = videoResoulution,
+                PixelFormat = pixelFormat,
 
-                if (audioPlayer != null)
-                {
-                    audioPlayer.PlaybackStopped -= AudioPlayer_PlaybackStopped;
-                    audioPlayer.Dispose();
-                    audioPlayer = null;
-                }
+            };
 
-                audioEnabled = false;
-            }
+            renderSession.Setup(videoArgs, audioArgs);
 
+            deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
+            deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
+        
+            syncContext.Send(_ =>
+            {
+                ShowVideo();
+
+
+            }, null);
         }
 
-
-        private void StartAudio()
+        private void ShowVideo()
         {
-            logger.Debug("StartAudio()");
 
-            if (!audioEnabled)
+            var videoResoulution = deckLinkInput.FrameSize;
+            var pixelFormat = deckLinkInput.PixelFormatCode;
+            var frameRate = deckLinkInput.FrameRate;
+            var fps = frameRate.Item2 / frameRate.Item1;
+            string videoLog = "";
             {
-                logger.Warn("AudioEnabled " + audioEnabled);
-                return;
+                videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
             }
 
-            if (audioPlayer != null)
+            string audioLog = "";
+            if (deckLinkInput.AudioEnabled)
             {
-                if (audioPlayer.PlaybackState == PlaybackState.Stopped)
-                {
-                    audioPlayer.Play();
-                }
+                audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
             }
+
+            videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
+           // videoForm.Visible = true;
+
+
+            renderSession.Resize(videoForm.ClientRectangle);
         }
-        private bool audioEnabled = true;
-        private void StopAudio()
+
+        private void CloseVideo()
         {
-            logger.Debug("StopAudio()");
-
-            if (!audioEnabled)
+            if (videoForm != null)
             {
-                logger.Warn("AudioEnabled " + audioEnabled);
-                return;
-            }
-
-            if (audioPlayer != null)
-            {
-                audioPlayer.Stop();
-
+                videoForm.Close();
+                videoForm = null;
             }
         }
 
-        private void AudioPlayer_PlaybackStopped(object sender, StoppedEventArgs e)
+        private void DeckLinkInput_CaptureStarted()
         {
-            logger.Debug("AudioPlayer_PlaybackStopped(...)");
+            logger.Debug("DeckLinkInput_CaptureStarted(...)");
 
-            var ex = e.Exception;
-            if (ex != null)
+            renderSession?.Start();
+
+
+        }
+
+        private void DeckLinkInput_CaptureStopped(object obj)
+        {
+
+            logger.Debug("DeckLinkInput_CaptureStopped(...)");
+
+            deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
+            deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+
+            renderSession.Close();
+
+            syncContext.Send(_ =>
             {
-               
-                var comExeption = ex as System.Runtime.InteropServices.COMException;
-                if (comExeption != null)
+
+                var errorCode = deckLinkInput.ErrorCode;
+                if (errorCode != 0)
                 {
-                    var code = comExeption.HResult;
-                    if(code == AUDCLNT.E_DEVICE_INVALIDATED)
-                    {
-                        logger.Warn("AUDCLNT.E_DEVICE_INVALIDATED");
-
-                        //https://docs.microsoft.com/en-us/windows/win32/coreaudio/recovering-from-an-invalid-device-error
-                        // TODO: перезапустить девайс...
-                    }
-
-                    ////https://msdn.microsoft.com/en-us/library/windows/desktop/ee416776(v=vs.85).aspx
-                    //if (comExeption.ErrorCode == -2005401450) // 0x88780096 DSERR_BUFFERLOST 
-                    //{
-                    //    // TODO: перезапустить девайс...
-                    //    return;
-                    //}
+                    MessageBox.Show("DeckLink unknown error: " + errorCode);
                 }
 
-                logger.Error(ex);
-            }
+                CloseVideo();
 
-            audioPlayer?.Dispose();
+                buttonStart.Enabled = true;
+                buttonStop.Enabled = false;
 
-            audioEnabled = false;
+            }, null);
 
         }
 
-        private bool _muteAudio = false;
+
+
+        private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
+        {
+
+            renderSession.ProcessVideoFrame(frameData, frameLength, frameTime, frameDuration);
+
+        }
 
         private void CurrentDevice_AudioDataArrived(byte[] data, double time)
-        {// Получили аудио данные кладем их в буфер
-            if (!_muteAudio)
-            {
-                //if (audioBuffer != null)
-                //{
-                //    audioBuffer.AddSamples(data, 0, data.Length);
-                //}
+        {
+            renderSession.ProcessAudioPacket(data, time);
 
+        }
 
-                Sample sample = null;
-                try
-                {
-                    sample = MediaFactory.CreateSample();
-
-                    MediaBuffer mediaBuffer = null;
-                    try
-                    {
-                        mediaBuffer = MediaFactory.CreateMemoryBuffer(data.Length);
-                        {
-                            sample.AddBuffer(mediaBuffer);
-                        }
-
-                        sample.SampleDuration = MfTool.SecToMfTicks(time);
-                        sample.SampleTime = MfTool.SecToMfTicks(time);
-
-                        var pBuffer = mediaBuffer.Lock(out int cbMaxLen, out int cbCurLen);
-
-                        Marshal.Copy(data, 0, pBuffer, data.Length);
-
-                        mediaBuffer.CurrentLength = data.Length;
-                        mediaBuffer.Unlock();
-                        audioRenderer.ProcessSample(sample);
-     
-                    }
-                    finally
-                    {
-                        mediaBuffer?.Dispose();
-                    }
-                }
-                finally
-                {
-                    sample?.Dispose();
-                }
-
-
-            }
-
-            //if (testFile != null)
-            //{
-            //    testFile.Write(data, 0, data.Length);
-            //}
-
+        private void DeckLinkInput_InputFormatChanged(object obj) //IDeckLinkDisplayMode newDisplayMode
+        {
+            logger.Debug("DeckLinkInput_InputFormatChanged(...)");
+            //...
         }
 
         private DeckLinkDeviceDescription currentDevice = null;
@@ -565,7 +300,6 @@ namespace Test.DeckLink
                 }
             }
         }
-
 
 
         private List<DeckLinkDeviceDescription> decklinkDevices = new List<DeckLinkDeviceDescription>();
@@ -685,4 +419,7 @@ namespace Test.DeckLink
             
         }
     }
+
+
+
 }

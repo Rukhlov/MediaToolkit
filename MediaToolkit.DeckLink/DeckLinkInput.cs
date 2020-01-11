@@ -67,6 +67,7 @@ namespace MediaToolkit.DeckLink
 
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
+        public event Action ReadyToStart;
 
        // IDeckLinkMemoryAllocator memoryAllocator = new MemoryAllocator();
 
@@ -136,6 +137,7 @@ namespace MediaToolkit.DeckLink
                 logger.Debug("DeckLinkInput start capturing: " + DisplayName);
 
                 CaptureStarted?.Invoke();
+
                 while (isCapturing)
                 {
                     //TODO:
@@ -159,10 +161,13 @@ namespace MediaToolkit.DeckLink
                     //var videoTime2 = TimeSpan.FromSeconds(lastVideoFrameTimeSec).ToString("hh\\:mm\\:ss\\.fff");
                     //var adiff1 = (audioDurationSeconds - lastAudioPacketTimeSec).ToString("0.000");
                     //var vdiff1 = (videoDurationSeconds - lastVideoFrameTimeSec).ToString("0.000");
-                    //Console.WriteLine("AVDiff: " + diff1 + " " + diff2
-                    //    + "| at " + audioTime1 + " - " + audioTime2 + " " + adiff1  
-                    //    + "| vt " + videoTime1 + " - " + videoTime2 + " " +  adiff1);
 
+                    //Console.WriteLine("AVDiff: " + diff1 + " " + diff2
+                    //    + "| at " + audioTime1 + " - " + audioTime2 + " " + adiff1
+                    //    + "| vt " + videoTime1 + " - " + videoTime2 + " " + adiff1);
+
+                    //Console.WriteLine("adiff: " + audioDiff.ToString("0.000") + " adiff1: " + audioDiff1.ToString("0.000") + 
+                    //    " vdiff: " + videoDiff.ToString("0.000") + " vdiff1: " + videoDiff1.ToString("0.000"));
                     //Console.SetCursorPosition(0, Console.CursorTop - 1);
 
                     if (errorCode != 0)
@@ -309,6 +314,9 @@ namespace MediaToolkit.DeckLink
             this.lastVideoFrameTimeSec = 0;
 
             this.validInputSignal = false;
+
+            ReadyToStart?.Invoke();
+
             deckLinkInput.StartStreams();
 
             isCapturing = true;
@@ -445,9 +453,9 @@ namespace MediaToolkit.DeckLink
                     logger.Warn("No audio packet...");
                 }
             }
+            //Console.WriteLine();
 
         }
-
 
         private void ProcessAudioPacket(IDeckLinkAudioInputPacket audioPacket)
         {
@@ -475,12 +483,17 @@ namespace MediaToolkit.DeckLink
                             //var fileName = @"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
                             //MediaToolkit.Utils.TestTools.WriteFile(data, fileName);
 
-                            lastAudioPacketTimeSec = packetTime / timeScale;
+                            var packetTimeSec = (double)packetTime / timeScale;
 
                             double dataDurationSec = dataLength / audioBytesPerSeconds;
-                            audioDurationSeconds += dataDurationSec;
 
-                            AudioDataArrived?.Invoke(data, lastAudioPacketTimeSec);
+                           // Console.WriteLine("audio: " + packetTimeSec + " " + packetTime + " "+ (packetTimeSec - lastAudioPacketTimeSec));
+
+                            var time = audioDurationSeconds;
+                            audioDurationSeconds += dataDurationSec;
+                            
+                            AudioDataArrived?.Invoke(data, packetTimeSec);
+                            lastAudioPacketTimeSec = packetTimeSec;
 
                         }
                     }
@@ -547,13 +560,15 @@ namespace MediaToolkit.DeckLink
                         var bufferLength = stride * height;
                         videoFrame.GetBytes(out IntPtr pBuffer);
 
-                        lastVideoFrameTimeSec = (double)frameTime / timeScale;
-
+                        var frameTimeSec = (double)frameTime / timeScale;
                         double frameDurationSec = (double)frameDuration / timeScale;
+
+                        //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
+
                         videoDurationSeconds += frameDurationSec;
 
-
-                        VideoDataArrived?.Invoke(pBuffer, bufferLength, lastVideoFrameTimeSec, frameDurationSec);
+                        VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
+                        lastVideoFrameTimeSec = frameTimeSec;
 
                         //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
                         //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
