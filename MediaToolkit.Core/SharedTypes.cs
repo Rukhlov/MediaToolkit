@@ -118,12 +118,31 @@ namespace MediaToolkit.SharedTypes
         void Stop();
         void Close();
 
+
         void Resize(System.Drawing.Rectangle rect);
         void Repaint();
 
         int ErrorCode { get; }
     }
 
+    public interface IMediaRenderSession
+    {
+        void Setup(VideoRendererArgs videoArgs, AudioRendererArgs audioArgs);
+        void Start(long time);
+        void Stop();
+        void Close();
+
+        bool Mute { get; set; }
+        float Volume { get; set; }
+
+        void Resize(System.Drawing.Rectangle rect);
+        void Repaint();
+
+        void ProcessAudioPacket(byte[] data, double time);
+        void ProcessVideoFrame(IntPtr frameData, int frameLength, double frameTime, double frameDuration);
+
+        int ErrorCode { get; }
+    }
 
     public enum ErrorCode : int
     {

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-    public class MediaRenderSession
+    public class MediaRenderSession : IMediaRenderSession
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -23,6 +23,49 @@ namespace MediaToolkit
 
         private double lastAudioTime = 0;
         private double lastVideoTime = 0;
+
+
+        private volatile RendererState rendererState = RendererState.Closed;
+        public RendererState State { get => rendererState; }
+
+        private volatile int errorCode = 0;
+        public int ErrorCode { get => errorCode; }
+
+        public bool Mute
+        {
+            get
+            {
+                return audioRenderer?.Mute ?? false;
+            }
+            set
+            {
+                if (audioRenderer != null)
+                {
+                    if(audioRenderer.Mute!= value)
+                    {
+                        audioRenderer.Mute = value;
+                    }
+                }
+            }
+        }
+
+        public float Volume
+        {
+            get
+            {
+                return audioRenderer?.Volume ?? 1f;
+            }
+            set
+            {
+                if (audioRenderer != null)
+                {
+                    if (audioRenderer.Volume != value)
+                    {
+                        audioRenderer.Volume = value;
+                    }
+                }
+            }
+        }
 
         public void Resize(System.Drawing.Rectangle rect)
         {
@@ -63,6 +106,8 @@ namespace MediaToolkit
 
                     videoRenderer.SetPresentationClock(presentationClock);
                 }
+
+                rendererState = RendererState.Initialized;
 
             }
             catch (Exception ex)
@@ -163,6 +208,8 @@ namespace MediaToolkit
         {
             logger.Debug("MediaSession::Start(...)");
             presentationClock.Start(startOffset);
+            rendererState = RendererState.Started;
+
         }
 
         public void Stop()
@@ -170,23 +217,29 @@ namespace MediaToolkit
             logger.Debug("MediaSession::Stop(...)");
 
             presentationClock.Stop();
-
+            rendererState = RendererState.Stopped;
         }
 
         public void Close()
         {
             logger.Debug("MediaSession::Close(...)");
 
-            presentationClock.Stop();
+            if (presentationClock != null)
+            {
+                presentationClock.Stop();
+                presentationClock = null;
+            }
 
             if (audioRenderer != null)
             {
                 audioRenderer.Close();
+                audioRenderer = null;
             }
 
             if (videoRenderer != null)
             {
                 videoRenderer.Close();
+                videoRenderer = null;
 
             }
 
@@ -200,6 +253,8 @@ namespace MediaToolkit
                 presentationClock.Dispose();
                 presentationClock = null;
             }
+
+            rendererState = RendererState.Closed;
 
         }
 

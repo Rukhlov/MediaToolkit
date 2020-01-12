@@ -840,32 +840,41 @@ namespace TestStreamer.Controls
                                 DeviceId = symbolicLink,
                             };
 
-                            using (var mediaSource = activate.ActivateObject<MediaSource>())
+                            try
                             {
-                                using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
+                                using (var mediaSource = activate.ActivateObject<MediaSource>())
                                 {
-
-                                    var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
-                                    var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
-
-                                    var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                                    var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
-
-                                    var profile = new VideoCaptureDeviceProfile
+                                    using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
                                     {
-                                        FrameSize = frameSize,
-                                        FrameRate = frameRate,
-                                        Format = subtypeName,
-                                    };
 
-                                    deviceDescription.Resolution = frameSize;
-                                    deviceDescription.CurrentProfile = profile;
+                                        var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
+                                        var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
+
+                                        var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+                                        var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
+
+                                        var profile = new VideoCaptureDeviceProfile
+                                        {
+                                            FrameSize = frameSize,
+                                            FrameRate = frameRate,
+                                            Format = subtypeName,
+                                        };
+
+                                        deviceDescription.Resolution = frameSize;
+                                        deviceDescription.CurrentProfile = profile;
 
 
+                                    }
                                 }
+
+                                deviceDescriptions.Add(deviceDescription);
+
+                            }
+                            catch(Exception ex)
+                            {
+                                logger.Warn("Device not supported: " + friendlyName + " " + symbolicLink);
                             }
 
-                            deviceDescriptions.Add(deviceDescription);
                         }
                         catch (Exception ex)
                         {

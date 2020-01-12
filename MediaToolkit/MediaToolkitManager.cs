@@ -18,6 +18,8 @@ namespace MediaToolkit
                 //throw new Exception("Windows versions earlier than 8 are not supported.");
             }
 
+            //NativeAPIs.Kernel32.SetDllDirectory(".\\libFFmpeg");
+
             // TODO:
             // Validate directx, medaiafoundations... 
 

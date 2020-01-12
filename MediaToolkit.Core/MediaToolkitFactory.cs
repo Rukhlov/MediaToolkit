@@ -32,6 +32,10 @@ namespace MediaToolkit.SharedTypes
 
                 InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
 
+                InstanceFactory.RegisterType<IVideoRenderer>("MediaToolkit.dll");
+                InstanceFactory.RegisterType<IAudioRenderer>("MediaToolkit.dll");
+                InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll");
+
                 InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
                 InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll");
                 //...

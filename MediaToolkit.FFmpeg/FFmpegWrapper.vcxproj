@@ -96,8 +96,10 @@
       <AdditionalDependencies>avformat.lib;avcodec.lib;swscale.lib;avutil.lib;swresample.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
-XCOPY "$(SolutionDir)Resources\vc_redist\Debug\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
+      <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
+::MKDIR  "$(SolutionDir)bin\$(Configuration)\libFFmpeg"
+::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
+::XCOPY "$(SolutionDir)Resources\vc_redist\Debug\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /D /Y </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -135,7 +137,9 @@ XCOPY "$(SolutionDir)Resources\vc_redist\Debug\*.dll" "$(SolutionDir)bin\$(Confi
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
-      <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
+      <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
+::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
+::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

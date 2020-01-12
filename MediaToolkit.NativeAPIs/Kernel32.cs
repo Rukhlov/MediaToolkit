@@ -18,6 +18,10 @@ namespace MediaToolkit.NativeAPIs
         public static extern bool GetSystemTimes(out System.Runtime.InteropServices.ComTypes.FILETIME lpIdleTime,
             out System.Runtime.InteropServices.ComTypes.FILETIME lpKernelTime,
             out System.Runtime.InteropServices.ComTypes.FILETIME lpUserTime);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetDllDirectory(string lpPathName);
     }
 
 }

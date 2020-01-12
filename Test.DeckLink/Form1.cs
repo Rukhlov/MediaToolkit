@@ -37,7 +37,7 @@ namespace Test.DeckLink
             //SharpDX.Configuration.EnableObjectTracking = true;
             //SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
 
-            MediaToolkit.MediaToolkitManager.Startup();
+            MediaToolkitManager.Startup();
 
             syncContext = SynchronizationContext.Current;
         }
@@ -51,6 +51,8 @@ namespace Test.DeckLink
 
         private IntPtr windowHandle = IntPtr.Zero;
         private Form videoForm = null;
+
+
         private void buttonStart_Click(object sender, EventArgs e)
         {
            
@@ -130,14 +132,7 @@ namespace Test.DeckLink
 
             try
             {
-                if (deckLinkInput != null)
-                {
-
-                    deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
-                    deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
-
-                    deckLinkInput.StopCapture();
-                }
+                StopCapture();
             }
             catch (Exception ex)
             {
@@ -145,6 +140,17 @@ namespace Test.DeckLink
             }
         }
 
+        private void StopCapture()
+        {
+            if (deckLinkInput != null)
+            {
+
+                deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+                deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
+
+                deckLinkInput.StopCapture();
+            }
+        }
 
         private void DeckLinkInput_ReadyToStart()
         {
@@ -281,6 +287,33 @@ namespace Test.DeckLink
         {
             logger.Debug("DeckLinkInput_InputFormatChanged(...)");
             //...
+        }
+
+
+        protected override void OnClosed(EventArgs e)
+        {
+
+            if (deckLinkInput != null)
+            {
+                deckLinkInput.CaptureStarted -= DeckLinkInput_CaptureStarted;
+                deckLinkInput.ReadyToStart -= DeckLinkInput_ReadyToStart;
+                deckLinkInput.CaptureStopped -= DeckLinkInput_CaptureStopped;
+                deckLinkInput.InputFormatChanged -= DeckLinkInput_InputFormatChanged;
+
+                deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+                deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
+
+                deckLinkInput.StopCapture();
+            }
+
+            if (renderSession != null)
+            {
+                renderSession.Close();
+                renderSession = null;
+            }
+                
+
+            base.OnClosed(e);
         }
 
         private DeckLinkDeviceDescription currentDevice = null;
