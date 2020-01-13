@@ -206,21 +206,6 @@ namespace MediaToolkit.MediaFoundation
             {
                 audioSink.PresentationClock = clock;
             }
-
-            //PresentationTimeSource timeSource = null;
-            //try
-            //{
-            //    MediaFactory.CreateSystemTimeSource(out timeSource);
-
-            //    clock.TimeSource = timeSource;
-
-            //    audioSink.PresentationClock = clock;
-
-            //}
-            //finally
-            //{
-            //    timeSource?.Dispose();
-            //}
         }
 
 
@@ -797,6 +782,12 @@ namespace MediaToolkit.MediaFoundation
 
             if (audioSink != null)
             {
+                var clock = audioSink.PresentationClock;
+                if (clock != null)
+                {
+                    clock.Dispose();
+                }
+
                 audioSink.PresentationClock = null;
                 audioSink.Shutdown();
 

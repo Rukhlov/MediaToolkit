@@ -90,6 +90,16 @@ namespace MediaToolkit
             try
             {
                 MediaFactory.CreatePresentationClock(out presentationClock);
+                PresentationTimeSource timeSource = null;
+                try
+                {
+                    MediaFactory.CreateSystemTimeSource(out timeSource);
+                    presentationClock.TimeSource = timeSource;
+                }
+                finally
+                {
+                    timeSource?.Dispose();
+                }
 
                 if (audioArgs != null)
                 {
@@ -224,11 +234,6 @@ namespace MediaToolkit
         {
             logger.Debug("MediaSession::Close(...)");
 
-            if (presentationClock != null)
-            {
-                presentationClock.Stop();
-                presentationClock = null;
-            }
 
             if (audioRenderer != null)
             {
@@ -241,6 +246,12 @@ namespace MediaToolkit
                 videoRenderer.Close();
                 videoRenderer = null;
 
+            }
+
+            if (presentationClock != null)
+            {
+                presentationClock.Stop();
+                presentationClock = null;
             }
 
             if (presentationClock != null)

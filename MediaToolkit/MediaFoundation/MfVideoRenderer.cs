@@ -619,6 +619,12 @@ namespace MediaToolkit.MediaFoundation
 
             if (videoSink != null)
             {
+                var clock = videoSink.PresentationClock;
+                if (clock != null)
+                {
+                    clock.Dispose();
+                }
+
                 videoSink.PresentationClock = null;
 
                 videoSink.Shutdown();
