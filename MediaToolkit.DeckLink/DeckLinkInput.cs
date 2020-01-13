@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.DeckLink
 {
+
+
     public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -43,7 +45,7 @@ namespace MediaToolkit.DeckLink
         public int AudioChannelsCount { get; private set; } = 2;
         private double audioBytesPerSeconds = 0;
 
-       // private volatile bool isCapturing = false;
+        // private volatile bool isCapturing = false;
         //public bool IsCapturing => isCapturing;
 
         private volatile int errorCode = 0;
@@ -140,7 +142,7 @@ namespace MediaToolkit.DeckLink
 
                 Setup();
 
-                if(captureState == CaptureState.Starting)
+                if (captureState == CaptureState.Starting)
                 {
                     logger.Debug("DeckLinkInput start capturing: " + DisplayName);
 
@@ -149,12 +151,14 @@ namespace MediaToolkit.DeckLink
 
                     CaptureStarted?.Invoke();
 
-                    captureState = CaptureState.Started;
+                    captureState = CaptureState.Capturing;
 
-                    while (captureState == CaptureState.Started)
+                    while (captureState == CaptureState.Capturing)
                     {
+
+                        #region Control device state, A/V sync, errors....
                         //TODO:
-                        //Control device state, A/V sync, errors....
+                        //
 
                         //logger.Debug("PacketTime: " + lastVideoFrameTimeSec.ToString("0.000") +
                         //    " - " + lastAudioPacketTimeSec.ToString("0.000") +
@@ -182,6 +186,9 @@ namespace MediaToolkit.DeckLink
                         //Console.WriteLine("adiff: " + audioDiff.ToString("0.000") + " adiff1: " + audioDiff1.ToString("0.000") + 
                         //    " vdiff: " + videoDiff.ToString("0.000") + " vdiff1: " + videoDiff1.ToString("0.000"));
                         //Console.SetCursorPosition(0, Console.CursorTop - 1);
+
+                        #endregion
+
 
                         if (errorCode != 0)
                         {
@@ -243,7 +250,7 @@ namespace MediaToolkit.DeckLink
 
                 CaptureStopped?.Invoke(null);
 
-                CleanUp();
+                Close();
 
                 captureState = CaptureState.Closed;
 
@@ -261,40 +268,25 @@ namespace MediaToolkit.DeckLink
 
             // deckLinkNotification.Subscribe(_BMDNotifications.bmdStatusChanged | _BMDNotifications.bmdDeviceRemoved, this);
 
-            //if (!videoInputSignalLocked)
-            //{
-            //    throw new Exception("Video input locked");
-            //}
 
             bool videoInputSignalLocked = false;
-            do
+            while (!videoInputSignalLocked && captureState == CaptureState.Starting)
             {
                 videoInputSignalLocked = GetVideoInputSignalLockedState();
                 if (videoInputSignalLocked)
                 {
                     break;
                 }
-                logger.Warn("videoInputSignalLocked " + videoInputSignalLocked);
+
+                logger.Debug("videoInputSignalLocked " + videoInputSignalLocked);
 
                 syncEvent.WaitOne(1000);
 
-            } while (!videoInputSignalLocked && captureState == CaptureState.Starting);
-
-            if (captureState != CaptureState.Starting)
-            {
-                return;
             }
 
             // проверяем доступен ли девайс
-            //_BMDDeviceBusyState deviceBusyState = GetDeviceBusyState();
-            //if (deviceBusyState == _BMDDeviceBusyState.bmdDeviceCaptureBusy)
-            //{// 
-            //    //TODO: device busy...
-            //    logger.Warn("bmdDeckLinkStatusBusy: " + deviceBusyState);
-            //}
-
             _BMDDeviceBusyState deviceBusyState = _BMDDeviceBusyState.bmdDeviceCaptureBusy;
-            do
+            while (deviceBusyState == _BMDDeviceBusyState.bmdDeviceCaptureBusy && captureState == CaptureState.Starting)
             {
                 deviceBusyState = GetDeviceBusyState();
 
@@ -303,11 +295,10 @@ namespace MediaToolkit.DeckLink
                     break;
                 }
 
-                logger.Warn("bmdDeckLinkStatusBusy: " + deviceBusyState);
+                logger.Debug("bmdDeckLinkStatusBusy: " + deviceBusyState);
                 syncEvent.WaitOne(1000);
 
-
-            } while (deviceBusyState == _BMDDeviceBusyState.bmdDeviceCaptureBusy && captureState == CaptureState.Starting);
+            }
 
             if (captureState != CaptureState.Starting)
             {
@@ -395,7 +386,7 @@ namespace MediaToolkit.DeckLink
         {// не понятно как менять форматы у девайса
             logger.Debug("IDeckLinkInputCallback.VideoInputFormatChanged(...) " + notificationEvents);
 
-            if (captureState != CaptureState.Started)
+            if (captureState != CaptureState.Capturing)
             {
                 logger.Warn("VideoInputFormatChanged(...): " + captureState);
                 return;
@@ -475,7 +466,7 @@ namespace MediaToolkit.DeckLink
 
         void IDeckLinkInputCallback.VideoInputFrameArrived(IDeckLinkVideoInputFrame videoFrame, IDeckLinkAudioInputPacket audioPacket)
         {
-            if (captureState != CaptureState.Started)
+            if (captureState != CaptureState.Capturing)
             {
                 logger.Warn("VideoInputFrameArrived(...): " + captureState);
 
@@ -522,7 +513,7 @@ namespace MediaToolkit.DeckLink
         {
             try
             {
-                if (captureState == CaptureState.Started)
+                if (captureState == CaptureState.Capturing)
                 {
                     long timeScale = FrameRate.Item2;
 
@@ -580,7 +571,7 @@ namespace MediaToolkit.DeckLink
         {
             try
             {
-                if (captureState == CaptureState.Started)
+                if (captureState == CaptureState.Capturing)
                 {
                     var frameFlags = videoFrame.GetFlags();
 
@@ -712,13 +703,11 @@ namespace MediaToolkit.DeckLink
             return videoConnection;
         }
 
-        private bool clenedUp = false;
-        private void CleanUp()
+
+        private void Close()
         {
 
             logger.Trace("DeckLinkInput::CleanUp()");
-
-            clenedUp = true;
 
             if (deckLink != null)
             {
@@ -743,7 +732,7 @@ namespace MediaToolkit.DeckLink
         enum CaptureState
         {
             Starting,
-            Started,
+            Capturing,
             Closing,
             Closed,
         }

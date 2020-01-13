@@ -202,20 +202,25 @@ namespace MediaToolkit.MediaFoundation
 
         public void SetPresentationClock(PresentationClock clock)
         {
-            PresentationTimeSource timeSource = null;
-            try
+            if (audioSink != null)
             {
-                MediaFactory.CreateSystemTimeSource(out timeSource);
-
-                clock.TimeSource = timeSource;
-
                 audioSink.PresentationClock = clock;
+            }
 
-            }
-            finally
-            {
-                timeSource?.Dispose();
-            }
+            //PresentationTimeSource timeSource = null;
+            //try
+            //{
+            //    MediaFactory.CreateSystemTimeSource(out timeSource);
+
+            //    clock.TimeSource = timeSource;
+
+            //    audioSink.PresentationClock = clock;
+
+            //}
+            //finally
+            //{
+            //    timeSource?.Dispose();
+            //}
         }
 
 
@@ -677,7 +682,21 @@ namespace MediaToolkit.MediaFoundation
 
                 MediaFactory.CreatePresentationClock(out presentationClock);
 
-                SetPresentationClock(presentationClock);
+                PresentationTimeSource timeSource = null;
+                try
+                {
+                    MediaFactory.CreateSystemTimeSource(out timeSource);
+
+                    presentationClock.TimeSource = timeSource;
+
+                    audioSink.PresentationClock = presentationClock;
+
+                }
+                finally
+                {
+                    timeSource?.Dispose();
+                }
+
 
                 presentationClock.GetState(0, out ClockState state);
                 if (state != ClockState.Running)
@@ -778,6 +797,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (audioSink != null)
             {
+                audioSink.PresentationClock = null;
                 audioSink.Shutdown();
 
                 audioSink.Dispose();
