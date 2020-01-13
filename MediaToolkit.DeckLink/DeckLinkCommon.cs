@@ -141,9 +141,9 @@ namespace MediaToolkit.DeckLink
             return log;
         }
 
-        public static string GetPixelFormatFourCC(_BMDPixelFormat pixFormat)
+        public static int GetPixelFormatFourCC(_BMDPixelFormat pixFormat)
         {
-            string fourCC = "";
+            int fourCC = 0;
             if (BMDPixelFormatsToFourCCDict.ContainsKey(pixFormat))
             {
                 fourCC = BMDPixelFormatsToFourCCDict[pixFormat];
@@ -152,13 +152,14 @@ namespace MediaToolkit.DeckLink
             return fourCC;
         }
 
-        private static readonly Dictionary<_BMDPixelFormat, string> BMDPixelFormatsToFourCCDict = new Dictionary<_BMDPixelFormat, string>
+        private static readonly Dictionary<_BMDPixelFormat, int> BMDPixelFormatsToFourCCDict = new Dictionary<_BMDPixelFormat, int>
         {
-             { _BMDPixelFormat.bmdFormat8BitYUV, "UYVY" },
-             { _BMDPixelFormat.bmdFormat10BitYUV, "v210" }, //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
-            
-            // остальные форматы не проверялись....
-            // { _BMDPixelFormat.bmdFormat8BitARGB, "RGBA" },
+             //https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
+             { _BMDPixelFormat.bmdFormat8BitYUV, 0x59565955 /*"UYVY" */},
+             { _BMDPixelFormat.bmdFormat8BitBGRA, 0x00000015 /*MFVideoFormat_ARGB32*/},
+
+             //{ _BMDPixelFormat.bmdFormat10BitYUV, 0x30313256 /*"v210"*/ }, //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
+             // остальные форматы не проверялись....
         };
     }
 
@@ -166,9 +167,31 @@ namespace MediaToolkit.DeckLink
 
     class MemoryAllocator : IDeckLinkMemoryAllocator
     {
-        public void AllocateBuffer(uint bufferSize, out IntPtr allocatedBuffer)
-        {
-            allocatedBuffer = Marshal.AllocCoTaskMem((int)bufferSize);
+       // private volatile int count = 0;
+        private IntPtr allocatedBuffer = IntPtr.Zero;
+        private uint bufferSize = 0;
+     
+        public void AllocateBuffer(uint size, out IntPtr buffer)
+        {// тестовый буффер на один кадр
+
+            if (allocatedBuffer == IntPtr.Zero)
+            {
+                allocatedBuffer = Marshal.AllocHGlobal((int)size);
+                bufferSize = size;
+            }
+
+            if (bufferSize < size)
+            {
+                if (allocatedBuffer != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(allocatedBuffer);
+                }
+
+                allocatedBuffer = Marshal.AllocHGlobal((int)size);
+                bufferSize = size;
+            }
+
+            buffer = allocatedBuffer;//Marshal.AllocHGlobal((int)bufferSize);
         }
 
         public void Commit()
@@ -181,7 +204,19 @@ namespace MediaToolkit.DeckLink
 
         public void ReleaseBuffer(IntPtr buffer)
         {
-            Marshal.FreeCoTaskMem(buffer);
+            //if (buffer != IntPtr.Zero)
+            //{
+            //    Marshal.FreeHGlobal(buffer);
+            //}
+
+        }
+
+        public void Dispose()
+        {
+            if (allocatedBuffer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(allocatedBuffer);
+            }
         }
     }
 }

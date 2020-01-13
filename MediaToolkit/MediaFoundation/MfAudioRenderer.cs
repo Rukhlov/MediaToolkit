@@ -388,7 +388,7 @@ namespace MediaToolkit.MediaFoundation
         {
             if (!IsRunning)
             {
-                logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
+                logger.Debug("MfAudioRenderer::ProcessSample(...) return invalid render state: " + rendererState);
                 return;
             }
 
@@ -782,11 +782,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (audioSink != null)
             {
-                var clock = audioSink.PresentationClock;
-                if (clock != null)
-                {
-                    clock.Dispose();
-                }
+
 
                 audioSink.PresentationClock = null;
                 audioSink.Shutdown();
@@ -830,6 +826,12 @@ namespace MediaToolkit.MediaFoundation
             {
                 deviceMediaType.Dispose();
                 deviceMediaType = null;
+            }
+
+            if (resampler != null)
+            {
+                resampler.Dispose();
+                resampler = null;
             }
 
         }

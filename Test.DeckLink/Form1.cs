@@ -154,6 +154,110 @@ namespace Test.DeckLink
 
         private void DeckLinkInput_ReadyToStart()
         {
+            InitRenderSession();
+        }
+
+
+        private void DeckLinkInput_CaptureStarted()
+        {
+            logger.Debug("DeckLinkInput_CaptureStarted(...)");
+
+            renderSession?.Start();
+
+        }
+
+
+        private void DeckLinkInput_InputFormatChanged(object obj) //IDeckLinkDisplayMode newDisplayMode
+        {
+            logger.Debug("DeckLinkInput_InputFormatChanged(...)");
+
+            CloseRenderSession();
+
+            InitRenderSession();
+
+            renderSession?.Start();
+
+        }
+
+
+        private void DeckLinkInput_CaptureStopped(object obj)
+        {
+
+            logger.Debug("DeckLinkInput_CaptureStopped(...)");
+
+
+            CloseRenderSession();
+
+
+            syncContext.Send(_ =>
+            {
+
+                var errorCode = deckLinkInput.ErrorCode;
+                if (errorCode != 0)
+                {
+                    MessageBox.Show("DeckLink unknown error: " + errorCode);
+                }
+
+                CloseVideo();
+
+                buttonStart.Enabled = true;
+                buttonStop.Enabled = false;
+
+            }, null);
+
+        }
+
+
+        private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
+        {
+
+            renderSession.ProcessVideoFrame(frameData, frameLength, frameTime, frameDuration);
+
+        }
+
+        private void CurrentDevice_AudioDataArrived(byte[] data, double time)
+        {
+            renderSession.ProcessAudioPacket(data, time);
+        }
+
+
+        private void ShowVideo()
+        {
+
+            var videoResoulution = deckLinkInput.FrameSize;
+            var pixelFormat = deckLinkInput.PixelFormatCode;
+            var frameRate = deckLinkInput.FrameRate;
+            var fps = frameRate.Item2 / frameRate.Item1;
+            string videoLog = "";
+            {
+                videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
+            }
+
+            string audioLog = "";
+            if (deckLinkInput.AudioEnabled)
+            {
+                audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
+            }
+
+            videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
+            // videoForm.Visible = true;
+
+
+            renderSession.Resize(videoForm.ClientRectangle);
+        }
+
+        private void CloseVideo()
+        {
+            if (videoForm != null)
+            {
+                videoForm.Close();
+                videoForm = null;
+            }
+        }
+
+
+        private void InitRenderSession()
+        {
             AudioRendererArgs audioArgs = null;
             if (deckLinkInput.AudioEnabled)
             {
@@ -188,7 +292,7 @@ namespace Test.DeckLink
 
             deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
             deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
-        
+
             syncContext.Send(_ =>
             {
                 ShowVideo();
@@ -197,96 +301,11 @@ namespace Test.DeckLink
             }, null);
         }
 
-        private void ShowVideo()
+        private void CloseRenderSession()
         {
-
-            var videoResoulution = deckLinkInput.FrameSize;
-            var pixelFormat = deckLinkInput.PixelFormatCode;
-            var frameRate = deckLinkInput.FrameRate;
-            var fps = frameRate.Item2 / frameRate.Item1;
-            string videoLog = "";
-            {
-                videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
-            }
-
-            string audioLog = "";
-            if (deckLinkInput.AudioEnabled)
-            {
-                audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
-            }
-
-            videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
-           // videoForm.Visible = true;
-
-
-            renderSession.Resize(videoForm.ClientRectangle);
-        }
-
-        private void CloseVideo()
-        {
-            if (videoForm != null)
-            {
-                videoForm.Close();
-                videoForm = null;
-            }
-        }
-
-        private void DeckLinkInput_CaptureStarted()
-        {
-            logger.Debug("DeckLinkInput_CaptureStarted(...)");
-
-            renderSession?.Start();
-
-
-        }
-
-        private void DeckLinkInput_CaptureStopped(object obj)
-        {
-
-            logger.Debug("DeckLinkInput_CaptureStopped(...)");
-
             deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
             deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
-
             renderSession.Close();
-
-            syncContext.Send(_ =>
-            {
-
-                var errorCode = deckLinkInput.ErrorCode;
-                if (errorCode != 0)
-                {
-                    MessageBox.Show("DeckLink unknown error: " + errorCode);
-                }
-
-                CloseVideo();
-
-                buttonStart.Enabled = true;
-                buttonStop.Enabled = false;
-
-            }, null);
-
-        }
-
-
-
-        private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
-        {
-
-            renderSession.ProcessVideoFrame(frameData, frameLength, frameTime, frameDuration);
-
-        }
-
-        private void CurrentDevice_AudioDataArrived(byte[] data, double time)
-        {
-            renderSession.ProcessAudioPacket(data, time);
-
-        }
-
-        private void DeckLinkInput_InputFormatChanged(object obj) //IDeckLinkDisplayMode newDisplayMode
-        {
-            logger.Debug("DeckLinkInput_InputFormatChanged(...)");
-            //...
         }
 
 

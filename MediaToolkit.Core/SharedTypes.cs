@@ -101,7 +101,7 @@ namespace MediaToolkit.SharedTypes
         public IntPtr hWnd { get; set; }
 
         public Size Resolution { get; set; } = Size.Empty;
-        public string PixelFormat { get; set; } = "RGBA"; //UYVY //FourCC code
+        public int PixelFormat { get; set; } = 0; //"ARGB"; //UYVY //FourCC code
         public int BitsPerPixel { get; set; } = 32;
 
         public override string ToString()

@@ -353,7 +353,7 @@ namespace MediaToolkit.MediaFoundation
         {
             if (!IsRunning)
             {
-                logger.Debug("ProcessSample(...) return invalid render state: " + rendererState);
+                logger.Debug("MfVideoRenderer::ProcessSample(...) return invalid render state: " + rendererState);
                 return;
             }
 
@@ -619,13 +619,8 @@ namespace MediaToolkit.MediaFoundation
 
             if (videoSink != null)
             {
-                var clock = videoSink.PresentationClock;
-                if (clock != null)
-                {
-                    clock.Dispose();
-                }
-
-                videoSink.PresentationClock = null;
+                // stops listening presentaton clock
+                videoSink.PresentationClock = null; 
 
                 videoSink.Shutdown();
 

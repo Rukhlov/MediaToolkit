@@ -251,11 +251,7 @@ namespace MediaToolkit
             if (presentationClock != null)
             {
                 presentationClock.Stop();
-                presentationClock = null;
-            }
 
-            if (presentationClock != null)
-            {
                 using (var clock = presentationClock.QueryInterface<Shutdownable>())
                 {
                     clock.Shutdown();
@@ -263,7 +259,9 @@ namespace MediaToolkit
 
                 presentationClock.Dispose();
                 presentationClock = null;
+
             }
+
 
             rendererState = RendererState.Closed;
 
