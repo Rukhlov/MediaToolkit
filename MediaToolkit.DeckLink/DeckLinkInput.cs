@@ -67,7 +67,7 @@ namespace MediaToolkit.DeckLink
         public event Action<object> CaptureStopped;
         public event Action ReadyToStart;
 
-        private MemoryAllocator memoryAllocator = null;
+        private IDeckLinkMemoryAllocator memoryAllocator = null;
 
         private double audioDurationSeconds = 0;
         private double videoDurationSeconds = 0;
@@ -88,7 +88,7 @@ namespace MediaToolkit.DeckLink
                 this.PixelFormat = (_BMDPixelFormat)mode.PixFmt;
                 this.DisplayModeId = (_BMDDisplayMode)mode.ModeId;
 
-                if(this.DisplayModeId != _BMDDisplayMode.bmdModeUnknown)
+                if (this.DisplayModeId != _BMDDisplayMode.bmdModeUnknown)
                 {
                     applyDetectedInputMode = false;
                 }
@@ -188,7 +188,7 @@ namespace MediaToolkit.DeckLink
                     this.DisplayName = displayName;
                     this.ModelName = modelName;
 
-                    if(DisplayModeId == _BMDDisplayMode.bmdModeUnknown)
+                    if (DisplayModeId == _BMDDisplayMode.bmdModeUnknown)
                     {
                         DisplayModeId = GetCurrentVideoInputMode();
                     }
@@ -202,7 +202,7 @@ namespace MediaToolkit.DeckLink
                     {
                         PixelFormat = GetCurrentVideoInputPixelFormat();
                     }
-                   
+
                     if (PixelFormat == _BMDPixelFormat.bmdFormat8BitARGB || (PixelFormat == _BMDPixelFormat.bmdFormat10BitRGB))
                     {
                         this.PixelFormat = _BMDPixelFormat.bmdFormat8BitBGRA;
@@ -220,7 +220,7 @@ namespace MediaToolkit.DeckLink
                     supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
-                    memoryAllocator = new MemoryAllocator();
+                    memoryAllocator = new SimpleMemoryAllocator();
                     deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
                     if (previewCallback != null)
@@ -376,11 +376,11 @@ namespace MediaToolkit.DeckLink
 
                 }
 
-                if (memoryAllocator != null)
-                {
-                    //memoryAllocator.Dispose();
-                    memoryAllocator = null;
-                }
+                //if (memoryAllocator != null)
+                //{
+                //    memoryAllocator.Decommit();
+                //    memoryAllocator = null;
+                //}
 
                 initialized = false;
 
@@ -507,10 +507,38 @@ namespace MediaToolkit.DeckLink
 
         void IDeckLinkInputCallback.VideoInputFrameArrived(IDeckLinkVideoInputFrame videoFrame, IDeckLinkAudioInputPacket audioPacket)
         {
-            if (captureState != CaptureState.Capturing)
+            try
             {
-                logger.Warn("VideoInputFrameArrived(...): " + captureState);
+                if (captureState == CaptureState.Capturing)
+                {
+                    if (videoFrame != null)
+                    {
+                        ProcessVideoFrame(videoFrame);
+                    }
+                    else
+                    {
+                        logger.Warn("No video frame...");
+                    }
 
+                    if (AudioEnabled)
+                    {
+                        if (audioPacket != null)
+                        {
+                            ProcessAudioPacket(audioPacket);
+                        }
+                        else
+                        {
+                            logger.Warn("No audio packet...");
+                        }
+                    }
+                }
+                else
+                {
+                    logger.Warn("VideoInputFrameArrived(...): " + captureState);
+                }
+            }
+            finally
+            {
                 if (audioPacket != null)
                 {
                     Marshal.ReleaseComObject(audioPacket);
@@ -522,165 +550,116 @@ namespace MediaToolkit.DeckLink
                     Marshal.ReleaseComObject(videoFrame);
                     videoFrame = null;
                 }
-
-                return;
             }
-
-            if (videoFrame != null)
-            {
-                ProcessVideoFrame(videoFrame);
-            }
-            else
-            {
-                logger.Warn("No video frame...");
-            }
-
-            if (AudioEnabled)
-            {
-                if (audioPacket != null)
-                {
-                    ProcessAudioPacket(audioPacket);
-                }
-                else
-                {
-                    logger.Warn("No audio packet...");
-                }
-            }
-            //Console.WriteLine();
-
         }
 
         private void ProcessAudioPacket(IDeckLinkAudioInputPacket audioPacket)
         {
-            try
+            if (captureState != CaptureState.Capturing)
             {
-                if (captureState == CaptureState.Capturing)
-                {
-                    long timeScale = FrameRate.Item2;
-
-                    audioPacket.GetPacketTime(out long packetTime, timeScale);
-
-                    int sampleSize = ((int)audioSampleType / 8); //32bit
-                    int samplesCount = audioPacket.GetSampleFrameCount();
-                    int dataLength = sampleSize * AudioChannelsCount * samplesCount;
-
-                    if (dataLength > 0)
-                    {
-                        audioPacket.GetBytes(out IntPtr pBuffer);
-
-                        if (pBuffer != IntPtr.Zero)
-                        {
-                            byte[] data = new byte[dataLength];
-                            Marshal.Copy(pBuffer, data, 0, data.Length);
-
-                            //var fileName = @"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
-                            //MediaToolkit.Utils.TestTools.WriteFile(data, fileName);
-
-                            var packetTimeSec = (double)packetTime / timeScale;
-
-                            double dataDurationSec = dataLength / audioBytesPerSeconds;
-
-                            // Console.WriteLine("audio: " + packetTimeSec + " " + packetTime + " "+ (packetTimeSec - lastAudioPacketTimeSec));
-
-                            var time = audioDurationSeconds;
-                            audioDurationSeconds += dataDurationSec;
-
-                            AudioDataArrived?.Invoke(data, packetTimeSec);
-                            lastAudioPacketTimeSec = packetTimeSec;
-
-                        }
-                    }
-                }
-                else
-                {
-                    logger.Warn("ProcessAudioPacket(...): " + captureState);
-                }
-
+                logger.Warn("ProcessAudioPacket(...): " + captureState);
+                return;
             }
-            //catch (Exception ex)
-            //{
-            //    logger.Error(ex);
-            //}
-            finally
+
+            long timeScale = FrameRate.Item2;
+
+            audioPacket.GetPacketTime(out long packetTime, timeScale);
+
+            int sampleSize = ((int)audioSampleType / 8); //32bit
+            int samplesCount = audioPacket.GetSampleFrameCount();
+            int dataLength = sampleSize * AudioChannelsCount * samplesCount;
+
+            if (dataLength > 0)
             {
-                Marshal.ReleaseComObject(audioPacket);
+                audioPacket.GetBytes(out IntPtr pBuffer);
+
+                if (pBuffer != IntPtr.Zero)
+                {
+                    byte[] data = new byte[dataLength];
+                    Marshal.Copy(pBuffer, data, 0, data.Length);
+
+                    //var fileName = @"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
+                    //MediaToolkit.Utils.TestTools.WriteFile(data, fileName);
+
+                    var packetTimeSec = (double)packetTime / timeScale;
+
+                    double dataDurationSec = dataLength / audioBytesPerSeconds;
+
+                    // Console.WriteLine("audio: " + packetTimeSec + " " + packetTime + " "+ (packetTimeSec - lastAudioPacketTimeSec));
+
+                    var time = audioDurationSeconds;
+                    audioDurationSeconds += dataDurationSec;
+
+                    AudioDataArrived?.Invoke(data, packetTimeSec);
+                    lastAudioPacketTimeSec = packetTimeSec;
+
+                }
             }
+
         }
 
 
         private void ProcessVideoFrame(IDeckLinkVideoInputFrame videoFrame)
         {
-            try
+            if (captureState != CaptureState.Capturing)
             {
-                if (captureState == CaptureState.Capturing)
-                {
-                    var frameFlags = videoFrame.GetFlags();
-
-                    bool inputSignal = frameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource); // no signal !!!
-                    if (inputSignal)
-                    {
-                        logger.Warn("Video no signal...");
-                    }
-
-                    if (inputSignal != validInputSignal)
-                    {
-                        validInputSignal = inputSignal;
-                        InputSignalChanged?.Invoke(validInputSignal);
-                    }
-                    else
-                    {
-                        long timeScale = FrameRate.Item2;
-
-                        videoFrame.GetStreamTime(out long frameTime, out long frameDuration, timeScale);
-
-                        //if (supportsHDMITimecode)
-                        //{ // Blackmagic DeckLink SDK 2.4.9.1 Timecode Capture
-                        //    videoFrame.GetHardwareReferenceTimestamp(timeScale, out long frameTime, out long frameDuration);
-                        //}
-                        //else
-                        //{
-                        //    videoFrame.GetTimecode(_BMDTimecodeFormat.bmdTimecodeLTC, out IDeckLinkTimecode timecode);
-                        //    //_BMDTimecodeFlags timecodeFlags = timecode.GetFlags();
-                        //    timecode.GetTimecodeUserBits(out uint userBits);
-                        //}
-
-
-                        int width = videoFrame.GetWidth();
-                        int height = videoFrame.GetHeight();
-                        int stride = videoFrame.GetRowBytes();
-                        _BMDPixelFormat format = videoFrame.GetPixelFormat();
-
-                        var bufferLength = stride * height;
-                        videoFrame.GetBytes(out IntPtr pBuffer);
-
-                        var frameTimeSec = (double)frameTime / timeScale;
-                        double frameDurationSec = (double)frameDuration / timeScale;
-
-                        //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
-
-                        videoDurationSeconds += frameDurationSec;
-
-                        VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
-                        lastVideoFrameTimeSec = frameTimeSec;
-
-                        //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
-                        //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
-                    }
-                }
-                else
-                {
-                    logger.Warn("ProcessVideoFrame(...): " + captureState);
-                }
-
+                logger.Warn("ProcessVideoFrame(...): " + captureState);
+                return;
             }
-            //catch(Exception ex)
-            //{
-            //    logger.Error(ex);
-            //}
-            finally
+
+            var frameFlags = videoFrame.GetFlags();
+
+            bool inputSignal = frameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource); // no signal !!!
+            if (inputSignal)
             {
-                Marshal.ReleaseComObject(videoFrame);
+                logger.Warn("Video no signal...");
             }
+
+            if (inputSignal != validInputSignal)
+            {
+                validInputSignal = inputSignal;
+                InputSignalChanged?.Invoke(validInputSignal);
+            }
+            else
+            {
+                long timeScale = FrameRate.Item2;
+
+                videoFrame.GetStreamTime(out long frameTime, out long frameDuration, timeScale);
+
+                //if (supportsHDMITimecode)
+                //{ // Blackmagic DeckLink SDK 2.4.9.1 Timecode Capture
+                //    videoFrame.GetHardwareReferenceTimestamp(timeScale, out long frameTime, out long frameDuration);
+                //}
+                //else
+                //{
+                //    videoFrame.GetTimecode(_BMDTimecodeFormat.bmdTimecodeLTC, out IDeckLinkTimecode timecode);
+                //    //_BMDTimecodeFlags timecodeFlags = timecode.GetFlags();
+                //    timecode.GetTimecodeUserBits(out uint userBits);
+                //}
+
+
+                int width = videoFrame.GetWidth();
+                int height = videoFrame.GetHeight();
+                int stride = videoFrame.GetRowBytes();
+                _BMDPixelFormat format = videoFrame.GetPixelFormat();
+
+                var bufferLength = stride * height;
+                videoFrame.GetBytes(out IntPtr pBuffer);
+
+                var frameTimeSec = (double)frameTime / timeScale;
+                double frameDurationSec = (double)frameDuration / timeScale;
+
+                //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
+
+                videoDurationSeconds += frameDurationSec;
+
+                VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
+                lastVideoFrameTimeSec = frameTimeSec;
+
+                //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
+                //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
+            }
+
         }
 
 
