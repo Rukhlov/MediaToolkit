@@ -80,6 +80,22 @@ namespace MediaToolkit.DeckLink
 
         private volatile CaptureState captureState = CaptureState.Closed;
 
+        public void StartCapture(DeckLinkDeviceDescription device, DeckLinkDisplayModeDescription mode = null)
+        {
+            var index = device.DeviceIndex;
+            if (mode != null)
+            {
+                this.PixelFormat = (_BMDPixelFormat)mode.PixFmt;
+                this.DisplayModeId = (_BMDDisplayMode)mode.ModeId;
+
+                if(this.DisplayModeId != _BMDDisplayMode.bmdModeUnknown)
+                {
+                    applyDetectedInputMode = false;
+                }
+            }
+
+            StartCapture(index);
+        }
 
         //private volatile bool isRunning = false;
         public void StartCapture(int inputIndex)
@@ -171,12 +187,30 @@ namespace MediaToolkit.DeckLink
 
                     this.DisplayName = displayName;
                     this.ModelName = modelName;
-                    this.DisplayModeId = GetCurrentVideoInputMode();
 
-                    PixelFormat = GetCurrentVideoInputPixelFormat();
-                    if (PixelFormat == _BMDPixelFormat.bmdFormat8BitARGB)
+                    if(DisplayModeId == _BMDDisplayMode.bmdModeUnknown)
+                    {
+                        DisplayModeId = GetCurrentVideoInputMode();
+                    }
+
+                    //if (DisplayModeId == _BMDDisplayMode.bmdModeUnknown)
+                    //{
+                    //    this.DisplayModeId = _BMDDisplayMode.bmdModeHD1080p5994;
+                    //}
+
+                    if (PixelFormat == _BMDPixelFormat.bmdFormatUnspecified)
+                    {
+                        PixelFormat = GetCurrentVideoInputPixelFormat();
+                    }
+                   
+                    if (PixelFormat == _BMDPixelFormat.bmdFormat8BitARGB || (PixelFormat == _BMDPixelFormat.bmdFormat10BitRGB))
                     {
                         this.PixelFormat = _BMDPixelFormat.bmdFormat8BitBGRA;
+                    }
+
+                    if (PixelFormat == _BMDPixelFormat.bmdFormatUnspecified)
+                    {
+                        PixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
                     }
 
                     _BMDVideoConnection videoConnections = GetVideoInputConnections();
@@ -336,7 +370,7 @@ namespace MediaToolkit.DeckLink
 
                     deckLinkInput.SetScreenPreviewCallback(null);
 
-                   // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
+                    // deckLinkInput.SetVideoInputFrameMemoryAllocator(null);
 
                     deckLinkInput.SetCallback(null);
 
@@ -348,7 +382,7 @@ namespace MediaToolkit.DeckLink
                     memoryAllocator = null;
                 }
 
-                initialized = false; 
+                initialized = false;
 
 
                 //if (deckLinkNotification != null)
@@ -411,7 +445,7 @@ namespace MediaToolkit.DeckLink
             var newPixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
             if (detectedSignalFlags.HasFlag(_BMDDetectedVideoInputFormatFlags.bmdDetectedVideoInputRGB444))
             {
-                newPixelFormat = _BMDPixelFormat.bmdFormat8BitARGB; //_BMDPixelFormat.bmdFormat10BitRGB;
+                newPixelFormat = _BMDPixelFormat.bmdFormat8BitBGRA; //_BMDPixelFormat.bmdFormat10BitRGB;
             }
 
             var videoConnection = GetVideoInputConnections();
@@ -425,7 +459,20 @@ namespace MediaToolkit.DeckLink
                 //TODO: что то пошло не так... закрываем стрим
             }
 
+
+
             this.PixelFormat = newPixelFormat;
+
+            //if (PixelFormat == _BMDPixelFormat.bmdFormat8BitARGB || (PixelFormat == _BMDPixelFormat.bmdFormat10BitRGB))
+            //{
+            //    this.PixelFormat = _BMDPixelFormat.bmdFormat8BitBGRA;
+            //}
+
+            //if (PixelFormat == _BMDPixelFormat.bmdFormatUnspecified)
+            //{
+            //    PixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
+            //}
+
             this.DisplayModeId = newDisplayModeId;
 
             //// Stop the capture
@@ -655,7 +702,7 @@ namespace MediaToolkit.DeckLink
 
         private _BMDPixelFormat GetCurrentVideoInputPixelFormat()
         {
-           
+
             deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusCurrentVideoInputPixelFormat, out long currentVideoInputPixelFormatFlag);
             _BMDPixelFormat currentVideoInputPixelFormat = (_BMDPixelFormat)currentVideoInputPixelFormatFlag;
             return currentVideoInputPixelFormat;
@@ -678,7 +725,7 @@ namespace MediaToolkit.DeckLink
 
 
         private bool GetSupportsHDMITimecode()
-        {          
+        {
             deckLinkProfileAttrs.GetFlag(_BMDDeckLinkAttributeID.BMDDeckLinkSupportsHDMITimecode, out int supportsHDMITimecodeFlag);
             var supportsHDMITimecode = (supportsHDMITimecodeFlag != 0);
             return supportsHDMITimecode;
@@ -704,7 +751,7 @@ namespace MediaToolkit.DeckLink
 
             logger.Trace("DeckLinkInput::CleanUp()");
 
-           
+
             if (deckLink != null)
             {
                 int refCount = Marshal.ReleaseComObject(deckLink);

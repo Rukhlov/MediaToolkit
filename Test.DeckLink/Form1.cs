@@ -52,6 +52,13 @@ namespace Test.DeckLink
         private IntPtr windowHandle = IntPtr.Zero;
         private Form videoForm = null;
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            FindDevices();
+        }
+
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
@@ -75,6 +82,7 @@ namespace Test.DeckLink
                 
                 buttonStart.Enabled = false;
                 buttonStop.Enabled = true;
+                devicesPanel.Enabled = false;
 
                 renderSession = new MediaRenderSession();
 
@@ -82,6 +90,8 @@ namespace Test.DeckLink
                 {
                     BackColor = Color.Black,
                     StartPosition = FormStartPosition.CenterScreen,
+                    ClientSize = new Size(640, 480),
+
                     //ClientSize = videoResoulution,
                 };
                 windowHandle = videoForm.Handle;
@@ -112,7 +122,7 @@ namespace Test.DeckLink
                 //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
 
                 
-                deckLinkInput.StartCapture(deviceIndex);//this.Handle);
+                deckLinkInput.StartCapture(currentDevice, currentDisplayMode);//this.Handle);
 
             }
             catch (Exception ex)
@@ -121,6 +131,7 @@ namespace Test.DeckLink
 
                 CloseVideo();
 
+                devicesPanel.Enabled = false;
                 buttonStart.Enabled = true;
                 buttonStop.Enabled = false;
             }
@@ -199,7 +210,7 @@ namespace Test.DeckLink
                 }
 
                 CloseVideo();
-
+                devicesPanel.Enabled = true;
                 buttonStart.Enabled = true;
                 buttonStop.Enabled = false;
 
@@ -335,6 +346,47 @@ namespace Test.DeckLink
             base.OnClosed(e);
         }
 
+
+
+        private List<DeckLinkDeviceDescription> decklinkDevices = new List<DeckLinkDeviceDescription>();
+
+
+
+        private void buttonFind_Click(object sender, EventArgs e)
+        {
+            logger.Debug("buttonFind_Click(...)");
+
+            FindDevices();
+
+        }
+
+        private void FindDevices()
+        {
+            logger.Debug("FindDevices()");
+
+            try
+            {
+                decklinkDevices = DeckLinkTools.GetDeckLinkInputDevices();
+
+                if (decklinkDevices.Count == 0)
+                {
+                    MessageBox.Show("This application requires a DeckLink PCI card.\n" +
+                        "You will not be able to use the features of this application until a DeckLink PCI card is installed.");
+
+                }
+
+                comboBoxDevices.DataSource = decklinkDevices;
+                //comboBoxDevices.DisplayMember = "DeviceName";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
+        List<DeckLinkDisplayModeDescription> displayModes = new List<DeckLinkDisplayModeDescription>();
+
         private DeckLinkDeviceDescription currentDevice = null;
         private void comboBoxDevices_SelectedValueChanged(object sender, EventArgs e)
         {
@@ -348,128 +400,70 @@ namespace Test.DeckLink
                 {
                     currentDevice = selectedDevice;
 
+                    comboBoxDisplayModes.DisplayMember = "Description";
+
+                    displayModes.Add(new DeckLinkDisplayModeDescription { Description = "Auto"});
+                    displayModes.AddRange(currentDevice.DisplayModeIds);
+
+                    comboBoxDisplayModes.DataSource = displayModes;
 
                 }
             }
         }
 
-
-        private List<DeckLinkDeviceDescription> decklinkDevices = new List<DeckLinkDeviceDescription>();
-
-        class DeckLinkDeviceDescription
+        private DeckLinkDisplayModeDescription currentDisplayMode = null;
+        private void comboBoxDisplayIds_SelectedValueChanged(object sender, EventArgs e)
         {
-            public int DeviceIndex = -1;
-            public string DeviceName = "";
-            public bool Available = false;
-
-            public override string ToString()
+            var selectedItem = comboBoxDisplayModes.SelectedItem;
             {
-                return DeviceName + " " + (Available ? "(Available)" : "(Not Available)");
-            }
-        }
-
-        private void buttonFind_Click(object sender, EventArgs e)
-        {
-            logger.Debug("buttonFind_Click(...)");
-
-
-            decklinkDevices = new List<DeckLinkDeviceDescription>();
-            IDeckLinkIterator deckLinkIterator = null;
-            try
-            {
-                deckLinkIterator = new CDeckLinkIterator();
-
-                int index = 0;
-                IDeckLink deckLink = null;
-                do
+                if (selectedItem != null)
                 {
-                    if (deckLink != null)
-                    {
-                        Marshal.ReleaseComObject(deckLink);
-                        deckLink = null;
-                    }
-
-                    deckLinkIterator.Next(out deckLink);
-
-                    if(deckLink == null)
-                    {
-                        break;
-                    }
-
-                    deckLink.GetDisplayName(out string deviceName);
-
-                    try
-                    {
-                        var deckLinkInput = (IDeckLinkInput)deckLink;
-                        var deckLinkStatus = (IDeckLinkStatus)deckLink;
-
-                        bool available = false;
-                        deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
-                        available = (videoInputSignalLockedFlag != 0);
-
-                        DeckLinkDeviceDescription deviceDescription = new DeckLinkDeviceDescription
-                        {
-                            DeviceIndex = index,
-                            DeviceName = deviceName,
-                            Available = available
-                        };
-
-                        decklinkDevices.Add(deviceDescription);
-
-                        //Marshal.ReleaseComObject(deckLinkInput);
-                        //Marshal.ReleaseComObject(deckLinkStatus);
-
-                    }
-                    catch (InvalidCastException)
-                    {
-
-                    }
-
-                    index++;
+                    currentDisplayMode = selectedItem as DeckLinkDisplayModeDescription;
 
                 }
-                while (deckLink != null);
-
             }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message;
-                if (deckLinkIterator == null)
-                {
-                    errorMessage = "This application requires the DeckLink drivers installed.\n" +
-                        "Please install the Blackmagic DeckLink drivers to use the features of this application";
-                }
-
-
-                MessageBox.Show(errorMessage, "Error");
-            }
-
-
-            if (decklinkDevices.Count == 0)
-            {
-                MessageBox.Show("This application requires a DeckLink PCI card.\n" +
-                    "You will not be able to use the features of this application until a DeckLink PCI card is installed.");
-
-            }
-
-            comboBoxDevices.DataSource = decklinkDevices;
-           //comboBoxDevices.DisplayMember = "DeviceName";
         }
+        private Size prevVideoFormSize = Size.Empty;
 
         private void FullScreenCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (FullScreenCheckBox.Checked)
+            if(videoForm == null)
             {
-                this.videoForm.FormBorderStyle = FormBorderStyle.None;
-                this.videoForm.Location = new Point(0, 0);
-                this.videoForm.Size = new Size(1920, 1080);
+                return;
             }
-            else
+
+
+            var frameSize = Size.Empty;
+            if (deckLinkInput != null)
             {
-                this.videoForm.FormBorderStyle = FormBorderStyle.Sizable;
+                frameSize = deckLinkInput.FrameSize;
             }
+
+            if(frameSize!= Size.Empty)
+            {
+                
+                if (FullScreenCheckBox.Checked)
+                {
+                    //this.videoForm.FormBorderStyle = FormBorderStyle.None;
+                    //this.videoForm.Location = new Point(0, 0);
+                    prevVideoFormSize = this.videoForm.ClientSize;
+                    videoForm.ClientSize = frameSize;
+                    
+                }
+                else
+                {
+                    if(prevVideoFormSize!= Size.Empty)
+                    {
+                        videoForm.ClientSize = prevVideoFormSize;
+                    }
+                 
+                }
+            }
+
             
         }
+
+
     }
 
 

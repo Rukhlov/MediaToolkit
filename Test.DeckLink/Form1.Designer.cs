@@ -33,11 +33,14 @@
             this.comboBoxDevices = new System.Windows.Forms.ComboBox();
             this.buttonFind = new System.Windows.Forms.Button();
             this.FullScreenCheckBox = new System.Windows.Forms.CheckBox();
+            this.comboBoxDisplayModes = new System.Windows.Forms.ComboBox();
+            this.devicesPanel = new System.Windows.Forms.Panel();
+            this.devicesPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonStop
             // 
-            this.buttonStop.Location = new System.Drawing.Point(123, 57);
+            this.buttonStop.Location = new System.Drawing.Point(96, 109);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(75, 23);
             this.buttonStop.TabIndex = 7;
@@ -47,7 +50,7 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(42, 57);
+            this.buttonStart.Location = new System.Drawing.Point(15, 109);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(75, 23);
             this.buttonStart.TabIndex = 6;
@@ -59,7 +62,7 @@
             // 
             this.comboBoxDevices.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDevices.FormattingEnabled = true;
-            this.comboBoxDevices.Location = new System.Drawing.Point(12, 12);
+            this.comboBoxDevices.Location = new System.Drawing.Point(3, 3);
             this.comboBoxDevices.Name = "comboBoxDevices";
             this.comboBoxDevices.Size = new System.Drawing.Size(324, 21);
             this.comboBoxDevices.TabIndex = 5;
@@ -67,10 +70,11 @@
             // 
             // buttonFind
             // 
-            this.buttonFind.Location = new System.Drawing.Point(341, 12);
+            this.buttonFind.AutoSize = true;
+            this.buttonFind.Location = new System.Drawing.Point(332, 1);
             this.buttonFind.Margin = new System.Windows.Forms.Padding(2);
             this.buttonFind.Name = "buttonFind";
-            this.buttonFind.Size = new System.Drawing.Size(56, 19);
+            this.buttonFind.Size = new System.Drawing.Size(65, 23);
             this.buttonFind.TabIndex = 4;
             this.buttonFind.Text = "_Find";
             this.buttonFind.UseVisualStyleBackColor = true;
@@ -79,7 +83,7 @@
             // FullScreenCheckBox
             // 
             this.FullScreenCheckBox.AutoSize = true;
-            this.FullScreenCheckBox.Location = new System.Drawing.Point(41, 102);
+            this.FullScreenCheckBox.Location = new System.Drawing.Point(14, 154);
             this.FullScreenCheckBox.Name = "FullScreenCheckBox";
             this.FullScreenCheckBox.Size = new System.Drawing.Size(76, 17);
             this.FullScreenCheckBox.TabIndex = 8;
@@ -87,18 +91,39 @@
             this.FullScreenCheckBox.UseVisualStyleBackColor = true;
             this.FullScreenCheckBox.CheckedChanged += new System.EventHandler(this.FullScreenCheckBox_CheckedChanged);
             // 
+            // comboBoxDisplayModes
+            // 
+            this.comboBoxDisplayModes.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxDisplayModes.FormattingEnabled = true;
+            this.comboBoxDisplayModes.Location = new System.Drawing.Point(3, 30);
+            this.comboBoxDisplayModes.Name = "comboBoxDisplayModes";
+            this.comboBoxDisplayModes.Size = new System.Drawing.Size(324, 21);
+            this.comboBoxDisplayModes.TabIndex = 9;
+            this.comboBoxDisplayModes.SelectedValueChanged += new System.EventHandler(this.comboBoxDisplayIds_SelectedValueChanged);
+            // 
+            // devicesPanel
+            // 
+            this.devicesPanel.Controls.Add(this.comboBoxDevices);
+            this.devicesPanel.Controls.Add(this.comboBoxDisplayModes);
+            this.devicesPanel.Controls.Add(this.buttonFind);
+            this.devicesPanel.Location = new System.Drawing.Point(12, 12);
+            this.devicesPanel.Name = "devicesPanel";
+            this.devicesPanel.Size = new System.Drawing.Size(411, 75);
+            this.devicesPanel.TabIndex = 10;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(418, 165);
+            this.ClientSize = new System.Drawing.Size(481, 198);
+            this.Controls.Add(this.devicesPanel);
             this.Controls.Add(this.FullScreenCheckBox);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);
-            this.Controls.Add(this.comboBoxDevices);
-            this.Controls.Add(this.buttonFind);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.devicesPanel.ResumeLayout(false);
+            this.devicesPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -111,6 +136,8 @@
         private System.Windows.Forms.ComboBox comboBoxDevices;
         private System.Windows.Forms.Button buttonFind;
         private System.Windows.Forms.CheckBox FullScreenCheckBox;
+        private System.Windows.Forms.ComboBox comboBoxDisplayModes;
+        private System.Windows.Forms.Panel devicesPanel;
     }
 }
 
