@@ -90,8 +90,8 @@ namespace MediaToolkit.DeckLink
                     deckLinkIterator.Next(out deckLink);
                     if (deckLink != null)
                     {
-                        deckLink.GetDisplayName( out string name);
-                        if(deviceName == name)
+                        deckLink.GetDisplayName(out string name);
+                        if (deviceName == name)
                         {
                             break;
                         }
@@ -283,7 +283,7 @@ namespace MediaToolkit.DeckLink
 
                         var displayModeFlags = displayMode.GetFlags();
                         var fieldDominance = displayMode.GetFieldDominance();
-  
+
                         // var log = string.Join(", " , displayName, resolution, bdmDisplayMode, displayModeFlags, frameDuration, timeScale, fieldDominance);
 
                         foreach (var pixFmt in pixelFormats.Keys)
@@ -335,82 +335,260 @@ namespace MediaToolkit.DeckLink
         }
     }
 
-
-
     class MemoryAllocator : IDeckLinkMemoryAllocator
     {
-        private volatile int count = 0;
+        private readonly int maxAllocatedBuffersCount = 8;
+        public MemoryAllocator(int maxBufferCount = 7)
+        {
+            this.maxAllocatedBuffersCount = maxBufferCount;
+        }
+
+        private volatile int allocateBufferRequest = 0;
+
         private IntPtr allocatedBuffer = IntPtr.Zero;
         private uint bufferSize = 0;
-     
+
+        private object syncRoot = new object();
+        private Queue<IntPtr> bufferQueue = new Queue<IntPtr>();
+
         public void AllocateBuffer(uint size, out IntPtr buffer)
-        {// тестовый буффер на один кадр
+        {
+            //Console.WriteLine("AllocateBuffer(...) " + size);
 
-            //if(count> 10)
-            //{
-            //    buffer = IntPtr.Zero;
-            //    return;
-            //}
-
-            if (allocatedBuffer == IntPtr.Zero)
+            if (bufferSize != size)
             {
-                allocatedBuffer = Marshal.AllocHGlobal((int)size);
+                Console.WriteLine("bufferSize!= size" + bufferSize + " != " + size);
                 bufferSize = size;
+                ClearBuffer();
+                //Clear queue ...
             }
 
-            if (bufferSize < size)
+            buffer = IntPtr.Zero;
+            lock (syncRoot)
+            {
+                allocateBufferRequest++;
+                if (bufferQueue.Count > 0)
+                {
+                    //Console.WriteLine("bufferQueue.Count == " + bufferQueue.Count);
+
+                    buffer = bufferQueue.Dequeue();
+                    if (buffer == IntPtr.Zero)
+                    {
+                        Console.WriteLine("!!!!!!!!!!!!!! buffer = " + buffer);
+                    }
+                    //Console.WriteLine(">>>>> BufferFromQueue " + size + " " + buffer + " " + allocateBufferRequest + " " + bufferQueue.Count);
+                }
+                else
+                {
+                    if (allocateBufferRequest <= maxAllocatedBuffersCount)
+                    {
+                        buffer = Marshal.AllocHGlobal((int)size);
+
+                        //Console.WriteLine(">>>>> AllocateBuffer(...) " + size + " " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+                    }
+                    else
+                    {
+                        //Console.WriteLine(allocateBufferRequest + " > " + maxAllocatedBuffersCount);
+                    }
+                }
+
+                if (buffer == IntPtr.Zero)
+                {
+                    //Console.WriteLine("Stop alloc " + allocateBufferRequest);
+                }
+
+
+            }
+
+        }
+
+        public void ReleaseBuffer(IntPtr buffer)
+        {
+            //Console.WriteLine("<<<<< ReleaseBuffer(...) " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+
+            lock (syncRoot)
+            {
+                allocateBufferRequest--;
+                if (buffer != IntPtr.Zero)
+                {
+                    bufferQueue.Enqueue(buffer);
+
+                }
+                else
+                {
+                    //bufferQueue.Enqueue(Marshal.AllocHGlobal((int)bufferSize));
+
+                }
+
+            }
+
+        }
+
+        public void Commit()
+        {
+            Console.WriteLine("Commit() " + Thread.CurrentThread.ManagedThreadId);
+
+        }
+
+        public void Decommit()
+        {
+            Console.WriteLine("Decommit() " + Thread.CurrentThread.ManagedThreadId);
+            ClearBuffer();
+        }
+
+        public void ClearBuffer()
+        {
+            Console.WriteLine("ClearBuffer() " + Thread.CurrentThread.ManagedThreadId);
+
+            lock (syncRoot)
+            {
+                int count = 0;
+                while (bufferQueue.Count > 0)
+                {
+                    var buf = bufferQueue.Dequeue();
+                    if (buf != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(buf);
+                        buf = IntPtr.Zero;
+                    }
+                    count++;
+                }
+
+                if (count != maxAllocatedBuffersCount)
+                {
+                    Console.WriteLine("!!!!!!!!!!!!!!!!!!! " + count + "!=" + maxAllocatedBuffersCount);
+                }
+            }
+
+        }
+    }
+
+    class __MemoryAllocator : IDeckLinkMemoryAllocator
+    {
+
+        public __MemoryAllocator()
+        {
+        }
+
+        private volatile int allocateBufferRequest = 0;
+
+        private IntPtr allocatedBuffer = IntPtr.Zero;
+        private uint bufferSize = 0;
+
+        private object syncRoot = new object();
+
+        public void AllocateBuffer(uint size, out IntPtr buffer)
+        {
+            lock (syncRoot)
+            {
+                allocateBufferRequest++;
+                buffer = IntPtr.Zero;
+
+                if (allocatedBuffer == IntPtr.Zero)
+                {
+                    allocatedBuffer = Marshal.AllocHGlobal((int)size);
+                    bufferSize = size;
+                }
+
+                buffer = allocatedBuffer;
+
+                Console.WriteLine(">>>>> AllocateBuffer(...) " + size + " " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+
+            }
+
+        }
+
+        public void ReleaseBuffer(IntPtr buffer)
+        {
+            lock (syncRoot)
+            {
+                allocateBufferRequest--;
+                Console.WriteLine("<<<<< ReleaseBuffer(...) " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+            }
+
+        }
+
+        public void Commit()
+        {
+            Console.WriteLine("Commit() " + Thread.CurrentThread.ManagedThreadId);
+
+        }
+
+        public void Decommit()
+        {
+            Console.WriteLine("Decommit() " + Thread.CurrentThread.ManagedThreadId);
+            lock(syncRoot)
             {
                 if (allocatedBuffer != IntPtr.Zero)
                 {
                     Marshal.FreeHGlobal(allocatedBuffer);
                     allocatedBuffer = IntPtr.Zero;
                 }
-
-                allocatedBuffer = Marshal.AllocHGlobal((int)size);
-                bufferSize = size;
             }
 
-            buffer = allocatedBuffer;//Marshal.AllocHGlobal((int)bufferSize);
-          
-            //count++;
+        }
 
-            //Console.WriteLine("AllocateBuffer(...) " + size + " "+ buffer + " "+ count);
+    }
+
+    class MemoryAllocator__ : IDeckLinkMemoryAllocator
+    {
+
+        public MemoryAllocator__()
+        {
+        }
+
+        private volatile int allocateBufferRequest = 0;
+
+        //private IntPtr allocatedBuffer = IntPtr.Zero;
+        //private uint bufferSize = 0;
+
+        private object syncRoot = new object();
+
+        public void AllocateBuffer(uint size, out IntPtr buffer)
+        {
+            allocateBufferRequest++;
+            if (allocateBufferRequest > 3)
+            {
+                buffer = IntPtr.Zero;
+
+                Console.WriteLine("------------------- AllocateBuffer(...) return");
+
+                return;
+            }
+
+            
+            buffer = Marshal.AllocHGlobal((int)size);
+      
+            Console.WriteLine(">>>>> AllocateBuffer(...) " + size + " " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+
+        }
+
+        public void ReleaseBuffer(IntPtr buffer)
+        {
+            Console.WriteLine("<<<<< ReleaseBuffer(...) " + buffer + " " + allocateBufferRequest + " " + Thread.CurrentThread.ManagedThreadId);
+            allocateBufferRequest--;
+
+
+            if (buffer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(buffer);
+                buffer = IntPtr.Zero;
+            }
+
         }
 
         public void Commit()
         {
-
-            Console.WriteLine("Commit()");
+            Console.WriteLine("Commit() " + Thread.CurrentThread.ManagedThreadId);
 
         }
 
         public void Decommit()
         {
-            Console.WriteLine("Decommit()");
-            Dispose();
-        }
-
-        public void ReleaseBuffer(IntPtr buffer)
-        {
-
-            //count--;
-            //Console.WriteLine("ReleaseBuffer(...) " + buffer + " " + count);
-
-            //if (buffer != IntPtr.Zero)
-            //{
-            //    Marshal.FreeHGlobal(buffer);
-            //}
+            Console.WriteLine("Decommit() " + Thread.CurrentThread.ManagedThreadId);
 
         }
 
-        public void Dispose()
-        {
-            if (allocatedBuffer != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(allocatedBuffer);
-                allocatedBuffer = IntPtr.Zero;
-            }
-        }
     }
 
 

@@ -329,7 +329,7 @@ namespace MediaToolkit.DeckLink
                         syncEvent.WaitOne(1000);
 
 
-                        logger.Debug("DeckLinkInput capture result: " + errorCode);
+                        //logger.Debug("DeckLinkInput capture result: " + errorCode);
                     }
                 }
                 else
@@ -378,7 +378,7 @@ namespace MediaToolkit.DeckLink
 
                 if (memoryAllocator != null)
                 {
-                    memoryAllocator.Dispose();
+                    //memoryAllocator.Dispose();
                     memoryAllocator = null;
                 }
 
