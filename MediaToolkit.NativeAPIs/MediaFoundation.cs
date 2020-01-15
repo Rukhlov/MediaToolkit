@@ -11,6 +11,114 @@ namespace MediaToolkit.NativeAPIs
     public class MediaFoundation
     {
 
+        [ComImport, SuppressUnmanagedCodeSecurity,
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+        Guid("814C7B20-0FDB-4eec-AF8F-F957C8F69EDC")]
+        public interface IMFVideoMixerBitmap
+        {
+            [PreserveSig]
+            HResult SetAlphaBitmap(
+                [In, MarshalAs(UnmanagedType.LPStruct)] MFVideoAlphaBitmap pBmpParms);
+
+            [PreserveSig]
+            HResult ClearAlphaBitmap();
+
+            [PreserveSig]
+            HResult UpdateAlphaBitmapParameters(
+                [In] MFVideoAlphaBitmapParams pBmpParms);
+
+            [PreserveSig]
+            HResult GetAlphaBitmapParameters(
+                [Out] MFVideoAlphaBitmapParams pBmpParms);
+        }
+
+        [StructLayout(LayoutKind.Sequential), UnmanagedName("MFVideoAlphaBitmap")]
+        public class MFVideoAlphaBitmap
+        {
+            public bool GetBitmapFromDC;
+            public IntPtr Data;
+            public MFVideoAlphaBitmapParams Params;
+        }
+
+        [StructLayout(LayoutKind.Sequential), UnmanagedName("MFVideoAlphaBitmapParams")]
+        public class MFVideoAlphaBitmapParams
+        {
+            public MFVideoAlphaBitmapFlags dwFlags;
+            public int clrSrcKey;
+            public RECT rcSrc;
+            public MFVideoNormalizedRect nrcDest;
+            public float fAlpha;
+            public int dwFilterMode;
+        }
+
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4), UnmanagedName("MFVideoNormalizedRect")]
+        public class MFVideoNormalizedRect
+        {
+            public float left;
+            public float top;
+            public float right;
+            public float bottom;
+
+            public MFVideoNormalizedRect()
+            {
+            }
+
+            public MFVideoNormalizedRect(System.Drawing.RectangleF rect)
+            {
+                left = rect.Left;
+                top = rect.Top;
+                right = rect.Right;
+                bottom = rect.Bottom;
+            }
+
+            public MFVideoNormalizedRect(float l, float t, float r, float b)
+            {
+                left = l;
+                top = t;
+                right = r;
+                bottom = b;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("left = {0}, top = {1}, right = {2}, bottom = {3}", left, top, right, bottom);
+            }
+
+            public override int GetHashCode()
+            {
+                return left.GetHashCode() |
+                    top.GetHashCode() |
+                    right.GetHashCode() |
+                    bottom.GetHashCode();
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is MFVideoNormalizedRect)
+                {
+                    MFVideoNormalizedRect cmp = (MFVideoNormalizedRect)obj;
+
+                    return right == cmp.right && bottom == cmp.bottom && left == cmp.left && top == cmp.top;
+                }
+
+                return false;
+            }
+
+            public bool IsEmpty()
+            {
+                return (right <= left || bottom <= top);
+            }
+
+            public void CopyFrom(MFVideoNormalizedRect from)
+            {
+                left = from.left;
+                top = from.top;
+                right = from.right;
+                bottom = from.bottom;
+            }
+        }
+
         [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
          InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
          Guid("6AB0000C-FECE-4d1f-A2AC-A9573530656E")]

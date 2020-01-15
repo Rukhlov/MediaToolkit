@@ -744,6 +744,31 @@ namespace MediaToolkit.MediaFoundation
 
     }
 
+    public static class ServiceProviderExt
+    {
+        public static T GetNativeMfService<T>(this ServiceProvider service, Guid guid) where T : class
+        {
+            var pUnk = service.GetService(guid, typeof(T).GUID);
+            return (T)Marshal.GetObjectForIUnknown(pUnk);
+        }
+    }
+
+    public class ComBase
+    {
+        public static void SafeRelease(object comObj)
+        {
+            if (comObj != null)
+            {
+                if (Marshal.IsComObject(comObj))
+                {
+                    int refCount = Marshal.ReleaseComObject(comObj);
+                    comObj = null;
+                }
+            }
+        }
+    }
+
+
     /// <summary>
     /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder

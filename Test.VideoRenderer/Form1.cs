@@ -32,7 +32,7 @@ namespace Test.VideoRenderer
             InitializeComponent();
         }
 
-        private MfVideoRenderer renderer = new MfVideoRenderer();
+        private MfVideoRenderer videoRenderer = new MfVideoRenderer();
         private VideoForm videoForm = null;
 
         private Task producerTask = null;
@@ -93,15 +93,15 @@ namespace Test.VideoRenderer
                 StartPosition = FormStartPosition.CenterScreen,
             };
 
-            renderer = new MfVideoRenderer();
+            videoRenderer = new MfVideoRenderer();
 
-            renderer.RendererStarted += Renderer_RendererStarted;
-            renderer.RendererStopped += Renderer_RendererStopped;
+            videoRenderer.RendererStarted += Renderer_RendererStarted;
+            videoRenderer.RendererStopped += Renderer_RendererStopped;
 
 
             videoForm.Paint += (o, a) =>
             {
-                renderer.Repaint();
+                videoRenderer.Repaint();
             };
 
             videoForm.SizeChanged += (o, a) =>
@@ -109,19 +109,19 @@ namespace Test.VideoRenderer
                 var rect = videoForm.ClientRectangle;
 
                 //Console.WriteLine(rect);
-                renderer.Resize(rect);
+                videoRenderer.Resize(rect);
             };
 
             videoForm.Visible = true;
 
-            renderer.Setup(new VideoRendererArgs
+            videoRenderer.Setup(new VideoRendererArgs
             {
                 hWnd = videoForm.Handle,
                 PixelFormat = 0x59565955, //"UYVY",
                 Resolution = new Size(1920, 1080),
             });
 
-            renderer.Resize(videoForm.ClientRectangle);
+            videoRenderer.Resize(videoForm.ClientRectangle);
 
             closing = false;
 
@@ -186,7 +186,7 @@ namespace Test.VideoRenderer
                         sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
                         sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
 
-                        renderer.ProcessSample(sample);
+                        videoRenderer.ProcessSample(sample);
 
                         var msec = sw.ElapsedMilliseconds;
 
@@ -242,7 +242,7 @@ namespace Test.VideoRenderer
 
             if (closing)
             {
-                renderer.Close();
+                videoRenderer.Close();
             }
 
         }
@@ -253,11 +253,11 @@ namespace Test.VideoRenderer
         {
             logger.Debug("buttonStart_Click(...)");
 
-            if (renderer != null)
+            if (videoRenderer != null)
             {
                var time =  MfTool.SecToMfTicks((globalTime / 1000.0));
                 logger.Debug("renderer.Start(...) " + time);
-                renderer.Start(time);
+                videoRenderer.Start(time);
 
             }
 
@@ -267,9 +267,9 @@ namespace Test.VideoRenderer
         {
             logger.Debug("buttonStop_Click(...)");
 
-            if (renderer != null)
+            if (videoRenderer != null)
             {
-                renderer.Stop();
+                videoRenderer.Stop();
 
             }
         }
@@ -278,9 +278,9 @@ namespace Test.VideoRenderer
         {
             logger.Debug("buttonPause_Click(...)");
 
-            if (renderer != null)
+            if (videoRenderer != null)
             {
-                renderer.Pause();
+                videoRenderer.Pause();
 
             }
         }
@@ -294,9 +294,9 @@ namespace Test.VideoRenderer
             videoForm?.Close();
             closing = true;
 
-            if (renderer != null)
+            if (videoRenderer != null)
             {
-                renderer.Stop();
+                videoRenderer.Stop();
 
                 //renderer.Close();
 
@@ -504,6 +504,28 @@ namespace Test.VideoRenderer
             {
                 audioRenderer.Mute = (checkBoxMute.Checked);
             }
+        }
+
+        private void buttonTest_Click(object sender, EventArgs e)
+        {
+
+            var bmp = new Bitmap(640, 480, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(0, 0, bmp.Width, bmp.Height));
+            }
+            //bmp.Save("d:\\test345.bmp");
+
+            //var bmp = (Bitmap)Image.FromFile("d:\\TEMP\\test123.bmp");
+            videoRenderer?.SetBitmap(bmp, new RectangleF(0f, 0f, 0.5f, 0.5f), 0.8f);
+            bmp.Dispose();
+
+
+        }
+
+        private void buttonClearBitmap_Click(object sender, EventArgs e)
+        {
+            videoRenderer?.SetBitmap(null);
         }
     }
 }
