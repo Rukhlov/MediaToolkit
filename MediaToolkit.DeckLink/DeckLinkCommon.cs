@@ -378,7 +378,7 @@ namespace MediaToolkit.DeckLink
 
         public int ReleaseBuffer(IntPtr buffer)
         {
-            //logger.Trace("AllocateBuffer::ReleaseBuffer(...) " + buffer);
+            //logger.Trace("SimpleMemoryAllocator::ReleaseBuffer(...) " + buffer);
 
             lock (syncRoot)
             {
@@ -395,19 +395,23 @@ namespace MediaToolkit.DeckLink
 
         public int Commit()
         {
-            logger.Trace("AllocateBuffer::Commit()");
+            logger.Debug("SimpleMemoryAllocator::Commit()");
             return S_OK;
         }
 
         public int Decommit()
         {
-            logger.Trace("AllocateBuffer::Decommit()");
+            logger.Debug("SimpleMemoryAllocator::Decommit()");
+
+            if (allocatedBuffersCount != 0)
+            {
+                logger.Warn("Possible memory leak, allocated buffers count: " + allocatedBuffersCount);
+            }
 
             return S_OK;
         }
 
     }
-
 
 
     class MemoryAllocator : IDeckLinkMemoryAllocator
@@ -552,6 +556,137 @@ namespace MediaToolkit.DeckLink
         }
     }
 
+    class MemoryAllocator2 : IDeckLinkMemoryAllocator
+    {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private const int S_OK = 0;
+        private const int E_OUTOFMEMORY = 0x000E;
+
+        private readonly int maxAllocatedBuffersCount = 8;
+        public MemoryAllocator2(int maxBufferCount = 8)
+        {
+            this.maxAllocatedBuffersCount = maxBufferCount;
+        }
+
+        private volatile int allocateBufferRequest = 0;
+
+        private IntPtr allocatedBuffer = IntPtr.Zero;
+        private uint bufferSize = 0;
+
+        private object syncRoot = new object();
+        private Queue<IntPtr> frameCache = new Queue<IntPtr>();
+
+        private int allocatedBuffersCount = 0;
+        public int AllocateBuffer(uint size, out IntPtr buffer)
+        {
+            //logger.Trace("MemoryAllocator::AllocateBuffer(...) " + size +" " + Thread.CurrentThread.ManagedThreadId);
+
+            int hResult = S_OK;
+            if (bufferSize != size)
+            {
+                if (bufferSize > 0)
+                { //Clear queue ...
+                    logger.Warn("bufferSize!= size" + bufferSize + " != " + size);
+                    ClearBuffer();
+                }
+
+                bufferSize = size;
+
+            }
+
+            buffer = IntPtr.Zero;
+            lock (syncRoot)
+            {
+                if (frameCache.Count == 0)
+                {
+                    buffer = Marshal.AllocHGlobal((int)size);
+                    allocatedBuffersCount++;
+                    logger.Debug("MemoryAllocator::AllocateBuffer " + buffer + " " + size + " " + allocateBufferRequest);
+                }
+                else
+                {
+                    buffer = frameCache.Dequeue();
+                    if (buffer == IntPtr.Zero)
+                    {
+                        logger.Warn("MemoryAllocator::EmptyBuffer " + buffer);
+                    }
+                }
+
+
+            }
+
+            return hResult;
+
+        }
+
+        public int ReleaseBuffer(IntPtr buffer)
+        {
+            //logger.Trace("MemoryAllocator::ReleaseBuffer(...) " + buffer + " " + Thread.CurrentThread.ManagedThreadId);
+
+            lock (syncRoot)
+            {
+                if (frameCache.Count < maxAllocatedBuffersCount)
+                {
+                    frameCache.Enqueue(buffer);
+                    logger.Debug("MemoryAllocator::ReleaseBuffer " + frameCache.Count);
+                }
+                else
+                {
+                    if (buffer != IntPtr.Zero)
+                    {
+                        logger.Debug("MemoryAllocator::FreeBuffer " + buffer);
+                        Marshal.FreeHGlobal(buffer);
+                        buffer = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return S_OK;
+
+        }
+
+        public int Commit()
+        {
+            logger.Debug("MemoryAllocator::Commit() " + Thread.CurrentThread.ManagedThreadId);
+            return S_OK;
+        }
+
+        public int Decommit()
+        {
+            logger.Debug("MemoryAllocator::Decommit() " + Thread.CurrentThread.ManagedThreadId);
+            ClearBuffer();
+
+            return S_OK;
+        }
+
+        public void ClearBuffer()
+        {
+            logger.Debug("MemoryAllocator::ClearBuffer() " + Thread.CurrentThread.ManagedThreadId);
+
+            lock (syncRoot)
+            {
+                int bufferCount = 0;
+                while (frameCache.Count > 0)
+                {
+                    var buf = frameCache.Dequeue();
+                    if (buf != IntPtr.Zero)
+                    {
+                        logger.Debug("MemoryAllocator::FreeBuffer " + buf + " " + bufferCount);
+                        Marshal.FreeHGlobal(buf);
+                        buf = IntPtr.Zero;
+                    }
+                    bufferCount++;
+                }
+
+                if (bufferCount != allocatedBuffersCount)
+                {
+                    logger.Warn("Possible memory leak: " + bufferCount + "!=" + allocatedBuffersCount);
+                }
+            }
+
+        }
+    }
 
 
     public class DeckLinkDeviceDescription

@@ -220,6 +220,7 @@ namespace MediaToolkit.DeckLink
                     supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
+                   // memoryAllocator = new MemoryAllocator();
                     memoryAllocator = new SimpleMemoryAllocator();
                     deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
