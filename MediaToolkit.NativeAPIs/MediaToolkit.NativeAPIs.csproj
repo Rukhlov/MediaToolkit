@@ -44,7 +44,11 @@
     <Compile Include="DwmApi.cs" />
     <Compile Include="Gdi32.cs" />
     <Compile Include="Kernel32.cs" />
-    <Compile Include="MediaFoundation.cs" />
+    <Compile Include="MF\Evr.cs" />
+    <Compile Include="Utils.cs" />
+    <Compile Include="MF\MfObjects.cs" />
+    <Compile Include="MF\MfReadWrite.cs" />
+    <Compile Include="Ole32.cs" />
     <Compile Include="SetupApi.cs" />
     <Compile Include="Types.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

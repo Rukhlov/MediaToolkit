@@ -13,6 +13,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using EVR = MediaToolkit.NativeAPIs.MF.EVR;
+
 namespace MediaToolkit.MediaFoundation
 {
     public class MfVideoRenderer : IVideoRenderer
@@ -137,7 +139,7 @@ namespace MediaToolkit.MediaFoundation
 
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
                 {
-                    videoMixerBitmap = service.GetNativeMfService<NativeAPIs.MediaFoundation.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
+                    videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
 
                 //NativeAPIs.MediaFoundation.IMFVideoProcessor videoProcessor = null;
@@ -199,7 +201,7 @@ namespace MediaToolkit.MediaFoundation
             }
 
         }
-        NativeAPIs.MediaFoundation.IMFVideoMixerBitmap videoMixerBitmap = null;
+        EVR.IMFVideoMixerBitmap videoMixerBitmap = null;
 
 
         public void SetPresentationClock(PresentationClock clock)
@@ -583,20 +585,20 @@ namespace MediaToolkit.MediaFoundation
                     {
                         hOld = NativeAPIs.Gdi32.SelectObject(hdcBmp, hBitmap);
 
-                        NativeAPIs.MediaFoundation.MFVideoNormalizedRect nrcDest = destRect.HasValue ?
-                            new NativeAPIs.MediaFoundation.MFVideoNormalizedRect(destRect.Value) :
-                            new NativeAPIs.MediaFoundation.MFVideoNormalizedRect();
+                        EVR.MFVideoNormalizedRect nrcDest = destRect.HasValue ?
+                            new EVR.MFVideoNormalizedRect(destRect.Value) :
+                            new EVR.MFVideoNormalizedRect();
 
-                        NativeAPIs.MediaFoundation.MFVideoAlphaBitmapParams mfBmpParams = new NativeAPIs.MediaFoundation.MFVideoAlphaBitmapParams
+                        EVR.MFVideoAlphaBitmapParams mfBmpParams = new EVR.MFVideoAlphaBitmapParams
                         {
                             rcSrc = new NativeAPIs.RECT(0, 0, bmp.Width, bmp.Height),
                             nrcDest = nrcDest,
-                            dwFlags = (NativeAPIs.MediaFoundation.MFVideoAlphaBitmapFlags.Alpha | NativeAPIs.MediaFoundation.MFVideoAlphaBitmapFlags.DestRect),
+                            dwFlags = (EVR.MFVideoAlphaBitmapFlags.Alpha | EVR.MFVideoAlphaBitmapFlags.DestRect),
                             fAlpha = alpha,
 
                         };
 
-                        NativeAPIs.MediaFoundation.MFVideoAlphaBitmap mfBitmap = new NativeAPIs.MediaFoundation.MFVideoAlphaBitmap
+                        EVR.MFVideoAlphaBitmap mfBitmap = new EVR.MFVideoAlphaBitmap
                         {
                             GetBitmapFromDC = true,
                             Params = mfBmpParams,

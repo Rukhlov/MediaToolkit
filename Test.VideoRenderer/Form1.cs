@@ -514,13 +514,52 @@ namespace Test.VideoRenderer
             {
                 g.FillRectangle(new SolidBrush(Color.Red), new Rectangle(0, 0, bmp.Width, bmp.Height));
             }
+
+            var displaySize = new Size(1920, 1080);
+            var bitmapArea = new Rectangle(0, 0, 960, 540);
+
+            RectangleF normalizedRect = NoralizeRect(displaySize, bitmapArea);
+
             //bmp.Save("d:\\test345.bmp");
 
             //var bmp = (Bitmap)Image.FromFile("d:\\TEMP\\test123.bmp");
-            videoRenderer?.SetBitmap(bmp, new RectangleF(0f, 0f, 0.5f, 0.5f), 0.8f);
+            videoRenderer?.SetBitmap(bmp, normalizedRect, 0.5f);
             bmp.Dispose();
 
 
+        }
+
+        public static RectangleF NoralizeRect(Size displaySize, Rectangle bitmapArea)
+        {
+            var x = (float)bitmapArea.X / displaySize.Width;
+            var y = (float)bitmapArea.Y / displaySize.Height;
+
+            var width = (float)bitmapArea.Width / displaySize.Width;
+            var height = (float)bitmapArea.Height / displaySize.Height;
+
+            if (width > 1)
+            {
+                width = 1;
+            }
+
+            if (height > 1)
+            {
+                height = 1;
+            }
+
+            if (x < 0)
+            {
+                x = 0;
+            }
+
+            if (y < 0)
+            {
+                y = 0;
+            }
+
+            var normalizedRect = new RectangleF(x, y, width, height);
+
+            return normalizedRect;
         }
 
         private void buttonClearBitmap_Click(object sender, EventArgs e)

@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static MediaToolkit.NativeAPIs.MediaFoundation;
+
 using GDI = System.Drawing;
 
 namespace MediaToolkit
