@@ -8,13 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using EVR = MediaToolkit.NativeAPIs.MF.EVR;
+
 namespace MediaToolkit.MediaFoundation
 {
-    public class MfVideoRenderer: IVideoRenderer
+    public class MfVideoRenderer : IVideoRenderer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -52,6 +55,8 @@ namespace MediaToolkit.MediaFoundation
 
         private object syncLock = new object();
 
+        private IntPtr WindowHandle = IntPtr.Zero;
+
         public void Setup(VideoRendererArgs videoArgs)
         {
 
@@ -75,6 +80,7 @@ namespace MediaToolkit.MediaFoundation
                 throw new InvalidOperationException("Invalid state: " + rendererState);
             }
 
+            this.WindowHandle = hWnd;
             try
             {
                 Activate activate = null;
@@ -125,26 +131,20 @@ namespace MediaToolkit.MediaFoundation
 
                 }
 
+                using (var service = videoSink.QueryInterface<ServiceProvider>())
+                {
+                    videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
+                }
 
+                //NativeAPIs.MediaFoundation.IMFVideoProcessor videoProcessor = null;
                 //using (var service = videoSink.QueryInterface<ServiceProvider>())
                 //{
-                //    var pVideoProcessor = service.GetService(MediaServiceKeysEx.MixerService, typeof(IMFVideoProcessor).GUID);
-                //    var comObj = Marshal.GetObjectForIUnknown(pVideoProcessor);
-                //    try
-                //    {
-                //        var videoProcessor = (IMFVideoProcessor)comObj;
-                //        videoProcessor.SetBackgroundColor(0x008000);
-                //    }
-                //    finally
-                //    {
-                //        Marshal.FinalReleaseComObject(comObj);
-                //    }
+                //    videoProcessor = service.GetNativeMfService<NativeAPIs.MediaFoundation.IMFVideoProcessor>(MediaServiceKeysEx.MixerService);
                 //}
 
-                if (videoSink.StreamSinkCount == 0)
-                {
-                    //TODO:..
-                }
+                //videoProcessor.SetBackgroundColor(0x008000);
+                //ComBase.SafeRelease(videoProcessor);
+
 
 
                 videoSink.GetStreamSinkByIndex(0, out streamSink);
@@ -198,6 +198,8 @@ namespace MediaToolkit.MediaFoundation
             }
 
         }
+        EVR.IMFVideoMixerBitmap videoMixerBitmap = null;
+
 
         public void SetPresentationClock(PresentationClock clock)
         {
@@ -236,45 +238,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-
-        public void Repaint()
-        {
-            if (!IsRunning)
-            {
-                //logger.Warn("Repaint() return invalid render state: " + rendererState);
-                return;
-            }
-
-            lock (syncLock)
-            {
-                videoControl?.RepaintVideo();
-            }
-
-        }
-
-
-        public void Resize(System.Drawing.Rectangle rect)
-        {
-            if (rendererState == RendererState.Closed)
-            {
-                //logger.Warn("Resize() return invalid render state: " + rendererState);
-                return;
-            }
-
-            lock (syncLock)
-            {
-                var destRect = new RawRectangle
-                {
-                    Left = 0,
-                    Top = 0,
-                    Right = rect.Width,
-                    Bottom = rect.Height,
-                };
-
-                videoControl?.SetVideoPosition(null, destRect);
-            }
-
-        }
 
         Stopwatch sw = new Stopwatch();
         private void StreamSinkEventHandler_EventReceived(MediaEvent mediaEvent)
@@ -527,8 +490,6 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        private const long PRESENTATION_CURRENT_POSITION = 0x7fffffffffffffff;
-
         public void Pause()
         {
             logger.Debug("MfVideoRenderer::Pause()");
@@ -547,7 +508,7 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else if (state == ClockState.Paused)
                 {
-                    presentationClock.Start(PRESENTATION_CURRENT_POSITION);
+                    presentationClock.Start(long.MaxValue);
                 }
                 else
                 {
@@ -556,6 +517,132 @@ namespace MediaToolkit.MediaFoundation
             }
 
         }
+
+        public void Repaint()
+        {
+            if (!IsRunning)
+            {
+                //logger.Warn("Repaint() return invalid render state: " + rendererState);
+                return;
+            }
+
+            lock (syncLock)
+            {
+                videoControl?.RepaintVideo();
+            }
+
+        }
+
+
+        public void Resize(System.Drawing.Rectangle rect)
+        {
+            if (rendererState == RendererState.Closed)
+            {
+                //logger.Warn("Resize() return invalid render state: " + rendererState);
+                return;
+            }
+
+            lock (syncLock)
+            {
+                var destRect = new RawRectangle
+                {
+                    Left = 0,
+                    Top = 0,
+                    Right = rect.Width,
+                    Bottom = rect.Height,
+                };
+
+                videoControl?.SetVideoPosition(null, destRect);
+            }
+
+        }
+
+        public void SetBitmap(System.Drawing.Bitmap bmp, System.Drawing.RectangleF? destRect = null, float alpha = 1f)
+        {
+            logger.Debug("MfVideoRenderer::SetBitmap(...)");
+            if (videoMixerBitmap == null)
+            {
+                logger.Warn("MfVideoRenderer::SetBitmap(...) videoMixerBitmap == null");
+                return;
+            }
+
+            if (bmp != null)
+            {
+                IntPtr hdc = IntPtr.Zero;
+                IntPtr hdcBmp = IntPtr.Zero;
+                IntPtr hBitmap = IntPtr.Zero;
+                try
+                {
+                    hdc = NativeAPIs.User32.GetDC(this.WindowHandle);
+                    hdcBmp = NativeAPIs.Gdi32.CreateCompatibleDC(hdc);
+                    hBitmap = bmp.GetHbitmap();
+
+                    IntPtr hOld = IntPtr.Zero;
+                    try
+                    {
+                        hOld = NativeAPIs.Gdi32.SelectObject(hdcBmp, hBitmap);
+
+                        EVR.MFVideoNormalizedRect nrcDest = destRect.HasValue ?
+                            new EVR.MFVideoNormalizedRect(destRect.Value) :
+                            new EVR.MFVideoNormalizedRect();
+
+                        EVR.MFVideoAlphaBitmapParams mfBmpParams = new EVR.MFVideoAlphaBitmapParams
+                        {
+                            rcSrc = new NativeAPIs.RECT(0, 0, bmp.Width, bmp.Height),
+                            nrcDest = nrcDest,
+                            dwFlags = (EVR.MFVideoAlphaBitmapFlags.Alpha | EVR.MFVideoAlphaBitmapFlags.DestRect),
+                            fAlpha = alpha,
+
+                        };
+
+                        EVR.MFVideoAlphaBitmap mfBitmap = new EVR.MFVideoAlphaBitmap
+                        {
+                            GetBitmapFromDC = true,
+                            Params = mfBmpParams,
+                            Data = hdcBmp,
+                        };
+
+                        logger.Debug("MfVideoRenderer::SetAlphaBitmap()");
+
+                        videoMixerBitmap.SetAlphaBitmap(mfBitmap);
+                    }
+                    finally
+                    {
+                        NativeAPIs.Gdi32.SelectObject(hdcBmp, hOld);
+                    }
+                }
+                finally
+                {
+                    if (hBitmap != IntPtr.Zero)
+                    {
+                        NativeAPIs.Gdi32.DeleteObject(hBitmap);
+                        hBitmap = IntPtr.Zero;
+                    }
+
+                    if (hdcBmp != IntPtr.Zero)
+                    {
+                        NativeAPIs.Gdi32.DeleteDC(hdcBmp);
+                        hdcBmp = IntPtr.Zero;
+                    }
+
+                    if (hdc != IntPtr.Zero)
+                    {
+                        NativeAPIs.User32.ReleaseDC(WindowHandle, hdc);
+                       // NativeAPIs.Gdi32.DeleteDC(hdc);
+                        hdc = IntPtr.Zero;
+                    }
+                    
+                }
+            }
+            else
+            {
+                logger.Debug("MfVideoRenderer::ClearAlphaBitmap()");
+
+                videoMixerBitmap.ClearAlphaBitmap();
+            }
+
+        }
+
 
         private void OnFormatChanged()
         {
@@ -617,7 +704,7 @@ namespace MediaToolkit.MediaFoundation
             if (videoSink != null)
             {
                 // stops listening presentaton clock
-                videoSink.PresentationClock = null; 
+                videoSink.PresentationClock = null;
 
                 videoSink.Shutdown();
 
@@ -668,6 +755,13 @@ namespace MediaToolkit.MediaFoundation
                 deviceManager = null;
             }
 
+            if (videoMixerBitmap != null)
+            {
+                ComBase.SafeRelease(videoMixerBitmap);
+                videoMixerBitmap = null;
+            }
+
+
             CloseSampleAllocator();
         }
 
@@ -682,6 +776,7 @@ namespace MediaToolkit.MediaFoundation
         }
 
     }
+
 
 
     public enum RendererState

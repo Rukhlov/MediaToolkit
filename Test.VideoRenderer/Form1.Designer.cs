@@ -40,6 +40,8 @@
             this.buttonProcessSample = new System.Windows.Forms.Button();
             this.checkBoxMute = new System.Windows.Forms.CheckBox();
             this.trackBarVolume = new System.Windows.Forms.TrackBar();
+            this.buttonSetBitmap = new System.Windows.Forms.Button();
+            this.buttonClearBitmap = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
             this.SuspendLayout();
             // 
@@ -175,11 +177,35 @@
             this.trackBarVolume.TickFrequency = 10;
             this.trackBarVolume.Scroll += new System.EventHandler(this.trackBarVolume_Scroll);
             // 
+            // buttonSetBitmap
+            // 
+            this.buttonSetBitmap.Location = new System.Drawing.Point(641, 25);
+            this.buttonSetBitmap.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.buttonSetBitmap.Name = "buttonSetBitmap";
+            this.buttonSetBitmap.Size = new System.Drawing.Size(101, 30);
+            this.buttonSetBitmap.TabIndex = 12;
+            this.buttonSetBitmap.Text = "SetBitmap";
+            this.buttonSetBitmap.UseVisualStyleBackColor = true;
+            this.buttonSetBitmap.Click += new System.EventHandler(this.buttonTest_Click);
+            // 
+            // buttonClearBitmap
+            // 
+            this.buttonClearBitmap.Location = new System.Drawing.Point(641, 83);
+            this.buttonClearBitmap.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.buttonClearBitmap.Name = "buttonClearBitmap";
+            this.buttonClearBitmap.Size = new System.Drawing.Size(101, 30);
+            this.buttonClearBitmap.TabIndex = 13;
+            this.buttonClearBitmap.Text = "ClearBitmap";
+            this.buttonClearBitmap.UseVisualStyleBackColor = true;
+            this.buttonClearBitmap.Click += new System.EventHandler(this.buttonClearBitmap_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.buttonClearBitmap);
+            this.Controls.Add(this.buttonSetBitmap);
             this.Controls.Add(this.trackBarVolume);
             this.Controls.Add(this.checkBoxMute);
             this.Controls.Add(this.buttonProcessSample);
@@ -215,6 +241,8 @@
         private System.Windows.Forms.Button buttonProcessSample;
         private System.Windows.Forms.CheckBox checkBoxMute;
         private System.Windows.Forms.TrackBar trackBarVolume;
+        private System.Windows.Forms.Button buttonSetBitmap;
+        private System.Windows.Forms.Button buttonClearBitmap;
     }
 }
 

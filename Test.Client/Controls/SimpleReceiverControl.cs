@@ -137,7 +137,7 @@ namespace TestClient.Controls
                     Text = title,
                 };
 
-                imageProvider?.Close();
+                imageProvider?.Close(true);
 
                 imageProvider = new D3DImageRenderer();
                 var reciver = remoteClient.VideoReceiver;

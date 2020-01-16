@@ -198,7 +198,7 @@ namespace MediaToolkit.Managers
                         {
                             lastError = Marshal.GetLastWin32Error();
 
-                            if (lastError == (long)WinErrors.ERROR_NO_MORE_ITEMS)
+                            if (lastError == (long)HResult.WIN32_ERROR_NO_MORE_ITEMS)
                             {
                                 break;
                             }
@@ -227,7 +227,7 @@ namespace MediaToolkit.Managers
                                 {
                                     lastError = Marshal.GetLastWin32Error();
 
-                                    if (lastError == (long)WinErrors.ERROR_INSUFFICIENT_BUFFER)
+                                    if (lastError == (long)HResult.WIN32_ERROR_INSUFFICIENT_BUFFER)
                                     {
                                         bufSize = requiredSize;
 

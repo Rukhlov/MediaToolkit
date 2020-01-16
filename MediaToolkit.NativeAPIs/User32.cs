@@ -116,6 +116,9 @@ namespace MediaToolkit.NativeAPIs
         public static extern IntPtr GetDC(IntPtr ptr);
 
         [DllImport("user32.dll")]
+        public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("user32.dll")]
         public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
         [DllImport("user32.dll")]
