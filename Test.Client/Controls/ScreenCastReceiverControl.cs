@@ -497,7 +497,7 @@ namespace TestClient.Controls
                     Text = title,
                 };
 
-                imageProvider?.Close();
+                imageProvider?.Close(true);
 
                
                 var texture = VideoReceiver?.sharedTexture;
@@ -676,6 +676,11 @@ namespace TestClient.Controls
 
         public void Close()
         {
+            if (imageProvider != null)
+            {
+                imageProvider.Close();
+
+            }
 
             if (VideoReceiver != null)
             {

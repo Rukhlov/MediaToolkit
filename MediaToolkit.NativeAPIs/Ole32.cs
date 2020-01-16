@@ -68,16 +68,16 @@ namespace MediaToolkit.NativeAPIs.Ole
         [FieldOffset(8)]
         protected short iVal;
 
-        [FieldOffset(8), CLSCompliant(false)]
+        [FieldOffset(8)]
         protected ushort uiVal;
 
-        [FieldOffset(8), CLSCompliant(false)]
+        [FieldOffset(8)]
         protected byte bVal;
 
         [FieldOffset(8)]
         protected int intValue;
 
-        [FieldOffset(8), CLSCompliant(false)]
+        [FieldOffset(8)]
         protected uint uintVal;
 
         [FieldOffset(8)]
@@ -86,7 +86,7 @@ namespace MediaToolkit.NativeAPIs.Ole
         [FieldOffset(8)]
         protected long longValue;
 
-        [FieldOffset(8), CLSCompliant(false)]
+        [FieldOffset(8)]
         protected ulong ulongValue;
 
         [FieldOffset(8)]
@@ -133,7 +133,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             return f.GetShort();
         }
 
-        [CLSCompliant(false)]
+
         public static explicit operator ushort(ConstPropVariant f)
         {
             return f.GetUShort();
@@ -144,7 +144,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             return f.GetInt();
         }
 
-        [CLSCompliant(false)]
+       
         public static explicit operator uint(ConstPropVariant f)
         {
             return f.GetUInt();
@@ -165,7 +165,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             return f.GetLong();
         }
 
-        [CLSCompliant(false)]
+
         public static explicit operator ulong(ConstPropVariant f)
         {
             return f.GetULong();
@@ -181,34 +181,6 @@ namespace MediaToolkit.NativeAPIs.Ole
             return f.GetBlob();
         }
 
-        //// I decided not to do implicits since perf is likely to be
-        //// better recycling the PropVariant, and the only way I can
-        //// see to support Implicit is to create a new PropVariant.
-        //// Also, since I can't free the previous instance, IUnknowns
-        //// will linger until the GC cleans up.  Not what I think I
-        //// want.
-
-        //public MFAttributeType GetMFAttributeType()
-        //{
-        //    switch (type)
-        //    {
-        //        case VariantType.None:
-        //        case VariantType.UInt32:
-        //        case VariantType.UInt64:
-        //        case VariantType.Double:
-        //        case VariantType.Guid:
-        //        case VariantType.String:
-        //        case VariantType.Blob:
-        //        case VariantType.IUnknown:
-        //            {
-        //                return (MFAttributeType)type;
-        //            }
-        //        default:
-        //            {
-        //                throw new Exception("Type is not a MFAttributeType");
-        //            }
-        //    }
-        //}
 
         public VariantType GetVariantType()
         {
@@ -261,7 +233,6 @@ namespace MediaToolkit.NativeAPIs.Ole
             throw new ArgumentException("PropVariant contents not a Short");
         }
 
-        [CLSCompliant(false)]
         public ushort GetUShort()
         {
             if (type == VariantType.UShort)
@@ -280,7 +251,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             throw new ArgumentException("PropVariant contents not an int32");
         }
 
-        [CLSCompliant(false)]
+
         public uint GetUInt()
         {
             if (type == VariantType.UInt32)
@@ -299,7 +270,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             throw new ArgumentException("PropVariant contents not an int64");
         }
 
-        [CLSCompliant(false)]
+
         public ulong GetULong()
         {
             if (type == VariantType.UInt64)
@@ -670,7 +641,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             bool bRet;
             PropVariant p = obj as PropVariant;
 
-            if ((((object)p) == null) || (p.type != type))
+            if ((p == null) || (p.type != type))
             {
                 bRet = false;
             }
@@ -921,7 +892,6 @@ namespace MediaToolkit.NativeAPIs.Ole
             iVal = value;
         }
 
-        [CLSCompliant(false)]
         public PropVariant(ushort value)
             : base(VariantType.UShort)
         {
@@ -934,7 +904,6 @@ namespace MediaToolkit.NativeAPIs.Ole
             intValue = value;
         }
 
-        [CLSCompliant(false)]
         public PropVariant(uint value)
             : base(VariantType.UInt32)
         {
@@ -959,7 +928,7 @@ namespace MediaToolkit.NativeAPIs.Ole
             longValue = value;
         }
 
-        [CLSCompliant(false)]
+
         public PropVariant(ulong value)
             : base(VariantType.UInt64)
         {

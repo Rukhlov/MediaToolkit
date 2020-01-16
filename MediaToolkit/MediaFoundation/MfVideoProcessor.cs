@@ -215,8 +215,6 @@ namespace MediaToolkit.MediaFoundation
                 bool createSample = !flags.HasFlag(MftOutputStreamInformationFlags.MftOutputStreamProvidesSamples);
 
                 // Create output sample
-
-
                 if (createSample)
                 {
                     outputSample = MediaFactory.CreateSample();
@@ -243,22 +241,9 @@ namespace MediaToolkit.MediaFoundation
                 };
                 outputDataBuffer[0] = data;
 
-                //bool res = true;
-                // processor.ProcessOutput(TransformProcessOutputFlags.None,  1, outputDataBuffer, out TransformProcessOutputStatus status);
-                // var res = processor.ProcessOutput(TransformProcessOutputFlags.None,  data, out TransformProcessOutputStatus status);
-
-                //((NAudio.MediaFoundation.IMFTransform)Marshal.GetObjectForIUnknown(processor.NativePointer)).ProcessOutput(0, 1, buf, out _);
-
                 var res = processor.TryProcessOutput(TransformProcessOutputFlags.None,  outputDataBuffer, out TransformProcessOutputStatus status);
-
-                //sample?.Dispose();
-                //sample = null;
-
-                if (res.Success)
+                if(res == SharpDX.Result.Ok)
                 {
-                    //outputSample = outputDataBuffer[0].PSample;
-                    //s.Dispose();
-
                     if (outputSample == null)
                     {
                         outputSample = outputDataBuffer[0].PSample;
@@ -268,46 +253,41 @@ namespace MediaToolkit.MediaFoundation
 
                     Result = true;
                 }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
+                {
+                    logger.Warn(res.ToString() + " TransformNeedMoreInput");
+
+                    Result = true;
+                }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
+                {
+                    logger.Warn(res.ToString() + " TransformStreamChange");
+
+                    MediaType newOutputType = null;
+                    try
+                    {
+                        processor.TryGetOutputAvailableType(outputStreamId, 0, out newOutputType);
+                        processor.SetOutputType(outputStreamId, newOutputType, 0);
+
+                        if (OutputMediaType != null)
+                        {
+                            OutputMediaType.Dispose();
+                            OutputMediaType = null;
+                        }
+                        OutputMediaType = newOutputType;
+
+                        logger.Info("============== NEW OUTPUT TYPE==================");
+                        logger.Info(MfTool.LogMediaType(OutputMediaType));
+                    }
+                    finally
+                    {
+                        newOutputType?.Dispose();
+                        newOutputType = null;
+                    }
+                }
                 else
                 {
-                    if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
-                    {
-                        logger.Warn(res.ToString() + " TransformNeedMoreInput");
-
-                        Result = true;
-
-                    }
-                    else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
-                    {
-
-                        logger.Warn(res.ToString() + " TransformStreamChange");
-
-                        MediaType newOutputType = null;
-                        try
-                        {
-                            processor.TryGetOutputAvailableType(outputStreamId, 0, out newOutputType);
-                            processor.SetOutputType(outputStreamId, newOutputType, 0);
-
-                            if (OutputMediaType != null)
-                            {
-                                OutputMediaType.Dispose();
-                                OutputMediaType = null;
-                            }
-                            OutputMediaType = newOutputType;
-
-                            logger.Info("============== NEW OUTPUT TYPE==================");
-                            logger.Info(MfTool.LogMediaType(OutputMediaType));
-                        }
-                        finally
-                        {
-                            newOutputType?.Dispose();
-                            newOutputType = null;
-                        }
-                    }
-                    else
-                    {
-                        res.CheckError();
-                    }
+                    res.CheckError();
                 }
 
             }

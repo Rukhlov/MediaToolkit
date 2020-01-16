@@ -381,7 +381,7 @@ namespace FFmpegLib {
 				packet.size = 0;
 				av_init_packet(&packet);
 
-				int got_output;
+				//int got_output;
 				int res = avcodec_send_frame(encoder_ctx, frame);
 				//int res = avcodec_encode_video2(encoder_st->codec, &packet, frame, &got_output);
 
