@@ -144,24 +144,72 @@ namespace MediaToolkit.DeckLink
         public static int GetPixelFormatFourCC(_BMDPixelFormat pixFormat)
         {
             int fourCC = 0;
-            if (BMDPixelFormatsToFourCCDict.ContainsKey(pixFormat))
+            if (SupportedPixelFormats.ContainsKey(pixFormat))
             {
-                fourCC = BMDPixelFormatsToFourCCDict[pixFormat];
+                fourCC = SupportedPixelFormats[pixFormat];
             }
 
             return fourCC;
         }
 
-        private static readonly Dictionary<_BMDPixelFormat, int> BMDPixelFormatsToFourCCDict = new Dictionary<_BMDPixelFormat, int>
+        public static bool ValidateAndCorrectPixelFormat(ref _BMDPixelFormat fmt)
         {
-             //https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
+            logger.Debug("ValidateAndCorrectFormat(...)" + fmt);
+            bool supported = true;
+            if (IsRgbFormat(fmt))
+            {// 
+                fmt = _BMDPixelFormat.bmdFormat8BitBGRA;
+            }
+            else if (fmt == _BMDPixelFormat.bmdFormat10BitYUV || 
+                fmt == _BMDPixelFormat.bmdFormat8BitYUV ||  
+                fmt == _BMDPixelFormat.bmdFormatUnspecified)
+            {
+                fmt = _BMDPixelFormat.bmdFormat8BitYUV;
+            }
+            else
+            {
+                // not supported...
+                supported = false;
+            }
+
+            return supported;
+        }
+
+
+
+        private static readonly Dictionary<_BMDPixelFormat, int> SupportedPixelFormats = new Dictionary<_BMDPixelFormat, int>
+        {
              { _BMDPixelFormat.bmdFormat8BitYUV, 0x59565955 /*"UYVY" */},
+
+             // в WinRgb цвета идут в другом порядке, поэтому что бы не переставлять 
+             // используем формат bmdFormat8BitBGRA
              { _BMDPixelFormat.bmdFormat8BitBGRA, 0x00000015 /*MFVideoFormat_ARGB32*/},
 
-             //{ _BMDPixelFormat.bmdFormat10BitYUV, 0x30313256 /*"v210"*/ }, //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
-             // остальные форматы не проверялись....
+             //{ _BMDPixelFormat.bmdFormat8BitARGB, 0x00000015 /*MFVideoFormat_ARGB32*/}, 
+
+             //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
+             //{ _BMDPixelFormat.bmdFormat10BitYUV, 0x30313256 /*"v210"*/ }, 
+
         };
 
+        public static bool IsRgbFormat(_BMDPixelFormat fmt)
+        {
+            return RGBPixelFormats.Contains(fmt);
+        }
+
+        private static readonly List<_BMDPixelFormat> RGBPixelFormats = new List<_BMDPixelFormat>
+        {
+              _BMDPixelFormat.bmdFormat8BitARGB,
+              _BMDPixelFormat.bmdFormat8BitBGRA,
+              _BMDPixelFormat.bmdFormat8BitRGBA,
+              _BMDPixelFormat.bmdFormat10BitRGB,
+              _BMDPixelFormat.bmdFormat10BitRGBX,
+              _BMDPixelFormat.bmdFormat10BitRGBXLE,
+              _BMDPixelFormat.bmdFormat10BitRGBXLE_FULL,
+              _BMDPixelFormat.bmdFormat10BitRGBX_FULL,
+              _BMDPixelFormat.bmdFormat12BitRGB,
+              _BMDPixelFormat.bmdFormat12BitRGBLE,
+        };
 
         public static List<DeckLinkDeviceDescription> GetDeckLinkInputDevices()
         {
@@ -328,6 +376,28 @@ namespace MediaToolkit.DeckLink
 
             return displayDescriptions;
 
+        }
+
+
+        private static readonly Dictionary<_BMDFieldDominance, int> videoInterlaceModesMap = new Dictionary<_BMDFieldDominance, int>
+        {
+            { _BMDFieldDominance.bmdUnknownFieldDominance, 0 }, //MFVideoInterlace_Unknown
+            { _BMDFieldDominance.bmdProgressiveFrame, 2 }, //MFVideoInterlace_Progressive
+            { _BMDFieldDominance.bmdProgressiveSegmentedFrame, 2 }, //MFVideoInterlace_Progressive
+            { _BMDFieldDominance.bmdUpperFieldFirst, 3 }, //MFVideoInterlace_FieldInterleavedUpperFirst
+            { _BMDFieldDominance.bmdLowerFieldFirst, 4 }, //MFVideoInterlace_FieldInterleavedLowerFirst
+        };
+
+        public static int GetVideoInterlaceMode(_BMDFieldDominance fieldDominance)
+        {
+            int interlaceMode = 0;
+
+            if (videoInterlaceModesMap.ContainsKey(fieldDominance))
+            {
+                interlaceMode = videoInterlaceModesMap[fieldDominance];
+            }
+
+            return interlaceMode;
         }
     }
 

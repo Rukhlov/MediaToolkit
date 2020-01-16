@@ -66,5 +66,11 @@
     <None Include="packages.config" />
     <None Include="tlbimp.bat" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+      <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
+      <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

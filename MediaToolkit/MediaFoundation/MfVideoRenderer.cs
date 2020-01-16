@@ -61,18 +61,12 @@ namespace MediaToolkit.MediaFoundation
             var videoFormat = VideoFormatGuids.FromFourCC(new SharpDX.Multimedia.FourCC(pixFmt));
             var resolution = videoArgs.Resolution;
             var hWnd = videoArgs.hWnd;
+            var interlaceMode = videoArgs.InterlaceMode;
 
-            MfVideoArgs mfVideoArgs = new MfVideoArgs
-            {
-                Format = videoFormat,
-                Width = resolution.Width,
-                Height = resolution.Height,
-            };
-
-            Setup(hWnd, videoFormat, resolution);
+            Setup(hWnd, videoFormat, resolution, interlaceMode);
         }
 
-        public void Setup(IntPtr hWnd, Guid videoFormat, System.Drawing.Size videoResolution)
+        public void Setup(IntPtr hWnd, Guid videoFormat, System.Drawing.Size videoResolution, int interlaceMode)
         {
             logger.Debug("MfVideoRenderer::Setup(...) " + hWnd);
 
@@ -173,8 +167,11 @@ namespace MediaToolkit.MediaFoundation
                         mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                         mediaType.Set(MediaTypeAttributeKeys.Subtype, videoFormat); //VideoFormatGuids.NV12 
                         mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoResolution.Width, videoResolution.Height));
-                        mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
+                        mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, interlaceMode);
+
+                        mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+                        
                         //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
 
                         //handler.IsMediaTypeSupported(mediaType, out MediaType _mediaType);

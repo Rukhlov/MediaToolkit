@@ -911,6 +911,7 @@ namespace MediaToolkit.MediaFoundation
 
         public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.eAVEncH264VProfile_Main;
 
+        public int InterlaceMode { get; set; } = 2; //Progressive
 
     }
 

@@ -724,8 +724,6 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        private const long PRESENTATION_CURRENT_POSITION = 0x7fffffffffffffff;
-
         public void Pause()
         { // не работает!!
             logger.Debug("MfAudioRenderer::Pause()");
@@ -744,7 +742,7 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else if (state == ClockState.Paused)
                 {
-                    presentationClock.Start(PRESENTATION_CURRENT_POSITION);
+                    presentationClock.Start(long.MaxValue);
                 }
                 else
                 {
