@@ -181,7 +181,7 @@ namespace MediaToolkit.DeckLink
         {
              { _BMDPixelFormat.bmdFormat8BitYUV, 0x59565955 /*"UYVY" */},
 
-             // в WinRgb цвета идут в другом порядке, поэтому что бы не переставлять 
+             // в WinRgb цвета идут в обратном порядке, поэтому что бы не переставлять пиксели
              // используем формат bmdFormat8BitBGRA
              { _BMDPixelFormat.bmdFormat8BitBGRA, 0x00000015 /*MFVideoFormat_ARGB32*/},
 

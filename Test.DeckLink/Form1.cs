@@ -40,6 +40,12 @@ namespace Test.DeckLink
             MediaToolkitManager.Startup();
 
             syncContext = SynchronizationContext.Current;
+
+
+            fitToVideoCheckBox.Checked = fitToVideoMode;
+
+            UpdateVideoWindow();
+
         }
 
 
@@ -50,7 +56,7 @@ namespace Test.DeckLink
         private MediaRenderSession renderSession = null;
 
         private IntPtr windowHandle = IntPtr.Zero;
-        private Form videoForm = null;
+        private VideoForm videoForm = null;
 
         protected override void OnLoad(EventArgs e)
         {
@@ -86,7 +92,7 @@ namespace Test.DeckLink
 
                 renderSession = new MediaRenderSession();
 
-                videoForm = new Form
+                videoForm = new VideoForm
                 {
                     BackColor = Color.Black,
                     StartPosition = FormStartPosition.CenterScreen,
@@ -94,22 +100,13 @@ namespace Test.DeckLink
 
                     //ClientSize = videoResoulution,
                 };
-                windowHandle = videoForm.Handle;
 
-                videoForm.Paint += (o, a) =>
-                {
-                    renderSession?.Repaint();
-                };
+                windowHandle = videoForm.VideoHandle;
 
-                videoForm.SizeChanged += (o, a) =>
-                {
-                    renderSession?.Resize(videoForm.ClientRectangle);
-                };
+                videoForm.Paint += VideoForm_Paint;
+                videoForm.SizeChanged += VideoForm_SizeChanged;
+                videoForm.FormClosed += VideoForm_FormClosed;
 
-                videoForm.FormClosed += (o, a) =>
-                {
-                    deckLinkInput?.StopCapture();
-                };
                 videoForm.Visible = true;
 
                 deckLinkInput = new DeckLinkInput();
@@ -117,12 +114,8 @@ namespace Test.DeckLink
                 deckLinkInput.ReadyToStart += DeckLinkInput_ReadyToStart;
                 deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
                 deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
-
-                //deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-                //deckLinkInput.AudioDataArrived += _selectedDevice_AudioDataArrived;
-
                 
-                deckLinkInput.StartCapture(currentDevice, currentDisplayMode);//this.Handle);
+                deckLinkInput.StartCapture(currentDevice, currentDisplayMode);
 
             }
             catch (Exception ex)
@@ -137,6 +130,7 @@ namespace Test.DeckLink
             }
         }
 
+
         private void buttonStop_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonStop_Click(...)");
@@ -149,6 +143,21 @@ namespace Test.DeckLink
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void VideoForm_Paint(object sender, PaintEventArgs e)
+        {
+            renderSession?.Repaint();
+        }
+
+        private void VideoForm_SizeChanged(object sender, EventArgs e)
+        {
+            renderSession?.Resize(videoForm.VideoRectangle);
+        }
+
+        private void VideoForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            deckLinkInput?.StopCapture();
         }
 
         private void StopCapture()
@@ -193,12 +202,9 @@ namespace Test.DeckLink
 
         private void DeckLinkInput_CaptureStopped(object obj)
         {
-
             logger.Debug("DeckLinkInput_CaptureStopped(...)");
 
-
             CloseRenderSession();
-
 
             syncContext.Send(_ =>
             {
@@ -253,8 +259,10 @@ namespace Test.DeckLink
             videoForm.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
             // videoForm.Visible = true;
 
+            UpdateVideoWindow();
 
-            renderSession.Resize(videoForm.ClientRectangle);
+            renderSession.Resize(videoForm.VideoRectangle);
+
         }
 
         private void CloseVideo()
@@ -425,44 +433,31 @@ namespace Test.DeckLink
         }
         private Size prevVideoFormSize = Size.Empty;
 
-        private void FullScreenCheckBox_CheckedChanged(object sender, EventArgs e)
+
+
+
+        private void fitToVideoCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if(videoForm == null)
+
+            fitToVideoMode = fitToVideoCheckBox.Checked;
+
+            UpdateVideoWindow();
+            var rect = videoForm?.VideoRectangle ?? Rectangle.Empty;
+            renderSession?.Resize(rect);
+
+        }
+
+        private bool fitToVideoMode = false;
+        private void UpdateVideoWindow()
+        {
+            if (videoForm == null)
             {
                 return;
             }
 
-
-            var frameSize = Size.Empty;
-            if (deckLinkInput != null)
-            {
-                frameSize = deckLinkInput.FrameSize;
-            }
-
-            if(frameSize!= Size.Empty)
-            {
-                
-                if (FullScreenCheckBox.Checked)
-                {
-                    //this.videoForm.FormBorderStyle = FormBorderStyle.None;
-                    //this.videoForm.Location = new Point(0, 0);
-                    prevVideoFormSize = this.videoForm.ClientSize;
-                    videoForm.ClientSize = frameSize;
-                    
-                }
-                else
-                {
-                    if(prevVideoFormSize!= Size.Empty)
-                    {
-                        videoForm.ClientSize = prevVideoFormSize;
-                    }
-                 
-                }
-            }
-
-            
+            var videoSize = deckLinkInput?.FrameSize ?? Size.Empty;
+            videoForm.UpdateWindow(fitToVideoMode, videoSize);
         }
-
 
     }
 

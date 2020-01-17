@@ -32,7 +32,7 @@
             this.buttonStart = new System.Windows.Forms.Button();
             this.comboBoxDevices = new System.Windows.Forms.ComboBox();
             this.buttonFind = new System.Windows.Forms.Button();
-            this.FullScreenCheckBox = new System.Windows.Forms.CheckBox();
+            this.fitToVideoCheckBox = new System.Windows.Forms.CheckBox();
             this.comboBoxDisplayModes = new System.Windows.Forms.ComboBox();
             this.devicesPanel = new System.Windows.Forms.Panel();
             this.devicesPanel.SuspendLayout();
@@ -80,16 +80,16 @@
             this.buttonFind.UseVisualStyleBackColor = true;
             this.buttonFind.Click += new System.EventHandler(this.buttonFind_Click);
             // 
-            // FullScreenCheckBox
+            // fitToVideoCheckBox
             // 
-            this.FullScreenCheckBox.AutoSize = true;
-            this.FullScreenCheckBox.Location = new System.Drawing.Point(14, 154);
-            this.FullScreenCheckBox.Name = "FullScreenCheckBox";
-            this.FullScreenCheckBox.Size = new System.Drawing.Size(76, 17);
-            this.FullScreenCheckBox.TabIndex = 8;
-            this.FullScreenCheckBox.Text = "FullScreen";
-            this.FullScreenCheckBox.UseVisualStyleBackColor = true;
-            this.FullScreenCheckBox.CheckedChanged += new System.EventHandler(this.FullScreenCheckBox_CheckedChanged);
+            this.fitToVideoCheckBox.AutoSize = true;
+            this.fitToVideoCheckBox.Location = new System.Drawing.Point(14, 154);
+            this.fitToVideoCheckBox.Name = "fitToVideoCheckBox";
+            this.fitToVideoCheckBox.Size = new System.Drawing.Size(142, 17);
+            this.fitToVideoCheckBox.TabIndex = 8;
+            this.fitToVideoCheckBox.Text = "_FitWindowToVideoSize";
+            this.fitToVideoCheckBox.UseVisualStyleBackColor = true;
+            this.fitToVideoCheckBox.CheckedChanged += new System.EventHandler(this.fitToVideoCheckBox_CheckedChanged);
             // 
             // comboBoxDisplayModes
             // 
@@ -117,7 +117,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(481, 198);
             this.Controls.Add(this.devicesPanel);
-            this.Controls.Add(this.FullScreenCheckBox);
+            this.Controls.Add(this.fitToVideoCheckBox);
             this.Controls.Add(this.buttonStop);
             this.Controls.Add(this.buttonStart);
             this.Name = "Form1";
@@ -135,7 +135,7 @@
         private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.ComboBox comboBoxDevices;
         private System.Windows.Forms.Button buttonFind;
-        private System.Windows.Forms.CheckBox FullScreenCheckBox;
+        private System.Windows.Forms.CheckBox fitToVideoCheckBox;
         private System.Windows.Forms.ComboBox comboBoxDisplayModes;
         private System.Windows.Forms.Panel devicesPanel;
     }
