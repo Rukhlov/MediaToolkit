@@ -10,6 +10,33 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Core
 {
 
+    public class VideoFormat
+    {
+        public VideoFormat(int fourCC, string name, string description)
+        {
+            this.FourCC = fourCC;
+            this.Name = name;
+            this.Description = description;
+        }
+
+        public readonly int FourCC= -1;
+        public readonly string Name = "";
+        public readonly string Description = "";
+
+    }
+
+    public class VideoFormats
+    {
+        //https://docs.microsoft.com/en-us/windows/win32/medfound/video-subtype-guids
+
+        public readonly static VideoFormat VideoFormatARGB32 = new VideoFormat(0x00000015, "ARGB32", "RGB, 32 bpp with alpha channel.");
+        public readonly static VideoFormat VideoFormatUYVY = new VideoFormat(0x59565955, "UYVY", "");
+        public readonly static VideoFormat VideoFormatV210 = new VideoFormat(30313276, "v210", "");
+        
+        //...
+    }
+
+
     public class VideoEncoderSettings
     {
         public VideoEncoderMode Encoder = VideoEncoderMode.H264;

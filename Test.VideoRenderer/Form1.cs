@@ -117,7 +117,7 @@ namespace Test.VideoRenderer
             videoRenderer.Setup(new VideoRendererArgs
             {
                 hWnd = videoForm.Handle,
-                PixelFormat = 0x59565955, //"UYVY",
+                FourCC = 0x59565955, //"UYVY",
                 Resolution = new Size(1920, 1080),
             });
 

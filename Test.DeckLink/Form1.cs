@@ -111,10 +111,10 @@ namespace Test.DeckLink
 
                 deckLinkInput = new DeckLinkInput();
                 deckLinkInput.CaptureStarted += DeckLinkInput_CaptureStarted;
-                deckLinkInput.ReadyToStart += DeckLinkInput_ReadyToStart;
+                deckLinkInput.CaptureInitialized += DeckLinkInput_ReadyToStart;
                 deckLinkInput.CaptureStopped += DeckLinkInput_CaptureStopped;
                 deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
-                
+                deckLinkInput.InputSignalChanged += DeckLinkInput_InputSignalChanged;
                 deckLinkInput.StartCapture(currentDevice, currentDisplayMode);
 
             }
@@ -130,6 +130,22 @@ namespace Test.DeckLink
             }
         }
 
+        private void DeckLinkInput_InputSignalChanged(bool noSignal)
+        {
+            logger.Debug("DeckLinkInput_InputSignalChanged(...) " + noSignal);
+
+            if (noSignal)
+            {
+                if (renderSession != null)
+                {
+                    //renderSession.UpdateStatusText("sfsd");
+                }
+            }
+            else
+            {
+
+            }
+        }
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
@@ -174,6 +190,8 @@ namespace Test.DeckLink
 
         private void DeckLinkInput_ReadyToStart()
         {
+            logger.Debug("DeckLinkInput_ReadyToStart()");
+
             InitRenderSession();
         }
 
@@ -204,16 +222,26 @@ namespace Test.DeckLink
         {
             logger.Debug("DeckLinkInput_CaptureStopped(...)");
 
-            CloseRenderSession();
+     
+            var errorCode = deckLinkInput.ErrorCode;
+            deckLinkInput.Shutdown();
 
             syncContext.Send(_ =>
             {
 
-                var errorCode = deckLinkInput.ErrorCode;
+                CloseRenderSession();
+
                 if (errorCode != 0)
                 {
-                    MessageBox.Show("DeckLink unknown error: " + errorCode);
+                    var dialogResult = MessageBox.Show("DeckLink unknown error: " + errorCode, "", MessageBoxButtons.RetryCancel);
+
+                    if (dialogResult == DialogResult.Retry)
+                    {
+                        deckLinkInput.StartCapture(currentDevice, currentDisplayMode);
+                        return;
+                    }
                 }
+
 
                 CloseVideo();
                 devicesPanel.Enabled = true;
@@ -242,12 +270,12 @@ namespace Test.DeckLink
         {
 
             var videoResoulution = deckLinkInput.FrameSize;
-            var pixelFormat = deckLinkInput.PixelFormatCode;
+            var videoFormat = deckLinkInput.VideoFormat;
             var frameRate = deckLinkInput.FrameRate;
             var fps = frameRate.Item2 / frameRate.Item1;
             string videoLog = "";
             {
-                videoLog = pixelFormat + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
+                videoLog = videoFormat.Name + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
             }
 
             string audioLog = "";
@@ -297,13 +325,14 @@ namespace Test.DeckLink
 
 
             var videoResoulution = deckLinkInput.FrameSize;
-            var pixelFormat = deckLinkInput.PixelFormatCode;
+
+            var fourCC = deckLinkInput.VideoFormat.FourCC;
 
             var videoArgs = new VideoRendererArgs
             {
                 hWnd = windowHandle,
                 Resolution = videoResoulution,
-                PixelFormat = pixelFormat,
+                FourCC = fourCC,
 
             };
 
@@ -334,7 +363,7 @@ namespace Test.DeckLink
             if (deckLinkInput != null)
             {
                 deckLinkInput.CaptureStarted -= DeckLinkInput_CaptureStarted;
-                deckLinkInput.ReadyToStart -= DeckLinkInput_ReadyToStart;
+                deckLinkInput.CaptureInitialized -= DeckLinkInput_ReadyToStart;
                 deckLinkInput.CaptureStopped -= DeckLinkInput_CaptureStopped;
                 deckLinkInput.InputFormatChanged -= DeckLinkInput_InputFormatChanged;
 

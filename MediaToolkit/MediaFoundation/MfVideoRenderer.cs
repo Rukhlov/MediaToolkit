@@ -62,7 +62,7 @@ namespace MediaToolkit.MediaFoundation
 
             logger.Debug("MfVideoRenderer::Setup(...) " + videoArgs.ToString());
 
-            var pixFmt = videoArgs.PixelFormat;
+            var pixFmt = videoArgs.FourCC;
             var videoFormat = VideoFormatGuids.FromFourCC(new SharpDX.Multimedia.FourCC(pixFmt));
             var resolution = videoArgs.Resolution;
             var hWnd = videoArgs.hWnd;

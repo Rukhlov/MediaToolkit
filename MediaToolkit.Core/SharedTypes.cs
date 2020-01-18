@@ -101,12 +101,12 @@ namespace MediaToolkit.SharedTypes
         public IntPtr hWnd { get; set; }
 
         public Size Resolution { get; set; } = Size.Empty;
-        public int PixelFormat { get; set; } = 0; //"ARGB"; //UYVY //FourCC code
+        public int FourCC { get; set; } = 0; //"ARGB"; //UYVY //FourCC code
         public int BitsPerPixel { get; set; } = 32;
         public int InterlaceMode { get; set; } = 2;
         public override string ToString()
         {
-            return string.Join(";", hWnd, Resolution, PixelFormat, BitsPerPixel);
+            return string.Join(";", hWnd, Resolution, FourCC, BitsPerPixel);
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using DeckLinkAPI;
+using MediaToolkit.Core;
 using NLog;
 
 using System;
@@ -141,15 +142,15 @@ namespace MediaToolkit.DeckLink
             return log;
         }
 
-        public static int GetPixelFormatFourCC(_BMDPixelFormat pixFormat)
+        public static VideoFormat GetVideoFormat(_BMDPixelFormat pixFormat)
         {
-            int fourCC = 0;
+            VideoFormat format = null;
             if (SupportedPixelFormats.ContainsKey(pixFormat))
             {
-                fourCC = SupportedPixelFormats[pixFormat];
+                format = SupportedPixelFormats[pixFormat];
             }
 
-            return fourCC;
+            return format;
         }
 
         public static bool ValidateAndCorrectPixelFormat(ref _BMDPixelFormat fmt)
@@ -177,18 +178,18 @@ namespace MediaToolkit.DeckLink
 
 
 
-        private static readonly Dictionary<_BMDPixelFormat, int> SupportedPixelFormats = new Dictionary<_BMDPixelFormat, int>
+        private static readonly Dictionary<_BMDPixelFormat, VideoFormat> SupportedPixelFormats = new Dictionary<_BMDPixelFormat, VideoFormat>
         {
-             { _BMDPixelFormat.bmdFormat8BitYUV, 0x59565955 /*"UYVY" */},
+             { _BMDPixelFormat.bmdFormat8BitYUV, VideoFormats.VideoFormatUYVY },
 
              // в WinRgb цвета идут в обратном порядке, поэтому что бы не переставлять пиксели
              // используем формат bmdFormat8BitBGRA
-             { _BMDPixelFormat.bmdFormat8BitBGRA, 0x00000015 /*MFVideoFormat_ARGB32*/},
-
-             //{ _BMDPixelFormat.bmdFormat8BitARGB, 0x00000015 /*MFVideoFormat_ARGB32*/}, 
+             { _BMDPixelFormat.bmdFormat8BitBGRA,  VideoFormats.VideoFormatARGB32 },
 
              //не поддерживается EVR, VideoProcessorMFT конвертит только софтверно!
              //{ _BMDPixelFormat.bmdFormat10BitYUV, 0x30313256 /*"v210"*/ }, 
+
+             // остальные форматы не поддерживаются!
 
         };
 
@@ -295,12 +296,6 @@ namespace MediaToolkit.DeckLink
             _BMDSupportedVideoModeFlags videoModeFlags = _BMDSupportedVideoModeFlags.bmdSupportedVideoModeDefault)
         {
 
-            Dictionary<_BMDPixelFormat, string> pixelFormats = new Dictionary<_BMDPixelFormat, string>
-            {
-                { _BMDPixelFormat.bmdFormat8BitYUV, "UYVY"},
-                { _BMDPixelFormat.bmdFormat8BitBGRA, "RGBA32"}
-            };
-
             List<DeckLinkDisplayModeDescription> displayDescriptions = new List<DeckLinkDisplayModeDescription>();
 
             IDeckLinkDisplayModeIterator iterator = null;
@@ -334,8 +329,9 @@ namespace MediaToolkit.DeckLink
 
                         // var log = string.Join(", " , displayName, resolution, bdmDisplayMode, displayModeFlags, frameDuration, timeScale, fieldDominance);
 
-                        foreach (var pixFmt in pixelFormats.Keys)
+                        foreach (var pixFmt in SupportedPixelFormats.Keys)
                         {
+                            var format = SupportedPixelFormats[pixFmt];
                             deckLinkInput.DoesSupportVideoMode(connection, displayModeId, pixFmt, videoModeFlags, out int supported);
                             if (supported != 0)
                             {
@@ -346,7 +342,7 @@ namespace MediaToolkit.DeckLink
                                     Height = height,
                                     Fps = fps,
                                     PixFmt = (long)pixFmt,
-                                    Description = displayName + " (" + resolution + " " + fps.ToString("0.##") + " fps " + pixelFormats[pixFmt] + ")",
+                                    Description = displayName + " (" + resolution + " " + fps.ToString("0.##") + " fps " + format.Name + ")",
                                 });
                             }
                             else

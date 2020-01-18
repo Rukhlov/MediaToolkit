@@ -1,4 +1,5 @@
 ﻿using DeckLinkAPI;
+using MediaToolkit.Core;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,11 @@ namespace MediaToolkit.DeckLink
         private IDeckLinkStatus deckLinkStatus = null;
         private IDeckLinkProfileAttributes deckLinkProfileAttrs = null;
 
+        private IDeckLinkMemoryAllocator memoryAllocator = null;
         private IDeckLinkNotification deckLinkNotification = null;
+        private IDeckLinkScreenPreviewCallback previewCallback = null;
+
+        private int inputDeviceIndex = -1;
 
         public string DisplayName { get; private set; } = "";
         public string ModelName { get; private set; } = "";
@@ -32,8 +37,7 @@ namespace MediaToolkit.DeckLink
         private _BMDPixelFormat pixelFormat = _BMDPixelFormat.bmdFormatUnspecified;
         public _BMDPixelFormat PixelFormat { get => pixelFormat; set => pixelFormat = value; }
 
-        public int PixelFormatCode => DeckLinkTools.GetPixelFormatFourCC(this.PixelFormat);
-
+        public VideoFormat VideoFormat => DeckLinkTools.GetVideoFormat(this.PixelFormat);
         public System.Drawing.Size FrameSize { get; private set; } = System.Drawing.Size.Empty;
         public Tuple<long, long> FrameRate { get; private set; }
 
@@ -52,16 +56,16 @@ namespace MediaToolkit.DeckLink
         private volatile int errorCode = 0;
         public int ErrorCode => errorCode;
 
+        private volatile CaptureState captureState = CaptureState.Shutdown;
 
         private bool supportsFormatDetection = true;
         private bool applyDetectedInputMode = true;
         private bool supportsHDMITimecode = false;
 
-        private volatile bool validInputSignal = false;
         private volatile bool initialized = false;
-        private AutoResetEvent syncEvent = new AutoResetEvent(false);
-        private Thread captureThread = null;
 
+        private AutoResetEvent syncEvent = null;
+        private Thread captureThread = null;
 
         public event Action<bool> InputSignalChanged;
         public event Action<object> InputFormatChanged;
@@ -70,21 +74,20 @@ namespace MediaToolkit.DeckLink
         public event Action<IntPtr, int, double, double> VideoDataArrived;
 
         public event Action CaptureStarted;
+        public event Action CaptureInitialized;
         public event Action<object> CaptureStopped;
-        public event Action ReadyToStart;
 
-        private IDeckLinkMemoryAllocator memoryAllocator = null;
 
-        private double audioDurationSeconds = 0;
-        private double videoDurationSeconds = 0;
+        private volatile _BMDFrameFlags lastFrameFlags = _BMDFrameFlags.bmdFrameFlagDefault;
 
         private double lastAudioPacketTimeSec = 0;
         private double lastVideoFrameTimeSec = 0;
 
-        private int inputDeviceIndex = -1;
-        private IDeckLinkScreenPreviewCallback previewCallback = null;
+        private double audioDurationSeconds = 0;
+        private double videoDurationSeconds = 0;
 
-        private volatile CaptureState captureState = CaptureState.Closed;
+        private uint lostAudioPacketsCount = 0;
+        public uint lostVideoFramesCount = 0;
 
         public void StartCapture(DeckLinkDeviceDescription device, DeckLinkDisplayModeDescription mode = null)
         {
@@ -95,12 +98,11 @@ namespace MediaToolkit.DeckLink
             StartCapture(index, pixFormat, modeId);
         }
 
-        //private volatile bool isRunning = false;
         public void StartCapture(int inputIndex, long pixFmt, long modeId)
         {
             logger.Debug("DeckLinkInput::StartCapture(...) " + string.Join(" ", inputIndex, pixFmt, modeId));
 
-            if (captureState != CaptureState.Closed)
+            if (captureState != CaptureState.Shutdown)
             {
                 logger.Warn("DeckLinkInput::StartCapture(...) return invalid state: " + captureState);
                 return;
@@ -136,7 +138,8 @@ namespace MediaToolkit.DeckLink
                 return;
             }
 
-
+            syncEvent = new AutoResetEvent(false);
+            errorCode = 0;
             bool streamStarted = false;
             try
             {
@@ -170,31 +173,32 @@ namespace MediaToolkit.DeckLink
 
                 while (captureState == CaptureState.Starting && !initialized)
                 {
-                    bool videoInputSignalLocked = GetVideoInputSignalLockedState();
-                    if (!videoInputSignalLocked)
-                    {
-                        syncEvent.WaitOne(1000);
-                        continue;
-                    }
 
-                    if (captureState != CaptureState.Starting)
-                    {
-                        return;
-                    }
+                    //bool videoInputSignalLocked = GetVideoInputSignalLockedState();
+                    //if (!videoInputSignalLocked)
+                    //{
+                    //    syncEvent.WaitOne(1000);
+                    //    continue;
+                    //}
 
-                    _BMDDeviceBusyState deviceBusyState = GetDeviceBusyState();
-                    if (deviceBusyState == _BMDDeviceBusyState.bmdDeviceCaptureBusy)
-                    {
-                        logger.Debug("bmdDeckLinkStatusBusy: " + deviceBusyState);
-                        syncEvent.WaitOne(1000);
+                    //if (captureState != CaptureState.Starting)
+                    //{
+                    //    return;
+                    //}
 
-                        continue;
-                    }
+                    //_BMDDeviceBusyState deviceBusyState = GetDeviceBusyState();
+                    //if (deviceBusyState == _BMDDeviceBusyState.bmdDeviceCaptureBusy)
+                    //{
+                    //    logger.Debug("bmdDeckLinkStatusBusy: " + deviceBusyState);
+                    //    syncEvent.WaitOne(1000);
 
-                    if (captureState != CaptureState.Starting)
-                    {
-                        return;
-                    }
+                    //    continue;
+                    //}
+
+                    //if (captureState != CaptureState.Starting)
+                    //{
+                    //    return;
+                    //}
 
 
                     deckLink.GetDisplayName(out string displayName);
@@ -216,10 +220,9 @@ namespace MediaToolkit.DeckLink
                     bool pixelFormatSupported = DeckLinkTools.ValidateAndCorrectPixelFormat(ref pixelFormat);
                     if (!pixelFormatSupported)
                     {
-                        throw new NotSupportedException("Pixel format not supported: " + PixelFormat);
+                        // throw new NotSupportedException("Pixel format not supported: " + PixelFormat);
+                        PixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
                     }
-
-                    //PixelFormat = _BMDPixelFormat.bmdFormat8BitYUV;
 
                     _BMDVideoConnection videoConnections = GetVideoInputConnections();
                     logger.Info(string.Join("; ", DisplayName, videoConnections, DisplayModeId, PixelFormat));
@@ -277,13 +280,19 @@ namespace MediaToolkit.DeckLink
                     this.lastAudioPacketTimeSec = 0;
                     this.lastVideoFrameTimeSec = 0;
 
-                    this.validInputSignal = false;
+                    this.lastFrameFlags = _BMDFrameFlags.bmdFrameFlagDefault;
 
-                    ReadyToStart?.Invoke();
+                    CaptureInitialized?.Invoke();
 
                     initialized = true;
 
                 }
+
+
+                uint audioPacketLoss = lostAudioPacketsCount;
+                uint videoFrameLoss = lostVideoFramesCount;
+                bool noSignal = lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource) || 
+                    lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputDevice);
 
                 if (captureState == CaptureState.Starting && initialized)
                 {
@@ -332,6 +341,34 @@ namespace MediaToolkit.DeckLink
 
                         #endregion
 
+
+                        bool _noSignal = lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource) || 
+                            lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputDevice);
+
+                        if (noSignal != _noSignal)
+                        {
+                            noSignal = _noSignal;
+                            if (noSignal)
+                            {
+                                logger.Warn("No signal...");
+                            }
+ 
+                            InputSignalChanged?.Invoke(noSignal);
+                        }
+
+
+                        if (audioPacketLoss != lostAudioPacketsCount)
+                        {
+                            logger.Warn("Audio packets loss: " + (lostAudioPacketsCount - audioPacketLoss));
+                            audioPacketLoss = lostAudioPacketsCount;
+                        }
+
+                        if (videoFrameLoss != lostVideoFramesCount)
+                        {
+                            logger.Warn("Video frame loss: " + (lostVideoFramesCount - videoFrameLoss));
+                            videoFrameLoss = lostVideoFramesCount;
+                        }
+
                         if (errorCode != 0)
                         {
                             break;
@@ -354,7 +391,7 @@ namespace MediaToolkit.DeckLink
             {
                 logger.Error(ex);
 
-                captureState = CaptureState.Closing;
+                captureState = CaptureState.Stopping;
                 streamStarted = false;
 
                 errorCode = 100500;
@@ -397,14 +434,12 @@ namespace MediaToolkit.DeckLink
 
                 CaptureStopped?.Invoke(null);
 
-                Close();
-
-                captureState = CaptureState.Closed;
+                //Shutdown();
 
 
             }
 
-            logger.Debug("DeckLinkInput::DoCapture() END");
+            logger.Debug("DeckLinkInput::DoCapture() END " + errorCode);
 
         }
 
@@ -465,6 +500,8 @@ namespace MediaToolkit.DeckLink
                 string log = "Format not supported: " + string.Join(" ", videoConnection, DisplayModeId, PixelFormat, videoModeFlags);
                 logger.Error(log);
 
+                errorCode = 100501;
+                return;
 
                 //throw new NotSupportedException(log);
 
@@ -507,7 +544,8 @@ namespace MediaToolkit.DeckLink
                     }
                     else
                     {
-                        logger.Warn("No video frame...");
+                        //logger.Warn("No video frame...");
+                        lostVideoFramesCount++;
                     }
 
                     if (AudioEnabled)
@@ -518,7 +556,8 @@ namespace MediaToolkit.DeckLink
                         }
                         else
                         {
-                            logger.Warn("No audio packet...");
+                            //logger.Warn("No audio packet...");
+                            lostAudioPacketsCount++;
                         }
                     }
                 }
@@ -526,6 +565,11 @@ namespace MediaToolkit.DeckLink
                 {
                     logger.Warn("VideoInputFrameArrived(...): " + captureState);
                 }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+                errorCode = 100502;
             }
             finally
             {
@@ -597,58 +641,50 @@ namespace MediaToolkit.DeckLink
                 return;
             }
 
-            var frameFlags = videoFrame.GetFlags();
-
-            bool inputSignal = frameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource); // no signal !!!
-            if (inputSignal)
+            lastFrameFlags = videoFrame.GetFlags();
+            if (lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputSource) ||
+                lastFrameFlags.HasFlag(_BMDFrameFlags.bmdFrameHasNoInputDevice))
             {
-                logger.Warn("Video no signal...");
+                //logger.Warn("Video no signal...");
+                return;
             }
 
-            if (inputSignal != validInputSignal)
-            {
-                validInputSignal = inputSignal;
-                InputSignalChanged?.Invoke(validInputSignal);
-            }
-            else
-            {
-                long timeScale = FrameRate.Item2;
+            long timeScale = FrameRate.Item2;
+            videoFrame.GetStreamTime(out long frameTime, out long frameDuration, timeScale);
 
-                videoFrame.GetStreamTime(out long frameTime, out long frameDuration, timeScale);
-
-                //if (supportsHDMITimecode)
-                //{ // Blackmagic DeckLink SDK 2.4.9.1 Timecode Capture
-                //    videoFrame.GetHardwareReferenceTimestamp(timeScale, out long frameTime, out long frameDuration);
-                //}
-                //else
-                //{
-                //    videoFrame.GetTimecode(_BMDTimecodeFormat.bmdTimecodeLTC, out IDeckLinkTimecode timecode);
-                //    //_BMDTimecodeFlags timecodeFlags = timecode.GetFlags();
-                //    timecode.GetTimecodeUserBits(out uint userBits);
-                //}
+            //if (supportsHDMITimecode)
+            //{ // Blackmagic DeckLink SDK 2.4.9.1 Timecode Capture
+            //    videoFrame.GetHardwareReferenceTimestamp(timeScale, out long frameTime, out long frameDuration);
+            //}
+            //else
+            //{
+            //    videoFrame.GetTimecode(_BMDTimecodeFormat.bmdTimecodeLTC, out IDeckLinkTimecode timecode);
+            //    //_BMDTimecodeFlags timecodeFlags = timecode.GetFlags();
+            //    timecode.GetTimecodeUserBits(out uint userBits);
+            //}
 
 
-                int width = videoFrame.GetWidth();
-                int height = videoFrame.GetHeight();
-                int stride = videoFrame.GetRowBytes();
-                _BMDPixelFormat format = videoFrame.GetPixelFormat();
+            int width = videoFrame.GetWidth();
+            int height = videoFrame.GetHeight();
+            int stride = videoFrame.GetRowBytes();
+            _BMDPixelFormat format = videoFrame.GetPixelFormat();
 
-                var bufferLength = stride * height;
-                videoFrame.GetBytes(out IntPtr pBuffer);
+            var bufferLength = stride * height;
+            videoFrame.GetBytes(out IntPtr pBuffer);
 
-                var frameTimeSec = (double)frameTime / timeScale;
-                double frameDurationSec = (double)frameDuration / timeScale;
+            var frameTimeSec = (double)frameTime / timeScale;
+            double frameDurationSec = (double)frameDuration / timeScale;
 
-                //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
+            //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
 
-                videoDurationSeconds += frameDurationSec;
+            videoDurationSeconds += frameDurationSec;
 
-                VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
-                lastVideoFrameTimeSec = frameTimeSec;
+            VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
+            lastVideoFrameTimeSec = frameTimeSec;
 
-                //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
-                //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
-            }
+            //var fileName = @"d:\testBMP2\" + DateTime.Now.ToString("HH_mm_ss_fff") + " " + width + "x" + height + "_" + format + ".raw";
+            //MediaToolkit.Utils.TestTools.WriteFile( pBuffer, bufferLength, fileName);
+
 
         }
 
@@ -657,7 +693,7 @@ namespace MediaToolkit.DeckLink
         {
             logger.Debug("DeckLinkInput::StopCapture()");
 
-            captureState = CaptureState.Closing;
+            captureState = CaptureState.Stopping;
 
             syncEvent?.Set();
         }
@@ -715,10 +751,10 @@ namespace MediaToolkit.DeckLink
         }
 
 
-        private void Close()
+        public void Shutdown()
         {
 
-            logger.Trace("DeckLinkInput::CleanUp()");
+            logger.Trace("DeckLinkInput::Shutdown()");
 
 
             if (deckLink != null)
@@ -738,6 +774,7 @@ namespace MediaToolkit.DeckLink
                 syncEvent = null;
             }
 
+            captureState = CaptureState.Shutdown;
 
         }
 
@@ -745,8 +782,8 @@ namespace MediaToolkit.DeckLink
         {
             Starting,
             Capturing,
-            Closing,
-            Closed,
+            Stopping,
+            Shutdown,
         }
 
     }

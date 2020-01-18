@@ -83,6 +83,24 @@ namespace MediaToolkit
             }
         }
 
+        public void UpdateStatusText(string text)
+        {
+            System.Drawing.Bitmap bmp = null;
+            if (text != null)
+            {
+                bmp = new System.Drawing.Bitmap(640, 480, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var g = System.Drawing.Graphics.FromImage(bmp))
+                {
+                    g.FillRectangle(new System.Drawing.SolidBrush(System.Drawing.Color.Red), new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height));
+                } 
+            }
+
+            System.Drawing.RectangleF normalizedRect = new System.Drawing.RectangleF(0f, 0f, 1f, 1f);
+            videoRenderer?.SetBitmap(bmp, normalizedRect, 0.5f);
+
+            bmp?.Dispose();
+        }
+
         public void Setup(VideoRendererArgs videoArgs, AudioRendererArgs audioArgs)
         {
             logger.Debug("MediaSession::Setup(...)");
