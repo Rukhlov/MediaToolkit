@@ -31,7 +31,7 @@ namespace Test.DeckLink
         {
             InitializeComponent();
 
-            MediaToolkitManager.Startup();
+            //MediaToolkitManager.Startup();
 
             syncContext = SynchronizationContext.Current;
 
@@ -56,7 +56,7 @@ namespace Test.DeckLink
         private IntPtr windowHandle = IntPtr.Zero;
         private VideoForm videoForm = null;
 
-
+        private volatile bool isCapture = false;
         private void buttonStart_Click(object sender, EventArgs e)
         {
            
@@ -92,6 +92,8 @@ namespace Test.DeckLink
                 OnCaptureStopped();
             }
         }
+
+
 
 
 
@@ -450,10 +452,9 @@ namespace Test.DeckLink
                 }
             }
         }
+
+
         private Size prevVideoFormSize = Size.Empty;
-
-
-
 
         private void fitToVideoCheckBox_CheckedChanged(object sender, EventArgs e)
         {

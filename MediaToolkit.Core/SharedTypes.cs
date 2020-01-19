@@ -144,6 +144,27 @@ namespace MediaToolkit.SharedTypes
         int ErrorCode { get; }
     }
 
+
+    public interface IDeckLinkInputControl
+    {
+
+        void FindDevices();
+        void StartCapture(int deviceIndex);
+        void StopCapture();
+        ErrorCode Code { get; }
+        bool IsCapture { get; }
+
+        int DeviceIndex { get; }
+
+        event Action CaptureStarted;
+        event Action CaptureStopped;
+
+        bool DebugMode { get; set; }
+
+    }
+
+
+
     public enum ErrorCode : int
     {
         Ok = 0,

@@ -38,6 +38,8 @@ namespace MediaToolkit.SharedTypes
 
                 InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
                 InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll");
+
+                InstanceFactory.RegisterType<IDeckLinkInputControl>("MediaToolkit.UI.dll");
                 //...
 
                 mediaToolkit = InstanceFactory.CreateInstance<IMediaToolkitBootstrapper>();

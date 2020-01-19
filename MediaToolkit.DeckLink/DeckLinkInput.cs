@@ -99,7 +99,9 @@ namespace MediaToolkit.DeckLink
             StartCapture(index, pixFormat, modeId);
         }
 
-        public void StartCapture(int inputIndex, long pixFmt, long modeId)
+        public void StartCapture(int inputIndex,
+            long pixFmt = (long)_BMDPixelFormat.bmdFormatUnspecified,
+            long modeId = (long)_BMDDisplayMode.bmdModeUnknown)
         {
             logger.Debug("DeckLinkInput::StartCapture(...) " + string.Join(" ", inputIndex, pixFmt, modeId));
 
@@ -168,6 +170,8 @@ namespace MediaToolkit.DeckLink
                     {
                         errorCode = ErrorCode.NotFound;
                         logger.Warn("Device not found: " + inputDeviceIndex);
+
+                        break;
                     }
 
                     this.deckLink = _deckLink;
@@ -189,6 +193,7 @@ namespace MediaToolkit.DeckLink
                     {
                         logger.Debug("bmdDeckLinkStatusBusy: " + deviceBusyState);
                         errorCode = ErrorCode.IsBusy;
+                        break;
 
                     }
 
@@ -297,6 +302,7 @@ namespace MediaToolkit.DeckLink
                     {
                         errorCode = ErrorCode.Cancelled;
                         logger.Warn("Capture cancelled...");
+                        break;
                     }
 
                     while (captureState == CaptureState.Capturing)

@@ -771,12 +771,12 @@ namespace MediaToolkit.DeckLink
 
     public class DeckLinkDisplayModeDescription
     {
-        public long ModeId { get; set; } = (long)_BMDDisplayMode.bmdModeUnknown;
+        public long ModeId { get; set; } =  (long)_BMDDisplayMode.bmdModeUnknown;
 
         public int Width { get; set; } = 0;
         public int Height { get; set; } = 0;
         public double Fps { get; set; } = 0;
-        public long PixFmt { get; set; } = (long)_BMDPixelFormat.bmdFormatUnspecified;
+        public long PixFmt { get; set; } = 0;//(long)_BMDPixelFormat.bmdFormatUnspecified;
 
         public string Description { get; set; } = "";
 
