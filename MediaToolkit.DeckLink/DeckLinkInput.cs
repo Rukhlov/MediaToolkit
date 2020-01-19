@@ -56,6 +56,7 @@ namespace MediaToolkit.DeckLink
         private volatile int errorCode = 0;
         public int ErrorCode => errorCode;
 
+        public CaptureState State => captureState;
         private volatile CaptureState captureState = CaptureState.Shutdown;
 
         private bool supportsFormatDetection = true;
@@ -67,15 +68,11 @@ namespace MediaToolkit.DeckLink
         private AutoResetEvent syncEvent = null;
         private Thread captureThread = null;
 
-        public event Action<bool> InputSignalChanged;
+        public event Action<object> StateChanged;
         public event Action<object> InputFormatChanged;
 
         public event Action<byte[], double> AudioDataArrived;
         public event Action<IntPtr, int, double, double> VideoDataArrived;
-
-        public event Action CaptureStarted;
-        public event Action CaptureInitialized;
-        public event Action<object> CaptureStopped;
 
 
         private volatile _BMDFrameFlags lastFrameFlags = _BMDFrameFlags.bmdFrameFlagDefault;
@@ -231,7 +228,7 @@ namespace MediaToolkit.DeckLink
                     supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
-                    // memoryAllocator = new MemoryAllocator();
+                    //memoryAllocator = new MemoryAllocator();
                     memoryAllocator = new SimpleMemoryAllocator();
                     deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
@@ -282,7 +279,7 @@ namespace MediaToolkit.DeckLink
 
                     this.lastFrameFlags = _BMDFrameFlags.bmdFrameFlagDefault;
 
-                    CaptureInitialized?.Invoke();
+                    InputFormatChanged?.Invoke(null);
 
                     initialized = true;
 
@@ -301,9 +298,8 @@ namespace MediaToolkit.DeckLink
                     deckLinkInput.StartStreams();
                     streamStarted = true;
 
-                    CaptureStarted?.Invoke();
-
                     captureState = CaptureState.Capturing;
+                    StateChanged?.Invoke(null);
 
                     while (captureState == CaptureState.Capturing)
                     {
@@ -353,7 +349,7 @@ namespace MediaToolkit.DeckLink
                                 logger.Warn("No signal...");
                             }
  
-                            InputSignalChanged?.Invoke(noSignal);
+                            //InputSignalChanged?.Invoke(noSignal);
                         }
 
 
@@ -431,11 +427,10 @@ namespace MediaToolkit.DeckLink
                 //    deckLinkNotification.Unsubscribe(_BMDNotifications.bmdDeviceRemoved | _BMDNotifications.bmdStatusChanged, this);
                 //}
 
-
-                CaptureStopped?.Invoke(null);
-
+                captureState = CaptureState.Stopped;
+                StateChanged?.Invoke(null);
+                
                 //Shutdown();
-
 
             }
 
@@ -778,14 +773,17 @@ namespace MediaToolkit.DeckLink
 
         }
 
-        enum CaptureState
-        {
-            Starting,
-            Capturing,
-            Stopping,
-            Shutdown,
-        }
 
+
+    }
+
+    public enum CaptureState
+    {
+        Starting,
+        Capturing,
+        Stopping,
+        Stopped,
+        Shutdown,
     }
 
 }
