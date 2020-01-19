@@ -136,6 +136,7 @@ namespace MediaToolkit.MediaFoundation
                     videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
 
+               //videoMixerBitmap.SetAlphaBitmap(null);
                 //NativeAPIs.MediaFoundation.IMFVideoProcessor videoProcessor = null;
                 //using (var service = videoSink.QueryInterface<ServiceProvider>())
                 //{

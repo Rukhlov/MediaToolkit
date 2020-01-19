@@ -94,7 +94,7 @@ namespace Test.DeckLink
                 deckLinkInput.StateChanged += DeckLinkInput_StateChanged;
 
                 deckLinkInput.InputFormatChanged += DeckLinkInput_InputFormatChanged;
-
+                
 
                 deckLinkInput.StartCapture(currentDevice, currentDisplayMode);
 
@@ -230,13 +230,13 @@ namespace Test.DeckLink
         private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
         {
 
-            renderSession.ProcessVideoFrame(frameData, frameLength, frameTime, frameDuration);
+            renderSession?.ProcessVideoFrame(frameData, frameLength, frameTime, frameDuration);
 
         }
 
         private void CurrentDevice_AudioDataArrived(byte[] data, double time)
         {
-            renderSession.ProcessAudioPacket(data, time);
+            renderSession?.ProcessAudioPacket(data, time);
         }
 
 

@@ -748,8 +748,24 @@ namespace MediaToolkit.MediaFoundation
     {
         public static T GetNativeMfService<T>(this ServiceProvider service, Guid guid) where T : class
         {
-            var pUnk = service.GetService(guid, typeof(T).GUID);
-            return (T)Marshal.GetObjectForIUnknown(pUnk);
+            T comObj = null;
+            IntPtr pUnk = IntPtr.Zero;
+            try
+            {
+                pUnk = service.GetService(guid, typeof(T).GUID);
+                comObj = (T)Marshal.GetObjectForIUnknown(pUnk);
+
+            }
+            finally
+            {
+                if (pUnk != IntPtr.Zero)
+                {
+                    Marshal.Release(pUnk);
+                    pUnk = IntPtr.Zero;
+                }
+            }
+
+            return comObj;
         }
     }
 
