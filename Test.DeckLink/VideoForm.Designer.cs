@@ -29,16 +29,31 @@
         private void InitializeComponent()
         {
             this.videoPanel = new System.Windows.Forms.Panel();
+            this.statusLabel = new System.Windows.Forms.Label();
+            this.videoPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // videoPanel
             // 
             this.videoPanel.BackColor = System.Drawing.Color.Aquamarine;
+            this.videoPanel.Controls.Add(this.statusLabel);
             this.videoPanel.Location = new System.Drawing.Point(0, 0);
             this.videoPanel.Margin = new System.Windows.Forms.Padding(0);
             this.videoPanel.Name = "videoPanel";
             this.videoPanel.Size = new System.Drawing.Size(418, 319);
             this.videoPanel.TabIndex = 0;
+            // 
+            // statusLabel
+            // 
+            this.statusLabel.AutoSize = true;
+            this.statusLabel.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 7.8F);
+            this.statusLabel.Location = new System.Drawing.Point(0, 0);
+            this.statusLabel.Margin = new System.Windows.Forms.Padding(0);
+            this.statusLabel.Name = "statusLabel";
+            this.statusLabel.Size = new System.Drawing.Size(16, 13);
+            this.statusLabel.TabIndex = 3;
+            this.statusLabel.Text = "...";
             // 
             // VideoForm
             // 
@@ -52,6 +67,8 @@
             this.MinimizeBox = false;
             this.Name = "VideoForm";
             this.Text = "VideoForm";
+            this.videoPanel.ResumeLayout(false);
+            this.videoPanel.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -59,5 +76,6 @@
         #endregion
 
         private System.Windows.Forms.Panel videoPanel;
+        private System.Windows.Forms.Label statusLabel;
     }
 }

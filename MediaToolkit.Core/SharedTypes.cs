@@ -147,13 +147,15 @@ namespace MediaToolkit.SharedTypes
     public enum ErrorCode : int
     {
         Ok = 0,
-        Unknown = 1,
-        Cancelled = 2,
-        Interrupted = 3,
-        IsBusy = 4,
-        NotFound = 5,
-        NotReady = 6,
-        
+        Fail = 1,
+        Unexpected,
+        Abort,
+        Cancelled, 
+        Interrupted,
+        IsBusy,
+        NotFound, 
+        NotReady,
+        NotSupported,
         //...
 
     }

@@ -198,7 +198,7 @@ namespace MediaToolkit.UI
                 catch (Exception ex)
                 {
                     logger.Error(ex);
-                    errorCode = MediaToolkit.SharedTypes.ErrorCode.Unknown;
+                    errorCode = MediaToolkit.SharedTypes.ErrorCode.Fail;
                 }
                 finally
                 {

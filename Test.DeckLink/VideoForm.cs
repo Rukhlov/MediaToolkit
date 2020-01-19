@@ -18,6 +18,7 @@ namespace Test.DeckLink
 
             this.videoPanel.BackColor = Color.Transparent;
             this.BackColor = Color.Black;
+            statusLabel.Text = "";
 
         }
 
@@ -46,7 +47,18 @@ namespace Test.DeckLink
             }
         }
 
+        public void UpdateStatusText(string text)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                statusLabel.Text = text;
+            }
+            else
+            {
+                statusLabel.Text = "";
+            }
 
+        }
 
     }
 }

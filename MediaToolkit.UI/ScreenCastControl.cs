@@ -289,7 +289,7 @@ namespace MediaToolkit.UI
 
                         if (errorCode == ErrorCode.Ok)
                         {
-                            errorCode = ErrorCode.Unknown;
+                            errorCode = ErrorCode.Fail;
                         }
                     }
                     finally
