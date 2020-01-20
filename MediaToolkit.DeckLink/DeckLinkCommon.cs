@@ -1,5 +1,6 @@
 ﻿using DeckLinkAPI;
 using MediaToolkit.Core;
+using MediaToolkit.SharedTypes;
 using NLog;
 
 using System;
@@ -755,33 +756,7 @@ namespace MediaToolkit.DeckLink
     }
 
 
-    public class DeckLinkDeviceDescription
-    {
-        public int DeviceIndex { get; set; } = -1;
-        public string DeviceName { get; set; } = "";
-        public bool Available { get; set; } = false;
 
-        public List<DeckLinkDisplayModeDescription> DisplayModeIds { get; set; } = null;
-
-        public override string ToString()
-        {
-            return DeviceName + " " + (Available ? "(Available)" : "(Not Available)");
-        }
-    }
-
-    public class DeckLinkDisplayModeDescription
-    {
-        public long ModeId { get; set; } =  (long)_BMDDisplayMode.bmdModeUnknown;
-
-        public int Width { get; set; } = 0;
-        public int Height { get; set; } = 0;
-        public double Fps { get; set; } = 0;
-        public long PixFmt { get; set; } = 0;//(long)_BMDPixelFormat.bmdFormatUnspecified;
-
-        public string Description { get; set; } = "";
-
-
-    }
 
 
 }

@@ -37,13 +37,14 @@ namespace MediaToolkit.UI
 
             syncContext = SynchronizationContext.Current;
 
-            debugPanel.Visible = debugMode;
+            debugPanel.Visible = false;
+            statusLabel.Text = "";
+            labelStatus.Text = "";
 
-            _UpdateControls();
+            UptateDetailsButton();
 
-            this.statusLabel.Text = "";
-            this.labelStatus.Text = "";
         }
+
 
         private volatile ErrorCode errorCode = ErrorCode.Ok;
         public ErrorCode Code => errorCode;
@@ -62,31 +63,65 @@ namespace MediaToolkit.UI
         public event Action CaptureStarted;
         public event Action CaptureStopped;
 
-        private bool debugMode = false;
-        public bool DebugMode
+        private int volume = 70;
+        public int Volume
         {
             get
             {
-                return debugMode;
+                return volume;
             }
             set
             {
-                if(debugMode!= value)
+                if (volume != value)
                 {
-                    debugMode = value;
-                    debugPanel.Visible = debugMode;
+                    volume = value;
                 }
             }
         }
 
+        private bool mute = false;
+        public bool Mute
+        {
+            get
+            {
+                
+                return mute;
+            }
+            set
+            {
+                if (mute != value)
+                {
+                    mute = value;
+
+                    if (renderSession != null)
+                    {
+                        renderSession.Mute = mute;
+                    }
+                }
+            }
+        }
+
+        public List<DeckLinkDeviceDescription> FindDevices()
+        {
+            logger.Debug("IDeckLinkInputControl::FindDevices()");
+
+            return DeckLinkTools.GetDeckLinkInputDevices();
+
+
+        }
+
         public void StartCapture(int deviceIndex)
         {
+            logger.Debug("IDeckLinkInputControl::StartCapture(...) " + deviceIndex);
+
             StartCapture(deviceIndex, 0, 1769303659);
         }
 
 
         public void StartCapture(int deviceIndex, long pixelFormat, long displayModeId )
-        {
+        { 
+            logger.Debug("IDeckLinkInputControl::StartCapture(...) " + string.Join(" ", deviceIndex, pixelFormat, displayModeId));
+
             try
             {
                 DeviceIndex = deviceIndex;
@@ -97,16 +132,23 @@ namespace MediaToolkit.UI
                 deckLinkInput = new DeckLinkInput();
                 deckLinkInput.CaptureChanged += DeckLinkInput_CaptureChanged;
 
+                deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
+                deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
+
                 deckLinkInput.StartCapture(deviceIndex, pixelFormat, displayModeId);
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
 
-                CloseRenderSession();
+                renderSession?.Close();
 
                 if (deckLinkInput != null)
                 {
+
+                    deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
+                    deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
+
                     deckLinkInput.CaptureChanged -= DeckLinkInput_CaptureChanged;
                     deckLinkInput.Shutdown();
                     deckLinkInput = null;
@@ -119,6 +161,8 @@ namespace MediaToolkit.UI
 
         public void StopCapture()
         {
+            logger.Debug("IDeckLinkInputControl::StopCapture()");
+
             if (deckLinkInput != null)
             {
 
@@ -141,16 +185,31 @@ namespace MediaToolkit.UI
             {
                 if (state == DeckLink.CaptureState.Starting)
                 {// new format...
-                    InitRenderSession();
+
+                    AudioRendererArgs audioArgs = GetAudioRenderArgs();
+                    VideoRendererArgs videoArgs = GetVideoRenderArgs();
+
+                    renderSession?.Setup(videoArgs, audioArgs);
+
+                    OnCaptureInitialized();
                 }
                 else if (state == DeckLink.CaptureState.Capturing)
                 {//  new format, restart media renderers...
 
-                    CloseRenderSession();
+                    if (renderSession != null)
+                    {
+                        renderSession.Close();
 
-                    InitRenderSession();
+                        AudioRendererArgs audioArgs = GetAudioRenderArgs();
+                        VideoRendererArgs videoArgs = GetVideoRenderArgs();
 
-                    renderSession?.Start();
+                        renderSession.Setup(videoArgs, audioArgs);
+
+                        OnCaptureInitialized();
+
+                        renderSession.Start();
+                    }
+
 
                 }
             }
@@ -159,20 +218,8 @@ namespace MediaToolkit.UI
                 if (state == DeckLink.CaptureState.Capturing)
                 {
                     renderSession?.Start();
-                    
-                    syncContext.Send(_ =>
-                    {
-                        if (DebugMode)
-                        {
-                            this.switchCaptureStateButton.Enabled = true;
-                            this.switchCaptureStateButton.Text = "_Stop";
 
-                        }
-
-                        isCapture = true;
-                        CaptureStarted?.Invoke();
-
-                    }, null);
+                    OnCaptureStarted();
                 }
                 else if (state == DeckLink.CaptureState.Stopped)
                 {
@@ -180,30 +227,14 @@ namespace MediaToolkit.UI
 
                     deckLinkInput.Shutdown();
 
-                    CloseRenderSession();
+                    renderSession?.Close();
 
-                    syncContext.Send(_ =>
-                    {
-                        if (DebugMode)
-                        {
-                            switchCaptureStateButton.Text = "_Start";
-                            switchCaptureStateButton.Enabled = true;
-                            comboBoxDevices.Enabled = true;
-                            comboBoxDisplayModes.Enabled = true;
-                            findServiceButton.Enabled = true;
-
-                        }
-
-
-                        isCapture = false;
-                        CaptureStopped?.Invoke();
-
-                    }, null);
+                    OnCaptureStopped();
 
                 }
             }
-
         }
+
 
         private void CurrentDevice_VideoDataArrived(IntPtr frameData, int frameLength, double frameTime, double frameDuration)
         {
@@ -219,8 +250,95 @@ namespace MediaToolkit.UI
 
 
 
-        private void InitRenderSession()
+        private void OnCaptureStarted()
         {
+            syncContext.Send(_ =>
+            {
+                if (DebugMode)
+                {
+                    this.switchCaptureStateButton.Enabled = true;
+                    this.switchCaptureStateButton.Text = "_Stop";
+
+                }
+
+                isCapture = true;
+                CaptureStarted?.Invoke();
+
+            }, null);
+        }
+
+        private void OnCaptureInitialized()
+        {
+            syncContext.Send(_ =>
+            {
+                var videoResolution = deckLinkInput.FrameSize;
+                var videoFormat = deckLinkInput.VideoFormat;
+                var frameRate = deckLinkInput.FrameRate;
+                var fps = frameRate.Item2 / frameRate.Item1;
+                string videoLog = "";
+                {
+                    videoLog = videoFormat.Name + "/" + videoResolution.Width + "x" + videoResolution.Height + "/" + fps.ToString("0.00");
+                }
+
+                string audioLog = "";
+                if (deckLinkInput.AudioEnabled)
+                {
+                    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
+                }
+
+                this.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
+
+                renderSession.Resize(this.ClientRectangle);
+
+
+            }, null);
+        }
+
+        private void OnCaptureStopped()
+        {
+            syncContext.Send(_ =>
+            {
+                if (DebugMode)
+                {
+                    switchCaptureStateButton.Text = "_Start";
+
+                    switchCaptureStateButton.Enabled = true;
+                    comboBoxDevices.Enabled = true;
+                    comboBoxDisplayModes.Enabled = true;
+                    findServiceButton.Enabled = true;
+
+                }
+
+
+                isCapture = false;
+                CaptureStopped?.Invoke();
+
+            }, null);
+        }
+
+
+
+        private VideoRendererArgs GetVideoRenderArgs()
+        {
+
+            var frameSize = deckLinkInput.FrameSize;
+
+            var fourCC = deckLinkInput.VideoFormat.FourCC;
+
+            var videoArgs = new VideoRendererArgs
+            {
+                hWnd = windowHandle,
+                Resolution = frameSize,
+                FourCC = fourCC,
+
+            };
+
+            return videoArgs;
+        }
+
+        private AudioRendererArgs GetAudioRenderArgs()
+        {
+
             AudioRendererArgs audioArgs = null;
             if (deckLinkInput.AudioEnabled)
             {
@@ -239,55 +357,7 @@ namespace MediaToolkit.UI
                 };
             }
 
-
-            var videoResoulution = deckLinkInput.FrameSize;
-
-            var fourCC = deckLinkInput.VideoFormat.FourCC;
-
-            var videoArgs = new VideoRendererArgs
-            {
-                hWnd = windowHandle,
-                Resolution = videoResoulution,
-                FourCC = fourCC,
-
-            };
-
-            renderSession.Setup(videoArgs, audioArgs);
-
-            deckLinkInput.VideoDataArrived += CurrentDevice_VideoDataArrived;
-            deckLinkInput.AudioDataArrived += CurrentDevice_AudioDataArrived;
-
-            syncContext.Send(_ =>
-            {
-
-                //var videoFormat = deckLinkInput.VideoFormat;
-                //var frameRate = deckLinkInput.FrameRate;
-                //var fps = frameRate.Item2 / frameRate.Item1;
-                //string videoLog = "";
-                //{
-                //    videoLog = videoFormat.Name + "/" + videoResoulution.Width + "x" + videoResoulution.Height + "/" + fps.ToString("0.00");
-                //}
-
-                //string audioLog = "";
-                //if (deckLinkInput.AudioEnabled)
-                //{
-                //    audioLog = deckLinkInput.AudioSampleRate + "/" + deckLinkInput.AudioBitsPerSample + "/" + deckLinkInput.AudioChannelsCount;
-                //}
-
-                //this.Text = deckLinkInput.DisplayName + " " + videoLog + " " + audioLog;
-
-                renderSession.Resize(this.ClientRectangle);
-
-
-            }, null);
-        }
-
-        private void CloseRenderSession()
-        {
-            deckLinkInput.VideoDataArrived -= CurrentDevice_VideoDataArrived;
-            deckLinkInput.AudioDataArrived -= CurrentDevice_AudioDataArrived;
-
-            renderSession?.Close();
+            return audioArgs;
         }
 
 
@@ -304,35 +374,30 @@ namespace MediaToolkit.UI
         }
 
 
-        private void UpdateControls()
-        {
-            logger.Debug("UpdateControls(...)");
 
-            syncContext.Send(_ =>
+
+        private bool debugMode = false;
+        public bool DebugMode
+        {
+            get
             {
-                _UpdateControls();
-
-            }, null);
-
-        }
-
-        private void SetStatus(string text)
-        {
-            syncContext.Send(_ =>
+                return debugMode;
+            }
+            set
             {
-                labelStatus.Text = text;
-                statusLabel.Text = "...";
+                if (debugMode != value)
+                {
+                    debugMode = value;
 
+                    debugPanel.Visible = debugMode;
 
-            }, null);
-        }
+                    if (debugMode)
+                    {
+                        findServiceButton.PerformClick();
+                    }
 
-        private void _UpdateControls()
-        {
-
-            showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
-
-            //labelInfo.Text = errorMessage;
+                }
+            }
         }
 
 
@@ -359,7 +424,6 @@ namespace MediaToolkit.UI
                     comboBoxDevices.Enabled = false;
                     comboBoxDisplayModes.Enabled = false;
                     findServiceButton.Enabled = false;
-
                     switchCaptureStateButton.Enabled = false;
 
                     StartCapture(currentDevice.DeviceIndex, currentDisplayMode.PixFmt, currentDisplayMode.ModeId);
@@ -395,7 +459,7 @@ namespace MediaToolkit.UI
         {
             controlPanel.Visible = !controlPanel.Visible;
 
-            showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
+            UptateDetailsButton();
         }
 
         private DeckLinkDeviceDescription currentDevice = null;
@@ -408,18 +472,9 @@ namespace MediaToolkit.UI
         {
             logger.Debug("findServiceButton_Click(...)");
 
-            FindDevices();
-
-        }
-
-
-        public void FindDevices()
-        {
-            logger.Debug("FindDevices()");
-
             try
             {
-                decklinkDevices = DeckLinkTools.GetDeckLinkInputDevices();
+                decklinkDevices = FindDevices();
 
                 if (decklinkDevices.Count == 0)
                 {
@@ -433,12 +488,11 @@ namespace MediaToolkit.UI
             }
             catch (Exception ex)
             {
-                if (DebugMode)
-                {
-                    MessageBox.Show(ex.Message);
-                }
+                logger.Error(ex);
+
 
             }
+
         }
 
 
@@ -475,6 +529,13 @@ namespace MediaToolkit.UI
 
                 }
             }
+        }
+
+        private void UptateDetailsButton()
+        {
+
+            showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
+
         }
     }
 

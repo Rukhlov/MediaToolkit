@@ -145,10 +145,42 @@ namespace MediaToolkit.SharedTypes
     }
 
 
+    public interface IDeckLinkInputDevice
+    {
+        int DeviceIndex { get; }
+        string DisplayName { get; }
+        string ModelName { get; }
+
+        VideoFormat VideoFormat { get; }
+        System.Drawing.Size FrameSize { get; }
+        Tuple<long, long> FrameRate { get; }
+        int VideoInterlaceMode { get; }
+
+        int AudioSampleRate { get; }
+        int AudioChannelsCount { get; }
+        int AudioBitsPerSample { get; }
+
+        ErrorCode ErrorCode { get; }
+        void StartCapture(DeckLinkDeviceDescription device, DeckLinkDisplayModeDescription mode = null);
+        void StopCapture();
+
+        event Action<bool> CaptureChanged;
+
+        event Action<byte[], double> AudioDataArrived;
+        event Action<IntPtr, int, double, double> VideoDataArrived;
+
+        void Shutdown();
+
+    }
+
     public interface IDeckLinkInputControl
     {
 
-        void FindDevices();
+        List<DeckLinkDeviceDescription> FindDevices();
+
+        int Volume { get; set; }
+        bool Mute { get; set; }
+
         void StartCapture(int deviceIndex);
         void StopCapture();
         ErrorCode Code { get; }
@@ -162,6 +194,36 @@ namespace MediaToolkit.SharedTypes
         bool DebugMode { get; set; }
 
     }
+
+
+    public class DeckLinkDeviceDescription
+    {
+        public int DeviceIndex { get; set; } = -1;
+        public string DeviceName { get; set; } = "";
+        public bool Available { get; set; } = false;
+
+        public List<DeckLinkDisplayModeDescription> DisplayModeIds { get; set; } = null;
+
+        public override string ToString()
+        {
+            return DeviceName + " " + (Available ? "(Available)" : "(Not Available)");
+        }
+    }
+
+    public class DeckLinkDisplayModeDescription
+    {
+        public long ModeId { get; set; } = 1769303659; //(long)_BMDDisplayMode.bmdModeUnknown;
+
+        public int Width { get; set; } = 0;
+        public int Height { get; set; } = 0;
+        public double Fps { get; set; } = 0;
+        public long PixFmt { get; set; } = 0;//(long)_BMDPixelFormat.bmdFormatUnspecified;
+
+        public string Description { get; set; } = "";
+
+
+    }
+
 
 
 

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace MediaToolkit.DeckLink
 {
 
-    public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback
+    public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback, IDeckLinkInputDevice
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -27,7 +27,9 @@ namespace MediaToolkit.DeckLink
         private IDeckLinkNotification deckLinkNotification = null;
         private IDeckLinkScreenPreviewCallback previewCallback = null;
 
+
         private int inputDeviceIndex = -1;
+        public int DeviceIndex => inputDeviceIndex;
 
         public string DisplayName { get; private set; } = "";
         public string ModelName { get; private set; } = "";

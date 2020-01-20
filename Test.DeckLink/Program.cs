@@ -67,7 +67,9 @@ namespace Test.DeckLink
             var control = MediaToolkitFactory.CreateInstance<IDeckLinkInputControl>();
 
             control.CaptureStarted += () =>
-            { };
+            {
+
+            };
 
             control.CaptureStopped += () =>
             {
@@ -106,8 +108,6 @@ namespace Test.DeckLink
                     control.StopCapture();
                 }
             };
-
-            control.FindDevices();
 
             var c = (Control)control;
             c.Dock = DockStyle.Fill;
