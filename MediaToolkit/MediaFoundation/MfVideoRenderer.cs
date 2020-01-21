@@ -39,8 +39,6 @@ namespace MediaToolkit.MediaFoundation
 
         private VideoSampleAllocator videoSampleAllocator = null;
 
-        byte[] videoBuffer = new byte[1024];
-
         private volatile int streamSinkRequestSample = 0;
         private MediaEventHandler streamSinkEventHandler = null;
 
@@ -187,7 +185,9 @@ namespace MediaToolkit.MediaFoundation
                             mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                             //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
-                            //handler.IsMediaTypeSupported(mediaType, out MediaType _mediaType);
+
+                            //handler.IsMediaTypeSupported(mediaType, out MediaType mediaTypeOut);
+                            //var res = handler._IsMediaTypeSupported(mediaType, out MediaType mediaTypeOut);
 
                             handler.CurrentMediaType = mediaType;
                             break;
@@ -219,7 +219,6 @@ namespace MediaToolkit.MediaFoundation
                     }
                     while (true);
 
-
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
                     streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
 
@@ -227,8 +226,8 @@ namespace MediaToolkit.MediaFoundation
 
                 InitSampleAllocator();
 
-
                 rendererState = RendererState.Initialized;
+
             }
             catch (Exception ex)
             {
@@ -280,7 +279,7 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
-        Stopwatch sw = new Stopwatch();
+        //Stopwatch sw = new Stopwatch();
         private void StreamSinkEventHandler_EventReceived(MediaEvent mediaEvent)
         {
 
@@ -295,7 +294,7 @@ namespace MediaToolkit.MediaFoundation
 
 
                     //logger.Debug("StreamSinkRequestSample: " + sw.ElapsedMilliseconds);
-                    sw.Restart();
+                    //sw.Restart();
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkStarted)
                 {
