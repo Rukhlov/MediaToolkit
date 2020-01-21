@@ -33,6 +33,8 @@ namespace MediaToolkit.MediaFoundation
         private MediaSink videoSink = null;
         private Direct3DDeviceManager deviceManager = null;
 
+        private EVR.IMFVideoMixerBitmap videoMixerBitmap = null;
+
         private VideoRenderer videoRenderer = null;
 
         private VideoSampleAllocator videoSampleAllocator = null;
@@ -136,15 +138,16 @@ namespace MediaToolkit.MediaFoundation
                     videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
 
-               //videoMixerBitmap.SetAlphaBitmap(null);
-                //NativeAPIs.MediaFoundation.IMFVideoProcessor videoProcessor = null;
-                //using (var service = videoSink.QueryInterface<ServiceProvider>())
-                //{
-                //    videoProcessor = service.GetNativeMfService<NativeAPIs.MediaFoundation.IMFVideoProcessor>(MediaServiceKeysEx.MixerService);
-                //}
+                //videoMixerBitmap.SetAlphaBitmap(null);
+                EVR.IMFVideoProcessor videoProcessor = null;
+                using (var service = videoSink.QueryInterface<ServiceProvider>())
+                {
+                    videoProcessor = service.GetNativeMfService<EVR.IMFVideoProcessor>(MediaServiceKeysEx.MixerService);
+                }
+
 
                 //videoProcessor.SetBackgroundColor(0x008000);
-                //ComBase.SafeRelease(videoProcessor);
+                ComBase.SafeRelease(videoProcessor);
 
 
 
@@ -157,36 +160,73 @@ namespace MediaToolkit.MediaFoundation
                         logger.Debug("EVRStreamSinkAttrubutes:\r\n" + attrLog);
                     }
 
-                    //for(int i=0; i< handler.MediaTypeCount; i++)
+                    //for (int i = 0; i < handler.MediaTypeCount; i++)
                     //{
                     //    var mediaType = handler.GetMediaTypeByIndex(i);
                     //    logger.Debug(MfTool.LogMediaType(mediaType));
                     //}
 
-                    using (var mediaType = new MediaType())
+                    do
                     {
-                        mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
-                        mediaType.Set(MediaTypeAttributeKeys.Subtype, videoFormat); //VideoFormatGuids.NV12 
-                        mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoResolution.Width, videoResolution.Height));
+                        /*
+                       * The EVR does not report any preferred media types. 
+                       * The client must test media types until it finds an acceptable type. 
+                       * The media type for the reference stream must be set before the types can be set on any of the substreams.
+                       * https://docs.microsoft.com/en-us/windows/win32/medfound/evr-media-type-negotiation
+                       */
 
-                        mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, interlaceMode);
+                        var mediaType = new MediaType();
+                        try
+                        {
+   
+                            mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
+                            mediaType.Set(MediaTypeAttributeKeys.Subtype, videoFormat); //VideoFormatGuids.NV12 
+                            mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoResolution.Width, videoResolution.Height));
 
-                        mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+                            mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, interlaceMode);
+                            mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+
+                            //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
+                            //handler.IsMediaTypeSupported(mediaType, out MediaType _mediaType);
+
+                            handler.CurrentMediaType = mediaType;
+                            break;
+
+                        }
+                        catch (Exception)
+                        {
+                            //TODO: try other format...
+                            var log = MfTool.LogMediaType(mediaType);
+                            logger.Error("Not supported format: " + log);
+
+                            if (videoFormat == VideoFormatGuids.Argb32)
+                            {//Некоторые карты (например Datapath) не поддерживают Argb32, но могут поддерживать Rgb32
+                                videoFormat = VideoFormatGuids.Rgb32;
+                                continue;
+                            }
+
+                            throw new NotSupportedException("Not supported format: " + MfTool.GetMediaTypeName(videoFormat));
+                        }
+                        finally
+                        {
+                            if (mediaType != null)
+                            {
+                                mediaType.Dispose();
+                                mediaType = null;
+                            }
+                        }
                         
-                        //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
-
-                        //handler.IsMediaTypeSupported(mediaType, out MediaType _mediaType);
-
-                        handler.CurrentMediaType = mediaType;
                     }
+                    while (true);
+
 
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
                     streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
 
                 }
 
-
                 InitSampleAllocator();
+
 
                 rendererState = RendererState.Initialized;
             }
@@ -199,7 +239,7 @@ namespace MediaToolkit.MediaFoundation
             }
 
         }
-        EVR.IMFVideoMixerBitmap videoMixerBitmap = null;
+
 
 
         public void SetPresentationClock(PresentationClock clock)
@@ -776,6 +816,41 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
+
+
+        private void TryGetVideoCaps()
+        {
+            IntPtr hDevice = IntPtr.Zero;
+            try
+            {
+                deviceManager.OpenDeviceHandle(out hDevice);
+                Guid IID_IDirectXVideoProcessorService = new Guid("fc51a552-d5e7-11d9-af55-00054e43ff02");
+                deviceManager.GetVideoService(hDevice, IID_IDirectXVideoProcessorService, out IntPtr pDxProcServ);
+
+                using (VideoProcessorService directXVideoProcessorService = new VideoProcessorService(pDxProcServ))
+                {
+                    VideoDesc videoDesc = new VideoDesc
+                    {
+                        Format = SharpDX.Direct3D9.Format.A8R8G8B8,
+                        //SampleFormat = new ExtendedFormat { },
+                        //SampleWidth = videoResolution.Width,
+                        //SampleHeight = videoResolution.Height,
+
+                    };
+                    Guid[] guids = new Guid[16];
+                    directXVideoProcessorService.GetVideoProcessorDeviceGuids(ref videoDesc, out int count, guids);
+
+                    SharpDX.Direct3D9.Format[] formats = new SharpDX.Direct3D9.Format[1024];
+                    directXVideoProcessorService.GetVideoProcessorRenderTargets(guids[0], ref videoDesc, out int fcount, formats);
+
+                }
+
+            }
+            finally
+            {
+                deviceManager.CloseDeviceHandle(hDevice);
+            }
+        }
     }
 
 
