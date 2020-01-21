@@ -68,9 +68,9 @@ namespace MediaToolkit.DeckLink
             return Success;
         }
 
-        public static bool GetDeviceByName(string deviceName, out IDeckLink deckLink)
+        public static bool GetDeviceByHandle(string deviceHandle, out IDeckLink deckLink)
         {
-            logger.Trace("GetDeviceByName(...) " + deviceName);
+            logger.Trace("GetDeviceByName(...) " + deviceHandle);
 
             bool Success = false;
 
@@ -92,8 +92,8 @@ namespace MediaToolkit.DeckLink
                     deckLinkIterator.Next(out deckLink);
                     if (deckLink != null)
                     {
-                        deckLink.GetDisplayName(out string name);
-                        if (deviceName == name)
+                        ((IDeckLinkProfileAttributes)deckLink).GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string handle);
+                        if (deviceHandle == handle)
                         {
                             break;
                         }
@@ -244,6 +244,9 @@ namespace MediaToolkit.DeckLink
                     {
                         var deckLinkInput = (IDeckLinkInput)deckLink;
                         var deckLinkStatus = (IDeckLinkStatus)deckLink;
+                        var deckLinkAttrs = (IDeckLinkProfileAttributes)deckLink;
+
+                        deckLinkAttrs.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string deviceHandle);
 
                         bool available = false;
                         deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
@@ -253,6 +256,7 @@ namespace MediaToolkit.DeckLink
 
                         DeckLinkDeviceDescription deviceDescription = new DeckLinkDeviceDescription
                         {
+                            DeviceHandle = deviceHandle,
                             DeviceIndex = index,
                             DeviceName = deviceName,
                             Available = available,
@@ -756,6 +760,85 @@ namespace MediaToolkit.DeckLink
     }
 
 
+
+    public class DeckLinkDeviceDiscovery : IDeckLinkDeviceNotificationCallback
+    {
+        private IDeckLinkDiscovery deckLinkDiscovery;
+
+        public DeckLinkDeviceDiscovery()
+        {
+            deckLinkDiscovery = new CDeckLinkDiscovery();
+        }
+
+        public void Enable()
+        {
+            Console.WriteLine("DeckLinkDeviceDiscovery::Enable()");
+
+            deckLinkDiscovery.InstallDeviceNotifications(this);
+        }
+
+        public void Disable()
+        {
+            Console.WriteLine("DeckLinkDeviceDiscovery::Disable()");
+
+            deckLinkDiscovery.UninstallDeviceNotifications();
+        }
+
+        public void Dispose()
+        {
+            Console.WriteLine("DeckLinkDeviceDiscovery::Dispose()");
+
+            if (Marshal.IsComObject(deckLinkDiscovery))
+            {
+                Marshal.ReleaseComObject(deckLinkDiscovery);
+            }
+        }
+
+        void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceArrived(IDeckLink deckLink)
+        {
+            Console.WriteLine(" IDeckLinkDeviceNotificationCallback.DeckLinkDeviceArrived(...)");
+
+            try
+            {
+                var attr = (IDeckLinkProfileAttributes)deckLink;
+                attr.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle,  out string deviceHandle);
+
+
+               // DeckLinkDeviceDescription device = new DeckLinkDeviceDescription();
+
+                deckLink.GetDisplayName(out string deviceName);
+                Console.WriteLine("Device Arrived: " + deviceName + " " + deviceHandle);
+            }
+            finally
+            {
+                if (deckLink != null)
+                {
+                    Marshal.ReleaseComObject(deckLink);
+                }
+            }
+        }
+
+        void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(IDeckLink deckLink)
+        {
+            Console.WriteLine(" IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(...)");
+            try
+            {
+                DeckLinkDeviceDescription device = new DeckLinkDeviceDescription();
+
+                deckLink.GetDisplayName(out string deviceName);
+                Console.WriteLine("Device Removed: " + deviceName);
+            }
+            finally
+            {
+                if (deckLink != null)
+                {
+                    Marshal.ReleaseComObject(deckLink);
+                }
+
+            }
+
+        }
+    }
 
 
 

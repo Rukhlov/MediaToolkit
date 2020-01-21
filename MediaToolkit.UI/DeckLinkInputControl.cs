@@ -374,8 +374,6 @@ namespace MediaToolkit.UI
         }
 
 
-
-
         private bool debugMode = false;
         public bool DebugMode
         {

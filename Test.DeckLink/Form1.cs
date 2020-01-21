@@ -1,4 +1,4 @@
-﻿using DeckLinkAPI;
+﻿//using DeckLinkAPI;
 using MediaToolkit;
 using MediaToolkit.DeckLink;
 using MediaToolkit.MediaFoundation;
@@ -31,7 +31,6 @@ namespace Test.DeckLink
         {
             InitializeComponent();
 
-            //MediaToolkitManager.Startup();
 
             syncContext = SynchronizationContext.Current;
 

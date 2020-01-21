@@ -27,10 +27,8 @@ namespace MediaToolkit.DeckLink
         private IDeckLinkNotification deckLinkNotification = null;
         private IDeckLinkScreenPreviewCallback previewCallback = null;
 
-
-        private int inputDeviceIndex = -1;
-        public int DeviceIndex => inputDeviceIndex;
-
+        public int DeviceIndex { get; private set; } = -1;
+        public string DeviceHandle { get; private set; } = "";
         public string DisplayName { get; private set; } = "";
         public string ModelName { get; private set; } = "";
 
@@ -134,7 +132,7 @@ namespace MediaToolkit.DeckLink
         private void DoCapture(object args)
         {
 
-            logger.Debug("DeckLinkInput::DoCapture(...) BEGIN " + args?.ToString());
+            logger.Debug("DeckLinkInput::DoCapture(...) BEGIN");
 
             if (captureState != CaptureState.Starting)
             {
@@ -152,7 +150,7 @@ namespace MediaToolkit.DeckLink
                 var captureParams = args as Dictionary<string, object>;
                 if (captureParams != null)
                 {
-                    this.inputDeviceIndex = (int)captureParams["DeviceIndex"];
+                    this.DeviceIndex = (int)captureParams["DeviceIndex"];
 
                     this.PixelFormat = (_BMDPixelFormat)captureParams["PixelFormat"];
                     this.DisplayModeId = (_BMDDisplayMode)captureParams["DisplayModeId"];
@@ -166,12 +164,12 @@ namespace MediaToolkit.DeckLink
                 do
                 {
 
-                    DeckLinkTools.GetDeviceByIndex(inputDeviceIndex, out IDeckLink _deckLink);
+                    DeckLinkTools.GetDeviceByIndex(DeviceIndex, out IDeckLink _deckLink);
 
                     if (_deckLink == null)
                     {
                         errorCode = ErrorCode.NotFound;
-                        logger.Warn("Device not found: " + inputDeviceIndex);
+                        logger.Warn("Device not found: " + DeviceIndex);
 
                         break;
                     }
@@ -181,6 +179,7 @@ namespace MediaToolkit.DeckLink
                     this.deckLinkStatus = (IDeckLinkStatus)deckLink;
                     this.deckLinkNotification = (IDeckLinkNotification)deckLink;
                     this.deckLinkProfileAttrs = (IDeckLinkProfileAttributes)deckLink;
+
 
                     //bool videoInputSignalLocked = GetVideoInputSignalLockedState();
                     //if (!videoInputSignalLocked)
@@ -199,6 +198,7 @@ namespace MediaToolkit.DeckLink
 
                     }
 
+                    this.DeviceHandle = GetDeviceHandle();
 
                     deckLink.GetDisplayName(out string displayName);
                     deckLink.GetModelName(out string modelName);
@@ -667,11 +667,25 @@ namespace MediaToolkit.DeckLink
             syncEvent?.Set();
         }
 
+        private string GetDeviceHandle()
+        {
+            deckLinkProfileAttrs.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string deviceHandle);
+
+            return deviceHandle;
+        }
+
         private bool GetVideoInputSignalLockedState()
         {
             deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
             bool videoInputSignalLocked = (videoInputSignalLockedFlag != 0);
             return videoInputSignalLocked;
+        }
+
+        private _BMDDeviceBusyState GetDeviceBusyState()
+        {
+            deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusBusy, out long deviceBusyStateFlag);
+            _BMDDeviceBusyState deviceBusyState = (_BMDDeviceBusyState)deviceBusyStateFlag;
+            return deviceBusyState;
         }
 
         private _BMDPixelFormat GetCurrentVideoInputPixelFormat()
@@ -689,13 +703,6 @@ namespace MediaToolkit.DeckLink
             return currentVideoInputMode;
         }
 
-
-        private _BMDDeviceBusyState GetDeviceBusyState()
-        {
-            deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusBusy, out long deviceBusyStateFlag);
-            _BMDDeviceBusyState deviceBusyState = (_BMDDeviceBusyState)deviceBusyStateFlag;
-            return deviceBusyState;
-        }
 
 
         private bool GetSupportsHDMITimecode()
@@ -718,6 +725,10 @@ namespace MediaToolkit.DeckLink
             _BMDVideoConnection videoConnection = (_BMDVideoConnection)videoInputConnectionsFlag;
             return videoConnection;
         }
+
+
+
+
 
 
         public void Shutdown()

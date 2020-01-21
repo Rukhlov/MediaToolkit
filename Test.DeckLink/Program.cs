@@ -1,4 +1,5 @@
-﻿using MediaToolkit.SharedTypes;
+﻿using MediaToolkit.DeckLink;
+using MediaToolkit.SharedTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,11 @@ namespace Test.DeckLink
                 }
             }
 
+            //DeckLinkDeviceDiscovery deviceDiscovery = new DeckLinkDeviceDiscovery();
+            //deviceDiscovery.Enable();
+
+
+            InstanceFactory.AssemblyPath = mediaToolkitPath;
             InstanceFactory.EnableLog = true;
             InstanceFactory.Log += (log, level) =>
             {
@@ -54,17 +60,27 @@ namespace Test.DeckLink
 
             };
 
-            if (!MediaToolkitFactory.Startup(mediaToolkitPath))
-            {
-                MessageBox.Show("Error at MediaToolkit startup:\r\n\r\n" + mediaToolkitPath);
+            InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
+            InstanceFactory.RegisterType<IDeckLinkInputControl>("MediaToolkit.UI.dll");
+            //...
 
-                return;
-            }
+            var mediaToolkit = InstanceFactory.CreateInstance<IMediaToolkitBootstrapper>();
+
+            mediaToolkit.Startup();
+
+
+
+            //if (!MediaToolkitFactory.Startup(mediaToolkitPath))
+            //{
+            //    MessageBox.Show("Error at MediaToolkit startup:\r\n\r\n" + mediaToolkitPath);
+
+            //    return;
+            //}
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var control = MediaToolkitFactory.CreateInstance<IDeckLinkInputControl>();
+            var control = InstanceFactory.CreateInstance<IDeckLinkInputControl>();
 
             control.CaptureStarted += () =>
             {
@@ -102,7 +118,6 @@ namespace Test.DeckLink
 
             form.FormClosed += (o, a) =>
             {
-
                 if (control != null)
                 {
                     control.StopCapture();
@@ -114,9 +129,18 @@ namespace Test.DeckLink
             form.Controls.Add(c);
 
 
+
+            //var form = new Form1();
             Application.Run(form);
 
-            MediaToolkitFactory.Shutdown();
+            mediaToolkit.Shutdown();
+
+
+            //deviceDiscovery.Disable();
+            //deviceDiscovery.Dispose();
+
+
+            //MediaToolkitFactory.Shutdown();
 
             logger.Info("========== THE END ============");
         }

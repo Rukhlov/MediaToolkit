@@ -198,6 +198,8 @@ namespace MediaToolkit.SharedTypes
 
     public class DeckLinkDeviceDescription
     {
+        public string DeviceHandle { get; set; } = "";
+
         public int DeviceIndex { get; set; } = -1;
         public string DeviceName { get; set; } = "";
         public bool Available { get; set; } = false;
