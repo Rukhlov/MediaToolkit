@@ -114,7 +114,7 @@ namespace MediaToolkit.MediaFoundation
                     deviceManager = service.GetService<Direct3DDeviceManager>(MediaServiceKeys.VideoAcceleration);
 
                     videoControl = service.GetService<VideoDisplayControl>(MediaServiceKeysEx.RenderService);
-
+                    
                     //var renderingPrefs = VideoRenderPrefs.DoNotClipToDevice;// | VideoRenderPrefs.DoNotRenderBorder;
                     //videoControl.RenderingPrefs = (int)renderingPrefs;
                     //videoControl.BorderColor = 0xFFFFFF;//0x008000;
@@ -266,18 +266,23 @@ namespace MediaToolkit.MediaFoundation
                         videoSample.SampleDuration = 0;
                         videoSample.SampleTime = 0;
 
-                        //using (var mb = videoSample.ConvertToContiguousBuffer())
-                        //{
-                        //    if(videoBuffer.Length< mb.MaxLength)
-                        //    {
-                        //        videoBuffer = new byte[mb.MaxLength];
-                        //    }
-                        //}
-                    }
+    
+
+                    }   
+
+                    //using (var mb = videoSample.ConvertToContiguousBuffer())
+                    //{
+                    //    if(videoBuffer.Length< mb.MaxLength)
+                    //    {
+                    //        videoBuffer = new byte[mb.MaxLength];
+                    //    }
+                    //}
+
                 }
             }
 
         }
+
 
 
         Stopwatch sw = new Stopwatch();
@@ -685,6 +690,75 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
+        public System.Drawing.Bitmap GetCurrentImage()
+        {
+            logger.Debug("MfVideoRenderer::GetCurrentImage()");
+
+            System.Drawing.Bitmap bmp = null;
+            EVR.IMFVideoDisplayControl control = null;
+            try
+            {
+                control = (EVR.IMFVideoDisplayControl)Marshal.GetTypedObjectForIUnknown(videoControl.NativePointer, typeof(EVR.IMFVideoDisplayControl));
+
+                var bih = new NativeAPIs.BITMAPINFOHEADER
+                {
+                    biSize = (uint)Marshal.SizeOf(typeof(NativeAPIs.BITMAPINFOHEADER)),
+                };
+
+                IntPtr pBih = IntPtr.Zero;
+                try
+                {
+                    pBih = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(NativeAPIs.BITMAPINFOHEADER)));
+
+                    Marshal.StructureToPtr(bih, pBih, true);
+                    var res = control.GetCurrentImage(pBih, out IntPtr pDib, out int pcbDib, out long time);
+                    //var res = videoControl.TryGetCurrentImage(pBih, out IntPtr pDib, out int pcbDib, out long time);
+                    if (res == NativeAPIs.HResult.S_OK)
+                    {
+                        bih = (NativeAPIs.BITMAPINFOHEADER)Marshal.PtrToStructure(pBih, typeof(NativeAPIs.BITMAPINFOHEADER));
+                        if (pcbDib > 0)
+                        {
+                            bmp = new System.Drawing.Bitmap(bih.biWidth, bih.biHeight);
+                            var data = bmp.LockBits(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height),
+                                System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+
+                            NativeAPIs.Kernel32.CopyMemory(data.Scan0, pDib, (uint)pcbDib);
+                            bmp.UnlockBits(data);
+
+                            bmp.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
+                        }
+                    }
+
+                    if (pDib != IntPtr.Zero)
+                    {
+                        Marshal.FreeHGlobal(pDib);
+                        pDib = IntPtr.Zero;
+                    }
+
+                }
+                finally
+                {
+                    if (pBih != null)
+                    {
+                        Marshal.FreeHGlobal(pBih);
+                        pBih = IntPtr.Zero;
+                    }
+
+                }
+            }
+            finally
+            {
+                if (control != null)
+                {
+                    Marshal.ReleaseComObject(control);
+                    control = null;
+                }
+            }
+
+
+            return bmp;
+        }
+
         private void OnFormatChanged()
         {
             logger.Debug("MfVideoRenderer::OnFormatChanged()");
@@ -815,7 +889,6 @@ namespace MediaToolkit.MediaFoundation
                 videoSampleAllocator = null;
             }
         }
-
 
 
         private void TryGetVideoCaps()

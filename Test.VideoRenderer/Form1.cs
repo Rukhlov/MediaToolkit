@@ -130,7 +130,7 @@ namespace Test.VideoRenderer
             int fps = 60;
             int interval = (int)(1000.0 / fps);
 
-            int _count = 100000;
+            int _count = 1;
        
 
             producerTask = Task.Run(() =>
@@ -148,7 +148,7 @@ namespace Test.VideoRenderer
                     sample.AddBuffer(mb);
                 }
 
-                while (true) //_count-- > 0)
+                while (true)
                 {
                     if (closing)
                     {
@@ -565,6 +565,18 @@ namespace Test.VideoRenderer
         private void buttonClearBitmap_Click(object sender, EventArgs e)
         {
             videoRenderer?.SetBitmap(null);
+        }
+
+        private void buttonGetBitmap_Click(object sender, EventArgs e)
+        {
+            var bmp = videoRenderer?.GetCurrentImage();
+
+            if (bmp != null)
+            {
+                //bmp.Save("d:\\test1.bmp");
+                bmp.Dispose();
+
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediaToolkit.NativeAPIs.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -8,6 +9,127 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF.EVR
 {
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity, 
+        Guid("A490B1E4-AB84-4D31-A1B2-181E03B1077A"),
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IMFVideoDisplayControl
+    {
+        [PreserveSig]
+        HResult GetNativeVideoSize(
+            [Out] SIZE pszVideo,
+            [Out] SIZE pszARVideo
+            );
+
+        [PreserveSig]
+        HResult GetIdealVideoSize(
+            [Out] SIZE pszMin,
+            [Out] SIZE pszMax
+            );
+
+        [PreserveSig]
+        HResult SetVideoPosition(
+            [In] MFVideoNormalizedRect pnrcSource,
+            [In] RECT prcDest
+            );
+
+        [PreserveSig]
+        HResult GetVideoPosition(
+            [Out] MFVideoNormalizedRect pnrcSource,
+            [Out] RECT prcDest
+            );
+
+        [PreserveSig]
+        HResult SetAspectRatioMode(
+            [In] MFVideoAspectRatioMode dwAspectRatioMode
+            );
+
+        [PreserveSig]
+        HResult GetAspectRatioMode(
+            out MFVideoAspectRatioMode pdwAspectRatioMode
+            );
+
+        [PreserveSig]
+        HResult SetVideoWindow(
+            [In] IntPtr hwndVideo
+            );
+
+        [PreserveSig]
+        HResult GetVideoWindow(
+            out IntPtr phwndVideo
+            );
+
+        [PreserveSig]
+        HResult RepaintVideo();
+
+        [PreserveSig]
+        HResult GetCurrentImage(
+            [In, Out] IntPtr pBih,
+            out IntPtr pDib,
+            out int pcbDib,
+            out long pTimeStamp
+            );
+
+        [PreserveSig]
+        HResult SetBorderColor(
+            [In] int Clr
+            );
+
+        [PreserveSig]
+        HResult GetBorderColor(
+            out int pClr
+            );
+
+        [PreserveSig]
+        HResult SetRenderingPrefs(
+            [In] MFVideoRenderPrefs dwRenderFlags
+            );
+
+        [PreserveSig]
+        HResult GetRenderingPrefs(
+            out MFVideoRenderPrefs pdwRenderFlags
+            );
+
+        [PreserveSig]
+        HResult SetFullscreen(
+            [In, MarshalAs(UnmanagedType.Bool)] bool fFullscreen
+            );
+
+        [PreserveSig]
+        HResult GetFullscreen(
+            [MarshalAs(UnmanagedType.Bool)] out bool pfFullscreen
+            );
+    }
+
+
+    [Flags]
+    public enum MFVideoRenderPrefs
+    {
+        None = 0,
+        DoNotRenderBorder = 0x00000001,
+        DoNotClipToDevice = 0x00000002,
+        AllowOutputThrottling = 0x00000004,
+        ForceOutputThrottling = 0x00000008,
+        ForceBatching = 0x00000010,
+        AllowBatching = 0x00000020,
+        ForceScaling = 0x00000040,
+        AllowScaling = 0x00000080,
+        DoNotRepaintOnStop = 0x00000100,
+        Mask = 0x000001ff,
+    }
+
+
+    [Flags]
+    public enum MFVideoAspectRatioMode
+    {
+        None = 0x00000000,
+        PreservePicture = 0x00000001,
+        PreservePixel = 0x00000002,
+        NonLinearStretch = 0x00000004,
+        Mask = 0x00000007
+    }
+
+
 
     [ComImport, SuppressUnmanagedCodeSecurity,
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
@@ -252,5 +374,6 @@ namespace MediaToolkit.NativeAPIs.MF.EVR
         public int Hue;
         public int Saturation;
     }
+
 
 }
