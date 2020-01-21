@@ -616,6 +616,19 @@ namespace MediaToolkit.NativeAPIs
         public int y;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SIZE
+    {
+        public int cx;
+        public int cy;
+
+        public SIZE(int cx, int cy)
+        {
+            this.cx = cx;
+            this.cy = cy;
+        }
+    }
+
     [Serializable, StructLayout(LayoutKind.Sequential)]
     public struct RECT
     {

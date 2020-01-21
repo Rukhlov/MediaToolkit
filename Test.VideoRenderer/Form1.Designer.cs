@@ -42,6 +42,7 @@
             this.trackBarVolume = new System.Windows.Forms.TrackBar();
             this.buttonSetBitmap = new System.Windows.Forms.Button();
             this.buttonClearBitmap = new System.Windows.Forms.Button();
+            this.buttonGetBitmap = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBarVolume)).BeginInit();
             this.SuspendLayout();
             // 
@@ -199,11 +200,23 @@
             this.buttonClearBitmap.UseVisualStyleBackColor = true;
             this.buttonClearBitmap.Click += new System.EventHandler(this.buttonClearBitmap_Click);
             // 
+            // buttonGetBitmap
+            // 
+            this.buttonGetBitmap.Location = new System.Drawing.Point(650, 154);
+            this.buttonGetBitmap.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.buttonGetBitmap.Name = "buttonGetBitmap";
+            this.buttonGetBitmap.Size = new System.Drawing.Size(101, 30);
+            this.buttonGetBitmap.TabIndex = 14;
+            this.buttonGetBitmap.Text = "GetBitmap";
+            this.buttonGetBitmap.UseVisualStyleBackColor = true;
+            this.buttonGetBitmap.Click += new System.EventHandler(this.buttonGetBitmap_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.buttonGetBitmap);
             this.Controls.Add(this.buttonClearBitmap);
             this.Controls.Add(this.buttonSetBitmap);
             this.Controls.Add(this.trackBarVolume);
@@ -243,6 +256,7 @@
         private System.Windows.Forms.TrackBar trackBarVolume;
         private System.Windows.Forms.Button buttonSetBitmap;
         private System.Windows.Forms.Button buttonClearBitmap;
+        private System.Windows.Forms.Button buttonGetBitmap;
     }
 }
 
