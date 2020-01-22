@@ -576,14 +576,22 @@ namespace Test.VideoRenderer
 
         private void buttonGetBitmap_Click(object sender, EventArgs e)
         {
-            var bmp = videoRenderer?.GetCurrentImage();
-
-            if (bmp != null)
+            try
             {
-                bmp.Save("d:\\test1.bmp");
-                bmp.Dispose();
+                var bmp = videoRenderer?.GetCurrentImage();
 
+                if (bmp != null)
+                {
+                    bmp.Save("d:\\test1.bmp");
+                    bmp.Dispose();
+
+                }
             }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
         }
     }
 }

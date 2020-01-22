@@ -271,14 +271,6 @@ namespace MediaToolkit.MediaFoundation
 
                     }   
 
-                    //using (var mb = videoSample.ConvertToContiguousBuffer())
-                    //{
-                    //    if(videoBuffer.Length< mb.MaxLength)
-                    //    {
-                    //        videoBuffer = new byte[mb.MaxLength];
-                    //    }
-                    //}
-
                 }
             }
 
@@ -798,21 +790,34 @@ namespace MediaToolkit.MediaFoundation
             lock (syncLock)
             {
 
+                //byte[] buffer = null;
+                //using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
+                //{
+                //    var data = dxBuffer.Lock(out int maxLen, out int curLen);
+
+                //    buffer = new byte[maxLen];
+                //    Marshal.Copy(data, buffer, 0, buffer.Length);
+
+                //    dxBuffer.Unlock();
+
+                //}
+
                 CloseSampleAllocator();
                 videoSample?.Dispose();
 
                 InitSampleAllocator();
 
-
-                //using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
+                //if (buffer != null && buffer.Length > 0)
                 //{
-                //    using (var buffer2D = dxBuffer.QueryInterface<Buffer2D>())
+                //    using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
                 //    {
-                //        buffer2D.ContiguousCopyFrom(videoBuffer, videoBuffer.Length);
+                //        using (var buffer2D = dxBuffer.QueryInterface<Buffer2D>())
+                //        {
+                //            buffer2D.ContiguousCopyFrom(buffer, buffer.Length);
+                //        }
                 //    }
+                //    streamSink.ProcessSample(videoSample);
                 //}
-
-                //streamSink.ProcessSample(videoSample);
 
             }
         }
