@@ -226,6 +226,8 @@ namespace MediaToolkit.MediaFoundation
 
                 InitSampleAllocator();
 
+
+                //TryGetVideoCaps();
                 rendererState = RendererState.Initialized;
 
             }
@@ -704,21 +706,44 @@ namespace MediaToolkit.MediaFoundation
                 };
 
                 IntPtr pBih = IntPtr.Zero;
+                IntPtr pDib = IntPtr.Zero;
                 try
                 {
                     pBih = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(NativeAPIs.BITMAPINFOHEADER)));
 
                     Marshal.StructureToPtr(bih, pBih, true);
-                    var res = control.GetCurrentImage(pBih, out IntPtr pDib, out int pcbDib, out long time);
+                    var res = control.GetCurrentImage(pBih, out pDib, out int pcbDib, out long time);
                     //var res = videoControl.TryGetCurrentImage(pBih, out IntPtr pDib, out int pcbDib, out long time);
                     if (res == NativeAPIs.HResult.S_OK)
                     {
                         bih = (NativeAPIs.BITMAPINFOHEADER)Marshal.PtrToStructure(pBih, typeof(NativeAPIs.BITMAPINFOHEADER));
                         if (pcbDib > 0)
                         {
-                            bmp = new System.Drawing.Bitmap(bih.biWidth, bih.biHeight);
+                            System.Drawing.Imaging.PixelFormat pixFmt = System.Drawing.Imaging.PixelFormat.Undefined;
+                            if(bih.biCompression == 0)
+                            {
+                                if(bih.biBitCount == 32)
+                                {
+                                    pixFmt = System.Drawing.Imaging.PixelFormat.Format32bppRgb;
+                                }
+                                else if (bih.biBitCount == 24)
+                                {
+                                    pixFmt = System.Drawing.Imaging.PixelFormat.Format24bppRgb;
+                                }
+                                else if (bih.biBitCount == 16)
+                                {
+                                    pixFmt = System.Drawing.Imaging.PixelFormat.Format16bppRgb555;
+                                }
+                            }
+
+                            if(pixFmt == System.Drawing.Imaging.PixelFormat.Undefined)
+                            {
+                                throw new FormatException("Unsupported bitmap format");
+                            }
+
+                            bmp = new System.Drawing.Bitmap(bih.biWidth, bih.biHeight, pixFmt);
                             var data = bmp.LockBits(new System.Drawing.Rectangle(0, 0, bmp.Width, bmp.Height),
-                                System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+                                System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
 
                             NativeAPIs.Kernel32.CopyMemory(data.Scan0, pDib, (uint)pcbDib);
                             bmp.UnlockBits(data);
@@ -726,16 +751,20 @@ namespace MediaToolkit.MediaFoundation
                             bmp.RotateFlip(System.Drawing.RotateFlipType.RotateNoneFlipY);
                         }
                     }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid operation: " + res);
+                    }
 
+                }
+                finally
+                {
                     if (pDib != IntPtr.Zero)
                     {
                         Marshal.FreeHGlobal(pDib);
                         pDib = IntPtr.Zero;
                     }
 
-                }
-                finally
-                {
                     if (pBih != null)
                     {
                         Marshal.FreeHGlobal(pBih);
@@ -890,7 +919,7 @@ namespace MediaToolkit.MediaFoundation
 
 
         private void TryGetVideoCaps()
-        {
+        {// не работает!
             IntPtr hDevice = IntPtr.Zero;
             try
             {

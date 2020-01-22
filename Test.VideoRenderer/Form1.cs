@@ -156,6 +156,12 @@ namespace Test.VideoRenderer
                     }
 
                     {
+                        if (paused)
+                        {
+                            Thread.Sleep(100);
+                            continue;
+                        }
+
                         //int index = _count % testBitmapSequence.Count;
                         var bytes = testBytes;// testBitmapSequence[index];
 
@@ -273,7 +279,7 @@ namespace Test.VideoRenderer
 
             }
         }
-
+        private bool paused = false;
         private void buttonPause_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonPause_Click(...)");
@@ -281,6 +287,7 @@ namespace Test.VideoRenderer
             if (videoRenderer != null)
             {
                 videoRenderer.Pause();
+                paused = !paused;
 
             }
         }
@@ -573,7 +580,7 @@ namespace Test.VideoRenderer
 
             if (bmp != null)
             {
-                //bmp.Save("d:\\test1.bmp");
+                bmp.Save("d:\\test1.bmp");
                 bmp.Dispose();
 
             }

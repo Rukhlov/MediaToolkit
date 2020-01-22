@@ -10,95 +10,58 @@ using System.Text;
 namespace MediaToolkit.NativeAPIs.MF.EVR
 {
 
-    [ComImport, System.Security.SuppressUnmanagedCodeSecurity, 
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         Guid("A490B1E4-AB84-4D31-A1B2-181E03B1077A"),
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IMFVideoDisplayControl
     {
         [PreserveSig]
-        HResult GetNativeVideoSize(
-            [Out] SIZE pszVideo,
-            [Out] SIZE pszARVideo
-            );
+        HResult GetNativeVideoSize([Out] SIZE pszVideo, [Out] SIZE pszARVideo);
 
         [PreserveSig]
-        HResult GetIdealVideoSize(
-            [Out] SIZE pszMin,
-            [Out] SIZE pszMax
-            );
+        HResult GetIdealVideoSize([Out] SIZE pszMin, [Out] SIZE pszMax);
 
         [PreserveSig]
-        HResult SetVideoPosition(
-            [In] MFVideoNormalizedRect pnrcSource,
-            [In] RECT prcDest
-            );
+        HResult SetVideoPosition([In] MFVideoNormalizedRect pnrcSource, [In] RECT prcDest);
 
         [PreserveSig]
-        HResult GetVideoPosition(
-            [Out] MFVideoNormalizedRect pnrcSource,
-            [Out] RECT prcDest
-            );
+        HResult GetVideoPosition([Out] MFVideoNormalizedRect pnrcSource, [Out] RECT prcDest);
 
         [PreserveSig]
-        HResult SetAspectRatioMode(
-            [In] MFVideoAspectRatioMode dwAspectRatioMode
-            );
+        HResult SetAspectRatioMode([In] MFVideoAspectRatioMode dwAspectRatioMode);
 
         [PreserveSig]
-        HResult GetAspectRatioMode(
-            out MFVideoAspectRatioMode pdwAspectRatioMode
-            );
+        HResult GetAspectRatioMode(out MFVideoAspectRatioMode pdwAspectRatioMode);
 
         [PreserveSig]
-        HResult SetVideoWindow(
-            [In] IntPtr hwndVideo
-            );
+        HResult SetVideoWindow([In] IntPtr hwndVideo);
 
         [PreserveSig]
-        HResult GetVideoWindow(
-            out IntPtr phwndVideo
-            );
+        HResult GetVideoWindow(out IntPtr phwndVideo);
 
         [PreserveSig]
         HResult RepaintVideo();
 
         [PreserveSig]
-        HResult GetCurrentImage(
-            [In, Out] IntPtr pBih,
-            out IntPtr pDib,
-            out int pcbDib,
-            out long pTimeStamp
-            );
+        HResult GetCurrentImage([In, Out] IntPtr pBih, out IntPtr pDib, out int pcbDib, out long pTimeStamp);
 
         [PreserveSig]
-        HResult SetBorderColor(
-            [In] int Clr
-            );
+        HResult SetBorderColor([In] int Clr);
 
         [PreserveSig]
-        HResult GetBorderColor(
-            out int pClr
-            );
+        HResult GetBorderColor(out int pClr);
 
         [PreserveSig]
-        HResult SetRenderingPrefs(
-            [In] MFVideoRenderPrefs dwRenderFlags
-            );
+        HResult SetRenderingPrefs([In] MFVideoRenderPrefs dwRenderFlags);
 
         [PreserveSig]
-        HResult GetRenderingPrefs(
-            out MFVideoRenderPrefs pdwRenderFlags
-            );
+        HResult GetRenderingPrefs(out MFVideoRenderPrefs pdwRenderFlags);
 
         [PreserveSig]
-        HResult SetFullscreen(
-            [In, MarshalAs(UnmanagedType.Bool)] bool fFullscreen
-            );
+        HResult SetFullscreen([In, MarshalAs(UnmanagedType.Bool)] bool fFullscreen);
 
         [PreserveSig]
-        HResult GetFullscreen(
-            [MarshalAs(UnmanagedType.Bool)] out bool pfFullscreen
-            );
+        HResult GetFullscreen([MarshalAs(UnmanagedType.Bool)] out bool pfFullscreen);
     }
 
 
