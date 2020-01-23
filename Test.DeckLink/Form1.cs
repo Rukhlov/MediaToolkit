@@ -561,6 +561,68 @@ namespace Test.DeckLink
             }
            
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+
+            try
+            {
+                var devices = deviceManager.GetInputsFromMTA();
+                foreach (var d in devices)
+                {
+                    logger.Info(d.ToString());
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+
+            //Task.Run(() =>
+            //{
+            //    var devices = deviceManager.GetInputs();
+
+            //    foreach (var d in devices)
+            //    {
+            //        logger.Info(d.ToString());
+            //    }
+            //});
+
+            //var t = new Thread(() =>
+            //{
+
+            //    var devices = deviceManager.GetInputs();
+
+            //    foreach (var d in devices)
+            //    {
+            //        logger.Info(d.ToString());
+            //    }
+            //});
+            //t.IsBackground = true;
+            //t.SetApartmentState(ApartmentState.MTA);
+
+            //t.Start();
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var devices = deviceManager.FindInputs();
+                foreach (var d in devices)
+                {
+                    logger.Info(d.ToString());
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
     }
 
 

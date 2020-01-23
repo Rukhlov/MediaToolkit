@@ -3,6 +3,7 @@ using MediaToolkit.SharedTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -21,10 +22,14 @@ namespace MediaToolkit.DeckLink
         public event Action<DeckLinkDeviceDescription> InputDeviceArrived;
         public event Action<DeckLinkDeviceDescription> InputDeviceRemoved;
 
+        private List<DeckLinkInput> inputDevices = new List<DeckLinkInput>();
+
         public bool StartUp()
         {
             if (Started)
             {
+                Debug.Assert(deckLinkDiscovery != null, "deckLinkDiscovery!=null");
+
                 return Started;
             }
 
@@ -58,8 +63,23 @@ namespace MediaToolkit.DeckLink
             {
                 deckLinkDiscovery.UninstallDeviceNotifications();
 
-                Marshal.ReleaseComObject(deckLinkDiscovery);
+                var refCount = Marshal.ReleaseComObject(deckLinkDiscovery);
+
+                Debug.Assert(refCount == 0, "refCount == 0");
                 deckLinkDiscovery = null;
+            }
+
+            if (inputDevices.Count > 0)
+            {
+                for (int i = 0; i < inputDevices.Count; i++)
+                {
+                    var inputDevice = inputDevices[i];
+                    if (inputDevice != null)
+                    {
+                        inputDevice.Dispose();
+                        inputDevice = null;
+                    }
+                }
             }
         }
 
@@ -68,52 +88,117 @@ namespace MediaToolkit.DeckLink
         {
             logger.Trace("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceArrived()");
 
-            try
+            DeckLinkDeviceDescription deviceDescr = null;
+            var inputDevice = new DeckLinkInput(device);
+            if (inputDevice.Init())
             {
-                var deviceDescr = GetInputDeviceDescription(device);
-                if (deviceDescr != null)
+                deviceDescr = inputDevice.GetDeviceDescription();
+                inputDevices.Add(inputDevice);
+
+                InputDeviceArrived?.Invoke(deviceDescr);
+            }
+
+            if(deviceDescr == null)
+            {//  нас интересуют только decklink input
+                if (inputDevice != null)
                 {
-                    InputDeviceArrived?.Invoke(deviceDescr);
+                    inputDevice.Dispose();
+                    inputDevice = null;
                 }
 
-            }
-            finally
-            {
                 if (device != null)
                 {
                     Marshal.ReleaseComObject(device);
                     device = null;
                 }
             }
+
         }
 
 
 
         void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(IDeckLink device)
-        {
+        {// Удаление не проверялось т.к не было в наличии устройств поддерживающий динамическое отключение
             logger.Trace("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceRemoved()");
 
             try
-            {
-                var deviceDescr = GetInputDeviceDescription(device);
+            { 
+                var inputDevice =  inputDevices.FirstOrDefault(d => d.deckLink == device);
+
+                DeckLinkDeviceDescription deviceDescr = inputDevice?.GetDeviceDescription();
                 if (deviceDescr != null)
                 {
+                    bool removed = inputDevices.Remove(inputDevice);
+                    Debug.Assert(removed, "result");
+
                     InputDeviceRemoved?.Invoke(deviceDescr);
                 }
 
+                if (inputDevice != null)
+                {
+                    inputDevice.Dispose();
+                    inputDevice = null;
+                }
             }
             finally
             {
-                if(device != null)
+                if (device != null)
                 {
-                    Marshal.ReleaseComObject(device);
+                    var refCount = Marshal.ReleaseComObject(device);
+                    Debug.Assert(refCount == 0, "refCount == 0");
+
                     device = null;
                 }
 
             }
         }
 
-        public List<DeckLinkDeviceDescription> GetDeckLinkInputs()
+        public List<DeckLinkDeviceDescription> GetInputsFromMTA()
+        {
+            logger.Debug("DeckLinkDeviceManager::GetInputsFromMTA()");
+
+            //IDeckLink требует MTA поэтому вызываем его из потока
+            return GetInputsAsync().Result;
+
+        }
+
+
+
+        public async Task<List<DeckLinkDeviceDescription>> GetInputsAsync()
+        {
+            logger.Debug("DeckLinkDeviceManager::GetDeckLinkInputsAsync()");
+
+            return await Task.Factory.StartNew(() =>
+            {
+                List<DeckLinkDeviceDescription> deviceDescriptions = GetInputs();
+
+                return deviceDescriptions;
+
+            }).ConfigureAwait(false);
+
+        }
+
+        public List<DeckLinkDeviceDescription> GetInputs()
+        {
+            List<DeckLinkDeviceDescription> deviceDescriptions = new List<DeckLinkDeviceDescription>();
+
+            for (int index = 0; index < inputDevices.Count; index++)
+            {
+                var inputDevice = inputDevices[index];
+
+                DeckLinkDeviceDescription deviceDescription = inputDevice.GetDeviceDescription();
+                if (deviceDescription != null)
+                {
+                    deviceDescription.DeviceIndex = index;
+
+                    deviceDescriptions.Add(deviceDescription);
+                }
+            }
+
+            return deviceDescriptions;
+        }
+
+        public List<DeckLinkDeviceDescription> FindInputs()
         {
             logger.Debug("DeckLinkDeviceManager::GetDeckLinkInputs()");
 
@@ -141,14 +226,25 @@ namespace MediaToolkit.DeckLink
                         break;
                     }
 
-                    DeckLinkDeviceDescription deviceDescription = GetInputDeviceDescription(deckLink);
-                    if (deviceDescription != null)
+                    var inputDevice = new DeckLinkInput(deckLink);
+                    if (inputDevice.Init())
                     {
-                        deviceDescription.DeviceIndex = index;
+                        DeckLinkDeviceDescription deviceDescription = inputDevice.GetDeviceDescription();
+                        if (deviceDescription != null)
+                        {
+                            deviceDescription.DeviceIndex = index;
 
-                        devices.Add(deviceDescription);
-                        index++;
+                            devices.Add(deviceDescription);
+                            index++;
+                        }
                     }
+
+                    if (inputDevice != null)
+                    {
+                        inputDevice.Dispose();
+                        inputDevice = null;
+                    }
+
                 }
                 while (deckLink != null);
 
@@ -157,27 +253,58 @@ namespace MediaToolkit.DeckLink
             {
                 logger.Error(ex);
             }
+            finally
+            {
+                if (deckLinkIterator != null)
+                {
+                    Marshal.ReleaseComObject(deckLinkIterator);
+                    deckLinkIterator = null;
+                }
+            }
 
             return devices;
         }
 
-        private static DeckLinkDeviceDescription GetInputDeviceDescription(IDeckLink deckLink)
+        class DeckLinkInput
         {
+            internal IDeckLink deckLink = null;
+            internal IDeckLinkInput deckLinkInput = null;
+            internal IDeckLinkStatus deckLinkStatus = null;
+            internal IDeckLinkProfileAttributes deckLinkAttrs = null;
 
-            if (deckLink == null)
+            internal DeckLinkInput(IDeckLink _deckLink)
             {
-                return null;
+                deckLink = _deckLink;
+            }
+            private bool initialized = false;
+            internal bool Init()
+            {
+
+                try
+                {
+                    deckLinkInput = (IDeckLinkInput)deckLink;
+                    deckLinkStatus = (IDeckLinkStatus)deckLink;
+                    deckLinkAttrs = (IDeckLinkProfileAttributes)deckLink;
+                    initialized = true;
+                }
+                catch (InvalidCastException)
+                {
+                    //logger.Warn("");
+                }
+
+                return initialized;
             }
 
-            DeckLinkDeviceDescription deviceDescription = null;
-
-            try
+            internal DeckLinkDeviceDescription GetDeviceDescription()
             {
-                deckLink.GetDisplayName(out string deviceName);
+                if (!initialized)
+                {
+                    return null;
+                }
 
-                var deckLinkInput = (IDeckLinkInput)deckLink;
-                var deckLinkStatus = (IDeckLinkStatus)deckLink;
-                var deckLinkAttrs = (IDeckLinkProfileAttributes)deckLink;
+                DeckLinkDeviceDescription deviceDescription = null;
+
+                deckLink.GetDisplayName(out string deviceName);
 
                 deckLinkAttrs.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string deviceHandle);
 
@@ -229,16 +356,27 @@ namespace MediaToolkit.DeckLink
                     DisplayModeIds = new List<DeckLinkDisplayModeDescription> { displayDescription },
                 };
 
+                return deviceDescription;
             }
-            catch (InvalidCastException)
+
+            internal void Dispose()
             {
+                if (deckLink != null)
+                {
+                    var refCount = Marshal.ReleaseComObject(deckLink);
+                    Debug.Assert(refCount == 0, "refCount == 0");
 
+                    deckLink = null;
+
+                    deckLinkStatus = null;
+                    deckLinkInput = null;
+                    deckLinkAttrs = null;
+
+                    initialized = false;
+
+                }
             }
-
-
-            return deviceDescription;
         }
-
 
     }
 

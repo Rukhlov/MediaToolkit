@@ -37,6 +37,8 @@
             this.devicesPanel = new System.Windows.Forms.Panel();
             this.buttonDiscoveryStart = new System.Windows.Forms.Button();
             this.buttonDiscoveryStop = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
             this.devicesPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -115,7 +117,7 @@
             // 
             // buttonDiscoveryStart
             // 
-            this.buttonDiscoveryStart.Location = new System.Drawing.Point(273, 163);
+            this.buttonDiscoveryStart.Location = new System.Drawing.Point(228, 148);
             this.buttonDiscoveryStart.Name = "buttonDiscoveryStart";
             this.buttonDiscoveryStart.Size = new System.Drawing.Size(75, 23);
             this.buttonDiscoveryStart.TabIndex = 11;
@@ -125,7 +127,7 @@
             // 
             // buttonDiscoveryStop
             // 
-            this.buttonDiscoveryStop.Location = new System.Drawing.Point(354, 163);
+            this.buttonDiscoveryStop.Location = new System.Drawing.Point(390, 150);
             this.buttonDiscoveryStop.Name = "buttonDiscoveryStop";
             this.buttonDiscoveryStop.Size = new System.Drawing.Size(75, 23);
             this.buttonDiscoveryStop.TabIndex = 12;
@@ -133,11 +135,33 @@
             this.buttonDiscoveryStop.UseVisualStyleBackColor = true;
             this.buttonDiscoveryStop.Click += new System.EventHandler(this.buttonDiscoveryStop_Click);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(309, 150);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "Get";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(344, 109);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(97, 23);
+            this.button2.TabIndex = 14;
+            this.button2.Text = "FindInputs";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(481, 198);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.buttonDiscoveryStop);
             this.Controls.Add(this.buttonDiscoveryStart);
             this.Controls.Add(this.devicesPanel);
@@ -164,6 +188,8 @@
         private System.Windows.Forms.Panel devicesPanel;
         private System.Windows.Forms.Button buttonDiscoveryStart;
         private System.Windows.Forms.Button buttonDiscoveryStop;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
     }
 }
 
