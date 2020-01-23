@@ -162,8 +162,8 @@ namespace MediaToolkit.DeckLink
             {// 
                 fmt = _BMDPixelFormat.bmdFormat8BitBGRA;
             }
-            else if (fmt == _BMDPixelFormat.bmdFormat10BitYUV || 
-                fmt == _BMDPixelFormat.bmdFormat8BitYUV ||  
+            else if (fmt == _BMDPixelFormat.bmdFormat10BitYUV ||
+                fmt == _BMDPixelFormat.bmdFormat8BitYUV ||
                 fmt == _BMDPixelFormat.bmdFormatUnspecified)
             {
                 fmt = _BMDPixelFormat.bmdFormat8BitYUV;
@@ -402,8 +402,6 @@ namespace MediaToolkit.DeckLink
         }
     }
 
-
-
     class SimpleMemoryAllocator : IDeckLinkMemoryAllocator
     {
         private const int S_OK = 0;
@@ -424,7 +422,7 @@ namespace MediaToolkit.DeckLink
         public int AllocateBuffer(uint size, out IntPtr buffer)
         {// По умолчанию decklink создает буфер на 64 кадра (>500МБ) 
          // соответственно что бы ограничить потребление памяти,
-            // говорим, что места есть только на 8 кадров
+         // говорим, что места есть только на 8 кадров
             buffer = IntPtr.Zero;
             int hResult = S_OK;
             lock (syncRoot)
@@ -511,7 +509,7 @@ namespace MediaToolkit.DeckLink
         {
             //logger.Trace("MemoryAllocator::AllocateBuffer(...) " + size +" " + Thread.CurrentThread.ManagedThreadId);
 
-            
+
             if (bufferSize != size)
             {
                 if (bufferSize > 0)
@@ -526,7 +524,7 @@ namespace MediaToolkit.DeckLink
 
             buffer = IntPtr.Zero;
             lock (syncRoot)
-            {           
+            {
                 if (bufferQueue.Count > 0)
                 {
                     buffer = bufferQueue.Dequeue();
@@ -543,7 +541,7 @@ namespace MediaToolkit.DeckLink
                     {
                         buffer = Marshal.AllocHGlobal((int)size);
                         allocatedBuffersCount++;
-                        logger.Trace("MemoryAllocator::AllocateBuffer " + buffer + " " + size  + " "+ allocateBufferRequest);
+                        logger.Trace("MemoryAllocator::AllocateBuffer " + buffer + " " + size + " " + allocateBufferRequest);
                     }
                     //else
                     //{
@@ -557,7 +555,7 @@ namespace MediaToolkit.DeckLink
                 }
                 else
                 {
-                   // Console.WriteLine("E_OUTOFMEMORY " + allocateBufferRequest);
+                    // Console.WriteLine("E_OUTOFMEMORY " + allocateBufferRequest);
                     return E_OUTOFMEMORY;
                 }
 
@@ -569,7 +567,7 @@ namespace MediaToolkit.DeckLink
 
         public int ReleaseBuffer(IntPtr buffer)
         {
-           //logger.Trace("MemoryAllocator::ReleaseBuffer(...) " + buffer + " " + Thread.CurrentThread.ManagedThreadId);
+            //logger.Trace("MemoryAllocator::ReleaseBuffer(...) " + buffer + " " + Thread.CurrentThread.ManagedThreadId);
 
             lock (syncRoot)
             {
@@ -754,87 +752,6 @@ namespace MediaToolkit.DeckLink
                 {
                     logger.Warn("Possible memory leak: " + bufferCount + "!=" + allocatedBuffersCount);
                 }
-            }
-
-        }
-    }
-
-
-
-    public class DeckLinkDeviceDiscovery : IDeckLinkDeviceNotificationCallback
-    {
-        private IDeckLinkDiscovery deckLinkDiscovery;
-
-        public DeckLinkDeviceDiscovery()
-        {
-            deckLinkDiscovery = new CDeckLinkDiscovery();
-        }
-
-        public void Enable()
-        {
-            Console.WriteLine("DeckLinkDeviceDiscovery::Enable()");
-
-            deckLinkDiscovery.InstallDeviceNotifications(this);
-        }
-
-        public void Disable()
-        {
-            Console.WriteLine("DeckLinkDeviceDiscovery::Disable()");
-
-            deckLinkDiscovery.UninstallDeviceNotifications();
-        }
-
-        public void Dispose()
-        {
-            Console.WriteLine("DeckLinkDeviceDiscovery::Dispose()");
-
-            if (Marshal.IsComObject(deckLinkDiscovery))
-            {
-                Marshal.ReleaseComObject(deckLinkDiscovery);
-            }
-        }
-
-        void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceArrived(IDeckLink deckLink)
-        {
-            Console.WriteLine(" IDeckLinkDeviceNotificationCallback.DeckLinkDeviceArrived(...)");
-
-            try
-            {
-                var attr = (IDeckLinkProfileAttributes)deckLink;
-                attr.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle,  out string deviceHandle);
-
-
-               // DeckLinkDeviceDescription device = new DeckLinkDeviceDescription();
-
-                deckLink.GetDisplayName(out string deviceName);
-                Console.WriteLine("Device Arrived: " + deviceName + " " + deviceHandle);
-            }
-            finally
-            {
-                if (deckLink != null)
-                {
-                    Marshal.ReleaseComObject(deckLink);
-                }
-            }
-        }
-
-        void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(IDeckLink deckLink)
-        {
-            Console.WriteLine(" IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(...)");
-            try
-            {
-                DeckLinkDeviceDescription device = new DeckLinkDeviceDescription();
-
-                deckLink.GetDisplayName(out string deviceName);
-                Console.WriteLine("Device Removed: " + deviceName);
-            }
-            finally
-            {
-                if (deckLink != null)
-                {
-                    Marshal.ReleaseComObject(deckLink);
-                }
-
             }
 
         }

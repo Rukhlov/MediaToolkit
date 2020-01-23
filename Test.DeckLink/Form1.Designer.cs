@@ -35,6 +35,8 @@
             this.fitToVideoCheckBox = new System.Windows.Forms.CheckBox();
             this.comboBoxDisplayModes = new System.Windows.Forms.ComboBox();
             this.devicesPanel = new System.Windows.Forms.Panel();
+            this.buttonDiscoveryStart = new System.Windows.Forms.Button();
+            this.buttonDiscoveryStop = new System.Windows.Forms.Button();
             this.devicesPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -111,11 +113,33 @@
             this.devicesPanel.Size = new System.Drawing.Size(411, 75);
             this.devicesPanel.TabIndex = 10;
             // 
+            // buttonDiscoveryStart
+            // 
+            this.buttonDiscoveryStart.Location = new System.Drawing.Point(273, 163);
+            this.buttonDiscoveryStart.Name = "buttonDiscoveryStart";
+            this.buttonDiscoveryStart.Size = new System.Drawing.Size(75, 23);
+            this.buttonDiscoveryStart.TabIndex = 11;
+            this.buttonDiscoveryStart.Text = "Start";
+            this.buttonDiscoveryStart.UseVisualStyleBackColor = true;
+            this.buttonDiscoveryStart.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // buttonDiscoveryStop
+            // 
+            this.buttonDiscoveryStop.Location = new System.Drawing.Point(354, 163);
+            this.buttonDiscoveryStop.Name = "buttonDiscoveryStop";
+            this.buttonDiscoveryStop.Size = new System.Drawing.Size(75, 23);
+            this.buttonDiscoveryStop.TabIndex = 12;
+            this.buttonDiscoveryStop.Text = "Stop";
+            this.buttonDiscoveryStop.UseVisualStyleBackColor = true;
+            this.buttonDiscoveryStop.Click += new System.EventHandler(this.buttonDiscoveryStop_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(481, 198);
+            this.Controls.Add(this.buttonDiscoveryStop);
+            this.Controls.Add(this.buttonDiscoveryStart);
             this.Controls.Add(this.devicesPanel);
             this.Controls.Add(this.fitToVideoCheckBox);
             this.Controls.Add(this.buttonStop);
@@ -138,6 +162,8 @@
         private System.Windows.Forms.CheckBox fitToVideoCheckBox;
         private System.Windows.Forms.ComboBox comboBoxDisplayModes;
         private System.Windows.Forms.Panel devicesPanel;
+        private System.Windows.Forms.Button buttonDiscoveryStart;
+        private System.Windows.Forms.Button buttonDiscoveryStop;
     }
 }
 

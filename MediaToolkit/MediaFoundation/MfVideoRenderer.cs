@@ -1,4 +1,5 @@
-﻿using MediaToolkit.SharedTypes;
+﻿using MediaToolkit.NativeAPIs.Utils;
+using MediaToolkit.SharedTypes;
 using NLog;
 using SharpDX;
 using SharpDX.Mathematics.Interop;

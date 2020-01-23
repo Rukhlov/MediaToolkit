@@ -8,6 +8,8 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.Ole
 {
+
+
     [StructLayout(LayoutKind.Explicit)]
     public class ConstPropVariant : IDisposable
     {
@@ -1013,5 +1015,8 @@ namespace MediaToolkit.NativeAPIs.Ole
 
         #endregion
     }
+
+
+
 
 }

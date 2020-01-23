@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeckLinkCommon.cs" />
+    <Compile Include="DeckLinkDeviceManager.cs" />
     <Compile Include="DeckLinkInput.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

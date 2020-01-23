@@ -10,6 +10,23 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.Utils
 {
+    public class ComBase
+    {
+        public static void SafeRelease(object comObj)
+        {
+            if (comObj == null)
+            {
+                return;
+            }
+
+            if (Marshal.IsComObject(comObj))
+            {
+                int refCount = Marshal.ReleaseComObject(comObj);
+                comObj = null;
+            }
+        }
+
+    }
 
     class PVMarshaler : ICustomMarshaler
     {

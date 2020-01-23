@@ -769,22 +769,6 @@ namespace MediaToolkit.MediaFoundation
         }
     }
 
-    public class ComBase
-    {
-        public static void SafeRelease(object comObj)
-        {
-            if (comObj != null)
-            {
-                if (Marshal.IsComObject(comObj))
-                {
-                    int refCount = Marshal.ReleaseComObject(comObj);
-                    comObj = null;
-                }
-            }
-        }
-    }
-
-
     /// <summary>
     /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder

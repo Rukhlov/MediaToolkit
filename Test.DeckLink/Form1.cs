@@ -478,6 +478,89 @@ namespace Test.DeckLink
             videoForm.UpdateWindow(fitToVideoMode, videoSize);
         }
 
+        private static DeckLinkDeviceManager deviceManager = null;
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+            if(deviceManager == null)
+            {
+                deviceManager = new DeckLinkDeviceManager();
+
+                deviceManager.InputDeviceArrived += DeviceManager_DeviceArrived;
+                deviceManager.InputDeviceRemoved += DeviceManager_DeviceRemoved;
+
+                deviceManager.StartUp();
+
+            }
+
+
+            //var inputs = deviceManager.GetDeckLinkInputs();
+
+
+            // Task.Run(() =>
+            // {
+
+            //     while (true)
+            //    {
+            //        var inputs = deviceManager.GetDeckLinkInputs();
+
+            //       // var inputs = deviceManager.GetDeckLinkInputs();
+
+            //        logger.Debug(inputs.Count);
+
+            //        Thread.Sleep(2000);
+            //    }
+
+
+            //});
+
+        }
+
+
+        private void DeviceManager_DeviceArrived(DeckLinkDeviceDescription device)
+        {
+            //logger.Debug("DeviceManager_DeviceArrived()");
+
+            if (device != null)
+            {
+                var displayMode = device.DisplayModeIds.FirstOrDefault();
+
+                logger.Info("DeviceArrived: " + device.ToString() + " " + displayMode.ToString());
+            }
+
+
+        }
+
+
+        private void DeviceManager_DeviceRemoved(DeckLinkDeviceDescription device)
+        {
+            //logger.Debug("DeviceManager_DeviceRemoved() " + device?.ToString() ?? "");
+
+            if (device != null)
+            {
+                var displayMode = device.DisplayModeIds.FirstOrDefault();
+
+                logger.Info("DeviceRemoved: " + device.ToString() + " " + displayMode.ToString());
+            }
+
+
+        }
+
+
+
+        private void buttonDiscoveryStop_Click(object sender, EventArgs e)
+        {
+            if (deviceManager != null)
+            {
+                deviceManager.InputDeviceArrived -= DeviceManager_DeviceArrived;
+                deviceManager.InputDeviceRemoved -= DeviceManager_DeviceRemoved;
+
+                deviceManager.Shutdown();
+                deviceManager = null;
+            }
+           
+        }
     }
 
 

@@ -173,6 +173,12 @@ namespace MediaToolkit.SharedTypes
 
     }
 
+    public interface IDeckLinkDeviceManager
+    {
+
+        List<DeckLinkDeviceDescription> FindDevices();
+    }
+
     public interface IDeckLinkInputControl
     {
 
@@ -203,6 +209,7 @@ namespace MediaToolkit.SharedTypes
         public int DeviceIndex { get; set; } = -1;
         public string DeviceName { get; set; } = "";
         public bool Available { get; set; } = false;
+        public bool IsBusy { get; set; } = false;
 
         public List<DeckLinkDisplayModeDescription> DisplayModeIds { get; set; } = null;
 
@@ -223,6 +230,11 @@ namespace MediaToolkit.SharedTypes
 
         public string Description { get; set; } = "";
 
+
+        public override string ToString()
+        {
+            return Description + " (" + Width + "x" + Height + "_" + Fps.ToString("0.##") + ")";
+        }
 
     }
 
