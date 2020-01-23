@@ -243,9 +243,9 @@ namespace MediaToolkit.UI
 
         }
 
-        private void CurrentDevice_AudioDataArrived(byte[] data, double time)
+        private void CurrentDevice_AudioDataArrived(IntPtr data, int length, double time, double duration)//byte[] data, double time)
         {
-            renderSession?.ProcessAudioPacket(data, time);
+            renderSession?.ProcessAudioPacket(data, length, time, duration);
         }
 
 

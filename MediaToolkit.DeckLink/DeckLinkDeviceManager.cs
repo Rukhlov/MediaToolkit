@@ -24,8 +24,10 @@ namespace MediaToolkit.DeckLink
 
         private List<DeckLinkInput> inputDevices = new List<DeckLinkInput>();
 
-        public bool StartUp()
+        public bool Startup()
         {
+            logger.Debug("DeckLinkDeviceManager::Startup()");
+
             if (Started)
             {
                 Debug.Assert(deckLinkDiscovery != null, "deckLinkDiscovery!=null");
@@ -33,7 +35,6 @@ namespace MediaToolkit.DeckLink
                 return Started;
             }
 
-            logger.Debug("DeckLinkDeviceManager::StartUp()");
             try
             {
                 deckLinkDiscovery = new CDeckLinkDiscovery();
@@ -88,17 +89,17 @@ namespace MediaToolkit.DeckLink
         {
             logger.Trace("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceArrived()");
 
-            DeckLinkDeviceDescription deviceDescr = null;
+            DeckLinkDeviceDescription inputDescr = null;
             var inputDevice = new DeckLinkInput(device);
             if (inputDevice.Init())
             {
-                deviceDescr = inputDevice.GetDeviceDescription();
+                inputDescr = inputDevice.GetDeviceDescription();
                 inputDevices.Add(inputDevice);
 
-                InputDeviceArrived?.Invoke(deviceDescr);
+                InputDeviceArrived?.Invoke(inputDescr);
             }
 
-            if(deviceDescr == null)
+            if(inputDescr == null)
             {//  нас интересуют только decklink input
                 if (inputDevice != null)
                 {
@@ -125,13 +126,13 @@ namespace MediaToolkit.DeckLink
             { 
                 var inputDevice =  inputDevices.FirstOrDefault(d => d.deckLink == device);
 
-                DeckLinkDeviceDescription deviceDescr = inputDevice?.GetDeviceDescription();
-                if (deviceDescr != null)
+                DeckLinkDeviceDescription inputDescr = inputDevice?.GetDeviceDescription();
+                if (inputDescr != null)
                 {
                     bool removed = inputDevices.Remove(inputDevice);
-                    Debug.Assert(removed, "result");
+                    Debug.Assert(removed, "removed");
 
-                    InputDeviceRemoved?.Invoke(deviceDescr);
+                    InputDeviceRemoved?.Invoke(inputDescr);
                 }
 
                 if (inputDevice != null)
@@ -161,8 +162,6 @@ namespace MediaToolkit.DeckLink
             return GetInputsAsync().Result;
 
         }
-
-
 
         public async Task<List<DeckLinkDeviceDescription>> GetInputsAsync()
         {
@@ -318,6 +317,9 @@ namespace MediaToolkit.DeckLink
                 deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusCurrentVideoInputMode, out long bmdDeckLinkStatusCurrentVideoInputModeFlag);
                 _BMDDisplayMode displayModeId = (_BMDDisplayMode)bmdDeckLinkStatusCurrentVideoInputModeFlag;
 
+                deckLinkStatus.GetInt(_BMDDeckLinkStatusID.bmdDeckLinkStatusCurrentVideoInputPixelFormat, out long currentVideoInputPixelFormatFlag);
+                _BMDPixelFormat pixelFormat = (_BMDPixelFormat)currentVideoInputPixelFormatFlag;
+
                 DeckLinkDisplayModeDescription displayDescription = null;
                 IDeckLinkDisplayMode displayMode = null;
                 try
@@ -328,11 +330,12 @@ namespace MediaToolkit.DeckLink
                     int height = displayMode.GetHeight();
                     displayMode.GetFrameRate(out long duration, out long scale);
                     displayMode.GetName(out string displayName);
-
+                   
                     displayDescription = new DeckLinkDisplayModeDescription
                     {
                         Width = width,
                         Height = height,
+                        PixFmt = (long)pixelFormat,
                         Fps = ((double)scale / duration),
                         Description = displayName,
 

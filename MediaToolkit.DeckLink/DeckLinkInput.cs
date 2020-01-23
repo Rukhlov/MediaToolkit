@@ -75,7 +75,8 @@ namespace MediaToolkit.DeckLink
             CaptureChanged?.Invoke(formatChanged);
         }
 
-        public event Action<byte[], double> AudioDataArrived;
+        //public event Action<byte[], double> AudioDataArrived;
+        public event Action<IntPtr, int, double, double> AudioDataArrived;
         public event Action<IntPtr, int, double, double> VideoDataArrived;
 
 
@@ -230,8 +231,8 @@ namespace MediaToolkit.DeckLink
                     supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
-                    //memoryAllocator = new MemoryAllocator();
-                    memoryAllocator = new SimpleMemoryAllocator();
+                    memoryAllocator = new MemoryAllocator(5);
+                   // memoryAllocator = new SimpleMemoryAllocator(5);
                     deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
                     if (previewCallback != null)
@@ -578,22 +579,13 @@ namespace MediaToolkit.DeckLink
 
                 if (pBuffer != IntPtr.Zero)
                 {
-                    byte[] data = new byte[dataLength];
-                    Marshal.Copy(pBuffer, data, 0, data.Length);
-
-                    //var fileName = @"d:\testPCM\" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
-                    //MediaToolkit.Utils.TestTools.WriteFile(data, fileName);
-
                     var packetTimeSec = (double)packetTime / timeScale;
-
                     double dataDurationSec = dataLength / audioBytesPerSeconds;
+                    audioDurationSeconds += dataDurationSec;
 
                     // Console.WriteLine("audio: " + packetTimeSec + " " + packetTime + " "+ (packetTimeSec - lastAudioPacketTimeSec));
 
-                    var time = audioDurationSeconds;
-                    audioDurationSeconds += dataDurationSec;
-
-                    AudioDataArrived?.Invoke(data, packetTimeSec);
+                    AudioDataArrived?.Invoke(pBuffer, dataLength, packetTimeSec, dataDurationSec);
                     lastAudioPacketTimeSec = packetTimeSec;
 
                 }
@@ -643,10 +635,9 @@ namespace MediaToolkit.DeckLink
 
             var frameTimeSec = (double)frameTime / timeScale;
             double frameDurationSec = (double)frameDuration / timeScale;
+            videoDurationSeconds += frameDurationSec;
 
             //Console.WriteLine("video: " + frameTimeSec + " " + frameTime+ " "+(frameTimeSec - lastVideoFrameTimeSec));
-
-            videoDurationSeconds += frameDurationSec;
 
             VideoDataArrived?.Invoke(pBuffer, bufferLength, frameTimeSec, frameDurationSec);
             lastVideoFrameTimeSec = frameTimeSec;

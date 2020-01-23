@@ -146,7 +146,7 @@ namespace MediaToolkit
 
         }
 
-        public void ProcessAudioPacket(byte[] data, double time)
+        public void ProcessAudioPacket(IntPtr data, int length, double time, double duration)
         {
             Sample sample = null;
             try
@@ -156,7 +156,7 @@ namespace MediaToolkit
                 MediaBuffer mediaBuffer = null;
                 try
                 {
-                    mediaBuffer = MediaFactory.CreateMemoryBuffer(data.Length);
+                    mediaBuffer = MediaFactory.CreateMemoryBuffer(length);
                     {
                         sample.AddBuffer(mediaBuffer);
                     }
@@ -167,8 +167,9 @@ namespace MediaToolkit
                     var pBuffer = mediaBuffer.Lock(out int cbMaxLen, out int cbCurLen);
                     try
                     {
-                        Marshal.Copy(data, 0, pBuffer, data.Length);
-                        mediaBuffer.CurrentLength = data.Length;
+                        Kernel32.CopyMemory(pBuffer, data, (uint)length);
+                        //Marshal.Copy(data, 0, pBuffer, data.Length);
+                        mediaBuffer.CurrentLength = length;
                     }
                     finally
                     {
