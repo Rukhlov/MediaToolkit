@@ -715,7 +715,11 @@ namespace MediaToolkit.MediaFoundation
                 }
                 finally
                 {
-                    mediaEvent?.Dispose();
+                    if (mediaEvent != null)
+                    {
+                        mediaEvent.Dispose();
+                        mediaEvent = null;
+                    }
                 }
 
                 if(eventGenerator == null || eventGenerator.IsDisposed)

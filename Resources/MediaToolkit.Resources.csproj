@@ -274,11 +274,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />
-    <None Include="FFmpeg4\bin\SDP.bat" />
     <None Include="FFmpeg4\bin\SDP_239_0_0_1.sdp" />
-    <None Include="FFmpeg4\bin\TEST_sdp.bat" />
-    <None Include="FFmpeg4\bin\Новый текстовый документ - копия.bat" />
-    <None Include="FFmpeg4\bin\Новый текстовый документ.bat" />
+    <None Include="FFmpeg4\bin\TestVidGen.bat" />
     <None Include="FFmpeg4\examples\Makefile" />
     <None Include="FFmpeg4\examples\README" />
     <None Include="FFmpeg4\lib\avcodec.lib" />
@@ -307,9 +304,11 @@
     <None Include="FFmpeg4\presets\libvpx-720p50_60.ffpreset" />
     <None Include="Files\AV_10Sec_30Fps_Click_Sin.mkv" />
     <None Include="Files\AV_60Sec_30Fps_Click_Sin.mkv" />
+    <None Include="Utils\mftrace.bat" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

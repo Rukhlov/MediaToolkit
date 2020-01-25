@@ -39,11 +39,36 @@ namespace Test.VideoRenderer
 
 
         long globalTime = 0;
+        private PresentationClock presentationClock = null;
+
 
         private List<byte[]> testBitmapSequence = new List<byte[]>();
         private void buttonSetup_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonSetup_Click(...)");
+
+
+
+            if (presentationClock != null)
+            {
+                presentationClock.Dispose();
+                presentationClock = null;
+            }
+
+            MediaFactory.CreatePresentationClock(out presentationClock);
+
+            PresentationTimeSource timeSource = null;
+            try
+            {
+                MediaFactory.CreateSystemTimeSource(out timeSource);
+                presentationClock.TimeSource = timeSource;
+            }
+            finally
+            {
+                timeSource?.Dispose();
+            }
+
+
 
 
             videoForm = new VideoForm
@@ -54,6 +79,7 @@ namespace Test.VideoRenderer
             };
 
             videoRenderer = new MfVideoRenderer();
+            
 
             videoRenderer.RendererStarted += Renderer_RendererStarted;
             videoRenderer.RendererStopped += Renderer_RendererStopped;
@@ -81,6 +107,7 @@ namespace Test.VideoRenderer
                 Resolution = new Size(1920, 1080),
             });
 
+            videoRenderer.SetPresentationClock(presentationClock);
             videoRenderer.RendererStopped += () => 
             {
                 videoRenderer.Close();
@@ -93,6 +120,9 @@ namespace Test.VideoRenderer
 
             sampleSource.SampleReady += (sample) =>
             {
+                sample.SampleTime = presentationClock.Time;
+                sample.SampleDuration = 0;
+
                 videoRenderer?.ProcessSample(sample);
 
                 //sample?.Dispose();
@@ -149,12 +179,14 @@ namespace Test.VideoRenderer
                 };
 
 
+
+
                 var producerTask = Task.Run(() =>
                 {
 
                     running = true;
                     Stopwatch sw = new Stopwatch();
-                    int fps = 60;
+                    int fps = 1000;
                     int interval = (int)(1000.0 / fps);
 
                     int _count = 1;
@@ -282,7 +314,9 @@ namespace Test.VideoRenderer
             {
                 var time = MfTool.SecToMfTicks((globalTime / 1000.0));
                 logger.Debug("renderer.Start(...) " + time);
-                videoRenderer.Start(time);
+
+                presentationClock.Start(0);
+                //videoRenderer.Start(time);
                 sampleSource.Start();
 
             }
@@ -295,7 +329,9 @@ namespace Test.VideoRenderer
 
             if (videoRenderer != null)
             {
-                videoRenderer.Stop();
+                presentationClock.Stop();
+
+                //videoRenderer.Stop();
 
                 sampleSource.Stop();
 
@@ -308,7 +344,21 @@ namespace Test.VideoRenderer
 
             if (videoRenderer != null)
             {
-                videoRenderer.Pause();
+                //videoRenderer.Pause();
+
+                presentationClock.GetState(0, out ClockState state);
+                if (state == ClockState.Running)
+                {
+                    presentationClock.Pause();
+                }
+                else if (state == ClockState.Paused)
+                {
+                    presentationClock.Start(long.MaxValue);
+                }
+                else
+                {
+                    logger.Warn("Pause() return invalid clock state: " + state);
+                }
 
                 sampleSource.Pause();
 

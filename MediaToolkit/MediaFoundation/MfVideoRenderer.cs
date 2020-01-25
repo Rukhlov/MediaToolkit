@@ -99,6 +99,8 @@ namespace MediaToolkit.MediaFoundation
                     activate?.Dispose();
                 }
 
+                
+
                 //var characteristics = videoSink.Characteristics;
                 //var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
                 //logger.Debug("VideoSinkCharacteristics: " + logCharacts);
@@ -289,7 +291,7 @@ namespace MediaToolkit.MediaFoundation
             {
                 var status = mediaEvent.Status;
                 var typeInfo = mediaEvent.TypeInfo;
-
+                
                 if (status.Success)
                 {
                     if (typeInfo == MediaEventTypes.StreamSinkRequestSample)
@@ -349,7 +351,13 @@ namespace MediaToolkit.MediaFoundation
             }
             finally
             {
-                mediaEvent?.Dispose();
+                if (mediaEvent != null)
+                {
+                    mediaEvent.Dispose();
+                    mediaEvent = null;
+
+                }
+               
             }
         }
 
