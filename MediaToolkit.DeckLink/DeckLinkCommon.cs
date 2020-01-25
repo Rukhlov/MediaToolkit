@@ -457,7 +457,7 @@ namespace MediaToolkit.DeckLink
             {
                 if (allocatedBuffersCount < maxAllocatedBuffersCount)
                 {
-                    buffer = Marshal.AllocHGlobal((int)size);
+                    buffer = Marshal.AllocCoTaskMem((int)size);
                     allocatedBuffersCount++;
 
                     //logger.Trace(">>>>> MemoryAllocator::AllocateBuffer(...) " + size + " " + buffer + " " + allocatedBuffersCount);
@@ -482,7 +482,7 @@ namespace MediaToolkit.DeckLink
                 allocatedBuffersCount--;
                 if (buffer != IntPtr.Zero)
                 {
-                    Marshal.FreeHGlobal(buffer);
+                    Marshal.FreeCoTaskMem(buffer);
                     buffer = IntPtr.Zero;
                 }
             }

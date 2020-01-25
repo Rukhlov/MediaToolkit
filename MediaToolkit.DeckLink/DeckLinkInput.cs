@@ -4,6 +4,7 @@ using MediaToolkit.SharedTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 namespace MediaToolkit.DeckLink
 {
 
-    public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkNotificationCallback, IDeckLinkInputDevice
+    public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkInputDevice
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -45,7 +46,7 @@ namespace MediaToolkit.DeckLink
         public _BMDFieldDominance FieldDominance { get; private set; } = _BMDFieldDominance.bmdUnknownFieldDominance;
         public int VideoInterlaceMode => DeckLinkTools.GetVideoInterlaceMode(FieldDominance);
 
-        public bool AudioEnabled { get; private set; } = true;
+        public bool AudioEnabled { get; private set; } = false;
         private _BMDAudioSampleType audioSampleType = _BMDAudioSampleType.bmdAudioSampleType32bitInteger;
         public int AudioBitsPerSample => (int)audioSampleType;
 
@@ -231,9 +232,9 @@ namespace MediaToolkit.DeckLink
                     supportsHDMITimecode = GetSupportsHDMITimecode();
 
 
-                    memoryAllocator = new MemoryAllocator(5);
-                   // memoryAllocator = new SimpleMemoryAllocator(5);
-                    deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
+                   // memoryAllocator = new MemoryAllocator(5);
+                    memoryAllocator = new SimpleMemoryAllocator(3);
+                    //deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
                     if (previewCallback != null)
                     {
@@ -412,12 +413,6 @@ namespace MediaToolkit.DeckLink
 
         }
 
-        void IDeckLinkNotificationCallback.Notify(_BMDNotifications topic, ulong param1, ulong param2)
-        {
-            logger.Debug("IDeckLinkNotificationCallback.Notify(...) " + topic + " " + param1 + " " + " " + param2);
-            //...
-        }
-
 
         void IDeckLinkInputCallback.VideoInputFormatChanged(_BMDVideoInputFormatChangedEvents notificationEvents,
             IDeckLinkDisplayMode newDisplayMode, _BMDDetectedVideoInputFormatFlags detectedSignalFlags)
@@ -545,13 +540,15 @@ namespace MediaToolkit.DeckLink
             {
                 if (audioPacket != null)
                 {
-                    Marshal.ReleaseComObject(audioPacket);
+                    int refCount = Marshal.ReleaseComObject(audioPacket);
+                    Debug.Assert(refCount == 0, "refCount == 0");
                     audioPacket = null;
                 }
 
                 if (videoFrame != null)
                 {
-                    Marshal.ReleaseComObject(videoFrame);
+                    int refCount = Marshal.ReleaseComObject(videoFrame);
+                    Debug.Assert(refCount == 0, "refCount == 0");
                     videoFrame = null;
                 }
             }
