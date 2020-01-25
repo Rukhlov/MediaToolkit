@@ -227,6 +227,7 @@ namespace MediaToolkit
             }
             finally
             {
+                //sample.RemoveAllBuffers();
                 sample.Dispose();
             }
 

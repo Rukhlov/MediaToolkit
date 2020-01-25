@@ -46,50 +46,10 @@ namespace Test.VideoRenderer
             logger.Debug("buttonSetup_Click(...)");
 
 
-
-            //var testSeqDir = @"D:\testBMP\";
-            //var di = new DirectoryInfo(testSeqDir);
-            //var files = di.GetFiles().Take(60);
-            //foreach (var f in files)
-            //{
-            //    var bytes = File.ReadAllBytes(f.FullName);
-            //    testBitmapSequence.Add(bytes);
-            //}
-
-
-
-
-            var testFile5 = @".\Test\1920x1080_bmdFormat10BitYUV.raw";
-            var testFile2 = @".\Test\1920x1080_bmdFormat8BitYUV.raw";
-            //var testFile3 = @".\Test\1920x1080_Argb32.raw";
-
-            //var canvaspng = @".\Test\canvas.png";
-            var testBytes = File.ReadAllBytes(testFile2);
-            var testBytes5 = File.ReadAllBytes(testFile5);
-
-            //var fourCC = new FourCC("V210");
-
-
-            var V210FourCC = new FourCC(0x30313256);
-
-            var UYVYFourCC = new FourCC(0x59565955);
-
-            // var format = VideoFormatGuids.FromFourCC(v210FourCC);
-            var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
-
-            //var format = VideoFormatGuids.NV12;
-            var sampleArgs = new MfVideoArgs
-            {
-                Width = 1920,
-                Height = 1080,
-                Format = format, //VideoFormatGuids.Uyvy, //VideoFormatGuids.NV12,//MFVideoFormat_v210,
-
-            };
-
             videoForm = new VideoForm
             {
                 BackColor = Color.Black,
-                ClientSize = new Size(sampleArgs.Width, sampleArgs.Height),
+                //ClientSize = new Size(sampleArgs.Width, sampleArgs.Height),
                 StartPosition = FormStartPosition.CenterScreen,
             };
 
@@ -121,78 +81,135 @@ namespace Test.VideoRenderer
                 Resolution = new Size(1920, 1080),
             });
 
-            videoRenderer.Resize(videoForm.ClientRectangle);
-
-            closing = false;
-
-
-            Stopwatch sw = new Stopwatch();
-            int fps = 60;
-            int interval = (int)(1000.0 / fps);
-
-            int _count = 1;
-       
-
-            producerTask = Task.Run(() =>
+            videoRenderer.RendererStopped += () => 
             {
-                var sample = MediaFactory.CreateSample();
-                var mb = MediaFactory.CreateMemoryBuffer(testBytes.Length);
+                videoRenderer.Close();
+
+                GC.Collect();
+            };
+
+            videoRenderer.Resize(videoForm.ClientRectangle);
+            sampleSource = new SampleSource();
+
+            sampleSource.SampleReady += (sample) =>
+            {
+                videoRenderer?.ProcessSample(sample);
+
+                //sample?.Dispose();
+            };
+
+        }
+
+        private SampleSource sampleSource = null;
+
+        class SampleSource
+        {
+            public void Start()
+            {
+                if (running)
                 {
-                    var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
-
-                    Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
-
-                    mb.CurrentLength = testBytes.Length;
-                    mb.Unlock();
-
-                    sample.AddBuffer(mb);
+                    return;
                 }
 
-                while (true)
+                //var testSeqDir = @"D:\testBMP\";
+                //var di = new DirectoryInfo(testSeqDir);
+                //var files = di.GetFiles().Take(60);
+                //foreach (var f in files)
+                //{
+                //    var bytes = File.ReadAllBytes(f.FullName);
+                //    testBitmapSequence.Add(bytes);
+                //}
+
+
+                var testFile5 = @".\Test\1920x1080_bmdFormat10BitYUV.raw";
+                var testFile2 = @".\Test\1920x1080_bmdFormat8BitYUV.raw";
+                //var testFile3 = @".\Test\1920x1080_Argb32.raw";
+
+                //var canvaspng = @".\Test\canvas.png";
+                var testBytes = File.ReadAllBytes(testFile2);
+                var testBytes5 = File.ReadAllBytes(testFile5);
+
+                //var fourCC = new FourCC("V210");
+
+
+                var V210FourCC = new FourCC(0x30313256);
+
+                var UYVYFourCC = new FourCC(0x59565955);
+
+                // var format = VideoFormatGuids.FromFourCC(v210FourCC);
+                var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+
+                //var format = VideoFormatGuids.NV12;
+                var sampleArgs = new MfVideoArgs
                 {
-                    if (closing)
+                    Width = 1920,
+                    Height = 1080,
+                    Format = format, //VideoFormatGuids.Uyvy, //VideoFormatGuids.NV12,//MFVideoFormat_v210,
+
+                };
+
+
+                var producerTask = Task.Run(() =>
+                {
+
+                    running = true;
+                    Stopwatch sw = new Stopwatch();
+                    int fps = 60;
+                    int interval = (int)(1000.0 / fps);
+
+                    int _count = 1;
+
+                    long globalTime = 0;
+
+                    var sample = MediaFactory.CreateSample();
+                    using (var mb = MediaFactory.CreateMemoryBuffer(testBytes.Length))
                     {
-                        break;
+                        var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+
+                        Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
+
+                        mb.CurrentLength = testBytes.Length;
+                        mb.Unlock();
+
+                        sample.AddBuffer(mb);
                     }
 
+                    while (running)
                     {
+
                         if (paused)
                         {
                             Thread.Sleep(100);
                             continue;
                         }
 
-                        //int index = _count % testBitmapSequence.Count;
-                        var bytes = testBytes;// testBitmapSequence[index];
 
-
-                        var _pBuffer = mb.Lock(out int _cbMaxLen, out int _cbCurLen);
-
-                        Marshal.Copy(bytes, 0, _pBuffer, bytes.Length);
-
-
-
-                        //if (_count % 10 != 0)
-                        //{
-                        //    Marshal.Copy(testBytes, 0, _pBuffer, testBytes.Length);
-                        //}
-                        //else
-                        //{
-                        //    Marshal.Copy(testBytes5, 0, _pBuffer, testBytes.Length);
-                        //}
-
-                        _count++;
                         sw.Restart();
 
 
-                        mb.CurrentLength = testBytes.Length;
-                        mb.Unlock();
+                        //var sample = MediaFactory.CreateSample();
+                        //using (var mb = MediaFactory.CreateMemoryBuffer(testBytes.Length))
+                        //{
+                        //    var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+
+                        //    //Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
+
+                        //    mb.CurrentLength = testBytes.Length;
+                        //    mb.Unlock();
+
+                        //    sample.AddBuffer(mb);
+                        //}
+
 
                         globalTime += sw.ElapsedMilliseconds;
-                        sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
-                        sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+                        sample.SampleTime = 0;//MfTool.SecToMfTicks((globalTime / 1000.0));
+                        sample.SampleDuration = 0;//MfTool.SecToMfTicks(((int)interval / 1000.0));
 
-                        videoRenderer.ProcessSample(sample);
+                        //sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
+                        //sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+
+                        SampleReady?.Invoke(sample);
+
 
                         var msec = sw.ElapsedMilliseconds;
 
@@ -202,36 +219,38 @@ namespace Test.VideoRenderer
                             delay = 1;
                         }
 
+                        // var delay = 1;
                         Thread.Sleep((int)delay);
+                        var elapsedMilliseconds = sw.ElapsedMilliseconds;
+                        globalTime += elapsedMilliseconds;
+                        _count++;
 
-                        globalTime += sw.ElapsedMilliseconds;
+                        //Console.WriteLine(elapsedMilliseconds);
+                        //Console.SetCursorPosition(0, Console.CursorTop - 1);
 
                         
-
-                        // Console.WriteLine(msec);
                     }
 
-                }
+                    sample?.Dispose();
 
+                });
+            }
 
-                sample?.Dispose();
-                mb?.Dispose();
+            public event Action<Sample> SampleReady;
+            public void Pause()
+            {
+                paused = !paused;
+            }
 
-            });
+            private bool paused = false;
+            private bool running = false;
 
-
-            //Task.Run(() =>
-            //{
-            //    while (true)
-            //    {
-
-            //        Thread.Sleep(1000);
-            //        Console.WriteLine("FPS: " + fps);
-            //        fps = 0;
-            //    }
-            //});
-
+            public void Stop()
+            {
+                running = false;
+            }
         }
+
 
 
         private void Renderer_RendererStarted()
@@ -261,9 +280,10 @@ namespace Test.VideoRenderer
 
             if (videoRenderer != null)
             {
-               var time =  MfTool.SecToMfTicks((globalTime / 1000.0));
+                var time = MfTool.SecToMfTicks((globalTime / 1000.0));
                 logger.Debug("renderer.Start(...) " + time);
                 videoRenderer.Start(time);
+                sampleSource.Start();
 
             }
 
@@ -277,6 +297,8 @@ namespace Test.VideoRenderer
             {
                 videoRenderer.Stop();
 
+                sampleSource.Stop();
+
             }
         }
         private bool paused = false;
@@ -287,7 +309,10 @@ namespace Test.VideoRenderer
             if (videoRenderer != null)
             {
                 videoRenderer.Pause();
-                paused = !paused;
+
+                sampleSource.Pause();
+
+                //paused = !paused;
 
             }
         }
@@ -297,6 +322,7 @@ namespace Test.VideoRenderer
         {
 
             logger.Debug("buttonClose_Click(...)");
+            sampleSource?.Stop();
 
             videoForm?.Close();
             closing = true;
@@ -304,10 +330,10 @@ namespace Test.VideoRenderer
             if (videoRenderer != null)
             {
                 videoRenderer.Stop();
-
-                //renderer.Close();
-
                 
+                //videoRenderer.Close();
+
+
             }
         }
 
@@ -322,9 +348,9 @@ namespace Test.VideoRenderer
 
             try
             {
-                
+
                 MMDevice device = null;
-                
+
                 var deviceEnum = new MMDeviceEnumerator();
                 if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
                 {
@@ -354,7 +380,7 @@ namespace Test.VideoRenderer
                 audioRenderer.Setup(audioArgs);
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex);
             }
@@ -376,7 +402,7 @@ namespace Test.VideoRenderer
             {
                 logger.Error(ex);
             }
-            
+
         }
 
         private void buttonAudioStop_Click(object sender, EventArgs e)
@@ -405,6 +431,7 @@ namespace Test.VideoRenderer
         }
 
 
+
         private void buttonProcessSample_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonProcessSample_Click(...)");
@@ -417,14 +444,14 @@ namespace Test.VideoRenderer
 
                     logger.Debug("signal generator start...");
 
-                   
+
                     var waveSignalGen = signalGenerator.ToWaveProvider();
                     var signalFormat = waveSignalGen.WaveFormat;
                     var bytesPerSecond = signalFormat.AverageBytesPerSecond;
                     var buffer = new byte[bytesPerSecond];
 
                     int count = 10;
-                    while (count--> 0)
+                    while (count-- > 0)
                     {
 
                         var sample = MediaFactory.CreateSample();
@@ -442,7 +469,7 @@ namespace Test.VideoRenderer
                         {
                             Marshal.Copy(buffer, 0, pBuffer, bytesRead);
                         }
-                        
+
                         mb.CurrentLength = bytesRead;
                         mb.Unlock();
 
@@ -462,7 +489,7 @@ namespace Test.VideoRenderer
                     logger.Debug("Signal generator stop...");
                 });
 
-  
+
                 //index++;
             }
             catch (Exception ex)
@@ -587,11 +614,16 @@ namespace Test.VideoRenderer
 
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            GC.Collect();
         }
     }
 }

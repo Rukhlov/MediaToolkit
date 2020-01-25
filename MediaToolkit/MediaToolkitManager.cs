@@ -25,7 +25,7 @@ namespace MediaToolkit
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
-            SharpDX.Configuration.EnableObjectTracking = true;
+            SharpDX.Configuration.EnableObjectTracking = false;
             SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
 
             //SharpDX.Configuration.EnableReleaseOnFinalizer = true;

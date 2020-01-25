@@ -45,6 +45,7 @@
     <Compile Include="Gdi32.cs" />
     <Compile Include="Kernel32.cs" />
     <Compile Include="MF\Evr.cs" />
+    <Compile Include="MF\MfIdl.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="MF\MfObjects.cs" />
     <Compile Include="MF\MfReadWrite.cs" />
