@@ -40,6 +40,9 @@ namespace Test.DeckLink
             timer.Interval = 1000;
             timer.Tick += Timer_Tick;
 
+
+
+
         }
 
 
@@ -198,9 +201,9 @@ namespace Test.DeckLink
 
         }
 
-        private void CurrentDevice_AudioDataArrived(byte[] data, double time)
+        private void CurrentDevice_AudioDataArrived(IntPtr data, int length, double time, double duration)
         {
-            renderSession?.ProcessAudioPacket(data, time);
+            renderSession?.ProcessAudioPacket(data, length, time, duration);
         }
 
         private void VideoForm_Paint(object sender, PaintEventArgs e)
@@ -490,7 +493,7 @@ namespace Test.DeckLink
                 deviceManager.InputDeviceArrived += DeviceManager_DeviceArrived;
                 deviceManager.InputDeviceRemoved += DeviceManager_DeviceRemoved;
 
-                deviceManager.StartUp();
+                deviceManager.Startup();
 
             }
 
@@ -570,7 +573,9 @@ namespace Test.DeckLink
                 var devices = deviceManager.GetInputsFromMTA();
                 foreach (var d in devices)
                 {
-                    logger.Info(d.ToString());
+                    var mode = d.DisplayModeIds.FirstOrDefault();
+
+                    logger.Info(d.ToString() + " " + mode?.ToString());
                 }
 
             }

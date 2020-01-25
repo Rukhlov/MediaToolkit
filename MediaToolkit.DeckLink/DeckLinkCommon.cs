@@ -121,6 +121,168 @@ namespace MediaToolkit.DeckLink
             return Success;
         }
 
+        public static List<DeckLinkDeviceDescription> GetDeckLinkInputDevices()
+        {
+            List<DeckLinkDeviceDescription> devices = new List<DeckLinkDeviceDescription>();
+            IDeckLinkIterator deckLinkIterator = null;
+            try
+            {
+                deckLinkIterator = new CDeckLinkIterator();
+
+                int index = 0;
+                IDeckLink deckLink = null;
+                do
+                {
+                    if (deckLink != null)
+                    {
+                        Marshal.ReleaseComObject(deckLink);
+                        deckLink = null;
+                    }
+
+                    deckLinkIterator.Next(out deckLink);
+
+                    if (deckLink == null)
+                    {
+                        break;
+                    }
+
+                    deckLink.GetDisplayName(out string deviceName);
+
+                    try
+                    {
+                        var deckLinkInput = (IDeckLinkInput)deckLink;
+                        var deckLinkStatus = (IDeckLinkStatus)deckLink;
+                        var deckLinkAttrs = (IDeckLinkProfileAttributes)deckLink;
+
+                        deckLinkAttrs.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string deviceHandle);
+
+                        deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
+                        bool available = (videoInputSignalLockedFlag != 0);
+
+                        var pixelFormats = SupportedPixelFormats.Keys.ToList();
+                        var displayModeIds = GetDisplayDescriptions(deckLinkInput, pixelFormats);
+
+                        DeckLinkDeviceDescription deviceDescription = new DeckLinkDeviceDescription
+                        {
+                            DeviceHandle = deviceHandle,
+                            DeviceIndex = index,
+                            DeviceName = deviceName,
+                            Available = available,
+                            DisplayModeIds = displayModeIds,
+                        };
+
+                        devices.Add(deviceDescription);
+
+
+                        //Marshal.ReleaseComObject(deckLinkInput);
+                        //Marshal.ReleaseComObject(deckLinkStatus);
+
+                    }
+                    catch (InvalidCastException)
+                    {
+
+                    }
+
+                    index++;
+
+                }
+                while (deckLink != null);
+
+            }
+            catch (Exception ex)
+            {
+                if (deckLinkIterator == null)
+                {
+                    throw new Exception("This application requires the DeckLink drivers installed.\n" +
+                        "Please install the Blackmagic DeckLink drivers to use the features of this application");
+                }
+
+                throw;
+            }
+
+            return devices;
+        }
+
+
+        public static List<DeckLinkDisplayModeDescription> GetDisplayDescriptions(IDeckLinkInput deckLinkInput, List<_BMDPixelFormat> pixelFormats,
+            _BMDVideoConnection connection = _BMDVideoConnection.bmdVideoConnectionHDMI,
+            _BMDSupportedVideoModeFlags videoModeFlags = _BMDSupportedVideoModeFlags.bmdSupportedVideoModeDefault)
+        {
+
+            List<DeckLinkDisplayModeDescription> displayDescriptions = new List<DeckLinkDisplayModeDescription>();
+
+            IDeckLinkDisplayModeIterator iterator = null;
+            try
+            {
+                deckLinkInput.GetDisplayModeIterator(out iterator);
+
+                while (true)
+                {
+                    IDeckLinkDisplayMode displayMode = null;
+                    try
+                    {
+                        iterator.Next(out displayMode);
+                        if (displayMode == null)
+                        {
+                            break;
+                        }
+
+                        var displayModeId = displayMode.GetDisplayMode();
+
+                        displayMode.GetName(out string displayName);
+                        displayMode.GetFrameRate(out long frameDuration, out long timeScale);
+                        var fps = (double)timeScale / frameDuration;
+
+                        int width = displayMode.GetWidth();
+                        int height = displayMode.GetHeight();
+                        var resolution = width + "x" + height;
+
+                        var displayModeFlags = displayMode.GetFlags();
+                        var fieldDominance = displayMode.GetFieldDominance();
+
+                        foreach (var pixFmt in pixelFormats)
+                        {
+                            deckLinkInput.DoesSupportVideoMode(connection, displayModeId, pixFmt, videoModeFlags, out int supported);
+                            if (supported != 0)
+                            {
+                                displayDescriptions.Add(new DeckLinkDisplayModeDescription
+                                {
+                                    ModeId = (long)displayModeId,
+                                    Width = width,
+                                    Height = height,
+                                    Fps = fps,
+                                    PixFmt = (long)pixFmt,
+                                    Description = displayName + " (" + resolution + " " + fps.ToString("0.##") + " fps " + GetFourCCStr(pixFmt) +  ")",
+                                });
+                            }
+                            else
+                            {
+                                //Console.WriteLine("Display mode not supported: "+ displayModeId + " " + pixFmt);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        if (displayMode != null)
+                        {
+                            Marshal.ReleaseComObject(displayMode);
+                            displayMode = null;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (iterator != null)
+                {
+                    Marshal.ReleaseComObject(iterator);
+                    iterator = null;
+                }
+            }
+
+            return displayDescriptions;
+
+        }
 
         public static string LogDisplayMode(IDeckLinkDisplayMode deckLinkDisplayMode)
         {
@@ -213,170 +375,34 @@ namespace MediaToolkit.DeckLink
               _BMDPixelFormat.bmdFormat12BitRGBLE,
         };
 
-        public static List<DeckLinkDeviceDescription> GetDeckLinkInputDevices()
+
+        public static string GetFourCCStr(_BMDPixelFormat pixFormat)
         {
-            List<DeckLinkDeviceDescription> devices = new List<DeckLinkDeviceDescription>();
-            IDeckLinkIterator deckLinkIterator = null;
-            try
+            string fourCCStr = "";
+
+            if (pixFormat == _BMDPixelFormat.bmdFormat8BitARGB)
             {
-                deckLinkIterator = new CDeckLinkIterator();
-
-                int index = 0;
-                IDeckLink deckLink = null;
-                do
-                {
-                    if (deckLink != null)
-                    {
-                        Marshal.ReleaseComObject(deckLink);
-                        deckLink = null;
-                    }
-
-                    deckLinkIterator.Next(out deckLink);
-
-                    if (deckLink == null)
-                    {
-                        break;
-                    }
-
-                    deckLink.GetDisplayName(out string deviceName);
-
-                    try
-                    {
-                        var deckLinkInput = (IDeckLinkInput)deckLink;
-                        var deckLinkStatus = (IDeckLinkStatus)deckLink;
-                        var deckLinkAttrs = (IDeckLinkProfileAttributes)deckLink;
-
-                        deckLinkAttrs.GetString(_BMDDeckLinkAttributeID.BMDDeckLinkDeviceHandle, out string deviceHandle);
-
-                        bool available = false;
-                        deckLinkStatus.GetFlag(_BMDDeckLinkStatusID.bmdDeckLinkStatusVideoInputSignalLocked, out int videoInputSignalLockedFlag);
-                        available = (videoInputSignalLockedFlag != 0);
-
-                        var displayModeIds = GetDisplayDescriptions(deckLinkInput);
-
-                        DeckLinkDeviceDescription deviceDescription = new DeckLinkDeviceDescription
-                        {
-                            DeviceHandle = deviceHandle,
-                            DeviceIndex = index,
-                            DeviceName = deviceName,
-                            Available = available,
-                            DisplayModeIds = displayModeIds,
-                        };
-
-                        devices.Add(deviceDescription);
-
-
-                        //Marshal.ReleaseComObject(deckLinkInput);
-                        //Marshal.ReleaseComObject(deckLinkStatus);
-
-                    }
-                    catch (InvalidCastException)
-                    {
-
-                    }
-
-                    index++;
-
-                }
-                while (deckLink != null);
-
+                fourCCStr = "ARGB";
             }
-            catch (Exception ex)
+            else if (pixFormat == _BMDPixelFormat.bmdFormatUnspecified)
             {
-                if (deckLinkIterator == null)
+                fourCCStr = "";
+            }
+            else
+            {
+                long format = (long)pixFormat;
+                byte[] fourBytes = new byte[]
                 {
-                    throw new Exception("This application requires the DeckLink drivers installed.\n" +
-                        "Please install the Blackmagic DeckLink drivers to use the features of this application");
-                }
+                    (byte)(format >> 24),
+                    (byte)(format >> 16),
+                    (byte)(format >> 8),
+                    (byte)(format)
+                };
 
-                throw;
+                fourCCStr = Encoding.ASCII.GetString(fourBytes);
             }
 
-            return devices;
-        }
-
-
-        public static List<DeckLinkDisplayModeDescription> GetDisplayDescriptions(IDeckLinkInput deckLinkInput,
-            _BMDVideoConnection connection = _BMDVideoConnection.bmdVideoConnectionHDMI,
-            _BMDSupportedVideoModeFlags videoModeFlags = _BMDSupportedVideoModeFlags.bmdSupportedVideoModeDefault)
-        {
-
-            List<DeckLinkDisplayModeDescription> displayDescriptions = new List<DeckLinkDisplayModeDescription>();
-
-            IDeckLinkDisplayModeIterator iterator = null;
-            try
-            {
-                deckLinkInput.GetDisplayModeIterator(out iterator);
-
-                while (true)
-                {
-                    IDeckLinkDisplayMode displayMode = null;
-                    try
-                    {
-                        iterator.Next(out displayMode);
-                        if (displayMode == null)
-                        {
-                            break;
-                        }
-
-                        var displayModeId = displayMode.GetDisplayMode();
-
-                        displayMode.GetName(out string displayName);
-                        displayMode.GetFrameRate(out long frameDuration, out long timeScale);
-                        var fps = (double)timeScale / frameDuration;
-
-                        int width = displayMode.GetWidth();
-                        int height = displayMode.GetHeight();
-                        var resolution = width + "x" + height;
-
-                        var displayModeFlags = displayMode.GetFlags();
-                        var fieldDominance = displayMode.GetFieldDominance();
-
-                        // var log = string.Join(", " , displayName, resolution, bdmDisplayMode, displayModeFlags, frameDuration, timeScale, fieldDominance);
-
-                        foreach (var pixFmt in SupportedPixelFormats.Keys)
-                        {
-                            var format = SupportedPixelFormats[pixFmt];
-                            deckLinkInput.DoesSupportVideoMode(connection, displayModeId, pixFmt, videoModeFlags, out int supported);
-                            if (supported != 0)
-                            {
-                                displayDescriptions.Add(new DeckLinkDisplayModeDescription
-                                {
-                                    ModeId = (long)displayModeId,
-                                    Width = width,
-                                    Height = height,
-                                    Fps = fps,
-                                    PixFmt = (long)pixFmt,
-                                    Description = displayName + " (" + resolution + " " + fps.ToString("0.##") + " fps " + format.Name + ")",
-                                });
-                            }
-                            else
-                            {
-                                //Console.WriteLine("Display mode not supported: "+ displayModeId + " " + pixFmt);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (displayMode != null)
-                        {
-                            Marshal.ReleaseComObject(displayMode);
-                            displayMode = null;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                if (iterator != null)
-                {
-                    Marshal.ReleaseComObject(iterator);
-                    iterator = null;
-                }
-            }
-
-            return displayDescriptions;
-
+            return fourCCStr;
         }
 
 
@@ -400,6 +426,8 @@ namespace MediaToolkit.DeckLink
 
             return interlaceMode;
         }
+
+        
     }
 
     class SimpleMemoryAllocator : IDeckLinkMemoryAllocator

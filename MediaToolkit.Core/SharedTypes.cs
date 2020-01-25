@@ -138,8 +138,8 @@ namespace MediaToolkit.SharedTypes
         void Resize(System.Drawing.Rectangle rect);
         void Repaint();
 
-        void ProcessAudioPacket(byte[] data, double time);
-        void ProcessVideoFrame(IntPtr frameData, int frameLength, double frameTime, double frameDuration);
+        void ProcessAudioPacket(IntPtr data, int length, double time, double duration);
+        void ProcessVideoFrame(IntPtr data, int length, double time, double duration);
 
         int ErrorCode { get; }
     }
@@ -166,7 +166,8 @@ namespace MediaToolkit.SharedTypes
 
         event Action<bool> CaptureChanged;
 
-        event Action<byte[], double> AudioDataArrived;
+        //event Action<byte[], double> AudioDataArrived;
+        event Action<IntPtr, int, double, double> AudioDataArrived;
         event Action<IntPtr, int, double, double> VideoDataArrived;
 
         void Shutdown();
