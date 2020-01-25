@@ -22,6 +22,7 @@ namespace MediaToolkit.NativeAPIs.Utils
             if (Marshal.IsComObject(comObj))
             {
                 int refCount = Marshal.ReleaseComObject(comObj);
+                Debug.Assert(refCount == 0 , "refCount == 0");
                 comObj = null;
             }
         }

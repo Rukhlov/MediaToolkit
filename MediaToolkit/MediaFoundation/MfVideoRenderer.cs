@@ -714,10 +714,10 @@ namespace MediaToolkit.MediaFoundation
                                 {
                                     pixFmt = System.Drawing.Imaging.PixelFormat.Format24bppRgb;
                                 }
-                                else if (bih.biBitCount == 16)
-                                {
-                                    pixFmt = System.Drawing.Imaging.PixelFormat.Format16bppRgb555;
-                                }
+                                //else if (bih.biBitCount == 16)
+                                //{
+                                //    pixFmt = System.Drawing.Imaging.PixelFormat.Format16bppRgb555;
+                                //}
                             }
 
                             if(pixFmt == System.Drawing.Imaging.PixelFormat.Undefined)
@@ -759,11 +759,7 @@ namespace MediaToolkit.MediaFoundation
             }
             finally
             {
-                if (control != null)
-                {
-                    Marshal.ReleaseComObject(control);
-                    control = null;
-                }
+                ComBase.SafeRelease(control);
             }
 
             return bmp;
@@ -772,6 +768,8 @@ namespace MediaToolkit.MediaFoundation
 
         private void OnStarted()
         {
+            logger.Debug("MfVideoRenderer::OnStarted()");
+
             rendererState = RendererState.Started;
 
             DoRender();
@@ -781,6 +779,7 @@ namespace MediaToolkit.MediaFoundation
 
         private void DoRender()
         {
+            logger.Debug("MfVideoRenderer::DoRender()");
             Task.Run(() =>
             {
                 //Stopwatch sw = new Stopwatch();
@@ -820,6 +819,9 @@ namespace MediaToolkit.MediaFoundation
 
         private void OnStopped()
         {
+
+            logger.Debug("MfVideoRenderer::OnStopped()");
+
             rendererState = RendererState.Stopped;
 
             RendererStopped?.Invoke();

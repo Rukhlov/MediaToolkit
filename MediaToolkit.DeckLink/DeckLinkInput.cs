@@ -25,7 +25,7 @@ namespace MediaToolkit.DeckLink
         private IDeckLinkProfileAttributes deckLinkProfileAttrs = null;
 
         private IDeckLinkMemoryAllocator memoryAllocator = null;
-        private IDeckLinkNotification deckLinkNotification = null;
+
         private IDeckLinkScreenPreviewCallback previewCallback = null;
 
         public int DeviceIndex { get; private set; } = -1;
@@ -46,7 +46,7 @@ namespace MediaToolkit.DeckLink
         public _BMDFieldDominance FieldDominance { get; private set; } = _BMDFieldDominance.bmdUnknownFieldDominance;
         public int VideoInterlaceMode => DeckLinkTools.GetVideoInterlaceMode(FieldDominance);
 
-        public bool AudioEnabled { get; private set; } = false;
+        public bool AudioEnabled { get; private set; } = true;
         private _BMDAudioSampleType audioSampleType = _BMDAudioSampleType.bmdAudioSampleType32bitInteger;
         public int AudioBitsPerSample => (int)audioSampleType;
 
@@ -179,7 +179,6 @@ namespace MediaToolkit.DeckLink
                     this.deckLink = _deckLink;
                     this.deckLinkInput = (IDeckLinkInput)deckLink;
                     this.deckLinkStatus = (IDeckLinkStatus)deckLink;
-                    this.deckLinkNotification = (IDeckLinkNotification)deckLink;
                     this.deckLinkProfileAttrs = (IDeckLinkProfileAttributes)deckLink;
 
 
@@ -233,8 +232,8 @@ namespace MediaToolkit.DeckLink
 
 
                    // memoryAllocator = new MemoryAllocator(5);
-                    memoryAllocator = new SimpleMemoryAllocator(3);
-                    //deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
+                    memoryAllocator = new SimpleMemoryAllocator(5);
+                    deckLinkInput.SetVideoInputFrameMemoryAllocator(memoryAllocator);
 
                     if (previewCallback != null)
                     {

@@ -190,6 +190,8 @@ namespace Test.DeckLink
 
                     }, null);
                 }
+
+                GC.Collect();
             }
 
         }
@@ -311,6 +313,8 @@ namespace Test.DeckLink
             devicesPanel.Enabled = true;
             buttonStart.Enabled = true;
             buttonStop.Enabled = false;
+
+
            
         }
 
