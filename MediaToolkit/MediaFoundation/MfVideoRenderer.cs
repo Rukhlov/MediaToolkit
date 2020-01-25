@@ -1,4 +1,5 @@
-﻿using MediaToolkit.NativeAPIs.Utils;
+﻿using MediaToolkit.NativeAPIs;
+using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.SharedTypes;
 using NLog;
 using SharpDX;
@@ -40,8 +41,10 @@ namespace MediaToolkit.MediaFoundation
 
         private VideoSampleAllocator videoSampleAllocator = null;
 
+        private volatile bool newSampleReceived = false;
         private volatile int streamSinkRequestSample = 0;
         private MediaEventHandler streamSinkEventHandler = null;
+
 
         public event Action RendererStarted;
         public event Action RendererStopped;
@@ -55,6 +58,7 @@ namespace MediaToolkit.MediaFoundation
         private bool IsRunning => (rendererState == RendererState.Started || rendererState == RendererState.Paused);
 
         private object syncLock = new object();
+        private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
         private IntPtr WindowHandle = IntPtr.Zero;
 
@@ -137,17 +141,16 @@ namespace MediaToolkit.MediaFoundation
                     videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
 
-                //videoMixerBitmap.SetAlphaBitmap(null);
+                /*
                 EVR.IMFVideoProcessor videoProcessor = null;
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
                 {
                     videoProcessor = service.GetNativeMfService<EVR.IMFVideoProcessor>(MediaServiceKeysEx.MixerService);
                 }
 
-
                 //videoProcessor.SetBackgroundColor(0x008000);
                 ComBase.SafeRelease(videoProcessor);
-
+                */
 
 
                 videoSink.GetStreamSinkByIndex(0, out streamSink);
@@ -220,8 +223,11 @@ namespace MediaToolkit.MediaFoundation
                     }
                     while (true);
 
+
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
                     streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
+
+                    //nativeStreamSink = (NativeAPIs.MF.IMFStreamSink)Marshal.GetObjectForIUnknown(streamSink.NativePointer);
 
                 }
 
@@ -242,8 +248,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-
-
         public void SetPresentationClock(PresentationClock clock)
         {
             if (videoSink != null)
@@ -262,91 +266,92 @@ namespace MediaToolkit.MediaFoundation
                     using (var service = streamSink.QueryInterface<ServiceProvider>())
                     {
                         videoSampleAllocator = service.GetService<VideoSampleAllocator>(MediaServiceKeys.VideoAcceleration);
+
+                        //videoSampleAllocatorCallback = (NativeAPIs.MF.IMFVideoSampleAllocatorCallback)videoSampleAllocator;
+
                         videoSampleAllocator.DirectXManager = deviceManager;
                         videoSampleAllocator.InitializeSampleAllocator(1, mediaType);
                         videoSampleAllocator.AllocateSample(out videoSample);
                         videoSample.SampleDuration = 0;
                         videoSample.SampleTime = 0;
 
-    
+                        //nativeVideoSample = (NativeAPIs.MF.Objects.IMFSample)Marshal.GetObjectForIUnknown(videoSample.NativePointer);
 
                     }   
-
                 }
             }
 
         }
 
-
-        Stopwatch sw = new Stopwatch();
         private void StreamSinkEventHandler_EventReceived(MediaEvent mediaEvent)
         {
-
-            var status = mediaEvent.Status;
-            var typeInfo = mediaEvent.TypeInfo;
-
-            if (status.Success)
+            try
             {
-                if (typeInfo == MediaEventTypes.StreamSinkRequestSample)
+                var status = mediaEvent.Status;
+                var typeInfo = mediaEvent.TypeInfo;
+
+                if (status.Success)
                 {
-                    streamSinkRequestSample++;
+                    if (typeInfo == MediaEventTypes.StreamSinkRequestSample)
+                    {
+                        //logger.Debug(typeInfo);
+                        OnRequestSample();
 
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkStarted)
+                    {
+                        logger.Debug(typeInfo);
 
-                    //logger.Debug("StreamSinkRequestSample: " + sw.ElapsedMilliseconds);
-                    //sw.Restart();
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkStarted)
-                {
-                    logger.Debug(typeInfo);
+                        OnStarted();
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkStopped)
+                    {
+                        logger.Debug(typeInfo);
 
-                    rendererState = RendererState.Started;
-                    RendererStarted?.Invoke();
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkStopped)
-                {
-                    logger.Debug(typeInfo);
+                        OnStopped();
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkPaused)
+                    {
+                        logger.Debug(typeInfo);
+                        rendererState = RendererState.Paused;
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkMarker)
+                    {
+                        logger.Debug(typeInfo);
+                        //...
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkDeviceChanged)
+                    {
+                        logger.Debug(typeInfo);
 
-                    rendererState = RendererState.Stopped;
+                        OnDeviceChanged();
+                    }
+                    else if (typeInfo == MediaEventTypes.StreamSinkFormatChanged)
+                    {
+                        logger.Debug(typeInfo);
+                        OnFormatChanged();
 
-                    RendererStopped?.Invoke();
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkPaused)
-                {
-                    logger.Debug(typeInfo);
-                    rendererState = RendererState.Paused;
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkMarker)
-                {
-                    logger.Debug(typeInfo);
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkDeviceChanged)
-                {
-                    logger.Debug(typeInfo);
+                        //...
+                        errorCode = 100500;
 
-                    OnDeviceChanged();
-                }
-                else if (typeInfo == MediaEventTypes.StreamSinkFormatChanged)
-                {
-                    logger.Debug(typeInfo);
-                    OnFormatChanged();
-
-                    //...
-                    errorCode = 100500;
-
+                    }
+                    else
+                    {
+                        logger.Debug(typeInfo);
+                    }
                 }
                 else
                 {
-                    logger.Debug(typeInfo);
+                    logger.Error("Event status: " + status);
+                    // errorCode = 100500;
+                    //..
                 }
             }
-            else
+            finally
             {
-
+                mediaEvent?.Dispose();
             }
-
         }
-
-
 
         public void ProcessSample(Sample sample)
         {
@@ -355,7 +360,6 @@ namespace MediaToolkit.MediaFoundation
                 logger.Debug("MfVideoRenderer::ProcessSample(...) return invalid render state: " + rendererState);
                 return;
             }
-
 
             var sampleTime = sample.SampleTime;
             var sampleDuration = sample.SampleDuration;
@@ -366,30 +370,20 @@ namespace MediaToolkit.MediaFoundation
                 Monitor.TryEnter(syncLock, 10, ref lockTacken);
                 if (lockTacken)
                 {
-                    videoSample.SampleDuration = sampleTime;
-                    videoSample.SampleTime = sampleDuration;
-
                     using (var srcBuffer = sample.ConvertToContiguousBuffer())
                     {
                         try
                         {
                             var pSrcBuffer = srcBuffer.Lock(out int maxLen, out int curLen);
-
-                            //// var srcArray = new byte[curLen];
-                            // Marshal.Copy(pSrcBuffer, videoBuffer, 0, videoBuffer.Length);
-                            // using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
-                            // {
-                            //     using (var buffer2D = dxBuffer.QueryInterface<Buffer2D>())
-                            //     {
-                            //         buffer2D.ContiguousCopyFrom(videoBuffer, curLen);
-                            //     }
-                            // }
-
                             using (var buffer = videoSample.ConvertToContiguousBuffer())
                             {
                                 using (var buffer2D = buffer.QueryInterface<Buffer2D>())
                                 {
-                                    buffer2D._ContiguousCopyFrom(pSrcBuffer, curLen);
+                                    //var isContiguousFormat = buffer2D.IsContiguousFormat;
+                                    //if (isContiguousFormat)
+                                    {
+                                        buffer2D._ContiguousCopyFrom(pSrcBuffer, curLen);
+                                    }
                                 }
                             }
                         }
@@ -398,12 +392,8 @@ namespace MediaToolkit.MediaFoundation
                             srcBuffer.Unlock();
                         }
 
-                        if (streamSinkRequestSample > 0)
-                        {
-                            streamSink.ProcessSample(videoSample);
-
-                            streamSinkRequestSample--;
-                        }
+                        newSampleReceived = true;
+                        syncEvent.Set();
                     }
                 }
                 else
@@ -432,7 +422,6 @@ namespace MediaToolkit.MediaFoundation
                     logger.Error(ex);
                     //throw;
                 }
-
             }
             catch (Exception ex)
             {
@@ -544,6 +533,8 @@ namespace MediaToolkit.MediaFoundation
                 if (state == ClockState.Running)
                 {
                     presentationClock.Pause();
+
+                    //streamSink.Flush();
                 }
                 else if (state == ClockState.Paused)
                 {
@@ -775,8 +766,65 @@ namespace MediaToolkit.MediaFoundation
                 }
             }
 
-
             return bmp;
+        }
+
+
+        private void OnStarted()
+        {
+            rendererState = RendererState.Started;
+
+            DoRender();
+
+            RendererStarted?.Invoke();
+        }
+
+        private void DoRender()
+        {
+            Task.Run(() =>
+            {
+                //Stopwatch sw = new Stopwatch();
+                while (rendererState == RendererState.Started)
+                {
+                    lock (syncLock)
+                    {
+                        if (streamSinkRequestSample > 0)
+                        {
+                            if (newSampleReceived)
+                            {
+                                streamSink.ProcessSample(videoSample);
+                                streamSinkRequestSample--;
+                                newSampleReceived = false;
+
+                                //logger.Debug("StreamSinkRequestSample: " + sw.ElapsedMilliseconds + " " + streamSinkRequestSample);
+                                //sw.Restart();
+                            }
+
+                        }
+                    }
+
+                    syncEvent.WaitOne(100);
+                }
+            });
+        }
+
+        private void OnRequestSample()
+        {
+            lock (syncLock)
+            {
+                streamSinkRequestSample++;
+            }
+
+            syncEvent.Set();
+        }
+
+        private void OnStopped()
+        {
+            rendererState = RendererState.Stopped;
+
+            RendererStopped?.Invoke();
+
+            syncEvent.Set();
         }
 
         private void OnFormatChanged()

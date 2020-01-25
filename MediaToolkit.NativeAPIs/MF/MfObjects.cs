@@ -8,6 +8,93 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF.Objects
 {
+
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+        Guid("AC6B7889-0740-4D51-8619-905994A55CC6")]
+    public interface IMFAsyncResult
+    {
+        [PreserveSig]
+        HResult GetState(
+            [MarshalAs(UnmanagedType.IUnknown)] out object ppunkState
+            );
+
+        [PreserveSig]
+        HResult GetStatus();
+
+        [PreserveSig]
+        HResult SetStatus(
+            [In, MarshalAs(UnmanagedType.Error)] HResult hrStatus
+            );
+
+        [PreserveSig]
+        HResult GetObject(
+            [MarshalAs(UnmanagedType.Interface)] out object ppObject
+            );
+
+        [PreserveSig]
+        IntPtr GetStateNoAddRef();
+    }
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+        Guid("2CD0BD52-BCD5-4B89-B62C-EADC0C031E7D"),
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IMFMediaEventGenerator
+    {
+        [PreserveSig]
+        HResult GetEvent(
+            [In] MFEventFlag dwFlags,
+            [MarshalAs(UnmanagedType.Interface)] out IMFMediaEvent ppEvent
+            );
+
+        [PreserveSig]
+        HResult BeginGetEvent(
+            [In, MarshalAs(UnmanagedType.Interface)] IMFAsyncCallback pCallback,
+            [In, MarshalAs(UnmanagedType.IUnknown)] object o
+            );
+
+        [PreserveSig]
+        HResult EndGetEvent(
+            IMFAsyncResult pResult,
+            out IMFMediaEvent ppEvent
+            );
+
+        [PreserveSig]
+        HResult QueueEvent(
+            [In] MediaEventType met,
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid guidExtendedType,
+            [In] HResult hrStatus,
+            [In, MarshalAs(UnmanagedType.LPStruct)] ConstPropVariant pvValue
+            );
+    }
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+        Guid("A27003CF-2354-4F2A-8D6A-AB7CFF15437E")]
+    public interface IMFAsyncCallback
+    {
+        [PreserveSig]
+        HResult GetParameters(
+            out MFASync pdwFlags,
+            out MFAsyncCallbackQueue pdwQueue
+            );
+
+        [PreserveSig]
+        HResult Invoke(
+            [In, MarshalAs(UnmanagedType.Interface)] IMFAsyncResult pAsyncResult
+            );
+    }
+
+
+    [Flags]
+    public enum MFEventFlag
+    {
+        None = 0,
+        NoWait = 0x00000001
+    }
+
+
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         Guid("C40A00F2-B93A-4D80-AE8C-5A1C634F58E4"),
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -266,6 +353,32 @@ namespace MediaToolkit.NativeAPIs.MF.Objects
             [In, MarshalAs(UnmanagedType.Interface)] IMFMediaBuffer pBuffer
             );
     }
+
+
+    public enum MFAsyncCallbackQueue
+    {
+        Undefined = 0x00000000,
+        Standard = 0x00000001,
+        RT = 0x00000002,
+        IO = 0x00000003,
+        Timer = 0x00000004,
+        MultiThreaded = 0x00000005,
+        LongFunction = 0x00000007,
+        PrivateMask = unchecked((int)0xFFFF0000),
+        All = unchecked((int)0xFFFFFFFF)
+    }
+
+    [Flags]
+    public enum MFASync
+    {
+        None = 0,
+        FastIOProcessingCallback = 0x00000001,
+        SignalCallback = 0x00000002,
+        BlockingCallback = 0x00000004,
+        ReplyCallback = 0x00000008,
+        LocalizeRemoteCallback = 0x00000010,
+    }
+
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
     InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
