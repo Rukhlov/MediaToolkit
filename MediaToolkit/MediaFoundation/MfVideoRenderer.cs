@@ -99,8 +99,6 @@ namespace MediaToolkit.MediaFoundation
                     activate?.Dispose();
                 }
 
-                
-
                 //var characteristics = videoSink.Characteristics;
                 //var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
                 //logger.Debug("VideoSinkCharacteristics: " + logCharacts);
@@ -111,6 +109,7 @@ namespace MediaToolkit.MediaFoundation
                 //    logger.Debug("EVRSinkAttrubutes:\r\n" + attrLog);
                 //}
 
+
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
                 videoRenderer.InitializeRenderer(null, null);
 
@@ -119,6 +118,7 @@ namespace MediaToolkit.MediaFoundation
                     deviceManager = service.GetService<Direct3DDeviceManager>(MediaServiceKeys.VideoAcceleration);
 
                     videoControl = service.GetService<VideoDisplayControl>(MediaServiceKeysEx.RenderService);
+
                     
                     //var renderingPrefs = VideoRenderPrefs.DoNotClipToDevice;// | VideoRenderPrefs.DoNotRenderBorder;
                     //videoControl.RenderingPrefs = (int)renderingPrefs;
@@ -142,7 +142,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
-
+                
                 /*
                 EVR.IMFVideoProcessor videoProcessor = null;
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
@@ -348,6 +348,11 @@ namespace MediaToolkit.MediaFoundation
                     // errorCode = 100500;
                     //..
                 }
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+                throw;
             }
             finally
             {

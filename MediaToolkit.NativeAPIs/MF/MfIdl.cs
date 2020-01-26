@@ -8,6 +8,38 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF
 {
+    [StructLayout(LayoutKind.Explicit, Pack = 1),]
+    public struct MFPaletteEntry
+    {
+        [FieldOffset(0)]
+        public MFARGB ARGB;
+        [FieldOffset(0)]
+        public MFAYUVSample AYCbCr;
+    }
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class MFAYUVSample
+    {
+        public byte bCrValue;
+        public byte bCbValue;
+        public byte bYValue;
+        public byte bSampleAlpha8;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public class MFARGB
+    {
+        public byte rgbBlue;
+        public byte rgbGreen;
+        public byte rgbRed;
+        public byte rgbAlpha;
+
+        public int ToInt32()
+        {
+            return (rgbBlue) | (rgbGreen << 8) | (rgbRed << 16) | (rgbAlpha << 24);
+        }
+    }
+
+
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),

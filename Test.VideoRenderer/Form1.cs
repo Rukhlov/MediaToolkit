@@ -186,7 +186,7 @@ namespace Test.VideoRenderer
 
                     running = true;
                     Stopwatch sw = new Stopwatch();
-                    int fps = 1000;
+                    int fps = 120;
                     int interval = (int)(1000.0 / fps);
 
                     int _count = 1;
@@ -337,7 +337,7 @@ namespace Test.VideoRenderer
 
             }
         }
-        private bool paused = false;
+
         private void buttonPause_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonPause_Click(...)");
@@ -362,8 +362,6 @@ namespace Test.VideoRenderer
 
                 sampleSource.Pause();
 
-                //paused = !paused;
-
             }
         }
 
@@ -379,8 +377,15 @@ namespace Test.VideoRenderer
 
             if (videoRenderer != null)
             {
-                videoRenderer.Stop();
+
+                presentationClock.GetState(0, out ClockState state);
+                if(state != ClockState.Stopped)
+                {
+                    presentationClock.Stop();
+                }
                 
+                //videoRenderer.Stop();
+
                 //videoRenderer.Close();
 
 
@@ -498,9 +503,9 @@ namespace Test.VideoRenderer
                     var waveSignalGen = signalGenerator.ToWaveProvider();
                     var signalFormat = waveSignalGen.WaveFormat;
                     var bytesPerSecond = signalFormat.AverageBytesPerSecond;
-                    var buffer = new byte[bytesPerSecond];
+                    var buffer = new byte[bytesPerSecond/100];
 
-                    int count = 10;
+                    int count = 10000000;
                     while (count-- > 0)
                     {
 
@@ -527,7 +532,7 @@ namespace Test.VideoRenderer
                         mb?.Dispose();
                         sample?.Dispose();
 
-                        Thread.Sleep(900);
+                        Thread.Sleep(9);
 
                         logger.Debug("Next sample...");
 

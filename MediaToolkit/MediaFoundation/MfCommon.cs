@@ -680,6 +680,7 @@ namespace MediaToolkit.MediaFoundation
 
     class MediaEventHandler : CallbackBase, IAsyncCallback
     {
+        
         private readonly MediaEventGenerator eventGenerator = null;
         public event Action<MediaEvent> EventReceived;
         public MediaEventHandler(MediaEventGenerator eventGen)
@@ -688,20 +689,17 @@ namespace MediaToolkit.MediaFoundation
             this.eventGenerator.BeginGetEvent(this, null);
         }
 
-        //public void Start()
-        //{
-        //    eventGenerator.BeginGetEvent(this, null);
-        //}
+        public bool IsShutdown
+        {
+            get
+            { 
+                return (eventGenerator == null || eventGenerator.IsDisposed) || this.IsDisposed;
+            }
+        }
 
         public void Invoke(AsyncResult asyncResultRef)
         {
-            if (eventGenerator == null || eventGenerator.IsDisposed)
-            {
-                Console.WriteLine("eventGenerator == null || eventGenerator.IsDisposed");
-                return;
-            }
-
-            if (IsDisposed)
+            if (IsShutdown)
             {
                 return;
             }
@@ -722,25 +720,22 @@ namespace MediaToolkit.MediaFoundation
                     }
                 }
 
-                if(eventGenerator == null || eventGenerator.IsDisposed)
+                if (IsShutdown)
                 {
-                    Console.WriteLine("eventGenerator == null || eventGenerator.IsDisposed");
                     return;
                 }
 
-                if (IsDisposed)
-                {
-                    return;
-                }
-                
                 eventGenerator?.BeginGetEvent(this, null);
-            }
-            catch (Exception ex)
-            {
-                //TODO:...
-                Console.WriteLine(ex);
-            }
         }
+            catch (Exception ex)
+            { 
+                //FIXME: может привести к неопределенному состоянию...
+                // т.е события больше не генерятся, подписчики ни чего об этом не знают...
+                Console.WriteLine(ex);
+
+                throw;
+            }
+}
 
         public IDisposable Shadow { get; set; }
         public AsyncCallbackFlags Flags { get; private set; }

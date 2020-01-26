@@ -8,7 +8,248 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF.Objects
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public struct MFVideoInfo
+    {
+        public int dwWidth;
+        public int dwHeight;
+        public MFRatio PixelAspectRatio;
+        public MFVideoChromaSubsampling SourceChromaSubsampling;
+        public MFVideoInterlaceMode InterlaceMode;
+        public MFVideoTransferFunction TransferFunction;
+        public MFVideoPrimaries ColorPrimaries;
+        public MFVideoTransferMatrix TransferMatrix;
+        public MFVideoLighting SourceLighting;
+        public MFRatio FramesPerSecond;
+        public MFNominalRange NominalRange;
+        public MFVideoArea GeometricAperture;
+        public MFVideoArea MinimumDisplayAperture;
+        public MFVideoArea PanScanAperture;
+        public MFVideoFlags VideoFlags;
+    }
 
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public class MFVideoArea
+    {
+        public MFOffset OffsetX;
+        public MFOffset OffsetY;
+        public SIZE Area;
+
+        public MFVideoArea()
+        {
+            OffsetX = new MFOffset();
+            OffsetY = new MFOffset();
+        }
+
+        public MFVideoArea(float x, float y, int width, int height)
+        {
+            OffsetX = new MFOffset(x);
+            OffsetY = new MFOffset(y);
+            Area = new SIZE(width, height);
+        }
+
+        public void MakeArea(float x, float y, int width, int height)
+        {
+            OffsetX.MakeOffset(x);
+            OffsetY.MakeOffset(y);
+            Area.cx = width;
+            Area.cy = height;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 2)]
+    public class MFOffset
+    {
+        public short fract;
+        public short Value;
+
+        public MFOffset()
+        {
+        }
+
+        public MFOffset(float v)
+        {
+            Value = (short)v;
+            fract = (short)(65536 * (v - Value));
+        }
+
+        public void MakeOffset(float v)
+        {
+            Value = (short)v;
+            fract = (short)(65536 * (v - Value));
+        }
+
+        public float GetOffset()
+        {
+            return ((float)Value) + (((float)fract) / 65536.0f);
+        }
+    }
+
+    [Flags]
+    public enum MFVideoFlags : long
+    {
+        None = 0,
+        PAD_TO_Mask = 0x0001 | 0x0002,
+        PAD_TO_None = 0 * 0x0001,
+        PAD_TO_4x3 = 1 * 0x0001,
+        PAD_TO_16x9 = 2 * 0x0001,
+        SrcContentHintMask = 0x0004 | 0x0008 | 0x0010,
+        SrcContentHintNone = 0 * 0x0004,
+        SrcContentHint16x9 = 1 * 0x0004,
+        SrcContentHint235_1 = 2 * 0x0004,
+        AnalogProtected = 0x0020,
+        DigitallyProtected = 0x0040,
+        ProgressiveContent = 0x0080,
+        FieldRepeatCountMask = 0x0100 | 0x0200 | 0x0400,
+        FieldRepeatCountShift = 8,
+        ProgressiveSeqReset = 0x0800,
+        PanScanEnabled = 0x20000,
+        LowerFieldFirst = 0x40000,
+        BottomUpLinearRep = 0x80000,
+        DXVASurface = 0x100000,
+        RenderTargetSurface = 0x400000,
+        ForceQWORD = 0x7FFFFFFF
+    }
+
+
+    public enum MFVideoChromaSubsampling
+    {
+        Cosited = 7,
+        DV_PAL = 6,
+        ForceDWORD = 0x7fffffff,
+        Horizontally_Cosited = 4,
+        Last = 8,
+        MPEG1 = 1,
+        MPEG2 = 5,
+        ProgressiveChroma = 8,
+        Unknown = 0,
+        Vertically_AlignedChromaPlanes = 1,
+        Vertically_Cosited = 2
+    }
+
+
+    public enum MFVideoInterlaceMode
+    {
+        FieldInterleavedLowerFirst = 4,
+        FieldInterleavedUpperFirst = 3,
+        FieldSingleLower = 6,
+        FieldSingleUpper = 5,
+        ForceDWORD = 0x7fffffff,
+        Last = 8,
+        MixedInterlaceOrProgressive = 7,
+        Progressive = 2,
+        Unknown = 0
+    }
+
+
+    public enum MFVideoTransferFunction
+    {
+        Unknown = 0,
+        Func10 = 1,
+        Func18 = 2,
+        Func20 = 3,
+        Func22 = 4,
+        Func240M = 6,
+        Func28 = 8,
+        Func709 = 5,
+        Func2020Const = 12,
+        Func2020 = 13,
+        Func26 = 14,
+        ForceDWORD = 0x7fffffff,
+        Last = 9,
+        sRGB = 7,
+        Log_100 = 9,
+        Log_316 = 10,
+        x709_sym = 11 // symmetric 709
+    }
+
+
+    public enum MFVideoPrimaries
+    {
+        BT470_2_SysBG = 4,
+        BT470_2_SysM = 3,
+        BT709 = 2,
+        EBU3213 = 7,
+        ForceDWORD = 0x7fffffff,
+        Last = 9,
+        reserved = 1,
+        SMPTE_C = 8,
+        SMPTE170M = 5,
+        SMPTE240M = 6,
+        Unknown = 0,
+        BT2020 = 9,
+        XYZ = 10,
+    }
+
+
+    public enum MFVideoTransferMatrix
+    {
+        BT601 = 2,
+        BT709 = 1,
+        ForceDWORD = 0x7fffffff,
+        SMPTE240M = 3,
+        Unknown = 0,
+        BT2020_10 = 4,
+        BT2020_12 = 5,
+        Last = 6,
+    }
+
+
+    public enum MFVideoLighting
+    {
+        Bright = 1,
+        Dark = 4,
+        Dim = 3,
+        ForceDWORD = 0x7fffffff,
+        Last = 5,
+        Office = 2,
+        Unknown = 0
+    }
+
+
+    public enum MFNominalRange
+    {
+        MFNominalRange_Unknown = 0,
+        MFNominalRange_Normal = 1,
+        MFNominalRange_Wide = 2,
+
+        MFNominalRange_0_255 = 1,
+        MFNominalRange_16_235 = 2,
+        MFNominalRange_48_208 = 3,
+        MFNominalRange_64_127 = 4,
+
+        MFNominalRange_Last,
+        MFNominalRange_ForceDWORD = 0x7fffffff,
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct MFRatio
+    {
+        public int Numerator;
+        public int Denominator;
+
+        public MFRatio(int n, int d)
+        {
+            Numerator = n;
+            Denominator = d;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+    public struct MFVideoCompressedInfo
+    {
+        public long AvgBitrate;
+        public long AvgBitErrorRate;
+        public int MaxKeyFrameSpacing;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct MFVideoSurfaceInfo
+    {
+        public int Format;
+        public int PaletteEntries;
+        public MFPaletteEntry[] Palette;
+    }
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
