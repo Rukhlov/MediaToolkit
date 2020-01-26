@@ -11,6 +11,21 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF.EVR
 {
+    public class Evr
+    {
+        [DllImport("Evr.dll", EntryPoint = "MFCreateVideoMixer", CallingConvention = CallingConvention.StdCall)]
+        public static extern int CreateVideoMixer([In] IntPtr pOwner, 
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid riidDevice,
+            [In, MarshalAs(UnmanagedType.LPStruct)]Guid riid,
+            out IntPtr ppv);
+
+        [DllImport("Evr.dll", EntryPoint = "MFCreateVideoPresenter", CallingConvention = CallingConvention.StdCall)]
+        public static extern int MFCreateVideoPresenter([In] IntPtr pOwner, 
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid riidDevice, 
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid riid, 
+            out IntPtr ppVideoPresenter);
+
+    }
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),

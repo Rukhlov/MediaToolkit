@@ -680,7 +680,7 @@ namespace MediaToolkit.MediaFoundation
 
     class MediaEventHandler : CallbackBase, IAsyncCallback
     {
-        
+
         private readonly MediaEventGenerator eventGenerator = null;
         public event Action<MediaEvent> EventReceived;
         public MediaEventHandler(MediaEventGenerator eventGen)
@@ -692,7 +692,7 @@ namespace MediaToolkit.MediaFoundation
         public bool IsShutdown
         {
             get
-            { 
+            {
                 return (eventGenerator == null || eventGenerator.IsDisposed) || this.IsDisposed;
             }
         }
@@ -726,16 +726,15 @@ namespace MediaToolkit.MediaFoundation
                 }
 
                 eventGenerator?.BeginGetEvent(this, null);
-        }
+            }
             catch (Exception ex)
-            { 
-                //FIXME: может привести к неопределенному состоянию...
-                // т.е события больше не генерятся, подписчики ни чего об этом не знают...
+            { //может привести к неопределенному состоянию...
+              // т.е события больше не генерятся, подписчики ни чего об этом не знают...
                 Console.WriteLine(ex);
 
                 throw;
             }
-}
+        }
 
         public IDisposable Shadow { get; set; }
         public AsyncCallbackFlags Flags { get; private set; }
@@ -847,7 +846,7 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Guid MJPEGDecoderMFT = new Guid("CB17E772-E1CC-4633-8450-5617AF577905");
 
         public static readonly Guid CResamplerMediaObject = new Guid("f447b69e-1884-4a7e-8055-346f74d6edb3");
-        
+
 
 
     }

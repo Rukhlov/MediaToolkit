@@ -35,6 +35,8 @@ namespace MediaToolkit.MediaFoundation
         private MediaSink videoSink = null;
         private Direct3DDeviceManager deviceManager = null;
 
+        private Transform videoMixer = null;
+
         private EVR.IMFVideoMixerBitmap videoMixerBitmap = null;
 
         private VideoRenderer videoRenderer = null;
@@ -108,6 +110,33 @@ namespace MediaToolkit.MediaFoundation
                 //    var attrLog = MfTool.LogMediaAttributes(attrs);
                 //    logger.Debug("EVRSinkAttrubutes:\r\n" + attrLog);
                 //}
+
+                //VideoPresenter videoPresenter = null;
+                //IntPtr pVideoPresenter = IntPtr.Zero;
+                //try
+                //{
+                //    EVR.Evr.MFCreateVideoPresenter(IntPtr.Zero, 
+                //         Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
+                //         Utilities.GetGuidFromType(typeof(VideoPresenter)),
+                //         out pVideoPresenter);
+
+                //    videoPresenter = (VideoPresenter)Marshal.GetObjectForIUnknown(pVideoPresenter);
+                //}
+                //finally
+                //{
+                //    if (pVideoPresenter != IntPtr.Zero)
+                //    {
+                //        Marshal.Release(pVideoPresenter);
+                //        pVideoPresenter = IntPtr.Zero;
+                //    }
+                //}
+
+                //EVR.Evr.CreateVideoMixer(IntPtr.Zero, 
+                //    Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
+                //    Utilities.GetGuidFromType(typeof(Transform)), 
+                //    out IntPtr pUnk);
+
+                //videoMixer = new Transform(pUnk);
 
 
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
@@ -225,16 +254,12 @@ namespace MediaToolkit.MediaFoundation
                     }
                     while (true);
 
-
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
                     streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
-
-                    //nativeStreamSink = (NativeAPIs.MF.IMFStreamSink)Marshal.GetObjectForIUnknown(streamSink.NativePointer);
 
                 }
 
                 InitSampleAllocator();
-
 
                 //TryGetVideoCaps();
                 rendererState = RendererState.Initialized;
@@ -269,15 +294,11 @@ namespace MediaToolkit.MediaFoundation
                     {
                         videoSampleAllocator = service.GetService<VideoSampleAllocator>(MediaServiceKeys.VideoAcceleration);
 
-                        //videoSampleAllocatorCallback = (NativeAPIs.MF.IMFVideoSampleAllocatorCallback)videoSampleAllocator;
-
                         videoSampleAllocator.DirectXManager = deviceManager;
                         videoSampleAllocator.InitializeSampleAllocator(1, mediaType);
                         videoSampleAllocator.AllocateSample(out videoSample);
                         videoSample.SampleDuration = 0;
                         videoSample.SampleTime = 0;
-
-                        //nativeVideoSample = (NativeAPIs.MF.Objects.IMFSample)Marshal.GetObjectForIUnknown(videoSample.NativePointer);
 
                     }   
                 }
@@ -972,6 +993,11 @@ namespace MediaToolkit.MediaFoundation
                 videoMixerBitmap = null;
             }
 
+            if (videoMixer != null)
+            {
+                videoMixer.Dispose();
+                videoMixer = null;
+            }
 
             CloseSampleAllocator();
         }
