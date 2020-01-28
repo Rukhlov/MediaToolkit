@@ -319,7 +319,6 @@ namespace MediaToolkit.DeckLink
                         {
                             _noSignal = noSignal;
 
-                            //InputSignalChanged?.Invoke(noSignal);
                         }
 
                         if (_noSignal)

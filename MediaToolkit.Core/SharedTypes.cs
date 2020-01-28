@@ -200,6 +200,8 @@ namespace MediaToolkit.SharedTypes
 
         bool DebugMode { get; set; }
 
+        void SetStatusText(string text);
+
     }
 
 

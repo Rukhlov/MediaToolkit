@@ -39,12 +39,16 @@ namespace MediaToolkit.UI
 
             debugPanel.Visible = false;
             statusLabel.Text = "";
-            labelStatus.Text = "";
+            statusLabel2.Text = "";
 
             UptateDetailsButton();
 
+            timer.Interval = 1000;
+            timer.Tick += Timer_Tick;
+
         }
 
+        private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
 
         private volatile ErrorCode errorCode = ErrorCode.Ok;
         public ErrorCode Code => errorCode;
@@ -68,36 +72,86 @@ namespace MediaToolkit.UI
         {
             get
             {
+                int volume = 0;
+                try
+                {
+                    if (renderSession != null)
+                    {
+                        volume = (int)(renderSession.Volume * 100);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+
                 return volume;
+  
             }
             set
             {
-                if (volume != value)
+                try
                 {
-                    volume = value;
+                    if (renderSession != null)
+                    {
+                        float vol = value / 100f;
+                        if (vol > 1f)
+                        {
+                            vol = 1f;
+                        }
+
+                        if (vol < 0)
+                        {
+                            vol = 0;
+                        }
+                        logger.Debug("New volume: " + vol);
+                        renderSession.Volume = vol;
+
+                    }
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
                 }
             }
         }
 
-        private bool mute = false;
+
         public bool Mute
         {
             get
             {
-                
+                bool mute = false;
+                try
+                {
+                    if (renderSession != null)
+                    {
+                        mute = renderSession.Mute;
+                    }
+                    
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                }
+
                 return mute;
             }
             set
             {
-                if (mute != value)
+                
+                try
                 {
-                    mute = value;
-
                     if (renderSession != null)
                     {
-                        renderSession.Mute = mute;
+                        renderSession.Mute = value;
                     }
                 }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                }
+  
             }
         }
 
@@ -107,14 +161,17 @@ namespace MediaToolkit.UI
 
             return DeckLinkTools.GetDeckLinkInputDevices();
 
-
+           
         }
 
         public void StartCapture(int deviceIndex)
         {
             logger.Debug("IDeckLinkInputControl::StartCapture(...) " + deviceIndex);
 
-            StartCapture(deviceIndex, 0, 1769303659);
+            const long BMDDisplayMode_Unknown = 1769303659;
+            const long BMDPixelFormat_Unspecified = 0;
+
+            StartCapture(deviceIndex, BMDPixelFormat_Unspecified, BMDDisplayMode_Unknown);
         }
 
 
@@ -248,6 +305,10 @@ namespace MediaToolkit.UI
             renderSession?.ProcessAudioPacket(data, length, time, duration);
         }
 
+        public void SetStatusText(string text)
+        {
+            statusLabel.Text = text;
+        }
 
 
         private void OnCaptureStarted()
@@ -258,9 +319,10 @@ namespace MediaToolkit.UI
                 {
                     this.switchCaptureStateButton.Enabled = true;
                     this.switchCaptureStateButton.Text = "_Stop";
-
+                
                 }
 
+                this.timer.Enabled = true;
                 isCapture = true;
                 CaptureStarted?.Invoke();
 
@@ -306,9 +368,10 @@ namespace MediaToolkit.UI
                     comboBoxDevices.Enabled = true;
                     comboBoxDisplayModes.Enabled = true;
                     findServiceButton.Enabled = true;
-
                 }
 
+                this.timer.Enabled = false;
+                
 
                 isCapture = false;
                 CaptureStopped?.Invoke();
@@ -360,6 +423,19 @@ namespace MediaToolkit.UI
             return audioArgs;
         }
 
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            var stats = deckLinkInput?.Statistics;
+            if (stats != null)
+            {
+                if (!this.IsDisposed && this.Visible)
+                {
+                    var noSignal = stats.NoSignal;
+                    statusLabel.Text = (noSignal ? "No signal..." : "");
+                }
+            }
+
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
