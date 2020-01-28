@@ -724,7 +724,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     return;
                 }
-
+                
                 eventGenerator?.BeginGetEvent(this, null);
             }
             catch (Exception ex)
@@ -817,6 +817,9 @@ namespace MediaToolkit.MediaFoundation
         public static readonly MediaAttributeKey<int> EVRConfig_AllowScaling = new MediaAttributeKey<int>("e447df08-10ca-4d17-b17e-6a840f8a3a4c");
         public static readonly MediaAttributeKey<int> EVRConfig_ForceBatching = new MediaAttributeKey<int>("e447df09-10ca-4d17-b17e-6a840f8a3a4c");
         public static readonly MediaAttributeKey<int> EVRConfig_AllowBatching = new MediaAttributeKey<int>("e447df0a-10ca-4d17-b17e-6a840f8a3a4c");
+
+        public static readonly MediaAttributeKey<byte[]> VIDEO_ZOOM_RECT = new MediaAttributeKey<byte[]>("7aaa1638-1b7f-4c93-bd89-5b9c9fb6fcf0");
+
 
     }
     public static class MediaServiceKeysEx

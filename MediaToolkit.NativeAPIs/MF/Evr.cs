@@ -27,6 +27,19 @@ namespace MediaToolkit.NativeAPIs.MF.EVR
 
     }
 
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+        Guid("FA99388A-4383-415A-A930-DD472A8CF6F7"),
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IMFTopologyServiceLookupClient
+    {
+        [PreserveSig]
+        HResult InitServicePointers(IntPtr pLookup);
+
+        [PreserveSig]
+        HResult ReleaseServicePointers();
+    }
+
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
         Guid("29AFF080-182A-4A5D-AF3B-448F3A6346CB")]

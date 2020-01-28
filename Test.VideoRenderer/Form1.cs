@@ -186,7 +186,7 @@ namespace Test.VideoRenderer
 
                     running = true;
                     Stopwatch sw = new Stopwatch();
-                    int fps = 120;
+                    int fps = 1000;
                     int interval = (int)(1000.0 / fps);
 
                     int _count = 1;
@@ -597,6 +597,8 @@ namespace Test.VideoRenderer
 
         private void buttonTest_Click(object sender, EventArgs e)
         {
+
+
 
             var bmp = new Bitmap(640, 480, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             using (var g = Graphics.FromImage(bmp))

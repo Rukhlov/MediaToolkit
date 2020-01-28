@@ -141,6 +141,7 @@ namespace MediaToolkit.MediaFoundation
                 var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
                 logger.Debug("AudioSinkCharacteristics: " + logCharacts);
 
+
                 using (var service = audioSink.QueryInterface<ServiceProvider>())
                 { //MR_POLICY_VOLUME_SERVICE
 

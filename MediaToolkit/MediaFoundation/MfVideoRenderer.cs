@@ -131,16 +131,20 @@ namespace MediaToolkit.MediaFoundation
                 //    }
                 //}
 
-                //EVR.Evr.CreateVideoMixer(IntPtr.Zero, 
+                //EVR.Evr.CreateVideoMixer(IntPtr.Zero,
                 //    Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
-                //    Utilities.GetGuidFromType(typeof(Transform)), 
+                //    Utilities.GetGuidFromType(typeof(Transform)),
                 //    out IntPtr pUnk);
 
                 //videoMixer = new Transform(pUnk);
 
-
+              
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
-                videoRenderer.InitializeRenderer(null, null);
+                videoRenderer.InitializeRenderer(videoMixer, null);
+
+
+                //var client = (EVR.IMFTopologyServiceLookupClient)Marshal.GetObjectForIUnknown(videoMixer.NativePointer);
+                //client.InitServicePointers(videoRenderer.NativePointer);
 
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
                 {
@@ -171,7 +175,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     videoMixerBitmap = service.GetNativeMfService<EVR.IMFVideoMixerBitmap>(MediaServiceKeysEx.MixerService);
                 }
-                
+
                 /*
                 EVR.IMFVideoProcessor videoProcessor = null;
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
@@ -254,10 +258,41 @@ namespace MediaToolkit.MediaFoundation
                     }
                     while (true);
 
-                    streamSinkEventHandler = new MediaEventHandler(streamSink);
-                    streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
+                    //for (int i = 0; ; i++)
+                    //{
+                    //    bool res = videoMixer.TryGetOutputAvailableType(0, i, out MediaType _mediaType);
+                    //    if (!res)
+                    //    {
+                    //        break;
+                    //    }
+                    //    logger.Debug(MfTool.LogMediaType(_mediaType));
+                    //    _mediaType.Dispose();
+                    //}
+
+                    //{
+                    //    videoMixer.GetInputCurrentType(0, out MediaType currentInputType);
+                    //    logger.Debug(MfTool.LogMediaType(currentInputType));
+                    //    currentInputType.Dispose();
+
+                    //    videoMixer.GetOutputCurrentType(0, out MediaType currentOutputType);
+                    //    logger.Debug(MfTool.LogMediaType(currentOutputType));
+                    //    currentOutputType.Dispose();
+
+
+
+                    //    using (var _attrs = videoMixer.Attributes)
+                    //    {
+                    //        logger.Debug(MfTool.LogMediaAttributes(_attrs));
+                    //    }
+                    //}
+
+ 
 
                 }
+
+
+                streamSinkEventHandler = new MediaEventHandler(streamSink);
+                streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
 
                 InitSampleAllocator();
 
@@ -356,6 +391,13 @@ namespace MediaToolkit.MediaFoundation
 
                         //...
                         errorCode = 100500;
+
+                    }                    
+                    else if (typeInfo == MediaEventTypes.StreamSinkFormatInvalidated)
+                    {
+                        logger.Debug(typeInfo);
+
+                        errorCode = 100501;
 
                     }
                     else
@@ -971,6 +1013,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (streamSink != null)
             {
+
                 streamSink.Dispose();
                 streamSink = null;
             }
@@ -1048,6 +1091,12 @@ namespace MediaToolkit.MediaFoundation
         }
     }
 
+    [Guid("56a868a2-0ad4-11ce-b03a-0020af0ba770")]
+    [System.Security.SuppressUnmanagedCodeSecurity]
+    public interface IMediaEventSink
+    {
+        void Notify(long EventCode, IntPtr EventParam1, IntPtr EventParam2);
+    }
 
 
     public enum RendererState

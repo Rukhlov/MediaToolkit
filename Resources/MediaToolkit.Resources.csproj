@@ -305,6 +305,7 @@
     <None Include="Files\AV_10Sec_30Fps_Click_Sin.mkv" />
     <None Include="Files\AV_60Sec_30Fps_Click_Sin.mkv" />
     <None Include="Utils\mftrace.bat" />
+    <None Include="Utils\mftrace_startnew.bat" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
