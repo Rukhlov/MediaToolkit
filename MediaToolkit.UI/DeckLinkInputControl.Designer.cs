@@ -37,7 +37,7 @@
             this.findServiceButton = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.showDetailsButton = new System.Windows.Forms.Button();
-            this.labelStatus = new System.Windows.Forms.Label();
+            this.statusLabel2 = new System.Windows.Forms.Label();
             this.statusLabel = new System.Windows.Forms.Label();
             this.debugPanel.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -133,7 +133,7 @@
             this.panel2.AutoSize = true;
             this.panel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panel2.Controls.Add(this.showDetailsButton);
-            this.panel2.Controls.Add(this.labelStatus);
+            this.panel2.Controls.Add(this.statusLabel2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel2.Location = new System.Drawing.Point(2, 64);
             this.panel2.Margin = new System.Windows.Forms.Padding(2);
@@ -156,20 +156,20 @@
             this.showDetailsButton.UseVisualStyleBackColor = true;
             this.showDetailsButton.Click += new System.EventHandler(this.showDetailsButton_Click);
             // 
-            // labelStatus
+            // statusLabel2
             // 
-            this.labelStatus.AutoEllipsis = true;
-            this.labelStatus.AutoSize = true;
-            this.labelStatus.Dock = System.Windows.Forms.DockStyle.Left;
-            this.labelStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelStatus.Location = new System.Drawing.Point(0, 0);
-            this.labelStatus.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.labelStatus.Name = "labelStatus";
-            this.labelStatus.Padding = new System.Windows.Forms.Padding(0, 3, 0, 0);
-            this.labelStatus.Size = new System.Drawing.Size(80, 16);
-            this.labelStatus.TabIndex = 37;
-            this.labelStatus.Text = "__STATUS___";
-            this.labelStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.statusLabel2.AutoEllipsis = true;
+            this.statusLabel2.AutoSize = true;
+            this.statusLabel2.Dock = System.Windows.Forms.DockStyle.Left;
+            this.statusLabel2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.statusLabel2.Location = new System.Drawing.Point(0, 0);
+            this.statusLabel2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.statusLabel2.Name = "statusLabel2";
+            this.statusLabel2.Padding = new System.Windows.Forms.Padding(0, 3, 0, 0);
+            this.statusLabel2.Size = new System.Drawing.Size(80, 16);
+            this.statusLabel2.TabIndex = 37;
+            this.statusLabel2.Text = "__STATUS___";
+            this.statusLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // statusLabel
             // 
@@ -213,7 +213,7 @@
         private System.Windows.Forms.Button switchCaptureStateButton;
         private System.Windows.Forms.Button findServiceButton;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Label labelStatus;
+        private System.Windows.Forms.Label statusLabel2;
         private System.Windows.Forms.Button showDetailsButton;
         private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.ComboBox comboBoxDisplayModes;

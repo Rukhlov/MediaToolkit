@@ -41,8 +41,6 @@ namespace Test.DeckLink
             timer.Tick += Timer_Tick;
 
 
-
-
         }
 
 

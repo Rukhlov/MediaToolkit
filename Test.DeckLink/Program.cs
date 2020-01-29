@@ -68,69 +68,60 @@ namespace Test.DeckLink
 
             mediaToolkit.Startup();
 
-
-
-            //if (!MediaToolkitFactory.Startup(mediaToolkitPath))
-            //{
-            //    MessageBox.Show("Error at MediaToolkit startup:\r\n\r\n" + mediaToolkitPath);
-
-            //    return;
-            //}
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            //var control = InstanceFactory.CreateInstance<IDeckLinkInputControl>();
+            var control = InstanceFactory.CreateInstance<IDeckLinkInputControl>();
 
-            //control.CaptureStarted += () =>
-            //{
+            control.CaptureStarted += () =>
+            {
 
-            //};
+            };
 
-            //control.CaptureStopped += () =>
-            //{
-            //    var code = control.Code;
-            //    if (code != 0)
-            //    {
-            //        var result = MessageBox.Show("Device stopped with error: " + code, "",
-            //            MessageBoxButtons.RetryCancel);
+            control.CaptureStopped += () =>
+            {
+                var code = control.Code;
+                if (code != 0)
+                {
+                    var result = MessageBox.Show("Device stopped with error: " + code, "",
+                        MessageBoxButtons.RetryCancel);
 
-            //        if (result == DialogResult.Retry)
-            //        {
-            //            var deviceIndex = control.DeviceIndex;
+                    if (result == DialogResult.Retry)
+                    {
+                        var deviceIndex = control.DeviceIndex;
 
-            //            control.StartCapture(deviceIndex);
+                        control.StartCapture(deviceIndex);
 
-            //            return;
-            //        }
+                        return;
+                    }
 
-            //    }
-            //};
-
-
-            //control.DebugMode = true;
-
-            //var form = new Form
-            //{
-            //    Size = new System.Drawing.Size(1280, 720),
-            //    StartPosition = FormStartPosition.CenterScreen,
-            //};
-
-            //form.FormClosed += (o, a) =>
-            //{
-            //    if (control != null)
-            //    {
-            //        control.StopCapture();
-            //    }
-            //};
-
-            //var c = (Control)control;
-            //c.Dock = DockStyle.Fill;
-            //form.Controls.Add(c);
+                }
+            };
 
 
+            control.DebugMode = true;
 
-            var form = new Form1();
+            var form = new Form
+            {
+                Size = new System.Drawing.Size(1280, 720),
+                StartPosition = FormStartPosition.CenterScreen,
+            };
+
+            form.FormClosed += (o, a) =>
+            {
+                if (control != null)
+                {
+                    control.StopCapture();
+                }
+            };
+
+            var c = (Control)control;
+            c.Dock = DockStyle.Fill;
+            form.Controls.Add(c);
+
+            //control.StartCapture(0);
+
+            //var form = new Form1();
             Application.Run(form);
 
             mediaToolkit.Shutdown();
