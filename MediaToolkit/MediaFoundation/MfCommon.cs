@@ -830,6 +830,9 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Guid MixerService = new Guid("073cd2fc-6cf4-40b7-8859-e89552c841f8");
 
 
+        public static readonly Guid MF_QUALITY_NOTIFY_PROCESSING_LATENCY = new Guid("f6b44af8-604d-46fe-a95d-45479b10c9bc");
+
+
     }
 
     public static class VideoFormatGuidsEx

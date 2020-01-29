@@ -42,6 +42,8 @@ namespace MediaToolkit.MediaFoundation
         private VideoRenderer videoRenderer = null;
 
         private VideoSampleAllocator videoSampleAllocator = null;
+        private MediaEventGenerator mediaSinkEventGenerator = null;
+        private MediaEventHandler mediaSinkEventHandler = null;
 
         private volatile bool newSampleReceived = false;
         private volatile int streamSinkRequestSample = 0;
@@ -138,7 +140,7 @@ namespace MediaToolkit.MediaFoundation
 
                 //videoMixer = new Transform(pUnk);
 
-              
+
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
                 videoRenderer.InitializeRenderer(videoMixer, null);
 
@@ -152,7 +154,7 @@ namespace MediaToolkit.MediaFoundation
 
                     videoControl = service.GetService<VideoDisplayControl>(MediaServiceKeysEx.RenderService);
 
-                    
+
                     //var renderingPrefs = VideoRenderPrefs.DoNotClipToDevice;// | VideoRenderPrefs.DoNotRenderBorder;
                     //videoControl.RenderingPrefs = (int)renderingPrefs;
                     //videoControl.BorderColor = 0xFFFFFF;//0x008000;
@@ -215,7 +217,7 @@ namespace MediaToolkit.MediaFoundation
                         var mediaType = new MediaType();
                         try
                         {
-   
+
                             mediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                             mediaType.Set(MediaTypeAttributeKeys.Subtype, videoFormat); //VideoFormatGuids.NV12 
                             mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(videoResolution.Width, videoResolution.Height));
@@ -254,7 +256,7 @@ namespace MediaToolkit.MediaFoundation
                                 mediaType = null;
                             }
                         }
-                        
+
                     }
                     while (true);
 
@@ -286,13 +288,17 @@ namespace MediaToolkit.MediaFoundation
                     //    }
                     //}
 
- 
 
                 }
 
+                mediaSinkEventGenerator = videoSink.QueryInterface<MediaEventGenerator>();
+
+                mediaSinkEventHandler = new MediaEventHandler(mediaSinkEventGenerator);
+                mediaSinkEventHandler.EventReceived += MediaSinkEventHandler_EventReceived;
 
                 streamSinkEventHandler = new MediaEventHandler(streamSink);
                 streamSinkEventHandler.EventReceived += StreamSinkEventHandler_EventReceived;
+
 
                 InitSampleAllocator();
 
@@ -308,6 +314,11 @@ namespace MediaToolkit.MediaFoundation
                 throw;
             }
 
+        }
+
+        private void MediaSinkEventHandler_EventReceived(MediaEvent mediaEvent)
+        {// MemoryLeak
+            mediaEvent?.Dispose();
         }
 
         public void SetPresentationClock(PresentationClock clock)
@@ -347,7 +358,7 @@ namespace MediaToolkit.MediaFoundation
             {
                 var status = mediaEvent.Status;
                 var typeInfo = mediaEvent.TypeInfo;
-                
+
                 if (status.Success)
                 {
                     if (typeInfo == MediaEventTypes.StreamSinkRequestSample)
@@ -421,6 +432,11 @@ namespace MediaToolkit.MediaFoundation
             {
                 if (mediaEvent != null)
                 {
+                    if (mediaEvent.Count > 0)
+                    {
+                        mediaEvent.DeleteAllItems();
+                    }
+
                     mediaEvent.Dispose();
                     mediaEvent = null;
 
@@ -1040,6 +1056,18 @@ namespace MediaToolkit.MediaFoundation
             {
                 videoMixer.Dispose();
                 videoMixer = null;
+            }
+
+            if (mediaSinkEventGenerator != null)
+            {
+                mediaSinkEventGenerator.Dispose();
+                mediaSinkEventGenerator = null;
+            }
+
+            if (mediaSinkEventHandler != null)
+            {
+                mediaSinkEventHandler.Dispose();
+                mediaSinkEventGenerator = null;
             }
 
             CloseSampleAllocator();
