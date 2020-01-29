@@ -113,47 +113,17 @@ namespace MediaToolkit.MediaFoundation
                 //    logger.Debug("EVRSinkAttrubutes:\r\n" + attrLog);
                 //}
 
-                //VideoPresenter videoPresenter = null;
-                //IntPtr pVideoPresenter = IntPtr.Zero;
-                //try
-                //{
-                //    EVR.Evr.MFCreateVideoPresenter(IntPtr.Zero, 
-                //         Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
-                //         Utilities.GetGuidFromType(typeof(VideoPresenter)),
-                //         out pVideoPresenter);
-
-                //    videoPresenter = (VideoPresenter)Marshal.GetObjectForIUnknown(pVideoPresenter);
-                //}
-                //finally
-                //{
-                //    if (pVideoPresenter != IntPtr.Zero)
-                //    {
-                //        Marshal.Release(pVideoPresenter);
-                //        pVideoPresenter = IntPtr.Zero;
-                //    }
-                //}
-
-                //EVR.Evr.CreateVideoMixer(IntPtr.Zero,
-                //    Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
-                //    Utilities.GetGuidFromType(typeof(Transform)),
-                //    out IntPtr pUnk);
-
-                //videoMixer = new Transform(pUnk);
-
+                //var presenter = CreateDefaultVideoPresenter();
+                //videoMixer = CreateDefaultVideoMixer();
 
                 videoRenderer = videoSink.QueryInterface<VideoRenderer>();
-                videoRenderer.InitializeRenderer(videoMixer, null);
-
-
-                //var client = (EVR.IMFTopologyServiceLookupClient)Marshal.GetObjectForIUnknown(videoMixer.NativePointer);
-                //client.InitServicePointers(videoRenderer.NativePointer);
+                videoRenderer.InitializeRenderer(null, null);
 
                 using (var service = videoSink.QueryInterface<ServiceProvider>())
                 {
                     deviceManager = service.GetService<Direct3DDeviceManager>(MediaServiceKeys.VideoAcceleration);
 
                     videoControl = service.GetService<VideoDisplayControl>(MediaServiceKeysEx.RenderService);
-
 
                     //var renderingPrefs = VideoRenderPrefs.DoNotClipToDevice;// | VideoRenderPrefs.DoNotRenderBorder;
                     //videoControl.RenderingPrefs = (int)renderingPrefs;
@@ -260,6 +230,7 @@ namespace MediaToolkit.MediaFoundation
                     }
                     while (true);
 
+                    #region Log mixer output types
                     //for (int i = 0; ; i++)
                     //{
                     //    bool res = videoMixer.TryGetOutputAvailableType(0, i, out MediaType _mediaType);
@@ -280,14 +251,13 @@ namespace MediaToolkit.MediaFoundation
                     //    logger.Debug(MfTool.LogMediaType(currentOutputType));
                     //    currentOutputType.Dispose();
 
-
-
                     //    using (var _attrs = videoMixer.Attributes)
                     //    {
                     //        logger.Debug(MfTool.LogMediaAttributes(_attrs));
                     //    }
                     //}
 
+                    #endregion
 
                 }
 
@@ -316,10 +286,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        private void MediaSinkEventHandler_EventReceived(MediaEvent mediaEvent)
-        {// MemoryLeak
-            mediaEvent?.Dispose();
-        }
 
         public void SetPresentationClock(PresentationClock clock)
         {
@@ -444,6 +410,39 @@ namespace MediaToolkit.MediaFoundation
                
             }
         }
+
+        private void MediaSinkEventHandler_EventReceived(MediaEvent mediaEvent)
+        {// 
+            try
+            {
+                var status = mediaEvent.Status;
+                var typeInfo = mediaEvent.TypeInfo;
+
+                if (status == Result.Ok)
+                {
+                    if (typeInfo == MediaEventTypes.QualityNotify)
+                    {
+                        // ProcessQualityNotifyEvent(mediaEvent);
+                    }
+                    else
+                    {
+                        logger.Debug(typeInfo);
+                    }
+                }
+                else
+                {// TODO:..
+
+                    logger.Warn("MediaSinkEventHandler_EventReceived(...) " + status);
+                }
+            }
+            finally
+            {
+                mediaEvent?.Dispose();
+            }
+
+        }
+
+
 
         public void ProcessSample(Sample sample)
         {
@@ -965,6 +964,27 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
+        private void ProcessQualityNotifyEvent(MediaEvent mediaEvent)
+        {
+            if (mediaEvent.ExtendedType == MediaEventExtendedTypes.QualityNotifyProcessingLatency)
+            {
+                var eventValue = mediaEvent.Value;
+                var latencyValue = eventValue.Value;
+
+                if (latencyValue is long)
+                {
+                    long latency = (long)latencyValue;
+                    var latencySec = MfTool.MfTicksToSec(latency);
+                    logger.Debug("QualityNotifyProcessingLatency " + latencySec);
+                }
+            }
+            else if (mediaEvent.ExtendedType == MediaEventExtendedTypes.QualityNotifySampleLag)
+            {
+                logger.Debug("QualityNotifySampleLag");
+                //...
+            }
+        }
+
 
         public void Close()
         {
@@ -1067,7 +1087,7 @@ namespace MediaToolkit.MediaFoundation
             if (mediaSinkEventHandler != null)
             {
                 mediaSinkEventHandler.Dispose();
-                mediaSinkEventGenerator = null;
+                mediaSinkEventHandler = null;
             }
 
             CloseSampleAllocator();
@@ -1083,6 +1103,26 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
+        private static VideoPresenter CreateDefaultVideoPresenter()
+        {//  не работает
+
+            EVR.Evr.MFCreateVideoPresenter(IntPtr.Zero,
+                    Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
+                    Utilities.GetGuidFromType(typeof(VideoPresenter)),
+                    out IntPtr pUnk);
+
+            return (VideoPresenter)Marshal.GetObjectForIUnknown(pUnk);
+        }
+
+        private static Transform CreateDefaultVideoMixer()
+        {
+            EVR.Evr.CreateVideoMixer(IntPtr.Zero,
+                Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Device)),
+                Utilities.GetGuidFromType(typeof(Transform)),
+                out IntPtr pUnk);
+
+            return new Transform(pUnk);
+        }
 
         private void TryGetVideoCaps()
         {// не работает!
