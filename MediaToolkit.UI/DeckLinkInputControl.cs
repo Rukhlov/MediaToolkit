@@ -67,7 +67,7 @@ namespace MediaToolkit.UI
         public event Action CaptureStarted;
         public event Action CaptureStopped;
 
-        private int volume = 70;
+
         public int Volume
         {
             get
@@ -319,7 +319,8 @@ namespace MediaToolkit.UI
                 {
                     this.switchCaptureStateButton.Enabled = true;
                     this.switchCaptureStateButton.Text = "_Stop";
-                
+                    statusLabel2.Text = "_CaptureStarted";
+
                 }
 
                 this.timer.Enabled = true;
@@ -368,6 +369,7 @@ namespace MediaToolkit.UI
                     comboBoxDevices.Enabled = true;
                     comboBoxDisplayModes.Enabled = true;
                     findServiceButton.Enabled = true;
+                    statusLabel2.Text = "_CaptureStopped";
                 }
 
                 this.timer.Enabled = false;
@@ -468,6 +470,7 @@ namespace MediaToolkit.UI
                     if (debugMode)
                     {
                         findServiceButton.PerformClick();
+                        UptateDetailsButton();
                     }
 
                 }
