@@ -30,6 +30,7 @@ namespace MediaToolkit.MediaFoundation
 
         static MfTool()
         {
+            FillTypeDict(typeof(MediaEventExtendedTypes));
 
             FillTypeDict(typeof(AudioFormatGuids));
             FillTypeDict(typeof(VideoFormatGuids));
@@ -724,7 +725,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     return;
                 }
-                
+
                 eventGenerator?.BeginGetEvent(this, null);
             }
             catch (Exception ex)
@@ -830,6 +831,28 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Guid MixerService = new Guid("073cd2fc-6cf4-40b7-8859-e89552c841f8");
 
 
+        
+
+
+    }
+
+    public static class MediaEventExtendedTypes
+    {
+        /// <summary>
+        /// Approximate processing latency introduced by the component, in 100-nanosecond units.
+        /// Processing latency is the amount of latency that a component introduces into the pipeline by processing a sample.In some cases,
+        /// the latency cannot be derived simply by looking at the calls to IMFQualityManager::NotifyProcessInput and IMFQualityManager::NotifyProcessOutput.
+        /// For example, there may not be a one-to-one correspondence between input samples and output samples.In this case,
+        /// the component might send an MEQualityNotify event with the processing latency.If the processing latency changes,
+        /// the component can send a new event at any time during streaming.
+        /// </summary>
+        public static readonly Guid QualityNotifyProcessingLatency = new Guid("f6b44af8-604d-46fe-a95d-45479b10c9bc");
+
+        /// <summary>
+        /// Lag time for the sample, in 100-nanosecond units. 
+        /// If the value is positive, the sample was late. If the value is negative, the sample was early.
+        /// </summary>
+        public static readonly Guid QualityNotifySampleLag = new Guid("30d15206-ed2a-4760-be17-eb4a9f12295c");
     }
 
     public static class VideoFormatGuidsEx

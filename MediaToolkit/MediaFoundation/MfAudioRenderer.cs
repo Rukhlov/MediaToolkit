@@ -136,6 +136,15 @@ namespace MediaToolkit.MediaFoundation
                     activate?.Dispose();
                 }
 
+                var evgen = audioSink.QueryInterface<MediaEventGenerator>();
+
+                var evgenHandler = new MediaEventHandler(evgen);
+                evgenHandler.EventReceived += (mediaEvent) =>
+                {
+                    logger.Debug(mediaEvent.TypeInfo);
+                    mediaEvent?.Dispose();
+
+                };
 
                 var characteristics = audioSink.Characteristics;
                 var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
