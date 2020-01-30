@@ -21,7 +21,7 @@ using MediaToolkit.Managers;
 
 namespace TestStreamer.Controls
 {
-    public partial class ScreenStreamerControl : UserControl
+    public partial class ScreenStreamerControl : UserControl, IScreenStreamerServiceControl
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 

@@ -110,9 +110,9 @@
             // 
             // adjustAspectRatioButton
             // 
-            this.adjustAspectRatioButton.Location = new System.Drawing.Point(269, 26);
+            this.adjustAspectRatioButton.Location = new System.Drawing.Point(264, 26);
             this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
-            this.adjustAspectRatioButton.Size = new System.Drawing.Size(94, 23);
+            this.adjustAspectRatioButton.Size = new System.Drawing.Size(99, 27);
             this.adjustAspectRatioButton.TabIndex = 74;
             this.adjustAspectRatioButton.Text = "_Adjust";
             this.adjustAspectRatioButton.UseVisualStyleBackColor = true;

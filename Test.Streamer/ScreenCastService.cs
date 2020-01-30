@@ -19,8 +19,8 @@ namespace TestStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        private readonly ScreenStreamerControl streamerControl = null;
-        public ScreencastCommunicationService(ScreenStreamerControl control)
+        private readonly IScreenStreamerServiceControl streamerControl = null;
+        public ScreencastCommunicationService(IScreenStreamerServiceControl control)
         {
             this.streamerControl = control;
         }
@@ -176,7 +176,7 @@ namespace TestStreamer
         {
             logger.Debug("ScreenCastService::Play()");
 
-            streamerControl?.Play(infos);
+            //streamerControl?.Play(infos);
 
             return null;
         }
@@ -186,7 +186,7 @@ namespace TestStreamer
             logger.Debug("ScreenCastService::Teardown()");
 
 
-            streamerControl?.Teardown();
+           // streamerControl?.Teardown();
         }
 
         public void PostMessage(ServerRequest request)
