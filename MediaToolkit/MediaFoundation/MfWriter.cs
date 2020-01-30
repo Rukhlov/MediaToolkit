@@ -101,8 +101,8 @@ namespace MediaToolkit.MediaFoundation
 
                     using (var encoderParams = new MediaAttributes(2))
                     {                      
-                        encoderParams.Set(MFAttributeKeys.CODECAPI_AVEncCommonRateControlMode, RateControlMode.Quality);
-                        encoderParams.Set(MFAttributeKeys.CODECAPI_AVEncCommonQuality, Args.Quality);
+                        encoderParams.Set(CodecApiPropertyKeys.AVEncCommonRateControlMode, RateControlMode.Quality);
+                        encoderParams.Set(CodecApiPropertyKeys.AVEncCommonQuality, Args.Quality);
 
                         sinkWriter.SetInputMediaType(0, inputMediaType, encoderParams);
                     }
