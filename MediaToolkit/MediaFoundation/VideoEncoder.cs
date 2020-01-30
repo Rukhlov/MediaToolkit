@@ -53,14 +53,14 @@ namespace MediaToolkit.Core
                 }
             }
 
-            var profile = eAVEncH264VProfile.eAVEncH264VProfile_Main;
+            var profile = eAVEncH264VProfile.Main;
             if(destParams.Profile == H264Profile.High)
             {
-                profile = eAVEncH264VProfile.eAVEncH264VProfile_High;
+                profile = eAVEncH264VProfile.High;
             }
             else if (destParams.Profile == H264Profile.Base)
             {
-                profile = eAVEncH264VProfile.eAVEncH264VProfile_Base;
+                profile = eAVEncH264VProfile.Base;
             }
 
             var bitrateMode = RateControlMode.CBR;

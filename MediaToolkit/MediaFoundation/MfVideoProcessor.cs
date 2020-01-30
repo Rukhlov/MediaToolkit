@@ -50,7 +50,7 @@ namespace MediaToolkit.MediaFoundation
             try
             {
                 //processor = new Transform(CLSID.MJPEGDecoderMFT);
-                processor = new Transform(CLSID.VideoProcessorMFT);
+                processor = new Transform(ClsId.VideoProcessorMFT);
                 // processor = new Transform(CLSID.CColorConvertDMO);
                 if (device != null)
                 {

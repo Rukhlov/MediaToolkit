@@ -186,7 +186,7 @@ namespace Test.VideoRenderer
 
                     running = true;
                     Stopwatch sw = new Stopwatch();
-                    int fps = 1000;
+                    int fps = 60;
                     int interval = (int)(1000.0 / fps);
 
                     int _count = 1;
@@ -234,8 +234,8 @@ namespace Test.VideoRenderer
 
 
                         globalTime += sw.ElapsedMilliseconds;
-                        sample.SampleTime = 0;//MfTool.SecToMfTicks((globalTime / 1000.0));
-                        sample.SampleDuration = 0;//MfTool.SecToMfTicks(((int)interval / 1000.0));
+                        sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
+                        sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
 
                         //sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
                         //sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));

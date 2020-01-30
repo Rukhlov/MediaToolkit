@@ -30,7 +30,7 @@ namespace MediaToolkit.MediaFoundation
 
         static MfTool()
         {
-            FillTypeDict(typeof(MediaEventExtendedTypes));
+            FillTypeDict(typeof(ExtendedTypeGuids));
 
             FillTypeDict(typeof(AudioFormatGuids));
             FillTypeDict(typeof(VideoFormatGuids));
@@ -38,6 +38,7 @@ namespace MediaToolkit.MediaFoundation
             FillTypeDict(typeof(MediaTypeGuids));
             FillTypeDict(typeof(TransformCategoryGuids));
 
+            FillAttrDict(typeof(CodecApiPropertyKeys));
             FillAttrDict(typeof(MediaTypeAttributeKeys));
             FillAttrDict(typeof(TransformAttributeKeys));
             FillAttrDict(typeof(SinkWriterAttributeKeys));
@@ -768,29 +769,34 @@ namespace MediaToolkit.MediaFoundation
         }
     }
 
+    public static class CodecApiPropertyKeys
+    {
+        /// <summary>
+        /// Sets the number of worker threads used by a video encoder.
+        /// </summary> //CODECAPI_AVEncNumWorkerThreads
+        public static readonly MediaAttributeKey<int> AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
+
+        //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
+        public static readonly MediaAttributeKey<bool> AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
+
+        /// <summary>
+        /// Applications can set this property to specify the rate control mode. Encoders can also return this property as a capability.
+        /// </summary> //CODECAPI_AVEncCommonRateControlMode
+        public static readonly MediaAttributeKey<RateControlMode> AVEncCommonRateControlMode = new MediaAttributeKey<RateControlMode>("1c0608e9-370c-4710-8a58-cb6181c42423");
+
+        public static readonly MediaAttributeKey<int> AVEncCommonQuality = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
+
+        public static readonly MediaAttributeKey<int> AVEncCommonMaxBitRate = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
+
+
+    }
+
     /// <summary>
     /// https://github.com/tpn/winsdk-10/blob/master/Include/10.0.10240.0/um/codecapi.h
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-encoder
     /// </summary>
-    class MFAttributeKeys
+    public static class MFAttributeKeys
     {
-
-        /// <summary>
-        /// Sets the number of worker threads used by a video encoder.
-        /// </summary>
-        public static readonly MediaAttributeKey<int> CODECAPI_AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
-
-        //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
-        public static readonly MediaAttributeKey<bool> CODECAPI_AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
-
-        /// <summary>
-        /// Applications can set this property to specify the rate control mode. Encoders can also return this property as a capability.
-        /// </summary>
-        public static readonly MediaAttributeKey<RateControlMode> CODECAPI_AVEncCommonRateControlMode = new MediaAttributeKey<RateControlMode>("1c0608e9-370c-4710-8a58-cb6181c42423");
-
-        public static readonly MediaAttributeKey<int> CODECAPI_AVEncCommonQuality = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
-
-        public static readonly MediaAttributeKey<int> CODECAPI_AVEncCommonMaxBitRate = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
 
 
         // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
@@ -821,22 +827,9 @@ namespace MediaToolkit.MediaFoundation
 
         public static readonly MediaAttributeKey<byte[]> VIDEO_ZOOM_RECT = new MediaAttributeKey<byte[]>("7aaa1638-1b7f-4c93-bd89-5b9c9fb6fcf0");
 
-
-    }
-    public static class MediaServiceKeysEx
-    {
-        public static readonly Guid RenderService = new Guid(0x1092a86c, 0xab1a, 0x459a, 0xa3, 0x36, 0x83, 0x1f, 0xbc, 0x4d, 0x11, 0xff);
-
-        //MR_VIDEO_MIXER_SERVICE
-        public static readonly Guid MixerService = new Guid("073cd2fc-6cf4-40b7-8859-e89552c841f8");
-
-
-        
-
-
     }
 
-    public static class MediaEventExtendedTypes
+    public static class ExtendedTypeGuids
     {
         /// <summary>
         /// Approximate processing latency introduced by the component, in 100-nanosecond units.
@@ -845,14 +838,24 @@ namespace MediaToolkit.MediaFoundation
         /// For example, there may not be a one-to-one correspondence between input samples and output samples.In this case,
         /// the component might send an MEQualityNotify event with the processing latency.If the processing latency changes,
         /// the component can send a new event at any time during streaming.
-        /// </summary>
+        /// </summary> //MF_QUALITY_NOTIFY_PROCESSING_LATENCY
         public static readonly Guid QualityNotifyProcessingLatency = new Guid("f6b44af8-604d-46fe-a95d-45479b10c9bc");
 
         /// <summary>
         /// Lag time for the sample, in 100-nanosecond units. 
         /// If the value is positive, the sample was late. If the value is negative, the sample was early.
-        /// </summary>
+        /// </summary> // MF_QUALITY_NOTIFY_SAMPLE_LAG
         public static readonly Guid QualityNotifySampleLag = new Guid("30d15206-ed2a-4760-be17-eb4a9f12295c");
+    }
+
+    public static class MediaServiceKeysEx
+    {
+        //MR_VIDEO_RENDER_SERVICE
+        public static readonly Guid RenderService = new Guid("1092a86c-ab1a-459a-a336-831fbc4d11ff");
+
+        //MR_VIDEO_MIXER_SERVICE
+        public static readonly Guid MixerService = new Guid("073cd2fc-6cf4-40b7-8859-e89552c841f8");
+
     }
 
     public static class VideoFormatGuidsEx
@@ -863,16 +866,18 @@ namespace MediaToolkit.MediaFoundation
     }
 
 
-    public class CLSID
+    public class ClsId
     {
+        //CLSID_VideoProcessorMFT
         public static readonly Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
+        //CLSID_CColorConvertDMO
         public static readonly Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
 
         public static readonly Guid MJPEGDecoderMFT = new Guid("CB17E772-E1CC-4633-8450-5617AF577905");
 
+        //CLSID_CResamplerMediaObject
         public static readonly Guid CResamplerMediaObject = new Guid("f447b69e-1884-4a7e-8055-346f74d6edb3");
-
 
 
     }
@@ -890,24 +895,23 @@ namespace MediaToolkit.MediaFoundation
 
     public enum eAVEncH264VProfile
     {
-        eAVEncH264VProfile_unknown = 0,
-        eAVEncH264VProfile_Simple = 66,
-        eAVEncH264VProfile_Base = 66,
-        eAVEncH264VProfile_Main = 77,
-        eAVEncH264VProfile_High = 100,
-        eAVEncH264VProfile_422 = 122,
-        eAVEncH264VProfile_High10 = 110,
-        eAVEncH264VProfile_444 = 144,
-        eAVEncH264VProfile_Extended = 88,
-        eAVEncH264VProfile_ScalableBase = 83,
-        eAVEncH264VProfile_ScalableHigh = 86,
-        eAVEncH264VProfile_MultiviewHigh = 118,
-        eAVEncH264VProfile_StereoHigh = 128,
-        eAVEncH264VProfile_ConstrainedBase = 256,
-        eAVEncH264VProfile_UCConstrainedHigh = 257,
-        eAVEncH264VProfile_UCScalableConstrainedBase = 258,
-        eAVEncH264VProfile_UCScalableConstrainedHigh = 259
-
+        Unknown = 0,
+        Simple = 66,
+        Base = 66,
+        Main = 77,
+        High = 100,
+        High422 = 122,
+        High10 = 110,
+        High444 = 144,
+        Extended = 88,
+        ScalableBase = 83,
+        ScalableHigh = 86,
+        MultiviewHigh = 118,
+        StereoHigh = 128,
+        ConstrainedBase = 256,
+        UCConstrainedHigh = 257,
+        UCScalableConstrainedBase = 258,
+        UCScalableConstrainedHigh = 259
     }
 
     //https://docs.microsoft.com/en-us/windows/win32/api/mfidl/nf-mfidl-imfmediasink-getcharacteristics
@@ -958,7 +962,7 @@ namespace MediaToolkit.MediaFoundation
 
         public bool LowLatency { get; set; } = true;
 
-        public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.eAVEncH264VProfile_Main;
+        public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.Main;
 
         public int InterlaceMode { get; set; } = 2; //Progressive
 

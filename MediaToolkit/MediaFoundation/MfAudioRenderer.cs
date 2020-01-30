@@ -136,15 +136,6 @@ namespace MediaToolkit.MediaFoundation
                     activate?.Dispose();
                 }
 
-                var evgen = audioSink.QueryInterface<MediaEventGenerator>();
-
-                var evgenHandler = new MediaEventHandler(evgen);
-                evgenHandler.EventReceived += (mediaEvent) =>
-                {
-                    logger.Debug(mediaEvent.TypeInfo);
-                    mediaEvent?.Dispose();
-
-                };
 
                 var characteristics = audioSink.Characteristics;
                 var logCharacts = MfTool.LogEnumFlags((MediaSinkCharacteristics)characteristics);
@@ -185,12 +176,17 @@ namespace MediaToolkit.MediaFoundation
                         logger.Debug("Resapmler input type:\r\n" + MfTool.LogMediaType(inputMediaType));
                         logger.Debug("Resapmler output type:\r\n" + MfTool.LogMediaType(deviceMediaType));
 
-                        resampler = new Transform(CLSID.CResamplerMediaObject);
+                        resampler = new Transform(ClsId.CResamplerMediaObject);
 
                         resampler.SetInputType(0, inputMediaType, 0);
                         resampler.SetOutputType(0, deviceMediaType, 0);
 
                     }
+
+                    mediaSinkEventGenerator = audioSink.QueryInterface<MediaEventGenerator>();
+
+                    mediaSinkEventHandler = new MediaEventHandler(mediaSinkEventGenerator);
+                    mediaSinkEventHandler.EventReceived += MediaSinkEventHandler_EventReceived;
 
 
                     streamSinkEventHandler = new MediaEventHandler(streamSink);
@@ -209,6 +205,8 @@ namespace MediaToolkit.MediaFoundation
             }
 
         }
+        private MediaEventGenerator mediaSinkEventGenerator = null;
+        private MediaEventHandler mediaSinkEventHandler = null;
 
         public void SetPresentationClock(PresentationClock clock)
         {
@@ -390,6 +388,37 @@ namespace MediaToolkit.MediaFoundation
             else
             {
 
+            }
+
+        }
+
+        private void MediaSinkEventHandler_EventReceived(MediaEvent mediaEvent)
+        {// 
+            try
+            {
+                var status = mediaEvent.Status;
+                var typeInfo = mediaEvent.TypeInfo;
+
+                if (status == Result.Ok)
+                {
+                    if (typeInfo == MediaEventTypes.QualityNotify)
+                    {
+                        HandleQualityNotifyEvent(mediaEvent);
+                    }
+                    else
+                    {
+                        logger.Debug(typeInfo);
+                    }
+                }
+                else
+                {// TODO:..
+
+                    logger.Warn("MediaSinkEventHandler_EventReceived(...) " + status);
+                }
+            }
+            finally
+            {
+                mediaEvent?.Dispose();
             }
 
         }
@@ -842,6 +871,49 @@ namespace MediaToolkit.MediaFoundation
                 resampler = null;
             }
 
+            if (mediaSinkEventHandler != null)
+            {
+                mediaSinkEventHandler.EventReceived -= MediaSinkEventHandler_EventReceived;
+                mediaSinkEventHandler.Dispose();
+                mediaSinkEventHandler = null;
+            }
+
+            if (mediaSinkEventGenerator != null)
+            {
+                mediaSinkEventGenerator.Dispose();
+                mediaSinkEventGenerator = null;
+            }
+
+        }
+
+
+        private void HandleQualityNotifyEvent(MediaEvent mediaEvent)
+        {
+            var eventVar = mediaEvent.Value;
+            var eventValue = eventVar.Value;
+
+            if (mediaEvent.ExtendedType == ExtendedTypeGuids.QualityNotifyProcessingLatency)
+            {
+                //long latency = (long)eventValue;
+                //var latencySec = MfTool.MfTicksToSec(latency);
+                //logger.Debug("ProcessingLatency " + latencySec);
+
+            }
+            else if (mediaEvent.ExtendedType == ExtendedTypeGuids.QualityNotifySampleLag)
+            {
+                //logger.Debug("QualityNotifySampleLag");
+                long sampleLag = (long)eventValue;
+                var sampleLagSec = MfTool.MfTicksToSec(sampleLag);
+                logger.Debug("SampleLag " + sampleLagSec);
+                if (sampleLag > 0)
+                { //sample was late
+                  //...
+                }
+                else
+                {//sample was early
+
+                }
+            }
         }
 
         private static NAudio.CoreAudioApi.MMDevice GetAudioDevice(string deviceId)

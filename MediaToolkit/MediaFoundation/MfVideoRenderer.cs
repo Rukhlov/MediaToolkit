@@ -422,7 +422,7 @@ namespace MediaToolkit.MediaFoundation
                 {
                     if (typeInfo == MediaEventTypes.QualityNotify)
                     {
-                        // ProcessQualityNotifyEvent(mediaEvent);
+                         HandleQualityNotifyEvent(mediaEvent);
                     }
                     else
                     {
@@ -964,24 +964,32 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        private void ProcessQualityNotifyEvent(MediaEvent mediaEvent)
+        private void HandleQualityNotifyEvent(MediaEvent mediaEvent)
         {
-            if (mediaEvent.ExtendedType == MediaEventExtendedTypes.QualityNotifyProcessingLatency)
-            {
-                var eventValue = mediaEvent.Value;
-                var latencyValue = eventValue.Value;
+            var eventVar = mediaEvent.Value;
+            var eventValue = eventVar.Value;
 
-                if (latencyValue is long)
-                {
-                    long latency = (long)latencyValue;
-                    var latencySec = MfTool.MfTicksToSec(latency);
-                    logger.Debug("QualityNotifyProcessingLatency " + latencySec);
-                }
-            }
-            else if (mediaEvent.ExtendedType == MediaEventExtendedTypes.QualityNotifySampleLag)
+            if (mediaEvent.ExtendedType == ExtendedTypeGuids.QualityNotifyProcessingLatency)
             {
-                logger.Debug("QualityNotifySampleLag");
-                //...
+                //long latency = (long)eventValue;
+                //var latencySec = MfTool.MfTicksToSec(latency);
+                //logger.Debug("ProcessingLatency " + latencySec);
+                
+            }
+            else if (mediaEvent.ExtendedType == ExtendedTypeGuids.QualityNotifySampleLag)
+            {
+                //logger.Debug("QualityNotifySampleLag");
+                long sampleLag = (long)eventValue;
+                var sampleLagSec = MfTool.MfTicksToSec(sampleLag);
+                logger.Debug("SampleLag " + sampleLagSec);
+                if (sampleLag > 0)
+                { //sample was late
+                   //...
+                }
+                else
+                {//sample was early
+
+                }
             }
         }
 
@@ -1086,6 +1094,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (mediaSinkEventHandler != null)
             {
+                mediaSinkEventHandler.EventReceived -= MediaSinkEventHandler_EventReceived;
                 mediaSinkEventHandler.Dispose();
                 mediaSinkEventHandler = null;
             }
