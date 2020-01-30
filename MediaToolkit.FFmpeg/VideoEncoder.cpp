@@ -281,7 +281,7 @@ namespace FFmpegLib {
 							sws_ctx = sws_getCachedContext(sws_ctx,
 								width, height, pix_fmt, // input
 								frame->width, frame->height, (AVPixelFormat)frame->format,  // output
-								SWS_BILINEAR,//SWS_BICUBIC,
+								SWS_BICUBIC,//SWS_SPLINE,//SWS_BILINEAR,//SWS_BICUBIC,
 								NULL, NULL, NULL);
 
 

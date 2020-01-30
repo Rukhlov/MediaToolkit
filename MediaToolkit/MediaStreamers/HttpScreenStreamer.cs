@@ -80,7 +80,7 @@ namespace MediaToolkit.MediaStreamers
             };
 
 
-            if (captureType == VideoCaptureType.GDI || captureType == VideoCaptureType.GDIPlus)
+            if (captureType == VideoCaptureType.GDI || captureType == VideoCaptureType.GDIPlus || captureType == VideoCaptureType.Datapath)
             {// масштабируем на энкодере
                 captureParams.Resolution = new Size(srcRect.Width, srcRect.Height);
             }
