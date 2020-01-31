@@ -395,6 +395,7 @@ namespace MediaToolkit.UI
                 hWnd = windowHandle,
                 Resolution = frameSize,
                 FourCC = fourCC,
+                FrameRate = new Tuple<int, int>((int)deckLinkInput.FrameRate.Item1, (int)deckLinkInput.FrameRate.Item2),
 
             };
 
