@@ -311,6 +311,8 @@ namespace TestStreamer.Controls
             videoSettings.NetworkParams.TransportMode = transportMode;
             audioSettings.NetworkParams.TransportMode = transportMode;
 
+            audioSettings.Enabled = audioEnabledCheckBox.Checked;
+            videoSettings.Enabled = videoEnabledCheckBox.Checked;
 
             var multicastAddr = multicastAddressTextBox.Text;
             var multicastVideoPort = 1234;

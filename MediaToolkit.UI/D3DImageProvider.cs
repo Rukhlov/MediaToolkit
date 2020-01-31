@@ -202,7 +202,7 @@ namespace MediaToolkit.UI
                        if (surfPtr != IntPtr.Zero)
                        {
                            VideoSource.Lock();
-                           VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr);
+                           VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surfPtr, true);
 
                            VideoSource.AddDirtyRect(new Int32Rect(0, 0, VideoSource.PixelWidth, VideoSource.PixelHeight));
                            VideoSource.Unlock();

@@ -105,6 +105,8 @@ namespace Test.VideoRenderer
                 hWnd = videoForm.Handle,
                 FourCC = 0x59565955, //"UYVY",
                 Resolution = new Size(1920, 1080),
+                FrameRate = new Tuple<int, int>(60, 1),
+
             });
 
             videoRenderer.SetPresentationClock(presentationClock);

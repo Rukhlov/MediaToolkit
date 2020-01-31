@@ -244,7 +244,7 @@ namespace MediaToolkit.UI
                         VideoSource.Lock();
                         // Repeatedly calling SetBackBuffer with the same IntPtr is 
                         // a no-op. There is no performance penalty.
-                        VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer);
+                        VideoSource.SetBackBuffer(D3DResourceType.IDirect3DSurface9, surface.NativePointer, true);
                         VideoSource.AddDirtyRect(new Int32Rect(0, 0, VideoSource.PixelWidth, VideoSource.PixelHeight));
 
                         VideoSource.Unlock();

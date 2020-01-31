@@ -1131,6 +1131,20 @@ namespace TestStreamer
             UpdateControls();
         }
 
+
+        private void audioEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            audioSettings.Enabled = audioSourceEnableCheckBox.Checked;
+
+            UpdateControls();
+        }
+
+        private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            videoSettings.Enabled = videoSourceEnableCheckBox.Checked;
+            UpdateControls();
+        }
+
         private AudioCaptureSettings GetCurrentAudioCaptureSettings()
         {
             AudioCaptureSettings captureSettings = null;

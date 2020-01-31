@@ -104,6 +104,7 @@ namespace MediaToolkit.SharedTypes
         public int FourCC { get; set; } = 0; //"ARGB"; //UYVY //FourCC code
         public int BitsPerPixel { get; set; } = 32;
         public int InterlaceMode { get; set; } = 2; //Progressive
+        public Tuple<int, int> FrameRate { get; set; } = new Tuple<int, int>(30, 1);
         public override string ToString()
         {
             return string.Join(";", hWnd, Resolution, FourCC, BitsPerPixel);

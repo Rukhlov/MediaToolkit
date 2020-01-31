@@ -23,7 +23,7 @@ using MediaToolkit;
 using TestStreamer.Controls;
 
 using MediaToolkit.NativeAPIs;
-using MediaToolkit.Core;
+
 
 namespace TestStreamer
 {

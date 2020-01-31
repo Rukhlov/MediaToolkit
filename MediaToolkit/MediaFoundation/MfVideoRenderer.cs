@@ -77,10 +77,12 @@ namespace MediaToolkit.MediaFoundation
             var hWnd = videoArgs.hWnd;
             var interlaceMode = videoArgs.InterlaceMode;
 
-            Setup(hWnd, videoFormat, resolution, interlaceMode);
+            long frameRate = MfTool.PackToLong(videoArgs.FrameRate.Item1, videoArgs.FrameRate.Item2);
+
+            Setup(hWnd, videoFormat, resolution, interlaceMode, frameRate);
         }
 
-        public void Setup(IntPtr hWnd, Guid videoFormat, System.Drawing.Size videoResolution, int interlaceMode)
+        public void Setup(IntPtr hWnd, Guid videoFormat, System.Drawing.Size videoResolution, int interlaceMode, long frameRate)
         {
             logger.Debug("MfVideoRenderer::Setup(...) " + hWnd);
 
@@ -194,8 +196,8 @@ namespace MediaToolkit.MediaFoundation
 
                             mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, interlaceMode);
                             mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
-
-                            //mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(30, 1));
+                            
+                            mediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
 
                             //handler.IsMediaTypeSupported(mediaType, out MediaType mediaTypeOut);
                             //var res = handler._IsMediaTypeSupported(mediaType, out MediaType mediaTypeOut);
@@ -247,9 +249,9 @@ namespace MediaToolkit.MediaFoundation
                     //    logger.Debug(MfTool.LogMediaType(currentInputType));
                     //    currentInputType.Dispose();
 
-                    //    videoMixer.GetOutputCurrentType(0, out MediaType currentOutputType);
-                    //    logger.Debug(MfTool.LogMediaType(currentOutputType));
-                    //    currentOutputType.Dispose();
+                    //videoMixer.GetOutputCurrentType(0, out MediaType currentOutputType);
+                    //logger.Debug(MfTool.LogMediaType(currentOutputType));
+                    //currentOutputType.Dispose();
 
                     //    using (var _attrs = videoMixer.Attributes)
                     //    {
