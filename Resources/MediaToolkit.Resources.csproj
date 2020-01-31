@@ -52,6 +52,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CRT\Debug_NoRedist\ucrtbased.dll" />
+    <Content Include="CRT\Debug_NoRedist\vcruntime140d.dll" />
+    <Content Include="CRT\Redist\ucrtbase.dll" />
+    <Content Include="CRT\Redist\vcruntime140.dll" />
     <Content Include="FFmpeg4\bin\avcodec-58.dll" />
     <Content Include="FFmpeg4\bin\avdevice-58.dll" />
     <Content Include="FFmpeg4\bin\avfilter-7.dll" />
@@ -248,6 +252,20 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SharedAssemblyInfo.cs</LastGenOutput>
     </Content>
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct2D1.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct2D1.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct3D11.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct3D11.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct3D9.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct3D9.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.DXGI.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.DXGI.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Mathematics.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Mathematics.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.dll" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll" />
@@ -263,14 +281,8 @@
     <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\ReadMe.txt" />
-    <Content Include="vc_redist\DebugLibs\mscoree.dll" />
-    <Content Include="vc_redist\DebugLibs\ucrtbase.dll" />
-    <Content Include="vc_redist\DebugLibs\ucrtbased.dll" />
-    <Content Include="vc_redist\DebugLibs\ucrtbase_clr0400.dll" />
-    <Content Include="vc_redist\DebugLibs\vcamp140d.dll" />
-    <Content Include="vc_redist\DebugLibs\vcruntime140.dll" />
-    <Content Include="vc_redist\DebugLibs\vcruntime140d.dll" />
-    <Content Include="vc_redist\DebugLibs\vcruntime140_clr0400.dll" />
+    <Content Include="vs_redist\ReadMe.txt" />
+    <Content Include="vs_redist\VC_redist.x86.exe" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />

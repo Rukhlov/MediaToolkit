@@ -153,11 +153,11 @@ namespace Test.VideoRenderer
                 //}
 
 
-                var testFile5 = @".\Test\1920x1080_bmdFormat10BitYUV.raw";
-                var testFile2 = @".\Test\1920x1080_bmdFormat8BitYUV.raw";
-                //var testFile3 = @".\Test\1920x1080_Argb32.raw";
+                var testFile5 = @".\TestBmp\1920x1080_bmdFormat10BitYUV.raw";
+                var testFile2 = @".\TestBmp\1920x1080_bmdFormat8BitYUV.raw";
+                //var testFile3 = @".\TestBmp\1920x1080_Argb32.raw";
 
-                //var canvaspng = @".\Test\canvas.png";
+                //var canvaspng = @".\TestBmp\canvas.png";
                 var testBytes = File.ReadAllBytes(testFile2);
                 var testBytes5 = File.ReadAllBytes(testFile5);
 

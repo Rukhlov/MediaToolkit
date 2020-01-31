@@ -98,9 +98,11 @@
     </Link>
     <PreBuildEvent>
       <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
+XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
+
 ::MKDIR  "$(SolutionDir)bin\$(Configuration)\libFFmpeg"
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
-::XCOPY "$(SolutionDir)Resources\vc_redist\Debug\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /D /Y </Command>
+::XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /D /Y </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -140,6 +142,8 @@
     </Link>
     <PreBuildEvent>
       <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
+XCOPY "$(SolutionDir)Resources\CRT\Redist\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
+
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
     </PreBuildEvent>

@@ -92,8 +92,8 @@ namespace TestStreamer
 
                 //StreamingForm form = new StreamingForm();
                 //MainForm2 form = new MainForm2();
-               // MainForm form = new MainForm();
-                StreamingForm form = new StreamingForm();
+                MainForm form = new MainForm();
+                //StreamingForm form = new StreamingForm();
 
                 Application.Run(form);
             }

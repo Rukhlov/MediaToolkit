@@ -14,6 +14,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Core", "MediaToolkit.Core\MediaToolkit.Core.csproj", "{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Streamer", "Test.Streamer\Test.Streamer.csproj", "{FB9EA9CE-8052-4CAF-A85A-89A41B62C7A0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F83157FD-4E1F-4F55-BED8-F4F138824FFD} = {F83157FD-4E1F-4F55-BED8-F4F138824FFD}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.UI", "MediaToolkit.UI\MediaToolkit.UI.csproj", "{6EC45781-0060-4F0A-AD0E-1452704F0740}"
 EndProject
