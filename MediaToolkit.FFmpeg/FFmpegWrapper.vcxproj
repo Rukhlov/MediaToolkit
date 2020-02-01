@@ -9,14 +9,6 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -41,20 +33,6 @@
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>true</CLRSupport>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
-    <CLRSupport>true</CLRSupport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -66,21 +44,14 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,25 +71,13 @@
       <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
 XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
 
+::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\Tests" /I /D /Y
+::XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Configuration)\Tests" /I /D /Y
+
+
 ::MKDIR  "$(SolutionDir)bin\$(Configuration)\libFFmpeg"
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
 ::XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /D /Y </Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Resources\ffmpeg4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Resources\ffmpeg4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>avformat.lib;avcodec.lib;swscale.lib;avutil.lib;swresample.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <PreBuildEvent>
-      <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -142,25 +101,13 @@ XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Co
     </Link>
     <PreBuildEvent>
       <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y
-XCOPY "$(SolutionDir)Resources\CRT\Redist\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
+
+::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\Tests" /I /D /Y
+::XCOPY "$(SolutionDir)Resources\CRT\Redist\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y
 
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)\libFFmpeg" /I /D /Y
 ::XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /D /Y </Command>
     </PreBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AudioDecoder.cpp" />
