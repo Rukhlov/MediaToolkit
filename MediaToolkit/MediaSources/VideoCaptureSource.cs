@@ -507,16 +507,17 @@ namespace MediaToolkit
                     try
                     {
                         var pBuffer = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
-
-                        var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
+                        var immediateContext = device.ImmediateContext;
+                       
+                        var dataBox = immediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
 
                         Kernel32.CopyMemory(dataBox.DataPointer, pBuffer, (uint)cbCurrentLengthRef);
 
-                        device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+                        immediateContext.UnmapSubresource(stagingTexture, 0);
 
-
-                        device.ImmediateContext.CopyResource(stagingTexture, SharedTexture);
-                        device.ImmediateContext.Flush();
+                        immediateContext.CopyResource(stagingTexture, SharedTexture);
+                        immediateContext.Flush();
+                        
 
                         OnBufferUpdated();
 

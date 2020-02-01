@@ -4,9 +4,7 @@ using MediaToolkit.DeckLink;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
-using NAudio.CoreAudioApi;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
+
 using NLog;
 using SharpDX.MediaFoundation;
 using System;

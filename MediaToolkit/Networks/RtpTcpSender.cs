@@ -152,7 +152,27 @@ namespace MediaToolkit
                         }
                         catch(Exception ex)
                         {
-                            logger.Error(ex);
+                            var socketAborted = false;
+                            var socketException = ex as SocketException;
+                            if (socketException != null)
+                            {
+                                var code = socketException.SocketErrorCode;
+                                if (code == SocketError.ConnectionAborted ||
+                                code == SocketError.ConnectionReset ||
+                                code == SocketError.Interrupted)
+                                {
+                                    logger.Warn("Socket closed: " + code);
+                                    socketAborted = true;
+                                }
+                            }
+
+                            if (!socketAborted)
+                            {
+                                logger.Error(ex);
+                            }
+
+                            break;
+                           
                         }
                     }
 

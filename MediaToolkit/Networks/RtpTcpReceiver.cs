@@ -131,7 +131,25 @@ namespace MediaToolkit.Networks
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex);
+                    bool socketAborted = false;
+                    var socketException = ex as SocketException;
+                    if (socketException != null)
+                    {
+                        var code = socketException.SocketErrorCode;
+                        if (code == SocketError.ConnectionAborted ||
+                            code == SocketError.ConnectionReset ||
+                            code == SocketError.Interrupted)
+                        {
+                            logger.Warn("Socket closed: " + code);
+                            socketAborted = true;
+                        }
+                    }
+
+                    if (!socketAborted)
+                    {
+                        logger.Error(ex);
+                    }
+                    
 
                 }
                 finally

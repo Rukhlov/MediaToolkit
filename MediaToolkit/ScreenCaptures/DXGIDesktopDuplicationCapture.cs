@@ -101,11 +101,6 @@ namespace MediaToolkit
                     adapter = dxgiFactory.GetAdapter1(0);
                 }
 
-                //if (output == null)
-                //{
-                //    output = adapter.Outputs.FirstOrDefault();
-                //}
-
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
                 var deviceCreationFlags =
@@ -180,7 +175,6 @@ namespace MediaToolkit
             SharedTexture = new Texture2D(device,
                  new Texture2DDescription
                  {
-
                      CpuAccessFlags = CpuAccessFlags.None,
                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                      Format = Format.B8G8R8A8_UNorm,
@@ -330,11 +324,13 @@ namespace MediaToolkit
         private bool FinalyzeTexture(Texture2D texture)
         {
             bool Result;
+            var deviceContext = device.ImmediateContext;
+
             if (UseHwContext)
             {
 
-                device.ImmediateContext.CopyResource(texture, SharedTexture);
-                device.ImmediateContext.Flush();
+                deviceContext.CopyResource(texture, SharedTexture);
+                deviceContext.Flush();
 
                 Result = true;
             }
@@ -359,8 +355,8 @@ namespace MediaToolkit
                             OptionFlags = ResourceOptionFlags.None,
                         });
 
-                    device.ImmediateContext.CopyResource(texture, stagingTexture);
-                    device.ImmediateContext.Flush();
+                    deviceContext.CopyResource(texture, stagingTexture);
+                    deviceContext.Flush();
 
                     Result = CopyToGdiBuffer(stagingTexture);
 
@@ -993,9 +989,10 @@ namespace MediaToolkit
                         });
 
                         var region = new ResourceRegion(left, top, 0, right, bottom, 1);
-                        device.ImmediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
+                        var immediateContext = device.ImmediateContext;
+                        immediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
 
-                        var dataBox = device.ImmediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
+                        var dataBox = immediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
                         try
                         {
                             var desktopBuffer = new byte[width * height * 4];
@@ -1066,7 +1063,7 @@ namespace MediaToolkit
                         }
                         finally
                         {
-                            device.ImmediateContext.UnmapSubresource(desktopRegionTex, 0);
+                            immediateContext.UnmapSubresource(desktopRegionTex, 0);
                         }
 
                     }
