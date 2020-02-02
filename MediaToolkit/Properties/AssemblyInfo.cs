@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("MediaToolkit")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany(MediaToolkit.Resources.AssemblyInfo.Company)]
+[assembly: AssemblyCompany(MediaToolkit.Resources.AssemblyInformation.Company)]
 [assembly: AssemblyProduct("MediaToolkit")]
-[assembly: AssemblyCopyright(MediaToolkit.Resources.AssemblyInfo.Copyright)]
+[assembly: AssemblyCopyright(MediaToolkit.Resources.AssemblyInformation.Copyright)]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номер сборки и номер редакции по умолчанию.
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(MediaToolkit.Resources.AssemblyInfo.Version)]
-[assembly: AssemblyFileVersion(MediaToolkit.Resources.AssemblyInfo.Version)]
+   [assembly: AssemblyVersion(MediaToolkit.Resources.AssemblyInformation.Version)]
+//[assembly: AssemblyFileVersion(MediaToolkit.Resources.AssemblyInfo.Version)]

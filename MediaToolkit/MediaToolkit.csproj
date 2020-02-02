@@ -131,7 +131,6 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
-    <Compile Include="Properties\SharedAssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="MediaStreamers\VideoStreamer.cs" />
   </ItemGroup>

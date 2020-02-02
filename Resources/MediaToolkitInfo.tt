@@ -11,14 +11,15 @@ using System.Text;
 
 namespace MediaToolkit.Resources
 {     
-	public partial class AssemblyInfo
+	public partial class AssemblyInformation
 	{
+
 		public const int Day = <#=DateTime.Now.Day#>;  
 		public const int Month = <#=DateTime.Now.Month#>; 
 		public const int Year = <#=DateTime.Now.Year#>;
 
-		public const string Copyright = "Copyright © ___ CO Ltd. <#=DateTime.Now.Year#>";
-		public const string Company = "___ CO Ltd.";
+		public const string Copyright = "Copyright © <#=DateTime.Now.Year#>"; //"Copyright © ___ CO Ltd. <#=DateTime.Now.Year#>";
+		public const string Company = "";//"___ CO Ltd.";
 
 		public const string Version = "1.0.0.0";
 	}

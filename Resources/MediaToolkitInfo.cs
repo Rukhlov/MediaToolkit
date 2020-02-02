@@ -9,14 +9,15 @@ using System.Text;
 
 namespace MediaToolkit.Resources
 {     
-	public partial class AssemblyInfo
+	public partial class AssemblyInformation
 	{
-		public const int Day = 20;  
-		public const int Month = 12; 
-		public const int Year = 2019;
 
-		public const string Copyright = "Copyright © ___ CO Ltd. 2019";
-		public const string Company = "___ CO Ltd.";
+		public const int Day = 2;  
+		public const int Month = 2; 
+		public const int Year = 2020;
+
+		public const string Copyright = "Copyright © 2020"; //"Copyright © ___ CO Ltd. 2020";
+		public const string Company = "";//"___ CO Ltd.";
 
 		public const string Version = "1.0.0.0";
 	}
