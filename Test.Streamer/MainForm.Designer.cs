@@ -85,45 +85,46 @@
             this.toolStripSeparator1,
             this.exitMenuItem});
             this.contextMenu.Name = "contextMenu";
-            this.contextMenu.Size = new System.Drawing.Size(130, 106);
+            this.contextMenu.Size = new System.Drawing.Size(115, 98);
             // 
             // startToolStripMenuItem
             // 
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.startToolStripMenuItem.Text = "_Start";
             // 
             // stopToolStripMenuItem
             // 
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.stopToolStripMenuItem.Text = "_Stop";
             // 
             // settingToolStripMenuItem
             // 
             this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
-            this.settingToolStripMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.settingToolStripMenuItem.Text = "_Debug";
             this.settingToolStripMenuItem.Click += new System.EventHandler(this.settingToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(126, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(111, 6);
             // 
             // exitMenuItem
             // 
             this.exitMenuItem.Name = "exitMenuItem";
-            this.exitMenuItem.Size = new System.Drawing.Size(129, 24);
+            this.exitMenuItem.Size = new System.Drawing.Size(114, 22);
             this.exitMenuItem.Text = "_Exit";
             this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
             // 
             // exitButton
             // 
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.exitButton.Location = new System.Drawing.Point(339, 494);
+            this.exitButton.Location = new System.Drawing.Point(271, 395);
+            this.exitButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.exitButton.Name = "exitButton";
-            this.exitButton.Size = new System.Drawing.Size(157, 33);
+            this.exitButton.Size = new System.Drawing.Size(126, 26);
             this.exitButton.TabIndex = 0;
             this.exitButton.Text = "_Exit";
             this.exitButton.UseVisualStyleBackColor = true;
@@ -131,9 +132,10 @@
             // 
             // updateNetworksButton
             // 
-            this.updateNetworksButton.Location = new System.Drawing.Point(366, 9);
+            this.updateNetworksButton.Location = new System.Drawing.Point(293, 7);
+            this.updateNetworksButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.updateNetworksButton.Name = "updateNetworksButton";
-            this.updateNetworksButton.Size = new System.Drawing.Size(75, 23);
+            this.updateNetworksButton.Size = new System.Drawing.Size(60, 21);
             this.updateNetworksButton.TabIndex = 18;
             this.updateNetworksButton.Text = "_Update";
             this.updateNetworksButton.UseVisualStyleBackColor = true;
@@ -142,9 +144,10 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 12);
+            this.label5.Location = new System.Drawing.Point(2, 10);
+            this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(78, 17);
+            this.label5.Size = new System.Drawing.Size(61, 13);
             this.label5.TabIndex = 17;
             this.label5.Text = "_Networks:";
             // 
@@ -152,18 +155,20 @@
             // 
             this.networkComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.networkComboBox.FormattingEnabled = true;
-            this.networkComboBox.Location = new System.Drawing.Point(91, 9);
+            this.networkComboBox.Location = new System.Drawing.Point(73, 7);
+            this.networkComboBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.networkComboBox.Name = "networkComboBox";
-            this.networkComboBox.Size = new System.Drawing.Size(269, 24);
+            this.networkComboBox.Size = new System.Drawing.Size(216, 21);
             this.networkComboBox.TabIndex = 16;
             this.networkComboBox.SelectedValueChanged += new System.EventHandler(this.networkComboBox_SelectedValueChanged);
             // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(16, 494);
+            this.button1.Location = new System.Drawing.Point(13, 395);
+            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(172, 33);
+            this.button1.Size = new System.Drawing.Size(138, 26);
             this.button1.TabIndex = 20;
             this.button1.Text = "_TestClient";
             this.button1.UseVisualStyleBackColor = true;
@@ -179,19 +184,21 @@
             this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Location = new System.Drawing.Point(12, 102);
+            this.tabControl1.Location = new System.Drawing.Point(10, 82);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(490, 386);
+            this.tabControl1.Size = new System.Drawing.Size(392, 309);
             this.tabControl1.TabIndex = 23;
             // 
             // tabPage2
             // 
             this.tabPage2.Controls.Add(this.screenStreamerControl);
-            this.tabPage2.Location = new System.Drawing.Point(4, 25);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(482, 357);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage2.Size = new System.Drawing.Size(384, 283);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "RtpStreamer";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -199,18 +206,19 @@
             // screenStreamerControl
             // 
             this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.screenStreamerControl.Location = new System.Drawing.Point(3, 3);
+            this.screenStreamerControl.Location = new System.Drawing.Point(2, 2);
+            this.screenStreamerControl.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.screenStreamerControl.Name = "screenStreamerControl";
-            this.screenStreamerControl.Size = new System.Drawing.Size(476, 351);
+            this.screenStreamerControl.Size = new System.Drawing.Size(380, 279);
             this.screenStreamerControl.TabIndex = 0;
-
             // 
             // tabPage3
             // 
             this.tabPage3.Controls.Add(this.audioStreamerControl);
-            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(482, 357);
+            this.tabPage3.Size = new System.Drawing.Size(384, 283);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "AudioStreamer";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -219,34 +227,38 @@
             // 
             this.audioStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioStreamerControl.Location = new System.Drawing.Point(0, 0);
+            this.audioStreamerControl.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.audioStreamerControl.Name = "audioStreamerControl";
-            this.audioStreamerControl.Size = new System.Drawing.Size(482, 357);
+            this.audioStreamerControl.Size = new System.Drawing.Size(384, 283);
             this.audioStreamerControl.TabIndex = 0;
             // 
             // tabPage5
             // 
             this.tabPage5.Controls.Add(this.webCamStreamerControl1);
-            this.tabPage5.Location = new System.Drawing.Point(4, 25);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage5.Size = new System.Drawing.Size(482, 357);
+            this.tabPage5.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage5.Size = new System.Drawing.Size(384, 283);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "WebCamStreamer";
             this.tabPage5.UseVisualStyleBackColor = true;
             // 
             // webCamStreamerControl1
             // 
-            this.webCamStreamerControl1.Location = new System.Drawing.Point(9, 6);
+            this.webCamStreamerControl1.Location = new System.Drawing.Point(7, 5);
+            this.webCamStreamerControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.webCamStreamerControl1.Name = "webCamStreamerControl1";
-            this.webCamStreamerControl1.Size = new System.Drawing.Size(467, 345);
+            this.webCamStreamerControl1.Size = new System.Drawing.Size(374, 276);
             this.webCamStreamerControl1.TabIndex = 0;
             // 
             // tabPage4
             // 
             this.tabPage4.Controls.Add(this.httpStreamerControl1);
-            this.tabPage4.Location = new System.Drawing.Point(4, 25);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(482, 357);
+            this.tabPage4.Size = new System.Drawing.Size(384, 283);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "HttpStreamer";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -255,26 +267,29 @@
             // 
             this.httpStreamerControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.httpStreamerControl1.Location = new System.Drawing.Point(0, 0);
+            this.httpStreamerControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.httpStreamerControl1.Name = "httpStreamerControl1";
-            this.httpStreamerControl1.Size = new System.Drawing.Size(482, 357);
+            this.httpStreamerControl1.Size = new System.Drawing.Size(384, 283);
             this.httpStreamerControl1.TabIndex = 0;
             // 
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.remoteServerControl1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(482, 357);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1.Size = new System.Drawing.Size(384, 283);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // remoteServerControl1
             // 
-            this.remoteServerControl1.Location = new System.Drawing.Point(3, 6);
+            this.remoteServerControl1.Location = new System.Drawing.Point(2, 5);
+            this.remoteServerControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.remoteServerControl1.Name = "remoteServerControl1";
-            this.remoteServerControl1.Size = new System.Drawing.Size(473, 372);
+            this.remoteServerControl1.Size = new System.Drawing.Size(378, 298);
             this.remoteServerControl1.TabIndex = 0;
             // 
             // panel1
@@ -284,23 +299,26 @@
             this.panel1.Controls.Add(this.label5);
             this.panel1.Controls.Add(this.updateNetworksButton);
             this.panel1.Controls.Add(this.networkComboBox);
-            this.panel1.Location = new System.Drawing.Point(19, 12);
+            this.panel1.Location = new System.Drawing.Point(15, 10);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(456, 84);
+            this.panel1.Size = new System.Drawing.Size(365, 67);
             this.panel1.TabIndex = 67;
             // 
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(3, 41);
+            this.label23.Location = new System.Drawing.Point(2, 33);
+            this.label23.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(46, 17);
+            this.label23.Size = new System.Drawing.Size(35, 13);
             this.label23.TabIndex = 20;
             this.label23.Text = "_Port:";
             // 
             // communicationPortNumeric
             // 
-            this.communicationPortNumeric.Location = new System.Drawing.Point(91, 39);
+            this.communicationPortNumeric.Location = new System.Drawing.Point(73, 31);
+            this.communicationPortNumeric.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.communicationPortNumeric.Maximum = new decimal(new int[] {
             100500,
             0,
@@ -312,7 +330,7 @@
             0,
             -2147483648});
             this.communicationPortNumeric.Name = "communicationPortNumeric";
-            this.communicationPortNumeric.Size = new System.Drawing.Size(78, 22);
+            this.communicationPortNumeric.Size = new System.Drawing.Size(62, 20);
             this.communicationPortNumeric.TabIndex = 19;
             this.communicationPortNumeric.Value = new decimal(new int[] {
             1,
@@ -322,13 +340,14 @@
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(512, 539);
+            this.ClientSize = new System.Drawing.Size(410, 431);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.exitButton);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "MainForm";
             this.Text = "TestServer";
             this.contextMenu.ResumeLayout(false);

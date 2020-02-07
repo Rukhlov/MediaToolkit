@@ -173,6 +173,9 @@ namespace MediaToolkit.Core
         public bool CaptureMouse = false;
         public bool AspectRatio = true;
         public bool UseHardware = true;
+
+        public bool ShowCaptureBorder = true;
+        public bool ShowDebugInfo = true;
     }
 
     public class ScreenCaptureDescription

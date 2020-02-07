@@ -66,6 +66,8 @@
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.showCaptureBorderCheckBox = new System.Windows.Forms.CheckBox();
+            this.showDebugInfoCheckBox = new System.Windows.Forms.CheckBox();
             this.EncoderSettingsGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
@@ -101,7 +103,7 @@
             this.EncoderSettingsGroup.Controls.Add(this.label1);
             this.EncoderSettingsGroup.Controls.Add(this.latencyModeCheckBox);
             this.EncoderSettingsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.EncoderSettingsGroup.Location = new System.Drawing.Point(3, 291);
+            this.EncoderSettingsGroup.Location = new System.Drawing.Point(3, 288);
             this.EncoderSettingsGroup.Name = "EncoderSettingsGroup";
             this.EncoderSettingsGroup.Size = new System.Drawing.Size(379, 268);
             this.EncoderSettingsGroup.TabIndex = 74;
@@ -114,7 +116,7 @@
             this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
             this.adjustAspectRatioButton.Size = new System.Drawing.Size(99, 27);
             this.adjustAspectRatioButton.TabIndex = 74;
-            this.adjustAspectRatioButton.Text = "_Adjust";
+            this.adjustAspectRatioButton.Text = "Adjust";
             this.adjustAspectRatioButton.UseVisualStyleBackColor = true;
             this.adjustAspectRatioButton.Click += new System.EventHandler(this.adjustAspectRatioButton_Click);
             // 
@@ -180,11 +182,11 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(249, 175);
+            this.label15.Location = new System.Drawing.Point(205, 175);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(37, 17);
+            this.label15.Size = new System.Drawing.Size(82, 17);
             this.label15.TabIndex = 55;
-            this.label15.Text = "Max:";
+            this.label15.Text = "Bitrate Max:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // destWidthNumeric
@@ -242,9 +244,9 @@
             this.aspectRatioCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.aspectRatioCheckBox.Location = new System.Drawing.Point(17, 54);
             this.aspectRatioCheckBox.Name = "aspectRatioCheckBox";
-            this.aspectRatioCheckBox.Size = new System.Drawing.Size(114, 21);
+            this.aspectRatioCheckBox.Size = new System.Drawing.Size(106, 21);
             this.aspectRatioCheckBox.TabIndex = 72;
-            this.aspectRatioCheckBox.Text = "_AspectRatio";
+            this.aspectRatioCheckBox.Text = "AspectRatio";
             this.aspectRatioCheckBox.UseVisualStyleBackColor = true;
             // 
             // label12
@@ -344,25 +346,27 @@
             this.latencyModeCheckBox.AutoSize = true;
             this.latencyModeCheckBox.Checked = true;
             this.latencyModeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.latencyModeCheckBox.Location = new System.Drawing.Point(17, 229);
+            this.latencyModeCheckBox.Location = new System.Drawing.Point(18, 229);
             this.latencyModeCheckBox.Name = "latencyModeCheckBox";
-            this.latencyModeCheckBox.Size = new System.Drawing.Size(113, 21);
+            this.latencyModeCheckBox.Size = new System.Drawing.Size(105, 21);
             this.latencyModeCheckBox.TabIndex = 51;
-            this.latencyModeCheckBox.Text = "_LowLatency";
+            this.latencyModeCheckBox.Text = "LowLatency";
             this.latencyModeCheckBox.UseVisualStyleBackColor = true;
             // 
             // snippingToolButton
             // 
-            this.snippingToolButton.Location = new System.Drawing.Point(17, 147);
+            this.snippingToolButton.Location = new System.Drawing.Point(17, 135);
             this.snippingToolButton.Name = "snippingToolButton";
-            this.snippingToolButton.Size = new System.Drawing.Size(170, 27);
+            this.snippingToolButton.Size = new System.Drawing.Size(160, 27);
             this.snippingToolButton.TabIndex = 73;
-            this.snippingToolButton.Text = "_SelectRegion";
+            this.snippingToolButton.Text = "SelectRegion";
             this.snippingToolButton.UseVisualStyleBackColor = true;
             this.snippingToolButton.Click += new System.EventHandler(this.snippingToolButton_Click);
             // 
             // ScreenCaptureGroup
             // 
+            this.ScreenCaptureGroup.Controls.Add(this.showDebugInfoCheckBox);
+            this.ScreenCaptureGroup.Controls.Add(this.showCaptureBorderCheckBox);
             this.ScreenCaptureGroup.Controls.Add(this.label5);
             this.ScreenCaptureGroup.Controls.Add(this.label9);
             this.ScreenCaptureGroup.Controls.Add(this.displayTextBox);
@@ -371,10 +375,9 @@
             this.ScreenCaptureGroup.Controls.Add(this.captureRegionTextBox);
             this.ScreenCaptureGroup.Controls.Add(this.captureMouseCheckBox);
             this.ScreenCaptureGroup.Controls.Add(this.snippingToolButton);
-            this.ScreenCaptureGroup.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ScreenCaptureGroup.Location = new System.Drawing.Point(3, 100);
             this.ScreenCaptureGroup.Name = "ScreenCaptureGroup";
-            this.ScreenCaptureGroup.Size = new System.Drawing.Size(379, 185);
+            this.ScreenCaptureGroup.Size = new System.Drawing.Size(379, 182);
             this.ScreenCaptureGroup.TabIndex = 70;
             this.ScreenCaptureGroup.TabStop = false;
             this.ScreenCaptureGroup.Text = "CaptureSettings";
@@ -437,11 +440,11 @@
             this.captureMouseCheckBox.AutoSize = true;
             this.captureMouseCheckBox.Checked = true;
             this.captureMouseCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.captureMouseCheckBox.Location = new System.Drawing.Point(18, 108);
+            this.captureMouseCheckBox.Location = new System.Drawing.Point(17, 108);
             this.captureMouseCheckBox.Name = "captureMouseCheckBox";
-            this.captureMouseCheckBox.Size = new System.Drawing.Size(134, 21);
+            this.captureMouseCheckBox.Size = new System.Drawing.Size(126, 21);
             this.captureMouseCheckBox.TabIndex = 69;
-            this.captureMouseCheckBox.Text = "_Capture Mouse";
+            this.captureMouseCheckBox.Text = "Capture Mouse";
             this.captureMouseCheckBox.UseVisualStyleBackColor = true;
             // 
             // applyButton
@@ -450,7 +453,7 @@
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(100, 27);
             this.applyButton.TabIndex = 76;
-            this.applyButton.Text = "_Apply";
+            this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
             // 
@@ -460,7 +463,7 @@
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 27);
             this.cancelButton.TabIndex = 77;
-            this.cancelButton.Text = "_Cancel";
+            this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
@@ -534,7 +537,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(385, 601);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(385, 598);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
             // panel1
@@ -543,11 +546,35 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(133, 565);
+            this.panel1.Location = new System.Drawing.Point(133, 562);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.panel1.Size = new System.Drawing.Size(249, 33);
             this.panel1.TabIndex = 80;
+            // 
+            // showCaptureBorderCheckBox
+            // 
+            this.showCaptureBorderCheckBox.AutoSize = true;
+            this.showCaptureBorderCheckBox.Checked = true;
+            this.showCaptureBorderCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.showCaptureBorderCheckBox.Location = new System.Drawing.Point(201, 114);
+            this.showCaptureBorderCheckBox.Name = "showCaptureBorderCheckBox";
+            this.showCaptureBorderCheckBox.Size = new System.Drawing.Size(162, 21);
+            this.showCaptureBorderCheckBox.TabIndex = 83;
+            this.showCaptureBorderCheckBox.Text = "Show Capture Frame";
+            this.showCaptureBorderCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // showDebugInfoCheckBox
+            // 
+            this.showDebugInfoCheckBox.AutoSize = true;
+            this.showDebugInfoCheckBox.Checked = true;
+            this.showDebugInfoCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.showDebugInfoCheckBox.Location = new System.Drawing.Point(201, 141);
+            this.showDebugInfoCheckBox.Name = "showDebugInfoCheckBox";
+            this.showDebugInfoCheckBox.Size = new System.Drawing.Size(137, 21);
+            this.showDebugInfoCheckBox.TabIndex = 84;
+            this.showDebugInfoCheckBox.Text = "Show Debug Info";
+            this.showDebugInfoCheckBox.UseVisualStyleBackColor = true;
             // 
             // VideoSettingsForm
             // 
@@ -561,7 +588,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VideoSettingsForm";
-            this.Text = "_VideoSettings";
+            this.Text = "VideoSettings";
             this.EncoderSettingsGroup.ResumeLayout(false);
             this.EncoderSettingsGroup.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).EndInit();
@@ -620,5 +647,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox showDebugInfoCheckBox;
+        private System.Windows.Forms.CheckBox showCaptureBorderCheckBox;
     }
 }

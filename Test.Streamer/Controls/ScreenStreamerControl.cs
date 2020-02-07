@@ -1415,6 +1415,18 @@ namespace TestStreamer.Controls
 
     }
 
+    public class ServerSettings
+    {
+        public string StreamName = "";
+
+        public string NetworkIpAddress = "0.0.0.0";
+        public int CommunicationPort = -1;
+
+        public TransportMode TransportMode = TransportMode.Tcp;
+        public bool IsMulticast = false;
+        public string MutlicastAddress = "239.0.0.1";
+    }
+
     public class AudioStreamSettings
     {
         public bool Enabled = false;

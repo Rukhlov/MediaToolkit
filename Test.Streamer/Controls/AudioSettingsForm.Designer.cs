@@ -70,7 +70,7 @@
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(100, 27);
             this.cancelButton.TabIndex = 77;
-            this.cancelButton.Text = "_Cancel";
+            this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
@@ -80,7 +80,7 @@
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(100, 27);
             this.applyButton.TabIndex = 76;
-            this.applyButton.Text = "_Apply";
+            this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
             // 
@@ -96,23 +96,23 @@
             this.groupBox2.Size = new System.Drawing.Size(343, 100);
             this.groupBox2.TabIndex = 82;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "_Capture Settings";
+            this.groupBox2.Text = "Capture Settings";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(6, 24);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 17);
+            this.label2.Size = new System.Drawing.Size(56, 17);
             this.label2.TabIndex = 83;
-            this.label2.Text = "_Format:";
+            this.label2.Text = "Format:";
             // 
             // captFormatTextBox
             // 
-            this.captFormatTextBox.Location = new System.Drawing.Point(108, 21);
+            this.captFormatTextBox.Location = new System.Drawing.Point(94, 21);
             this.captFormatTextBox.Name = "captFormatTextBox";
             this.captFormatTextBox.ReadOnly = true;
-            this.captFormatTextBox.Size = new System.Drawing.Size(229, 22);
+            this.captFormatTextBox.Size = new System.Drawing.Size(243, 22);
             this.captFormatTextBox.TabIndex = 82;
             // 
             // label3
@@ -120,9 +120,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(6, 52);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(70, 17);
+            this.label3.Size = new System.Drawing.Size(62, 17);
             this.label3.TabIndex = 46;
-            this.label3.Text = "_Capture:";
+            this.label3.Text = "Capture:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // captureComboBox
@@ -130,9 +130,9 @@
             this.captureComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.captureComboBox.Enabled = false;
             this.captureComboBox.FormattingEnabled = true;
-            this.captureComboBox.Location = new System.Drawing.Point(108, 49);
+            this.captureComboBox.Location = new System.Drawing.Point(94, 49);
             this.captureComboBox.Name = "captureComboBox";
-            this.captureComboBox.Size = new System.Drawing.Size(229, 24);
+            this.captureComboBox.Size = new System.Drawing.Size(243, 24);
             this.captureComboBox.TabIndex = 47;
             // 
             // tableLayoutPanel1
@@ -168,21 +168,21 @@
             this.groupBox1.Size = new System.Drawing.Size(343, 139);
             this.groupBox1.TabIndex = 74;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "_Encoder Settings";
+            this.groupBox1.Text = "Encoder Settings";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(13, 51);
+            this.label7.Location = new System.Drawing.Point(13, 54);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(89, 17);
+            this.label7.Size = new System.Drawing.Size(93, 17);
             this.label7.TabIndex = 76;
-            this.label7.Text = "SampleRate:";
+            this.label7.Text = "Sample Rate:";
             // 
             // sampleRateNumeric
             // 
             this.sampleRateNumeric.Enabled = false;
-            this.sampleRateNumeric.Location = new System.Drawing.Point(108, 51);
+            this.sampleRateNumeric.Location = new System.Drawing.Point(112, 52);
             this.sampleRateNumeric.Maximum = new decimal(new int[] {
             96000,
             0,
@@ -214,7 +214,7 @@
             // channelsNumeric
             // 
             this.channelsNumeric.Enabled = false;
-            this.channelsNumeric.Location = new System.Drawing.Point(108, 80);
+            this.channelsNumeric.Location = new System.Drawing.Point(112, 80);
             this.channelsNumeric.Maximum = new decimal(new int[] {
             8,
             0,
@@ -249,9 +249,9 @@
             this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encoderComboBox.Enabled = false;
             this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(108, 21);
+            this.encoderComboBox.Location = new System.Drawing.Point(112, 21);
             this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(229, 24);
+            this.encoderComboBox.Size = new System.Drawing.Size(225, 24);
             this.encoderComboBox.TabIndex = 47;
             // 
             // AudioSettingsForm
@@ -266,7 +266,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "AudioSettingsForm";
-            this.Text = "_AudioSettings";
+            this.Text = "AudioSettings";
             this.panel1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();

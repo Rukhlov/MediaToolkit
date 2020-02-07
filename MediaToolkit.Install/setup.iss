@@ -1,11 +1,12 @@
 #include "ISPPBuiltins.iss"
 
-#define ApplicationName "Polywall Mediakit"
+#define ApplicationName "Polywall Media Streamer"
 #define ApplicationPublisher "Polywall"
 #define ApplicationURL "visiology.com"
-#define ApplicationExeName "MediaToolkit.dll"
+;#define ApplicationExeName "MediaToolkit.dll"
+#define ApplicationExeName "Test.Streamer.exe"
 
-#define DEBUG
+;#define DEBUG
 
 #define TrunkPath "..\"
 
@@ -28,9 +29,9 @@
 #define AppicationVersionFile Copy(AVF2,1, Pos(".", AVF2) - 1) ;+ "b" + Copy(AVF2, Pos(".",AVF2) + 1)
 
 ;Название выходного файла инсталлятора
-#define OutputBaseFilenameVervion "PolywallMediakit_v" + ApplicationVersion
+#define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion
 #ifdef DEBUG 
-  #define OutputBaseFilenameVervion "PolywallMediakit_v" + ApplicationVersion + "_Debug"
+  #define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion + "_Debug"
 #endif
 
 [Setup]
@@ -50,8 +51,8 @@ AppSupportURL={#ApplicationURL}
 AppUpdatesURL={#ApplicationURL}
 
 ;DefaultDirName={sd}\Mitsar\{#ApplicationName}
-DefaultDirName={commonpf}\Polywall\MediaToolkit
-;DefaultGroupName=Polywall\MediaToolkit\{#ApplicationName}
+DefaultDirName={commonpf}\Polywall\MediaStreamer
+DefaultGroupName=Polywall\MediaStreamer\{#ApplicationName}
 
 AllowNoIcons=yes
 
@@ -71,8 +72,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl, CustomMessage\Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl, CustomMessage\Russian.isl"
 
 [Tasks]
-;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
-;Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
+Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 [Dirs]
 ;Name: "{commonappdata}\Mitsar\Data Studio"
@@ -86,7 +87,7 @@ Source: "{#CurrentSourcePath}\avfilter-7.dll"; DestDir: "{app}"; Flags: replaces
 Source: "{#CurrentSourcePath}\avformat-58.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\avutil-56.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\CommandLine.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\CommandLine.xml"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\CommandLine.xml"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.Resources.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.Core.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.Core.pdb"; DestDir: "{app}"; Flags: replacesameversion
@@ -98,13 +99,13 @@ Source: "{#CurrentSourcePath}\MediaToolkit.NativeAPIs.dll"; DestDir: "{app}"; Fl
 Source: "{#CurrentSourcePath}\MediaToolkit.NativeAPIs.pdb"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.pdb"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.UI.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\MediaToolkit.UI.dll.config"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\MediaToolkit.UI.dll.config"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\MediaToolkit.UI.pdb"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\mscoree.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\mscoree.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\NAudio.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\NAudio.xml"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\NAudio.xml"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\NLog.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\NLog.xml"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\NLog.xml"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\postproc-55.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\SharpDX.Direct2D1.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#CurrentSourcePath}\SharpDX.Direct2D1.pdb"; DestDir: "{app}"; Flags: replacesameversion
@@ -122,25 +123,27 @@ Source: "{#CurrentSourcePath}\SharpDX.MediaFoundation.dll"; DestDir: "{app}"; Fl
 ;Source: "{#CurrentSourcePath}\SharpDX.pdb"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\swresample-3.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\swscale-5.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.Client.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.Client.exe.config"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.Client.pdb"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\Test.Client.exe"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\Test.Client.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\Test.Client.pdb"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\Test.Streamer.exe"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\Test.Streamer.exe.config"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\Test.Streamer.pdb"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.WebCam.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.WebCam.exe.config"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.WebCam.pdb"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\ucrtbase.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\ucrtbase_clr0400.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\ucrtbased.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\vcamp140d.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\vcruntime140.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\vcruntime140_clr0400.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\vcruntime140d.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\WindowsInput.dll"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replacesameversion
 
+;Source: "{#CurrentSourcePath}\Test.WebCam.exe"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\Test.WebCam.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\Test.WebCam.pdb"; DestDir: "{app}"; Flags: replacesameversion
+
+;Source: "{#CurrentSourcePath}\ucrtbase.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\ucrtbase_clr0400.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\ucrtbased.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\vcamp140d.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\vcruntime140.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\vcruntime140_clr0400.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\vcruntime140d.dll"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentSourcePath}\WindowsInput.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#CurrentSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentSourcePath}\MediaToolkit.DeckLink.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 [InstallDelete]
 ;Type: filesandordirs; Name: "{app}\ru"
@@ -153,10 +156,10 @@ Source: "{#CurrentSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replac
 Root: HKLM; Subkey: "Software\Visiology\Polywall\Path"; ValueType: string; ValueName: "MediaToolkitPath"; ValueData: "{app}"; Flags: uninsdeletekey
 
 [Icons]
-;Name: "{group}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"
-;Name: "{group}\uninstall.exe"; Filename: "{uninstallexe}"
+Name: "{group}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"
+Name: "{group}\uninstall.exe"; Filename: "{uninstallexe}"
 
-;Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
+Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
 ;Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
 ;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: quicklaunchicon
 

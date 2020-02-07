@@ -31,8 +31,12 @@ namespace TestStreamer
             UpdateVideoSources();
             UpdateAudioSources();
 
+            audioSourceEnableCheckBox.Checked = audioSettings.Enabled;
+            videoSourceEnableCheckBox.Checked = videoSettings.Enabled;
 
-            //            base.OnPaintBackground(e);
+            streamNameTextBox.Text = serverSettings.StreamName;
+
+            // base.OnPaintBackground(e);
             //using (var brush = new SolidBrush(BackColor))
             //{
             //    e.Graphics.FillRectangle(brush, ClientRectangle);
@@ -77,8 +81,11 @@ namespace TestStreamer
 
         private ScreencastCommunicationService communicationService = null;
         private string communicationAddress = "";
-        public int CommunicationPort = -1;
-        private bool isMulticastMode = false;
+
+        //public int CommunicationPort = -1;
+        //private bool isMulticastMode = false;
+
+        private ServerSettings serverSettings = null;
 
         public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
 
@@ -86,6 +93,18 @@ namespace TestStreamer
 
         private void InitMediaSettings()
         {
+            var hostName = System.Net.Dns.GetHostName();
+
+            serverSettings = new ServerSettings
+            {
+                StreamName = hostName,
+                NetworkIpAddress = "0.0.0.0",
+                MutlicastAddress = "239.0.0.1",
+                CommunicationPort = -1,
+                IsMulticast = false,
+                TransportMode = TransportMode.Tcp,
+            };
+
             screenCaptureDeviceDescr = new ScreenCaptureDeviceDescription
             {
                 Resolution = new Size(1920, 1080),
@@ -127,7 +146,7 @@ namespace TestStreamer
 
             audioSettings = new AudioStreamSettings
             {
-                Enabled = true,
+                Enabled = false,
                 SessionId = "audio_" + Guid.NewGuid().ToString(),
                 NetworkParams = new NetworkSettings(),
                 CaptureParams = new AudioCaptureSettings(),
@@ -205,14 +224,21 @@ namespace TestStreamer
                             {
                                 var screenDescr = (ScreenCaptureDeviceDescription)captureDescr;
 
-                                regionForm = new RegionForm(screenDescr.CaptureRegion);
-                                regionForm.Visible = true;
-
-                                statisticForm.Location = screenDescr.CaptureRegion.Location;
-                                if (showStatistic)
+                                if (screenDescr.ShowCaptureBorder)
                                 {
-                                    statisticForm.Start();
+                                    regionForm = new RegionForm(screenDescr.CaptureRegion);
+                                    regionForm.Visible = true;
                                 }
+
+                                if (screenDescr.ShowDebugInfo)
+                                {
+                                    statisticForm.Location = screenDescr.CaptureRegion.Location;
+                                    if (showStatistic)
+                                    {
+                                        statisticForm.Start();
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -273,14 +299,18 @@ namespace TestStreamer
                         statisticForm.Visible = false;
                     }
 
-                    if (previewForm != null && !previewForm.IsDisposed)
+                    //if (previewForm != null && !previewForm.IsDisposed)
+                    //{
+                    //    previewForm.Close();
+                    //    previewForm = null;
+                    //}
+
+                    if (regionForm != null)
                     {
-                        previewForm.Close();
-                        previewForm = null;
+                        regionForm.Close();
+                        regionForm = null;
                     }
 
-                    regionForm?.Close();
-                    regionForm = null;
 
                     var ex = t.Exception;
                     if (ex != null)
@@ -324,7 +354,8 @@ namespace TestStreamer
                 StartPosition = FormStartPosition.CenterParent,
 
             };
-            //f.Setup(videoSettings);
+
+            f.Init(serverSettings);
 
             f.ShowDialog();
         }
@@ -342,6 +373,7 @@ namespace TestStreamer
 
             videoSettings.NetworkParams.TransportMode = transportMode;
         }
+
 
         private void audioSourceDetailsButton_Click(object sender, EventArgs e)
         {
@@ -364,9 +396,9 @@ namespace TestStreamer
         {
             var sourceId = Guid.NewGuid().ToString();
 
-            var communicationPort = this.CommunicationPort;
+            var communicationPort = serverSettings.CommunicationPort;
 
-            var networkIpAddr = "0.0.0.0";
+            var networkIpAddr = serverSettings.NetworkIpAddress; //"0.0.0.0";
             //var ipInfo = mainForm.GetCurrentIpAddrInfo();
 
             //if (ipInfo != null)
@@ -375,12 +407,12 @@ namespace TestStreamer
             //}
 
             transportMode = TransportMode.Tcp;//(TransportMode)transportComboBox.SelectedItem;
-            //if (isMulticastMode)
-            //{
-            //    transportMode = TransportMode.Udp;
-            //}
+            if (serverSettings.IsMulticast)
+            {
+                transportMode = TransportMode.Udp;
+            }
 
-            if (!isMulticastMode && transportMode == TransportMode.Udp)
+            if (!serverSettings.IsMulticast && transportMode == TransportMode.Udp)
             {
                 throw new NotSupportedException("TransportMode.Udp currently not supported...");
             }
@@ -388,17 +420,17 @@ namespace TestStreamer
             audioSettings.NetworkParams.TransportMode = transportMode;
 
 
-            //var multicastAddr = multicastAddressTextBox.Text;
-            //var multicastVideoPort = 1234;
-            //var multicastAudioPort = 1235;
+            var multicastAddr = serverSettings.MutlicastAddress;
+            var multicastVideoPort = 1234;
+            var multicastAudioPort = 1235;
 
-            if (isMulticastMode)
+            if (serverSettings.IsMulticast)
             {
-                //videoSettings.NetworkParams.RemoteAddr = multicastAddr;
-                //videoSettings.NetworkParams.RemotePort = multicastVideoPort;
+                videoSettings.NetworkParams.RemoteAddr = multicastAddr;
+                videoSettings.NetworkParams.RemotePort = multicastVideoPort;
 
-                //audioSettings.NetworkParams.RemoteAddr = multicastAddr;
-                //audioSettings.NetworkParams.RemotePort = multicastAudioPort;
+                audioSettings.NetworkParams.RemoteAddr = multicastAddr;
+                audioSettings.NetworkParams.RemotePort = multicastAudioPort;
 
             }
             else
@@ -450,7 +482,7 @@ namespace TestStreamer
             var audioEnabled = audioSettings.Enabled;
 
             logger.Info("CommunicationAddress=" + communicationAddress +
-                " MulticastMode=" + isMulticastMode +
+                " MulticastMode=" + serverSettings.IsMulticast +
                 " VideoEnabled=" + videoEnabled +
                 " AudioEnabled=" + audioEnabled);
 
@@ -458,7 +490,7 @@ namespace TestStreamer
             {
                 SetupVideoSource(videoSettings);
 
-                if (transportMode == TransportMode.Tcp || isMulticastMode)
+                if (transportMode == TransportMode.Tcp || serverSettings.IsMulticast)
                 {
                     SetupVideoStream(videoSettings);
                 }
@@ -471,7 +503,7 @@ namespace TestStreamer
             {
                 SetupAudioSource(audioSettings);
 
-                if (transportMode == TransportMode.Tcp || isMulticastMode)
+                if (transportMode == TransportMode.Tcp || serverSettings.IsMulticast)
                 {
                     SetupAudioStream(audioSettings);
                 }
@@ -481,7 +513,7 @@ namespace TestStreamer
             }
 
             communicationService = new ScreencastCommunicationService(this);
-            var hostName = System.Net.Dns.GetHostName();
+            var hostName = serverSettings.StreamName; //System.Net.Dns.GetHostName();
 
 
             hostName += " (" + videoSettings.CaptureDescription.Name + ")";
@@ -662,7 +694,7 @@ namespace TestStreamer
             {
                 Address = address,
                 Port = port,
-                IsMulticast = isMulticastMode,
+                IsMulticast = serverSettings.IsMulticast,
                 Transport = _transportMode,
                 MediaInfo = audioInfo,
                 SSRC = settings.NetworkParams.SSRC,
@@ -698,7 +730,7 @@ namespace TestStreamer
                 Address = address,//videoSettings.Address,
                 Port = port, // videoSettings.Port,
                 Transport = _transportMode,
-                IsMulticast = isMulticastMode,
+                IsMulticast = serverSettings.IsMulticast,
                 MediaInfo = videoInfo,
                 SSRC = settings.NetworkParams.SSRC,
             };
@@ -1123,8 +1155,12 @@ namespace TestStreamer
         private void audioSourceComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
             var captureSettings = GetCurrentAudioCaptureSettings();
+            if(captureSettings == null)
+            {
+                audioSettings.Enabled = false;
+            }
 
-            audioSettings.Enabled = (captureSettings != null);
+            //audioSettings.Enabled = (captureSettings != null);
 
             audioSettings.CaptureParams = captureSettings;
 

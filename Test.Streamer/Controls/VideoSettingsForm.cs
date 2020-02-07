@@ -55,6 +55,10 @@ namespace TestStreamer.Controls
                 ScreenCaptureGroup.Visible = true;
 
                 adjustAspectRatioButton.Visible = true;
+
+                showDebugInfoCheckBox.Checked = screenCaptureParams.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = screenCaptureParams.ShowCaptureBorder;
+
             }
 
             var webCamCaptureParams = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
@@ -122,6 +126,9 @@ namespace TestStreamer.Controls
                 screenCaptureParams.CaptureRegion = this.CaptureRegion;
                 screenCaptureParams.CaptureMouse = this.captureMouseCheckBox.Checked;
                 screenCaptureParams.AspectRatio = this.aspectRatioCheckBox.Checked;
+
+                screenCaptureParams.ShowDebugInfo = showDebugInfoCheckBox.Checked;
+                screenCaptureParams.ShowCaptureBorder = showCaptureBorderCheckBox.Checked;
             }
 
             var deviceDescr = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
