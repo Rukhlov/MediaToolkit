@@ -26,6 +26,32 @@ namespace TestStreamer
         }
 
         private ServiceHost host = null;
+        //public int Port
+        //{
+        //    get
+        //    {
+        //        int port = -1;
+
+        //        try
+        //        {
+        //            if (host != null)
+        //            {
+        //                var channelDispatcher = host.ChannelDispatchers?.FirstOrDefault();
+        //                if (channelDispatcher != null)
+        //                {
+        //                    port = channelDispatcher.Listener.Uri.Port;
+        //                }
+        //            }
+
+        //        }
+        //        catch(Exception ex)
+        //        {
+        //            logger.Error(ex);
+        //        }
+
+        //        return port;
+        //    }
+        //}
 
         public bool IsOpened
         {
@@ -38,6 +64,7 @@ namespace TestStreamer
         public string HostName { get; private set; }
         public string ServerId { get; private set; }
 
+        public Uri ListenUri { get; private set; }
 
         public void Open(string address, string hostName)
         {
@@ -45,8 +72,8 @@ namespace TestStreamer
 
             try
             {
- 
-                var uri = new Uri(address);
+
+                this.ListenUri = new Uri(address);
 
                 this.HostName = hostName; 
                 this.ServerId = MediaToolkit.Utils.RngProvider.GetRandomNumber().ToString();
@@ -80,9 +107,12 @@ namespace TestStreamer
                     // PortSharingEnabled = true,
                 };
 
-                host = new ServiceHost(this, uri);
+                host = new ServiceHost(this, ListenUri);
 
-                var endpoint = host.AddServiceEndpoint(typeof(IScreenCastService), binding, uri);
+                var endpoint = host.AddServiceEndpoint(typeof(IScreenCastService), binding, ListenUri);
+
+                //endpoint.ListenUriMode = System.ServiceModel.Description.ListenUriMode.Unique;
+
                 var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
                // endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
                 endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
@@ -113,7 +143,7 @@ namespace TestStreamer
                 //    logger.Debug(_channel.Listener.Uri);
                 //}
 
-                logger.Debug("Service opened: " + uri.ToString());
+                logger.Debug("Service opened: " + ListenUri.ToString());
 
             }
             catch (Exception ex)

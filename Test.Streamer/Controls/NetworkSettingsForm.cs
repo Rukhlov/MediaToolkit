@@ -34,6 +34,7 @@ namespace Test.Streamer.Controls
         {
             this.serverSettings = settings;
 
+            this.textBoxStreamName.Text = settings.StreamName;
             communicationPortNumeric.Value = serverSettings.CommunicationPort;
             multicastAddressTextBox.Text = serverSettings.MutlicastAddress;
 
@@ -200,12 +201,29 @@ namespace Test.Streamer.Controls
             serverSettings.IsMulticast = multicastRadioButton.Checked;
             serverSettings.MutlicastAddress = multicastAddressTextBox.Text;
 
+            serverSettings.StreamName = this.textBoxStreamName.Text;
+
             this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void findFreePortButton_Click(object sender, EventArgs e)
+        {
+            var ports = NetUtils.GetFreePortRange(ProtocolType.Tcp, 1, 808);
+            if (ports != null)
+            {
+                var port = ports.FirstOrDefault();
+
+                communicationPortNumeric.Value = (int)port;
+            }
+            else
+            {
+                MessageBox.Show("No avaliable tcp ports..");
+            }
         }
     }
 }

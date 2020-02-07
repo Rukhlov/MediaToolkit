@@ -50,6 +50,8 @@
             this.latencyModeCheckBox = new System.Windows.Forms.CheckBox();
             this.snippingToolButton = new System.Windows.Forms.Button();
             this.ScreenCaptureGroup = new System.Windows.Forms.GroupBox();
+            this.showDebugInfoCheckBox = new System.Windows.Forms.CheckBox();
+            this.showCaptureBorderCheckBox = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.displayTextBox = new System.Windows.Forms.TextBox();
@@ -66,8 +68,6 @@
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.showCaptureBorderCheckBox = new System.Windows.Forms.CheckBox();
-            this.showDebugInfoCheckBox = new System.Windows.Forms.CheckBox();
             this.EncoderSettingsGroup.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.destWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MaxBitrateNumeric)).BeginInit();
@@ -366,11 +366,11 @@
             // ScreenCaptureGroup
             // 
             this.ScreenCaptureGroup.Controls.Add(this.showDebugInfoCheckBox);
+            this.ScreenCaptureGroup.Controls.Add(this.label8);
+            this.ScreenCaptureGroup.Controls.Add(this.displayTextBox);
             this.ScreenCaptureGroup.Controls.Add(this.showCaptureBorderCheckBox);
             this.ScreenCaptureGroup.Controls.Add(this.label5);
             this.ScreenCaptureGroup.Controls.Add(this.label9);
-            this.ScreenCaptureGroup.Controls.Add(this.displayTextBox);
-            this.ScreenCaptureGroup.Controls.Add(this.label8);
             this.ScreenCaptureGroup.Controls.Add(this.captureTypesComboBox);
             this.ScreenCaptureGroup.Controls.Add(this.captureRegionTextBox);
             this.ScreenCaptureGroup.Controls.Add(this.captureMouseCheckBox);
@@ -381,6 +381,30 @@
             this.ScreenCaptureGroup.TabIndex = 70;
             this.ScreenCaptureGroup.TabStop = false;
             this.ScreenCaptureGroup.Text = "CaptureSettings";
+            // 
+            // showDebugInfoCheckBox
+            // 
+            this.showDebugInfoCheckBox.AutoSize = true;
+            this.showDebugInfoCheckBox.Checked = true;
+            this.showDebugInfoCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.showDebugInfoCheckBox.Location = new System.Drawing.Point(201, 141);
+            this.showDebugInfoCheckBox.Name = "showDebugInfoCheckBox";
+            this.showDebugInfoCheckBox.Size = new System.Drawing.Size(137, 21);
+            this.showDebugInfoCheckBox.TabIndex = 84;
+            this.showDebugInfoCheckBox.Text = "Show Debug Info";
+            this.showDebugInfoCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // showCaptureBorderCheckBox
+            // 
+            this.showCaptureBorderCheckBox.AutoSize = true;
+            this.showCaptureBorderCheckBox.Checked = true;
+            this.showCaptureBorderCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.showCaptureBorderCheckBox.Location = new System.Drawing.Point(201, 114);
+            this.showCaptureBorderCheckBox.Name = "showCaptureBorderCheckBox";
+            this.showCaptureBorderCheckBox.Size = new System.Drawing.Size(162, 21);
+            this.showCaptureBorderCheckBox.TabIndex = 83;
+            this.showCaptureBorderCheckBox.Text = "Show Capture Frame";
+            this.showCaptureBorderCheckBox.UseVisualStyleBackColor = true;
             // 
             // label5
             // 
@@ -394,7 +418,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(15, 24);
+            this.label9.Location = new System.Drawing.Point(15, 53);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(57, 17);
             this.label9.TabIndex = 81;
@@ -402,7 +426,7 @@
             // 
             // displayTextBox
             // 
-            this.displayTextBox.Location = new System.Drawing.Point(96, 50);
+            this.displayTextBox.Location = new System.Drawing.Point(96, 22);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
             this.displayTextBox.Size = new System.Drawing.Size(267, 22);
@@ -411,7 +435,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(15, 53);
+            this.label8.Location = new System.Drawing.Point(14, 25);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(58, 17);
             this.label8.TabIndex = 79;
@@ -429,7 +453,7 @@
             // 
             // captureRegionTextBox
             // 
-            this.captureRegionTextBox.Location = new System.Drawing.Point(96, 22);
+            this.captureRegionTextBox.Location = new System.Drawing.Point(96, 50);
             this.captureRegionTextBox.Name = "captureRegionTextBox";
             this.captureRegionTextBox.ReadOnly = true;
             this.captureRegionTextBox.Size = new System.Drawing.Size(267, 22);
@@ -551,30 +575,6 @@
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.panel1.Size = new System.Drawing.Size(249, 33);
             this.panel1.TabIndex = 80;
-            // 
-            // showCaptureBorderCheckBox
-            // 
-            this.showCaptureBorderCheckBox.AutoSize = true;
-            this.showCaptureBorderCheckBox.Checked = true;
-            this.showCaptureBorderCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showCaptureBorderCheckBox.Location = new System.Drawing.Point(201, 114);
-            this.showCaptureBorderCheckBox.Name = "showCaptureBorderCheckBox";
-            this.showCaptureBorderCheckBox.Size = new System.Drawing.Size(162, 21);
-            this.showCaptureBorderCheckBox.TabIndex = 83;
-            this.showCaptureBorderCheckBox.Text = "Show Capture Frame";
-            this.showCaptureBorderCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // showDebugInfoCheckBox
-            // 
-            this.showDebugInfoCheckBox.AutoSize = true;
-            this.showDebugInfoCheckBox.Checked = true;
-            this.showDebugInfoCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showDebugInfoCheckBox.Location = new System.Drawing.Point(201, 141);
-            this.showDebugInfoCheckBox.Name = "showDebugInfoCheckBox";
-            this.showDebugInfoCheckBox.Size = new System.Drawing.Size(137, 21);
-            this.showDebugInfoCheckBox.TabIndex = 84;
-            this.showDebugInfoCheckBox.Text = "Show Debug Info";
-            this.showDebugInfoCheckBox.UseVisualStyleBackColor = true;
             // 
             // VideoSettingsForm
             // 

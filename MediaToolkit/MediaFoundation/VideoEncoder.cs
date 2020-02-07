@@ -137,6 +137,7 @@ namespace MediaToolkit.Core
             Encode(texture);
         }
 
+        private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
         public void Encode(Texture2D texture)
         {
             using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
@@ -178,8 +179,8 @@ namespace MediaToolkit.Core
                         {
                             using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
                             {
-                                var uuid = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-                                dxgiBuffer.GetResource(uuid, out IntPtr intPtr);
+                                
+                                dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
                                 using (Texture2D nv12Texture = new Texture2D(intPtr))
                                 {
                                     encoder.WriteTexture(nv12Texture);

@@ -111,14 +111,20 @@ namespace MediaToolkit
 
 
         // private Texture2D SharedTexture = null;
+        private volatile bool running = false;
 
         private Stopwatch sw = new Stopwatch();
-        public Task Start()
+        public bool Start()
         {
             logger.Debug("ScreenStreamer::Start()");
-
-            return Task.Run(() =>
+            if (running)
             {
+                return false;
+            }
+
+            Task.Run(() =>
+            {
+                running = true;
                 logger.Info("Streaming thread started...");
 
 
@@ -172,7 +178,10 @@ namespace MediaToolkit
                 }
 
                 logger.Info("Streaming thread ended...");
+                running = false;
             });
+
+            return true;
 
         }
 
@@ -210,8 +219,15 @@ namespace MediaToolkit
         public void Close()
         {
             logger.Debug("VideoMulticastStreamer::Close()");
-            closing = true;
-            syncEvent.Set();
+            if (running)
+            {
+                closing = true;
+                syncEvent.Set();
+            }
+            else
+            {
+                CleanUp();
+            }
         }
 
         private void CleanUp()
@@ -220,6 +236,7 @@ namespace MediaToolkit
 
             if (videoEncoder != null)
             {
+                videoEncoder.DataEncoded -= VideoEncoder_DataEncoded;
                 videoEncoder.Close();
                 videoEncoder = null;
             }

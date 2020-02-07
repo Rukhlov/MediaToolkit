@@ -34,6 +34,7 @@ namespace TestStreamer.Controls
             this.AudioSettings = settingsParams;
             var captureSettings = AudioSettings.CaptureParams;
 
+            textBoxDevice.Text = captureSettings.Name;
             this.captFormatTextBox.Text = captureSettings.Description;
 
             //this.addressTextBox.Text = AudioSettings.Address;

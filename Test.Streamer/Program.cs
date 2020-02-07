@@ -36,7 +36,7 @@ namespace TestStreamer
         [STAThread]
         static void Main(string[] args)
         {
-            Console.Title = "App started...";
+            //Console.Title = "App started...";
 
             logger = LogManager.GetCurrentClassLogger();
 
@@ -61,8 +61,8 @@ namespace TestStreamer
                 }
 
 
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+                //Console.WriteLine("Press any key to exit...");
+                //Console.ReadKey();
             };
 
             logger.Info("========== START ============");
@@ -92,7 +92,9 @@ namespace TestStreamer
 
                 //StreamingForm form = new StreamingForm();
                 //MainForm2 form = new MainForm2();
-               // MainForm form = new MainForm();
+                //MainForm form = new MainForm();
+
+
                 StreamingForm form = new StreamingForm();
 
                 Application.Run(form);

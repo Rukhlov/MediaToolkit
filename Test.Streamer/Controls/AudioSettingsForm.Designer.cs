@@ -44,6 +44,8 @@
             this.channelsNumeric = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
+            this.labelDevice = new System.Windows.Forms.Label();
+            this.textBoxDevice = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -58,7 +60,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(97, 254);
+            this.panel1.Location = new System.Drawing.Point(97, 246);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.panel1.Size = new System.Drawing.Size(249, 33);
@@ -86,14 +88,15 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.labelDevice);
+            this.groupBox2.Controls.Add(this.textBoxDevice);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.captFormatTextBox);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.captureComboBox);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(3, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(343, 100);
+            this.groupBox2.Size = new System.Drawing.Size(343, 118);
             this.groupBox2.TabIndex = 82;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Capture Settings";
@@ -101,7 +104,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 24);
+            this.label2.Location = new System.Drawing.Point(13, 52);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 17);
             this.label2.TabIndex = 83;
@@ -109,7 +112,7 @@
             // 
             // captFormatTextBox
             // 
-            this.captFormatTextBox.Location = new System.Drawing.Point(94, 21);
+            this.captFormatTextBox.Location = new System.Drawing.Point(94, 49);
             this.captFormatTextBox.Name = "captFormatTextBox";
             this.captFormatTextBox.ReadOnly = true;
             this.captFormatTextBox.Size = new System.Drawing.Size(243, 22);
@@ -118,7 +121,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 52);
+            this.label3.Location = new System.Drawing.Point(13, 82);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(62, 17);
             this.label3.TabIndex = 46;
@@ -130,7 +133,7 @@
             this.captureComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.captureComboBox.Enabled = false;
             this.captureComboBox.FormattingEnabled = true;
-            this.captureComboBox.Location = new System.Drawing.Point(94, 49);
+            this.captureComboBox.Location = new System.Drawing.Point(94, 79);
             this.captureComboBox.Name = "captureComboBox";
             this.captureComboBox.Size = new System.Drawing.Size(243, 24);
             this.captureComboBox.TabIndex = 47;
@@ -151,7 +154,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(349, 290);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(349, 282);
             this.tableLayoutPanel1.TabIndex = 83;
             // 
             // groupBox1
@@ -162,10 +165,9 @@
             this.groupBox1.Controls.Add(this.channelsNumeric);
             this.groupBox1.Controls.Add(this.label6);
             this.groupBox1.Controls.Add(this.encoderComboBox);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(3, 109);
+            this.groupBox1.Location = new System.Drawing.Point(3, 127);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(343, 139);
+            this.groupBox1.Size = new System.Drawing.Size(343, 113);
             this.groupBox1.TabIndex = 74;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encoder Settings";
@@ -254,13 +256,30 @@
             this.encoderComboBox.Size = new System.Drawing.Size(225, 24);
             this.encoderComboBox.TabIndex = 47;
             // 
+            // labelDevice
+            // 
+            this.labelDevice.AutoSize = true;
+            this.labelDevice.Location = new System.Drawing.Point(13, 24);
+            this.labelDevice.Name = "labelDevice";
+            this.labelDevice.Size = new System.Drawing.Size(55, 17);
+            this.labelDevice.TabIndex = 85;
+            this.labelDevice.Text = "Device:";
+            // 
+            // textBoxDevice
+            // 
+            this.textBoxDevice.Location = new System.Drawing.Point(94, 21);
+            this.textBoxDevice.Name = "textBoxDevice";
+            this.textBoxDevice.ReadOnly = true;
+            this.textBoxDevice.Size = new System.Drawing.Size(243, 22);
+            this.textBoxDevice.TabIndex = 84;
+            // 
             // AudioSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(405, 354);
+            this.ClientSize = new System.Drawing.Size(414, 368);
             this.Controls.Add(this.tableLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -298,5 +317,7 @@
         private System.Windows.Forms.NumericUpDown channelsNumeric;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox encoderComboBox;
+        private System.Windows.Forms.Label labelDevice;
+        private System.Windows.Forms.TextBox textBoxDevice;
     }
 }

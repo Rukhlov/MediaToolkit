@@ -9,6 +9,9 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +39,11 @@ namespace TestStreamer
 
             streamNameTextBox.Text = serverSettings.StreamName;
 
+            captureStatusDescriptionLabel.Text = "";
+            captureStatusLabel.Text = captureStatus;
+
+            captureStatusDescriptionLabel.Text = "";
+            
             // base.OnPaintBackground(e);
             //using (var brush = new SolidBrush(BackColor))
             //{
@@ -62,7 +70,7 @@ namespace TestStreamer
 
 
         private StatisticForm statisticForm = new StatisticForm();
-        private PreviewForm previewForm = null;
+        //private PreviewForm previewForm = null;
         private RegionForm regionForm = null;
 
 
@@ -91,18 +99,31 @@ namespace TestStreamer
 
         private bool showStatistic = true;
 
+
+        private string captureStatus = "Capture Stopped";
+
         private void InitMediaSettings()
         {
             var hostName = System.Net.Dns.GetHostName();
+
+            //FIXME: порт может изменится!
+            int port = -1;
+
+            var freeTcpPorts = NetUtils.GetFreePortRange(ProtocolType.Tcp, 1, 808);
+            if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+            {
+                port = freeTcpPorts.FirstOrDefault();
+            }
 
             serverSettings = new ServerSettings
             {
                 StreamName = hostName,
                 NetworkIpAddress = "0.0.0.0",
                 MutlicastAddress = "239.0.0.1",
-                CommunicationPort = -1,
+                CommunicationPort = port,
                 IsMulticast = false,
                 TransportMode = TransportMode.Tcp,
+                
             };
 
             screenCaptureDeviceDescr = new ScreenCaptureDeviceDescription
@@ -113,6 +134,7 @@ namespace TestStreamer
                 CaptureType = VideoCaptureType.DXGIDeskDupl,
                 UseHardware = true,
                 Fps = 30,
+                ShowDebugInfo = false,
             };
 
             videoEncoderSettings = new VideoEncoderSettings
@@ -155,7 +177,32 @@ namespace TestStreamer
 
         }
 
-        private void startButton_Click(object sender, EventArgs e)
+        private bool allowshowdisplay = true;
+
+        protected override void SetVisibleCore(bool value)
+        {
+            base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (!closing)
+            {
+                e.Cancel = true;
+                this.Visible = false;
+            }
+            base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+
+            base.OnClosed(e);
+        }
+
+
+
+        private void switchStreamingStateButton_Click(object sender, EventArgs e)
         {
             logger.Debug("startButton_Click(...) ");
 
@@ -176,12 +223,15 @@ namespace TestStreamer
             {
                 UpdateSettings();
 
+                contextMenu.Enabled = false;
+
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
                 audioSourceSettingsLayoutPanel.Enabled = false;
 
-                startStreamingButton.Enabled = false;
-
+                switchStreamingStateButton.Enabled = false;
+                captureStatus = "Capture Starting...";
+                captureStatusLabel.Text = captureStatus;
 
                 //this.Enabled = false;
                 this.Cursor = Cursors.WaitCursor;
@@ -197,6 +247,8 @@ namespace TestStreamer
                     }
                     catch (Exception ex)
                     {
+                        //logger.Error(ex);
+
                         StopStreaming();
                         throw;
                     }
@@ -209,11 +261,17 @@ namespace TestStreamer
                     this.Cursor = Cursors.Default;
                     this.Enabled = true;
 
+                    contextMenu.Enabled = true;
+
                     var ex = t.Exception;
                     if (ex != null)
                     {
                         var iex = ex.InnerException;
                         MessageBox.Show(iex.Message);
+
+
+                        captureStatus = "Capture Stopped";
+                        captureStatusLabel.Text = captureStatus;
                     }
                     else
                     {
@@ -240,7 +298,25 @@ namespace TestStreamer
                                 }
 
                             }
+
                         }
+
+
+                        captureStatus = "Capturing...";
+
+                        captureStatusLabel.Text = captureStatus;
+                        var statusDescription = "";
+                        var _port = serverSettings.CommunicationPort;
+                        if (serverSettings.CommunicationPort >= 0)
+                        {
+                            var listenUri = communicationService.ListenUri;
+                            statusDescription = "Streamer running on port " + listenUri.Port;
+                        }
+
+                       
+                        //"Waiting for connection at " + _port + " port";
+                        captureStatusDescriptionLabel.Text = statusDescription;
+
                     }
 
                 }, TaskScheduler.FromCurrentSynchronizationContext());
@@ -252,12 +328,18 @@ namespace TestStreamer
 
                 MessageBox.Show(ex.Message);
 
+                contextMenu.Enabled = true;
 
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
                 audioSourceSettingsLayoutPanel.Enabled = true;
 
-                startStreamingButton.Enabled = true;
+                switchStreamingStateButton.Enabled = true;
+
+                captureStatus = "Capture Stopped";
+                captureStatusLabel.Text = captureStatus;
+
+                captureStatusDescriptionLabel.Text = "";
             }
         }
 
@@ -274,11 +356,18 @@ namespace TestStreamer
             {
                 this.Cursor = Cursors.WaitCursor;
 
+                contextMenu.Enabled = false;
+
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
                 audioSourceSettingsLayoutPanel.Enabled = false;
 
-                startStreamingButton.Enabled = false;
+                switchStreamingStateButton.Enabled = false;
+
+                captureStatus = "Capture Stopping...";
+                captureStatusLabel.Text = captureStatus;
+
+                captureStatusDescriptionLabel.Text = "";
 
                 Task.Run(() =>
                 {
@@ -289,6 +378,13 @@ namespace TestStreamer
                     logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
                     UpdateControls();
+                    contextMenu.Enabled = true;
+                    switchStreamingStateButton.Enabled = true;
+                    captureStatus = "Capture Stopped";
+
+                    captureStatusLabel.Text = captureStatus;
+
+                    captureStatusDescriptionLabel.Text = "";
 
                     this.Cursor = Cursors.Default;
                     this.Enabled = true;
@@ -331,19 +427,38 @@ namespace TestStreamer
                 logger.Error(ex);
                 MessageBox.Show(ex.ToString());
 
-
+                contextMenu.Enabled = true;
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
                 audioSourceSettingsLayoutPanel.Enabled = true;
 
-                startStreamingButton.Enabled = true;
+                switchStreamingStateButton.Enabled = true;
+
+                captureStatus = "Capture Stopped";
+
+                captureStatusLabel.Text = captureStatus;
+                captureStatusDescriptionLabel.Text = "";
             }
 
 
         }
 
+
+        
+        private void exitMenuItem_Click(object sender, EventArgs e)
+        {
+            DoClose();
+        }
+
         private void exitButton_Click(object sender, EventArgs e)
         {
+            DoClose();
+        }
+
+        private bool closing = false;
+        private void DoClose()
+        {
+            closing = true;
             this.Close();
         }
 
@@ -358,6 +473,9 @@ namespace TestStreamer
             f.Init(serverSettings);
 
             f.ShowDialog();
+
+
+            streamNameTextBox.Text = serverSettings.StreamName;
         }
 
         private void videoSourceDetailsButton_Click(object sender, EventArgs e)
@@ -1208,18 +1326,22 @@ namespace TestStreamer
 
             if (isStreaming)
             {
-                startStreamingButton.Text = "_Stop Capture";
+                startToolStripMenuItem.Text = "Stop Streaming";
+                switchStreamingStateButton.Text = "Stop Streaming";
             }
             else
             {
-                startStreamingButton.Text = "_Start Capture";
+                startToolStripMenuItem.Text = "Start Streaming";
+                switchStreamingStateButton.Text = "Start Streaming";
             }
+
+            
 
             networkSettingsLayoutPanel.Enabled = !isStreaming;
             videoSourceSettingsLayoutPanel.Enabled = !isStreaming;
             audioSourceSettingsLayoutPanel.Enabled = !isStreaming;
 
-            startStreamingButton.Enabled = true;
+            switchStreamingStateButton.Enabled = true;
 
             /*
             var videoEnabled = videoSettings.Enabled;
@@ -1272,15 +1394,23 @@ namespace TestStreamer
             }
         }
 
-        private void tableLayoutPanel2_Paint(object sender, PaintEventArgs e)
+        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            this.Visible = true;
         }
 
-        private void tableLayoutPanel2_Paint_1(object sender, PaintEventArgs e)
+        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left)
+            {
+                this.allowshowdisplay = true;
 
+                this.Visible = !this.Visible;
+            }
         }
+
+
+
     }
 
     public class CustomComboBox : ComboBox

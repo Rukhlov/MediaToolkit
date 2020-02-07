@@ -399,7 +399,7 @@ namespace TestStreamer
             videoStreamer.Setup(encodingParams, networkParams);
 
             videoSource.Start();
-            var streamerTask = videoStreamer.Start();
+            videoStreamer.Start();
 
             //previewForm = new PreviewForm();
             //previewForm.Setup(screenSource);

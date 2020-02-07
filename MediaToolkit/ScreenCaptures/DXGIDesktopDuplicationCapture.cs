@@ -29,13 +29,6 @@ using SharpDX.MediaFoundation;
 
 namespace MediaToolkit
 {
-    public interface IDirect3D11Capture
-    {
-        Device Device3D11 { get; }
-
-        Texture2D SharedTexture { get; }
-    }
-
     public class DXGIDesktopDuplicationCapture : ScreenCapture //, IDirect3D11Capture
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
