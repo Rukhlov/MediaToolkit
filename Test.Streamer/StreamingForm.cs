@@ -100,7 +100,7 @@ namespace TestStreamer
         private bool showStatistic = true;
 
 
-        private string captureStatus = "Capture Stopped";
+        private string captureStatus = "Ready to stream";
 
         private void InitMediaSettings()
         {
@@ -177,28 +177,28 @@ namespace TestStreamer
 
         }
 
-        private bool allowshowdisplay = true;
+        //private bool allowshowdisplay = true;
 
-        protected override void SetVisibleCore(bool value)
-        {
-            base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
-        }
+        //protected override void SetVisibleCore(bool value)
+        //{
+        //    base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
+        //}
 
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            if (!closing)
-            {
-                e.Cancel = true;
-                this.Visible = false;
-            }
-            base.OnClosing(e);
-        }
+        //protected override void OnClosing(CancelEventArgs e)
+        //{
+        //    if (!closing)
+        //    {
+        //        e.Cancel = true;
+        //        this.Visible = false;
+        //    }
+        //    base.OnClosing(e);
+        //}
 
-        protected override void OnClosed(EventArgs e)
-        {
+        //protected override void OnClosed(EventArgs e)
+        //{
 
-            base.OnClosed(e);
-        }
+        //    base.OnClosed(e);
+        //}
 
 
 
@@ -223,14 +223,14 @@ namespace TestStreamer
             {
                 UpdateSettings();
 
-                contextMenu.Enabled = false;
+                //contextMenu.Enabled = false;
 
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
                 audioSourceSettingsLayoutPanel.Enabled = false;
 
                 switchStreamingStateButton.Enabled = false;
-                captureStatus = "Capture Starting...";
+                captureStatus = "Stream starting...";
                 captureStatusLabel.Text = captureStatus;
 
                 //this.Enabled = false;
@@ -261,17 +261,17 @@ namespace TestStreamer
                     this.Cursor = Cursors.Default;
                     this.Enabled = true;
 
-                    contextMenu.Enabled = true;
+                    //contextMenu.Enabled = true;
 
                     var ex = t.Exception;
                     if (ex != null)
                     {
+                        captureStatus = "Streaming attempt has failed";//"Capture Stopped";
+                        captureStatusLabel.Text = captureStatus;
+
                         var iex = ex.InnerException;
                         MessageBox.Show(iex.Message);
 
-
-                        captureStatus = "Capture Stopped";
-                        captureStatusLabel.Text = captureStatus;
                     }
                     else
                     {
@@ -302,7 +302,7 @@ namespace TestStreamer
                         }
 
 
-                        captureStatus = "Capturing...";
+                        captureStatus = "";//"Capturing...";
 
                         captureStatusLabel.Text = captureStatus;
                         var statusDescription = "";
@@ -310,7 +310,7 @@ namespace TestStreamer
                         if (serverSettings.CommunicationPort >= 0)
                         {
                             var listenUri = communicationService.ListenUri;
-                            statusDescription = "Streamer running on port " + listenUri.Port;
+                            statusDescription = "Stream running on port " + listenUri.Port;
                         }
 
                        
@@ -328,7 +328,7 @@ namespace TestStreamer
 
                 MessageBox.Show(ex.Message);
 
-                contextMenu.Enabled = true;
+                //contextMenu.Enabled = true;
 
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
@@ -336,7 +336,7 @@ namespace TestStreamer
 
                 switchStreamingStateButton.Enabled = true;
 
-                captureStatus = "Capture Stopped";
+                captureStatus = "Streaming attempt has failed";//Stopped";
                 captureStatusLabel.Text = captureStatus;
 
                 captureStatusDescriptionLabel.Text = "";
@@ -356,7 +356,7 @@ namespace TestStreamer
             {
                 this.Cursor = Cursors.WaitCursor;
 
-                contextMenu.Enabled = false;
+                //contextMenu.Enabled = false;
 
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
@@ -364,7 +364,7 @@ namespace TestStreamer
 
                 switchStreamingStateButton.Enabled = false;
 
-                captureStatus = "Capture Stopping...";
+                captureStatus = "Stream stopping...";
                 captureStatusLabel.Text = captureStatus;
 
                 captureStatusDescriptionLabel.Text = "";
@@ -378,9 +378,9 @@ namespace TestStreamer
                     logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
                     UpdateControls();
-                    contextMenu.Enabled = true;
+                    //contextMenu.Enabled = true;
                     switchStreamingStateButton.Enabled = true;
-                    captureStatus = "Capture Stopped";
+                    captureStatus = "Ready to stream";//"Capture Stopped";
 
                     captureStatusLabel.Text = captureStatus;
 
@@ -427,14 +427,14 @@ namespace TestStreamer
                 logger.Error(ex);
                 MessageBox.Show(ex.ToString());
 
-                contextMenu.Enabled = true;
+                //contextMenu.Enabled = true;
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
                 audioSourceSettingsLayoutPanel.Enabled = true;
 
                 switchStreamingStateButton.Enabled = true;
 
-                captureStatus = "Capture Stopped";
+                captureStatus = "Streaming attempt has failed";//"Capture Stopped";
 
                 captureStatusLabel.Text = captureStatus;
                 captureStatusDescriptionLabel.Text = "";
@@ -968,11 +968,15 @@ namespace TestStreamer
                 }
                 ).ToList();
 
-            items.Add(new ComboBoxItem
+            if (items.Count > 1)
             {
-                Name = "_AllScreen",
-                Tag = SystemInformation.VirtualScreen
-            });
+                items.Add(new ComboBoxItem
+                {
+                    Name = "All Screens",
+                    Tag = SystemInformation.VirtualScreen
+                });
+
+            }
 
             var captDevices = GetVideoCaptureDevices();
             if (captDevices.Count > 0)
@@ -1326,12 +1330,12 @@ namespace TestStreamer
 
             if (isStreaming)
             {
-                startToolStripMenuItem.Text = "Stop Streaming";
+               // startToolStripMenuItem.Text = "Stop Streaming";
                 switchStreamingStateButton.Text = "Stop Streaming";
             }
             else
             {
-                startToolStripMenuItem.Text = "Start Streaming";
+                //startToolStripMenuItem.Text = "Start Streaming";
                 switchStreamingStateButton.Text = "Start Streaming";
             }
 
@@ -1394,20 +1398,22 @@ namespace TestStreamer
             }
         }
 
-        private void settingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Visible = true;
-        }
 
-        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                this.allowshowdisplay = true;
 
-                this.Visible = !this.Visible;
-            }
-        }
+        //private void settingToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    this.Visible = true;
+        //}
+
+        //private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        //{
+        //    if (e.Button == MouseButtons.Left)
+        //    {
+        //        this.allowshowdisplay = true;
+
+        //        this.Visible = !this.Visible;
+        //    }
+        //}
 
 
 

@@ -171,7 +171,7 @@ namespace MediaToolkit
                                 logger.Error(ex);
                             }
 
-                            break;
+                            //break;
                            
                         }
                     }

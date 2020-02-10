@@ -257,7 +257,7 @@ namespace TestStreamer
             this.StartPosition = FormStartPosition.Manual;
             this.Location = region.Location;
             this.Size = new Size(region.Width, region.Height);
-
+                                                                
             this.TransparencyKey = Color.White;
             this.BackColor = Color.White;
             this.FormBorderStyle = FormBorderStyle.None;

@@ -282,5 +282,10 @@ namespace TestStreamer.Controls
             this.destHeightNumeric.Value = destHeight;
             
         }
+
+        private void showDebugInfoCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

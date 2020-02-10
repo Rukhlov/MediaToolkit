@@ -213,17 +213,21 @@ namespace Test.Streamer.Controls
 
         private void findFreePortButton_Click(object sender, EventArgs e)
         {
-            var ports = NetUtils.GetFreePortRange(ProtocolType.Tcp, 1, 808);
-            if (ports != null)
-            {
-                var port = ports.FirstOrDefault();
+            int currentPort = (int)communicationPortNumeric.Value;
 
-                communicationPortNumeric.Value = (int)port;
+            var freeTcpPorts = NetUtils.GetFreePortRange(ProtocolType.Tcp, 1, currentPort);
+            if (freeTcpPorts != null)
+            {
+                var newPort = freeTcpPorts.FirstOrDefault();
+
+                communicationPortNumeric.Value = (int)newPort;
             }
             else
             {
                 MessageBox.Show("No avaliable tcp ports..");
             }
         }
+
+
     }
 }
