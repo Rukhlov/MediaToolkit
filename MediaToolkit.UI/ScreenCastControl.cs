@@ -104,6 +104,7 @@ namespace MediaToolkit.UI
 
                     var uri = new Uri("net.tcp://" + addrStr);
 
+                   
                     logger.Info("Connect to: " + uri.ToString());
 
                     var host = uri.Host;
@@ -159,6 +160,8 @@ namespace MediaToolkit.UI
             {
                 address = "net.tcp://" + ServerAddr + ":" + ServerPort + "/ScreenCaster";
             }
+
+            //Console.WriteLine(address);
 
             UpdateControls();
 
@@ -282,6 +285,8 @@ namespace MediaToolkit.UI
                     {
                         errorCode = ErrorCode.NotFound;
                         logger.Error(ex.Message);
+
+                        //Console.WriteLine(ex.Message);
                     }
                     catch (Exception ex)
                     {
@@ -291,6 +296,8 @@ namespace MediaToolkit.UI
                         {
                             errorCode = ErrorCode.Fail;
                         }
+
+                        //Console.WriteLine(ex);
                     }
                     finally
                     {

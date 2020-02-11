@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.SharedTypes;
+using NLog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +16,8 @@ namespace Test.PolywallClient
 {
     public partial class Form1 : Form
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public Form1()
         {
             InitializeComponent();
@@ -36,9 +39,17 @@ namespace Test.PolywallClient
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + "Test.Streamer.exe");
+            try
+            {
+                var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + "Test.Streamer.exe");
 
-            Process.Start(file);
+                Process.Start(file);
+            }
+            catch(Exception ex)
+            {
+                logger.Error(ex);
+            }
+
         }
 
 
