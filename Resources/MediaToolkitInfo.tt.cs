@@ -16,8 +16,8 @@ namespace MediaToolkit.Resources
 
 		public const string Version = "1.0.0.0";
 
-		public const string HeadSha1 = @"a33f73f88814559225961ba4a4ddf6a4752a7fc5";
-        public const string HeadShaShort = @"a33f73f";
+		public const string HeadSha1 = @"37be152bb9e7fe10cf49261f7a93b7a9d04a1cc3";
+        public const string HeadShaShort = @"37be152";
 	}
 
 }
