@@ -45,10 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MediaToolkitInfo.tt.cs">
+    <Compile Include="GlobalAssemblyInfo.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>MediaToolkitInfo.tt</DependentUpon>
+      <DependentUpon>GlobalAssemblyInfo.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -249,9 +249,9 @@
     <Content Include="FFmpeg4\LICENSE.txt" />
     <Content Include="FFmpeg4\README.txt" />
     <Content Include="logo.ico" />
-    <Content Include="MediaToolkitInfo.tt">
+    <Content Include="GlobalAssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>MediaToolkitInfo.tt.cs</LastGenOutput>
+      <LastGenOutput>GlobalAssemblyInfo.cs</LastGenOutput>
     </Content>
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct2D1.dll" />
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.Direct2D1.pdb" />

@@ -45,8 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Resources\MediaToolkitInfo.cs">
-      <Link>Properties\MediaToolkitInfo.cs</Link>
+    <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="BaseTypes.cs" />
     <Compile Include="MediaToolkitFactory.cs" />

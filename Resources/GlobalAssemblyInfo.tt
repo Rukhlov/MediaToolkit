@@ -1,0 +1,85 @@
+﻿
+<#@ template  language="C#"  hostspecific="True" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ assembly name="EnvDTE" #>
+<#@ output extension=".cs" #>
+
+using System.Reflection;
+
+#if DEBUG
+	[assembly: AssemblyConfiguration("Debug")]
+#else
+	[assembly: AssemblyConfiguration("Release")]
+#endif
+
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyCopyright("Copyright © <#=DateTime.Now.Year#>")]
+
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+[assembly: AssemblyVersion("1.0.0.<#= GetBuild() #>")]
+[assembly: AssemblyFileVersion("1.0.0.<#= GetBuild() #>")]
+[assembly: AssemblyInformationalVersion("1.0.0-master+<#= GetSha1().Substring(0,7) #>")]
+
+
+
+<#+
+
+		public string GetBuild()
+		{
+			return ((int)(DateTime.Now - new DateTime(2020, 1, 1)).TotalDays).ToString();
+		}
+
+        public string GetSha1()
+        {
+            var gitDirectory = SearchForGitDirectory(GetSolutionDirectory());
+            var headSha1 = GetHeadSha1(gitDirectory);
+            return headSha1;
+        }
+		
+        public string GetSolutionDirectory()
+        {
+            var serviceProvider = this.Host as IServiceProvider;
+            var dte = serviceProvider.GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            return System.IO.Path.GetDirectoryName(dte.Solution.FullName);
+        }
+
+        public  DirectoryInfo SearchForGitDirectory(string path)
+        {
+            DirectoryInfo di = new DirectoryInfo(path);
+            var directories = di.GetDirectories(".git");
+            var gitDirectory = directories.FirstOrDefault(x => x.Name == ".git");
+            if (gitDirectory == null)
+            {
+                if (di.Parent != null)
+                {
+                    return SearchForGitDirectory(di.Parent.FullName);
+                }
+
+                return null;
+            }
+            return gitDirectory;
+        }
+
+		public  string GetHeadSha1(DirectoryInfo gitDirectory)
+        {
+            if (gitDirectory != null)
+            {
+                var head = File.ReadAllText(gitDirectory.GetFiles("HEAD").First().FullName);
+                head = head.Substring(4).Trim();
+                var headRef = System.IO.Path.Combine(gitDirectory.FullName, head);
+                return  File.ReadAllText(headRef).Trim();
+            }
+            return null;
+        }
+
+
+
+          
+#>

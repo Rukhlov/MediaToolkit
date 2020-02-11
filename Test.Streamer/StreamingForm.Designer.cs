@@ -265,8 +265,8 @@
             this.flowLayoutPanel2.AutoSize = true;
             this.flowLayoutPanel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel2.Controls.Add(this.exitButton);
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(487, 4);
-            this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(2);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(480, 4);
+            this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(2, 2, 9, 2);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
             this.flowLayoutPanel2.Size = new System.Drawing.Size(116, 35);
             this.flowLayoutPanel2.TabIndex = 110;

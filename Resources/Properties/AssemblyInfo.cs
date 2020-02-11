@@ -6,13 +6,8 @@ using System.Runtime.InteropServices;
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
 [assembly: AssemblyTitle("MediaToolkit.Resources")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MediaToolkit.Resources")]
-[assembly: AssemblyCopyright("Copyright ©  2019")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+
 
 // Установка значения False для параметра ComVisible делает типы в этой сборке невидимыми
 // для компонентов COM. Если необходимо обратиться к типу в этой сборке через
@@ -21,16 +16,3 @@ using System.Runtime.InteropServices;
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
 [assembly: Guid("53677e3b-7880-4c45-8ea9-95db9fcb2d8c")]
-
-// Сведения о версии сборки состоят из следующих четырех значений:
-//
-//      Основной номер версии
-//      Дополнительный номер версии
-//   Номер сборки
-//      Редакция
-//
-// Можно задать все значения или принять номер сборки и номер редакции по умолчанию.
-// используя "*", как показано ниже:
-// [assembly: AssemblyVersion("1.0.*")]
-//[assembly: AssemblyVersion("1.0.*")]
-//[assembly: AssemblyFileVersion("1.0.*")]

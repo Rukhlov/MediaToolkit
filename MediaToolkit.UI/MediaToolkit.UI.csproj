@@ -85,6 +85,9 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
+      <Link>Properties\GlobalAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="D3DImageControl.xaml.cs">
       <DependentUpon>D3DImageControl.xaml</DependentUpon>
     </Compile>
