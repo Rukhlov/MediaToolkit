@@ -121,7 +121,7 @@
             // findServiceButton
             // 
             this.findServiceButton.Location = new System.Drawing.Point(261, 7);
-            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
             this.findServiceButton.Name = "findServiceButton";
             this.findServiceButton.Size = new System.Drawing.Size(100, 27);
             this.findServiceButton.TabIndex = 30;

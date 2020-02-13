@@ -7,6 +7,11 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("MediaToolkit.Core")]
 [assembly: AssemblyProduct("MediaToolkit.Core")]
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MediaToolkit")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MediaToolkit.NativeAPIs")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MediaToolkit.UI")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MediaToolkit.FFmpeg")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("MediaToolkit.DeckLink")]
 
 //// Установка значения False для параметра ComVisible делает типы в этой сборке невидимыми
 //// для компонентов COM. Если необходимо обратиться к типу в этой сборке через

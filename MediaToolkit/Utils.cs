@@ -21,6 +21,7 @@ using System.Xml;
 namespace MediaToolkit.Utils
 {
 
+
     public abstract class StatCounter
     {
         public abstract string GetReport();

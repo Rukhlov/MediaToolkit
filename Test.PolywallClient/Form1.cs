@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.SharedTypes;
 using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -47,6 +48,7 @@ namespace Test.PolywallClient
             }
             catch(Exception ex)
             {
+
                 logger.Error(ex);
             }
 

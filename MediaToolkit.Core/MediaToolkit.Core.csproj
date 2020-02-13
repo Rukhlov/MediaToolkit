@@ -52,6 +52,7 @@
     <Compile Include="MediaToolkitFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharedTypes.cs" />
+    <Compile Include="TraceManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
