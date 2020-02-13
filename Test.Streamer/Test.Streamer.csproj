@@ -121,6 +121,12 @@
     <Compile Include="Controls\ScreenStreamerControl.Designer.cs">
       <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\SelectAreaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\SelectAreaForm.Designer.cs">
+      <DependentUpon>SelectAreaForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\StatisticForm.cs">
       <SubType>Form</SubType>
     </Compile>

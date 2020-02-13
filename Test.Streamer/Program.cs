@@ -94,8 +94,8 @@ namespace TestStreamer
                 //MainForm2 form = new MainForm2();
                 //MainForm form = new MainForm();
 
-
-                StreamingForm form = new StreamingForm();
+                Test.Streamer.Controls.SelectAreaForm form = new Test.Streamer.Controls.SelectAreaForm();
+                //StreamingForm form = new StreamingForm();
 
                 Application.Run(form);
             }

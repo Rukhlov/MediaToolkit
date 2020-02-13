@@ -525,6 +525,48 @@ namespace MediaToolkit.NativeAPIs
         CAPTUREBLT = 0x40000000 //only if WinVer >= 5.0.0 (see wingdi.h)
     }
 
+    public class WS 
+    {
+        public const int Overlapped = 0x00000000;
+        public const int MaximizeBox = 0x00010000;
+    }
+
+    public class WS_EX 
+    {
+        public const int Layered = 0x80000;
+        public const int Composited = 0x02000000;
+        public const int ToolWindow = 0x00000080;// 
+        public const int TopMost = 0x00000008;
+    }
+
+    public class WM
+    {
+        public const int HTCLIENT = 1;
+        public const int HTCAPTION = 2;
+        public const int HTMENU = 5;
+        public const int HTMAXBUTTON = 9;
+        public const int HTLEFT = 10;
+        public const int HTRIGHT = 11;
+        public const int HTTOP = 12;
+        public const int HTTOPLEFT = 13;
+        public const int HTTOPRIGHT = 14;
+        public const int HTBOTTOM = 15;
+        public const int HTBOTTOMLEFT = 16;
+        public const int HTBOTTOMRIGHT = 17;
+        public const int HTCLOSE = 0x20;
+
+
+        public const int ACTIVATE = 0x0006;
+        public const int CLOSE = 0x0010;
+        public const int QUIT = 0x0012;
+
+
+        public const int NCHITTEST = 0x84;
+        public const int NCLBUTTONDOWN = 0xA1;
+
+        public const int DEVICECHANGE = 0x0219;
+    }
+
 
 
     [StructLayout(LayoutKind.Sequential)]
@@ -854,14 +896,7 @@ namespace MediaToolkit.NativeAPIs
     }
 
 
-    public class WM
-    {
-        public const uint ACTIVATE = 0x0006;
-        public const uint CLOSE = 0x0010;
-        public const uint QUIT = 0x0012;
 
-        public const uint DEVICECHANGE = 0x0219;
-    }
 
 
     public static class AUDCLNT
