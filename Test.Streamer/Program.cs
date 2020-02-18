@@ -1,21 +1,10 @@
-﻿using CommandLine;
-using MediaToolkit.Core;
-
+﻿
 
 using NLog;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+
 using System.Windows.Forms;
 using System.Windows.Threading;
 
@@ -69,18 +58,24 @@ namespace TestStreamer
 
             try
             {
-                CommandLineOptions options = null;
-                if (args != null)
-                {
-                    logger.Info("Command Line String: " + string.Join(" ", args));
+                if (args != null && args.Length>0)
+                {//...
+                   
 
-                    options = new CommandLineOptions();
-                    var res = Parser.Default.ParseArguments(args, options);
-                    if (!res)
-                    {
-                        //...
-                    }
                 }
+
+                //CommandLineOptions options = null;
+                //if (args != null)
+                //{
+                //    logger.Info("Command Line String: " + string.Join(" ", args));
+
+                //    options = new CommandLineOptions();
+                //    var res = Parser.Default.ParseArguments(args, options);
+                //    if (!res)
+                //    {
+                //        //...
+                //    }
+                //}
 
                 MediaToolkitManager.Startup();
 
@@ -94,10 +89,12 @@ namespace TestStreamer
                 //MainForm2 form = new MainForm2();
                 //MainForm form = new MainForm();
 
-                Test.Streamer.Controls.SelectAreaForm form = new Test.Streamer.Controls.SelectAreaForm();
-                //StreamingForm form = new StreamingForm();
+                //Test.Streamer.Controls.SelectAreaForm form = new Test.Streamer.Controls.SelectAreaForm();
+                StreamingForm form = new StreamingForm();
 
                 Application.Run(form);
+
+
             }
             finally
             {
@@ -114,43 +111,45 @@ namespace TestStreamer
 
 
 
-    public class CommandLineOptions
-    {
-        [Option("ipaddr")]
-        public string IpAddr { get; set; } = "239.0.0.1";
+    //public class CommandLineOptions
+    //{
+    //    [Option("ipaddr")]
+    //    public string IpAddr { get; set; } = "239.0.0.1";
 
-        [Option("port")]
-        public int Port { get; set; } = 1234;
+    //    [Option("port")]
+    //    public int Port { get; set; } = 1234;
 
-        [Option("width")]
-        public int Width { get; set; } = 1920;
+    //    [Option("width")]
+    //    public int Width { get; set; } = 1920;
 
-        [Option("height")]
-        public int Height { get; set; } = 1080;
+    //    [Option("height")]
+    //    public int Height { get; set; } = 1080;
 
-        [Option("fps")]
-        public int FrameRate { get; set; } = 30;
+    //    [Option("fps")]
+    //    public int FrameRate { get; set; } = 30;
 
-        [Option("encoder")]
-        public string EncoderName { get; set; } = "";
+    //    [Option("encoder")]
+    //    public string EncoderName { get; set; } = "";
 
-        [Option("isim")]
-        public bool EnableInputSimulator { get; set; } = true;
+    //    [Option("isim")]
+    //    public bool EnableInputSimulator { get; set; } = true;
 
-        [Option("srcrect")]
-        public Rectangle SrcRect { get; set; } = Rectangle.Empty;
+    //    [Option("srcrect")]
+    //    public Rectangle SrcRect { get; set; } = Rectangle.Empty;
 
-        [Option("dstsize")]
-        public Size DstSize { get; set; } = Size.Empty;
+    //    [Option("dstsize")]
+    //    public Size DstSize { get; set; } = Size.Empty;
 
-        [Option("aratio")]
-        public bool AspectRatio { get; set; } = true;
+    //    [Option("aratio")]
+    //    public bool AspectRatio { get; set; } = true;
 
-        [Option("showmouse")]
-        public bool ShowMouse { get; set; } = true;
-        //...
+    //    [Option("showmouse")]
+    //    public bool ShowMouse { get; set; } = true;
+    //    //...
 
-    }
+    //}
+
+
 
     //    [STAThread]
     //    static void _Main(string[] args)

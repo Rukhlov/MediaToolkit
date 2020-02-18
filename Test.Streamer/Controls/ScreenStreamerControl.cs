@@ -13,7 +13,7 @@ using MediaToolkit.Core;
 using System.Diagnostics;
 using NAudio.CoreAudioApi;
 using MediaToolkit.UI;
-using SharpDX.MediaFoundation;
+//using SharpDX.MediaFoundation;
 using MediaToolkit.Utils;
 using MediaToolkit.NativeAPIs;
 using System.Threading;
@@ -245,7 +245,7 @@ namespace TestStreamer.Controls
 
             }).ContinueWith(t =>
             {
-                logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+                //logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
                 UpdateControls();
 
@@ -797,7 +797,7 @@ namespace TestStreamer.Controls
                 Tag = SystemInformation.VirtualScreen
             });
 
-            var captDevices = GetVideoCaptureDevices();
+            var captDevices = MediaToolkit.MediaFoundation.MfTool.GetVideoCaptureDevices();
             if (captDevices.Count > 0)
             {
                 var captItems = captDevices.Select(d => new ComboBoxItem
@@ -813,97 +813,6 @@ namespace TestStreamer.Controls
             videoSourceItems = new BindingList<ComboBoxItem>(items);
             videoSourcesComboBox.DisplayMember = "Name";
             videoSourcesComboBox.DataSource = videoSourceItems;
-        }
-
-
-        public List<VideoCaptureDeviceDescription> GetVideoCaptureDevices()
-        {
-            List<VideoCaptureDeviceDescription> deviceDescriptions = new List<VideoCaptureDeviceDescription>();
-
-            Activate[] activates = null;
-            try
-            {
-                using (var attributes = new MediaAttributes())
-                {
-                    MediaFactory.CreateAttributes(attributes, 1);
-                    attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
-
-                    activates = MediaFactory.EnumDeviceSources(attributes);
-
-                    foreach (var activate in activates)
-                    {
-                        try
-                        {
-                            var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-                            var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
-                            var deviceDescription = new VideoCaptureDeviceDescription
-                            {
-                                Name = friendlyName,
-                                DeviceId = symbolicLink,
-                            };
-
-                            try
-                            {
-                                using (var mediaSource = activate.ActivateObject<MediaSource>())
-                                {
-                                    using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
-                                    {
-
-                                        var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
-                                        var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
-
-                                        var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                                        var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
-
-                                        var profile = new VideoCaptureDeviceProfile
-                                        {
-                                            FrameSize = frameSize,
-                                            FrameRate = frameRate,
-                                            Format = subtypeName,
-                                        };
-
-                                        deviceDescription.Resolution = frameSize;
-                                        deviceDescription.CurrentProfile = profile;
-
-
-                                    }
-                                }
-
-                                deviceDescriptions.Add(deviceDescription);
-
-                            }
-                            catch(Exception ex)
-                            {
-                                logger.Warn("Device not supported: " + friendlyName + " " + symbolicLink);
-                            }
-
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                        }
-
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-            finally
-            {
-                if (activates != null)
-                {
-                    foreach (var act in activates)
-                    {
-                        act.Dispose();
-                    }
-                }
-            }
-
-            return deviceDescriptions;
-
         }
 
         //private Size defaultEncoderResolution = new Size(1920, 1080);

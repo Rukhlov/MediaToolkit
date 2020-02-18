@@ -24,6 +24,7 @@ using MediaToolkit.Utils;
 
 using MediaToolkit.SharedTypes;
 using System.Diagnostics;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.UI
 {

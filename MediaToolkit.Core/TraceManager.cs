@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace MediaToolkit.Core
+namespace MediaToolkit.Logging
 {
 
     internal class TraceManager
@@ -131,6 +131,25 @@ namespace MediaToolkit.Core
 
 
         public static void Verb(this TraceSource ts, string format, params object[] args)
+        {
+            ts.TraceEvent(TraceEventType.Verbose, 0, format, args);
+        }
+
+
+
+        public static void Debug<T>(this TraceSource ts, T t) where T : Exception
+        {
+            ts.TraceData(TraceEventType.Verbose, 0, t);
+        }
+
+
+        public static void Debug(this TraceSource ts, string message)
+        {
+            ts.TraceEvent(TraceEventType.Verbose, 0, message);
+        }
+
+
+        public static void Debug(this TraceSource ts, string format, params object[] args)
         {
             ts.TraceEvent(TraceEventType.Verbose, 0, format, args);
         }

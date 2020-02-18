@@ -42,6 +42,7 @@ namespace MediaToolkit
         Direct2D.RenderTarget renderTarget = null;
 
         public Texture2D SharedTexture { get; private set; }
+        public long AdapterId { get; private set; }
 
         public bool UseHwContext = true;
 
@@ -93,6 +94,8 @@ namespace MediaToolkit
                 {// первым идет адаптер с которому подключен primary монитор
                     adapter = dxgiFactory.GetAdapter1(0);
                 }
+
+                AdapterId = adapter.Description.Luid;
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 

@@ -31,6 +31,7 @@ namespace MediaToolkit
 
         private SharpDX.Direct3D11.Device device = null;
         public Texture2D SharedTexture { get; private set; }
+        public long AdapterId { get; private set; } = -1;
 
         public VideoBuffer SharedBitmap { get; private set; }
 

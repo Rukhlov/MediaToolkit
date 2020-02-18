@@ -2,7 +2,7 @@
 using MediaToolkit.Core;
 using NAudio.CoreAudioApi;
 using NLog;
-using SharpDX.MediaFoundation;
+//using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -347,7 +347,8 @@ namespace TestStreamer
         {
             logger.Debug("stopButton_Click(...) ");
 
-            Stop();
+            logger.Info(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
+           // Stop();
         }
 
         private void Stop()
@@ -375,7 +376,7 @@ namespace TestStreamer
 
                 }).ContinueWith(t =>
                 {
-                    logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+                    //logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
                     UpdateControls();
                     //contextMenu.Enabled = true;
@@ -978,7 +979,7 @@ namespace TestStreamer
 
             }
 
-            var captDevices = GetVideoCaptureDevices();
+            var captDevices = MediaToolkit.MediaFoundation.MfTool.GetVideoCaptureDevices();
             if (captDevices.Count > 0)
             {
                 var captItems = captDevices.Select(d => new ComboBoxItem
@@ -996,86 +997,86 @@ namespace TestStreamer
             videoSourceComboBox.DataSource = videoSourceItems;
         }
 
-        public List<VideoCaptureDeviceDescription> GetVideoCaptureDevices()
-        {
-            List<VideoCaptureDeviceDescription> deviceDescriptions = new List<VideoCaptureDeviceDescription>();
+        //public List<VideoCaptureDeviceDescription> GetVideoCaptureDevices()
+        //{
+        //    List<VideoCaptureDeviceDescription> deviceDescriptions = new List<VideoCaptureDeviceDescription>();
 
-            Activate[] activates = null;
-            try
-            {
-                using (var attributes = new MediaAttributes())
-                {
-                    MediaFactory.CreateAttributes(attributes, 1);
-                    attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+        //    Activate[] activates = null;
+        //    try
+        //    {
+        //        using (var attributes = new MediaAttributes())
+        //        {
+        //            MediaFactory.CreateAttributes(attributes, 1);
+        //            attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
 
-                    activates = MediaFactory.EnumDeviceSources(attributes);
+        //            activates = MediaFactory.EnumDeviceSources(attributes);
 
-                    foreach (var activate in activates)
-                    {
-                        try
-                        {
-                            var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-                            var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
-                            var deviceDescription = new VideoCaptureDeviceDescription
-                            {
-                                Name = friendlyName,
-                                DeviceId = symbolicLink,
-                            };
+        //            foreach (var activate in activates)
+        //            {
+        //                try
+        //                {
+        //                    var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+        //                    var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+        //                    var deviceDescription = new VideoCaptureDeviceDescription
+        //                    {
+        //                        Name = friendlyName,
+        //                        DeviceId = symbolicLink,
+        //                    };
 
-                            using (var mediaSource = activate.ActivateObject<MediaSource>())
-                            {
-                                using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
-                                {
+        //                    using (var mediaSource = activate.ActivateObject<MediaSource>())
+        //                    {
+        //                        using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
+        //                        {
 
-                                    var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
-                                    var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
+        //                            var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
+        //                            var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
 
-                                    var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                                    var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
+        //                            var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+        //                            var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
 
-                                    var profile = new VideoCaptureDeviceProfile
-                                    {
-                                        FrameSize = frameSize,
-                                        FrameRate = frameRate,
-                                        Format = subtypeName,
-                                    };
+        //                            var profile = new VideoCaptureDeviceProfile
+        //                            {
+        //                                FrameSize = frameSize,
+        //                                FrameRate = frameRate,
+        //                                Format = subtypeName,
+        //                            };
 
-                                    deviceDescription.Resolution = frameSize;
-                                    deviceDescription.CurrentProfile = profile;
+        //                            deviceDescription.Resolution = frameSize;
+        //                            deviceDescription.CurrentProfile = profile;
 
 
-                                }
-                            }
+        //                        }
+        //                    }
 
-                            deviceDescriptions.Add(deviceDescription);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                        }
+        //                    deviceDescriptions.Add(deviceDescription);
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    logger.Error(ex);
+        //                }
 
-                    }
-                }
+        //            }
+        //        }
 
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-            finally
-            {
-                if (activates != null)
-                {
-                    foreach (var act in activates)
-                    {
-                        act.Dispose();
-                    }
-                }
-            }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.Error(ex);
+        //    }
+        //    finally
+        //    {
+        //        if (activates != null)
+        //        {
+        //            foreach (var act in activates)
+        //            {
+        //                act.Dispose();
+        //            }
+        //        }
+        //    }
 
-            return deviceDescriptions;
+        //    return deviceDescriptions;
 
-        }
+        //}
 
 
         private void UpdateAudioSources()
@@ -1397,7 +1398,6 @@ namespace TestStreamer
                 return handleParam;
             }
         }
-
 
 
         //private void settingToolStripMenuItem_Click(object sender, EventArgs e)

@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 using NLog;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
 
-namespace MediaToolkit.Core
+namespace MediaToolkit.MediaFoundation
 {
     public class VideoEncoder
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
         private readonly IVideoSource videoSource = null;
 
         public VideoEncoder(IVideoSource source)
@@ -35,23 +40,25 @@ namespace MediaToolkit.Core
             // var hwDevice = hwContext.Device3D11;
 
             var hwBuffer = videoSource.SharedTexture;
-            var hwDevice = hwBuffer.Device;
+           
             var hwDescr = hwBuffer.Description;
-            int srcWidth = hwDescr.Width;
-            int srcHeight = hwDescr.Height;
 
-            var srcSize = new Size(srcWidth, srcHeight);
+            var srcSize = new Size(hwDescr.Width, hwDescr.Height);
+            var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
+           
 
             var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
 
-            long adapterLuid = -1;
-            using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
-            {
-                using (var adapter = dxgiDevice.Adapter)
-                {
-                    adapterLuid = adapter.Description.Luid;
-                }
-            }
+            //var hwDevice = hwBuffer.Device;
+            //long adapterLuid = -1;
+            //using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
+            //{
+            //    using (var adapter = dxgiDevice.Adapter)
+            //    {
+            //        adapterLuid = adapter.Description.Luid;
+            //    }
+            //}
+            //var refCount = ((IUnknown)hwDevice).Release();
 
             var profile = eAVEncH264VProfile.Main;
             if(destParams.Profile == H264Profile.High)
@@ -78,10 +85,11 @@ namespace MediaToolkit.Core
             {
                 Width = srcSize.Width,
                 Height = srcSize.Height,
+                Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
                 FrameRate = destParams.FrameRate,
                 AvgBitrate = destParams.Bitrate,
                 LowLatency = destParams.LowLatency,
-                AdapterId = adapterLuid,
+                AdapterId = videoSource.AdapterId,
                 Profile = profile,
                 BitrateMode = bitrateMode,
                 MaxBitrate = destParams.MaxBitrate,
@@ -89,12 +97,13 @@ namespace MediaToolkit.Core
             });
 
             var encDevice = encoder.device;
+
             processor = new MfVideoProcessor(encDevice);
             var inProcArgs = new MfVideoArgs
             {
                 Width = srcSize.Width,
                 Height = srcSize.Height,
-                Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+                Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
             };
 
             var outProcArgs = new MfVideoArgs
@@ -106,11 +115,12 @@ namespace MediaToolkit.Core
 
             processor.Setup(inProcArgs, outProcArgs);
 
+
             bufTexture = new Texture2D(encDevice, 
                 new Texture2DDescription
                 {
                     // Format = Format.NV12,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    Format = hwDescr.Format,//SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                     Width = srcSize.Width,
                     Height = srcSize.Height,
                     MipLevels = 1,
@@ -121,7 +131,8 @@ namespace MediaToolkit.Core
    
             encoder.DataReady += MfEncoder_DataReady;
 
-            processor.Start();
+            processor?.Start();
+
             encoder.Start();
         }
 
@@ -138,6 +149,7 @@ namespace MediaToolkit.Core
         }
 
         private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+
         public void Encode(Texture2D texture)
         {
             using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
@@ -151,53 +163,63 @@ namespace MediaToolkit.Core
 
             }
 
-            Sample inputSample = null;
-            try
+
+            if(processor != null)
             {
-                MediaBuffer mediaBuffer = null;
+                Sample inputSample = null;
                 try
                 {
-                    MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out mediaBuffer);
-                    inputSample = MediaFactory.CreateSample();
-                    inputSample.AddBuffer(mediaBuffer);
-
-                    inputSample.SampleTime = 0;
-                    inputSample.SampleDuration = 0;
-                }
-                finally
-                {
-                    mediaBuffer?.Dispose();
-                }
-
-                Sample nv12Sample = null;
-                try
-                {
-                    bool result = processor.ProcessSample(inputSample, out nv12Sample);
-                    if (result)
+                    MediaBuffer mediaBuffer = null;
+                    try
                     {
-                        using (var buffer = nv12Sample.ConvertToContiguousBuffer())
+                        MediaFactory.CreateDXGISurfaceBuffer(uuidTexture2d, bufTexture, 0, false, out mediaBuffer);
+                        inputSample = MediaFactory.CreateSample();
+                        inputSample.AddBuffer(mediaBuffer);
+
+                        inputSample.SampleTime = 0;
+                        inputSample.SampleDuration = 0;
+                    }
+                    finally
+                    {
+                        mediaBuffer?.Dispose();
+                    }
+
+                    Sample nv12Sample = null;
+                    try
+                    {
+                        bool result = processor.ProcessSample(inputSample, out nv12Sample);
+                        if (result)
                         {
-                            using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
+                            using (var buffer = nv12Sample.ConvertToContiguousBuffer())
                             {
-                                
-                                dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
-                                using (Texture2D nv12Texture = new Texture2D(intPtr))
+                                using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
                                 {
-                                    encoder.WriteTexture(nv12Texture);
-                                };
+
+                                    dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
+                                    using (Texture2D nv12Texture = new Texture2D(intPtr))
+                                    {
+                                        encoder.WriteTexture(nv12Texture);
+                                    };
+                                }
                             }
                         }
+                    }
+                    finally
+                    {
+                        nv12Sample?.Dispose();
                     }
                 }
                 finally
                 {
-                    nv12Sample?.Dispose();
+                    inputSample?.Dispose();
                 }
             }
-            finally
+            else
             {
-                inputSample?.Dispose();
+                encoder.WriteTexture(bufTexture);
             }
+
+
         }
 
 
@@ -209,7 +231,7 @@ namespace MediaToolkit.Core
             {
                 encoder.DataReady -= MfEncoder_DataReady;
                 encoder.Stop();
-                //mfEncoder.Close();
+                //encoder.Close();
             }
 
             if (processor != null)
@@ -223,6 +245,8 @@ namespace MediaToolkit.Core
                 bufTexture.Dispose();
                 bufTexture = null;
             }
+
+
         }
 
 

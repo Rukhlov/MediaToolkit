@@ -330,7 +330,6 @@
             this.stopStreamingButton.TabIndex = 86;
             this.stopStreamingButton.Text = "_Stop";
             this.stopStreamingButton.UseVisualStyleBackColor = false;
-            this.stopStreamingButton.Visible = false;
             this.stopStreamingButton.Click += new System.EventHandler(this.stopStreamingButton_Click);
             // 
             // videoSourceSettingsLayoutPanel

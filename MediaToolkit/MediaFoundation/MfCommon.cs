@@ -201,6 +201,8 @@ namespace MediaToolkit.MediaFoundation
             return attrName + " " + valStr;
         }
 
+
+
         public static string LogEnumFlags(Enum flags)
         {
             string log = "";
@@ -301,6 +303,23 @@ namespace MediaToolkit.MediaFoundation
                 format = DxgiFormatsDict[guid];
             }
             return format;
+        }
+
+        public static Guid GetVideoFormatGuidFromDXGIFormat(Format format)
+        {
+            Guid videoGuid = Guid.Empty;
+
+            foreach(var guid in DxgiFormatsDict.Keys)
+            {
+                var _format = DxgiFormatsDict[guid];
+                if(format == _format)
+                {
+                    videoGuid = guid;
+                    break;
+                }
+            }
+
+            return videoGuid;
         }
 
 
@@ -564,6 +583,101 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
+        public static List<Core.VideoCaptureDeviceDescription> GetVideoCaptureDevices()
+        {
+            List<Core.VideoCaptureDeviceDescription> deviceDescriptions = new List<Core.VideoCaptureDeviceDescription>();
+
+            Activate[] activates = null;
+            try
+            {
+                using (var attributes = new MediaAttributes())
+                {
+                    MediaFactory.CreateAttributes(attributes, 1);
+                    attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+
+                    activates = MediaFactory.EnumDeviceSources(attributes);
+
+                    foreach (var activate in activates)
+                    {
+                        try
+                        {
+                            var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+                            var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+                            var deviceDescription = new Core.VideoCaptureDeviceDescription
+                            {
+                                Name = friendlyName,
+                                DeviceId = symbolicLink,
+                            };
+
+                            try
+                            {
+                                using (var mediaSource = activate.ActivateObject<MediaSource>())
+                                {
+                                    using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
+                                    {
+
+                                        var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
+                                        var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
+
+                                        var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+                                        var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
+
+                                        var profile = new Core.VideoCaptureDeviceProfile
+                                        {
+                                            FrameSize = frameSize,
+                                            FrameRate = frameRate,
+                                            Format = subtypeName,
+                                        };
+
+                                        deviceDescription.Resolution = frameSize;
+                                        deviceDescription.CurrentProfile = profile;
+
+
+                                    }
+                                }
+
+                                deviceDescriptions.Add(deviceDescription);
+
+                            }
+                            catch (Exception ex)
+                            {
+                               // logger.Warn("Device not supported: " + friendlyName + " " + symbolicLink);
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                           // logger.Error(ex);
+                        }
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //logger.Error(ex);
+            }
+            finally
+            {
+                if (activates != null)
+                {
+                    foreach (var act in activates)
+                    {
+                        act.Dispose();
+                    }
+                }
+            }
+
+            return deviceDescriptions;
+
+        }
+
+        public static string GetActiveObjectsReport()
+        {
+            return SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects();
+        }
+
     }
 
     public class DxTool
@@ -593,7 +707,8 @@ namespace MediaToolkit.MediaFoundation
                 //return false;
             }
 
-            var device = texture.Device;
+            // FIXME: memory leak.......
+            var device = texture.Device; // !!!!!!!!!!!
             try
             {
                 var srcData = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);

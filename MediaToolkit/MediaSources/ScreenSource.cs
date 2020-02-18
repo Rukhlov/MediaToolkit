@@ -25,6 +25,9 @@ namespace MediaToolkit
         {
             get { return hwContext?.SharedTexture; }
         }
+        
+        public long AdapterId { get; private set; } = -1;
+
 
         public Size SrcSize
         {
@@ -96,6 +99,7 @@ namespace MediaToolkit
                     capture.UseHwContext = captureParams.UseHardware;
 
                     this.hwContext = capture;
+                    this.AdapterId = capture.AdapterId;
                 }
 
                 this.SharedBitmap = screenCapture.VideoBuffer;

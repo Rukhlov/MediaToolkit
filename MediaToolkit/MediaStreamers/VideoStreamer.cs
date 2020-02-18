@@ -1,6 +1,7 @@
 ﻿using MediaToolkit;
 
 using MediaToolkit.Core;
+using MediaToolkit.MediaFoundation;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
 using NLog;
@@ -218,7 +219,7 @@ namespace MediaToolkit
 
         public void Close()
         {
-            logger.Debug("VideoMulticastStreamer::Close()");
+            logger.Debug("VideoStreamer::Close()");
             if (running)
             {
                 closing = true;
@@ -232,7 +233,7 @@ namespace MediaToolkit
 
         private void CleanUp()
         {
-            logger.Debug("VideoMulticastStreamer::CleanUp()");
+            logger.Debug("VideoStreamer::CleanUp()");
 
             if (videoEncoder != null)
             {

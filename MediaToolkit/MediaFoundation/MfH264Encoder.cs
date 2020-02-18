@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
+//using NLog;
 using System.Linq;
 
 using GDI = System.Drawing;
@@ -15,18 +15,23 @@ using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
 
 using System.IO;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.MediaFoundation
 {
 
     public class MfEncoderAsync
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public SharpDX.Direct3D11.Device device = null;
 
         private Transform encoder = null;
+
+        private MediaEventGenerator mediaEventGenerator = null;
+        private MediaEventHandler eventHandler = null;
 
         private Sample bufSample = null;
         private Texture2D bufTexture = null;
@@ -38,14 +43,26 @@ namespace MediaToolkit.MediaFoundation
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
 
+        private volatile int inputRequests = 0;
+        private volatile int outputRequests = 0;
 
-        public MfEncoderAsync()
-        { }
+        private static object syncRoot = new object();
+
+        private volatile bool needUpdate = false;
+        private volatile bool stopping = false;
+        private volatile bool closing = false;
+
+
+        public MfEncoderAsync(SharpDX.Direct3D11.Device d = null)
+        {
+            this.device = d;
+
+        }
 
 
         public void Setup(MfVideoArgs args)
         {
-            logger.Debug("MfEncoderAsync::Setup(...)");
+             logger.Debug("MfEncoderAsync::Setup(...)");
 
             var winVersion = Environment.OSVersion.Version;
             bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
@@ -67,16 +84,22 @@ namespace MediaToolkit.MediaFoundation
 
                     logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-                    var flags = //DeviceCreationFlags.Debug |
-                        DeviceCreationFlags.VideoSupport |
-                        DeviceCreationFlags.BgraSupport;
 
-                    device = new SharpDX.Direct3D11.Device(adapter, flags);
-
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    if (device == null)
                     {
-                        multiThread.SetMultithreadProtected(true);
+                        var flags =  DeviceCreationFlags.VideoSupport |
+                                     DeviceCreationFlags.BgraSupport;
+                                    //DeviceCreationFlags.Debug;
+
+                        device = new SharpDX.Direct3D11.Device(adapter, flags);
+                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                        {
+                            multiThread.SetMultithreadProtected(true);
+                        }
                     }
+                   
+
+
 
                     SetupSampleBuffer(args);
 
@@ -166,7 +189,7 @@ namespace MediaToolkit.MediaFoundation
             }
             finally
             {
-                mediaBuffer.Dispose();
+                mediaBuffer?.Dispose();
             }
         }
 
@@ -430,18 +453,36 @@ namespace MediaToolkit.MediaFoundation
             logger.Debug("\r\nInputMediaType:\r\n-----------------\r\n" + mediaLog);
 
 
-            //TOutputStreamInformation sinfo;
-            //transform.GetOutputStreamInfo(0, out sinfo);
+            //mediaEventGenerator = encoder.QueryInterface<MediaEventGenerator>();
+            //eventHandler = new MediaEventHandler(mediaEventGenerator);
+            //eventHandler.EventReceived += HandleMediaEvent;
+
+
+            //encoder.GetInputStreamInfo(0, out TInputStreamInformation inputStreamInfo);
+            //var inputInfoFlags = (MftInputStreamInformationFlags)inputStreamInfo.DwFlags;
+            //logger.Debug(MfTool.LogEnumFlags(inputInfoFlags));
+
+            //encoder.GetOutputStreamInfo(0, out TOutputStreamInformation outputStreamInfo);
+            //var outputInfoFlags = (MftOutputStreamInformationFlags)outputStreamInfo.DwFlags;
+            //logger.Debug(MfTool.LogEnumFlags(outputInfoFlags));
+
+
         }
+
 
         public void Start()
         {
             logger.Debug("MfEncoderAsync::Start()");
 
-
-            encoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+            /*
+             * If the client does not send this message, the MFT allocates resources on the first call to ProcessInput. 
+             * Therefore, sending this message can reduce the initial latency when streaming begins.
+             */
             encoder.ProcessMessage(TMessageType.NotifyBeginStreaming, IntPtr.Zero);
+
+            //Notifies a Media Foundation transform (MFT) that the first sample is about to be processed.
             encoder.ProcessMessage(TMessageType.NotifyStartOfStream, IntPtr.Zero);
+
 
             Task.Run(() =>
             {
@@ -451,8 +492,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        Stopwatch sw = new Stopwatch();
-        private volatile bool closing = false;
         private void EventProc()
         {
             logger.Debug("EventProc() BEGIN");
@@ -475,41 +514,7 @@ namespace MediaToolkit.MediaFoundation
                             break;
                         }
 
-                        // logger.Debug("GetEvent(...) " + mediaEvent.TypeInfo);
-
-                        if (mediaEvent.TypeInfo == MediaEventTypes.TransformNeedInput)
-                        {
-                            lock (syncRoot)
-                            {
-                                inputRequests++;
-
-                                ProcessInput();
-                            }
-
-                            //logger.Debug("inputRequests " + inputRequests);
-                        }
-                        else if (mediaEvent.TypeInfo == MediaEventTypes.TransformHaveOutput)
-                        {
-                            ProcessOutput();
-
-                        }
-                        else if (mediaEvent.TypeInfo == MediaEventTypes.TransformDrainComplete)
-                        {
-                            logger.Warn("_MediaEventTypes.TransformDrainComplete");
-                            closing = true;
-                        }
-                        else if (mediaEvent.TypeInfo == MediaEventTypes.TransformMarker)
-                        {
-                            logger.Warn("_MediaEventTypes.TransformMarker");
-                        }
-                        else if (mediaEvent.TypeInfo == MediaEventTypes.TransformInputStreamStateChanged)
-                        {
-                            logger.Warn("_MediaEventTypes.TransformInputStreamStateChanged");
-                        }
-                        else if (mediaEvent.TypeInfo == MediaEventTypes.TransformUnknown)
-                        {
-                            logger.Warn("_MediaEventTypes.TransformUnknown");
-                        }
+                        HandleMediaEvent(mediaEvent);
                     }
                     catch (Exception ex)
                     {
@@ -530,6 +535,10 @@ namespace MediaToolkit.MediaFoundation
             }
             finally
             {
+                using (var shutdown = eventGen.QueryInterface<Shutdownable>())
+                {
+                    shutdown.Shutdown();
+                }
 
                 eventGen?.Dispose();
                 Close();
@@ -539,10 +548,88 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        private void ProcessInput()
+
+        private void HandleMediaEvent(MediaEvent mediaEvent)
         {
+            // logger.Debug("GetEvent(...) " + mediaEvent.TypeInfo);
+
             if (closing)
             {
+                logger.Warn("HandleMediaEvent(...) " + mediaEvent.ToString());
+                return;
+            }
+
+
+            if (mediaEvent.TypeInfo == MediaEventTypes.TransformNeedInput)
+            {
+                OnTransformNeedInput();
+
+                //logger.Debug("inputRequests " + inputRequests);
+            }
+            else if (mediaEvent.TypeInfo == MediaEventTypes.TransformHaveOutput)
+            {
+                OnTransformHaveOutput();
+
+            }
+            else if (mediaEvent.TypeInfo == MediaEventTypes.TransformDrainComplete)
+            {
+                logger.Warn("_MediaEventTypes.TransformDrainComplete ");
+
+                OnTransformDrainComplete();
+            }
+            else if (mediaEvent.TypeInfo == MediaEventTypes.TransformMarker)
+            {
+                logger.Warn("_MediaEventTypes.TransformMarker");
+            }
+            else if (mediaEvent.TypeInfo == MediaEventTypes.TransformInputStreamStateChanged)
+            {
+                logger.Warn("_MediaEventTypes.TransformInputStreamStateChanged");
+            }
+            else
+            {
+                logger.Warn("_MediaEventTypes " + mediaEvent.TypeInfo);
+            }
+
+        }
+
+        private void OnTransformNeedInput()
+        {
+            lock (syncRoot)
+            {
+                inputRequests++;
+
+                ProcessInput();
+            }
+        }
+
+        private void OnTransformHaveOutput()
+        {
+            //outputRequests++;
+
+            ProcessOutput();
+
+            //outputRequests--;
+        }
+
+        private void OnTransformDrainComplete()
+        {
+            closing = true;
+
+            Close();
+        }
+
+
+        private void ProcessInput()
+        {
+            if (stopping)
+            {
+                logger.Debug("ProcessInput() stopping");
+                return;
+            }
+
+            if (closing)
+            {
+                logger.Debug("ProcessInput() closing");
                 return;
             }
 
@@ -551,7 +638,7 @@ namespace MediaToolkit.MediaFoundation
                 if (inputRequests > 0)
                 {
                     inputRequests--;
-                    sw.Restart();
+                   // sw.Restart();
                     encoder.ProcessInput(inputStreamId, bufSample, 0);
 
                     needUpdate = false;
@@ -560,7 +647,7 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else
                 {
-                    //logger.Debug("inputRequests == 0 " + inputRequests);
+                    logger.Debug("inputRequests == 0 " + inputRequests);
                 }
             }
         }
@@ -568,8 +655,14 @@ namespace MediaToolkit.MediaFoundation
 
         private void ProcessOutput()
         {
+            if (stopping)
+            {
+                logger.Warn("ProcessOutput() stopping...");
+            }
+
             if (closing)
             {
+                logger.Warn("ProcessOutput() closing...");
                 return;
             }
 
@@ -606,7 +699,7 @@ namespace MediaToolkit.MediaFoundation
 
                 var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, outputDataBuffer, out TransformProcessOutputStatus status);
 
-                if (res.Success)
+                if (res == SharpDX.Result.Ok)
                 {
 
                     if (outputSample == null)
@@ -645,29 +738,26 @@ namespace MediaToolkit.MediaFoundation
                     {
                         buffer?.Dispose();
                     }
+ 
+                }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
+                {
+
+                    //logger.Debug(res.ToString() + " TransformNeedMoreInput");
+
+                    //Result = true;
+
+                }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
+                {// не должны приходить для энкодера...
+ 
+                    logger.Warn(res.ToString() + " TransformStreamChange");
                 }
                 else
                 {
-                    if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
-                    {
-                        logger.Warn(res.ToString() + " TransformNeedMoreInput");
-
-                        //Result = true;
-
-                    }
-                    else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
-                    {
-                        //...
-                        //transform.TryGetOutputAvailableType(outputStreamId, 0, out MediaType typeOut);
-                        //transform.SetOutputType(outputStreamId, typeOut, 0);
-
-                        logger.Warn(res.ToString() + " TransformStreamChange");
-                    }
-                    else
-                    {
-                        res.CheckError();
-                    }
+                    res.CheckError();
                 }
+                
             }
             finally
             {
@@ -687,16 +777,18 @@ namespace MediaToolkit.MediaFoundation
             DataReady?.Invoke(buf);
         }
 
-        private volatile int inputRequests = 0;
-
-        private static object syncRoot = new object();
-
-        private volatile bool needUpdate = false;
 
         public void WriteTexture(Texture2D texture)
         {
+            if (stopping)
+            {
+                logger.Warn("WriteTexture(...) stopping");
+                return;
+            }
+
             if (closing)
             {
+                logger.Warn("WriteTexture(...) closing");
                 return;
             }
 
@@ -723,17 +815,21 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
-
         public void Stop()
         {
             logger.Debug("MfEncoderAsync::Stop()");
-
+            
             if (encoder != null)
-            {
+            {            
+
+                stopping = true;
+              
                 encoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+
+                encoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+                
                 encoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 encoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
-                encoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
 
             }
 
@@ -744,6 +840,12 @@ namespace MediaToolkit.MediaFoundation
             logger.Debug("MfEncoderAsync::Close()");
 
             closing = true;
+
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
 
             if (InputMediaType != null)
             {
@@ -759,6 +861,17 @@ namespace MediaToolkit.MediaFoundation
 
             if (encoder != null)
             {
+                //using (var shutdown = encoder.QueryInterface<Shutdownable>())
+                //{
+                //    shutdown.Shutdown();
+                //    //while(shutdown.ShutdownStatus != ShutdownStatus.Completed)
+                //    //{
+                //    //    logger.Warn("shutdown.ShutdownStatus " + shutdown.ShutdownStatus);
+                //    //    Thread.Sleep(100);
+                       
+                //    //}
+                //}
+
                 encoder.Dispose();
                 encoder = null;
             }
@@ -775,11 +888,23 @@ namespace MediaToolkit.MediaFoundation
                 bufTexture = null;
             }
 
-            if (device != null)
+
+            if (eventHandler != null)
             {
-                device.Dispose();
-                device = null;
+                eventHandler.EventReceived -= HandleMediaEvent;
+                eventHandler.Dispose();
+                eventHandler = null;
             }
+
+            if (mediaEventGenerator != null)
+            {
+                mediaEventGenerator.Dispose();
+                mediaEventGenerator = null;
+            }
+
+
+
+            // logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
         }
 

@@ -131,7 +131,7 @@ namespace Test.Streamer.Controls
         protected override void OnResizeEnd(EventArgs e)
         {
 
-            //ResumeLayout();
+            //ResumeLayout(true);
             base.OnResizeEnd(e);
         }
 
