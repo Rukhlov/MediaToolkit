@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaToolkit.Core;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -17,6 +18,39 @@ using System.Xml;
 
 namespace TestStreamer
 {
+
+    public class ServerSettings
+    {
+        public string StreamName = "";
+
+        public string NetworkIpAddress = "0.0.0.0";
+        public int CommunicationPort = -1;
+
+        public TransportMode TransportMode = TransportMode.Tcp;
+        public bool IsMulticast = false;
+        public string MutlicastAddress = "239.0.0.1";
+    }
+
+    public class AudioStreamSettings
+    {
+        public bool Enabled = false;
+        public string SessionId = "";
+        public NetworkSettings NetworkParams = null;
+        public AudioEncoderSettings EncodingParams = null;
+        public AudioCaptureSettings CaptureParams = null;
+    }
+
+
+    public class VideoStreamSettings
+    {
+        public bool Enabled = false;
+        public string SessionId = "";
+        public NetworkSettings NetworkParams = null;
+        public VideoCaptureDescription CaptureDescription = null;
+        public VideoEncoderSettings EncodingParams = null;
+
+    }
+
     public class NetUtils
     {
         public static IEnumerable<int> GetFreePortRange(ProtocolType protocolType, int portsCount,

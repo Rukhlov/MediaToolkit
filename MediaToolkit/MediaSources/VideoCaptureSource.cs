@@ -114,6 +114,11 @@ namespace MediaToolkit
 
                 var destSize = captureParams.Resolution;
 
+                if (destSize.IsEmpty)
+                {
+                    destSize = srcSize;
+                }
+
                 var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
 
 

@@ -40,6 +40,7 @@ namespace MediaToolkit.Core
     public class VideoEncoderSettings
     {
         public VideoEncoderMode Encoder = VideoEncoderMode.H264;
+        public bool UseResoulutionFromSource = false;
 
         public Size Resolution = Size.Empty;
         //public int Width = 0;
@@ -176,16 +177,18 @@ namespace MediaToolkit.Core
 
         public bool ShowCaptureBorder = true;
         public bool ShowDebugInfo = true;
+
+        public bool CustomRegion = false;
     }
 
-    public class ScreenCaptureDescription
-    {
-        public VideoCaptureType CaptureType = VideoCaptureType.GDI;
-        public int Fps = 10;
-        public bool CaptureMouse = false;
-        public bool AspectRatio = true;
-        public bool UseHardware = true;
-    }
+    //public class ScreenCaptureDescription
+    //{
+    //    public VideoCaptureType CaptureType = VideoCaptureType.GDI;
+    //    public int Fps = 10;
+    //    public bool CaptureMouse = false;
+    //    public bool AspectRatio = true;
+    //    public bool UseHardware = true;
+    //}
 
     public enum VideoCaptureType
     {

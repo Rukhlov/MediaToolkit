@@ -59,6 +59,12 @@ namespace TestStreamer.Controls
                 showDebugInfoCheckBox.Checked = screenCaptureParams.ShowDebugInfo;
                 showCaptureBorderCheckBox.Checked = screenCaptureParams.ShowCaptureBorder;
 
+                if (screenCaptureParams.CustomRegion)
+                {
+                    displayTextBox.Visible = false;
+                    labelDisplay.Visible = false;
+                }
+
             }
 
             var webCamCaptureParams = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
@@ -101,7 +107,9 @@ namespace TestStreamer.Controls
             {
                 this.destHeightNumeric.Value = resolution.Height;
             }
-     
+
+
+            this.checkBoxResoulutionFromSource.Checked = videoEncoderPars.UseResoulutionFromSource;
 
             this.encoderComboBox.SelectedItem = videoEncoderPars.Encoder;
             this.encProfileComboBox.SelectedItem = videoEncoderPars.Profile;
@@ -150,6 +158,7 @@ namespace TestStreamer.Controls
 
             VideoSettings.EncodingParams.LowLatency = this.latencyModeCheckBox.Checked;
 
+            VideoSettings.EncodingParams.UseResoulutionFromSource = this.checkBoxResoulutionFromSource.Checked;
 
             this.Close();
         }
@@ -286,6 +295,20 @@ namespace TestStreamer.Controls
         private void showDebugInfoCheckBox_CheckedChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBoxResoulutionFromSource_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxResoulutionFromSource.Checked)
+            {
+                panelEncoderResoulution.Enabled = false;
+                aspectRatioCheckBox.Enabled = false;
+            }
+            else
+            {
+                panelEncoderResoulution.Enabled = true;
+                aspectRatioCheckBox.Enabled = true;
+            }
         }
     }
 }

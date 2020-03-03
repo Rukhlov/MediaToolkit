@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -73,6 +75,8 @@ namespace TestStreamer
         //private PreviewForm previewForm = null;
         private RegionForm regionForm = null;
 
+        private SelectAreaForm selectAreaForm = null;
+
 
         private AudioSource audioSource = null;
         private AudioStreamer audioStreamer = null;
@@ -128,7 +132,7 @@ namespace TestStreamer
 
             screenCaptureDeviceDescr = new ScreenCaptureDeviceDescription
             {
-                Resolution = new Size(1920, 1080),
+                //Resolution = new Size(1920, 1080),
                 CaptureMouse = true,
                 AspectRatio = true,
                 CaptureType = VideoCaptureType.DXGIDeskDupl,
@@ -297,6 +301,11 @@ namespace TestStreamer
                                     }
                                 }
 
+                                if (selectAreaForm != null )
+                                {
+                                    selectAreaForm.Capturing = true;
+                                }
+
                             }
 
                         }
@@ -343,12 +352,24 @@ namespace TestStreamer
             }
         }
 
+        public static readonly string CurrentDirectory = new System.IO.FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
+
         private void stopStreamingButton_Click(object sender, EventArgs e)
         {
             logger.Debug("stopButton_Click(...) ");
 
-            logger.Info(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
-           // Stop();
+            //try
+            //{
+            //    Process.Start(Path.Combine(CurrentDirectory, "Test.Client.exe"));
+            //}
+            //catch(Exception ex)
+            //{
+            //    logger.Error(ex);
+            //}
+            
+
+            //logger.Info(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
+            // Stop();
         }
 
         private void Stop()
@@ -406,6 +427,12 @@ namespace TestStreamer
                     {
                         regionForm.Close();
                         regionForm = null;
+                    }
+
+
+                    if (selectAreaForm != null)
+                    {
+                        selectAreaForm.Capturing = false;
                     }
 
 
@@ -668,7 +695,16 @@ namespace TestStreamer
             try
             {
                 var captureDescr = settings.CaptureDescription;
-                captureDescr.Resolution = videoSettings.EncodingParams.Resolution;
+                if (!videoSettings.EncodingParams.UseResoulutionFromSource)
+                {
+                    captureDescr.Resolution = videoSettings.EncodingParams.Resolution;
+                }
+                else
+                {
+                    captureDescr.Resolution = Size.Empty;
+                }
+
+                
 
                 if (captureDescr.CaptureMode == CaptureMode.CaptDevice)
                 {
@@ -961,23 +997,93 @@ namespace TestStreamer
         private BindingList<ComboBoxItem> videoSourceItems = null;
         private void UpdateVideoSources()
         {
-            var items = Screen.AllScreens
-                .Select(s => new ComboBoxItem
+
+            List<ComboBoxItem> items = new List<ComboBoxItem>();
+
+            foreach(var screen in Screen.AllScreens)
+            {
+                var bounds = screen.Bounds;
+
+                ScreenCaptureDeviceDescription descr = new ScreenCaptureDeviceDescription
                 {
-                    Name = s.DeviceName,//+ "" + s.Bounds.ToString(),
-                    Tag = s.Bounds
-                }
-                ).ToList();
+                    CaptureRegion = bounds,
+                    DisplayRegion = bounds,
+                    DisplayName = screen.DeviceName,
+
+                    Resolution = bounds.Size,
+                    CaptureMouse = true,
+                    AspectRatio = true,
+                    CaptureType = VideoCaptureType.DXGIDeskDupl,
+                    UseHardware = true,
+                    Fps = 30,
+                    ShowDebugInfo = false,
+                };
+
+                items.Add(new ComboBoxItem
+                {
+                    Name = screen.DeviceName,//+ "" + s.Bounds.ToString(),
+                    Tag = descr,
+                });
+            }
+
+            //var items = Screen.AllScreens
+            //    .Select(s => new ComboBoxItem
+            //    {
+            //        Name = s.DeviceName,//+ "" + s.Bounds.ToString(),
+            //        Tag = s.Bounds
+            //    }
+            //    ).ToList();
 
             if (items.Count > 1)
             {
+                ScreenCaptureDeviceDescription descr = new ScreenCaptureDeviceDescription
+                {
+                    CaptureRegion = SystemInformation.VirtualScreen,
+                    Resolution = SystemInformation.VirtualScreen.Size,
+                    CaptureMouse = true,
+                    AspectRatio = true,
+                    CaptureType = VideoCaptureType.DXGIDeskDupl,
+                    UseHardware = true,
+                    Fps = 30,
+                    ShowDebugInfo = false,
+                };
+
                 items.Add(new ComboBoxItem
                 {
-                    Name = "All Screens",
-                    Tag = SystemInformation.VirtualScreen
+                    Name = "All Screens",//+ "" + s.Bounds.ToString(),
+                    Tag = descr,
                 });
 
+                //items.Add(new ComboBoxItem
+                //{
+                //    Name = "All Screens",
+                //    Tag = SystemInformation.VirtualScreen
+                //});
+
             }
+
+
+            ScreenCaptureDeviceDescription regionDescr = new ScreenCaptureDeviceDescription
+            {
+                CaptureRegion = new Rectangle(0, 0, 100, 100),
+                DisplayRegion = new Rectangle(0, 0, 100, 100),
+
+                Resolution = new Size(100, 100),
+                CaptureMouse = true,
+                AspectRatio = true,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+
+                CustomRegion = true,
+            };
+
+            items.Add(new ComboBoxItem
+            {
+                Name = "Screen Region",
+                Tag = regionDescr,
+            });
 
             var captDevices = MediaToolkit.MediaFoundation.MfTool.GetVideoCaptureDevices();
             if (captDevices.Count > 0)
@@ -996,87 +1102,6 @@ namespace TestStreamer
             videoSourceComboBox.DisplayMember = "Name";
             videoSourceComboBox.DataSource = videoSourceItems;
         }
-
-        //public List<VideoCaptureDeviceDescription> GetVideoCaptureDevices()
-        //{
-        //    List<VideoCaptureDeviceDescription> deviceDescriptions = new List<VideoCaptureDeviceDescription>();
-
-        //    Activate[] activates = null;
-        //    try
-        //    {
-        //        using (var attributes = new MediaAttributes())
-        //        {
-        //            MediaFactory.CreateAttributes(attributes, 1);
-        //            attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
-
-        //            activates = MediaFactory.EnumDeviceSources(attributes);
-
-        //            foreach (var activate in activates)
-        //            {
-        //                try
-        //                {
-        //                    var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-        //                    var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
-        //                    var deviceDescription = new VideoCaptureDeviceDescription
-        //                    {
-        //                        Name = friendlyName,
-        //                        DeviceId = symbolicLink,
-        //                    };
-
-        //                    using (var mediaSource = activate.ActivateObject<MediaSource>())
-        //                    {
-        //                        using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
-        //                        {
-
-        //                            var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
-        //                            var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
-
-        //                            var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-        //                            var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
-
-        //                            var profile = new VideoCaptureDeviceProfile
-        //                            {
-        //                                FrameSize = frameSize,
-        //                                FrameRate = frameRate,
-        //                                Format = subtypeName,
-        //                            };
-
-        //                            deviceDescription.Resolution = frameSize;
-        //                            deviceDescription.CurrentProfile = profile;
-
-
-        //                        }
-        //                    }
-
-        //                    deviceDescriptions.Add(deviceDescription);
-        //                }
-        //                catch (Exception ex)
-        //                {
-        //                    logger.Error(ex);
-        //                }
-
-        //            }
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        logger.Error(ex);
-        //    }
-        //    finally
-        //    {
-        //        if (activates != null)
-        //        {
-        //            foreach (var act in activates)
-        //            {
-        //                act.Dispose();
-        //            }
-        //        }
-        //    }
-
-        //    return deviceDescriptions;
-
-        //}
 
 
         private void UpdateAudioSources()
@@ -1221,8 +1246,11 @@ namespace TestStreamer
             UpdateAudioSources();
         }
 
+ 
         private void videoSourceComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
+            bool isCustomRegion = false;
+
             Rectangle displayRect = Rectangle.Empty;
 
             VideoCaptureDescription captureParams = null;
@@ -1240,18 +1268,18 @@ namespace TestStreamer
                     var tag = item.Tag;
                     if (tag != null)
                     {
-
-                        if (tag is Rectangle)
+                        if (tag is ScreenCaptureDeviceDescription)
                         {
-                            displayRect = (Rectangle)tag;
+                            //captDeviceId = captDevice.DeviceId;
+                            //captureParams = captDevice;
+                            //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
 
-                            screenCaptureDeviceDescr.DisplayRegion = displayRect;
-                            screenCaptureDeviceDescr.CaptureRegion = displayRect;
-                            screenCaptureDeviceDescr.DisplayName = displayName;
+                            var screenDescr = tag as ScreenCaptureDeviceDescription;
+                            isCustomRegion = screenDescr.CustomRegion;
+                            displayRect = screenDescr.DisplayRegion;
 
-                            videoSettings.EncodingParams.Resolution = screenCaptureDeviceDescr.Resolution;
+                            captureParams = screenDescr;
 
-                            captureParams = screenCaptureDeviceDescr;
 
                         }
                         else if (tag is VideoCaptureDeviceDescription)
@@ -1262,8 +1290,56 @@ namespace TestStreamer
                             captureParams = captDevice;
                             videoSettings.EncodingParams.Resolution = captDevice.Resolution;
                         }
+                        //else if (tag is Rectangle)
+                        //{
+                        //    displayRect = (Rectangle)tag;
+
+                        //    screenCaptureDeviceDescr.DisplayRegion = displayRect;
+                        //    screenCaptureDeviceDescr.CaptureRegion = displayRect;
+                        //    screenCaptureDeviceDescr.DisplayName = displayName;
+
+                        //    //videoSettings.EncodingParams.Resolution = screenCaptureDeviceDescr.Resolution;
+
+                        //    captureParams = screenCaptureDeviceDescr;
+
+                        //}
+  
+                    }
+                    else
+                    {
                     }
                 }
+
+
+                if (isCustomRegion)
+                {
+                    if (selectAreaForm == null)
+                    {
+                        selectAreaForm = new SelectAreaForm();
+
+                    }
+
+                    var location = selectAreaForm.Location;
+                    var size = selectAreaForm.ClientSize;
+                    var rect = new Rectangle(location, size);
+
+                    selectAreaForm.CaptureDeviceDescription = (ScreenCaptureDeviceDescription)captureParams;
+                    selectAreaForm.UpdateDeviceDescr(rect);
+
+                    //selectAreaForm.StartPosition = FormStartPosition.Manual;
+                    //selectAreaForm.Location = displayRect.Location;
+                    //selectAreaForm.Size = displayRect.Size;
+
+                    selectAreaForm.Visible = true;
+                }
+                else
+                {
+                    if (selectAreaForm != null)
+                    {
+                        selectAreaForm.Visible = false;
+                    }
+                }
+
             }
 
 

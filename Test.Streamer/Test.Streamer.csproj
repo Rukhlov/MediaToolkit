@@ -100,18 +100,6 @@
     <Compile Include="Controls\PreviewForm.Designer.cs">
       <DependentUpon>PreviewForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\RemoteServerControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\RemoteServerControl.Designer.cs">
-      <DependentUpon>RemoteServerControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ScreenStreamerControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ScreenStreamerControl.Designer.cs">
-      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\SelectAreaForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -150,7 +138,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RemoteDesktopService.cs" />
     <Compile Include="ScreenCastService.cs" />
     <Compile Include="StreamingForm.cs">
       <SubType>Form</SubType>
@@ -171,11 +158,8 @@
     <EmbeddedResource Include="Controls\NetworkSettingsForm.resx">
       <DependentUpon>NetworkSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\RemoteServerControl.resx">
-      <DependentUpon>RemoteServerControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\ScreenStreamerControl.resx">
-      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
+    <EmbeddedResource Include="Controls\SelectAreaForm.resx">
+      <DependentUpon>SelectAreaForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\StatisticForm.resx">
       <DependentUpon>StatisticForm.cs</DependentUpon>
@@ -297,6 +281,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="logo.ico" />
+    <None Include="Resources\MovePanel2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -38,7 +38,7 @@ namespace TestStreamer
 
             LoadNetworks();
 
-            screenStreamerControl.Link(this);
+            //screenStreamerControl.Link(this);
 
         }
 
@@ -70,7 +70,7 @@ namespace TestStreamer
 
             closing = true;
 
-            screenStreamerControl.UnLink();
+            //screenStreamerControl.UnLink();
             this.Close();
 
            // Environment.Exit(0);

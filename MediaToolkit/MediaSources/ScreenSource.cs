@@ -82,6 +82,10 @@ namespace MediaToolkit
             var srcRect = captureParams.CaptureRegion;
             var destSize = captureParams.Resolution;
 
+            if (destSize.IsEmpty)
+            {
+                destSize = new Size(srcRect.Width, srcRect.Height);
+            }
 
             try
             {

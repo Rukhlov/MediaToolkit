@@ -1,4 +1,5 @@
-﻿using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.Core;
+using MediaToolkit.NativeAPIs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,12 +16,13 @@ namespace Test.Streamer.Controls
     public partial class SelectAreaForm : Form
     {
 
-        public SelectAreaForm()
+        public SelectAreaForm(bool debugMode = false)
         {
             InitializeComponent();
 
             this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.ResizeRedraw, true);
+            this.DebugMode = debugMode;
 
             //this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             //this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -33,11 +35,59 @@ namespace Test.Streamer.Controls
             this.labelInfo.Location = new Point(FrameWidth, FrameWidth);
             this.buttonClose.Location = new Point(this.Width - (buttonClose.Width + FrameWidth), FrameWidth);
 
+            framePen1.Width = FrameWidth;
+
+            framePen2.DashPattern = new float[] { 7, 7 };
+            framePen2.Width = FrameWidth;
+
+            buttonClose.Visible = DebugMode;
+            labelInfo.Visible = DebugMode;
+
+            panelMove.Visible = !capturing;
+
+
         }
 
+        public ScreenCaptureDeviceDescription  CaptureDeviceDescription { get; set; }
 
-        public Color FrameColor { get; set; } = Color.Red;
-        public int FrameWidth { get; set; } = 5;
+        public bool DebugMode { get; set; } = false;
+        private bool capturing = false;
+
+        public bool Capturing
+        {
+            get
+            {
+                return capturing;
+            }
+            set
+            {
+                if(capturing != value )
+                {
+                    capturing = value;
+
+                    panelMove.Visible = !capturing;
+                    this.Refresh();
+                }
+            }
+        } 
+
+        //private Pen framePen1 = new Pen(Color.Red);
+
+        // private Pen framePen1 = new Pen(Color.WhiteSmoke);
+        //// private Pen framePen2 = new Pen(Color.FromArgb(46, 131, 241));
+
+        // //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
+        // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
+
+        private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
+        //private Pen framePen1 = new Pen(Color.FromArgb(255, 127, 86));
+        private Pen framePen2 = new Pen(Color.WhiteSmoke);
+
+
+        public Color FrameColor { get; set; } = Color.FromArgb(255, 127, 86);//Color.Red;
+
+
+        public int FrameWidth { get; set; } = 4;
 
         private Rectangle TopRect
         {// вехняя граница
@@ -141,28 +191,77 @@ namespace Test.Streamer.Controls
 
         }
 
-        protected override void OnPaint(PaintEventArgs e) // you can safely omit this method if you want
+        protected override void OnPaint(PaintEventArgs e) 
         {
             var g = e.Graphics;
-            using (Brush b = new SolidBrush(FrameColor))
-            {
-                g.FillRectangle(b, TopRect);
-                g.FillRectangle(b, LeftRect);
-                g.FillRectangle(b, RightRect);
-                g.FillRectangle(b, BottomRect);
-            }
+            //using (Brush b = new SolidBrush(FrameColor))
+            //{
+            //    g.FillRectangle(b, TopRect);
+            //    g.FillRectangle(b, LeftRect);
+            //    g.FillRectangle(b, RightRect);
+            //    g.FillRectangle(b, BottomRect);
+            //}
+
+            //
 
             //var leftTop = new Point(0, 0);
-            //var leftBottom = new Point(0, this.ClientSize.Height);
-            //var rightTop = new Point(this.ClientSize.Width, 0);
-            //var rightBottom = new Point(this.ClientSize.Width, this.ClientSize.Height);
+            //var leftBottom = new Point(0, this.ClientSize.Height - FrameWidth /2);
+            //var rightTop = new Point(this.ClientSize.Width - FrameWidth/2, 0);
+            //var rightBottom = new Point(this.ClientSize.Width - FrameWidth/2, this.ClientSize.Height - FrameWidth/2);
 
-            //g.DrawLine(new Pen(Brushes.Red, 6), leftTop, rightTop);
-            //g.DrawLine(new Pen(Brushes.Red, 6), rightTop, rightBottom);
-            //g.DrawLine(new Pen(Brushes.Red, 6), leftBottom, rightBottom);
-            //g.DrawLine(new Pen(Brushes.Red, 6), leftBottom, leftTop);
 
-            //g.DrawRectangle(new Pen(Brushes.Red, 5), rect);
+            //g.DrawLine(framePen1, leftTop, rightTop);
+            //g.DrawLine(framePen1, rightTop, rightBottom);
+            //g.DrawLine(framePen1, leftBottom, rightBottom);
+            //g.DrawLine(framePen1, leftBottom, leftTop);
+
+            // g.DrawRectangle(new Pen(Brushes.Red, 5), rect);
+
+
+            var x = this.ClientRectangle.X+ FrameWidth;
+            var y = this.ClientRectangle.Y+ FrameWidth;
+            var width = (this.ClientRectangle.Width - 2 * FrameWidth);
+            var height = (this.ClientRectangle.Height - 2*FrameWidth);
+            var rect = new Rectangle(x, y, width, height);
+
+
+            //g.DrawRectangle(new Pen(FrameColor, 4), rect);
+
+            g.DrawRectangle(framePen1, rect);
+            g.DrawRectangle(framePen2, rect);
+
+            if (!capturing)
+            {
+                g.DrawLine(framePen1, new Point(x + 6, y + 8), new Point(x + 28, y + 8));
+                g.DrawLine(framePen1, new Point(x + 8, y + 8), new Point(x + 8, y + 28));
+
+                int centerX = (width - x) / 2 + 6;
+
+                g.DrawLine(framePen1, new Point(centerX - 12, y + 8), new Point(centerX + 12, y + 8));
+
+
+                g.DrawLine(framePen1, new Point(width - 4, y + 8), new Point(width - 24, y + 8));
+                g.DrawLine(framePen1, new Point(width - 4, y + 6), new Point(width - 4, y + 28));
+
+                int centerY = (height - y) / 2 + 6;
+
+                g.DrawLine(framePen1, new Point(width - 4, centerY - 12), new Point(width - 4, centerY + 12));
+
+
+                g.DrawLine(framePen1, new Point(width - 4, height - 4), new Point(width - 24, height - 4));
+                g.DrawLine(framePen1, new Point(width - 4, height - 2), new Point(width - 4, height - 24));
+
+
+                g.DrawLine(framePen1, new Point(centerX - 12, height - 4), new Point(centerX + 12, height - 4));
+
+
+                g.DrawLine(framePen1, new Point(x + 6, height - 4), new Point(x + 28, height - 4));
+                g.DrawLine(framePen1, new Point(x + 8, height - 2), new Point(x + 8, height - 24));
+
+
+                g.DrawLine(framePen1, new Point(x + 8, centerY - 12), new Point(x + 8, centerY + 12));
+            }
+
 
         }
 
@@ -179,6 +278,20 @@ namespace Test.Streamer.Controls
             var rect = new Rectangle(this.Location, this.Size);
             this.labelInfo.Text = rect.ToString();
 
+            UpdateDeviceDescr(rect);
+
+        }
+
+
+
+        internal void UpdateDeviceDescr(Rectangle rect)
+        {
+            if (CaptureDeviceDescription != null)
+            {
+                CaptureDeviceDescription.DisplayRegion = rect;
+                CaptureDeviceDescription.CaptureRegion = rect;
+                CaptureDeviceDescription.Resolution = rect.Size;
+            }
         }
 
         protected override void OnLocationChanged(EventArgs e)
@@ -189,16 +302,23 @@ namespace Test.Streamer.Controls
             var rect = new Rectangle(this.Location, this.Size);
             this.labelInfo.Text = rect.ToString();
 
+            UpdateDeviceDescr(rect);
+
+
         }
 
         protected override void WndProc(ref Message message)
         {
             base.WndProc(ref message);
 
-            if (message.Msg == WM.NCHITTEST)
+            if (!capturing)
             {
-                var cursorPosition = this.PointToClient(Cursor.Position);
-                message.Result = (IntPtr)HitTestFrame(cursorPosition);
+                if (message.Msg == WM.NCHITTEST)
+                {
+                    var cursorPosition = this.PointToClient(Cursor.Position);
+                    message.Result = (IntPtr)HitTestFrame(cursorPosition);
+
+                }
 
             }
 

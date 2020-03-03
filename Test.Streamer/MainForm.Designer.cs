@@ -44,7 +44,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.screenStreamerControl = new TestStreamer.Controls.ScreenStreamerControl();
+            //this.screenStreamerControl = new TestStreamer.Controls.ScreenStreamerControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.audioStreamerControl = new TestStreamer.Controls.AudioStreamerControl();
             this.tabPage5 = new System.Windows.Forms.TabPage();
@@ -52,7 +52,7 @@
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.httpStreamerControl1 = new TestStreamer.Controls.HttpStreamerControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.remoteServerControl1 = new TestStreamer.Controls.RemoteServerControl();
+            //this.remoteServerControl1 = new TestStreamer.Controls.RemoteServerControl();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label23 = new System.Windows.Forms.Label();
             this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
@@ -193,7 +193,7 @@
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.screenStreamerControl);
+            //this.tabPage2.Controls.Add(this.screenStreamerControl);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage2.Name = "tabPage2";
@@ -202,15 +202,15 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "RtpStreamer";
             this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // screenStreamerControl
-            // 
-            this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.screenStreamerControl.Location = new System.Drawing.Point(2, 2);
-            this.screenStreamerControl.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.screenStreamerControl.Name = "screenStreamerControl";
-            this.screenStreamerControl.Size = new System.Drawing.Size(380, 279);
-            this.screenStreamerControl.TabIndex = 0;
+            //// 
+            //// screenStreamerControl
+            //// 
+            //this.screenStreamerControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            //this.screenStreamerControl.Location = new System.Drawing.Point(2, 2);
+            //this.screenStreamerControl.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            //this.screenStreamerControl.Name = "screenStreamerControl";
+            //this.screenStreamerControl.Size = new System.Drawing.Size(380, 279);
+            //this.screenStreamerControl.TabIndex = 0;
             // 
             // tabPage3
             // 
@@ -274,7 +274,7 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.remoteServerControl1);
+           // this.tabPage1.Controls.Add(this.remoteServerControl1);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tabPage1.Name = "tabPage1";
@@ -286,11 +286,11 @@
             // 
             // remoteServerControl1
             // 
-            this.remoteServerControl1.Location = new System.Drawing.Point(2, 5);
-            this.remoteServerControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.remoteServerControl1.Name = "remoteServerControl1";
-            this.remoteServerControl1.Size = new System.Drawing.Size(378, 298);
-            this.remoteServerControl1.TabIndex = 0;
+            //this.remoteServerControl1.Location = new System.Drawing.Point(2, 5);
+            //this.remoteServerControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            //this.remoteServerControl1.Name = "remoteServerControl1";
+            //this.remoteServerControl1.Size = new System.Drawing.Size(378, 298);
+            //this.remoteServerControl1.TabIndex = 0;
             // 
             // panel1
             // 
@@ -383,10 +383,10 @@
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage4;
-        private Controls.ScreenStreamerControl screenStreamerControl;
+        //private Controls.ScreenStreamerControl screenStreamerControl;
         private Controls.AudioStreamerControl audioStreamerControl;
         private Controls.HttpStreamerControl httpStreamerControl1;
-        private Controls.RemoteServerControl remoteServerControl1;
+        //private Controls.RemoteServerControl remoteServerControl1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.NumericUpDown communicationPortNumeric;

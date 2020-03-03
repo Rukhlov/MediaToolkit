@@ -616,11 +616,11 @@ namespace MediaToolkit.MediaFoundation
                                     using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
                                     {
 
-                                        var frameSize = MediaToolkit.MediaFoundation.MfTool.GetFrameSize(mediaType);
-                                        var frameRate = MediaToolkit.MediaFoundation.MfTool.GetFrameRate(mediaType);
+                                        var frameSize = MfTool.GetFrameSize(mediaType);
+                                        var frameRate = MfTool.GetFrameRate(mediaType);
 
                                         var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                                        var subtypeName = MediaToolkit.MediaFoundation.MfTool.GetMediaTypeName(subtype);
+                                        var subtypeName = MfTool.GetMediaTypeName(subtype);
 
                                         var profile = new Core.VideoCaptureDeviceProfile
                                         {

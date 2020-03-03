@@ -328,7 +328,7 @@
             this.stopStreamingButton.Name = "stopStreamingButton";
             this.stopStreamingButton.Size = new System.Drawing.Size(99, 31);
             this.stopStreamingButton.TabIndex = 86;
-            this.stopStreamingButton.Text = "_Stop";
+            this.stopStreamingButton.Text = "_TEST";
             this.stopStreamingButton.UseVisualStyleBackColor = false;
             this.stopStreamingButton.Click += new System.EventHandler(this.stopStreamingButton_Click);
             // 

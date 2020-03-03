@@ -160,6 +160,17 @@ namespace MediaToolkit.MediaFoundation
 
             int width = args.Width;
             int height = args.Height;
+
+            if (width % 2 != 0)
+            {// должно быть четным...
+                width++;
+            }
+
+            if (height % 2 != 0)
+            {
+                height++;
+            }
+
             Format format = MfTool.GetDXGIFormatFromVideoFormatGuid(args.Format);
 
             if(format == Format.Unknown)
@@ -300,6 +311,16 @@ namespace MediaToolkit.MediaFoundation
             var fps = args.FrameRate;
             var width = args.Width;
             var height = args.Height;
+
+            if (width % 2 != 0)
+            {// должно быть четным...
+                width++;
+            }
+
+            if (height % 2 != 0)
+            {
+                height++;
+            }
 
             //var inputFormat = VideoFormatGuids.Argb32;
             var inputFormat = args.Format; //VideoFormatGuids.NV12;
