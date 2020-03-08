@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -45,10 +46,16 @@ namespace Test.Streamer.Controls
 
             panelMove.Visible = !capturing;
 
+            //TextureBrush brush = new TextureBrush(Properties.Resources.test);
+
+            //framePen1 = new Pen(brush);
+
 
         }
 
-        public ScreenCaptureDeviceDescription  CaptureDeviceDescription { get; set; }
+        private Pen testPen = new Pen(new TextureBrush(Properties.Resources.test));
+
+        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; set; }
 
         public bool DebugMode { get; set; } = false;
         private bool capturing = false;
@@ -61,7 +68,7 @@ namespace Test.Streamer.Controls
             }
             set
             {
-                if(capturing != value )
+                if (capturing != value)
                 {
                     capturing = value;
 
@@ -69,7 +76,7 @@ namespace Test.Streamer.Controls
                     this.Refresh();
                 }
             }
-        } 
+        }
 
         //private Pen framePen1 = new Pen(Color.Red);
 
@@ -79,7 +86,9 @@ namespace Test.Streamer.Controls
         // //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
         // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
 
+
         private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
+
         //private Pen framePen1 = new Pen(Color.FromArgb(255, 127, 86));
         private Pen framePen2 = new Pen(Color.WhiteSmoke);
 
@@ -87,9 +96,14 @@ namespace Test.Streamer.Controls
         public Color FrameColor { get; set; } = Color.FromArgb(255, 127, 86);//Color.Red;
 
 
-        public int FrameWidth { get; set; } = 4;
+        public int FrameWidth { get; set; } = 5;
 
-        private Rectangle TopRect
+        public int GripWidth { get; set; } = 25;
+        public int GripHeight { get; set; } = 25;
+        public int GripIdent { get; set; } = 5;
+
+
+        private Rectangle TopLine
         {// вехняя граница
             get
             {
@@ -97,15 +111,42 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle TopLeftRect
+        private Rectangle TopLeftGrip
         {// левый верхний угол
             get
             {
-                return new Rectangle(0, 0, FrameWidth, FrameWidth);
+                int x = GripIdent;
+                int y = GripIdent;
+
+                int w = GripIdent + GripWidth + FrameWidth / 2;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(0, 0, FrameWidth, FrameWidth);
             }
         }
 
-        private Rectangle LeftRect
+        private Rectangle TopGrip
+        {// вехняя граница
+            get
+            {
+
+                var width = (this.ClientRectangle.Width - 2 * FrameWidth);
+
+                int x =(int)((width ) / 2f - (GripIdent + (FrameWidth )));
+                int y = GripIdent;
+
+                int w = GripIdent + GripWidth + FrameWidth / 2;
+                int h = GripIdent + 2 * FrameWidth;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(0, 0, ClientSize.Width, FrameWidth);
+            }
+        }
+
+        private Rectangle LeftLine
         {
             get
             {
@@ -113,15 +154,46 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle BottomLeftRect
+        private Rectangle LeftGrip
         {
             get
             {
-                return new Rectangle(0, ClientSize.Height - FrameWidth, FrameWidth, FrameWidth);
+                var height = (this.ClientRectangle.Height - 2 * FrameWidth);
+
+                int x = GripIdent;
+                //int y = ClientSize.Height - (GripHeight + GripIdent + FrameWidth);
+
+                int y = (int)(height / 2f - (GripIdent + (FrameWidth)));
+
+                int w = GripIdent + 2 * FrameWidth;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+                //return new Rectangle(0, 0, FrameWidth, ClientSize.Height);
             }
         }
 
-        private Rectangle BottomRect
+
+
+        private Rectangle BottomLeftGrip
+        {
+            get
+            {
+                int x = GripIdent;
+                int y = ClientSize.Height - (GripHeight + GripIdent + FrameWidth);
+
+                int w = GripIdent + GripWidth + FrameWidth / 2;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(0, ClientSize.Height - FrameWidth, FrameWidth, FrameWidth);
+            }
+        }
+
+
+
+        private Rectangle BottomLine
         {
             get
             {
@@ -129,15 +201,41 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle BottomRightRect
+        private Rectangle BottomGrip
         {
             get
             {
-                return new Rectangle(ClientSize.Width - FrameWidth, ClientSize.Height - FrameWidth, FrameWidth, FrameWidth);
+                var width = (this.ClientRectangle.Width - 2 * FrameWidth);
+
+                int x = (int)((width) / 2f - (GripIdent + (FrameWidth)));
+                int y = (ClientSize.Height - FrameWidth  )- ( GripIdent +  2 * FrameWidth);
+
+                int w = GripIdent + GripWidth + FrameWidth / 2;
+                int h = GripIdent + 2 * FrameWidth;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(0, ClientSize.Height - FrameWidth, ClientSize.Width, FrameWidth);
             }
         }
 
-        private Rectangle RightRect
+        private Rectangle BottomRightGrip
+        {
+            get
+            {
+                int x = ClientSize.Width - (GripWidth + GripIdent + FrameWidth);
+                int y = ClientSize.Height - (GripHeight + GripIdent + FrameWidth);
+
+                int w = GripWidth + FrameWidth;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(ClientSize.Width - FrameWidth, ClientSize.Height - FrameWidth, FrameWidth, FrameWidth);
+            }
+        }
+
+        private Rectangle RightLine
         {
             get
             {
@@ -145,11 +243,39 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle TopRightRect
+        private Rectangle RightGrip
         {
             get
             {
-                return new Rectangle(ClientSize.Width - FrameWidth, 0, FrameWidth, FrameWidth);
+                var height = (this.ClientRectangle.Height - 2 * FrameWidth);
+
+                int x = (ClientSize.Width- FrameWidth) - ( GripIdent + 2* FrameWidth);
+                //int y = ClientSize.Height - (GripHeight + GripIdent + FrameWidth);
+
+                int y = (int)(height / 2f - (GripIdent + (FrameWidth)));
+
+                int w = GripIdent + 2* FrameWidth;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(ClientSize.Width - FrameWidth, 0, FrameWidth, ClientSize.Height);
+            }
+        }
+
+        private Rectangle TopRightGrip
+        {
+            get
+            {
+                int x = ClientSize.Width - (GripWidth + GripIdent +  FrameWidth);
+                int y =  GripIdent;
+
+                int w = GripWidth + FrameWidth;
+                int h = GripIdent + GripHeight + FrameWidth / 2;
+
+                return new Rectangle(x, y, w, h);
+
+                //return new Rectangle(ClientSize.Width - FrameWidth, 0, FrameWidth, FrameWidth);
             }
         }
 
@@ -191,18 +317,37 @@ namespace Test.Streamer.Controls
 
         }
 
-        protected override void OnPaint(PaintEventArgs e) 
+        protected override void OnPaint(PaintEventArgs e)
         {
             var g = e.Graphics;
+
+            //TextureBrush b = new TextureBrush(Properties.Resources.test);
+            //g.FillRectangle(b, e.ClipRectangle);
+
+            //return;
+
+
             //using (Brush b = new SolidBrush(FrameColor))
             //{
-            //    g.FillRectangle(b, TopRect);
-            //    g.FillRectangle(b, LeftRect);
-            //    g.FillRectangle(b, RightRect);
-            //    g.FillRectangle(b, BottomRect);
+            //    //TextureBrush b = new TextureBrush(Properties.Resources.test);
+            //    g.FillRectangle(b, TopLeftGrip);
+            //    g.FillRectangle(b, TopRightGrip);
+            //    g.FillRectangle(b, BottomRightGrip);
+            //    g.FillRectangle(b, BottomLeftGrip);
+
+
+            //    g.FillRectangle(b, TopGrip);
+            //    g.FillRectangle(b, BottomGrip);
+
+            //    g.FillRectangle(b, RightGrip);
+
+            //    g.FillRectangle(b, LeftGrip);
+
             //}
 
             //
+
+
 
             //var leftTop = new Point(0, 0);
             //var leftBottom = new Point(0, this.ClientSize.Height - FrameWidth /2);
@@ -218,10 +363,11 @@ namespace Test.Streamer.Controls
             // g.DrawRectangle(new Pen(Brushes.Red, 5), rect);
 
 
-            var x = this.ClientRectangle.X+ FrameWidth;
-            var y = this.ClientRectangle.Y+ FrameWidth;
+            var x = this.ClientRectangle.X + FrameWidth;
+            var y = this.ClientRectangle.Y + FrameWidth;
             var width = (this.ClientRectangle.Width - 2 * FrameWidth);
-            var height = (this.ClientRectangle.Height - 2*FrameWidth);
+            var height = (this.ClientRectangle.Height - 2 * FrameWidth);
+
             var rect = new Rectangle(x, y, width, height);
 
 
@@ -230,36 +376,150 @@ namespace Test.Streamer.Controls
             g.DrawRectangle(framePen1, rect);
             g.DrawRectangle(framePen2, rect);
 
+
+
+            //var starPoint = new PointF(0.0f, 0.0f);
+            //var endPoint = new PointF(20.0f, 20.0f);
+
+            //var color2 = Color.FromArgb(46, 131, 241);
+            //var color1 = Color.WhiteSmoke;
+
+            //using (LinearGradientBrush b = new LinearGradientBrush(starPoint, endPoint, color1, color2))
+            //{
+            //    b.WrapMode = WrapMode.TileFlipXY;
+
+            //    e.Graphics.FillRectangle(b, ClientRectangle);
+
+
+            //    g.FillRectangle(new SolidBrush(Color.Black), rect);
+            //}
+
+
             if (!capturing)
-            {
-                g.DrawLine(framePen1, new Point(x + 6, y + 8), new Point(x + 28, y + 8));
-                g.DrawLine(framePen1, new Point(x + 8, y + 8), new Point(x + 8, y + 28));
+            {// draw frame grip
+                //int gripIdent = FrameWidth;//4;
+                //int gripWidth = FrameWidth * 5;//20;
+                //int gripHeight = FrameWidth * 5;//20;
 
-                int centerX = (width - x) / 2 + 6;
+                {// top left
+                    {
+                        float x1 = (x + GripIdent + (FrameWidth / 2f));
+                        float x2 = x1 + GripWidth;
+                        float y1 = (y + GripIdent + FrameWidth);
 
-                g.DrawLine(framePen1, new Point(centerX - 12, y + 8), new Point(centerX + 12, y + 8));
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                    }
 
+                    {
+                        float x1 = (x + GripIdent + FrameWidth);
+                        float y1 = (y + GripIdent + FrameWidth / 2f);
+                        float y2 = y1 + GripHeight;
 
-                g.DrawLine(framePen1, new Point(width - 4, y + 8), new Point(width - 24, y + 8));
-                g.DrawLine(framePen1, new Point(width - 4, y + 6), new Point(width - 4, y + 28));
-
-                int centerY = (height - y) / 2 + 6;
-
-                g.DrawLine(framePen1, new Point(width - 4, centerY - 12), new Point(width - 4, centerY + 12));
-
-
-                g.DrawLine(framePen1, new Point(width - 4, height - 4), new Point(width - 24, height - 4));
-                g.DrawLine(framePen1, new Point(width - 4, height - 2), new Point(width - 4, height - 24));
-
-
-                g.DrawLine(framePen1, new Point(centerX - 12, height - 4), new Point(centerX + 12, height - 4));
-
-
-                g.DrawLine(framePen1, new Point(x + 6, height - 4), new Point(x + 28, height - 4));
-                g.DrawLine(framePen1, new Point(x + 8, height - 2), new Point(x + 8, height - 24));
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+                    }
+                }
 
 
-                g.DrawLine(framePen1, new Point(x + 8, centerY - 12), new Point(x + 8, centerY + 12));
+                // top center
+                float centerX = (width - x) / 2f + (GripIdent + (FrameWidth / 2f));
+                {
+                    float x1 = centerX - GripWidth / 2f;
+                    float x2 = centerX + GripWidth / 2f;
+                    float y1 = (y + GripIdent + FrameWidth);
+                    g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                }
+
+                {// right top
+                    {
+                        float x1 = width - GripIdent;
+                        float x2 = width - GripWidth - (GripIdent - (FrameWidth / 2f));
+                        float y1 = (y + GripIdent + FrameWidth);
+
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                    }
+
+                    {
+                        float x1 = width - GripIdent;
+
+                        float y1 = (y + GripIdent + FrameWidth / 2f);
+                        float y2 = y + GripHeight + GripIdent + FrameWidth / 2f;
+
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+                    }
+                }
+
+
+                // right center
+                float centerY = (height - y) / 2f + (GripIdent + (FrameWidth / 2f));
+                {
+                    float x1 = width - GripIdent;
+                    float y1 = centerY - GripHeight / 2f;
+                    float y2 = centerY + GripHeight / 2f;
+
+                    g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+
+                }
+
+                {// right bottom
+                    {
+
+                        float x1 = width - GripIdent;
+                        float x2 = width - GripWidth - (GripIdent - (FrameWidth / 2f));
+                        float y1 = height - GripIdent;
+
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                    }
+
+                    {
+                        float x1 = width - GripIdent;
+                        float y1 = height - (GripIdent - (FrameWidth / 2f));//gripIdent;
+                        float y2 = height - GripHeight - (GripIdent - (FrameWidth / 2f));
+
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+
+                    }
+                }
+
+
+
+                {// bottom center
+
+                    float x1 = centerX - GripWidth / 2f;
+                    float x2 = centerX + GripWidth / 2f;
+                    float y1 = height - GripIdent;
+                    g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                }
+
+                {// left bottom
+                    {
+
+                        float x1 = (x + GripIdent + (FrameWidth / 2f));
+                        float x2 = x1 + GripWidth;
+                        float y1 = height - GripIdent;
+
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x2, y1));
+                    }
+
+                    {
+
+                        float x1 = (x + GripIdent + FrameWidth);
+                        float y1 = height - (GripIdent - (FrameWidth / 2f));//gripIdent;
+                        float y2 = height - GripHeight - (GripIdent - (FrameWidth / 2f));
+                        g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+
+                    }
+                }
+
+
+                {// left center
+
+                    float x1 = (x + GripIdent + FrameWidth);
+                    float y1 = centerY - GripHeight / 2f;
+                    float y2 = centerY + GripHeight / 2f;
+
+                    g.DrawLine(framePen1, new PointF(x1, y1), new PointF(x1, y2));
+                }
+
             }
 
 
@@ -382,35 +642,35 @@ namespace Test.Streamer.Controls
         {
             int result = 0;
 
-            if (TopLeftRect.Contains(point))
+            if (TopLeftGrip.Contains(point))
             {
                 result = WM.HTTOPLEFT;
             }
-            else if (TopRightRect.Contains(point))
+            else if (TopRightGrip.Contains(point))
             {
                 result = WM.HTTOPRIGHT;
             }
-            else if (BottomLeftRect.Contains(point))
+            else if (BottomLeftGrip.Contains(point))
             {
                 result = WM.HTBOTTOMLEFT;
             }
-            else if (BottomRightRect.Contains(point))
+            else if (BottomRightGrip.Contains(point))
             {
                 result = WM.HTBOTTOMRIGHT;
             }
-            else if (TopRect.Contains(point))
+            else if (TopLine.Contains(point) || TopGrip.Contains(point))
             {
                 result = WM.HTTOP;
             }
-            else if (LeftRect.Contains(point))
+            else if (LeftLine.Contains(point) || LeftGrip.Contains(point))
             {
                 result = WM.HTLEFT;
             }
-            else if (RightRect.Contains(point))
+            else if (RightLine.Contains(point) || RightGrip.Contains(point))
             {
                 result = WM.HTRIGHT;
             }
-            else if (BottomRect.Contains(point))
+            else if (BottomLine.Contains(point) || (BottomGrip.Contains(point)))
             {
                 result = WM.HTBOTTOM;
             }
