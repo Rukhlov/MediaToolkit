@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace Test.Streamer.Controls
 {
     public partial class SelectAreaForm : Form
     {
+        private static readonly Color color1 = Color.FromArgb(46, 131, 241);
+        private static readonly Color color2 = Color.WhiteSmoke;
 
         public SelectAreaForm(bool debugMode = false)
         {
@@ -41,21 +44,35 @@ namespace Test.Streamer.Controls
             framePen2.DashPattern = new float[] { 7, 7 };
             framePen2.Width = FrameWidth;
 
+            textureBrush = CreateStripesBrush(new Size(50, 50), color1, color2);
+
             buttonClose.Visible = DebugMode;
             labelInfo.Visible = DebugMode;
 
             panelMove.Visible = !capturing;
 
-            //TextureBrush brush = new TextureBrush(Properties.Resources.test);
-
-            //framePen1 = new Pen(brush);
-
-
         }
 
-        private Pen testPen = new Pen(new TextureBrush(Properties.Resources.test));
 
-        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; set; }
+        //private Pen framePen1 = new Pen(Color.Red);
+
+        // private Pen framePen1 = new Pen(Color.WhiteSmoke);
+        //// private Pen framePen2 = new Pen(Color.FromArgb(46, 131, 241));
+
+        // //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
+        // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
+
+        private TextureBrush textureBrush = null;
+
+        private Pen framePen1 = new Pen(color1);
+        private Pen framePen2 = new Pen(color2);
+
+        public int FrameWidth { get; set; } = 5;
+
+        public int GripWidth { get; set; } = 25;
+        public int GripHeight { get; set; } = 25;
+        public int GripIdent { get; set; } = 4;
+
 
         public bool DebugMode { get; set; } = false;
         private bool capturing = false;
@@ -78,32 +95,10 @@ namespace Test.Streamer.Controls
             }
         }
 
-        //private Pen framePen1 = new Pen(Color.Red);
 
-        // private Pen framePen1 = new Pen(Color.WhiteSmoke);
-        //// private Pen framePen2 = new Pen(Color.FromArgb(46, 131, 241));
+        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; set; }
 
-        // //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
-        // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
-
-
-        private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
-
-        //private Pen framePen1 = new Pen(Color.FromArgb(255, 127, 86));
-        private Pen framePen2 = new Pen(Color.WhiteSmoke);
-
-
-        public Color FrameColor { get; set; } = Color.FromArgb(255, 127, 86);//Color.Red;
-
-
-        public int FrameWidth { get; set; } = 5;
-
-        public int GripWidth { get; set; } = 25;
-        public int GripHeight { get; set; } = 25;
-        public int GripIdent { get; set; } = 5;
-
-
-        private Rectangle TopLine
+        private RectangleF TopLine
         {// вехняя граница
             get
             {
@@ -146,7 +141,7 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle LeftLine
+        private RectangleF LeftLine
         {
             get
             {
@@ -193,7 +188,7 @@ namespace Test.Streamer.Controls
 
 
 
-        private Rectangle BottomLine
+        private RectangleF BottomLine
         {
             get
             {
@@ -235,7 +230,7 @@ namespace Test.Streamer.Controls
             }
         }
 
-        private Rectangle RightLine
+        private RectangleF RightLine
         {
             get
             {
@@ -335,7 +330,6 @@ namespace Test.Streamer.Controls
             //    g.FillRectangle(b, BottomRightGrip);
             //    g.FillRectangle(b, BottomLeftGrip);
 
-
             //    g.FillRectangle(b, TopGrip);
             //    g.FillRectangle(b, BottomGrip);
 
@@ -348,62 +342,33 @@ namespace Test.Streamer.Controls
             //
 
 
-
-            //var leftTop = new Point(0, 0);
-            //var leftBottom = new Point(0, this.ClientSize.Height - FrameWidth /2);
-            //var rightTop = new Point(this.ClientSize.Width - FrameWidth/2, 0);
-            //var rightBottom = new Point(this.ClientSize.Width - FrameWidth/2, this.ClientSize.Height - FrameWidth/2);
-
-
-            //g.DrawLine(framePen1, leftTop, rightTop);
-            //g.DrawLine(framePen1, rightTop, rightBottom);
-            //g.DrawLine(framePen1, leftBottom, rightBottom);
-            //g.DrawLine(framePen1, leftBottom, leftTop);
-
-            // g.DrawRectangle(new Pen(Brushes.Red, 5), rect);
-
-
-            var x = this.ClientRectangle.X + FrameWidth;
-            var y = this.ClientRectangle.Y + FrameWidth;
+            var x = this.ClientRectangle.X + FrameWidth -1;
+            var y = this.ClientRectangle.Y + FrameWidth -1;
             var width = (this.ClientRectangle.Width - 2 * FrameWidth);
             var height = (this.ClientRectangle.Height - 2 * FrameWidth);
 
             var rect = new Rectangle(x, y, width, height);
 
-
-            //g.DrawRectangle(new Pen(FrameColor, 4), rect);
-
-            g.DrawRectangle(framePen1, rect);
-            g.DrawRectangle(framePen2, rect);
-
-
-
-            //var starPoint = new PointF(0.0f, 0.0f);
-            //var endPoint = new PointF(20.0f, 20.0f);
-
-            //var color2 = Color.FromArgb(46, 131, 241);
-            //var color1 = Color.WhiteSmoke;
-
-            //using (LinearGradientBrush b = new LinearGradientBrush(starPoint, endPoint, color1, color2))
-            //{
-            //    b.WrapMode = WrapMode.TileFlipXY;
-
-            //    e.Graphics.FillRectangle(b, ClientRectangle);
+            //g.DrawRectangle(framePen1, rect);
+            //g.DrawRectangle(framePen2, rect);
+            
+            //g.FillRectangle(textureBrush, e.ClipRectangle);
+            ////g.FillRectangle(Brushes.Transparent, rect);
+            //g.FillRectangle(Brushes.Black, rect);
 
 
-            //    g.FillRectangle(new SolidBrush(Color.Black), rect);
-            //}
+            g.FillRectangle(textureBrush, TopLine);
+            g.FillRectangle(textureBrush, BottomLine);
+            g.FillRectangle(textureBrush, RightLine);
+            g.FillRectangle(textureBrush, LeftLine);
 
 
             if (!capturing)
             {// draw frame grip
-                //int gripIdent = FrameWidth;//4;
-                //int gripWidth = FrameWidth * 5;//20;
-                //int gripHeight = FrameWidth * 5;//20;
 
                 {// top left
                     {
-                        float x1 = (x + GripIdent + (FrameWidth / 2f));
+                        float x1 = (x + GripIdent + (FrameWidth / 2f) );
                         float x2 = x1 + GripWidth;
                         float y1 = (y + GripIdent + FrameWidth);
 
@@ -678,6 +643,81 @@ namespace Test.Streamer.Controls
             return result;
         }
 
+
+        private static TextureBrush CreateStripesBrush(Size size, Color color1, Color color2)
+        {
+            using (var bitmap = CreateStripesBitmap(size, color1, color2))
+            {
+                return new TextureBrush(bitmap);
+            }
+
+        }
+
+        private static Bitmap CreateStripesBitmap(Size size, Color color1, Color color2)
+        {
+            int width = size.Width;
+            int height = size.Height;
+
+            Bitmap bmp = new Bitmap(width, height);
+            try
+            {
+                using (Graphics g = Graphics.FromImage(bmp))
+                {
+                    var rect = new Rectangle(0, 0, width, height);
+                    using (Brush b = new SolidBrush(color1))
+                    {
+                        g.FillRectangle(b, rect);
+                    }
+
+                    using (GraphicsPath graghPath = new GraphicsPath())
+                    {
+                        Point[] points =
+                        {
+                            new Point(0,0),
+                            new Point(width/2,0),
+                            new Point(0, height/2),
+
+                        };
+
+                        graghPath.AddLines(points);
+
+                        using (Brush b = new SolidBrush(color2))
+                        {
+                            g.FillPath(b, graghPath);
+                        }
+
+                    }
+
+                    using (GraphicsPath graghPath = new GraphicsPath())
+                    {
+                        Point[] points =
+                        {
+                            new Point(width,0),
+                            new Point(width,height/2),
+                            new Point(width/2,height),
+                            new Point(0,height)
+
+                        };
+
+                        graghPath.AddLines(points);
+                        using (Brush b = new SolidBrush(color2))
+                        {
+                            g.FillPath(b, graghPath);
+                        }
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.Message);
+
+            }
+
+
+            return bmp;
+        }
 
     }
 

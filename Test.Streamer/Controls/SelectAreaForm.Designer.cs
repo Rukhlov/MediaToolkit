@@ -96,6 +96,7 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(80, 80);
             this.Name = "SelectAreaForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
