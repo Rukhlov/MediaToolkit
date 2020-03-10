@@ -100,12 +100,6 @@
     <Compile Include="Controls\PreviewForm.Designer.cs">
       <DependentUpon>PreviewForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\SelectAreaForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\SelectAreaForm.Designer.cs">
-      <DependentUpon>SelectAreaForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\StatisticForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -157,9 +151,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\NetworkSettingsForm.resx">
       <DependentUpon>NetworkSettingsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\SelectAreaForm.resx">
-      <DependentUpon>SelectAreaForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\StatisticForm.resx">
       <DependentUpon>StatisticForm.cs</DependentUpon>

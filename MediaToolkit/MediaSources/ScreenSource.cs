@@ -80,6 +80,28 @@ namespace MediaToolkit
             this.CaptureParams = captureParams;
 
             var srcRect = captureParams.CaptureRegion;
+            int x = srcRect.X;
+            int y = srcRect.Y;
+
+            int width = srcRect.Width;
+            if (width % 2!= 0)
+            {
+                width--;
+            }
+
+            int height = srcRect.Height;
+            if (height % 2 != 0)
+            {
+                height--;
+            }
+
+            srcRect = new Rectangle(x, y, width, height);
+            if(captureParams.CaptureRegion != srcRect)
+            {
+                captureParams.CaptureRegion = srcRect;
+            }
+            
+
             var destSize = captureParams.Resolution;
 
             if (destSize.IsEmpty)
@@ -90,9 +112,10 @@ namespace MediaToolkit
             try
             {
                 //var captureDescr = captureParams.CaptureDescription;
-                screenCapture = ScreenCapture.Create(captureParams.CaptureType);
-                screenCapture.CaptureMouse = captureParams.CaptureMouse;
-                screenCapture.AspectRatio = captureParams.AspectRatio;
+                var captureProp = captureParams.Properties;
+                screenCapture = ScreenCapture.Create(captureProp.CaptureType);
+                screenCapture.CaptureMouse = captureProp.CaptureMouse;
+                screenCapture.AspectRatio = captureProp.AspectRatio;
 
                 screenCapture.Init(srcRect, destSize);
                 //screenCapture.Init(srcRect);
@@ -100,7 +123,7 @@ namespace MediaToolkit
                 DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
                 if (capture != null)
                 {
-                    capture.UseHwContext = captureParams.UseHardware;
+                    capture.UseHwContext = captureProp.UseHardware;
 
                     this.hwContext = capture;
                     this.AdapterId = capture.AdapterId;
@@ -173,7 +196,7 @@ namespace MediaToolkit
 
                 Statistic.RegisterCounter(captureStats);
 
-                var frameRate = CaptureParams.Fps;
+                var frameRate = CaptureParams.Properties.Fps;
                 var frameInterval = (1000.0 / frameRate);
                 captureStats.frameInterval = frameInterval;
 

@@ -78,12 +78,12 @@ namespace TestStreamer.Controls
 
             };
 
-            captureParams.CaptureType = captureType;//CaptureType.DXGIDeskDupl,
+            captureParams.Properties.CaptureType = captureType;//CaptureType.DXGIDeskDupl,
 
-            captureParams.Fps = (int)fps;
-            captureParams.CaptureMouse = true;
-            captureParams.AspectRatio = true;
-            captureParams.UseHardware = false;
+            captureParams.Properties.Fps = (int)fps;
+            captureParams.Properties.CaptureMouse = true;
+            captureParams.Properties.AspectRatio = true;
+            captureParams.Properties.UseHardware = false;
 
             if (captureType == VideoCaptureType.GDI || captureType == VideoCaptureType.GDIPlus)
             {// масштабируем на энкодере

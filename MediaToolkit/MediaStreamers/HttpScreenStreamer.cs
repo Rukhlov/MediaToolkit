@@ -67,16 +67,27 @@ namespace MediaToolkit.MediaStreamers
             destSize = new Size(destWidth, destHeight);
             var captureType = args.CaptureTypes;
 
-            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
+            var captureProp = new ScreenCaptureProperties
             {
-                CaptureRegion = srcRect,
-                Resolution = destSize,
-
                 CaptureType = captureType,
                 Fps = (int)args.Fps,
                 CaptureMouse = args.CaptureMouse,
                 AspectRatio = true,
                 UseHardware = false,
+            };
+
+            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
+            {
+                CaptureRegion = srcRect,
+                Resolution = destSize,
+
+                Properties = captureProp,
+
+                //CaptureType = captureType,
+                //Fps = (int)args.Fps,
+                //CaptureMouse = args.CaptureMouse,
+                //AspectRatio = true,
+                //UseHardware = false,
             };
 
 
@@ -88,7 +99,7 @@ namespace MediaToolkit.MediaStreamers
             VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
                 Resolution = destSize,
-                FrameRate = captureParams.Fps,
+                FrameRate = captureParams.Properties.Fps,
                 EncoderName = "mjpeg",
             };
 

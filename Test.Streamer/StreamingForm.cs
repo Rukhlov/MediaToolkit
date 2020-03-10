@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
+using MediaToolkit.UI;
 using NAudio.CoreAudioApi;
 using NLog;
 //using SharpDX.MediaFoundation;
@@ -85,7 +86,6 @@ namespace TestStreamer
 
         private VideoStreamSettings videoSettings = null;
         private VideoEncoderSettings videoEncoderSettings = null;
-        private ScreenCaptureDeviceDescription screenCaptureDeviceDescr = null;
 
 
         private AudioStreamSettings audioSettings = null;
@@ -130,17 +130,6 @@ namespace TestStreamer
                 
             };
 
-            screenCaptureDeviceDescr = new ScreenCaptureDeviceDescription
-            {
-                //Resolution = new Size(1920, 1080),
-                CaptureMouse = true,
-                AspectRatio = true,
-                CaptureType = VideoCaptureType.DXGIDeskDupl,
-                UseHardware = true,
-                Fps = 30,
-                ShowDebugInfo = false,
-            };
-
             videoEncoderSettings = new VideoEncoderSettings
             {
                 Resolution = new Size(1920, 1080),
@@ -151,6 +140,8 @@ namespace TestStreamer
                 MaxBitrate = 5000,
                 FrameRate = 30,
                 LowLatency = true,
+
+                UseResoulutionFromSource = true,
             };
 
             videoSettings = new VideoStreamSettings
@@ -286,13 +277,13 @@ namespace TestStreamer
                             {
                                 var screenDescr = (ScreenCaptureDeviceDescription)captureDescr;
 
-                                if (screenDescr.ShowCaptureBorder)
+                                if (screenDescr.Properties.ShowCaptureBorder)
                                 {
                                     regionForm = new RegionForm(screenDescr.CaptureRegion);
                                     regionForm.Visible = true;
                                 }
 
-                                if (screenDescr.ShowDebugInfo)
+                                if (screenDescr.Properties.ShowDebugInfo)
                                 {
                                     statisticForm.Location = screenDescr.CaptureRegion.Location;
                                     if (showStatistic)
@@ -597,7 +588,7 @@ namespace TestStreamer
                 if (screenCaptParams.DisplayRegion.IsEmpty)
                 {
                     logger.Debug("VideoSource DisplayRegion.IsEmpty");
-                    videoSettings.Enabled = false;
+                    //videoSettings.Enabled = false;
                 }
             }
 
@@ -634,6 +625,28 @@ namespace TestStreamer
 
             if (videoEnabled)
             {
+                var captureDescription = videoSettings.CaptureDescription;
+              
+                var resolution = captureDescription.Resolution;
+                int w = resolution.Width;
+                if (w % 2 != 0)
+                {
+                    w--;
+                }
+
+                int h = resolution.Height;
+                if (h % 2 != 0)
+                {
+                    h--;
+                }
+                captureDescription.Resolution = new Size(w, h);
+
+               var encodingParams = videoSettings.EncodingParams;
+                if (encodingParams.UseResoulutionFromSource)
+                {
+                    videoSettings.EncodingParams.Resolution = videoSettings.CaptureDescription.Resolution;
+                }
+
                 SetupVideoSource(videoSettings);
 
                 if (transportMode == TransportMode.Tcp || serverSettings.IsMulticast)
@@ -999,6 +1012,16 @@ namespace TestStreamer
         {
 
             List<ComboBoxItem> items = new List<ComboBoxItem>();
+            ScreenCaptureProperties captureProperties = new ScreenCaptureProperties
+            {
+                CaptureMouse = true,
+                AspectRatio = true,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+            };
+
 
             foreach(var screen in Screen.AllScreens)
             {
@@ -1011,12 +1034,14 @@ namespace TestStreamer
                     DisplayName = screen.DeviceName,
 
                     Resolution = bounds.Size,
-                    CaptureMouse = true,
-                    AspectRatio = true,
-                    CaptureType = VideoCaptureType.DXGIDeskDupl,
-                    UseHardware = true,
-                    Fps = 30,
-                    ShowDebugInfo = false,
+                    Properties = captureProperties,
+
+                    //CaptureMouse = true,
+                    //AspectRatio = true,
+                    //CaptureType = VideoCaptureType.DXGIDeskDupl,
+                    //UseHardware = true,
+                    //Fps = 30,
+                    //ShowDebugInfo = false,
                 };
 
                 items.Add(new ComboBoxItem
@@ -1038,14 +1063,18 @@ namespace TestStreamer
             {
                 ScreenCaptureDeviceDescription descr = new ScreenCaptureDeviceDescription
                 {
+                    DisplayRegion = SystemInformation.VirtualScreen,
                     CaptureRegion = SystemInformation.VirtualScreen,
                     Resolution = SystemInformation.VirtualScreen.Size,
-                    CaptureMouse = true,
-                    AspectRatio = true,
-                    CaptureType = VideoCaptureType.DXGIDeskDupl,
-                    UseHardware = true,
-                    Fps = 30,
-                    ShowDebugInfo = false,
+                    Properties = captureProperties,
+                    DisplayName = "All Screens",
+
+                    //CaptureMouse = true,
+                    //AspectRatio = true,
+                    //CaptureType = VideoCaptureType.DXGIDeskDupl,
+                    //UseHardware = true,
+                    //Fps = 30,
+                    //ShowDebugInfo = false,
                 };
 
                 items.Add(new ComboBoxItem
@@ -1063,26 +1092,28 @@ namespace TestStreamer
             }
 
 
-            ScreenCaptureDeviceDescription regionDescr = new ScreenCaptureDeviceDescription
+            ScreenCaptureDeviceDescription customRegionDescr = new ScreenCaptureDeviceDescription
             {
                 CaptureRegion = new Rectangle(0, 0, 100, 100),
-                DisplayRegion = new Rectangle(0, 0, 100, 100),
+                DisplayRegion = Rectangle.Empty,
 
                 Resolution = new Size(100, 100),
-                CaptureMouse = true,
-                AspectRatio = true,
-                CaptureType = VideoCaptureType.DXGIDeskDupl,
-                UseHardware = true,
-                Fps = 30,
-                ShowDebugInfo = false,
+                Properties = captureProperties,
 
-                CustomRegion = true,
+                //CaptureMouse = true,
+                //AspectRatio = true,
+                //CaptureType = VideoCaptureType.DXGIDeskDupl,
+                //UseHardware = true,
+                //Fps = 30,
+                //ShowDebugInfo = false,
+
+                //CustomRegion = true,
             };
 
             items.Add(new ComboBoxItem
             {
                 Name = "Screen Region",
-                Tag = regionDescr,
+                Tag = customRegionDescr,
             });
 
             var captDevices = MediaToolkit.MediaFoundation.MfTool.GetVideoCaptureDevices();
@@ -1275,7 +1306,7 @@ namespace TestStreamer
                             //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
 
                             var screenDescr = tag as ScreenCaptureDeviceDescription;
-                            isCustomRegion = screenDescr.CustomRegion;
+                            isCustomRegion = screenDescr.DisplayRegion.IsEmpty;
                             displayRect = screenDescr.DisplayRegion;
 
                             captureParams = screenDescr;
@@ -1289,21 +1320,7 @@ namespace TestStreamer
                             captDeviceId = captDevice.DeviceId;
                             captureParams = captDevice;
                             videoSettings.EncodingParams.Resolution = captDevice.Resolution;
-                        }
-                        //else if (tag is Rectangle)
-                        //{
-                        //    displayRect = (Rectangle)tag;
-
-                        //    screenCaptureDeviceDescr.DisplayRegion = displayRect;
-                        //    screenCaptureDeviceDescr.CaptureRegion = displayRect;
-                        //    screenCaptureDeviceDescr.DisplayName = displayName;
-
-                        //    //videoSettings.EncodingParams.Resolution = screenCaptureDeviceDescr.Resolution;
-
-                        //    captureParams = screenCaptureDeviceDescr;
-
-                        //}
-  
+                        }  
                     }
                     else
                     {
@@ -1316,16 +1333,12 @@ namespace TestStreamer
                     if (selectAreaForm == null)
                     {
                         selectAreaForm = new SelectAreaForm();
+                        selectAreaForm.AreaChanged += SelectAreaForm_AreaChanged;
 
                     }
 
-                    var location = selectAreaForm.Location;
-                    var size = selectAreaForm.ClientSize;
-                    var rect = new Rectangle(location, size);
-
-                    selectAreaForm.CaptureDeviceDescription = (ScreenCaptureDeviceDescription)captureParams;
-                    selectAreaForm.UpdateDeviceDescr(rect);
-
+                    selectAreaForm.Link((ScreenCaptureDeviceDescription)captureParams);
+                   
                     //selectAreaForm.StartPosition = FormStartPosition.Manual;
                     //selectAreaForm.Location = displayRect.Location;
                     //selectAreaForm.Size = displayRect.Size;
@@ -1349,6 +1362,12 @@ namespace TestStreamer
             videoSourceDetailsButton.Enabled = true;//!(displayRect.IsEmpty && displayName == string.Empty);
 
             UpdateControls();
+        }
+
+
+        private void SelectAreaForm_AreaChanged(Rectangle rect)
+        {
+            //...
         }
 
         private void audioSourceComboBox_SelectedValueChanged(object sender, EventArgs e)

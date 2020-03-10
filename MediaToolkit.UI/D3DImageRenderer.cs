@@ -1,4 +1,5 @@
-﻿using MediaToolkit.SharedTypes;
+﻿using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 using NLog;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
@@ -20,7 +21,9 @@ namespace MediaToolkit.UI
 {
     public class D3DImageRenderer : INotifyPropertyChanged
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.UI");
 
         private readonly Dispatcher dispatcher = null;
         public D3DImageRenderer()
@@ -90,6 +93,7 @@ namespace MediaToolkit.UI
                 //System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
                 var descr = sharedTexture.Description;
+                logger.Verb(string.Join(", ", descr.Width + "x" + descr.Height, descr.Format));
 
                 if (descr.Format != SharpDX.DXGI.Format.B8G8R8A8_UNorm)
                 {
@@ -290,7 +294,7 @@ namespace MediaToolkit.UI
 
         private void CleanUp()
         {
-            logger.Trace("D3DImageRenderer::CleanUp()");
+            logger.Verb("D3DImageRenderer::CleanUp()");
 
             //System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
 

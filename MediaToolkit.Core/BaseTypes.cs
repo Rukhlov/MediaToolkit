@@ -163,12 +163,29 @@ namespace MediaToolkit.Core
     public class ScreenCaptureDeviceDescription: VideoCaptureDescription
     {
         public override CaptureMode CaptureMode => CaptureMode.Screen;
-        public string DisplayName = "";
-        public Rectangle CaptureRegion = new Rectangle(0, 0, 640, 480);
+
+        public string DisplayName = "";       
         public Rectangle DisplayRegion = new Rectangle(0, 0, 640, 480);
 
-        //public ScreenCaptureDescription CaptureDescription = new ScreenCaptureDescription();
+        public Rectangle CaptureRegion = new Rectangle(0, 0, 640, 480);
 
+        public ScreenCaptureProperties Properties { get; set; } = new ScreenCaptureProperties();
+
+        
+        //public VideoCaptureType CaptureType = VideoCaptureType.GDI;
+        //public int Fps = 10;
+        //public bool CaptureMouse = false;
+        //public bool AspectRatio = true;
+        //public bool UseHardware = true;
+
+        //public bool ShowCaptureBorder = true;
+        //public bool ShowDebugInfo = true;
+
+        //public bool CustomRegion = false;
+    }
+
+    public class ScreenCaptureProperties
+    {
         public VideoCaptureType CaptureType = VideoCaptureType.GDI;
         public int Fps = 10;
         public bool CaptureMouse = false;
@@ -178,17 +195,8 @@ namespace MediaToolkit.Core
         public bool ShowCaptureBorder = true;
         public bool ShowDebugInfo = true;
 
-        public bool CustomRegion = false;
+        //public bool CustomRegion = false;
     }
-
-    //public class ScreenCaptureDescription
-    //{
-    //    public VideoCaptureType CaptureType = VideoCaptureType.GDI;
-    //    public int Fps = 10;
-    //    public bool CaptureMouse = false;
-    //    public bool AspectRatio = true;
-    //    public bool UseHardware = true;
-    //}
 
     public enum VideoCaptureType
     {

@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Test.Streamer.Controls
+namespace MediaToolkit.UI
 {
     public partial class SelectAreaForm : Form
     {
@@ -27,6 +27,9 @@ namespace Test.Streamer.Controls
             this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.DebugMode = debugMode;
+
+
+            this.MinimumSize = new Size(75, 75);
 
             //this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             //this.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -96,7 +99,32 @@ namespace Test.Streamer.Controls
         }
 
 
-        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; set; }
+        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; private set; }
+
+
+        public Rectangle SelectedArea
+        {
+            get
+            {
+                int x = this.Location.X + FrameWidth;
+                int y = this.Location.Y + FrameWidth;
+
+                int w = ClientSize.Width - 2 * FrameWidth;
+                int h = ClientSize.Height - 2 * FrameWidth;
+
+                if(w % 2 == 0)
+                {
+                    w--;
+                }
+
+                if(h % 2 == 0)
+                {
+                    h--;
+                }
+
+                return new Rectangle(x, y, w, h);
+            }
+        }
 
         private RectangleF TopLine
         {// вехняя граница
@@ -105,6 +133,7 @@ namespace Test.Streamer.Controls
                 return new Rectangle(0, 0, ClientSize.Width, FrameWidth);
             }
         }
+
 
         private Rectangle TopLeftGrip
         {// левый верхний угол
@@ -274,6 +303,19 @@ namespace Test.Streamer.Controls
             }
         }
 
+        public void Link(ScreenCaptureDeviceDescription descr)
+        {
+            this.CaptureDeviceDescription = descr;
+
+            //var rect = new Rectangle(this.Location, this.Size);
+
+            this.UpdateDeviceDescr();
+        }
+
+        public void Unlink()
+        {
+            this.CaptureDeviceDescription = null;
+        }
 
         protected override CreateParams CreateParams
         {
@@ -503,17 +545,20 @@ namespace Test.Streamer.Controls
             var rect = new Rectangle(this.Location, this.Size);
             this.labelInfo.Text = rect.ToString();
 
-            UpdateDeviceDescr(rect);
+            UpdateDeviceDescr();
 
+            AreaChanged?.Invoke(rect);
         }
 
 
 
-        internal void UpdateDeviceDescr(Rectangle rect)
+        private void UpdateDeviceDescr()
         {
             if (CaptureDeviceDescription != null)
             {
-                CaptureDeviceDescription.DisplayRegion = rect;
+                var rect = SelectedArea;
+
+                CaptureDeviceDescription.DisplayRegion = Rectangle.Empty;
                 CaptureDeviceDescription.CaptureRegion = rect;
                 CaptureDeviceDescription.Resolution = rect.Size;
             }
@@ -527,10 +572,13 @@ namespace Test.Streamer.Controls
             var rect = new Rectangle(this.Location, this.Size);
             this.labelInfo.Text = rect.ToString();
 
-            UpdateDeviceDescr(rect);
+            UpdateDeviceDescr();
 
+            AreaChanged?.Invoke(rect);
 
         }
+
+        public event Action<Rectangle> AreaChanged;
 
         protected override void WndProc(ref Message message)
         {

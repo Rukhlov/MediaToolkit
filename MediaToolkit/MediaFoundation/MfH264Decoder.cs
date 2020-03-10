@@ -16,13 +16,15 @@ using SharpDX.MediaFoundation;
 using Device = SharpDX.Direct3D11.Device;
 using System.IO;
 using MediaToolkit.MediaFoundation;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.MediaFoundation
 {
 
     public class MfH264Decoder
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public Device device = null;
 
@@ -295,7 +297,7 @@ namespace MediaToolkit.MediaFoundation
 
             decoder.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
 
-            logger.Debug(streamInformation.CbSize);
+            //logger.Debug(streamInformation.CbSize);
 
 
         }

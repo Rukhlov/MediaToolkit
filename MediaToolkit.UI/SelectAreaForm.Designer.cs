@@ -1,4 +1,4 @@
-﻿namespace Test.Streamer.Controls
+﻿namespace MediaToolkit.UI
 {
     partial class SelectAreaForm
     {
@@ -58,7 +58,7 @@
             this.buttonClose.FlatAppearance.BorderSize = 0;
             this.buttonClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonClose.ForeColor = System.Drawing.Color.White;
-            this.buttonClose.Location = new System.Drawing.Point(623, 5);
+            this.buttonClose.Location = new System.Drawing.Point(607, 5);
             this.buttonClose.Margin = new System.Windows.Forms.Padding(5);
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.Size = new System.Drawing.Size(27, 27);
@@ -74,7 +74,7 @@
             this.panelMove.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("panelMove.BackgroundImage")));
             this.panelMove.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.panelMove.Cursor = System.Windows.Forms.Cursors.SizeAll;
-            this.panelMove.Location = new System.Drawing.Point(308, 174);
+            this.panelMove.Location = new System.Drawing.Point(300, 220);
             this.panelMove.Margin = new System.Windows.Forms.Padding(0);
             this.panelMove.Name = "panelMove";
             this.panelMove.Size = new System.Drawing.Size(40, 40);
@@ -86,7 +86,7 @@
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(656, 389);
+            this.ClientSize = new System.Drawing.Size(640, 480);
             this.ControlBox = false;
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.labelInfo);
@@ -96,7 +96,6 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(80, 80);
             this.Name = "SelectAreaForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;

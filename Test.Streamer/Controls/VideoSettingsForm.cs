@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
+using MediaToolkit.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -47,19 +48,19 @@ namespace TestStreamer.Controls
                 this.displayTextBox.Text = screenCaptureParams.DisplayName;
 
                 this.CaptureRegion = screenCaptureParams.CaptureRegion;
-                this.captureMouseCheckBox.Checked = screenCaptureParams.CaptureMouse;
+                this.captureMouseCheckBox.Checked = screenCaptureParams.Properties.CaptureMouse;
 
-                this.aspectRatioCheckBox.Checked = screenCaptureParams.AspectRatio;
+                this.aspectRatioCheckBox.Checked = screenCaptureParams.Properties.AspectRatio;
 
                 WebCamGroup.Visible = false;
                 ScreenCaptureGroup.Visible = true;
 
                 adjustAspectRatioButton.Visible = true;
 
-                showDebugInfoCheckBox.Checked = screenCaptureParams.ShowDebugInfo;
-                showCaptureBorderCheckBox.Checked = screenCaptureParams.ShowCaptureBorder;
+                showDebugInfoCheckBox.Checked = screenCaptureParams.Properties.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = screenCaptureParams.Properties.ShowCaptureBorder;
 
-                if (screenCaptureParams.CustomRegion)
+                if (screenCaptureParams.DisplayRegion.IsEmpty)
                 {
                     displayTextBox.Visible = false;
                     labelDisplay.Visible = false;
@@ -132,11 +133,11 @@ namespace TestStreamer.Controls
             if (screenCaptureParams != null)
             {
                 screenCaptureParams.CaptureRegion = this.CaptureRegion;
-                screenCaptureParams.CaptureMouse = this.captureMouseCheckBox.Checked;
-                screenCaptureParams.AspectRatio = this.aspectRatioCheckBox.Checked;
+                screenCaptureParams.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
+                screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
 
-                screenCaptureParams.ShowDebugInfo = showDebugInfoCheckBox.Checked;
-                screenCaptureParams.ShowCaptureBorder = showCaptureBorderCheckBox.Checked;
+                screenCaptureParams.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
+                screenCaptureParams.Properties.ShowCaptureBorder = showCaptureBorderCheckBox.Checked;
             }
 
             var deviceDescr = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
@@ -145,7 +146,26 @@ namespace TestStreamer.Controls
 
             }
 
-            VideoSettings.EncodingParams.Resolution = new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
+            VideoSettings.EncodingParams.UseResoulutionFromSource = this.checkBoxResoulutionFromSource.Checked;
+
+            if (!VideoSettings.EncodingParams.UseResoulutionFromSource)
+            {
+                int width = (int)this.destWidthNumeric.Value;
+                int height = (int)this.destHeightNumeric.Value;
+
+                if (width % 2 != 0)
+                {
+                    width--;
+                }
+
+                if (height % 2 != 0)
+                {
+                    height--;
+                }
+
+                VideoSettings.EncodingParams.Resolution = new Size(width, height);
+            }
+
 
             VideoSettings.EncodingParams.Encoder = (VideoEncoderMode)this.encoderComboBox.SelectedItem;
             VideoSettings.EncodingParams.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
@@ -158,7 +178,6 @@ namespace TestStreamer.Controls
 
             VideoSettings.EncodingParams.LowLatency = this.latencyModeCheckBox.Checked;
 
-            VideoSettings.EncodingParams.UseResoulutionFromSource = this.checkBoxResoulutionFromSource.Checked;
 
             this.Close();
         }
@@ -232,7 +251,7 @@ namespace TestStreamer.Controls
         }
 
         private Rectangle CaptureRegion = Rectangle.Empty;
-        private SnippingTool snippingTool = new SnippingTool();
+
         private void snippingToolButton_Click(object sender, EventArgs e)
         {
             var captureDescr = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
@@ -241,35 +260,18 @@ namespace TestStreamer.Controls
                 return;
             }
 
-            if (snippingTool != null)
+            var selectedRegion = SnippingTool.Snip(captureDescr.DisplayRegion);
+            if (!selectedRegion.IsEmpty)
             {
-                snippingTool.Dispose();
+                this.CaptureRegion = selectedRegion;
+
+                this.captureRegionTextBox.Text = CaptureRegion.ToString();
+            }
+            else
+            {// error, cancelled...
+
             }
 
-            snippingTool = new SnippingTool();
-  
-
-            var areaSelected = new Action<Rectangle, Rectangle>((a, s) =>
-            {
-                int left = a.Left + s.Left;
-                int top = a.Top + s.Top;
-                this.CaptureRegion = new Rectangle(left, top, a.Width, a.Height);
-
-                this.captureRegionTextBox.Text =  CaptureRegion.ToString();
-
-                //regionForm?.Close();
-
-                //regionForm = new RegionForm(rect);
-                //regionForm.Visible = true;
-
-                //MessageBox.Show(a.ToString() + " " + s.ToString() + " " + rect.ToString());
-            });
-
-            //regionForm?.Close();
-            //regionForm = null;
-
-            
-            snippingTool.Snip(captureDescr.DisplayRegion, areaSelected);
         }
 
         private void adjustAspectRatioButton_Click(object sender, EventArgs e)
