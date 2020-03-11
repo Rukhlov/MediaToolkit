@@ -124,6 +124,7 @@
     <Compile Include="Controls\WebCamStreamerControl.Designer.cs">
       <DependentUpon>WebCamStreamerControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Essentials.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

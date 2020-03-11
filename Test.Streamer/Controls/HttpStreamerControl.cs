@@ -104,9 +104,9 @@ namespace TestStreamer.Controls
 
             VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
-                //Width = destSize.Width, // options.Width,
-                //Height = destSize.Height, // options.Height,
-                Resolution = destSize,
+                Width = destSize.Width, // options.Width,
+                Height = destSize.Height, // options.Height,
+                //Resolution = destSize,
                 FrameRate = (int)fps,
                 EncoderName = "mjpeg",
             };

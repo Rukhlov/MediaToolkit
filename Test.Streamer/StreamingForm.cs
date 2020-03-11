@@ -119,20 +119,24 @@ namespace TestStreamer
                 port = freeTcpPorts.FirstOrDefault();
             }
 
-            serverSettings = new ServerSettings
-            {
-                StreamName = hostName,
-                NetworkIpAddress = "0.0.0.0",
-                MutlicastAddress = "239.0.0.1",
-                CommunicationPort = port,
-                IsMulticast = false,
-                TransportMode = TransportMode.Tcp,
-                
-            };
+            serverSettings = Config.Data.ServerSettings;
+
+            //serverSettings = new ServerSettings
+            //{
+            //    StreamName = hostName,
+            //    NetworkIpAddress = "0.0.0.0",
+            //    MutlicastAddress = "239.0.0.1",
+            //    CommunicationPort = port,
+            //    IsMulticast = false,
+            //    TransportMode = TransportMode.Tcp,
+
+            //};
 
             videoEncoderSettings = new VideoEncoderSettings
             {
-                Resolution = new Size(1920, 1080),
+
+                Width = 1920, 
+                Height = 1080,
                 Encoder = VideoEncoderMode.H264,
                 Profile = H264Profile.Main,
                 BitrateMode = BitrateControlMode.CBR,
@@ -141,16 +145,19 @@ namespace TestStreamer
                 FrameRate = 30,
                 LowLatency = true,
 
-                UseResoulutionFromSource = true,
+
             };
 
             videoSettings = new VideoStreamSettings
             {
                 Enabled = true,
                 SessionId = "video_" + Guid.NewGuid().ToString(),
-                NetworkParams = new NetworkSettings(),
+                NetworkSettings = new NetworkSettings(),
                 CaptureDescription = null,
-                EncodingParams = videoEncoderSettings,
+                EncoderSettings = videoEncoderSettings,
+                StreamFlags = VideoStreamFlags.UseEncoderResoulutionFromSource,
+
+                //UseEncoderResoulutionFromSource = true,
             };
 
             audioEncoderSettings = new AudioEncoderSettings
@@ -166,8 +173,8 @@ namespace TestStreamer
                 Enabled = false,
                 SessionId = "audio_" + Guid.NewGuid().ToString(),
                 NetworkParams = new NetworkSettings(),
-                CaptureParams = new AudioCaptureSettings(),
-                EncodingParams = audioEncoderSettings,
+                CaptureSettings = new AudioCaptureSettings(),
+                EncoderSettings = audioEncoderSettings,
             };
 
         }
@@ -508,7 +515,7 @@ namespace TestStreamer
 
             f.ShowDialog();
 
-            videoSettings.NetworkParams.TransportMode = transportMode;
+            videoSettings.NetworkSettings.TransportMode = transportMode;
         }
 
 
@@ -553,7 +560,7 @@ namespace TestStreamer
             {
                 throw new NotSupportedException("TransportMode.Udp currently not supported...");
             }
-            videoSettings.NetworkParams.TransportMode = transportMode;
+            videoSettings.NetworkSettings.TransportMode = transportMode;
             audioSettings.NetworkParams.TransportMode = transportMode;
 
 
@@ -563,8 +570,8 @@ namespace TestStreamer
 
             if (serverSettings.IsMulticast)
             {
-                videoSettings.NetworkParams.RemoteAddr = multicastAddr;
-                videoSettings.NetworkParams.RemotePort = multicastVideoPort;
+                videoSettings.NetworkSettings.RemoteAddr = multicastAddr;
+                videoSettings.NetworkSettings.RemotePort = multicastVideoPort;
 
                 audioSettings.NetworkParams.RemoteAddr = multicastAddr;
                 audioSettings.NetworkParams.RemotePort = multicastAudioPort;
@@ -574,8 +581,8 @@ namespace TestStreamer
             {
                 if (transportMode == TransportMode.Tcp)
                 {
-                    videoSettings.NetworkParams.LocalAddr = networkIpAddr;
-                    videoSettings.NetworkParams.LocalPort = 0;
+                    videoSettings.NetworkSettings.LocalAddr = networkIpAddr;
+                    videoSettings.NetworkSettings.LocalPort = 0;
 
                     audioSettings.NetworkParams.LocalAddr = networkIpAddr;
                     audioSettings.NetworkParams.LocalPort = 0;//1235;
@@ -592,7 +599,7 @@ namespace TestStreamer
                 }
             }
 
-            if (string.IsNullOrEmpty(audioSettings.CaptureParams.DeviceId))
+            if (string.IsNullOrEmpty(audioSettings.CaptureSettings.DeviceId))
             {
                 logger.Debug("Empty MMDeviceId...");
                 audioSettings.Enabled = false;
@@ -641,10 +648,11 @@ namespace TestStreamer
                 }
                 captureDescription.Resolution = new Size(w, h);
 
-               var encodingParams = videoSettings.EncodingParams;
-                if (encodingParams.UseResoulutionFromSource)
+               var encodingParams = videoSettings.EncoderSettings;
+                if (videoSettings.UseEncoderResoulutionFromSource)
                 {
-                    videoSettings.EncodingParams.Resolution = videoSettings.CaptureDescription.Resolution;
+                    encodingParams.Width = videoSettings.CaptureDescription.Resolution.Width;
+                    encodingParams.Height = videoSettings.CaptureDescription.Resolution.Height;
                 }
 
                 SetupVideoSource(videoSettings);
@@ -708,9 +716,10 @@ namespace TestStreamer
             try
             {
                 var captureDescr = settings.CaptureDescription;
-                if (!videoSettings.EncodingParams.UseResoulutionFromSource)
+
+                if (!videoSettings.UseEncoderResoulutionFromSource)
                 {
-                    captureDescr.Resolution = videoSettings.EncodingParams.Resolution;
+                    captureDescr.Resolution = videoSettings.EncoderSettings.Resolution;
                 }
                 else
                 {
@@ -760,7 +769,7 @@ namespace TestStreamer
             try
             {
                 audioSource = new AudioSource();
-                var deviceId = settings.CaptureParams.DeviceId;
+                var deviceId = settings.CaptureSettings.DeviceId;
                 var eventSyncMode = true;
                 var audioBufferMilliseconds = 50;
                 var exclusiveMode = false;
@@ -789,7 +798,7 @@ namespace TestStreamer
             {
                 videoStreamer = new VideoStreamer(videoSource);
 
-                videoStreamer.Setup(settings.EncodingParams, settings.NetworkParams);
+                videoStreamer.Setup(settings.EncoderSettings, settings.NetworkSettings);
 
             }
             catch (Exception ex)
@@ -818,7 +827,7 @@ namespace TestStreamer
             try
             {
                 audioStreamer = new AudioStreamer(audioSource);
-                audioStreamer.Setup(audioSettings.EncodingParams, audioSettings.NetworkParams);
+                audioStreamer.Setup(audioSettings.EncoderSettings, audioSettings.NetworkParams);
                 audioStreamer.StateChanged += AudioStreamer_StateChanged;
 
             }
@@ -842,9 +851,9 @@ namespace TestStreamer
             AudioChannelInfo audioInfo = new AudioChannelInfo
             {
                 Id = settings.SessionId,
-                AudioEncoder = settings.EncodingParams.Encoder,
-                SampleRate = settings.EncodingParams.SampleRate,
-                Channels = settings.EncodingParams.Channels,
+                AudioEncoder = settings.EncoderSettings.Encoder,
+                SampleRate = settings.EncoderSettings.SampleRate,
+                Channels = settings.EncoderSettings.Channels,
 
             };
 
@@ -872,7 +881,7 @@ namespace TestStreamer
 
         private void SetVideoChannelInfo(VideoStreamSettings settings)
         {
-            var videoEncoderPars = settings.EncodingParams;
+            var videoEncoderPars = settings.EncoderSettings;
 
             VideoChannelInfo videoInfo = new VideoChannelInfo
             {
@@ -884,13 +893,13 @@ namespace TestStreamer
                 Fps = videoEncoderPars.FrameRate,
             };
 
-            var address = settings.NetworkParams.RemoteAddr;
-            var port = settings.NetworkParams.RemotePort;
-            var _transportMode = settings.NetworkParams.TransportMode;
+            var address = settings.NetworkSettings.RemoteAddr;
+            var port = settings.NetworkSettings.RemotePort;
+            var _transportMode = settings.NetworkSettings.TransportMode;
             if (_transportMode == TransportMode.Tcp)
             {
-                address = settings.NetworkParams.LocalAddr;
-                port = settings.NetworkParams.LocalPort;
+                address = settings.NetworkSettings.LocalAddr;
+                port = settings.NetworkSettings.LocalPort;
             }
 
             ScreencastChannelInfo videoChannelInfo = new ScreencastChannelInfo
@@ -900,7 +909,7 @@ namespace TestStreamer
                 Transport = _transportMode,
                 IsMulticast = serverSettings.IsMulticast,
                 MediaInfo = videoInfo,
-                SSRC = settings.NetworkParams.SSRC,
+                SSRC = settings.NetworkSettings.SSRC,
             };
 
             ScreencastChannelsInfos.Add(videoChannelInfo);
@@ -1036,12 +1045,6 @@ namespace TestStreamer
                     Resolution = bounds.Size,
                     Properties = captureProperties,
 
-                    //CaptureMouse = true,
-                    //AspectRatio = true,
-                    //CaptureType = VideoCaptureType.DXGIDeskDupl,
-                    //UseHardware = true,
-                    //Fps = 30,
-                    //ShowDebugInfo = false,
                 };
 
                 items.Add(new ComboBoxItem
@@ -1068,13 +1071,6 @@ namespace TestStreamer
                     Resolution = SystemInformation.VirtualScreen.Size,
                     Properties = captureProperties,
                     DisplayName = "All Screens",
-
-                    //CaptureMouse = true,
-                    //AspectRatio = true,
-                    //CaptureType = VideoCaptureType.DXGIDeskDupl,
-                    //UseHardware = true,
-                    //Fps = 30,
-                    //ShowDebugInfo = false,
                 };
 
                 items.Add(new ComboBoxItem
@@ -1100,14 +1096,6 @@ namespace TestStreamer
                 Resolution = new Size(100, 100),
                 Properties = captureProperties,
 
-                //CaptureMouse = true,
-                //AspectRatio = true,
-                //CaptureType = VideoCaptureType.DXGIDeskDupl,
-                //UseHardware = true,
-                //Fps = 30,
-                //ShowDebugInfo = false,
-
-                //CustomRegion = true,
             };
 
             items.Add(new ComboBoxItem
@@ -1301,13 +1289,8 @@ namespace TestStreamer
                     {
                         if (tag is ScreenCaptureDeviceDescription)
                         {
-                            //captDeviceId = captDevice.DeviceId;
-                            //captureParams = captDevice;
-                            //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
-
                             var screenDescr = tag as ScreenCaptureDeviceDescription;
                             isCustomRegion = screenDescr.DisplayRegion.IsEmpty;
-                            displayRect = screenDescr.DisplayRegion;
 
                             captureParams = screenDescr;
 
@@ -1319,7 +1302,7 @@ namespace TestStreamer
 
                             captDeviceId = captDevice.DeviceId;
                             captureParams = captDevice;
-                            videoSettings.EncodingParams.Resolution = captDevice.Resolution;
+                            //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
                         }  
                     }
                     else
@@ -1334,14 +1317,10 @@ namespace TestStreamer
                     {
                         selectAreaForm = new SelectAreaForm();
                         selectAreaForm.AreaChanged += SelectAreaForm_AreaChanged;
-
                     }
 
-                    selectAreaForm.Link((ScreenCaptureDeviceDescription)captureParams);
-                   
-                    //selectAreaForm.StartPosition = FormStartPosition.Manual;
-                    //selectAreaForm.Location = displayRect.Location;
-                    //selectAreaForm.Size = displayRect.Size;
+                    selectAreaForm.Tag = captureParams;
+
 
                     selectAreaForm.Visible = true;
                 }
@@ -1368,6 +1347,17 @@ namespace TestStreamer
         private void SelectAreaForm_AreaChanged(Rectangle rect)
         {
             //...
+
+            var tag = selectAreaForm.Tag;
+            if(tag != null)
+            {
+                var descr = (ScreenCaptureDeviceDescription)tag;
+                var selectedArea = selectAreaForm.SelectedArea;
+
+                descr.DisplayRegion = Rectangle.Empty;
+                descr.CaptureRegion = selectedArea;
+                descr.Resolution = selectedArea.Size;
+            }
         }
 
         private void audioSourceComboBox_SelectedValueChanged(object sender, EventArgs e)
@@ -1380,7 +1370,7 @@ namespace TestStreamer
 
             //audioSettings.Enabled = (captureSettings != null);
 
-            audioSettings.CaptureParams = captureSettings;
+            audioSettings.CaptureSettings = captureSettings;
 
             UpdateControls();
         }

@@ -86,10 +86,10 @@ namespace MediaToolkit
 
                 var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-                if (encodingSettings.UseResoulutionFromSource)
-                {
-                    encodingSettings.Resolution = srcSize;
-                }
+                //if (encodingSettings.UseResoulutionFromSource)
+                //{
+                //    encodingSettings.Resolution = srcSize;
+                //}
 
                 //encoder = new FFmpegVideoEncoder();
                 //encoder.Open(encodingParams);

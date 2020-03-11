@@ -20,6 +20,7 @@ namespace MediaToolkit.UI
         private static readonly Color color1 = Color.FromArgb(46, 131, 241);
         private static readonly Color color2 = Color.WhiteSmoke;
 
+        private static readonly Color captureStripeColor = Color.FromArgb(231, 68, 68);
         public SelectAreaForm(bool debugMode = false)
         {
             InitializeComponent();
@@ -28,6 +29,8 @@ namespace MediaToolkit.UI
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.DebugMode = debugMode;
 
+            this.BackColor = Color.Black;
+            this.TransparencyKey = this.BackColor;
 
             this.MinimumSize = new Size(75, 75);
 
@@ -48,6 +51,7 @@ namespace MediaToolkit.UI
             framePen2.Width = FrameWidth;
 
             textureBrush = CreateStripesBrush(new Size(50, 50), color1, color2);
+            captureTextureBrush= CreateStripesBrush(new Size(50, 50), captureStripeColor, color2);
 
             buttonClose.Visible = DebugMode;
             labelInfo.Visible = DebugMode;
@@ -66,6 +70,7 @@ namespace MediaToolkit.UI
         // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
 
         private TextureBrush textureBrush = null;
+        private TextureBrush captureTextureBrush = null;
 
         private Pen framePen1 = new Pen(color1);
         private Pen framePen2 = new Pen(color2);
@@ -99,9 +104,6 @@ namespace MediaToolkit.UI
         }
 
 
-        public ScreenCaptureDeviceDescription CaptureDeviceDescription { get; private set; }
-
-
         public Rectangle SelectedArea
         {
             get
@@ -112,15 +114,15 @@ namespace MediaToolkit.UI
                 int w = ClientSize.Width - 2 * FrameWidth;
                 int h = ClientSize.Height - 2 * FrameWidth;
 
-                if(w % 2 == 0)
-                {
-                    w--;
-                }
+                //if(w % 2 != 0)
+                //{
+                //    w--;
+                //}
 
-                if(h % 2 == 0)
-                {
-                    h--;
-                }
+                //if(h % 2 != 0)
+                //{
+                //    h--;
+                //}
 
                 return new Rectangle(x, y, w, h);
             }
@@ -303,20 +305,6 @@ namespace MediaToolkit.UI
             }
         }
 
-        public void Link(ScreenCaptureDeviceDescription descr)
-        {
-            this.CaptureDeviceDescription = descr;
-
-            //var rect = new Rectangle(this.Location, this.Size);
-
-            this.UpdateDeviceDescr();
-        }
-
-        public void Unlink()
-        {
-            this.CaptureDeviceDescription = null;
-        }
-
         protected override CreateParams CreateParams
         {
             get
@@ -384,30 +372,23 @@ namespace MediaToolkit.UI
             //
 
 
-            var x = this.ClientRectangle.X + FrameWidth -1;
-            var y = this.ClientRectangle.Y + FrameWidth -1;
-            var width = (this.ClientRectangle.Width - 2 * FrameWidth);
-            var height = (this.ClientRectangle.Height - 2 * FrameWidth);
-
-            var rect = new Rectangle(x, y, width, height);
-
-            //g.DrawRectangle(framePen1, rect);
-            //g.DrawRectangle(framePen2, rect);
-            
-            //g.FillRectangle(textureBrush, e.ClipRectangle);
-            ////g.FillRectangle(Brushes.Transparent, rect);
-            //g.FillRectangle(Brushes.Black, rect);
-
-
-            g.FillRectangle(textureBrush, TopLine);
-            g.FillRectangle(textureBrush, BottomLine);
-            g.FillRectangle(textureBrush, RightLine);
-            g.FillRectangle(textureBrush, LeftLine);
-
 
             if (!capturing)
-            {// draw frame grip
+            {
 
+                g.FillRectangle(textureBrush, TopLine);
+                g.FillRectangle(textureBrush, BottomLine);
+                g.FillRectangle(textureBrush, RightLine);
+                g.FillRectangle(textureBrush, LeftLine);
+
+                var x = this.ClientRectangle.X + FrameWidth - 1;
+                var y = this.ClientRectangle.Y + FrameWidth - 1;
+                var width = (this.ClientRectangle.Width - 2 * FrameWidth);
+                var height = (this.ClientRectangle.Height - 2 * FrameWidth);
+
+                var rect = new Rectangle(x, y, width, height);
+
+                // draw frame grip
                 {// top left
                     {
                         float x1 = (x + GripIdent + (FrameWidth / 2f) );
@@ -528,6 +509,14 @@ namespace MediaToolkit.UI
                 }
 
             }
+            else
+            {// capture mode
+
+                g.FillRectangle(captureTextureBrush, TopLine);
+                g.FillRectangle(captureTextureBrush, BottomLine);
+                g.FillRectangle(captureTextureBrush, RightLine);
+                g.FillRectangle(captureTextureBrush, LeftLine);
+            }
 
 
         }
@@ -543,36 +532,29 @@ namespace MediaToolkit.UI
             base.OnSizeChanged(e);
 
             var rect = new Rectangle(this.Location, this.Size);
-            this.labelInfo.Text = rect.ToString();
 
-            UpdateDeviceDescr();
+            if (DebugMode)
+            {
+                this.labelInfo.Text = rect.ToString();
+            }
 
             AreaChanged?.Invoke(rect);
         }
 
 
 
-        private void UpdateDeviceDescr()
-        {
-            if (CaptureDeviceDescription != null)
-            {
-                var rect = SelectedArea;
-
-                CaptureDeviceDescription.DisplayRegion = Rectangle.Empty;
-                CaptureDeviceDescription.CaptureRegion = rect;
-                CaptureDeviceDescription.Resolution = rect.Size;
-            }
-        }
-
         protected override void OnLocationChanged(EventArgs e)
         {
 
             base.OnLocationChanged(e);
-
+            
             var rect = new Rectangle(this.Location, this.Size);
-            this.labelInfo.Text = rect.ToString();
+            if (DebugMode)
+            {
+                this.labelInfo.Text = rect.ToString();
+            }
+                
 
-            UpdateDeviceDescr();
 
             AreaChanged?.Invoke(rect);
 

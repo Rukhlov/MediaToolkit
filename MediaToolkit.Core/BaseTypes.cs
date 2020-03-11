@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MediaToolkit.Core
 {
@@ -36,26 +37,44 @@ namespace MediaToolkit.Core
         //...
     }
 
-
+    [Serializable]
     public class VideoEncoderSettings
     {
-        public VideoEncoderMode Encoder = VideoEncoderMode.H264;
-        public bool UseResoulutionFromSource = false;
+        [XmlAttribute]
+        public VideoEncoderMode Encoder { get; set; } = VideoEncoderMode.H264;
 
-        public Size Resolution = Size.Empty;
-        //public int Width = 0;
-        //public int Height = 0;
-        public int FrameRate = 0;
-        public string EncoderName = "";
+        [XmlIgnore]
+        public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
 
-        public int Bitrate = 2500;
-        public int MaxBitrate = 5000;
-        public bool LowLatency = true;
-        public int Quality = 75;
+        [XmlAttribute]
+        public int Width { get; set; } = 0;
 
-        public H264Profile Profile = H264Profile.Main;
+        [XmlAttribute]
+        public int Height { get; set; } = 0;
 
-        public BitrateControlMode BitrateMode = BitrateControlMode.CBR;
+        [XmlAttribute]
+        public int FrameRate { get; set; } = 0;
+
+        [XmlAttribute]
+        public string EncoderName { get; set; } = "";
+
+        [XmlAttribute]
+        public int Bitrate { get; set; } = 2500;
+
+        [XmlAttribute]
+        public int MaxBitrate { get; set; } = 5000;
+
+        [XmlAttribute]
+        public bool LowLatency { get; set; } = true;
+
+        [XmlAttribute]
+        public int Quality { get; set; } = 75;
+
+        [XmlAttribute]
+        public H264Profile Profile { get; set; } = H264Profile.Main;
+
+        [XmlAttribute]
+        public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
     }
 
@@ -79,16 +98,29 @@ namespace MediaToolkit.Core
         Quality,
     }
 
-
+    [Serializable]
     public class AudioEncoderSettings
     {
-        public int SampleRate = 8000;
-        public int Channels = 1;
-        public int BitsPerSample = 0;
-        public int BlockAlign = 0;
-        public string Encoding = "";
-        public string DeviceId = "";
-        public AudioEncoderMode Encoder = AudioEncoderMode.G711;
+        [XmlAttribute("SampleRate")]
+        public int SampleRate { get; set; } = 8000;
+
+        [XmlAttribute("Channels")]
+        public int Channels { get; set; } = 1;
+
+        [XmlIgnore]
+        public int BitsPerSample { get; set; } = 0;
+
+        [XmlIgnore]
+        public int BlockAlign { get; set; } = 0;
+
+        [XmlIgnore]
+        public string Encoding { get; set; } = "";
+
+        [XmlIgnore]
+        public string DeviceId { get; set; } = "";
+
+        [XmlAttribute("Encoder")]
+        public AudioEncoderMode Encoder { get; set; } = AudioEncoderMode.G711;
     }
 
     public enum AudioEncoderMode
@@ -171,17 +203,7 @@ namespace MediaToolkit.Core
 
         public ScreenCaptureProperties Properties { get; set; } = new ScreenCaptureProperties();
 
-        
-        //public VideoCaptureType CaptureType = VideoCaptureType.GDI;
-        //public int Fps = 10;
-        //public bool CaptureMouse = false;
-        //public bool AspectRatio = true;
-        //public bool UseHardware = true;
-
-        //public bool ShowCaptureBorder = true;
-        //public bool ShowDebugInfo = true;
-
-        //public bool CustomRegion = false;
+    
     }
 
     public class ScreenCaptureProperties
@@ -208,20 +230,29 @@ namespace MediaToolkit.Core
     }
 
 
-
+    [Serializable]
     public class NetworkSettings
     {
-        public string LocalAddr = "";
-        public int LocalPort = 0;
+        [XmlAttribute("LocalAddr")]
+        public string LocalAddr { get; set; } = "";
 
-        public string RemoteAddr = "";
-        public int RemotePort = 0;
+        [XmlAttribute("LocalPort")]
+        public int LocalPort { get; set; } = 0;
 
-        public int MulticastTimeToLive = 10;
+        [XmlAttribute("RemoteAddr")]
+        public string RemoteAddr { get; set; } = "";
 
-        public TransportMode TransportMode = TransportMode.Udp;
+        [XmlAttribute("RemotePort")]
+        public int RemotePort { get; set; } = 0;
 
-        public uint SSRC = 0;
+        [XmlAttribute("TTL")]
+        public int MulticastTimeToLive { get; set; } = 10;
+
+        [XmlAttribute("Transport")]
+        public TransportMode TransportMode { get; set; } = TransportMode.Udp;
+
+        [XmlAttribute("Id")]
+        public uint SSRC { get; set; } = 0;
 
     }
 

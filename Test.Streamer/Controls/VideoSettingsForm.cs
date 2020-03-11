@@ -96,7 +96,7 @@ namespace TestStreamer.Controls
 
             this.captureRegionTextBox.Text =  CaptureRegion.ToString();
 
-            var videoEncoderPars = VideoSettings.EncodingParams;
+            var videoEncoderPars = VideoSettings.EncoderSettings;
 
             var resolution = videoEncoderPars.Resolution;
 
@@ -109,8 +109,8 @@ namespace TestStreamer.Controls
                 this.destHeightNumeric.Value = resolution.Height;
             }
 
-
-            this.checkBoxResoulutionFromSource.Checked = videoEncoderPars.UseResoulutionFromSource;
+            bool useEncoderResoulutionFromSource = VideoSettings.StreamFlags.HasFlag(VideoStreamFlags.UseEncoderResoulutionFromSource);
+            this.checkBoxResoulutionFromSource.Checked = VideoSettings.UseEncoderResoulutionFromSource;
 
             this.encoderComboBox.SelectedItem = videoEncoderPars.Encoder;
             this.encProfileComboBox.SelectedItem = videoEncoderPars.Profile;
@@ -146,9 +146,15 @@ namespace TestStreamer.Controls
 
             }
 
-            VideoSettings.EncodingParams.UseResoulutionFromSource = this.checkBoxResoulutionFromSource.Checked;
+            VideoSettings.StreamFlags &= ~VideoStreamFlags.UseEncoderResoulutionFromSource;
+            if (this.checkBoxResoulutionFromSource.Checked)
+            {
+                VideoSettings.StreamFlags |= VideoStreamFlags.UseEncoderResoulutionFromSource;
+            }
 
-            if (!VideoSettings.EncodingParams.UseResoulutionFromSource)
+            
+
+            if (!VideoSettings.UseEncoderResoulutionFromSource)
             {
                 int width = (int)this.destWidthNumeric.Value;
                 int height = (int)this.destHeightNumeric.Value;
@@ -163,20 +169,21 @@ namespace TestStreamer.Controls
                     height--;
                 }
 
-                VideoSettings.EncodingParams.Resolution = new Size(width, height);
+                VideoSettings.EncoderSettings.Width = width;
+                VideoSettings.EncoderSettings.Height = height;
             }
 
 
-            VideoSettings.EncodingParams.Encoder = (VideoEncoderMode)this.encoderComboBox.SelectedItem;
-            VideoSettings.EncodingParams.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
-            VideoSettings.EncodingParams.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
+            VideoSettings.EncoderSettings.Encoder = (VideoEncoderMode)this.encoderComboBox.SelectedItem;
+            VideoSettings.EncoderSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
+            VideoSettings.EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
 
-            VideoSettings.EncodingParams.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
-            VideoSettings.EncodingParams.Bitrate = (int)this.bitrateNumeric.Value;
+            VideoSettings.EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
+            VideoSettings.EncoderSettings.Bitrate = (int)this.bitrateNumeric.Value;
 
-            VideoSettings.EncodingParams.FrameRate = (int)this.fpsNumeric.Value;
+            VideoSettings.EncoderSettings.FrameRate = (int)this.fpsNumeric.Value;
 
-            VideoSettings.EncodingParams.LowLatency = this.latencyModeCheckBox.Checked;
+            VideoSettings.EncoderSettings.LowLatency = this.latencyModeCheckBox.Checked;
 
 
             this.Close();

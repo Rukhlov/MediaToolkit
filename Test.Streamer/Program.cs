@@ -9,14 +9,12 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 
 using MediaToolkit;
-using TestStreamer.Controls;
 
 using MediaToolkit.NativeAPIs;
-
+using System.Threading;
 
 namespace TestStreamer
 {
-
 
     class Program
     {
@@ -29,53 +27,28 @@ namespace TestStreamer
 
             logger = LogManager.GetCurrentClassLogger();
 
-            AppDomain.CurrentDomain.UnhandledException += (o, a) =>
-            {
-                Exception ex = null;
-
-                var obj = a.ExceptionObject;
-                if (obj != null)
-                {
-                    ex = obj as Exception;
-                    logger.Fatal(ex);
-
-                }
-                if (ex != null)
-                {
-                    logger.Fatal(ex);
-                }
-                else
-                {
-                    logger.Fatal("FATAL ERROR!!!");
-                }
-
-
-                //Console.WriteLine("Press any key to exit...");
-                //Console.ReadKey();
-            };
-
             logger.Info("========== START ============");
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
+            bool createdNew = false;
+            Mutex mutex = null;
             try
             {
+                mutex = new Mutex(true, AppConsts.ApplicationId, out createdNew);
+                if (!createdNew)
+                {
+                    logger.Info("Another instance is already running...");
+                    //...
+                }
+
                 if (args != null && args.Length>0)
                 {//...
                    
 
                 }
 
-                //CommandLineOptions options = null;
-                //if (args != null)
-                //{
-                //    logger.Info("Command Line String: " + string.Join(" ", args));
 
-                //    options = new CommandLineOptions();
-                //    var res = Parser.Default.ParseArguments(args, options);
-                //    if (!res)
-                //    {
-                //        //...
-                //    }
-                //}
+                Config.Initialize();
 
                 MediaToolkitManager.Startup();
 
@@ -85,27 +58,55 @@ namespace TestStreamer
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                //StreamingForm form = new StreamingForm();
-                //MainForm2 form = new MainForm2();
-                //MainForm form = new MainForm();
-
-                //Test.Streamer.Controls.SelectAreaForm form = new Test.Streamer.Controls.SelectAreaForm();
                 StreamingForm form = new StreamingForm();
 
                 Application.Run(form);
 
-
             }
             finally
             {
+                Config.Shutdown();
+
                 MediaToolkitManager.Shutdown();
 
+                if (mutex != null)
+                {
+                    if (createdNew)
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                    mutex.Dispose();
+                }
+
+
+                
                 logger.Info("========== THE END ============");
             }
 
         }
 
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = null;
 
+            var obj = e.ExceptionObject;
+            if (obj != null)
+            {
+                ex = obj as Exception;
+                logger.Fatal(ex);
+
+            }
+            if (ex != null)
+            {
+                logger.Fatal(ex);
+            }
+            else
+            {
+                logger.Fatal("FATAL ERROR!!!");
+            }
+
+           // MessageBox.Show();
+        }
     }
 
 

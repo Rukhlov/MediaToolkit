@@ -441,15 +441,17 @@ namespace MediaToolkit.UI
             var videoPort = videoChannelInfo.Port;
             var inputPars = new VideoEncoderSettings
             {
-                Resolution = videoInfo.Resolution,
-                //Width = videoInfo.Resolution.Width,
-                //Height = videoInfo.Resolution.Height,
+                //Resolution = videoInfo.Resolution,
+                Width = videoInfo.Resolution.Width,
+                Height = videoInfo.Resolution.Height,
                 FrameRate = videoInfo.Fps,
             };
 
             var outputPars = new VideoEncoderSettings
             {
-                Resolution = videoInfo.Resolution,
+                //Resolution = videoInfo.Resolution,
+                Width = videoInfo.Resolution.Width,
+                Height = videoInfo.Resolution.Height,
                 //Resolution = new System.Drawing.Size(1920, 1080);
 
                 FrameRate = videoInfo.Fps,

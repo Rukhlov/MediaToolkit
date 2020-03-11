@@ -98,7 +98,9 @@ namespace MediaToolkit.MediaStreamers
 
             VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
-                Resolution = destSize,
+                //Resolution = destSize,
+                Width = destSize.Width,
+                Height = destSize.Height,
                 FrameRate = captureParams.Properties.Fps,
                 EncoderName = "mjpeg",
             };
