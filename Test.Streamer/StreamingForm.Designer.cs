@@ -50,7 +50,6 @@
             this.videoSourceSettingsLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.videoSourceComboBox = new TestStreamer.ColoredCombo();
             this.audioSourceSettingsLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -66,6 +65,7 @@
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.captureStatusDescriptionLabel = new System.Windows.Forms.Label();
             this.captureStatusLabel = new System.Windows.Forms.Label();
+            this.videoSourceComboBox = new TestStreamer.ColoredCombo();
             this.mainControlsLayoutPanel.SuspendLayout();
             this.flowLayoutPanel2.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
@@ -383,19 +383,6 @@
             this.panel1.Size = new System.Drawing.Size(574, 48);
             this.panel1.TabIndex = 112;
             // 
-            // videoSourceComboBox
-            // 
-            this.videoSourceComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.videoSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.videoSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.videoSourceComboBox.FormattingEnabled = true;
-            this.videoSourceComboBox.Location = new System.Drawing.Point(2, 2);
-            this.videoSourceComboBox.Margin = new System.Windows.Forms.Padding(2);
-            this.videoSourceComboBox.Name = "videoSourceComboBox";
-            this.videoSourceComboBox.Size = new System.Drawing.Size(538, 28);
-            this.videoSourceComboBox.TabIndex = 104;
-            this.videoSourceComboBox.SelectedValueChanged += new System.EventHandler(this.videoSourceComboBox_SelectedValueChanged);
-            // 
             // audioSourceSettingsLayoutPanel
             // 
             this.audioSourceSettingsLayoutPanel.AutoSize = true;
@@ -513,10 +500,12 @@
             this.streamNameTextBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.streamNameTextBox.Location = new System.Drawing.Point(109, 2);
             this.streamNameTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.streamNameTextBox.MaxLength = 100;
             this.streamNameTextBox.Name = "streamNameTextBox";
             this.streamNameTextBox.Size = new System.Drawing.Size(463, 27);
             this.streamNameTextBox.TabIndex = 66;
             this.streamNameTextBox.Text = "RAS-HOME10";
+            this.streamNameTextBox.TextChanged += new System.EventHandler(this.streamNameTextBox_TextChanged);
             // 
             // networkSettingsButton
             // 
@@ -619,6 +608,19 @@
             this.captureStatusLabel.Size = new System.Drawing.Size(123, 20);
             this.captureStatusLabel.TabIndex = 1;
             this.captureStatusLabel.Text = "__Capture Status_";
+            // 
+            // videoSourceComboBox
+            // 
+            this.videoSourceComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.videoSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.videoSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.videoSourceComboBox.FormattingEnabled = true;
+            this.videoSourceComboBox.Location = new System.Drawing.Point(2, 2);
+            this.videoSourceComboBox.Margin = new System.Windows.Forms.Padding(2);
+            this.videoSourceComboBox.Name = "videoSourceComboBox";
+            this.videoSourceComboBox.Size = new System.Drawing.Size(538, 28);
+            this.videoSourceComboBox.TabIndex = 104;
+            this.videoSourceComboBox.SelectedValueChanged += new System.EventHandler(this.videoSourceComboBox_SelectedValueChanged);
             // 
             // StreamingForm
             // 

@@ -100,12 +100,6 @@
     <Compile Include="Controls\PreviewForm.Designer.cs">
       <DependentUpon>PreviewForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\StatisticForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\StatisticForm.Designer.cs">
-      <DependentUpon>StatisticForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\AudioSettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -152,9 +146,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\NetworkSettingsForm.resx">
       <DependentUpon>NetworkSettingsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\StatisticForm.resx">
-      <DependentUpon>StatisticForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\AudioSettingsForm.resx">
       <DependentUpon>AudioSettingsForm.cs</DependentUpon>

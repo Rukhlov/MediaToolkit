@@ -90,7 +90,7 @@ namespace WebCamTest
                 var d = device[0];
                 VideoCaptureSource videoCaptureSource = new VideoCaptureSource();
 
-                VideoCaptureDeviceDescription captureParams = new VideoCaptureDeviceDescription
+                UvcDevice captureParams = new UvcDevice
                 {
                     Resolution = new GDI.Size(1920, 1080),
                     DeviceId = d.SymLink,

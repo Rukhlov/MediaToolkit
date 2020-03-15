@@ -20,7 +20,6 @@ namespace TestStreamer
 {
 
 
-
     public class NetUtils
     {
         public static IEnumerable<int> GetFreePortRange(ProtocolType protocolType, int portsCount,

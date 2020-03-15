@@ -56,7 +56,7 @@ namespace MediaToolkit
 
         private ScreenCapture screenCapture = null;
 
-        public ScreenCaptureDeviceDescription CaptureParams { get; private set; }
+        public ScreenCaptureDevice CaptureParams { get; private set; }
 
         private bool deviceReady = false;
         public void Setup(object pars)//ScreenCaptureParams captureParams)
@@ -70,7 +70,7 @@ namespace MediaToolkit
             }
 
             syncEvent = new AutoResetEvent(false);
-            ScreenCaptureDeviceDescription captureParams = pars as ScreenCaptureDeviceDescription;
+            ScreenCaptureDevice captureParams = pars as ScreenCaptureDevice;
 
             if(captureParams == null)
             {

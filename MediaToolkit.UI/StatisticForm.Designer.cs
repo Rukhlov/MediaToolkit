@@ -1,4 +1,4 @@
-﻿namespace TestStreamer.Controls
+﻿namespace MediaToolkit.UI
 {
     partial class StatisticForm
     {

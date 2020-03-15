@@ -14,6 +14,7 @@ using NLog;
 using MediaToolkit.SharedTypes;
 using MediaToolkit.MediaStreamers;
 using System.Threading;
+using MediaToolkit.UI;
 
 namespace TestStreamer.Controls
 {
@@ -71,7 +72,7 @@ namespace TestStreamer.Controls
             VideoCaptureType captureType = (VideoCaptureType)captureTypesComboBox.SelectedItem;
 
             httpScreenSource = new ScreenSource();
-            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
+            ScreenCaptureDevice captureParams = new ScreenCaptureDevice
             {
                 CaptureRegion = srcRect,
                 Resolution = destSize,

@@ -76,7 +76,7 @@ namespace MediaToolkit.MediaStreamers
                 UseHardware = false,
             };
 
-            ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
+            ScreenCaptureDevice captureParams = new ScreenCaptureDevice
             {
                 CaptureRegion = srcRect,
                 Resolution = destSize,

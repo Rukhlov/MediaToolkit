@@ -32,7 +32,7 @@ namespace TestStreamer.Controls
         {
 
             this.AudioSettings = settingsParams;
-            var captureSettings = AudioSettings.CaptureSettings;
+            var captureSettings = AudioSettings.CaptureDevice;
 
             textBoxDevice.Text = captureSettings.Name;
             this.captFormatTextBox.Text = captureSettings.Description;

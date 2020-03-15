@@ -40,40 +40,30 @@ namespace MediaToolkit.Core
     [Serializable]
     public class VideoEncoderSettings
     {
-        [XmlAttribute]
+
         public VideoEncoderMode Encoder { get; set; } = VideoEncoderMode.H264;
 
         [XmlIgnore]
         public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
 
-        [XmlAttribute]
-        public int Width { get; set; } = 0;
+        public int Width { get; set; } = 1920;
 
-        [XmlAttribute]
-        public int Height { get; set; } = 0;
+        public int Height { get; set; } = 1080;
 
-        [XmlAttribute]
-        public int FrameRate { get; set; } = 0;
+        public int FrameRate { get; set; } = 30;
 
-        [XmlAttribute]
         public string EncoderName { get; set; } = "";
 
-        [XmlAttribute]
         public int Bitrate { get; set; } = 2500;
 
-        [XmlAttribute]
         public int MaxBitrate { get; set; } = 5000;
 
-        [XmlAttribute]
         public bool LowLatency { get; set; } = true;
 
-        [XmlAttribute]
         public int Quality { get; set; } = 75;
 
-        [XmlAttribute]
         public H264Profile Profile { get; set; } = H264Profile.Main;
 
-        [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
     }
@@ -101,10 +91,8 @@ namespace MediaToolkit.Core
     [Serializable]
     public class AudioEncoderSettings
     {
-        [XmlAttribute("SampleRate")]
         public int SampleRate { get; set; } = 8000;
 
-        [XmlAttribute("Channels")]
         public int Channels { get; set; } = 1;
 
         [XmlIgnore]
@@ -114,12 +102,11 @@ namespace MediaToolkit.Core
         public int BlockAlign { get; set; } = 0;
 
         [XmlIgnore]
-        public string Encoding { get; set; } = "";
+        public string Encoding { get; set; } = "PCMU";
 
         [XmlIgnore]
         public string DeviceId { get; set; } = "";
 
-        [XmlAttribute("Encoder")]
         public AudioEncoderMode Encoder { get; set; } = AudioEncoderMode.G711;
     }
 
@@ -137,18 +124,25 @@ namespace MediaToolkit.Core
     }
 
 
-    public class AudioCaptureSettings
+    public class AudioCaptureDeviceDescription
     {
-        public string Name = "";
-        public string DeviceId = "";
+        public string Name { get; set; } = "";
+        public string DeviceId { get; set; } = "";
 
-        public int BitsPerSample = 0;
-        public int SampleRate = 0;
-        public int Channels = 0;
 
-        public string Description = "";
+        [XmlIgnore]
+        public int SampleRate { get; set; } = 0;
 
-        public AudioCapturesTypes CapturesTypes = AudioCapturesTypes.Wasapi;
+        [XmlIgnore]
+        public int Channels { get; set; } = 0;
+
+        [XmlIgnore]
+        public int BitsPerSample { get; set; } = 0;
+
+        [XmlIgnore]
+        public string Description { get; set; } = "";
+
+        //public AudioCapturesTypes CapturesTypes { get; set; } = AudioCapturesTypes.Wasapi;
     }
 
     public enum AudioCapturesTypes
@@ -158,10 +152,20 @@ namespace MediaToolkit.Core
         WaveIn
     }
 
-    public abstract class VideoCaptureDescription
+
+    [Serializable]
+    [XmlInclude(typeof(UvcDevice))]
+    [XmlInclude(typeof(ScreenCaptureDevice))]
+    public abstract class VideoCaptureDevice
     {
         public string Name = "";
+        public string DeviceId { get; set; } = "";
+
+        // [XmlIgnore]
+        [XmlElement(typeof(XmlSize))]
         public Size Resolution = new Size(640, 480);
+
+        //[XmlIgnore]
         public abstract CaptureMode CaptureMode { get; }
 
     }
@@ -169,18 +173,19 @@ namespace MediaToolkit.Core
     public enum CaptureMode
     {
         Screen,
-        CaptDevice,
+        UvcDevice,
     }
 
-    public class VideoCaptureDeviceDescription: VideoCaptureDescription
+    [Serializable]
+    public class UvcDevice: VideoCaptureDevice
     {
-        public override CaptureMode CaptureMode => CaptureMode.CaptDevice;
-        public string DeviceId = "";
+        public override CaptureMode CaptureMode => CaptureMode.UvcDevice;
 
-        public VideoCaptureDeviceProfile CurrentProfile = null;
+        [XmlIgnore]
+        public UvcProfile CurrentProfile = null;
     }
 
-    public class VideoCaptureDeviceProfile
+    public class UvcProfile
     {
         public Size FrameSize = Size.Empty;
         public double FrameRate = 0;
@@ -192,33 +197,44 @@ namespace MediaToolkit.Core
         }
     }
 
-    public class ScreenCaptureDeviceDescription: VideoCaptureDescription
+    [Serializable]
+    public class ScreenCaptureDevice: VideoCaptureDevice
     {
         public override CaptureMode CaptureMode => CaptureMode.Screen;
 
-        public string DisplayName = "";       
+        //[XmlIgnore]
+        [XmlElement(typeof(XmlRect))]
         public Rectangle DisplayRegion = new Rectangle(0, 0, 640, 480);
 
+        [XmlElement(typeof(XmlRect))]
         public Rectangle CaptureRegion = new Rectangle(0, 0, 640, 480);
 
+        [XmlIgnore]
         public ScreenCaptureProperties Properties { get; set; } = new ScreenCaptureProperties();
 
     
     }
 
+    [Serializable]
     public class ScreenCaptureProperties
     {
-        public VideoCaptureType CaptureType = VideoCaptureType.GDI;
-        public int Fps = 10;
-        public bool CaptureMouse = false;
-        public bool AspectRatio = true;
-        public bool UseHardware = true;
+        public VideoCaptureType CaptureType { get; set; } = VideoCaptureType.GDI;
 
-        public bool ShowCaptureBorder = true;
-        public bool ShowDebugInfo = true;
+        public int Fps { get; set; } = 10;
+
+        public bool CaptureMouse { get; set; } = false;
+
+        public bool AspectRatio { get; set; } = true;
+
+        public bool UseHardware { get; set; } = true;
+
+        public bool ShowDebugBorder { get; set; } = true;
+
+        public bool ShowDebugInfo { get; set; } = true;
 
         //public bool CustomRegion = false;
     }
+
 
     public enum VideoCaptureType
     {
@@ -233,25 +249,25 @@ namespace MediaToolkit.Core
     [Serializable]
     public class NetworkSettings
     {
-        [XmlAttribute("LocalAddr")]
+        [XmlIgnore]
         public string LocalAddr { get; set; } = "";
 
-        [XmlAttribute("LocalPort")]
+        [XmlIgnore]
         public int LocalPort { get; set; } = 0;
 
-        [XmlAttribute("RemoteAddr")]
+        [XmlIgnore] 
         public string RemoteAddr { get; set; } = "";
 
-        [XmlAttribute("RemotePort")]
+        [XmlIgnore]
         public int RemotePort { get; set; } = 0;
 
-        [XmlAttribute("TTL")]
+        [XmlIgnore]
         public int MulticastTimeToLive { get; set; } = 10;
 
-        [XmlAttribute("Transport")]
+        [XmlIgnore]
         public TransportMode TransportMode { get; set; } = TransportMode.Udp;
 
-        [XmlAttribute("Id")]
+        [XmlAttribute]
         public uint SSRC { get; set; } = 0;
 
     }
@@ -568,4 +584,54 @@ namespace MediaToolkit.Core
         Closed,
     }
 
+
+
+    [Serializable]
+    public struct XmlRect
+    {
+        [XmlAttribute]
+        public int X { get; set; }
+
+        [XmlAttribute]
+        public int Y { get; set; }
+
+        [XmlAttribute]
+        public int Height { get; set; }
+
+        [XmlAttribute]
+        public int Width { get; set; }
+
+        public static implicit operator Rectangle(XmlRect xmlRectangle)
+        {
+            return new Rectangle(xmlRectangle.X, xmlRectangle.Y, xmlRectangle.Width, xmlRectangle.Height);
+        }
+
+        public static implicit operator XmlRect(Rectangle rectangle)
+        {
+            return new XmlRect { X = rectangle.X, Y = rectangle.Y, Height = rectangle.Height, Width = rectangle.Width };
+        }
+
+    }
+
+    [Serializable]
+    public struct XmlSize
+    {
+        [XmlAttribute]
+        public int Width { get; set; }
+
+        [XmlAttribute]
+        public int Height { get; set; }
+
+
+        public static implicit operator Size(XmlSize xmlSize)
+        {
+            return new Size(xmlSize.Width, xmlSize.Height);
+        }
+
+        public static implicit operator XmlSize(Size size)
+        {
+            return new XmlSize { Width = size.Width, Height = size.Height };
+        }
+
+    }
 }

@@ -41,11 +41,11 @@ namespace TestStreamer.Controls
             //this.portNumeric.Value = VideoSettings.Port;
             //this.transportComboBox.SelectedItem = VideoSettings.TransportMode;
 
-            var screenCaptureParams = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
             if (screenCaptureParams != null)
             {
                // var captureDescr = screenCaptureParams.CaptureDescription;
-                this.displayTextBox.Text = screenCaptureParams.DisplayName;
+                this.displayTextBox.Text = screenCaptureParams.Name;
 
                 this.CaptureRegion = screenCaptureParams.CaptureRegion;
                 this.captureMouseCheckBox.Checked = screenCaptureParams.Properties.CaptureMouse;
@@ -58,7 +58,7 @@ namespace TestStreamer.Controls
                 adjustAspectRatioButton.Visible = true;
 
                 showDebugInfoCheckBox.Checked = screenCaptureParams.Properties.ShowDebugInfo;
-                showCaptureBorderCheckBox.Checked = screenCaptureParams.Properties.ShowCaptureBorder;
+                showCaptureBorderCheckBox.Checked = screenCaptureParams.Properties.ShowDebugBorder;
 
                 if (screenCaptureParams.DisplayRegion.IsEmpty)
                 {
@@ -68,7 +68,7 @@ namespace TestStreamer.Controls
 
             }
 
-            var webCamCaptureParams = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
+            var webCamCaptureParams = VideoSettings.CaptureDevice as UvcDevice;
             if (webCamCaptureParams != null)
             {
                 CaptureDeviceTextBox.Text = webCamCaptureParams.Name;
@@ -129,7 +129,7 @@ namespace TestStreamer.Controls
 
             //VideoSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
 
-            var screenCaptureParams = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
             if (screenCaptureParams != null)
             {
                 screenCaptureParams.CaptureRegion = this.CaptureRegion;
@@ -137,10 +137,10 @@ namespace TestStreamer.Controls
                 screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
 
                 screenCaptureParams.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
-                screenCaptureParams.Properties.ShowCaptureBorder = showCaptureBorderCheckBox.Checked;
+                screenCaptureParams.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
             }
 
-            var deviceDescr = VideoSettings.CaptureDescription as VideoCaptureDeviceDescription;
+            var deviceDescr = VideoSettings.CaptureDevice as UvcDevice;
             if (deviceDescr != null)
             {
 
@@ -261,7 +261,7 @@ namespace TestStreamer.Controls
 
         private void snippingToolButton_Click(object sender, EventArgs e)
         {
-            var captureDescr = VideoSettings.CaptureDescription as ScreenCaptureDeviceDescription;
+            var captureDescr = VideoSettings.CaptureDevice as ScreenCaptureDevice;
             if (captureDescr == null)
             {
                 return;

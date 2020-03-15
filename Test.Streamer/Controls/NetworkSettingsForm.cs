@@ -34,7 +34,26 @@ namespace Test.Streamer.Controls
         {
             this.serverSettings = settings;
 
-            this.textBoxStreamName.Text = settings.StreamName;
+            var address = serverSettings.NetworkIpAddress;
+
+            ComboBoxItem networkItem = null;
+            if(address == "0.0.0.0")
+            {
+                networkItem = networkItems.FirstOrDefault(i => i.Tag == null);
+            }
+            else
+            {
+                networkItem = networkItems.FirstOrDefault(i => (i.Tag != null && ((IPAddressInformation)i.Tag).Address.ToString() == address));
+            }
+
+
+            if (networkItem != null)
+            {
+                networkComboBox.SelectedItem = networkItem;
+            }
+            
+
+            textBoxStreamName.Text = serverSettings.StreamName;
             communicationPortNumeric.Value = serverSettings.CommunicationPort;
             multicastAddressTextBox.Text = serverSettings.MutlicastAddress;
 
@@ -74,34 +93,34 @@ namespace Test.Streamer.Controls
 
         private void LoadNetworks()
         {
-            var networks = GetNetworkItems();
+            networkItems = GetNetworkItems();
 
 
-            networkComboBox.DataSource = networks;
+            networkComboBox.DataSource = networkItems;
             networkComboBox.DisplayMember = "Name";
-
+            
             var maxWidth = DropDownWidth(networkComboBox);
             networkComboBox.DropDownWidth = maxWidth;
         }
 
 
-        private static List<ComboBoxItem> GetNetworkItems()
+        private List<ComboBoxItem> networkItems = new List<ComboBoxItem>();
+
+        private List<ComboBoxItem> GetNetworkItems()
         {
-
-            List<ComboBoxItem> networkItems = new List<ComboBoxItem>();
-
+            var networks = new List<ComboBoxItem>();
             var networkAny = new ComboBoxItem
             {
                 Name = "Any",
                 Tag = null,
             };
-            networkItems.Add(networkAny);
+            networks.Add(networkAny);
 
             NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
             foreach (NetworkInterface network in networkInterfaces)
             {
-
+                
                 if (network.OperationalStatus == OperationalStatus.Up &&
                     network.NetworkInterfaceType != NetworkInterfaceType.Loopback)
                 {
@@ -119,7 +138,7 @@ namespace Test.Streamer.Controls
                             continue;
                         }
 
-                        networkItems.Add(new ComboBoxItem
+                        networks.Add(new ComboBoxItem
                         {
                             Name = network.Name + " (" + addr.Address.ToString() + ")",
                             Tag = addr,
@@ -129,7 +148,7 @@ namespace Test.Streamer.Controls
                 }
             }
 
-            return networkItems;
+            return networks;
         }
 
         private int DropDownWidth(ComboBox comboBox)

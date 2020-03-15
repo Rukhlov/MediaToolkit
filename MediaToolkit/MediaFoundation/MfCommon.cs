@@ -583,9 +583,9 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
-        public static List<Core.VideoCaptureDeviceDescription> GetVideoCaptureDevices()
+        public static List<Core.UvcDevice> GetVideoCaptureDevices()
         {
-            List<Core.VideoCaptureDeviceDescription> deviceDescriptions = new List<Core.VideoCaptureDeviceDescription>();
+            List<Core.UvcDevice> deviceDescriptions = new List<Core.UvcDevice>();
 
             Activate[] activates = null;
             try
@@ -603,7 +603,7 @@ namespace MediaToolkit.MediaFoundation
                         {
                             var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
                             var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
-                            var deviceDescription = new Core.VideoCaptureDeviceDescription
+                            var deviceDescription = new Core.UvcDevice
                             {
                                 Name = friendlyName,
                                 DeviceId = symbolicLink,
@@ -622,7 +622,7 @@ namespace MediaToolkit.MediaFoundation
                                         var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
                                         var subtypeName = MfTool.GetMediaTypeName(subtype);
 
-                                        var profile = new Core.VideoCaptureDeviceProfile
+                                        var profile = new Core.UvcProfile
                                         {
                                             FrameSize = frameSize,
                                             FrameRate = frameRate,

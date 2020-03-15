@@ -73,7 +73,7 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-            VideoCaptureDeviceDescription captureParams = pars as VideoCaptureDeviceDescription;
+            UvcDevice captureParams = pars as UvcDevice;
 
             var deviceId = captureParams.DeviceId;
 

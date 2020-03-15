@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -28,6 +29,9 @@ namespace TestStreamer
 
         public static readonly string ApplicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
+        public static readonly string CurrentDirectory = Directory.GetCurrentDirectory();// new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
+
+
         public static readonly string ConfigPath = Path.Combine(ApplicationDataPath, "Polywall\\ScreenStreamer");
         public static readonly string ConfigFullName = Path.Combine(ConfigPath, AppConsts.ConfigFileName);
 
@@ -48,11 +52,26 @@ namespace TestStreamer
             }
         }
 
-        public static void Initialize()
+
+        public static bool TempMode { get; private set; }
+
+        public static void Initialize(bool tempMode = false)
         {
             logger.Debug("Config::Initialize()");
 
-            Config.Read();
+            TempMode = tempMode;
+            //Validate ...
+            //...
+
+            if (!TempMode)
+            {
+                Config.Read();
+            }
+            else
+            {
+                data = Config.Default();
+            }
+            
 
         }
 
@@ -86,7 +105,7 @@ namespace TestStreamer
 
             if (!success)
             {
-                data = new Config();
+                data = Config.Default();
             }
         }
 
@@ -113,7 +132,11 @@ namespace TestStreamer
         {
             logger.Debug("Config::Shutdown()");
 
-            Data.Save();
+            if (!TempMode)
+            {
+                Data.Save();
+            }
+           
         }
 
 
@@ -246,7 +269,7 @@ namespace TestStreamer
             }
             finally
             {
-                if (success)
+                //if (success)
                 {
                     try
                     {
@@ -271,13 +294,102 @@ namespace TestStreamer
                 serializer.Serialize(stream, conf);
             }
         }
+
+        public static Config Default()
+        {
+            var config = new Config();
+
+            int port = -1;
+
+            var freeTcpPorts = NetUtils.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+            if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+            {
+                port = freeTcpPorts.FirstOrDefault();
+            }
+
+            var serverSettings = new ServerSettings
+            {
+                StreamName = Environment.MachineName,
+                NetworkIpAddress = "0.0.0.0",
+                MutlicastAddress = "239.0.0.1",
+                CommunicationPort = port,
+                IsMulticast = false,
+                TransportMode = TransportMode.Tcp,
+
+            };
+
+            var videoEncoderSettings = new VideoEncoderSettings
+            {
+                Width = 1920,
+                Height = 1080,
+                Encoder = VideoEncoderMode.H264,
+                Profile = H264Profile.Main,
+                BitrateMode = BitrateControlMode.CBR,
+                Bitrate = 2500,
+                MaxBitrate = 5000,
+                FrameRate = 30,
+                LowLatency = true,
+
+            };
+
+            var captureProperties = new ScreenCaptureProperties
+            {
+                CaptureMouse = true,
+                AspectRatio = true,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+            };
+
+            var videoSettings = new VideoStreamSettings
+            {
+                Enabled = true,
+                SessionId = "video_" + Guid.NewGuid().ToString(),
+                NetworkSettings = new NetworkSettings(),
+                CaptureDevice = null,
+                EncoderSettings = videoEncoderSettings,
+                StreamFlags = VideoStreamFlags.UseEncoderResoulutionFromSource,
+
+                ScreenCaptureProperties = captureProperties,
+
+            };
+
+            var audioEncoderSettings = new AudioEncoderSettings
+            {
+                SampleRate = 8000,
+                Channels = 1,
+                Encoding = "PCMU",
+
+            };
+
+            var audioSettings = new AudioStreamSettings
+            {
+                Enabled = false,
+                SessionId = "audio_" + Guid.NewGuid().ToString(),
+                NetworkParams = new NetworkSettings(),
+                CaptureDevice = new AudioCaptureDeviceDescription(),
+                EncoderSettings = audioEncoderSettings,
+            };
+
+
+
+
+            config.AudioSettings = audioSettings;
+            config.VideoSettings = videoSettings;
+            config.ServerSettings = serverSettings;
+
+            return config;
+
+        }
     }
+
 
     [Serializable]
     public class ServerSettings
     {
         [XmlAttribute("Name")]
-        public string StreamName { get; set; } = "";
+        public string StreamName { get; set; } = Environment.MachineName;
 
         [XmlAttribute("Address")]
         public string NetworkIpAddress { get; set; } = "0.0.0.0";
@@ -307,7 +419,8 @@ namespace TestStreamer
         public NetworkSettings NetworkParams { get; set; } = new NetworkSettings();
 
         public AudioEncoderSettings EncoderSettings { get; set; } = new AudioEncoderSettings();
-        public AudioCaptureSettings CaptureSettings { get; set; }
+
+        public AudioCaptureDeviceDescription CaptureDevice { get; set; }
     }
 
     [Serializable]
@@ -329,12 +442,34 @@ namespace TestStreamer
             }
         }
 
-        [XmlAttribute("Flags")]
+        [XmlIgnore]
         public VideoStreamFlags StreamFlags { get; set; } = VideoStreamFlags.None;
 
+        [XmlAttribute("Flags")]
+        public int flags
+        {
+            get
+            {
+                return (int)StreamFlags;
+            }
+            set
+            {
+                StreamFlags = (VideoStreamFlags)value;
+            }
+        } 
+
         public NetworkSettings NetworkSettings  { get; set; } = new NetworkSettings();
-        public VideoCaptureDescription CaptureDescription { get; set; }
+
+       // [XmlIgnore]
+
+        public VideoCaptureDevice CaptureDevice { get; set; }
+
         public VideoEncoderSettings EncoderSettings { get; set; } = new VideoEncoderSettings();
+
+        public ScreenCaptureProperties ScreenCaptureProperties { get; set; } = new ScreenCaptureProperties();
+
+        [XmlElement(typeof(XmlRect))]
+        public Rectangle CustomRegion { get; set; } = new Rectangle(0, 0, 640, 480);
 
     }
 

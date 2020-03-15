@@ -47,8 +47,8 @@ namespace TestStreamer
 
                 }
 
-
-                Config.Initialize();
+                bool tempMode = !createdNew;
+                Config.Initialize(tempMode);
 
                 MediaToolkitManager.Startup();
 
