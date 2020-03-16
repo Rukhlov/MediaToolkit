@@ -373,8 +373,6 @@ namespace TestStreamer
             };
 
 
-
-
             config.AudioSettings = audioSettings;
             config.VideoSettings = videoSettings;
             config.ServerSettings = serverSettings;

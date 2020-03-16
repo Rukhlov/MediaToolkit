@@ -48,6 +48,33 @@ namespace TestStreamer
 
             captureStatusDescriptionLabel.Text = "";
 
+            videoSourceComboBox.SelectedValueChanged += videoSourceComboBox_SelectedValueChanged;
+
+            var currentVideoDeviceId = videoSettings?.CaptureDevice?.DeviceId;
+
+            if (!string.IsNullOrEmpty(currentVideoDeviceId))
+            {
+                var currentVideoItem = videoSourceItems.FirstOrDefault(i => i.Tag != null && ((VideoCaptureDevice)i.Tag).DeviceId == currentVideoDeviceId);
+                if (currentVideoItem != null)
+                {
+                    videoSourceComboBox.SelectedItem = currentVideoItem;
+                }
+            }
+
+
+            audioSourceComboBox.SelectedValueChanged += audioSourceComboBox_SelectedValueChanged;
+
+            var currentAudioDeviceId = audioSettings?.CaptureDevice?.DeviceId;
+
+            if (!string.IsNullOrEmpty(currentAudioDeviceId))
+            {
+                var currentAudioItem = audioSourceItems.FirstOrDefault(i => i.Tag != null && ((AudioCaptureDeviceDescription)i.Tag).DeviceId == currentAudioDeviceId);
+                if (currentAudioItem != null)
+                {
+                    audioSourceComboBox.SelectedItem = currentAudioItem;
+                }
+            }
+
         }
 
 
@@ -939,6 +966,7 @@ namespace TestStreamer
 
                     Resolution = bounds.Size,
                     Properties = captureProperties,
+                    DeviceId = screen.DeviceName,
 
                 };
 
@@ -966,6 +994,7 @@ namespace TestStreamer
                     Resolution = SystemInformation.VirtualScreen.Size,
                     Properties = captureProperties,
                     Name = "All Screens",
+                    DeviceId = "AllScreens",
                 };
 
                 items.Add(new ComboBoxItem
@@ -991,6 +1020,7 @@ namespace TestStreamer
                 Resolution = customRegion.Size,
                 Properties = captureProperties,
                 Name = "Screen Region",
+                DeviceId = "ScreenRegion",
 
             };
 
@@ -1018,7 +1048,7 @@ namespace TestStreamer
             videoSourceComboBox.DataSource = videoSourceItems;
         }
 
-
+        private BindingList<ComboBoxItem> audioSourceItems = null;
         private void UpdateAudioSources()
         {
 
@@ -1091,7 +1121,7 @@ namespace TestStreamer
             }
 
             //var dataSource = new BindingList<ComboBoxItem>(mmdevices.Select(d => new ComboBoxItem { Name = d.FriendlyName, Tag = d.ID }).ToList());
-            var dataSource = new BindingList<ComboBoxItem>();
+            audioSourceItems = new BindingList<ComboBoxItem>();
             foreach (var d in mmdevices)
             {
                 //$"{bitsPerSample} bit PCM: {sampleRate / 1000}kHz {channels} channels"
@@ -1126,14 +1156,14 @@ namespace TestStreamer
                     Tag = captureSettings,
                 };
 
-                dataSource.Add(item);
+                audioSourceItems.Add(item);
                 d?.Dispose();
             }
             mmdevices.Clear();
 
             //dataSource.Add(new ComboBoxItem { Name = "Disabled", Tag = null, });
 
-            audioSourceComboBox.DataSource = dataSource;
+            audioSourceComboBox.DataSource = audioSourceItems;
             audioSourceComboBox.DisplayMember = "Name";
 
 

@@ -138,7 +138,7 @@
             this.audioSourceComboBox.Name = "audioSourceComboBox";
             this.audioSourceComboBox.Size = new System.Drawing.Size(538, 28);
             this.audioSourceComboBox.TabIndex = 82;
-            this.audioSourceComboBox.SelectedValueChanged += new System.EventHandler(this.audioSourceComboBox_SelectedValueChanged);
+
             // 
             // audioSourceDetailsButton
             // 
@@ -620,7 +620,7 @@
             this.videoSourceComboBox.Name = "videoSourceComboBox";
             this.videoSourceComboBox.Size = new System.Drawing.Size(538, 28);
             this.videoSourceComboBox.TabIndex = 104;
-            this.videoSourceComboBox.SelectedValueChanged += new System.EventHandler(this.videoSourceComboBox_SelectedValueChanged);
+            
             // 
             // StreamingForm
             // 
