@@ -40,30 +40,40 @@ namespace MediaToolkit.Core
     [Serializable]
     public class VideoEncoderSettings
     {
-
+        [XmlAttribute]
         public VideoEncoderMode Encoder { get; set; } = VideoEncoderMode.H264;
 
         [XmlIgnore]
         public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
 
+        [XmlAttribute]
         public int Width { get; set; } = 1920;
 
+        [XmlAttribute]
         public int Height { get; set; } = 1080;
 
+        [XmlAttribute]
         public int FrameRate { get; set; } = 30;
 
+        [XmlAttribute]
         public string EncoderName { get; set; } = "";
 
+        [XmlAttribute]
         public int Bitrate { get; set; } = 2500;
 
+        [XmlAttribute]
         public int MaxBitrate { get; set; } = 5000;
 
+        [XmlAttribute]
         public bool LowLatency { get; set; } = true;
 
+        [XmlAttribute]
         public int Quality { get; set; } = 75;
 
+        [XmlAttribute]
         public H264Profile Profile { get; set; } = H264Profile.Main;
 
+        [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
     }
@@ -91,8 +101,10 @@ namespace MediaToolkit.Core
     [Serializable]
     public class AudioEncoderSettings
     {
+        [XmlAttribute]
         public int SampleRate { get; set; } = 8000;
 
+        [XmlAttribute]
         public int Channels { get; set; } = 1;
 
         [XmlIgnore]
@@ -107,6 +119,7 @@ namespace MediaToolkit.Core
         [XmlIgnore]
         public string DeviceId { get; set; } = "";
 
+        [XmlAttribute]
         public AudioEncoderMode Encoder { get; set; } = AudioEncoderMode.G711;
     }
 
@@ -163,7 +176,7 @@ namespace MediaToolkit.Core
 
         // [XmlIgnore]
         [XmlElement(typeof(XmlSize))]
-        public Size Resolution = new Size(640, 480);
+        public Size Resolution  { get; set; } = new Size(640, 480);
 
         //[XmlIgnore]
         public abstract CaptureMode CaptureMode { get; }
@@ -218,21 +231,27 @@ namespace MediaToolkit.Core
     [Serializable]
     public class ScreenCaptureProperties
     {
+        [XmlAttribute]
         public VideoCaptureType CaptureType { get; set; } = VideoCaptureType.GDI;
 
+        [XmlAttribute]
         public int Fps { get; set; } = 10;
 
+        [XmlAttribute]
         public bool CaptureMouse { get; set; } = false;
 
+        [XmlAttribute]
         public bool AspectRatio { get; set; } = true;
 
+        [XmlAttribute]
         public bool UseHardware { get; set; } = true;
 
+        [XmlAttribute]
         public bool ShowDebugBorder { get; set; } = true;
 
+        [XmlAttribute]
         public bool ShowDebugInfo { get; set; } = true;
 
-        //public bool CustomRegion = false;
     }
 
 
@@ -245,6 +264,18 @@ namespace MediaToolkit.Core
         DXGIDeskDupl,
     }
 
+    [Serializable]
+    public class WasapiCaptureProperties
+    {
+        [XmlAttribute]
+        public bool EventSyncMode { get; set; } = true;
+
+        [XmlAttribute]
+        public int BufferMilliseconds { get; set; } = 50;
+
+        [XmlAttribute]
+        public bool ExclusiveMode { get; set; } = false;
+    }
 
     [Serializable]
     public class NetworkSettings

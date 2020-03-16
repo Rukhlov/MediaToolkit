@@ -61,7 +61,7 @@ namespace TestStreamer.Controls
 
             };
 
-            NetworkSettings networkParams = audioSettings.NetworkParams;
+            NetworkSettings networkParams = audioSettings.NetworkSettings;
 
             //NetworkStreamingParams networkParams = new NetworkStreamingParams
             //{

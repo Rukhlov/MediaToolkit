@@ -29,8 +29,8 @@ namespace Test.Streamer.Controls
 
         private bool isMulticastMode = true;
 
-        private ServerSettings serverSettings = null;
-        public void Init(ServerSettings settings)
+        private StreamSession serverSettings = null;
+        public void Init(StreamSession settings)
         {
             this.serverSettings = settings;
 
@@ -56,6 +56,9 @@ namespace Test.Streamer.Controls
             textBoxStreamName.Text = serverSettings.StreamName;
             communicationPortNumeric.Value = serverSettings.CommunicationPort;
             multicastAddressTextBox.Text = serverSettings.MutlicastAddress;
+
+            multicastPort1Numeric.Value = serverSettings.MutlicastPort1;
+            multicastPort2Numeric.Value = serverSettings.MutlicastPort2;
 
             multicastRadioButton.Checked = serverSettings.IsMulticast;
             transportComboBox.Enabled = !serverSettings.IsMulticast;
@@ -221,6 +224,9 @@ namespace Test.Streamer.Controls
             serverSettings.MutlicastAddress = multicastAddressTextBox.Text;
 
             serverSettings.StreamName = this.textBoxStreamName.Text;
+            serverSettings.MutlicastPort1 = (int)multicastPort1Numeric.Value;
+
+            serverSettings.MutlicastPort2 = (int)multicastPort2Numeric.Value;
 
             this.Close();
         }

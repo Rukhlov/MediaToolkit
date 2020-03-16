@@ -35,9 +35,13 @@ namespace TestStreamer
         public static readonly string ConfigPath = Path.Combine(ApplicationDataPath, "Polywall\\ScreenStreamer");
         public static readonly string ConfigFullName = Path.Combine(ConfigPath, AppConsts.ConfigFileName);
 
-        public ServerSettings ServerSettings { get; set; } = new ServerSettings();
-        public VideoStreamSettings VideoSettings { get; set; } = new VideoStreamSettings();
-        public AudioStreamSettings AudioSettings { get; set; } = new AudioStreamSettings();
+        public StreamSession Session { get; set; } = new StreamSession();
+
+        [XmlElement(typeof(XmlRect))]
+        public Rectangle SelectAreaRectangle { get; set; } = new Rectangle(0, 0, 640, 480);
+
+        public ScreenCaptureProperties ScreenCaptureProperties { get; set; } = new ScreenCaptureProperties();
+        public WasapiCaptureProperties WasapiCaptureProps { get; set; } = new WasapiCaptureProperties();
 
         private static Config data;
         public static Config Data
@@ -307,7 +311,7 @@ namespace TestStreamer
                 port = freeTcpPorts.FirstOrDefault();
             }
 
-            var serverSettings = new ServerSettings
+            var session = new StreamSession
             {
                 StreamName = Environment.MachineName,
                 NetworkIpAddress = "0.0.0.0",
@@ -316,7 +320,9 @@ namespace TestStreamer
                 IsMulticast = false,
                 TransportMode = TransportMode.Tcp,
 
-            };
+
+
+        };
 
             var videoEncoderSettings = new VideoEncoderSettings
             {
@@ -332,26 +338,18 @@ namespace TestStreamer
 
             };
 
-            var captureProperties = new ScreenCaptureProperties
-            {
-                CaptureMouse = true,
-                AspectRatio = true,
-                CaptureType = VideoCaptureType.DXGIDeskDupl,
-                UseHardware = true,
-                Fps = 30,
-                ShowDebugInfo = false,
-            };
+
 
             var videoSettings = new VideoStreamSettings
             {
                 Enabled = true,
-                SessionId = "video_" + Guid.NewGuid().ToString(),
+                Id = "video_" + Guid.NewGuid().ToString(),
                 NetworkSettings = new NetworkSettings(),
                 CaptureDevice = null,
                 EncoderSettings = videoEncoderSettings,
                 StreamFlags = VideoStreamFlags.UseEncoderResoulutionFromSource,
 
-                ScreenCaptureProperties = captureProperties,
+                //ScreenCaptureProperties = captureProperties,
 
             };
 
@@ -366,16 +364,29 @@ namespace TestStreamer
             var audioSettings = new AudioStreamSettings
             {
                 Enabled = false,
-                SessionId = "audio_" + Guid.NewGuid().ToString(),
-                NetworkParams = new NetworkSettings(),
+                Id = "audio_" + Guid.NewGuid().ToString(),
+                NetworkSettings = new NetworkSettings(),
                 CaptureDevice = new AudioCaptureDeviceDescription(),
                 EncoderSettings = audioEncoderSettings,
             };
 
+            var screenCaptureProperties = new ScreenCaptureProperties
+            {
+                CaptureMouse = true,
+                AspectRatio = true,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+            };
 
-            config.AudioSettings = audioSettings;
-            config.VideoSettings = videoSettings;
-            config.ServerSettings = serverSettings;
+            config.SelectAreaRectangle = new Rectangle(0, 0, 640, 480);
+            config.ScreenCaptureProperties = screenCaptureProperties;
+
+            session.AudioSettings = audioSettings;
+            session.VideoSettings = videoSettings;
+
+            config.Session = session;
 
             return config;
 
@@ -384,7 +395,7 @@ namespace TestStreamer
 
 
     [Serializable]
-    public class ServerSettings
+    public class StreamSession
     {
         [XmlAttribute("Name")]
         public string StreamName { get; set; } = Environment.MachineName;
@@ -403,18 +414,28 @@ namespace TestStreamer
 
         [XmlAttribute("MutlicastAddress")]
         public string MutlicastAddress { get; set; } = "239.0.0.1";
+
+        [XmlAttribute("MutlicastPort1")]
+        public int MutlicastPort1 { get; set; } = 1234;
+
+        [XmlAttribute("MutlicastPort2")]
+        public int MutlicastPort2 { get; set; } = 5555;
+
+        public VideoStreamSettings VideoSettings { get; set; } = new VideoStreamSettings();
+
+        public AudioStreamSettings AudioSettings { get; set; } = new AudioStreamSettings();
     }
 
     [Serializable]
     public class AudioStreamSettings
     {
         [XmlAttribute("Id")]
-        public string SessionId { get; set; } = "";
+        public string Id { get; set; } = "";
 
         [XmlAttribute("Enabled")]
         public bool Enabled { get; set; } = false;
 
-        public NetworkSettings NetworkParams { get; set; } = new NetworkSettings();
+        public NetworkSettings NetworkSettings { get; set; } = new NetworkSettings();
 
         public AudioEncoderSettings EncoderSettings { get; set; } = new AudioEncoderSettings();
 
@@ -426,7 +447,7 @@ namespace TestStreamer
     {
 
         [XmlAttribute("Id")]
-        public string SessionId { get; set; } = "";
+        public string Id { get; set; } = "";
 
         [XmlAttribute("Enabled")]
         public bool Enabled { get; set; } = false;
@@ -458,16 +479,11 @@ namespace TestStreamer
 
         public NetworkSettings NetworkSettings  { get; set; } = new NetworkSettings();
 
-       // [XmlIgnore]
-
         public VideoCaptureDevice CaptureDevice { get; set; }
 
         public VideoEncoderSettings EncoderSettings { get; set; } = new VideoEncoderSettings();
 
-        public ScreenCaptureProperties ScreenCaptureProperties { get; set; } = new ScreenCaptureProperties();
 
-        [XmlElement(typeof(XmlRect))]
-        public Rectangle CustomRegion { get; set; } = new Rectangle(0, 0, 640, 480);
 
     }
 

@@ -54,9 +54,15 @@ namespace MediaToolkit
         private VideoEncoder videoEncoder = null;
 
 
-        public void Setup(VideoEncoderSettings encodingSettings, NetworkSettings networkSettings)
+        public VideoEncoderSettings EncoderSettings { get; private set; }
+        public NetworkSettings NetworkSettings { get; private set; }
+
+        public void Setup(VideoEncoderSettings encoderSettings, NetworkSettings networkSettings)
         {
             logger.Debug("ScreenStreamer::Setup()");
+
+            this.EncoderSettings = encoderSettings;
+            this.NetworkSettings = networkSettings;
 
             try
             {
@@ -96,7 +102,7 @@ namespace MediaToolkit
                 //encoder.DataEncoded += Encoder_DataEncoded;
 
                 videoEncoder = new VideoEncoder(videoSource);
-                videoEncoder.Open(encodingSettings);
+                videoEncoder.Open(encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
                 videoSource.BufferUpdated += ScreenSource_BufferUpdated;
