@@ -91,7 +91,7 @@
             this.comboBoxDisplayModes.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDisplayModes.FormattingEnabled = true;
             this.comboBoxDisplayModes.Location = new System.Drawing.Point(5, 42);
-            this.comboBoxDisplayModes.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboBoxDisplayModes.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxDisplayModes.Name = "comboBoxDisplayModes";
             this.comboBoxDisplayModes.Size = new System.Drawing.Size(308, 24);
             this.comboBoxDisplayModes.TabIndex = 32;
@@ -122,7 +122,7 @@
             // findServiceButton
             // 
             this.findServiceButton.Location = new System.Drawing.Point(323, 7);
-            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.findServiceButton.Margin = new System.Windows.Forms.Padding(4);
             this.findServiceButton.Name = "findServiceButton";
             this.findServiceButton.Size = new System.Drawing.Size(100, 27);
             this.findServiceButton.TabIndex = 30;

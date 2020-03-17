@@ -3,36 +3,166 @@ using MediaToolkit.Core;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Discovery;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TestStreamer;
 
 namespace TestStreamer
 {
+    public enum StreamerState
+    {
+        Initialized,
+        Starting,
+        Streamming,
+        Stopping,
+        Stopped,
+        Shutdown,
+    }
 
     public class ScreenStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-       
-        private VideoStreamer videoStreamer = null;
         private IVideoSource videoSource = null;
-
+        private VideoStreamer videoStreamer = null;
+       
         private AudioSource audioSource = null;
         private AudioStreamer audioStreamer = null;
+
         private CommunicationService communicationService = null;
 
         public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
         public Uri ListenUri => communicationService?.ListenUri;
-        public bool IsStreaming { get; private set; }
+        //public bool IsStreaming { get; private set; }
 
         public StreamSession Session { get; private set; }
 
-        public void StartStreaming(StreamSession session)
+        public event Action StreamStarted;
+        public event Action StreamStopped;
+
+        public Exception ExceptionObj { get; private set; }
+        private AutoResetEvent syncEvent = null;
+
+        private volatile StreamerState state = StreamerState.Shutdown;
+        public StreamerState State => state;
+
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
+
+        private Task streamerTask = null;
+
+        public void Start(StreamSession session)
+        {
+            logger.Debug("ScreenStreamer::Start(...)");
+
+            if (state != StreamerState.Shutdown)
+            {
+                logger.Warn("ScreenStreamer::Start(...) return invalid state: " + state);
+                return;
+            }
+
+            state = StreamerState.Starting;
+
+            streamerTask = Task.Run(() =>
+            {
+                DoStreaming(session);
+
+            });
+        }
+
+        private void DoStreaming(StreamSession session)
+        {
+
+            if (state != StreamerState.Starting)
+            {
+                logger.Warn("ScreenStreamer::DoStreaming(...) return invalid state: " + state);
+                return;
+            }
+
+            try
+            {
+                syncEvent = new AutoResetEvent(false);
+
+                StartStreaming(session);
+
+                state = StreamerState.Streamming;
+
+                StreamStarted?.Invoke();
+
+                while (state == StreamerState.Streamming)
+                {
+                    //....
+
+
+                    syncEvent.WaitOne(1000);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+                ExceptionObj = ex;
+
+            }
+            finally
+            {
+                StopStreaming();
+
+                state = StreamerState.Stopped;
+
+                StreamStopped?.Invoke();
+
+            }
+        }
+
+        public void Stop()
+        {
+            logger.Debug("ScreenStreamer::Stop()");
+
+
+            if (state != StreamerState.Streamming)
+            {
+                logger.Warn("ScreenStreamer::Stop() return invalid state: " + state);
+                //return;
+            }
+
+
+            state = StreamerState.Stopping;
+
+            syncEvent?.Set();
+        }
+
+
+        public void Shutdown()
+        {
+            logger.Trace("DeckLinkInput::Shutdown()");
+
+            if (streamerTask != null && streamerTask.Status == TaskStatus.Running)
+            {
+                //...
+               
+            }
+
+            if (syncEvent != null)
+            {
+                syncEvent.Dispose();
+                syncEvent = null;
+            }
+
+            state = StreamerState.Shutdown;
+
+        }
+
+
+
+        private void StartStreaming(StreamSession session)
         {
             logger.Debug("ScreenStreamer::StartStreaming()");
 
@@ -187,10 +317,8 @@ namespace TestStreamer
                 audioStreamer.Start();
             }
 
-            IsStreaming = true;
+           // IsStreaming = true;
         }
-
-
 
 
 
@@ -447,25 +575,13 @@ namespace TestStreamer
 
         private void AudioStreamer_StateChanged()
         {
-
-            //syncContext.Send(_ =>
-            //{
-            //    //UpdateAudioControls();
-            //}, null);
-
-            //if (audioStreamer.IsStreaming)
-            //{
-
-            //}
-            //else
-            //{
-            //    audioStreamer.StateChanged -= AudioStreamer_StateChanged;
-            //}
+            //...
+            logger.Debug("AudioStreamer_StateChanged()");
         }
 
 
 
-        public void StopStreaming()
+        private void StopStreaming()
         {
             logger.Debug("StopStreaming()");
 
@@ -495,7 +611,7 @@ namespace TestStreamer
 
             communicationService?.Close();
 
-            IsStreaming = false;
+            //IsStreaming = false;
 
             //logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
         }

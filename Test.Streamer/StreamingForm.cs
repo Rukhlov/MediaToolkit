@@ -35,6 +35,9 @@ namespace TestStreamer
 
             screenStreamer = new ScreenStreamer();
 
+            screenStreamer.StreamStarted += ScreenStreamer_StreamStarted;
+            screenStreamer.StreamStopped += ScreenStreamer_StreamStopped;
+
             //Validate session...
             currentSession = Config.Data.Session;
 
@@ -94,30 +97,25 @@ namespace TestStreamer
                 audioSourceComboBox.SelectedItem = audioItem;
             }
 
+            syncContext = SynchronizationContext.Current;
 
         }
 
-        private SynchronizationContext syncContext = null;
-
         private ScreenStreamer screenStreamer = null;
-
         private StreamSession currentSession = null;
 
-
-        private StatisticForm statisticForm = new StatisticForm();
-
+        private SynchronizationContext syncContext = null;
+        private StatisticForm statisticForm = null;
         private RegionForm regionForm = null;
-
         private SelectAreaForm selectAreaForm = null;
-
 
 
         private void switchStreamingStateButton_Click(object sender, EventArgs e)
         {
             logger.Debug("startButton_Click(...) ");
 
-            
-            if (!screenStreamer.IsStreaming)
+
+            if (screenStreamer.State == StreamerState.Shutdown)
             {
                 Start();
             }
@@ -125,6 +123,11 @@ namespace TestStreamer
             {
                 Stop();
             }
+
+        }
+        private void stopStreamingButton_Click(object sender, EventArgs e)
+        {
+            logger.Debug("stopButton_Click(...) ");
 
         }
 
@@ -138,101 +141,13 @@ namespace TestStreamer
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
                 audioSourceSettingsLayoutPanel.Enabled = false;
-
                 switchStreamingStateButton.Enabled = false;
 
                 captureStatusLabel.Text = "Stream starting...";
 
-                //this.Enabled = false;
                 this.Cursor = Cursors.WaitCursor;
-                
 
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        screenStreamer.StartStreaming(currentSession);
-
-  
-                    }
-                    catch (Exception ex)
-                    {
-                        //logger.Error(ex);
-
-                        screenStreamer.StopStreaming();
-                        //StopStreaming();
-                        throw;
-                    }
-
-                }).ContinueWith(t =>
-                {
-
-                    UpdateControls();
-
-                    this.Cursor = Cursors.Default;
-                    this.Enabled = true;
-
-                    //contextMenu.Enabled = true;
-
-                    var ex = t.Exception;
-                    if (ex != null)
-                    {
-                        captureStatusLabel.Text = "Streaming attempt has failed";
-
-                        var iex = ex.InnerException;
-                        MessageBox.Show(iex.Message);
-
-                    }
-                    else
-                    {
-                        var videoSettings = currentSession.VideoSettings;
-
-                        if (videoSettings.Enabled)
-                        {
-                            var captureDescr = videoSettings?.CaptureDevice;
-                            if (captureDescr.CaptureMode == CaptureMode.Screen)
-                            {
-                                var screenDescr = (ScreenCaptureDevice)captureDescr;
-
-                                if (screenDescr.Properties.ShowDebugBorder)
-                                {
-                                    regionForm = new RegionForm(screenDescr.CaptureRegion);
-                                    regionForm.Visible = true;
-                                }
-
-                                if (screenDescr.Properties.ShowDebugInfo)
-                                {
-                                    statisticForm.Location = screenDescr.CaptureRegion.Location;
-             
-                                    statisticForm.Start();
-                                    
-                                }
-
-                                if (selectAreaForm != null )
-                                {
-                                    selectAreaForm.Capturing = true;
-                                }
-
-                            }
-
-                        }
-
-                        captureStatusLabel.Text = "";
-                        var statusDescription = "";
-                        var _port = currentSession.CommunicationPort;
-                        if (currentSession.CommunicationPort >= 0)
-                        {
-                            var listenUri = screenStreamer.ListenUri;
-                            statusDescription = "Stream running on port " + listenUri.Port;
-                        }
-
-                       
-                        //"Waiting for connection at " + _port + " port";
-                        captureStatusDescriptionLabel.Text = statusDescription;
-
-                    }
-
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                screenStreamer.Start(currentSession);
 
             }
             catch (Exception ex)
@@ -241,12 +156,9 @@ namespace TestStreamer
 
                 MessageBox.Show(ex.Message);
 
-                //contextMenu.Enabled = true;
-
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
                 audioSourceSettingsLayoutPanel.Enabled = true;
-
                 switchStreamingStateButton.Enabled = true;
 
                 captureStatusLabel.Text = "Streaming attempt has failed";
@@ -256,23 +168,107 @@ namespace TestStreamer
         }
 
 
-        private void stopStreamingButton_Click(object sender, EventArgs e)
+        private void ScreenStreamer_StreamStarted()
         {
-            logger.Debug("stopButton_Click(...) ");
+            syncContext.Send(_ =>
+            {
+                OnStreamStarted();
 
-            //try
-            //{
-            //    Process.Start(Path.Combine(CurrentDirectory, "Test.Client.exe"));
-            //}
-            //catch(Exception ex)
-            //{
-            //    logger.Error(ex);
-            //}
-            
+            }, null);
 
-            //logger.Info(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
-            // Stop();
         }
+
+        private void OnStreamStarted()
+        {
+
+            networkSettingsLayoutPanel.Enabled = false;
+            videoSourceSettingsLayoutPanel.Enabled = false;
+            audioSourceSettingsLayoutPanel.Enabled = false;
+
+            switchStreamingStateButton.Enabled = true;
+            switchStreamingStateButton.Text = "Stop Streaming";
+
+            this.Cursor = Cursors.Default;
+
+            //contextMenu.Enabled = true;
+
+            var ex = screenStreamer.ExceptionObj;
+            if (ex != null)
+            {
+                captureStatusLabel.Text = "Streaming attempt has failed";
+
+                var iex = ex.InnerException;
+                MessageBox.Show(iex.Message);
+
+            }
+            else
+            {
+                var videoSettings = currentSession.VideoSettings;
+
+                if (videoSettings.Enabled)
+                {
+                    var captureDescr = videoSettings?.CaptureDevice;
+                    if (captureDescr.CaptureMode == CaptureMode.Screen)
+                    {
+                        var screenDescr = (ScreenCaptureDevice)captureDescr;
+
+                        if (screenDescr.Properties.ShowDebugBorder)
+                        {
+                            regionForm = new RegionForm(screenDescr.CaptureRegion);
+                            regionForm.Visible = true;
+                        }
+
+                        if (screenDescr.Properties.ShowDebugInfo)
+                        {
+                            if(statisticForm == null)
+                            {
+                                statisticForm = new StatisticForm();
+                            }
+
+                            statisticForm.Location = screenDescr.CaptureRegion.Location;
+
+                            statisticForm.Start();
+
+                        }
+
+                        if (selectAreaForm != null)
+                        {
+                            selectAreaForm.Capturing = true;
+                        }
+
+                    }
+
+                }
+
+                captureStatusLabel.Text = "";
+                var statusDescription = "";
+                var _port = currentSession.CommunicationPort;
+                if (currentSession.CommunicationPort >= 0)
+                {
+                    var listenUri = screenStreamer.ListenUri;
+                    statusDescription = "Stream running on port " + listenUri.Port;
+                }
+
+
+                //"Waiting for connection at " + _port + " port";
+                captureStatusDescriptionLabel.Text = statusDescription;
+
+            }
+        }
+
+        private void ScreenStreamer_StreamStopped()
+        {
+
+            syncContext.Send(_ =>
+            {
+                OnStreamStopped();
+
+            }, null);
+
+            
+        }
+
+
 
         private void Stop()
         {
@@ -285,73 +281,15 @@ namespace TestStreamer
                 networkSettingsLayoutPanel.Enabled = false;
                 videoSourceSettingsLayoutPanel.Enabled = false;
                 audioSourceSettingsLayoutPanel.Enabled = false;
-
                 switchStreamingStateButton.Enabled = false;
 
                 captureStatusLabel.Text = "Stream stopping...";
 
                 captureStatusDescriptionLabel.Text = "";
 
-                Task.Run(() =>
-                {
-                    screenStreamer.StopStreaming();
-                    //StopStreaming();
-
-                }).ContinueWith(t =>
-                {
-                    //logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
-
-                    UpdateControls();
-                    //contextMenu.Enabled = true;
-                    switchStreamingStateButton.Enabled = true;
-
-                    captureStatusLabel.Text = "Ready to stream";
-
-                    captureStatusDescriptionLabel.Text = "";
-
-                    this.Cursor = Cursors.Default;
-                    this.Enabled = true;
-
-                    if (statisticForm != null)
-                    {
-                        statisticForm.Stop();
-                        statisticForm.Visible = false;
-                    }
-
-                    //if (previewForm != null && !previewForm.IsDisposed)
-                    //{
-                    //    previewForm.Close();
-                    //    previewForm = null;
-                    //}
-
-                    if (regionForm != null)
-                    {
-                        regionForm.Close();
-                        regionForm = null;
-                    }
-
-
-                    if (selectAreaForm != null)
-                    {
-                        selectAreaForm.Capturing = false;
-                    }
-
-
-                    var ex = t.Exception;
-                    if (ex != null)
-                    {
-                        var iex = ex.InnerException;
-                        MessageBox.Show(iex.Message);
-                    }
-                    else
-                    {
-
-
-                    }
-
-                }, TaskScheduler.FromCurrentSynchronizationContext());
+                screenStreamer.Stop();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.Error(ex);
                 MessageBox.Show(ex.ToString());
@@ -360,7 +298,6 @@ namespace TestStreamer
                 networkSettingsLayoutPanel.Enabled = true;
                 videoSourceSettingsLayoutPanel.Enabled = true;
                 audioSourceSettingsLayoutPanel.Enabled = true;
-
                 switchStreamingStateButton.Enabled = true;
 
 
@@ -371,8 +308,63 @@ namespace TestStreamer
 
         }
 
+        private void OnStreamStopped()
+        {
 
-        
+            networkSettingsLayoutPanel.Enabled = true;
+            videoSourceSettingsLayoutPanel.Enabled = true;
+            audioSourceSettingsLayoutPanel.Enabled = true;
+
+            switchStreamingStateButton.Enabled = true;
+            switchStreamingStateButton.Text = "Start Streaming";
+
+            //contextMenu.Enabled = true;
+
+            captureStatusLabel.Text = "Ready to stream";
+
+            captureStatusDescriptionLabel.Text = "";
+
+            this.Cursor = Cursors.Default;
+
+            if (screenStreamer != null)
+            {
+                screenStreamer.Shutdown();
+
+            }
+
+            if (statisticForm != null)
+            {
+                statisticForm.Stop();
+                statisticForm.Visible = false;
+            }
+
+            if (regionForm != null)
+            {
+                regionForm.Close();
+                regionForm = null;
+            }
+
+
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.Capturing = false;
+            }
+
+
+            var ex = screenStreamer.ExceptionObj;
+            if (ex != null)
+            {
+                var iex = ex.InnerException;
+                MessageBox.Show(iex.Message);
+            }
+            else
+            {
+
+
+            }
+        }
+
+
         private void exitMenuItem_Click(object sender, EventArgs e)
         {
             DoClose();
@@ -772,7 +764,6 @@ namespace TestStreamer
 
             videoSourceDetailsButton.Enabled = true;//!(displayRect.IsEmpty && displayName == string.Empty);
 
-            UpdateControls();
         }
 
 
@@ -803,8 +794,7 @@ namespace TestStreamer
             //audioSettings.Enabled = (captureSettings != null);
 
             currentSession.AudioSettings.CaptureDevice = captureDevice;
-
-            UpdateControls();
+ 
         }
 
 
@@ -812,14 +802,13 @@ namespace TestStreamer
         {
             currentSession.AudioSettings.Enabled = audioSourceEnableCheckBox.Checked;
 
-            UpdateControls();
+
         }
 
         private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             currentSession.VideoSettings.Enabled = videoSourceEnableCheckBox.Checked;
 
-            UpdateControls();
         }
 
         private AudioCaptureDeviceDescription GetCurrentAudioCaptureDevice()
@@ -839,36 +828,6 @@ namespace TestStreamer
             return captureSettings;
         }
 
-
-        private void UpdateControls()
-        {
-
-            //this.startStreamingButton.Enabled = !isStreaming;
-
-            //this.stopStreamingButton.Enabled = isStreaming;
-
-            bool isStreaming = screenStreamer?.IsStreaming ?? false;
-            if (isStreaming)
-            {
-               // startToolStripMenuItem.Text = "Stop Streaming";
-                switchStreamingStateButton.Text = "Stop Streaming";
-            }
-            else
-            {
-                //startToolStripMenuItem.Text = "Start Streaming";
-                switchStreamingStateButton.Text = "Start Streaming";
-            }
-
-            
-
-            networkSettingsLayoutPanel.Enabled = !isStreaming;
-            videoSourceSettingsLayoutPanel.Enabled = !isStreaming;
-            audioSourceSettingsLayoutPanel.Enabled = !isStreaming;
-
-            switchStreamingStateButton.Enabled = true;
-
-
-        }
 
         protected override CreateParams CreateParams
         {
