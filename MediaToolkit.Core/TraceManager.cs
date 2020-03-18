@@ -7,7 +7,7 @@ using System.Text;
 namespace MediaToolkit.Logging
 {
 
-    internal class TraceManager
+    public class TraceManager
     {
         private static Dictionary<string, TraceSource> traceSources = new Dictionary<string, TraceSource>();
 

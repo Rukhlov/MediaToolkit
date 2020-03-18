@@ -142,7 +142,7 @@ namespace TestStreamer
 
         public void Shutdown()
         {
-            logger.Trace("DeckLinkInput::Shutdown()");
+            logger.Trace("ScreenStreamer::Shutdown()");
 
             if (streamerTask != null && streamerTask.Status == TaskStatus.Running)
             {

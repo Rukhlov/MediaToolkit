@@ -35,6 +35,7 @@
             this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
             this.showDebugInfoCheckBox = new System.Windows.Forms.CheckBox();
             this.showCaptureBorderCheckBox = new System.Windows.Forms.CheckBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.displayTextBox = new System.Windows.Forms.TextBox();
             this.labelDisplay = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -78,7 +79,6 @@
             this.aspectRatioCheckBox = new System.Windows.Forms.CheckBox();
             this.checkBoxResoulutionFromSource = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
             this.ScreenCaptureGroup.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
@@ -218,6 +218,19 @@
             this.showCaptureBorderCheckBox.TabIndex = 84;
             this.showCaptureBorderCheckBox.Text = "Show Capture Frame";
             this.showCaptureBorderCheckBox.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.AutoSize = true;
+            this.button1.Enabled = false;
+            this.button1.Location = new System.Drawing.Point(303, 2);
+            this.button1.Margin = new System.Windows.Forms.Padding(2);
+            this.button1.Name = "button1";
+            this.tableLayoutPanel4.SetRowSpan(this.button1, 2);
+            this.button1.Size = new System.Drawing.Size(150, 30);
+            this.button1.TabIndex = 86;
+            this.button1.Text = "Preview";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // displayTextBox
             // 
@@ -858,19 +871,6 @@
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.panel1.Size = new System.Drawing.Size(245, 34);
             this.panel1.TabIndex = 80;
-            // 
-            // button1
-            // 
-            this.button1.AutoSize = true;
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(303, 2);
-            this.button1.Margin = new System.Windows.Forms.Padding(2);
-            this.button1.Name = "button1";
-            this.tableLayoutPanel4.SetRowSpan(this.button1, 2);
-            this.button1.Size = new System.Drawing.Size(150, 30);
-            this.button1.TabIndex = 86;
-            this.button1.Text = "Preview";
-            this.button1.UseVisualStyleBackColor = true;
             // 
             // VideoSettingsForm
             // 

@@ -1,0 +1,103 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors"
+                    xmlns:tb="http://www.hardcodet.net/taskbar">
+    <DataTemplate x:Key="streamMainTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Templates\StreamInfoTemplate.xaml"/>
+                    <ResourceDictionary Source="..\..\Templates\StreamMainDetailsTemplate.xaml"/>
+                    <ResourceDictionary Source="..\..\Templates\ReferenceTemplate.xaml"/>
+                    <ResourceDictionary Source="..\..\Templates\ContextMenuTemplate.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <Border Background="#FF17162A" CornerRadius="8">
+            <StackPanel Orientation="Vertical" Margin="0,0,0,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="42"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0"
+                                Orientation="Vertical">
+                        
+                        <!--List of references-->
+                        <ItemsControl ItemsSource="{Binding StreamList}"
+                                      ItemTemplate="{StaticResource referenceTemplate}">
+                            <i:Interaction.Behaviors>
+                                <behaviors:StreamSelectBehavior/>
+                            </i:Interaction.Behaviors>
+                        </ItemsControl>
+
+                        <!--Plus button-->
+                        <Button Style="{StaticResource defaultButtonStyle}" 
+                                Background="#FF42CF4C"
+                                Height="32"
+                                Width="32"
+                                Margin="0,4"
+                                HorizontalAlignment="Center"
+                                Command="{Binding AddCommand}"
+                                ToolTip="Create new stream">
+                            <Button.Visibility>
+                                <MultiBinding Converter="{converters:MultiBooleanToVisibilityConverter}"
+                                              ConverterParameter="Any,Collapsed">
+                                    <Binding Path="DataContext.HasNoStreams"
+                                            RelativeSource="{RelativeSource AncestorType=Grid, Mode=FindAncestor}"
+                                            Mode="OneWay"/>
+                                    <Binding Path="DataContext.IsEdit"
+                                            RelativeSource="{RelativeSource AncestorType=Grid, Mode=FindAncestor}"
+                                            Mode="OneWay"/>
+                                </MultiBinding>
+                            </Button.Visibility>
+                            <materialDesign:PackIcon Kind="Add" Margin="0"/>
+                        </Button>
+                        
+                    </StackPanel>
+
+                    <!--Stream details-->
+                    <ContentPresenter Grid.Column="1"
+                                      Visibility="{Binding DataContext.IsEdit, 
+                                                RelativeSource={RelativeSource AncestorType=Grid, Mode=FindAncestor}, 
+                                                Converter={converters:BooleanToVisibilityConverter}, 
+                                                Mode=OneWay}"
+                                      Content="{Binding SelectedStream}"
+                                      ContentTemplate="{StaticResource streamMainDetailsTemplate}"/>
+
+                    <!--List of streams-->
+                    <ItemsControl Grid.Column="1"
+                                  Visibility="{Binding IsEdit, Converter={converters:InvertedBooleanToVisibilityConverter}, Mode=OneWay}"
+                                  ItemsSource="{Binding StreamList}"
+                                  ItemTemplate="{StaticResource streamInfoTemplate}">
+                        <i:Interaction.Behaviors>
+                            <behaviors:StreamSelectBehavior/>
+                        </i:Interaction.Behaviors>
+                    </ItemsControl>
+                </Grid>
+                
+                <!--Taskbar icon-->
+                <tb:TaskbarIcon PopupActivation="RightClick"
+                                IconSource="/ScreenStreamer.Wpf.Common;Component/Icons/tray_logo.ico">
+                    <tb:TaskbarIcon.TrayPopup>
+                        <ContentPresenter ContentTemplate="{StaticResource contextMenuTemplate}"
+                                          Content="{Binding}"/>
+                    </tb:TaskbarIcon.TrayPopup>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="TrayRightMouseDown">
+                            <i:InvokeCommandAction Command="{Binding ActivateMainWindowCommand}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="TrayLeftMouseDown">
+                            <i:InvokeCommandAction Command="{Binding ActivateMainWindowCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </tb:TaskbarIcon>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

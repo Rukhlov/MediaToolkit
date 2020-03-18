@@ -1,0 +1,95 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors">
+    <DataTemplate x:Key="streamInfoTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\Styles\ToggleButtonStyle.xaml"/>
+                    <ResourceDictionary Source="..\Styles\TextBoxStyle.xaml"/>
+                    <ResourceDictionary Source="..\Templates\ReferenceTemplate.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+                <DataTemplate x:Key="toggleContentTemplate">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding StartCommandText, Mode=OneWay}"/>
+                        <materialDesign:PackIcon Kind="Pause" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
+                        <materialDesign:PackIcon Kind="PlayOutline" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <Grid Height="48">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="300"/>
+                <ColumnDefinition Width="109"/>
+                <ColumnDefinition Width="32"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                <TextBox IsReadOnly="{Binding IsEditName, Mode=OneWay, Converter={converters:InverseBooleanConverter}}" 
+                         Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="16,0,8,0"
+                         Style="{StaticResource captionTextBoxStyle}"
+                         Focusable="{Binding IsEditName}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:StreamEditNameBehavior/>
+                    </i:Interaction.Behaviors>
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding Path=EditNameCommand}"/>
+                        <KeyBinding Key="Tab" Command="{Binding Path=EditNameCommand}"/>
+                        <KeyBinding Key="Esc" Command="{Binding Path=EditNameCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                
+                <!--Edit name border-->
+                <Border Height="16" 
+                        Width="16"
+                        Style="{StaticResource clickableBorder}"
+                        ToolTip="Edit stream name">
+                    <materialDesign:PackIcon Kind="ModeEditOutline" VerticalAlignment="Center"/>
+                    <i:Interaction.Behaviors>
+                        <behaviors:HandleMouseDownBorderBehavior/>
+                    </i:Interaction.Behaviors>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseDown">
+                            <i:InvokeCommandAction Command="{Binding Path=EditNameCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+            </StackPanel>
+
+            <!--Start/Pause command-->
+            <ToggleButton Command="{Binding StartCommand}"
+                          Grid.Column="1"
+                          HorizontalAlignment="Right"
+                          Width="109"
+                          Height="32"
+                          ContentTemplate="{StaticResource toggleContentTemplate}" Style="{StaticResource defaultToggleButton}"
+                          Content="{Binding}"
+                          IsChecked="{Binding IsStarted, Mode=OneWay}"
+                          Cursor="Hand"
+                          ToolTip="Press to start or stop streaming"/>
+
+            <!--Clone border-->
+            <Border Grid.Column="2" 
+                    Height="16" 
+                    Width="16"
+                    Style="{StaticResource clickableBorder}"
+                    ToolTip="Copy url">
+                <materialDesign:PackIcon Kind="ContentCopy" />
+                <i:Interaction.Behaviors>
+                    <behaviors:HandleMouseDownBorderBehavior/>
+                </i:Interaction.Behaviors>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="PreviewMouseDown">
+                        <i:InvokeCommandAction Command="{Binding Path=CopyUrlCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Border>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

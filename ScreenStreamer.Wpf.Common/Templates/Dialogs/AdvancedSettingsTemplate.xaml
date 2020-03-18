@@ -1,0 +1,84 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:validationRules="clr-namespace:ScreenStreamer.Wpf.Common.ValidationRules">
+    <DataTemplate x:Key="advancedSettingsTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\TextBoxStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="160"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Encoder" Grid.Row="0" Grid.Column="0"/>
+            <ComboBox Grid.Row="0" Grid.Column="1" 
+                      ItemsSource="{Binding VideoEncoderModes}" 
+                      SelectedItem="{Binding VideoEncoder}"
+                      Cursor="Hand"/>
+            
+            <TextBlock Text="Profile" Grid.Row="1" Grid.Column="0"/>
+            <ComboBox Grid.Row="1" Grid.Column="1" 
+                      ItemsSource="{Binding H264Profiles}" 
+                      SelectedItem="{Binding H264Profile}"
+                      Cursor="Hand"/>
+
+            <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
+            
+            <TextBlock Text="Bitrate" Grid.Row="3" Grid.Column="0"/>
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Text="{Binding Bitrate, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
+                     Style="{StaticResource defaultTextBoxStyle}">
+                <i:Interaction.Behaviors>
+                    <behaviors:RestrictedInputTextBoxBehavior/>
+                </i:Interaction.Behaviors>
+            </TextBox>
+            
+            <TextBlock Text="Max" Grid.Row="4" Grid.Column="0"/>
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Text="{Binding MaxBitrate, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
+                     Style="{StaticResource defaultTextBoxStyle}">
+                <i:Interaction.Behaviors>
+                    <behaviors:RestrictedInputTextBoxBehavior/>
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <Rectangle Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
+
+            <TextBlock Text="FPS" Grid.Row="6" Grid.Column="0"/>
+            <TextBox Grid.Row="6" Grid.Column="1"
+                     Text="{Binding Fps, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
+                     Style="{StaticResource defaultTextBoxStyle}">
+                <i:Interaction.Behaviors>
+                    <behaviors:RestrictedInputTextBoxBehavior/>
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <TextBlock Text="Low latency" Grid.Row="7" Grid.Column="0"/>
+            <ToggleButton Grid.Row="7" Grid.Column="1"
+                          Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                          IsChecked="{Binding LowLatency}" 
+                          HorizontalAlignment="Right"
+                          Cursor="Hand"/>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

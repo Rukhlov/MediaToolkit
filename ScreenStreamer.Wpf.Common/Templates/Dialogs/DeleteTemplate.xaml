@@ -1,0 +1,35 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DataTemplate x:Key="deleteTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <StackPanel Orientation="Vertical">
+            <TextBlock MaxWidth="270"
+                       TextWrapping="Wrap"
+                       Text="{Binding DialogText}"/>
+            <StackPanel Orientation="Horizontal"
+                        Margin="0,8,0,8"
+                        FlowDirection="RightToLeft">
+                <Button IsCancel="True"
+                        Style="{StaticResource defaultButtonStyle}"
+                        MinWidth="60"
+                        Foreground="#FF131223"
+                        Background="#FF42CF4C">Nope</Button>
+                <Button IsDefault="True"
+                        Style="{StaticResource defaultButtonStyle}"
+                        MinWidth="60"
+                        Command="{Binding DeleteCommand}"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                        Foreground="#FFE74444"
+                        Background="#FF131223"
+                        Margin="10,0,0,0">Delete</Button>
+            </StackPanel>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

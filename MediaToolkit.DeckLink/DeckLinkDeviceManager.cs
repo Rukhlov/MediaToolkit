@@ -1,6 +1,7 @@
 ﻿using DeckLinkAPI;
+using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,7 +14,9 @@ namespace MediaToolkit.DeckLink
 {
     public class DeckLinkDeviceManager : IDeckLinkDeviceNotificationCallback
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         private IDeckLinkDiscovery deckLinkDiscovery;
 
@@ -87,7 +90,7 @@ namespace MediaToolkit.DeckLink
 
         void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceArrived(IDeckLink device)
         {
-            logger.Trace("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceArrived()");
+            logger.Verb("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceArrived()");
 
             DeckLinkDeviceDescription inputDescr = null;
             var inputDevice = new DeckLinkInput(device);
@@ -120,7 +123,7 @@ namespace MediaToolkit.DeckLink
 
         void IDeckLinkDeviceNotificationCallback.DeckLinkDeviceRemoved(IDeckLink device)
         {// Удаление не проверялось т.к не было в наличии устройств поддерживающий динамическое отключение
-            logger.Trace("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceRemoved()");
+            logger.Verb("IDeckLinkDeviceNotificationCallback::DeckLinkDeviceRemoved()");
 
             try
             { 

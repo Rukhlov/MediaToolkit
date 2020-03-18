@@ -33,7 +33,8 @@
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.multicastPanel = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
+            this.multicastPort2Numeric = new System.Windows.Forms.NumericUpDown();
+            this.multicastPort1Numeric = new System.Windows.Forms.NumericUpDown();
             this.multicastAddressTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -55,21 +56,20 @@
             this.findFreePortButton = new System.Windows.Forms.Button();
             this.videoSourceUpdateButton = new System.Windows.Forms.Button();
             this.networkComboBox = new System.Windows.Forms.ComboBox();
-            this.multicastPort1Numeric = new System.Windows.Forms.NumericUpDown();
-            this.multicastPort2Numeric = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.panel2.SuspendLayout();
             this.multicastPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).BeginInit();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -87,7 +87,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(500, 446);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(478, 480);
             this.tableLayoutPanel1.TabIndex = 84;
             // 
             // groupBox1
@@ -98,7 +98,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox1.Size = new System.Drawing.Size(496, 264);
+            this.groupBox1.Size = new System.Drawing.Size(474, 298);
             this.groupBox1.TabIndex = 91;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Streaming Settings";
@@ -119,7 +119,7 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(484, 214);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(462, 248);
             this.tableLayoutPanel3.TabIndex = 85;
             // 
             // panel2
@@ -134,53 +134,89 @@
             this.panel2.Location = new System.Drawing.Point(10, 46);
             this.panel2.Margin = new System.Windows.Forms.Padding(10, 15, 2, 2);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(269, 137);
+            this.panel2.Size = new System.Drawing.Size(219, 171);
             this.panel2.TabIndex = 86;
             // 
             // multicastPanel
             // 
             this.multicastPanel.AutoSize = true;
             this.multicastPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.multicastPanel.Controls.Add(this.label3);
             this.multicastPanel.Controls.Add(this.multicastPort2Numeric);
             this.multicastPanel.Controls.Add(this.multicastPort1Numeric);
-            this.multicastPanel.Controls.Add(this.label3);
             this.multicastPanel.Controls.Add(this.multicastAddressTextBox);
             this.multicastPanel.Controls.Add(this.label2);
             this.multicastPanel.Controls.Add(this.label1);
             this.multicastPanel.Location = new System.Drawing.Point(2, 68);
             this.multicastPanel.Margin = new System.Windows.Forms.Padding(2);
             this.multicastPanel.Name = "multicastPanel";
-            this.multicastPanel.Size = new System.Drawing.Size(265, 67);
+            this.multicastPanel.Size = new System.Drawing.Size(215, 101);
             this.multicastPanel.TabIndex = 85;
             // 
-            // label3
+            // multicastPort2Numeric
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(174, 40);
-            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(15, 20);
-            this.label3.TabIndex = 75;
-            this.label3.Text = "-";
+            this.multicastPort2Numeric.Location = new System.Drawing.Point(103, 70);
+            this.multicastPort2Numeric.Margin = new System.Windows.Forms.Padding(4);
+            this.multicastPort2Numeric.Maximum = new decimal(new int[] {
+            5555,
+            0,
+            0,
+            0});
+            this.multicastPort2Numeric.Minimum = new decimal(new int[] {
+            1234,
+            0,
+            0,
+            0});
+            this.multicastPort2Numeric.Name = "multicastPort2Numeric";
+            this.multicastPort2Numeric.Size = new System.Drawing.Size(108, 27);
+            this.multicastPort2Numeric.TabIndex = 94;
+            this.multicastPort2Numeric.Value = new decimal(new int[] {
+            1235,
+            0,
+            0,
+            0});
+            // 
+            // multicastPort1Numeric
+            // 
+            this.multicastPort1Numeric.Location = new System.Drawing.Point(102, 35);
+            this.multicastPort1Numeric.Margin = new System.Windows.Forms.Padding(4);
+            this.multicastPort1Numeric.Maximum = new decimal(new int[] {
+            5555,
+            0,
+            0,
+            0});
+            this.multicastPort1Numeric.Minimum = new decimal(new int[] {
+            1234,
+            0,
+            0,
+            0});
+            this.multicastPort1Numeric.Name = "multicastPort1Numeric";
+            this.multicastPort1Numeric.Size = new System.Drawing.Size(109, 27);
+            this.multicastPort1Numeric.TabIndex = 76;
+            this.multicastPort1Numeric.Value = new decimal(new int[] {
+            1234,
+            0,
+            0,
+            0});
             // 
             // multicastAddressTextBox
             // 
             this.multicastAddressTextBox.Location = new System.Drawing.Point(102, 2);
             this.multicastAddressTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.multicastAddressTextBox.Name = "multicastAddressTextBox";
-            this.multicastAddressTextBox.Size = new System.Drawing.Size(159, 27);
+            this.multicastAddressTextBox.Size = new System.Drawing.Size(109, 27);
             this.multicastAddressTextBox.TabIndex = 30;
             this.multicastAddressTextBox.Text = "239.0.0.1";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(2, 40);
+            this.label2.Location = new System.Drawing.Point(2, 37);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(84, 20);
+            this.label2.Size = new System.Drawing.Size(81, 20);
             this.label2.TabIndex = 73;
-            this.label2.Text = "Port Range:";
+            this.label2.Text = "Video Port:";
             // 
             // label1
             // 
@@ -234,7 +270,7 @@
             this.textBoxStreamName.Location = new System.Drawing.Point(109, 2);
             this.textBoxStreamName.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxStreamName.Name = "textBoxStreamName";
-            this.textBoxStreamName.Size = new System.Drawing.Size(373, 27);
+            this.textBoxStreamName.Size = new System.Drawing.Size(351, 27);
             this.textBoxStreamName.TabIndex = 24;
             // 
             // labelDevice
@@ -255,7 +291,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(227, 409);
+            this.panel1.Location = new System.Drawing.Point(205, 443);
             this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -293,7 +329,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox2.Size = new System.Drawing.Size(496, 135);
+            this.groupBox2.Size = new System.Drawing.Size(474, 135);
             this.groupBox2.TabIndex = 85;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Server Settings";
@@ -315,7 +351,7 @@
             this.tableLayoutPanel2.RowCount = 2;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(484, 85);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(462, 85);
             this.tableLayoutPanel2.TabIndex = 92;
             // 
             // label5
@@ -347,7 +383,7 @@
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.RowCount = 1;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(476, 45);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(454, 45);
             this.tableLayoutPanel4.TabIndex = 85;
             // 
             // panel3
@@ -359,7 +395,7 @@
             this.panel3.Location = new System.Drawing.Point(4, 4);
             this.panel3.Margin = new System.Windows.Forms.Padding(4);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(344, 37);
+            this.panel3.Size = new System.Drawing.Size(322, 37);
             this.panel3.TabIndex = 23;
             // 
             // label23
@@ -400,7 +436,7 @@
             // 
             this.findFreePortButton.AutoSize = true;
             this.findFreePortButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.findFreePortButton.Location = new System.Drawing.Point(354, 2);
+            this.findFreePortButton.Location = new System.Drawing.Point(332, 2);
             this.findFreePortButton.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.findFreePortButton.Name = "findFreePortButton";
             this.findFreePortButton.Size = new System.Drawing.Size(122, 30);
@@ -413,7 +449,7 @@
             // 
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.videoSourceUpdateButton.Image = global::Test.Streamer.Properties.Resources.baseline_cached_black_18dp;
-            this.videoSourceUpdateButton.Location = new System.Drawing.Point(453, 1);
+            this.videoSourceUpdateButton.Location = new System.Drawing.Point(431, 1);
             this.videoSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.videoSourceUpdateButton.Name = "videoSourceUpdateButton";
             this.videoSourceUpdateButton.Size = new System.Drawing.Size(30, 30);
@@ -430,54 +466,18 @@
             this.networkComboBox.Location = new System.Drawing.Point(74, 2);
             this.networkComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.networkComboBox.Name = "networkComboBox";
-            this.networkComboBox.Size = new System.Drawing.Size(376, 28);
+            this.networkComboBox.Size = new System.Drawing.Size(354, 28);
             this.networkComboBox.TabIndex = 16;
             // 
-            // multicastPort1Numeric
+            // label3
             // 
-            this.multicastPort1Numeric.Location = new System.Drawing.Point(102, 36);
-            this.multicastPort1Numeric.Margin = new System.Windows.Forms.Padding(4);
-            this.multicastPort1Numeric.Maximum = new decimal(new int[] {
-            5555,
-            0,
-            0,
-            0});
-            this.multicastPort1Numeric.Minimum = new decimal(new int[] {
-            1234,
-            0,
-            0,
-            0});
-            this.multicastPort1Numeric.Name = "multicastPort1Numeric";
-            this.multicastPort1Numeric.Size = new System.Drawing.Size(72, 27);
-            this.multicastPort1Numeric.TabIndex = 76;
-            this.multicastPort1Numeric.Value = new decimal(new int[] {
-            1234,
-            0,
-            0,
-            0});
-            // 
-            // multicastPort2Numeric
-            // 
-            this.multicastPort2Numeric.Location = new System.Drawing.Point(193, 36);
-            this.multicastPort2Numeric.Margin = new System.Windows.Forms.Padding(4);
-            this.multicastPort2Numeric.Maximum = new decimal(new int[] {
-            5555,
-            0,
-            0,
-            0});
-            this.multicastPort2Numeric.Minimum = new decimal(new int[] {
-            1234,
-            0,
-            0,
-            0});
-            this.multicastPort2Numeric.Name = "multicastPort2Numeric";
-            this.multicastPort2Numeric.Size = new System.Drawing.Size(68, 27);
-            this.multicastPort2Numeric.TabIndex = 94;
-            this.multicastPort2Numeric.Value = new decimal(new int[] {
-            5555,
-            0,
-            0,
-            0});
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(2, 72);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(82, 20);
+            this.label3.TabIndex = 95;
+            this.label3.Text = "Audio Port:";
             // 
             // NetworkSettingsForm
             // 
@@ -486,7 +486,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(604, 501);
+            this.ClientSize = new System.Drawing.Size(604, 589);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -504,6 +504,8 @@
             this.panel2.PerformLayout();
             this.multicastPanel.ResumeLayout(false);
             this.multicastPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).EndInit();
             this.panel1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.tableLayoutPanel2.ResumeLayout(false);
@@ -513,8 +515,6 @@
             this.panel3.ResumeLayout(false);
             this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -538,7 +538,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel multicastPanel;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label labelDevice;
         private System.Windows.Forms.TextBox textBoxStreamName;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
@@ -550,5 +549,6 @@
         private System.Windows.Forms.Button findFreePortButton;
         private System.Windows.Forms.NumericUpDown multicastPort2Numeric;
         private System.Windows.Forms.NumericUpDown multicastPort1Numeric;
+        private System.Windows.Forms.Label label3;
     }
 }

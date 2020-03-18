@@ -1,10 +1,12 @@
 ﻿using DeckLinkAPI;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,11 +17,13 @@ namespace MediaToolkit.DeckLink
 {
     public class DeckLinkTools
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         public static bool GetDeviceByIndex(int inputIndex, out IDeckLink deckLink)
         {
-            logger.Trace("GetDeviceByIndex(...) " + inputIndex);
+            logger.Verb("GetDeviceByIndex(...) " + inputIndex);
 
             bool Success = false;
 
@@ -70,7 +74,7 @@ namespace MediaToolkit.DeckLink
 
         public static bool GetDeviceByHandle(string deviceHandle, out IDeckLink deckLink)
         {
-            logger.Trace("GetDeviceByName(...) " + deviceHandle);
+            logger.Verb("GetDeviceByName(...) " + deviceHandle);
 
             bool Success = false;
 
@@ -435,7 +439,9 @@ namespace MediaToolkit.DeckLink
         private const int S_OK = 0;
         private const int E_OUTOFMEMORY = 0x000E;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
+
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly int maxAllocatedBuffersCount = 8;
         public SimpleMemoryAllocator(int maxBufferCount = 8)
@@ -513,7 +519,9 @@ namespace MediaToolkit.DeckLink
 
     class MemoryAllocator : IDeckLinkMemoryAllocator
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        // private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         private const int S_OK = 0;
         private const int E_OUTOFMEMORY = 0x000E;
@@ -569,7 +577,7 @@ namespace MediaToolkit.DeckLink
                     {
                         buffer = Marshal.AllocHGlobal((int)size);
                         allocatedBuffersCount++;
-                        logger.Trace("MemoryAllocator::AllocateBuffer " + buffer + " " + size + " " + allocateBufferRequest);
+                        logger.Verb("MemoryAllocator::AllocateBuffer " + buffer + " " + size + " " + allocateBufferRequest);
                     }
                     //else
                     //{
@@ -655,7 +663,9 @@ namespace MediaToolkit.DeckLink
 
     class MemoryAllocator2 : IDeckLinkMemoryAllocator
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
+
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private const int S_OK = 0;
         private const int E_OUTOFMEMORY = 0x000E;

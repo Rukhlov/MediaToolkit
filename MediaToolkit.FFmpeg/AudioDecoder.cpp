@@ -14,6 +14,7 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
+#using <system.dll>
 using namespace System;
 using namespace System::IO;
 
@@ -24,8 +25,9 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
+using namespace MediaToolkit::Logging;
 using namespace System::Threading;
-using namespace NLog;
+//using namespace NLog;
 
 namespace FFmpegLib {
 
@@ -45,7 +47,8 @@ namespace FFmpegLib {
 
 		void Open(AudioEncoderSettings^ srcParams) {
 			//av_log(NULL, AV_LOG_DEBUG, "AudioDecoder::Open()");
-			logger->Debug("AudioDecoder::Open()");
+
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioDecoder::Open()");
 			int res;
 			try {
 				//av_register_all();
@@ -171,7 +174,7 @@ namespace FFmpegLib {
 		void Close() {
 			//av_log(NULL, AV_LOG_DEBUG, "FFmpegAudioDecoder::Close()");
 
-			logger->Debug("AudioDecoder::Close()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioDecoder::Close()");
 			if (codec_context) {
 				avcodec_flush_buffers(codec_context);
 			}
@@ -196,7 +199,7 @@ namespace FFmpegLib {
 
 		void CleanUp() {
 
-			logger->Debug("AudioDecoder::CleanUp()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioDecoder::CleanUp()");
 
 			closing = true;
 
@@ -212,9 +215,10 @@ namespace FFmpegLib {
 			}
 
 			CleanedUp = true;
+			
 		}
-
-		static Logger^ logger = LogManager::GetCurrentClassLogger();
+		static TraceSource^ logger = TraceManager::GetTrace("MediaToolkit.FFmpeg");
+		//static Logger^ logger = LogManager::GetCurrentClassLogger();
 	};
 
 

@@ -1,0 +1,151 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                    xmlns:validationrules="clr-namespace:ScreenStreamer.Wpf.Common.ValidationRules">
+    <DataTemplate x:Key="videoSettingsTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\TextBoxStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\RadioButtonStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <StackPanel>
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton  GroupName="display"
+                              IsChecked="{Binding Property.IsRegion, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
+                              Content="Display" 
+                              Style="{StaticResource defaultRadioButtonStyle}"/>
+
+                <ComboBox Grid.Column="1" 
+                          ItemsSource="{Binding Displays}" 
+                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
+                          SelectedItem="{Binding Property.Display}"
+                          Cursor="Hand"/>
+            </Grid>
+
+            <Grid >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton  GroupName="display"
+                              IsChecked="{Binding Property.IsRegion, Mode=TwoWay}"
+                              Content="Region" 
+                              Style="{StaticResource defaultRadioButtonStyle}"/>
+
+
+                <!--<TextBlock Grid.Column="1" 
+                           Text="{Binding Property.Region, Mode=OneWay, Converter={converters:RectangleToStringConverter}}" 
+                           Visibility="{Binding Property.IsRegion, Mode=OneWay, Converter={converters:BooleanToVisibilityConverter}}"
+                           />-->
+
+                <Button  Grid.Column="1" 
+                        Style="{StaticResource actionButtonStyle}"
+                        IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
+                        Content="Show Border" Padding="10,0"
+                        Command="{Binding Property.ShowBorderCommand}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"/>
+
+
+            </Grid>
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Resolution" />
+
+                <TextBox Grid.Column="1" 
+                         IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <TextBox.Text>
+                        <MultiBinding Converter="{converters:MultiDoubleToStringConverter}" UpdateSourceTrigger="PropertyChanged">
+                            <MultiBinding.ValidationRules>
+                                <validationrules:ResolutionRule/>
+                            </MultiBinding.ValidationRules>
+                            <Binding Path="Property.ResolutionWidth" Mode="TwoWay" />
+                            <Binding Path="Property.ResolutionHeight" Mode="TwoWay" />
+                        </MultiBinding>
+                    </TextBox.Text>
+                    <i:Interaction.Behaviors>
+                        <behaviors:ResolutionRestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Top" />
+
+                <TextBox Grid.Column="1"
+                         IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
+                         Text="{Binding Property.Top, Converter={converters:IntegerToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:RestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Left"/>
+
+                <TextBox  Grid.Column="1"
+                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
+                         Text="{Binding Property.Left, Converter={converters:IntegerToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:RestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Aspect ratio" />
+
+                <ToggleButton  Grid.Column="1"
+                              Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                              IsChecked="{Binding Property.AspectRatio}" 
+                              HorizontalAlignment="Right"
+                              Cursor="Hand"/>
+            </Grid>
+
+            <Button 
+                    Style="{StaticResource actionButtonStyle}"
+                    Content="Adjust"
+                    Command="{Binding Property.AdjustCommand}"
+                    Width="75"
+                    Height="16"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Right"/>
+
+            <!--<Rectangle  Style="{StaticResource divider}"/>-->
+
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

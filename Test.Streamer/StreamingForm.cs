@@ -73,7 +73,7 @@ namespace TestStreamer
             }
 
             if (videoItem != null)
-            {
+            { 
                 videoSourceComboBox.SelectedItem = videoItem;
             }
 

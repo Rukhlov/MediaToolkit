@@ -1,0 +1,46 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters">
+    <DataTemplate x:Key="streamMainCaptionTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
+        </DataTemplate.Resources>
+        <DockPanel HorizontalAlignment="Stretch">
+            <Image Source="pack://application:,,/ScreenStreamer.Wpf.Common;Component/Icons/logo_24.png"
+                   Height="24"
+                   Width="24"
+                   Margin="0,16,24,16"/>
+            
+            <TextBlock Text="{Binding Caption}" Style="{StaticResource textBlockCaption}"/>
+            
+            <ListBox SelectionMode="Single"
+                     Style="{StaticResource MaterialDesignToolToggleFlatListBox}"
+                     Background="Transparent"
+                     Height="32"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Cursor="Hand"
+                     IsEnabled="{Binding SelectedStream, Converter={converters:NullToBooleanConverter}}">
+                <ListBoxItem IsSelected="{Binding IsEdit, Converter={converters:InverseBooleanConverter}, Mode=OneWay}"
+                             ToolTip="List mode">
+                    <ListBoxItem.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="6,0,0,6"/>
+                        </Style>
+                    </ListBoxItem.Resources>
+                    <materialDesign:PackIcon Kind="BallotOutline" Style="{StaticResource packIconDefault}"/>
+                </ListBoxItem>
+                <ListBoxItem IsSelected="{Binding IsEdit}"
+                             ToolTip="Edit mode">
+                    <ListBoxItem.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="0,6,6,0"/>
+                        </Style>
+                    </ListBoxItem.Resources>
+                    <materialDesign:PackIcon Kind="ModeEditOutline" Style="{StaticResource packIconDefault}"/>
+                </ListBoxItem>
+            </ListBox>
+        </DockPanel>
+    </DataTemplate>
+</ResourceDictionary>

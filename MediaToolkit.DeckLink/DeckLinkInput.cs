@@ -1,7 +1,8 @@
 ﻿using DeckLinkAPI;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,8 @@ namespace MediaToolkit.DeckLink
 
     public class DeckLinkInput : IDeckLinkInputCallback, IDeckLinkInputDevice
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        // private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         private IDeckLinkInput deckLinkInput = null;
         private IDeckLink deckLink = null;
@@ -720,7 +722,7 @@ namespace MediaToolkit.DeckLink
         public void Shutdown()
         {
 
-            logger.Trace("DeckLinkInput::Shutdown()");
+            logger.Verb("DeckLinkInput::Shutdown()");
 
 
             if (deckLink != null)

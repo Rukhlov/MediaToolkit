@@ -18,14 +18,16 @@ extern "C" {
 
 //#include <vcclr.h>
 
+#using <system.dll>
 using namespace System;
 using namespace System::Diagnostics;
 using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
+using namespace MediaToolkit::Logging;
 using namespace System::Threading;
-using namespace NLog;
+//using namespace NLog;
 
 namespace FFmpegLib {
 
@@ -42,7 +44,7 @@ namespace FFmpegLib {
 
 		void Open(VideoEncoderSettings^ encodingParams) {
 
-			logger->Debug("FFmpegVideoEncoder::Open(...) " +
+			logger->TraceEvent(TraceEventType::Verbose, 0, "FFmpegVideoEncoder::Open(...) " +
 				encodingParams->Resolution.Width + "x" + encodingParams->Resolution.Height + " " + encodingParams->EncoderName);
 
 			try {
@@ -226,7 +228,7 @@ namespace FFmpegLib {
 
 			if (sec <= last_sec) {
 
-				logger->Warn("Non monotone time: " + sec + " <= " + last_sec);
+				logger->TraceEvent(TraceEventType::Warning, 0, "Non monotone time: " + sec + " <= " + last_sec);
 
 			}
 
@@ -354,7 +356,7 @@ namespace FFmpegLib {
 
 		void Close() {
 
-			logger->Trace("Close()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "Close()");
 			try {
 
 				FlushEncoder();
@@ -423,7 +425,7 @@ namespace FFmpegLib {
 		}
 		void FlushEncoder() {
 
-			logger->Trace("FlushEncoder()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "FlushEncoder()");
 
 			if (cleanedup) {
 
@@ -449,7 +451,7 @@ namespace FFmpegLib {
 
 		void CleanUp() {
 
-			logger->Trace("CleanUp()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "CleanUp()");
 
 			cleanedup = true;
 
@@ -482,8 +484,8 @@ namespace FFmpegLib {
 		AVFrame* frame;
 
 
-
-		static Logger^ logger = LogManager::GetCurrentClassLogger();
+		static TraceSource^ logger = TraceManager::GetTrace("MediaToolkit.FFmpeg");
+		//static Logger^ logger = LogManager::GetCurrentClassLogger();
 
 	};
 

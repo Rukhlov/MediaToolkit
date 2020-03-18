@@ -1,0 +1,100 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters">
+    <DataTemplate x:Key="contextMenuTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\Templates\ContextMenuStreamTemplate.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <Border CornerRadius="8" BorderBrush="Transparent" Background="#FF1B1931">
+            <StackPanel Orientation="Vertical">
+                <Border Margin="2,6,2,0"
+                        Style="{StaticResource clickableBorder}"
+                        Visibility="{Binding IsAllStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="PlayOutline" Margin="10,0,0,0"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="Start all"/>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding StartAllCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+
+                <Border Margin="2,6,2,0"
+                        Style="{StaticResource clickableBorder}"
+                        Visibility="{Binding IsAllStarted, Converter={converters:BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Pause" Margin="10,0,0,0"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="Stop all"/>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding StopAllCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+
+
+                <!--List of streams-->
+                <ItemsControl ItemsSource="{Binding StreamList}"
+                              ItemTemplate="{StaticResource contextMenuStreamTemplate}"/>
+
+                <Rectangle Margin="2,6,2,0" Style="{StaticResource divider}"/>
+
+                <!--Show main window item-->
+                <Border Padding="2,6,2,0"
+                        Visibility="{Binding IsVisible, Converter={converters:InvertedBooleanToVisibilityConverter}}"
+                        Style="{StaticResource clickableBorder}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="SettingsOutline" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Show settings</TextBlock>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding ShowMainWindowCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+                
+                <!--Hide main window item-->
+                <Border Padding="2,6,2,0"
+                        Visibility="{Binding IsVisible, Converter={converters:BooleanToVisibilityConverter}}"
+                        Style="{StaticResource clickableBorder}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon  Kind="HideOutline" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Hide settings</TextBlock>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding HideMainWindowCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+
+                <Rectangle Margin="2,6,2,0" Style="{StaticResource divider}"/>
+
+                <!--Exit item-->
+                <Border Padding="2,6,2,6"
+                        Style="{StaticResource clickableBorder}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ExitToApp" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Exit</TextBlock>
+                    </StackPanel>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDown">
+                            <i:InvokeCommandAction Command="{Binding ExitCommand}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

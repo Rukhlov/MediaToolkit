@@ -15,6 +15,7 @@ extern "C" {
 #include <libswresample/swresample.h>
 }
 
+#using <system.dll>
 using namespace System;
 using namespace System::IO;
 
@@ -25,8 +26,10 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
+using namespace MediaToolkit::Logging;
+
 using namespace System::Threading;
-using namespace NLog;
+//using namespace NLog;
 
 namespace FFmpegLib {
 
@@ -40,7 +43,7 @@ namespace FFmpegLib {
 
 		void Open(AudioEncoderSettings^ srcParams, AudioEncoderSettings^ dstParams) {
 
-			logger->Debug("AudioEncoder::Open(...)");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioEncoder::Open(...)");
 			closing = false;
 
 			//AVCodec* encoder = avcodec_find_encoder_by_name("");
@@ -359,14 +362,12 @@ namespace FFmpegLib {
 		}
 
 
-
 		void Close() {
 
 
-			logger->Debug("AudioEncoder::Close(...)");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioEncoder::Close(...)");
 
-			if (swr_ctx != NULL) {
-
+			if (swr_ctx) {
 				pin_ptr<SwrContext*> p_swr_ctx = &swr_ctx;
 				swr_free(p_swr_ctx);
 				swr_ctx = NULL;
@@ -375,329 +376,27 @@ namespace FFmpegLib {
 		}
 
 
-		//void _Open(AudioEncodingParams^ inputParams , AudioEncodingParams^ outputParams) {
-
-
-
-		//	int max_dst_nb_samples;
-
-
-		//	swr_ctx = swr_alloc();
-		//	if (!swr_ctx) {
-		//		throw gcnew Exception("Could not allocate resampler context");
-		//	}
-
-		//	av_opt_set_int(swr_ctx, "in_channel_layout", src_ch_layout, 0);
-		//	av_opt_set_int(swr_ctx, "in_sample_rate", src_rate, 0);
-		//	av_opt_set_sample_fmt(swr_ctx, "in_sample_fmt", src_sample_fmt, 0);
-
-		//	av_opt_set_int(swr_ctx, "out_channel_layout", dst_ch_layout, 0);
-		//	av_opt_set_int(swr_ctx, "out_sample_rate", dst_rate, 0);
-		//	av_opt_set_sample_fmt(swr_ctx, "out_sample_fmt", dst_sample_fmt, 0);
-
-		//	int ret;
-		//	if ((ret = swr_init(swr_ctx)) < 0) {
-		//		throw gcnew Exception("Failed to initialize the resampling context");
-
-		//	}
-
-		//	src_nb_channels = av_get_channel_layout_nb_channels(src_ch_layout);
-
-
-		//	//ret = av_samples_alloc_array_and_samples(&src_data, &src_linesize, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-
-		//	//dst_nb_samples = av_rescale_rnd(src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
-		//	//max_dst_nb_samples = dst_nb_samples;
-
-
-		//	dst_nb_channels = av_get_channel_layout_nb_channels(dst_ch_layout);
-
-
-
-		//	//dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, src_rate) + src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
-
-
-		//	uint8_t **_src_data = NULL;
-		//	int src_nb_samples = 1024;
-
-		//	pin_ptr<uint8_t**>p_src_data = &_src_data;
-		//	pin_ptr<int> p_src_linesize = &src_linesize;
-
-		//	ret = av_samples_alloc_array_and_samples(p_src_data, p_src_linesize, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-		//	int src_bufsize = av_samples_get_buffer_size(p_src_linesize, src_nb_channels, ret, src_sample_fmt, 1);
-		//	int converted_linesize;
-
-		//	pin_ptr<uint8_t**>p_converted_samples = &converted_samples;
-		//	pin_ptr<int> p_converted_linesize = &converted_linesize;
-
-		//	ret = av_samples_alloc_array_and_samples(p_converted_samples, NULL, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-
-		//}
-
-
-
-
-
-		FILE *dst_file;
-		void Test() {
-
-
-
-			uint8_t **_src_data = NULL;
-			int src_nb_samples = 1024;
-
-			int src_linesize;
-
-			pin_ptr<uint8_t**>p_src_data = &_src_data;
-			pin_ptr<int> p_src_linesize = &src_linesize;
-
-
-			//dst_file = fopen("d:\\test_8000_8_2", "wb");
-
-			int ret = av_samples_alloc_array_and_samples(p_src_data, p_src_linesize, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-			int src_bufsize = av_samples_get_buffer_size(p_src_linesize, src_nb_channels, ret, src_sample_fmt, 1);
-
-
-			//array < Double > ^ _srcData = gcnew array<Double>(1024);
-			//pin_ptr<Double> p_srcData = &_srcData[0];
-
-
-			//int converted_linesize;
-
-			//pin_ptr<uint8_t**>p_converted_samples = &converted_samples;
-			//pin_ptr<int> p_converted_linesize = &converted_linesize;
-
-			//ret = av_samples_alloc_array_and_samples(p_converted_samples, NULL, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-			//
-
-			//if (ret < 0) {
-
-			//	throw gcnew Exception("Could not allocate destination samples " + ret);
-			//	
-			//}
-
-			FileStream^ fs = gcnew FileStream("d:\\test_8000_8_3", FileMode::Create, FileAccess::ReadWrite);
-
-
-			double t = 0;
-			do {
-
-
-				fill_samples((double *)_src_data[0], src_nb_samples, src_nb_channels, src_rate, &t);
-
-
-				array <Byte> ^ _srcData = gcnew array<Byte>(ret);// src_nb_samples * 4 * 4);
-
-				Marshal::Copy((IntPtr)_src_data[0], _srcData, 0, _srcData->Length);
-
-
-				/*uint8_t **converted_samples = NULL;*/
-
-
-				//src_bufsize = av_samples_get_buffer_size(p_src_linesize, src_nb_channels, ret, src_sample_fmt, 1);
-
-
-				//converted_samples = (uint8_t**)calloc(src_nb_channels, sizeof(*converted_samples));
-				//int res = av_samples_alloc(converted_samples, NULL, src_nb_channels, src_nb_samples, src_sample_fmt, 0);
-
-				//Marshal::Copy(_srcData, 0, (IntPtr)converted_samples[0], _srcData->Length);
-
-
-
-
-
-				//fwrite(src_data[0], src_nb_channels * sizeof(double), src_nb_samples, dst_file);
-
-				//dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, src_rate) + src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
-				//int max_dst_nb_samples = dst_nb_samples;
-
-				//pin_ptr<uint8_t**>p_dst_data = &dst_data;
-				//pin_ptr<int> p_dst_linesize = &dst_linesize;
-
-				//int ret = av_samples_alloc_array_and_samples(p_dst_data, p_dst_linesize, dst_nb_channels, dst_nb_samples, dst_sample_fmt, 0);
-
-				//if (ret < 0) {
-				//	throw gcnew Exception("Could not allocate destination samples");
-				//}
-
-
-				//ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t**)src_data, src_nb_samples);
-
-				//if (ret < 0) {
-				//	throw gcnew Exception("Error while converting");
-
-				//}
-
-
-				//int dst_bufsize = av_samples_get_buffer_size(p_dst_linesize, dst_nb_channels, ret, dst_sample_fmt, 1);
-
-				//if (dst_bufsize < 0) {
-
-				//	throw gcnew Exception("Could not get sample buffer size");
-
-				//}
-
-
-				//fwrite(dst_data[0], 1, dst_bufsize, dst_file);
-
-				array<Byte>^ destData = nullptr;
-				Resample(_srcData, destData);
-
-				//Resample((IntPtr)src_data, src_nb_samples, destData);
-
-				//Resample((IntPtr)converted_samples, src_nb_samples, destData);
-
-
-				//Resample(converted_samples, src_nb_samples, destData);
-
-				if (destData != nullptr) {
-
-					fs->Write(destData, 0, destData->Length);
-
-					//fwrite((const void *)destData, 1, destData->Length, dst_file);
-
-				}
-				//Thread::Sleep(1000);
-
-			} while (t < 10);
-		}
-
-
-		void _Resample(array<Byte>^ srcData, [Out] array<Byte>^% destData) {
-
-			uint8_t **src_samples = NULL;
-
-			uint8_t	**dst_samples = NULL;
-
-			int srcLenght = srcData->Length;
-
-			int sampleSize = av_get_bytes_per_sample(src_sample_fmt);
-
-			int srcSampleNum = srcLenght / (sampleSize * src_nb_channels);
-
-			pin_ptr<uint8_t**>p_src_samples = &src_samples;
-			int ret = av_samples_alloc_array_and_samples(p_src_samples, NULL, src_nb_channels, srcSampleNum, src_sample_fmt, 0);
-			if (ret < 0) {
-
-				throw gcnew Exception("Could not allocate destination samples " + ret);
-
-			}
-
-			Marshal::Copy(srcData, 0, (IntPtr)src_samples[0], srcData->Length);
-
-			int dst_rate = enc_ctx->sample_rate;
-			int dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, src_rate) + srcSampleNum, dst_rate, src_rate, AV_ROUND_UP);
-			int max_dst_nb_samples = dst_nb_samples;
-
-			pin_ptr<uint8_t**>p_dst_data = &dst_samples;
-
-			int dst_linesize;
-			pin_ptr<int> p_dst_linesize = &dst_linesize;
-
-			AVSampleFormat dst_sample_fmt = enc_ctx->sample_fmt;
-			int dst_nb_channels = enc_ctx->channels;
-			ret = av_samples_alloc_array_and_samples(p_dst_data, p_dst_linesize, dst_nb_channels, dst_nb_samples, dst_sample_fmt, 0);
-
-			if (ret < 0) {
-				throw gcnew Exception("Could not allocate destination samples");
-			}
-
-
-
-			/*
-			//pin_ptr<uint8_t**>p_dst_data = &srcData[0];
-
-			pin_ptr<Byte> p_srcData = &srcData[0];
-			//const uint8_t** _src = reinterpret_cast<const uint8_t**>(p_srcData);
-
-
-			//uint8_t** _src = (uint8_t**)calloc(1, sizeof(&_src));
-			uint8_t** _src = NULL;
-			pin_ptr<uint8_t**>p_src = &_src;
-
-			//int res = av_samples_alloc(_src, NULL, src_nb_channels, 1024, src_sample_fmt, 0);
-
-			ret = av_samples_alloc_array_and_samples(p_src, NULL, src_nb_channels, 1024, src_sample_fmt, 0);
-			*/
-
-
-
-			//const uint8_t** _src {
-
-			//	reinterpret_cast<const uint8_t**>(p_srcData)
-			//};
-
-			ret = swr_convert(swr_ctx, dst_samples, dst_nb_samples, (const uint8_t**)src_samples, srcSampleNum);// reinterpret_cast<const uint8_t**>(p_srcData), srcSampleNum);
-
-			//ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t**)p_srcData, srcSampleNum);
-
-			//ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t**)srcData.ToPointer(), srcSampleNum);
-			//ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, reinterpret_cast<const uint8_t**>(srcData.ToPointer()), srcSampleNum);
-			//ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t**)srcData, srcSampleNum);
-			if (ret < 0) {
-				throw gcnew Exception("Error while converting");
-
-			}
-
-
-
-			int dst_bufsize = av_samples_get_buffer_size(p_dst_linesize, dst_nb_channels, ret, dst_sample_fmt, 1);
-
-			if (dst_bufsize < 0) {
-
-				throw gcnew Exception("Could not get sample buffer size");
-
-			}
-
-			destData = gcnew array<Byte>(dst_bufsize);
-
-			Marshal::Copy((IntPtr)dst_samples[0], destData, 0, dst_bufsize);
-
-			//fwrite(dst_data[0], 1, dst_bufsize, dst_file);
-		}
-
-
-
-
 	private:
-
-
-		void fill_samples(double *dst, int nb_samples, int nb_channels, int sample_rate, double *t)
-		{
-			int i, j;
-			double tincr = 1.0 / sample_rate, *dstp = dst;
-			const double c = 2 * M_PI * 440.0;
-
-			/* generate sin tone with 440Hz frequency and duplicated channels */
-			for (i = 0; i < nb_samples; i++) {
-
-				*dstp = sin(c * *t);
-
-				for (j = 1; j < nb_channels; j++) {
-					dstp[j] = dstp[0];
-				}
-
-				dstp += nb_channels;
-				*t += tincr;
-			}
-		}
 
 		void CleanUp() {
 
-			logger->Debug("AudioEncoder::CleanUp()");
+			logger->TraceEvent(TraceEventType::Verbose, 0, "AudioEncoder::CleanUp()");
 
 			if (fifo) {
 				av_audio_fifo_free(fifo);
+				fifo = NULL;
 			}
 
 			if (swr_ctx) {
 				pin_ptr<SwrContext*> p_swr_ctx = &swr_ctx;
 				swr_free(p_swr_ctx);
+				swr_ctx = NULL;
 			}
 
 			if (enc_ctx) {
 				pin_ptr<AVCodecContext*> p_enc_ctx = &enc_ctx;
 				avcodec_free_context(p_enc_ctx);
+				enc_ctx = NULL;
 			}
 		}
 
@@ -722,7 +421,8 @@ namespace FFmpegLib {
 		//int src_linesize;
 		//int src_nb_samples = 1024;
 
-		static Logger^ logger = LogManager::GetCurrentClassLogger();
+		static TraceSource^ logger = TraceManager::GetTrace("MediaToolkit.FFmpeg");
+		//static Logger^ logger = LogManager::GetCurrentClassLogger();
 
 	};
 

@@ -1,0 +1,101 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                    xmlns:validationrules="clr-namespace:ScreenStreamer.Wpf.Common.ValidationRules">
+    <DataTemplate x:Key="networkSettingsTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\TextBoxStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\RadioButtonStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </DataTemplate.Resources>
+        <StackPanel>
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Network" />
+
+                <ComboBox Grid.Column="1" 
+                          ItemsSource="{Binding Networks}" 
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding Property.SelectedNetwork}"
+                          Cursor="Hand"/>
+            </Grid>
+
+            <Grid Height="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Port" />
+
+                <TextBox Grid.Column="1"
+                         Text="{Binding Property.Port, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:RestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+
+            <Rectangle Height="1" Style="{StaticResource divider}"/>
+
+            <TextBlock Height="32"
+                       Text="Transmission"
+                       FontSize="14"/>
+
+            <Grid Height="32">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton  GroupName="protocol"
+                             IsChecked="{Binding Property.IsUnicast, Mode=TwoWay}"
+                             Content="Unicast" 
+                             Style="{StaticResource defaultRadioButtonStyle}"/>
+
+                <ComboBox Grid.Column="1" 
+                          ItemsSource="{Binding UnicastProtocols}" 
+                          SelectedItem="{Binding Property.UnicastProtocol}"
+                          IsEnabled="{Binding Property.IsUnicast, Mode=OneWay}"
+                          Cursor="Hand"/>
+            </Grid>
+
+            <Grid Height="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton GroupName="protocol"
+                             IsChecked="{Binding Property.IsUnicast, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
+                             Content="Multicast"
+                             Style="{StaticResource defaultRadioButtonStyle}"/>
+
+                <TextBox Grid.Column="1"
+                         IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <TextBox.Text>
+                        <Binding Path="Property.MulticastIp" Mode="TwoWay" ValidatesOnExceptions="True"/>
+                        <!--<Binding.ValidationRules>
+                            <validationrules:IpAddressRule/>NotifyOnValidationError="True"
+                        </Binding.ValidationRules>
+                    </Binding>-->
+                    </TextBox.Text>
+                    <i:Interaction.Behaviors>
+                        <behaviors:IpRestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+                </TextBox>
+            </Grid>
+
+
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

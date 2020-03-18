@@ -115,9 +115,6 @@ XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Co
     <ClCompile Include="VideoEncoder.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="NLog">
-      <HintPath>..\packages\NLog.4.6.8\lib\net40-client\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>

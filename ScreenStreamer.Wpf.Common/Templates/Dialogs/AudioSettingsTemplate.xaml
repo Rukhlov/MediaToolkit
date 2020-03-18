@@ -1,0 +1,40 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DataTemplate x:Key="audioSettingsTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+        </DataTemplate.Resources>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="160"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="32"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="Microphone enabled" Grid.Row="0" Grid.Column="0"/>
+            <TextBlock Text="Microphone" Grid.Row="1" Grid.Column="0"/>
+            <TextBlock Text="Computer sound" Grid.Row="2" Grid.Column="0"/>
+            <ToggleButton Grid.Row="0" Grid.Column="1" 
+                          Style="{StaticResource MaterialDesignSwitchAccentToggleButton}" 
+                          IsChecked="{Binding Property.IsMicrophoneEnabled}" 
+                          HorizontalAlignment="Right"
+                          Cursor="Hand"/>
+            
+            <ComboBox Grid.Row="1" Grid.Column="1" 
+                      ItemsSource="{Binding Microphones}" 
+                      DisplayMemberPath="DisplayName"
+                      SelectedItem="{Binding Property.SelectedMicrophone}"
+                      Cursor="Hand"
+                      IsEnabled="{Binding Property.IsMicrophoneEnabled, Mode=OneWay}"/>
+            
+            <ToggleButton Grid.Row="2" Grid.Column="1"
+                          Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                          IsChecked="{Binding Property.IsComputerSoundEnabled}" 
+                          HorizontalAlignment="Right"
+                          Cursor="Hand"/>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

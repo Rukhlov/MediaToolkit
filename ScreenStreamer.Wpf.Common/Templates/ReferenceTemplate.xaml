@@ -1,0 +1,57 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
+                     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+    <DataTemplate x:Key="referenceTemplate">
+        <DataTemplate.Resources>
+            <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
+        </DataTemplate.Resources>
+        <Border Height="40" 
+                Width="42" 
+                CornerRadius="8" 
+                Background="#FF131223" 
+                HorizontalAlignment="Left" 
+                Margin="0,4"
+                Style="{StaticResource clickableBorder}"
+                ToolTip="{Binding Name}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+
+                <!--Selector-->
+                <Rectangle Grid.Column="0"
+                           Height="24" 
+                           Width="2" 
+                           Fill="#FF147BE2">
+                    <Rectangle.Visibility>
+                        <MultiBinding Converter="{converters:MultiBooleanToVisibilityConverter}">
+                            <Binding Path="IsSelected"/>
+                            <Binding Path="DataContext.IsEdit" 
+                                     RelativeSource="{RelativeSource AncestorLevel=2, AncestorType=StackPanel,Mode=FindAncestor}"/>
+                        </MultiBinding>
+                    </Rectangle.Visibility>
+                </Rectangle>
+                
+                <Image Grid.Column="1"
+                       Source="pack://application:,,/ScreenStreamer.Wpf.Common;Component/Icons/record_stopped_24.png"
+                       Height="24"
+                       Width="24"
+                       Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
+
+                <Image Grid.Column="1"
+                       Source="pack://application:,,/ScreenStreamer.Wpf.Common;Component/Icons/record_started_24.png"
+                       Height="24"
+                       Width="24"
+                       Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
+
+                <materialDesign:PackIcon Grid.Column="1"
+                                         Kind="MicrophoneOff" 
+                                         Visibility="{Binding IsMicrophoneEnabled, Converter={converters:InvertedBooleanToVisibilityConverter}}"
+                                         VerticalAlignment="Bottom"
+                                         HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>
