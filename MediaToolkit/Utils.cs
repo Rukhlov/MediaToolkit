@@ -478,6 +478,37 @@ namespace MediaToolkit.Utils
 
             return completer.Task;
         }
+
+    }
+
+    public class DisplayHelper
+    {
+        public static string DeviceFriendlyName(System.Windows.Forms.Screen targetScreen)
+        {
+            string deviceFriendlyName = "";
+            try
+            {
+                var allFriendlyNames = NativeAPIs.Utils.DisplayTool.GetAllMonitorsFriendlyNames();
+
+                for (var index = 0; index < System.Windows.Forms.Screen.AllScreens.Length; index++)
+                {
+                    var screen = System.Windows.Forms.Screen.AllScreens[index];
+
+                    if (targetScreen == screen)
+                    {
+                        deviceFriendlyName = allFriendlyNames[index];
+                    }
+
+                }
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError(ex.Message);
+            }
+
+
+            return deviceFriendlyName;
+        }
     }
 
     public class NetworkHelper

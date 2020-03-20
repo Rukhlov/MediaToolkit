@@ -28,6 +28,7 @@ namespace ScreenStreamer.Wpf.Common.Models
     {
         public string Name { get; set; }
         public bool IsStarted { get; set; }
+
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
         public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();

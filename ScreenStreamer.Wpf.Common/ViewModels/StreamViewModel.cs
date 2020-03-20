@@ -26,7 +26,15 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         #region Name
 
-        public string Name { get => Model.Name; set { SetProperty(Model,() => Model.Name, value); RaisePropertyChanged(nameof(StartContextMenuText)); } }
+        public string Name
+        {
+            get => Model.Name;
+            set
+            {
+                SetProperty(Model,() => Model.Name, value);
+                RaisePropertyChanged(nameof(StartContextMenuText));
+            }
+        }
 
         #endregion Name
 

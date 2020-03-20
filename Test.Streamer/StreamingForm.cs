@@ -445,19 +445,11 @@ namespace TestStreamer
 
             var captureProperties = Config.Data.ScreenCaptureProperties;
 
-            //ScreenCaptureProperties captureProperties = new ScreenCaptureProperties
-            //{
-            //    CaptureMouse = true,
-            //    AspectRatio = true,
-            //    CaptureType = VideoCaptureType.DXGIDeskDupl,
-            //    UseHardware = true,
-            //    Fps = 30,
-            //    ShowDebugInfo = false,
-            //};
-
-
+            int monitorIndex = 1;
             foreach (var screen in Screen.AllScreens)
             {
+                var friendlyName = MediaToolkit.Utils.DisplayHelper.DeviceFriendlyName(screen);
+
                 var bounds = screen.Bounds;
 
                 ScreenCaptureDevice descr = new ScreenCaptureDevice
@@ -471,12 +463,20 @@ namespace TestStreamer
                     DeviceId = screen.DeviceName,
 
                 };
+                var monitorName = "Screen " + monitorIndex + " (" + friendlyName + " " + bounds.Width + "x" + bounds.Height + ")";
 
+                //var name = screen.DeviceName;
+                //if (!string.IsNullOrEmpty(friendlyName))
+                //{
+                //    name += " (" + friendlyName + " " + bounds.Width  + "x" + bounds.Height + ") ";
+                //}
                 items.Add(new ComboBoxItem
                 {
-                    Name = screen.DeviceName,//+ "" + s.Bounds.ToString(),
+                    Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),
                     Tag = descr,
                 });
+
+                monitorIndex++;
             }
 
             //var items = Screen.AllScreens

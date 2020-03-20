@@ -16,6 +16,15 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
+    public enum StreamerState
+    {
+        Initialized,
+        Starting,
+        Streaming,
+        Closing,
+        Closed,
+    }
+
     public class VideoStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
@@ -27,6 +36,8 @@ namespace MediaToolkit
 
         }
 
+        private volatile StreamerState state = StreamerState.Closed;
+        public StreamerState State => state;
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
@@ -56,6 +67,9 @@ namespace MediaToolkit
 
         public VideoEncoderSettings EncoderSettings { get; private set; }
         public NetworkSettings NetworkSettings { get; private set; }
+
+        public event Action StateChanged;
+
 
         public void Setup(VideoEncoderSettings encoderSettings, NetworkSettings networkSettings)
         {
@@ -106,6 +120,8 @@ namespace MediaToolkit
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
                 videoSource.BufferUpdated += ScreenSource_BufferUpdated;
+
+                state = StreamerState.Initialized;
             }
             catch (Exception ex)
             {
@@ -131,67 +147,95 @@ namespace MediaToolkit
                 return false;
             }
 
+            if(state != StreamerState.Initialized)
+            {
+                //...
+                return false;
+            }
+
+            state = StreamerState.Starting;
+
             Task.Run(() =>
             {
-                running = true;
-                logger.Info("Streaming thread started...");
+                DoStreaming();
 
-
-                try
-                {
-                    streamStats = new StreamStats();
-
-                    Statistic.RegisterCounter(streamStats);
-
-                    //var hwContext = screenSource.hwContext;
-                    //mfEncoder.Start();
-
-
-                    while (!closing)
-                    {
-                        try
-                        {
-                            if (!syncEvent.WaitOne(1000))
-                            {
-                                continue;
-                            }
-
-                            if (closing)
-                            {
-                                break;
-                            }
-
-                            sw.Restart();
-                            
-                            videoEncoder.Encode();
-
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                            Thread.Sleep(1000);
-                        }
-
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex);
-
-                }
-                finally
-                {
-                    CleanUp();
-
-                    Statistic.UnregisterCounter(streamStats);
-                }
-
-                logger.Info("Streaming thread ended...");
-                running = false;
             });
 
             return true;
 
+        }
+
+        private void DoStreaming()
+        {
+            running = true;
+
+            logger.Info("Streaming thread started...");
+            if (state != StreamerState.Starting)
+            {
+                //...
+            }
+
+            try
+            {
+
+                streamStats = new StreamStats();
+
+                Statistic.RegisterCounter(streamStats);
+
+                //var hwContext = screenSource.hwContext;
+                //mfEncoder.Start();
+
+  
+                state = StreamerState.Streaming;
+                StateChanged?.Invoke();
+
+                while (state == StreamerState.Streaming)
+                {
+                    try
+                    {
+                        if (!syncEvent.WaitOne(1000))
+                        {
+                            continue;
+                        }
+
+                        if (state != StreamerState.Streaming)
+                        {
+                            break;
+                        }
+
+                        sw.Restart();
+
+                        videoEncoder.Encode();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                        Thread.Sleep(1000);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+
+            }
+            finally
+            {
+
+                CleanUp();
+
+                Statistic.UnregisterCounter(streamStats);
+
+                running = false;
+
+                state = StreamerState.Closed;
+                StateChanged?.Invoke();
+
+            }
+
+            logger.Info("Streaming thread ended...");
         }
 
 
@@ -223,14 +267,13 @@ namespace MediaToolkit
             syncEvent.Set();
         }
 
-        private bool closing = false;
-
         public void Close()
         {
             logger.Debug("VideoStreamer::Close()");
             if (running)
             {
-                closing = true;
+                state = StreamerState.Closing;
+
                 syncEvent.Set();
             }
             else
@@ -254,6 +297,8 @@ namespace MediaToolkit
             videoSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
             RtpSender?.Close();
+
+            state = StreamerState.Closed;
         }
 
         class StreamStats : StatCounter

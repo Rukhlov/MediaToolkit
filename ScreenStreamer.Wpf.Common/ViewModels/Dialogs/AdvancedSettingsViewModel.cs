@@ -1,5 +1,4 @@
 ﻿using MediaToolkit.Core;
-using Prism.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;

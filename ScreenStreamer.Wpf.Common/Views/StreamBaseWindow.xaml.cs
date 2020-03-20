@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Input;
 using GalaSoft.MvvmLight.Messaging;
 using Unity;
+using NLog;
 
 namespace ScreenStreamer.Wpf.Common.Views
 {
@@ -19,6 +20,8 @@ namespace ScreenStreamer.Wpf.Common.Views
     /// </summary>
     public partial class StreamBaseWindow : Window
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public ICommand CloseCommand { get; set; }
 
         //For debug\
@@ -41,11 +44,17 @@ namespace ScreenStreamer.Wpf.Common.Views
         private void VmOnPropertyChanged(AcceptChangesMessage obj)
         {
             //TODO Process changes
+            logger.Debug("VmOnPropertyChanged(...) " + obj);
+
+
         }
 
         private void ApplyInitialState()
         {
             //TODO apply initial state
+
+            logger.Debug("ApplyInitialState()");
+
         }
 
         public StreamBaseWindow(IDialogViewModel viewModel)

@@ -2,6 +2,7 @@
 using MediaToolkit.NativeAPIs.Ole;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -10,6 +11,75 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.Utils
 {
+    public class DisplayTool
+    {
+        public static string MonitorFriendlyName(LUID adapterId, uint targetId)
+        {
+
+            var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+            {
+                header =
+                    {
+                        size = (uint) Marshal.SizeOf(typeof (DISPLAYCONFIG_TARGET_DEVICE_NAME)),
+                        adapterId = adapterId,
+                        id = targetId,
+                        type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
+                    }
+            };
+
+            var result = User32.DisplayConfigGetDeviceInfo(ref deviceName);
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+            
+
+            return deviceName.monitorFriendlyDeviceName;
+        }
+
+        public static List<string> GetAllMonitorsFriendlyNames()
+        {
+            List<string> monitorNames = new List<string>();
+
+            uint pathCount, modeCount;
+            var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
+
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+                
+
+            var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+
+            result = User32.QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                ref pathCount, displayPaths, ref modeCount, displayModes, IntPtr.Zero);
+
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+                
+
+            for (var i = 0; i < modeCount; i++)
+            {
+                if (displayModes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
+                {
+                    var displayMode = displayModes[i];
+
+                    var friendlyName = MonitorFriendlyName(displayMode.adapterId, displayMode.id);
+
+                    monitorNames.Add(friendlyName);
+                }
+                    
+            }
+
+            return monitorNames;
+
+        }
+    }
+
     public class ComBase
     {
         public static void SafeRelease(object comObj)
