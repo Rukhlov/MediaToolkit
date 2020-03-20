@@ -483,23 +483,22 @@ namespace MediaToolkit.Utils
 
     public class DisplayHelper
     {
-        public static string DeviceFriendlyName(System.Windows.Forms.Screen targetScreen)
+        public static string GetFriendlyScreenName(System.Windows.Forms.Screen targetScreen)
         {
             string deviceFriendlyName = "";
             try
             {
-                var allFriendlyNames = NativeAPIs.Utils.DisplayTool.GetAllMonitorsFriendlyNames();
-
-                for (var index = 0; index < System.Windows.Forms.Screen.AllScreens.Length; index++)
+                var displayInfos = NativeAPIs.Utils.DisplayTool.GetDisplayInfos();
+                if (displayInfos.Count > 0)
                 {
-                    var screen = System.Windows.Forms.Screen.AllScreens[index];
+                    var displayInfo = displayInfos.FirstOrDefault(i => i.GdiDeviceName == targetScreen.DeviceName);
 
-                    if (targetScreen == screen)
+                    if (displayInfo != null)
                     {
-                        deviceFriendlyName = allFriendlyNames[index];
+                        deviceFriendlyName = displayInfo.Name;
                     }
-
                 }
+                
             }
             catch(Exception ex)
             {

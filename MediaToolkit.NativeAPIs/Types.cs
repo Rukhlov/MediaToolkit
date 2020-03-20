@@ -1050,8 +1050,8 @@ namespace MediaToolkit.NativeAPIs
     [StructLayout(LayoutKind.Sequential)]
     public struct POINTL
     {
-        private int x;
-        private int y;
+        public int x;
+        public int y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1089,7 +1089,7 @@ namespace MediaToolkit.NativeAPIs
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct DISPLAYCONFIG_DEVICE_INFO_HEADER
+    public class DISPLAYCONFIG_DEVICE_INFO_HEADER
     {
         public DISPLAYCONFIG_DEVICE_INFO_TYPE type;
         public uint size;
@@ -1098,9 +1098,8 @@ namespace MediaToolkit.NativeAPIs
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public struct DISPLAYCONFIG_TARGET_DEVICE_NAME
+    public class DISPLAYCONFIG_TARGET_DEVICE_NAME : DISPLAYCONFIG_DEVICE_INFO_HEADER
     {
-        public DISPLAYCONFIG_DEVICE_INFO_HEADER header;
         public DISPLAYCONFIG_TARGET_DEVICE_NAME_FLAGS flags;
         public DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
         public ushort edidManufactureId;
@@ -1112,6 +1111,15 @@ namespace MediaToolkit.NativeAPIs
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string monitorDevicePath;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public class DISPLAYCONFIG_SOURCE_DEVICE_NAME: DISPLAYCONFIG_DEVICE_INFO_HEADER
+    {
+        private const int Cchdevicename = 32;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = Cchdevicename)]
+        public string viewGdiDeviceName;
     }
 
     public class KS

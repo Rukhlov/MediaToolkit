@@ -171,8 +171,8 @@ namespace MediaToolkit.NativeAPIs
 
 
         [DllImport("user32.dll")]
-        public static extern int GetDisplayConfigBufferSizes(
-        QUERY_DEVICE_CONFIG_FLAGS flags, out uint numPathArrayElements, out uint numModeInfoArrayElements);
+        public static extern int GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS flags, 
+            out uint numPathArrayElements, out uint numModeInfoArrayElements);
 
         [DllImport("user32.dll")]
         public static extern int QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS flags,
@@ -180,8 +180,32 @@ namespace MediaToolkit.NativeAPIs
             ref uint numModeInfoArrayElements, [Out] DISPLAYCONFIG_MODE_INFO[] ModeInfoArray,
             IntPtr currentTopologyId);
 
+
         [DllImport("user32.dll")]
-        public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_TARGET_DEVICE_NAME deviceName);
+        private static extern int DisplayConfigGetDeviceInfo(IntPtr displayConfig);
+
+        public static int DisplayConfigGetDeviceInfo<T>(ref T displayConfig) where T : DISPLAYCONFIG_DEVICE_INFO_HEADER
+        {
+            int result = 0;
+            int size = Marshal.SizeOf(displayConfig);
+
+            var ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(displayConfig, ptr, false);
+
+                result = DisplayConfigGetDeviceInfo(ptr);
+
+                displayConfig = (T)Marshal.PtrToStructure(ptr, displayConfig.GetType());
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+
+            return result;
+        }
+
 
 
     }

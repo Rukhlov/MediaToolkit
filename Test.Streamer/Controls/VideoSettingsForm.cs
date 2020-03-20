@@ -319,5 +319,7 @@ namespace TestStreamer.Controls
                 aspectRatioCheckBox.Enabled = true;
             }
         }
+
+
     }
 }

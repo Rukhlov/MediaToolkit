@@ -11,35 +11,63 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.Utils
 {
+
     public class DisplayTool
     {
-        public static string MonitorFriendlyName(LUID adapterId, uint targetId)
+        public class DisplayInfo
         {
+            public string Name { get; set; }
+            public string Path { get; set; }
+            public string GdiDeviceName { get; set; }
+            public uint DisplayId { get; set; }
+        }
 
-            var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+        public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDisplayConfigSourceDeviceName(LUID adapterId, uint sourceId)
+        {
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME deviceInfo = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
             {
-                header =
-                    {
-                        size = (uint) Marshal.SizeOf(typeof (DISPLAYCONFIG_TARGET_DEVICE_NAME)),
-                        adapterId = adapterId,
-                        id = targetId,
-                        type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
-                    }
+                size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)),
+                adapterId = adapterId,
+                id = sourceId,
+                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
+
             };
 
-            var result = User32.DisplayConfigGetDeviceInfo(ref deviceName);
+            int result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+                
+            return deviceInfo;
+        }
+
+
+        public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDisplayConfigTargetDeviceName(LUID adapterId, uint targetId)
+        {
+
+            var deviceInfo = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+            {
+                size = (uint) Marshal.SizeOf(typeof (DISPLAYCONFIG_TARGET_DEVICE_NAME)),
+                adapterId = adapterId,
+                id = targetId,
+                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
+
+            };
+
+            var result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
             if (result != (int)HResult.S_OK)
             {
                 throw new Win32Exception(result);
             }
             
 
-            return deviceName.monitorFriendlyDeviceName;
+            return deviceInfo;
         }
 
-        public static List<string> GetAllMonitorsFriendlyNames()
+        public static List<DisplayInfo> GetDisplayInfos()
         {
-            List<string> monitorNames = new List<string>();
+            List<DisplayInfo> displayInfos = new List<DisplayInfo>();
 
             uint pathCount, modeCount;
             var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
@@ -60,22 +88,33 @@ namespace MediaToolkit.NativeAPIs.Utils
             {
                 throw new Win32Exception(result);
             }
-                
 
-            for (var i = 0; i < modeCount; i++)
+
+            for (int i = 0; i < modeCount; i += 2)
             {
                 if (displayModes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
                 {
                     var displayMode = displayModes[i];
 
-                    var friendlyName = MonitorFriendlyName(displayMode.adapterId, displayMode.id);
+                    var monitorInfo = GetDisplayConfigTargetDeviceName(displayMode.adapterId, displayMode.id);
 
-                    monitorNames.Add(friendlyName);
+                    var gdiDeviceInfo = GetDisplayConfigSourceDeviceName(displayModes[i + 1].adapterId, displayModes[i + 1].id);
+
+                    var di = new DisplayInfo
+                    {
+                        Name = monitorInfo.monitorFriendlyDeviceName,
+                        Path = monitorInfo.monitorDevicePath,
+                        DisplayId = displayModes[i].id,
+                        GdiDeviceName = gdiDeviceInfo.viewGdiDeviceName,
+  
+                    };
+
+                    displayInfos.Add(di);
                 }
                     
             }
 
-            return monitorNames;
+            return displayInfos;
 
         }
     }

@@ -668,7 +668,7 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else
                 {
-                    logger.Debug("inputRequests == 0 " + inputRequests);
+                    //logger.Debug("inputRequests == 0 " + inputRequests);
                 }
             }
         }

@@ -106,7 +106,7 @@ namespace TestStreamer
 
         private SynchronizationContext syncContext = null;
         private StatisticForm statisticForm = null;
-        private RegionForm regionForm = null;
+        private RegionForm debugBorderForm = null;
         private SelectAreaForm selectAreaForm = null;
 
 
@@ -214,8 +214,8 @@ namespace TestStreamer
 
                         if (screenDescr.Properties.ShowDebugBorder)
                         {
-                            regionForm = new RegionForm(screenDescr.CaptureRegion);
-                            regionForm.Visible = true;
+                            debugBorderForm = new RegionForm(screenDescr.CaptureRegion);
+                            debugBorderForm.Visible = true;
                         }
 
                         if (screenDescr.Properties.ShowDebugInfo)
@@ -338,10 +338,10 @@ namespace TestStreamer
                 statisticForm.Visible = false;
             }
 
-            if (regionForm != null)
+            if (debugBorderForm != null)
             {
-                regionForm.Close();
-                regionForm = null;
+                debugBorderForm.Close();
+                debugBorderForm = null;
             }
 
 
@@ -448,7 +448,7 @@ namespace TestStreamer
             int monitorIndex = 1;
             foreach (var screen in Screen.AllScreens)
             {
-                var friendlyName = MediaToolkit.Utils.DisplayHelper.DeviceFriendlyName(screen);
+                var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
 
                 var bounds = screen.Bounds;
 
@@ -463,7 +463,14 @@ namespace TestStreamer
                     DeviceId = screen.DeviceName,
 
                 };
-                var monitorName = "Screen " + monitorIndex + " (" + friendlyName + " " + bounds.Width + "x" + bounds.Height + ")";
+
+                var monitorDescr = bounds.Width + "x" + bounds.Height;
+                if (!string.IsNullOrEmpty(friendlyName))
+                {
+                    monitorDescr = friendlyName + " " + monitorDescr;
+                }
+
+                var monitorName = "Screen " + monitorIndex + " (" + monitorDescr + ")";
 
                 //var name = screen.DeviceName;
                 //if (!string.IsNullOrEmpty(friendlyName))
