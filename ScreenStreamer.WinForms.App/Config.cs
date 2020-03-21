@@ -306,7 +306,7 @@ namespace ScreenStreamer.WinForms.App
 
             int port = -1;
 
-            var freeTcpPorts = NetUtils.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+            var freeTcpPorts = MediaToolkit.Utils.NetworkHelper.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
             if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
             {
                 port = freeTcpPorts.FirstOrDefault();
@@ -367,7 +367,7 @@ namespace ScreenStreamer.WinForms.App
                 Enabled = false,
                 Id = "audio_" + Guid.NewGuid().ToString(),
                 NetworkSettings = new NetworkSettings(),
-                CaptureDevice = new AudioCaptureDeviceDescription(),
+                CaptureDevice = new AudioCaptureDevice(),
                 EncoderSettings = audioEncoderSettings,
             };
 

@@ -119,9 +119,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ScreenStreamer.Wpf.Common\ScreenStreamer.Wpf.Common.csproj">
+    <ProjectReference Include="..\ScreenStreamer.Wpf.Common\ScreenStreamer.Wpf.App.csproj">
       <Project>{739c605a-042c-4a4c-a35d-ad3e1aba0f3d}</Project>
-      <Name>ScreenStreamer.Wpf.Common</Name>
+      <Name>ScreenStreamer.Wpf.App</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

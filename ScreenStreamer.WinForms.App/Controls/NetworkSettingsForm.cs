@@ -242,7 +242,7 @@ namespace Test.Streamer.Controls
         {
             int currentPort = (int)communicationPortNumeric.Value;
 
-            var freeTcpPorts = NetUtils.GetFreePortRange(ProtocolType.Tcp, 1, currentPort);
+            var freeTcpPorts = MediaToolkit.Utils.NetworkHelper.GetFreePortRange(ProtocolType.Tcp, 1, currentPort);
             if (freeTcpPorts != null)
             {
                 var newPort = freeTcpPorts.FirstOrDefault();

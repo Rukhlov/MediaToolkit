@@ -1,6 +1,7 @@
 ﻿using FFmpegLib;
 using MediaToolkit;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
 using NAudio.CoreAudioApi;
@@ -14,13 +15,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace MediaToolkit.MediaStreamers
 {
 
     public class AudioStreamer
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        //private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         public AudioStreamer(AudioSource source)
         {
@@ -251,5 +253,6 @@ namespace MediaToolkit
 
 
     }
+
 
 }

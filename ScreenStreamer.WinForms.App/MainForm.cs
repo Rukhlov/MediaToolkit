@@ -21,9 +21,10 @@ using System.Windows.Forms;
 using ScreenStreamer.Common;
 using MediaToolkit.Core;
 using MediaToolkit.UI;
-using NAudio.CoreAudioApi;
+
 using TestStreamer.Controls;
 using Test.Streamer.Controls;
+using MediaToolkit;
 
 namespace ScreenStreamer.WinForms.App
 {
@@ -85,7 +86,7 @@ namespace ScreenStreamer.WinForms.App
             var currentAudioDeviceId = audioSettings?.CaptureDevice?.DeviceId;
             if (!string.IsNullOrEmpty(currentAudioDeviceId))
             {
-                audioItem = audioSourceItems.FirstOrDefault(i => i.Tag != null && ((AudioCaptureDeviceDescription)i.Tag).DeviceId == currentAudioDeviceId);
+                audioItem = audioSourceItems.FirstOrDefault(i => i.Tag != null && ((AudioCaptureDevice)i.Tag).DeviceId == currentAudioDeviceId);
             }
 
             if (audioItem == null)
@@ -617,119 +618,26 @@ namespace ScreenStreamer.WinForms.App
         private void UpdateAudioSources()
         {
 
-            List<MMDevice> mmdevices = new List<MMDevice>();
-
-            try
-            {
-                using (var deviceEnum = new MMDeviceEnumerator())
-                {
-
-                    var defaultCaptureId = "";
-                    try
-                    {
-                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console))
-                        {
-                            var captureDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-                            if (captureDevice != null)
-                            {
-
-                                defaultCaptureId = captureDevice.ID;
-                                mmdevices.Add(captureDevice);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Warn(ex);
-                    }
-
-                    var defaultRenderId = "";
-                    try
-                    {
-                        if (deviceEnum.HasDefaultAudioEndpoint(DataFlow.Render, Role.Console))
-                        {
-                            var renderDevice = deviceEnum.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
-                            if (renderDevice != null)
-                            {
-                                defaultRenderId = renderDevice.ID;
-                                mmdevices.Add(renderDevice);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Warn(ex);
-                    }
-
-                    try
-                    {
-
-                        var allDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
-                        foreach (var d in allDevices)
-                        {
-                            if (d.ID == defaultRenderId || d.ID == defaultCaptureId)
-                            {
-                                continue;
-                            }
-                            mmdevices.Add(d);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.Warn(ex);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-
-
             audioSourceItems = new BindingList<ComboBoxItem>();
-            foreach (var d in mmdevices)
+
+            var captureDevices = AudioTool.GetAudioCaptureDevices();
+
+            foreach(var d in captureDevices)
             {
-                AudioCaptureDeviceDescription captureSettings = null;
-                var client = d.AudioClient;
-                if (client != null)
-                {
-                    var mixFormat = client.MixFormat;
-                    if (mixFormat != null)
-                    {
-
-                        captureSettings = new AudioCaptureDeviceDescription
-                        {
-                            DeviceId = d.ID,
-                            Name = d.FriendlyName,
-
-                            BitsPerSample = mixFormat.BitsPerSample,
-                            SampleRate = mixFormat.SampleRate,
-                            Channels = mixFormat.Channels,
-                            Description = $"{mixFormat.BitsPerSample} bit PCM: {mixFormat.SampleRate / 1000}kHz {mixFormat.Channels} channels",
-
-                            //Properties = prop,
-                        };
-
-                    }
-                }
-
                 ComboBoxItem item = new ComboBoxItem
                 {
-                    Name = d.FriendlyName,
-                    Tag = captureSettings,
+                    Name = d.Name,
+                    Tag = d,
                 };
 
                 audioSourceItems.Add(item);
-                d?.Dispose();
             }
-            mmdevices.Clear();
-
 
             audioSourceComboBox.DataSource = audioSourceItems;
             audioSourceComboBox.DisplayMember = "Name";
 
-
         }
+
 
         private void videoSourceUpdateButton_Click(object sender, EventArgs e)
         {
@@ -908,9 +816,9 @@ namespace ScreenStreamer.WinForms.App
 
         }
 
-        private AudioCaptureDeviceDescription GetCurrentAudioCaptureDevice()
+        private AudioCaptureDevice GetCurrentAudioCaptureDevice()
         {
-            AudioCaptureDeviceDescription captureSettings = null;
+            AudioCaptureDevice captureSettings = null;
 
             var item = audioSourceComboBox.SelectedItem;
             if (item != null)
@@ -918,7 +826,7 @@ namespace ScreenStreamer.WinForms.App
                 var tag = ((item as ComboBoxItem)?.Tag);
                 if (tag != null)
                 {
-                    captureSettings = tag as AudioCaptureDeviceDescription;
+                    captureSettings = tag as AudioCaptureDevice;
                 }
             }
 

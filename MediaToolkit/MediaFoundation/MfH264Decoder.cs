@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 using NLog;
 using System.Linq;
 
-using GDI = System.Drawing;
-using Direct2D = SharpDX.Direct2D1;
-
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;

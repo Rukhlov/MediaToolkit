@@ -137,7 +137,7 @@ namespace MediaToolkit.Core
     }
 
 
-    public class AudioCaptureDeviceDescription
+    public class AudioCaptureDevice
     {
         public string Name { get; set; } = "";
         public string DeviceId { get; set; } = "";

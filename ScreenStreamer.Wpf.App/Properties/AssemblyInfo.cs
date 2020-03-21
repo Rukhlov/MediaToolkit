@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ScreenStreamer.Wpf.Common")]
+[assembly: AssemblyTitle("ScreenStreamer.Wpf.App")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft Corporation")]
-[assembly: AssemblyProduct("ScreenStreamer.Wpf.Common")]
+[assembly: AssemblyProduct("ScreenStreamer.Wpf.App")]
 [assembly: AssemblyCopyright("Copyright © Microsoft Corporation 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

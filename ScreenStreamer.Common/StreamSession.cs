@@ -59,7 +59,7 @@ namespace ScreenStreamer.Common
 
         public AudioEncoderSettings EncoderSettings { get; set; } = new AudioEncoderSettings();
 
-        public AudioCaptureDeviceDescription CaptureDevice { get; set; }
+        public AudioCaptureDevice CaptureDevice { get; set; }
     }
 
     [Serializable]

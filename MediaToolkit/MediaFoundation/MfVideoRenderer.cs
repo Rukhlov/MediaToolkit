@@ -1,4 +1,5 @@
-﻿using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.Logging;
+using MediaToolkit.NativeAPIs;
 using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.SharedTypes;
 using NLog;
@@ -21,7 +22,9 @@ namespace MediaToolkit.MediaFoundation
 {
     public class MfVideoRenderer : IVideoRenderer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public MfVideoRenderer()
         { }

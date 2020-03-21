@@ -1,8 +1,10 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -14,7 +16,9 @@ namespace MediaToolkit.MediaStreamers
     public class HttpScreenStreamer : SharedTypes.IHttpScreenStreamer
     {
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         private VideoHttpStreamer httpStreamer = null;
         private IVideoSource httpScreenSource = null;

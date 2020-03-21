@@ -20,6 +20,7 @@ namespace MediaToolkit.MediaFoundation
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
+
         private readonly IVideoSource videoSource = null;
 
         public VideoEncoder(IVideoSource source)

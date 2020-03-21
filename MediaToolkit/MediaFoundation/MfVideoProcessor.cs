@@ -17,13 +17,17 @@ using SharpDX.MediaFoundation;
 using System.IO;
 using MediaToolkit.MediaFoundation;
 using System.Drawing;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.MediaFoundation
 {
     public class MfVideoProcessor
     {
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
+
         private Transform processor = null;
 
         private int inputStreamId = -1;

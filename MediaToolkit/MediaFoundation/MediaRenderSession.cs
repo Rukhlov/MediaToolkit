@@ -1,10 +1,12 @@
-﻿using MediaToolkit.MediaFoundation;
+﻿using MediaToolkit.Logging;
+using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
 using NLog;
 using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,7 +16,9 @@ namespace MediaToolkit
 {
     public class MediaRenderSession : IMediaRenderSession
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //rivate static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         private MfVideoRenderer videoRenderer = null;
         private MfAudioRenderer audioRenderer = null;

@@ -1,4 +1,5 @@
-﻿using MediaToolkit.SharedTypes;
+﻿using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 
 using NLog;
 using SharpDX;
@@ -19,7 +20,9 @@ namespace MediaToolkit.MediaFoundation
 {
     public class MfAudioRenderer: IAudioRenderer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public MfAudioRenderer()
         { }
@@ -341,23 +344,23 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkPaused)
                 {
-                    logger.Debug(typeInfo);
+                    logger.Verb(typeInfo);
                     rendererState = RendererState.Paused;
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkMarker)
                 {
-                    logger.Debug(typeInfo);
+                    logger.Debug(typeInfo.ToString());
                 }
                 else if (typeInfo == MediaEventTypes.StreamSinkDeviceChanged)
                 {
-                    logger.Debug(typeInfo);
+                    logger.Debug(typeInfo.ToString());
 
                     OnDeviceChanged();
                 }
                 else if (typeInfo == MediaEventTypes.AudioSessionDeviceRemoved)
                 {// TODO: пересоздаем девайс
 
-                    logger.Debug(typeInfo);
+                    logger.Debug(typeInfo.ToString());
 
                    
                 }

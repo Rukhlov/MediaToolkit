@@ -12,6 +12,7 @@ using MediaToolkit.Core;
 using NLog;
 using NAudio.CoreAudioApi;
 using ScreenStreamer.Common;
+using MediaToolkit.MediaStreamers;
 
 namespace TestStreamer.Controls
 {

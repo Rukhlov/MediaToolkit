@@ -1,6 +1,7 @@
 ﻿using MediaToolkit;
 
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.RTP;
 using MediaToolkit.Utils;
@@ -14,7 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace MediaToolkit.MediaStreamers
 {
     public enum StreamerState
     {
@@ -27,7 +28,8 @@ namespace MediaToolkit
 
     public class VideoStreamer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //rivate static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         public readonly IVideoSource videoSource = null;
         public VideoStreamer(IVideoSource source)

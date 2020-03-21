@@ -53,7 +53,7 @@ namespace MediaToolkit.Logging
         }
     }
 
-    internal static class TraceSourceExtension
+    public static class TraceSourceExtension
     {
         public static void Fatal<T>(this TraceSource ts, T t) where T : Exception
         {
@@ -102,7 +102,7 @@ namespace MediaToolkit.Logging
             ts.TraceEvent(TraceEventType.Warning, 0, format, args);
         }
 
-        public static void Info<T>(this TraceSource ts, T t) where T : Exception
+        public static void Info<T>(this TraceSource ts, T t) //where T : Exception
         {
             ts.TraceData(TraceEventType.Information, 0, t);
         }
@@ -118,7 +118,7 @@ namespace MediaToolkit.Logging
             ts.TraceEvent(TraceEventType.Information, 0, message);
         }
 
-        public static void Verb<T>(this TraceSource ts, T t) where T : Exception
+        public static void Verb<T>(this TraceSource ts, T t) //where T : Exception
         {
             ts.TraceData(TraceEventType.Verbose, 0, t);
         }
@@ -137,7 +137,7 @@ namespace MediaToolkit.Logging
 
 
 
-        public static void Debug<T>(this TraceSource ts, T t) where T : Exception
+        public static void Debug<T>(this TraceSource ts, T t) //where T : Exception
         {
             ts.TraceData(TraceEventType.Verbose, 0, t);
         }

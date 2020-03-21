@@ -13,13 +13,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaToolkit.Networks;
+using MediaToolkit.Logging;
 
-namespace MediaToolkit
+namespace MediaToolkit.MediaStreamers
 {
 
     public class VideoHttpStreamer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         private readonly IVideoSource screenSource = null;
 
