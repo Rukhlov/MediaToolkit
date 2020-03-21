@@ -11,11 +11,11 @@ using System.ServiceModel.Discovery;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TestStreamer;
 
-namespace TestStreamer
+
+namespace ScreenStreamer.Common
 {
-    public enum StreamerState
+    public enum MediaStreamerState
     {
         Initialized,
         Starting,
@@ -25,13 +25,13 @@ namespace TestStreamer
         Shutdown,
     }
 
-    public class ScreenStreamer
+    public class MediaStreamer
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private IVideoSource videoSource = null;
         private VideoStreamer videoStreamer = null;
-       
+
         private AudioSource audioSource = null;
         private AudioStreamer audioStreamer = null;
 
@@ -39,7 +39,7 @@ namespace TestStreamer
 
         public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
         public Uri ListenUri => communicationService?.ListenUri;
- 
+
         public StreamSession Session { get; private set; }
 
         public event Action StateChanged;
@@ -47,57 +47,58 @@ namespace TestStreamer
         public Exception ExceptionObj { get; private set; }
         private AutoResetEvent syncEvent = null;
 
-        private volatile StreamerState state = StreamerState.Shutdown;
-        public StreamerState State => state;
+        private volatile MediaStreamerState state = MediaStreamerState.Shutdown;
+        public MediaStreamerState State => state;
 
         private volatile int errorCode = 0;
         public int ErrorCode => errorCode;
 
-        private Task streamerTask = null;
+        private Thread streamerThread = null;
 
         public bool Start(StreamSession session)
         {
             logger.Debug("ScreenStreamer::Start(...)");
 
-            Debug.Assert(session!=null, "session!=null");
+            Debug.Assert(session != null, "session!=null");
 
-            if (state != StreamerState.Shutdown)
+            if (state != MediaStreamerState.Shutdown)
             {
                 logger.Warn("ScreenStreamer::Start(...) return invalid state: " + state);
                 return false;
             }
 
-            state = StreamerState.Starting;
+            state = MediaStreamerState.Starting;
             StateChanged?.Invoke();
 
-            streamerTask = Task.Run(() =>
-            {
-                DoStreaming(session);
-
-            });
+            streamerThread = new Thread(DoStreaming);
+            streamerThread.IsBackground = true;
+            streamerThread.Start(session);
 
             return true;
         }
 
-        private void DoStreaming(StreamSession session)
+        private void DoStreaming(object session)
         {
 
             try
             {
+
+                Session = session as StreamSession;
                 syncEvent = new AutoResetEvent(false);
 
-                StartStreaming(session);
 
-                if(state == StreamerState.Starting)
+                StartStreaming();
+
+                if (state == MediaStreamerState.Starting)
                 {
-                    state = StreamerState.Streamming;
+                    state = MediaStreamerState.Streamming;
                     StateChanged?.Invoke();
                 }
 
-                while (state == StreamerState.Streamming)
+                while (state == MediaStreamerState.Streamming)
                 {
                     //TODO: process audio, video events...
-             
+
                     syncEvent.WaitOne(1000);
 
                 }
@@ -106,14 +107,13 @@ namespace TestStreamer
             {
                 logger.Error(ex);
 
-                ExceptionObj = ex;
-
+                ProcessError(ex);
             }
             finally
             {
                 StopStreaming();
 
-                state = StreamerState.Stopped;
+                state = MediaStreamerState.Stopped;
                 StateChanged?.Invoke();
 
             }
@@ -123,14 +123,14 @@ namespace TestStreamer
         {
             logger.Debug("ScreenStreamer::Stop()");
 
-            if (state != StreamerState.Streamming)
+            if (state != MediaStreamerState.Streamming)
             {
                 logger.Warn("ScreenStreamer::Stop() return invalid state: " + state);
                 return false;
             }
 
 
-            state = StreamerState.Stopping;
+            state = MediaStreamerState.Stopping;
             StateChanged?.Invoke();
 
             syncEvent?.Set();
@@ -143,11 +143,11 @@ namespace TestStreamer
         {
             logger.Trace("ScreenStreamer::Shutdown()");
 
-            if (streamerTask != null && streamerTask.Status == TaskStatus.Running)
-            {
-                //...
-               
-            }
+            //if (streamerThread != null && streamerThread.ThreadState == System.Threading.ThreadState.Running)
+            //{
+            //    //...
+
+            //}
 
             if (syncEvent != null)
             {
@@ -155,34 +155,34 @@ namespace TestStreamer
                 syncEvent = null;
             }
 
-            state = StreamerState.Shutdown;
+            state = MediaStreamerState.Shutdown;
+
+            StateChanged?.Invoke();
 
         }
 
 
-
-        private void StartStreaming(StreamSession session)
+        private void StartStreaming()
         {
             logger.Debug("ScreenStreamer::StartStreaming()");
 
-            this.Session = session;
 
-            var videoSettings = session.VideoSettings;
-            var audioSettings = session.AudioSettings;
+            var videoSettings = Session.VideoSettings;
+            var audioSettings = Session.AudioSettings;
 
             var sourceId = Guid.NewGuid().ToString();
 
-            var communicationPort = session.CommunicationPort;
+            var communicationPort = Session.CommunicationPort;
 
-            var networkIpAddr = session.NetworkIpAddress; //"0.0.0.0";
+            var networkIpAddr = Session.NetworkIpAddress; //"0.0.0.0";
 
-            var transportMode = session.TransportMode; //TransportMode.Tcp;//(TransportMode)transportComboBox.SelectedItem;
-            if (session.IsMulticast)
+            var transportMode = Session.TransportMode; //TransportMode.Tcp;//(TransportMode)transportComboBox.SelectedItem;
+            if (Session.IsMulticast)
             {
                 transportMode = TransportMode.Udp;
             }
 
-            if (!session.IsMulticast && transportMode == TransportMode.Udp)
+            if (!Session.IsMulticast && transportMode == TransportMode.Udp)
             {
                 throw new NotSupportedException("TransportMode.Udp currently not supported...");
             }
@@ -195,10 +195,10 @@ namespace TestStreamer
 
 
 
-            if (session.IsMulticast)
+            if (Session.IsMulticast)
             {
-                var multicastAddr = session.MutlicastAddress;
-                var multicastVideoPort = session.MutlicastPort1;
+                var multicastAddr = Session.MutlicastAddress;
+                var multicastVideoPort = Session.MutlicastPort1;
                 var multicastAudioPort = multicastVideoPort + 1;
 
                 videoNetworkSettings.RemoteAddr = multicastAddr;
@@ -260,7 +260,7 @@ namespace TestStreamer
 
 
             logger.Info("CommunicationAddress=" + communicationAddress +
-                " MulticastMode=" + session.IsMulticast +
+                " MulticastMode=" + Session.IsMulticast +
                 " VideoEnabled=" + videoEnabled +
                 " AudioEnabled=" + audioEnabled);
 
@@ -269,12 +269,12 @@ namespace TestStreamer
 
                 SetupVideoSource(videoSettings);
 
-                if (transportMode == TransportMode.Tcp || session.IsMulticast)
+                if (transportMode == TransportMode.Tcp || Session.IsMulticast)
                 {
                     SetupVideoStream(videoSettings);
                 }
 
-                ScreencastChannelInfo videoChannelInfo = GetVideoChannelInfo(videoSettings, session);
+                ScreencastChannelInfo videoChannelInfo = GetVideoChannelInfo(videoSettings, Session);
 
                 ScreencastChannelsInfos.Add(videoChannelInfo);
 
@@ -285,19 +285,19 @@ namespace TestStreamer
             {
                 SetupAudioSource(audioSettings);
 
-                if (transportMode == TransportMode.Tcp || session.IsMulticast)
+                if (transportMode == TransportMode.Tcp || Session.IsMulticast)
                 {
                     SetupAudioStream(audioSettings);
                 }
 
-                ScreencastChannelInfo audioChannelInfo = GetAudioChannelInfo(audioSettings, session);
+                ScreencastChannelInfo audioChannelInfo = GetAudioChannelInfo(audioSettings, Session);
 
                 ScreencastChannelsInfos.Add(audioChannelInfo);
 
             }
 
             communicationService = new CommunicationService(this);
-            var hostName = session.StreamName; //System.Net.Dns.GetHostName();
+            var hostName = Session.StreamName; //System.Net.Dns.GetHostName();
 
 
             hostName += " (" + videoSettings.CaptureDevice.Name + ")";
@@ -615,6 +615,13 @@ namespace TestStreamer
         }
 
 
+        private void ProcessError(Exception ex)
+        {
+            //...
+            ExceptionObj = ex;
+        }
+
+
         public ScreencastChannelInfo[] GetScreencastInfo()
         {
             var vci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
@@ -638,8 +645,8 @@ namespace TestStreamer
         {
             private static Logger logger = LogManager.GetCurrentClassLogger();
 
-            private readonly ScreenStreamer screenStreamer = null;
-            public CommunicationService(ScreenStreamer streamer)
+            private readonly MediaStreamer screenStreamer = null;
+            public CommunicationService(MediaStreamer streamer)
             {
                 this.screenStreamer= streamer;
             }

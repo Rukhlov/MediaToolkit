@@ -1,4 +1,6 @@
 ﻿using MediaToolkit.Core;
+using ScreenStreamer.Common;
+using ScreenStreamer.WinForms.App;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

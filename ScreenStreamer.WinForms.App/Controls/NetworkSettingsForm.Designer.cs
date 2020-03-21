@@ -393,7 +393,7 @@
             // videoSourceUpdateButton
             // 
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.videoSourceUpdateButton.Image = global::Test.Streamer.Properties.Resources.baseline_cached_black_18dp;
+            this.videoSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
             this.videoSourceUpdateButton.Location = new System.Drawing.Point(410, 1);
             this.videoSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.videoSourceUpdateButton.Name = "videoSourceUpdateButton";

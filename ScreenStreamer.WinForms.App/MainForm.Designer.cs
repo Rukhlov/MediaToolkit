@@ -1,6 +1,6 @@
-﻿namespace TestStreamer
+﻿namespace ScreenStreamer.WinForms.App
 {
-    partial class StreamingForm
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StreamingForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.videoSourceDetailsButton = new System.Windows.Forms.Button();
             this.videoSourceEnableCheckBox = new System.Windows.Forms.CheckBox();
             this.audioSourceEnableCheckBox = new System.Windows.Forms.CheckBox();
@@ -180,7 +180,7 @@
             // videoSourceUpdateButton
             // 
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.videoSourceUpdateButton.Image = global::Test.Streamer.Properties.Resources.baseline_cached_black_18dp;
+            this.videoSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
             this.videoSourceUpdateButton.Location = new System.Drawing.Point(543, 1);
             this.videoSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.videoSourceUpdateButton.Name = "videoSourceUpdateButton";
@@ -192,7 +192,7 @@
             // audioSourceUpdateButton
             // 
             this.audioSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.audioSourceUpdateButton.Image = global::Test.Streamer.Properties.Resources.baseline_cached_black_18dp;
+            this.audioSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
             this.audioSourceUpdateButton.Location = new System.Drawing.Point(543, 1);
             this.audioSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.audioSourceUpdateButton.Name = "audioSourceUpdateButton";

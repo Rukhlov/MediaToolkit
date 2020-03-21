@@ -1,9 +1,6 @@
-﻿using MediaToolkit;
-using MediaToolkit.Core;
-using MediaToolkit.UI;
-using NAudio.CoreAudioApi;
+﻿
 using NLog;
-//using SharpDX.MediaFoundation;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,25 +16,28 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Test.Streamer.Controls;
-using TestStreamer.Controls;
 
-namespace TestStreamer
+
+using ScreenStreamer.Common;
+using MediaToolkit.Core;
+using MediaToolkit.UI;
+using NAudio.CoreAudioApi;
+using TestStreamer.Controls;
+using Test.Streamer.Controls;
+
+namespace ScreenStreamer.WinForms.App
 {
-    public partial class StreamingForm : Form
+    public partial class MainForm : Form
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public StreamingForm()
+        public MainForm()
         {
             InitializeComponent();
 
 
-            screenStreamer = new ScreenStreamer();
-            screenStreamer.StateChanged += ScreenStreamer_StateChanged;
-
-            //screenStreamer.StreamStarted += ScreenStreamer_StreamStarted;
-            //screenStreamer.StreamStopped += ScreenStreamer_StreamStopped;
+            mediaStreamer = new MediaStreamer();
+            mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
             //Validate session...
             currentSession = Config.Data.Session;
@@ -103,7 +103,7 @@ namespace TestStreamer
         }
 
 
-        private ScreenStreamer screenStreamer = null;
+        private ScreenStreamer.Common.MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
 
         private SynchronizationContext syncContext = null;
@@ -117,7 +117,7 @@ namespace TestStreamer
             logger.Debug("switchStreamingStateButton_Click(...) ");
 
 
-            if (screenStreamer.State == StreamerState.Shutdown)
+            if (mediaStreamer.State == MediaStreamerState.Shutdown)
             {
                 Start();
             }
@@ -141,7 +141,7 @@ namespace TestStreamer
 
             try
             {
-                bool starting = screenStreamer.Start(currentSession);
+                bool starting = mediaStreamer.Start(currentSession);
                 if (!starting)
                 {
                     //...
@@ -168,7 +168,7 @@ namespace TestStreamer
             try
             {
   
-                bool stopping = screenStreamer.Stop();
+                bool stopping = mediaStreamer.Stop();
 
                 if (!stopping)
                 {
@@ -191,17 +191,17 @@ namespace TestStreamer
 
 
 
-        private void ScreenStreamer_StateChanged()
+        private void MediaStreamer_StateChanged()
         {
-            var state = screenStreamer.State;
+            var state = mediaStreamer.State;
 
             logger.Debug("ScreenStreamer_StateChanged(...) " + state);
 
-            if (state == StreamerState.Starting)
+            if (state == MediaStreamerState.Starting)
             {
                 OnSteramStarting();
             }
-            else if (state == StreamerState.Streamming)
+            else if (state == MediaStreamerState.Streamming)
             {
                 syncContext.Send(_ =>
                 {
@@ -209,11 +209,11 @@ namespace TestStreamer
 
                 }, null);
             }
-            else if(state == StreamerState.Stopping)
+            else if(state == MediaStreamerState.Stopping)
             {
                 OnStreamStopping();
             }
-            else if (state == StreamerState.Stopped)
+            else if (state == MediaStreamerState.Stopped)
             {
                 syncContext.Send(_ =>
                 {
@@ -263,7 +263,7 @@ namespace TestStreamer
 
             //contextMenu.Enabled = true;
 
-            var ex = screenStreamer.ExceptionObj;
+            var ex = mediaStreamer.ExceptionObj;
             if (ex != null)
             {
                 captureStatusLabel.Text = "Streaming attempt has failed";
@@ -316,7 +316,7 @@ namespace TestStreamer
                 var _port = currentSession.CommunicationPort;
                 if (currentSession.CommunicationPort >= 0)
                 {
-                    var listenUri = screenStreamer.ListenUri;
+                    var listenUri = mediaStreamer.ListenUri;
                     statusDescription = "Stream running on port " + listenUri.Port;
                 }
 
@@ -384,9 +384,9 @@ namespace TestStreamer
 
             this.Cursor = Cursors.Default;
 
-            if (screenStreamer != null)
+            if (mediaStreamer != null)
             {
-                screenStreamer.Shutdown();
+                mediaStreamer.Shutdown();
 
             }
 
@@ -409,7 +409,7 @@ namespace TestStreamer
             }
 
 
-            var ex = screenStreamer.ExceptionObj;
+            var ex = mediaStreamer.ExceptionObj;
             if (ex != null)
             {
                 var iex = ex.InnerException;
@@ -976,6 +976,119 @@ namespace TestStreamer
         //    base.OnClosed(e);
         //}
 
+    }
+
+
+    class RegionForm : Form
+    {
+        internal RegionForm(Rectangle region)
+        {
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = region.Location;
+            this.Size = new Size(region.Width, region.Height);
+
+            this.TransparencyKey = Color.White;
+            this.BackColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TopMost = true;
+            this.ShowInTaskbar = false;
+
+            RegionPanel panel = new RegionPanel();
+            panel.Dock = DockStyle.Fill;
+
+            this.Controls.Add(panel);
+        }
+
+        const int WS_EX_LAYERED = 0x00080000;
+        //protected override CreateParams CreateParams
+        //{
+        //    get
+        //    {
+        //        CreateParams createParams = base.CreateParams;
+        //        createParams.ExStyle |= WS_EX_LAYERED;
+        //        return createParams;
+        //    }
+        //}
+
+        class RegionPanel : Panel
+        {
+            internal RegionPanel()
+            {
+                timer.Tick += Timer_Tick;
+                timer.Interval = 1000;
+                timer.Enabled = true;
+
+            }
+
+
+            private byte tick = 0;
+            private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            private void Timer_Tick(object sender, EventArgs e)
+            {
+                DrawBorder();
+
+                tick++;
+
+
+            }
+
+            private void DrawBorder()
+            {
+                var color = Color.Red;
+                var color2 = Color.Green;
+
+                if (tick % 2 == 0)
+                {
+                    color = Color.Green;
+                    color2 = Color.Red;
+                }
+
+                var r = this.ClientRectangle;
+                var rect = new Rectangle(r.X, r.Y, r.Width - 1, r.Height - 1);
+                var g = Graphics.FromHwnd(this.Handle);
+
+                using (var b = new SolidBrush(color))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
+                        g.DrawRectangle(pen, rect);
+                    }
+                }
+
+                using (var b = new SolidBrush(color2))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
+                        pen.DashPattern = new float[] { 5, 5 };
+
+                        g.DrawRectangle(pen, rect);
+                    }
+                }
+            }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                DrawBorder();
+
+                base.OnPaint(e);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+
+                timer.Tick -= Timer_Tick;
+                timer.Dispose();
+
+                base.Dispose(disposing);
+            }
+
+        }
+    }
+
+    class ComboBoxItem
+    {
+        public string Name { get; set; }
+        public object Tag { get; set; }
     }
 
 }

@@ -12,6 +12,8 @@ using MediaToolkit;
 
 using MediaToolkit.NativeAPIs;
 using System.Threading;
+using ScreenStreamer.Common;
+using ScreenStreamer.WinForms.App;
 
 namespace TestStreamer
 {
@@ -58,7 +60,7 @@ namespace TestStreamer
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                StreamingForm form = new StreamingForm();
+                ScreenStreamer.WinForms.App.MainForm form = new ScreenStreamer.WinForms.App.MainForm();
 
                 Application.Run(form);
 
