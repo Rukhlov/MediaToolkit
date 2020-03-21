@@ -50,7 +50,7 @@
             this.videoSourceSettingsLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.videoSourceComboBox = new TestStreamer.ColoredCombo();
+            this.videoSourceComboBox = new System.Windows.Forms.ComboBox();
             this.audioSourceSettingsLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -329,6 +329,7 @@
             this.stopStreamingButton.TabIndex = 86;
             this.stopStreamingButton.Text = "_TEST";
             this.stopStreamingButton.UseVisualStyleBackColor = false;
+            this.stopStreamingButton.Visible = false;
             this.stopStreamingButton.Click += new System.EventHandler(this.stopStreamingButton_Click);
             // 
             // videoSourceSettingsLayoutPanel
@@ -675,7 +676,7 @@
         private System.Windows.Forms.Button audioSourceDetailsButton;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
-        private ColoredCombo videoSourceComboBox;
+        private System.Windows.Forms.ComboBox videoSourceComboBox;
         private System.Windows.Forms.Label lineSeparator;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;

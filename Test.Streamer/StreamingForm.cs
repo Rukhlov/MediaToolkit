@@ -34,9 +34,10 @@ namespace TestStreamer
 
 
             screenStreamer = new ScreenStreamer();
+            screenStreamer.StateChanged += ScreenStreamer_StateChanged;
 
-            screenStreamer.StreamStarted += ScreenStreamer_StreamStarted;
-            screenStreamer.StreamStopped += ScreenStreamer_StreamStopped;
+            //screenStreamer.StreamStarted += ScreenStreamer_StreamStarted;
+            //screenStreamer.StreamStopped += ScreenStreamer_StreamStopped;
 
             //Validate session...
             currentSession = Config.Data.Session;
@@ -101,6 +102,7 @@ namespace TestStreamer
 
         }
 
+
         private ScreenStreamer screenStreamer = null;
         private StreamSession currentSession = null;
 
@@ -112,7 +114,7 @@ namespace TestStreamer
 
         private void switchStreamingStateButton_Click(object sender, EventArgs e)
         {
-            logger.Debug("startButton_Click(...) ");
+            logger.Debug("switchStreamingStateButton_Click(...) ");
 
 
             if (screenStreamer.State == StreamerState.Shutdown)
@@ -129,54 +131,123 @@ namespace TestStreamer
         {
             logger.Debug("stopButton_Click(...) ");
 
+            Stop();
+
         }
 
         private void Start()
         {
+            logger.Debug("StreamingForm::Start()");
+
             try
             {
-
-                //contextMenu.Enabled = false;
-
-                networkSettingsLayoutPanel.Enabled = false;
-                videoSourceSettingsLayoutPanel.Enabled = false;
-                audioSourceSettingsLayoutPanel.Enabled = false;
-                switchStreamingStateButton.Enabled = false;
-
-                captureStatusLabel.Text = "Stream starting...";
-
-                this.Cursor = Cursors.WaitCursor;
-
-                screenStreamer.Start(currentSession);
+                bool starting = screenStreamer.Start(currentSession);
+                if (!starting)
+                {
+                    //...
+                    logger.Warn("screenStreamer.Start(currentSession) == " + starting);
+                }
+ 
 
             }
             catch (Exception ex)
             {
+                OnStreamError();
+
                 logger.Error(ex);
+                MessageBox.Show(ex.ToString());
 
-                MessageBox.Show(ex.Message);
 
-                networkSettingsLayoutPanel.Enabled = true;
-                videoSourceSettingsLayoutPanel.Enabled = true;
-                audioSourceSettingsLayoutPanel.Enabled = true;
-                switchStreamingStateButton.Enabled = true;
-
-                captureStatusLabel.Text = "Streaming attempt has failed";
-
-                captureStatusDescriptionLabel.Text = "";
             }
         }
 
-
-        private void ScreenStreamer_StreamStarted()
+        private void Stop()
         {
-            syncContext.Send(_ =>
-            {
-                OnStreamStarted();
+            logger.Debug("StreamingForm::Stop()");
 
-            }, null);
+            try
+            {
+  
+                bool stopping = screenStreamer.Stop();
+
+                if (!stopping)
+                {
+                    //...
+                    logger.Warn("screenStreamer.Stop() == " + stopping);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                OnStreamError();
+
+                logger.Error(ex);
+                MessageBox.Show(ex.ToString());
+
+            }
 
         }
+
+
+
+        private void ScreenStreamer_StateChanged()
+        {
+            var state = screenStreamer.State;
+
+            logger.Debug("ScreenStreamer_StateChanged(...) " + state);
+
+            if (state == StreamerState.Starting)
+            {
+                OnSteramStarting();
+            }
+            else if (state == StreamerState.Streamming)
+            {
+                syncContext.Send(_ =>
+                {
+                    OnStreamStarted();
+
+                }, null);
+            }
+            else if(state == StreamerState.Stopping)
+            {
+                OnStreamStopping();
+            }
+            else if (state == StreamerState.Stopped)
+            {
+                syncContext.Send(_ =>
+                {
+                    OnStreamStopped();
+
+                }, null);
+            }
+            else
+            {
+
+            }
+        }
+
+        private void OnSteramStarting()
+        {
+            //contextMenu.Enabled = false;
+
+            this.Cursor = Cursors.WaitCursor;
+
+            networkSettingsLayoutPanel.Enabled = false;
+            videoSourceSettingsLayoutPanel.Enabled = false;
+            audioSourceSettingsLayoutPanel.Enabled = false;
+            switchStreamingStateButton.Enabled = false;
+
+            captureStatusLabel.Text = "Stream starting...";
+
+
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.Capturing = true;
+            }
+
+        }
+
 
         private void OnStreamStarted()
         {
@@ -231,10 +302,10 @@ namespace TestStreamer
 
                         }
 
-                        if (selectAreaForm != null)
-                        {
-                            selectAreaForm.Capturing = true;
-                        }
+                        //if (selectAreaForm != null)
+                        //{
+                        //    selectAreaForm.Capturing = true;
+                        //}
 
                     }
 
@@ -256,56 +327,43 @@ namespace TestStreamer
             }
         }
 
-        private void ScreenStreamer_StreamStopped()
+
+        private void OnStreamError()
         {
+            this.Cursor = Cursors.Default;
 
-            syncContext.Send(_ =>
+
+            //contextMenu.Enabled = true;
+            networkSettingsLayoutPanel.Enabled = true;
+            videoSourceSettingsLayoutPanel.Enabled = true;
+            audioSourceSettingsLayoutPanel.Enabled = true;
+            switchStreamingStateButton.Enabled = true;
+
+
+            captureStatusLabel.Text = "Streaming attempt has failed";
+            captureStatusDescriptionLabel.Text = "";
+
+            if (selectAreaForm != null)
             {
-                OnStreamStopped();
-
-            }, null);
-
-            
+                selectAreaForm.Capturing = false;
+            }
         }
 
-
-
-        private void Stop()
+        private void OnStreamStopping()
         {
-            try
-            {
-                this.Cursor = Cursors.WaitCursor;
-
-                //contextMenu.Enabled = false;
-
-                networkSettingsLayoutPanel.Enabled = false;
-                videoSourceSettingsLayoutPanel.Enabled = false;
-                audioSourceSettingsLayoutPanel.Enabled = false;
-                switchStreamingStateButton.Enabled = false;
-
-                captureStatusLabel.Text = "Stream stopping...";
-
-                captureStatusDescriptionLabel.Text = "";
-
-                screenStreamer.Stop();
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-                MessageBox.Show(ex.ToString());
-
-                //contextMenu.Enabled = true;
-                networkSettingsLayoutPanel.Enabled = true;
-                videoSourceSettingsLayoutPanel.Enabled = true;
-                audioSourceSettingsLayoutPanel.Enabled = true;
-                switchStreamingStateButton.Enabled = true;
+            this.Cursor = Cursors.WaitCursor;
 
 
-                captureStatusLabel.Text = "Streaming attempt has failed";
-                captureStatusDescriptionLabel.Text = "";
-            }
+            //contextMenu.Enabled = false;
 
+            networkSettingsLayoutPanel.Enabled = false;
+            videoSourceSettingsLayoutPanel.Enabled = false;
+            audioSourceSettingsLayoutPanel.Enabled = false;
+            switchStreamingStateButton.Enabled = false;
 
+            captureStatusLabel.Text = "Stream stopping...";
+
+            captureStatusDescriptionLabel.Text = "";
         }
 
         private void OnStreamStopped()
@@ -365,13 +423,19 @@ namespace TestStreamer
         }
 
 
+
+
         private void exitMenuItem_Click(object sender, EventArgs e)
         {
+            logger.Debug("exitMenuItem_Click(...)");
+
             DoClose();
         }
 
         private void exitButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("exitButton_Click(...)");
+
             DoClose();
         }
 
@@ -384,6 +448,8 @@ namespace TestStreamer
 
         private void networkSettingsButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("networkSettingsButton_Click(...)");
+
             var f = new NetworkSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
@@ -408,6 +474,8 @@ namespace TestStreamer
 
         private void videoSourceDetailsButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("videoSourceDetailsButton_Click(...)");
+
             var f = new VideoSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
@@ -424,6 +492,8 @@ namespace TestStreamer
 
         private void audioSourceDetailsButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("audioSourceDetailsButton_Click(...)");
+
             var f = new AudioSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
@@ -486,14 +556,6 @@ namespace TestStreamer
                 monitorIndex++;
             }
 
-            //var items = Screen.AllScreens
-            //    .Select(s => new ComboBoxItem
-            //    {
-            //        Name = s.DeviceName,//+ "" + s.Bounds.ToString(),
-            //        Tag = s.Bounds
-            //    }
-            //    ).ToList();
-
             if (items.Count > 1)
             {
                 ScreenCaptureDevice descr = new ScreenCaptureDevice
@@ -511,12 +573,6 @@ namespace TestStreamer
                     Name = "All Screens",//+ "" + s.Bounds.ToString(),
                     Tag = descr,
                 });
-
-                //items.Add(new ComboBoxItem
-                //{
-                //    Name = "All Screens",
-                //    Tag = SystemInformation.VirtualScreen
-                //});
 
             }
 
@@ -629,11 +685,10 @@ namespace TestStreamer
                 logger.Error(ex);
             }
 
-            //var dataSource = new BindingList<ComboBoxItem>(mmdevices.Select(d => new ComboBoxItem { Name = d.FriendlyName, Tag = d.ID }).ToList());
+
             audioSourceItems = new BindingList<ComboBoxItem>();
             foreach (var d in mmdevices)
             {
-                //$"{bitsPerSample} bit PCM: {sampleRate / 1000}kHz {channels} channels"
                 AudioCaptureDeviceDescription captureSettings = null;
                 var client = d.AudioClient;
                 if (client != null)
@@ -656,7 +711,6 @@ namespace TestStreamer
                         };
 
                     }
-                    //Screen.PrimaryScreen.
                 }
 
                 ComboBoxItem item = new ComboBoxItem
@@ -670,7 +724,6 @@ namespace TestStreamer
             }
             mmdevices.Clear();
 
-            //dataSource.Add(new ComboBoxItem { Name = "Disabled", Tag = null, });
 
             audioSourceComboBox.DataSource = audioSourceItems;
             audioSourceComboBox.DisplayMember = "Name";
@@ -680,17 +733,23 @@ namespace TestStreamer
 
         private void videoSourceUpdateButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("videoSourceUpdateButton_Click(...)");
+
             UpdateVideoSources();
         }
 
         private void audioSourceUpdateButton_Click(object sender, EventArgs e)
         {
+            logger.Debug("audioSourceUpdateButton_Click(...)");
+
             UpdateAudioSources();
         }
 
  
         private void videoSourceComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
+            logger.Debug("videoSourceComboBox_SelectedValueChanged(...)");
+
             bool isCustomRegion = false;
 
             Rectangle displayRect = Rectangle.Empty;
@@ -792,6 +851,8 @@ namespace TestStreamer
 
         private void audioSourceComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
+            logger.Debug("audioSourceComboBox_SelectedValueChanged(...)");
+
             var captureDevice = GetCurrentAudioCaptureDevice();
             if(captureDevice == null)
             {
@@ -807,14 +868,43 @@ namespace TestStreamer
 
         private void audioEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            currentSession.AudioSettings.Enabled = audioSourceEnableCheckBox.Checked;
+            logger.Debug("audioEnabledCheckBox_CheckedChanged(...)");
 
+            if (currentSession == null)
+            {
+                return;
+            }
+            var audioSettings = currentSession.AudioSettings;
+            if (audioSettings == null)
+            {
+                return;
+            }
+
+            audioSettings.Enabled = audioSourceEnableCheckBox.Checked;
+
+            logger.Debug("AudioSettings.Enabled == " + audioSettings.Enabled);
 
         }
 
         private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            currentSession.VideoSettings.Enabled = videoSourceEnableCheckBox.Checked;
+            logger.Debug("videoEnabledCheckBox_CheckedChanged(...)");
+
+            if(currentSession == null)
+            {
+                return;
+            }
+
+            var videoSettings = currentSession.VideoSettings;
+
+            if(videoSettings == null)
+            {
+                return;
+            }
+
+            videoSettings.Enabled = videoSourceEnableCheckBox.Checked;
+
+            logger.Debug("VideoSettings.Enabled == " + videoSettings.Enabled);
 
         }
 
@@ -886,96 +976,6 @@ namespace TestStreamer
         //    base.OnClosed(e);
         //}
 
-
-
     }
 
-    public class CustomComboBox : ComboBox
-    {
-        private const int WM_PAINT = 0xF;
-        private int buttonWidth = SystemInformation.HorizontalScrollBarArrowWidth;
-        protected override void WndProc(ref Message m)
-        {
-            base.WndProc(ref m);
-            if (m.Msg == WM_PAINT)
-            {
-                using (var g = Graphics.FromHwnd(Handle))
-                {
-                    // Uncomment this if you don't want the "highlight border".
-                    /*
-                    using (var p = new Pen(this.BorderColor, 1))
-                    {
-                        g.DrawRectangle(p, 0, 0, Width - 1, Height - 1);
-                    }*/
-                    using (var p = new Pen(this.BorderColor, 2))
-                    {
-                        g.DrawRectangle(p, 2, 2, Width - buttonWidth - 4, Height - 4);
-                    }
-
-
-                    //using (var g = Graphics.FromHwnd(Handle))
-                    //{
-                    //    using (var p = new Pen(this.BorderColor, 1))
-                    //    {
-                    //        g.DrawRectangle(p, 0, 0, Width - buttonWidth - 1, Height - 1);
-                    //    }
-
-                    //    if (Properties.Settings.Default.Theme == "Dark")
-                    //    {
-                    //        g.DrawImageUnscaled(Properties.Resources.dropdown, new Point(Width - buttonWidth - 1));
-                    //    }
-                    //}
-                }
-            }
-        }
-
-        public CustomComboBox()
-        {
-            BorderColor = Color.DimGray;
-        }
-
-        [Browsable(true)]
-        [Category("Appearance")]
-        [DefaultValue(typeof(Color), "DimGray")]
-        public Color BorderColor { get; set; }
-    }
-
-    public class FlatCombo : ComboBox
-    {
-        private const int WM_PAINT = 0xF;
-        private int buttonWidth = SystemInformation.HorizontalScrollBarArrowWidth;
-        protected override void WndProc(ref Message m)
-        {
-            base.WndProc(ref m);
-            if (m.Msg == WM_PAINT)
-            {
-                using (var g = Graphics.FromHwnd(Handle))
-                {
-                    using (var p = new Pen(this.ForeColor))
-                    {
-                        g.DrawRectangle(p, 0, 0, Width - 1, Height - 1);
-                        g.DrawLine(p, Width - buttonWidth, 0, Width - buttonWidth, Height);
-                    }
-                }
-            }
-        }
-    }
-
-    public interface IScreenStreamerServiceControl
-    {
-        ScreencastChannelInfo[] GetScreencastInfo();
-    }
-
-    public class ColoredCombo : ComboBox
-    {
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            base.OnPaintBackground(e);
-            using (var brush = new SolidBrush(BackColor))
-            {
-                e.Graphics.FillRectangle(brush, ClientRectangle);
-                e.Graphics.DrawRectangle(Pens.Red, 0, 0, ClientSize.Width - 1, ClientSize.Height - 1);
-            }
-        }
-    }
 }

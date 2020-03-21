@@ -39,12 +39,10 @@ namespace TestStreamer
 
         public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
         public Uri ListenUri => communicationService?.ListenUri;
-        //public bool IsStreaming { get; private set; }
-
+ 
         public StreamSession Session { get; private set; }
 
-        public event Action StreamStarted;
-        public event Action StreamStopped;
+        public event Action StateChanged;
 
         public Exception ExceptionObj { get; private set; }
         private AutoResetEvent syncEvent = null;
@@ -57,33 +55,32 @@ namespace TestStreamer
 
         private Task streamerTask = null;
 
-        public void Start(StreamSession session)
+        public bool Start(StreamSession session)
         {
             logger.Debug("ScreenStreamer::Start(...)");
+
+            Debug.Assert(session!=null, "session!=null");
 
             if (state != StreamerState.Shutdown)
             {
                 logger.Warn("ScreenStreamer::Start(...) return invalid state: " + state);
-                return;
+                return false;
             }
 
             state = StreamerState.Starting;
+            StateChanged?.Invoke();
 
             streamerTask = Task.Run(() =>
             {
                 DoStreaming(session);
 
             });
+
+            return true;
         }
 
         private void DoStreaming(StreamSession session)
         {
-
-            if (state != StreamerState.Starting)
-            {
-                logger.Warn("ScreenStreamer::DoStreaming(...) return invalid state: " + state);
-                return;
-            }
 
             try
             {
@@ -91,15 +88,16 @@ namespace TestStreamer
 
                 StartStreaming(session);
 
-                state = StreamerState.Streamming;
-
-                StreamStarted?.Invoke();
+                if(state == StreamerState.Starting)
+                {
+                    state = StreamerState.Streamming;
+                    StateChanged?.Invoke();
+                }
 
                 while (state == StreamerState.Streamming)
                 {
-                    //....
-
-
+                    //TODO: process audio, video events...
+             
                     syncEvent.WaitOne(1000);
 
                 }
@@ -116,27 +114,28 @@ namespace TestStreamer
                 StopStreaming();
 
                 state = StreamerState.Stopped;
-
-                StreamStopped?.Invoke();
+                StateChanged?.Invoke();
 
             }
         }
 
-        public void Stop()
+        public bool Stop()
         {
             logger.Debug("ScreenStreamer::Stop()");
-
 
             if (state != StreamerState.Streamming)
             {
                 logger.Warn("ScreenStreamer::Stop() return invalid state: " + state);
-                //return;
+                return false;
             }
 
 
             state = StreamerState.Stopping;
+            StateChanged?.Invoke();
 
             syncEvent?.Set();
+
+            return true;
         }
 
 
@@ -317,7 +316,6 @@ namespace TestStreamer
                 audioStreamer.Start();
             }
 
-           // IsStreaming = true;
         }
 
 

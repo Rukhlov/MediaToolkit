@@ -32,13 +32,13 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.multicastPanel = new System.Windows.Forms.Panel();
-            this.label3 = new System.Windows.Forms.Label();
+            this.multicastPanel = new System.Windows.Forms.TableLayoutPanel();
             this.multicastPort2Numeric = new System.Windows.Forms.NumericUpDown();
-            this.multicastPort1Numeric = new System.Windows.Forms.NumericUpDown();
-            this.multicastAddressTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.multicastAddressTextBox = new System.Windows.Forms.TextBox();
+            this.multicastPort1Numeric = new System.Windows.Forms.NumericUpDown();
+            this.label2 = new System.Windows.Forms.Label();
             this.unicastRadioButton = new System.Windows.Forms.RadioButton();
             this.multicastRadioButton = new System.Windows.Forms.RadioButton();
             this.transportComboBox = new System.Windows.Forms.ComboBox();
@@ -50,17 +50,17 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label5 = new System.Windows.Forms.Label();
-            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.findFreePortButton = new System.Windows.Forms.Button();
             this.videoSourceUpdateButton = new System.Windows.Forms.Button();
             this.networkComboBox = new System.Windows.Forms.ComboBox();
-            this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
             this.label23 = new System.Windows.Forms.Label();
-            this.tableLayoutPanel5 = new System.Windows.Forms.TableLayoutPanel();
+            this.findFreePortButton = new System.Windows.Forms.Button();
+            this.communicationPortNumeric = new System.Windows.Forms.NumericUpDown();
             this.tableLayoutPanel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.multicastPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).BeginInit();
             this.panel1.SuspendLayout();
@@ -68,7 +68,6 @@
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).BeginInit();
-            this.tableLayoutPanel5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -126,7 +125,6 @@
             this.panel2.AutoSize = true;
             this.panel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.tableLayoutPanel3.SetColumnSpan(this.panel2, 2);
-            this.panel2.Controls.Add(this.tableLayoutPanel5);
             this.panel2.Controls.Add(this.multicastPanel);
             this.panel2.Controls.Add(this.unicastRadioButton);
             this.panel2.Controls.Add(this.multicastRadioButton);
@@ -141,23 +139,24 @@
             // 
             this.multicastPanel.AutoSize = true;
             this.multicastPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.multicastPanel.Location = new System.Drawing.Point(2, 68);
-            this.multicastPanel.Margin = new System.Windows.Forms.Padding(2);
+            this.multicastPanel.ColumnCount = 2;
+            this.multicastPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.multicastPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.multicastPanel.Controls.Add(this.multicastPort2Numeric, 1, 2);
+            this.multicastPanel.Controls.Add(this.label3, 0, 2);
+            this.multicastPanel.Controls.Add(this.label1, 0, 0);
+            this.multicastPanel.Controls.Add(this.multicastAddressTextBox, 1, 0);
+            this.multicastPanel.Controls.Add(this.multicastPort1Numeric, 1, 1);
+            this.multicastPanel.Controls.Add(this.label2, 0, 1);
+            this.multicastPanel.Location = new System.Drawing.Point(15, 69);
             this.multicastPanel.Name = "multicastPanel";
-            this.multicastPanel.Size = new System.Drawing.Size(0, 0);
+            this.multicastPanel.RowCount = 4;
+            this.multicastPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.multicastPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.multicastPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.multicastPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.multicastPanel.Size = new System.Drawing.Size(203, 105);
             this.multicastPanel.TabIndex = 85;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label3.Location = new System.Drawing.Point(2, 70);
-            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(82, 35);
-            this.label3.TabIndex = 95;
-            this.label3.Text = "Audio Port:";
-            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // multicastPort2Numeric
             // 
@@ -183,6 +182,40 @@
             0,
             0});
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label3.Location = new System.Drawing.Point(2, 70);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(82, 35);
+            this.label3.TabIndex = 95;
+            this.label3.Text = "Audio Port:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label1.Location = new System.Drawing.Point(2, 0);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(82, 35);
+            this.label1.TabIndex = 72;
+            this.label1.Text = "Address:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // multicastAddressTextBox
+            // 
+            this.multicastAddressTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.multicastAddressTextBox.Location = new System.Drawing.Point(90, 4);
+            this.multicastAddressTextBox.Margin = new System.Windows.Forms.Padding(4);
+            this.multicastAddressTextBox.Name = "multicastAddressTextBox";
+            this.multicastAddressTextBox.Size = new System.Drawing.Size(109, 27);
+            this.multicastAddressTextBox.TabIndex = 30;
+            this.multicastAddressTextBox.Text = "239.0.0.1";
+            // 
             // multicastPort1Numeric
             // 
             this.multicastPort1Numeric.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -207,16 +240,6 @@
             0,
             0});
             // 
-            // multicastAddressTextBox
-            // 
-            this.multicastAddressTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.multicastAddressTextBox.Location = new System.Drawing.Point(90, 4);
-            this.multicastAddressTextBox.Margin = new System.Windows.Forms.Padding(4);
-            this.multicastAddressTextBox.Name = "multicastAddressTextBox";
-            this.multicastAddressTextBox.Size = new System.Drawing.Size(109, 27);
-            this.multicastAddressTextBox.TabIndex = 30;
-            this.multicastAddressTextBox.Text = "239.0.0.1";
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -228,18 +251,6 @@
             this.label2.TabIndex = 73;
             this.label2.Text = "Video Port:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(2, 0);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(82, 35);
-            this.label1.TabIndex = 72;
-            this.label1.Text = "Address:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // unicastRadioButton
             // 
@@ -379,41 +390,6 @@
             this.label5.Text = "Network:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // tableLayoutPanel4
-            // 
-            this.tableLayoutPanel4.AutoSize = true;
-            this.tableLayoutPanel4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutPanel4.ColumnCount = 3;
-            this.tableLayoutPanel2.SetColumnSpan(this.tableLayoutPanel4, 3);
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel4.Controls.Add(this.label23, 0, 0);
-            this.tableLayoutPanel4.Controls.Add(this.findFreePortButton, 2, 0);
-            this.tableLayoutPanel4.Controls.Add(this.communicationPortNumeric, 1, 0);
-            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(4, 42);
-            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(4, 10, 4, 4);
-            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 2;
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(433, 39);
-            this.tableLayoutPanel4.TabIndex = 85;
-            // 
-            // findFreePortButton
-            // 
-            this.findFreePortButton.AutoSize = true;
-            this.findFreePortButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.findFreePortButton.Location = new System.Drawing.Point(311, 2);
-            this.findFreePortButton.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
-            this.findFreePortButton.Name = "findFreePortButton";
-            this.findFreePortButton.Size = new System.Drawing.Size(122, 30);
-            this.findFreePortButton.TabIndex = 22;
-            this.findFreePortButton.Text = "Find Available...";
-            this.findFreePortButton.UseVisualStyleBackColor = true;
-            this.findFreePortButton.Click += new System.EventHandler(this.findFreePortButton_Click);
-            // 
             // videoSourceUpdateButton
             // 
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -437,6 +413,53 @@
             this.networkComboBox.Name = "networkComboBox";
             this.networkComboBox.Size = new System.Drawing.Size(333, 28);
             this.networkComboBox.TabIndex = 16;
+            // 
+            // tableLayoutPanel4
+            // 
+            this.tableLayoutPanel4.AutoSize = true;
+            this.tableLayoutPanel4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel4.ColumnCount = 3;
+            this.tableLayoutPanel2.SetColumnSpan(this.tableLayoutPanel4, 3);
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel4.Controls.Add(this.label23, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.findFreePortButton, 2, 0);
+            this.tableLayoutPanel4.Controls.Add(this.communicationPortNumeric, 1, 0);
+            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(4, 42);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(4, 10, 4, 4);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            this.tableLayoutPanel4.RowCount = 2;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(433, 39);
+            this.tableLayoutPanel4.TabIndex = 85;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.label23.Location = new System.Drawing.Point(4, 4);
+            this.label23.Margin = new System.Windows.Forms.Padding(4);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(147, 27);
+            this.label23.TabIndex = 20;
+            this.label23.Text = "Communication Port:";
+            this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // findFreePortButton
+            // 
+            this.findFreePortButton.AutoSize = true;
+            this.findFreePortButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.findFreePortButton.Location = new System.Drawing.Point(311, 2);
+            this.findFreePortButton.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
+            this.findFreePortButton.Name = "findFreePortButton";
+            this.findFreePortButton.Size = new System.Drawing.Size(122, 30);
+            this.findFreePortButton.TabIndex = 22;
+            this.findFreePortButton.Text = "Find Available...";
+            this.findFreePortButton.UseVisualStyleBackColor = true;
+            this.findFreePortButton.Click += new System.EventHandler(this.findFreePortButton_Click);
             // 
             // communicationPortNumeric
             // 
@@ -462,41 +485,6 @@
             0,
             -2147483648});
             // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label23.Location = new System.Drawing.Point(4, 4);
-            this.label23.Margin = new System.Windows.Forms.Padding(4);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(147, 27);
-            this.label23.TabIndex = 20;
-            this.label23.Text = "Communication Port:";
-            this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // tableLayoutPanel5
-            // 
-            this.tableLayoutPanel5.AutoSize = true;
-            this.tableLayoutPanel5.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.tableLayoutPanel5.ColumnCount = 2;
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel5.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel5.Controls.Add(this.multicastPort2Numeric, 1, 2);
-            this.tableLayoutPanel5.Controls.Add(this.label3, 0, 2);
-            this.tableLayoutPanel5.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanel5.Controls.Add(this.multicastAddressTextBox, 1, 0);
-            this.tableLayoutPanel5.Controls.Add(this.multicastPort1Numeric, 1, 1);
-            this.tableLayoutPanel5.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanel5.Location = new System.Drawing.Point(15, 69);
-            this.tableLayoutPanel5.Name = "tableLayoutPanel5";
-            this.tableLayoutPanel5.RowCount = 4;
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(203, 105);
-            this.tableLayoutPanel5.TabIndex = 85;
-            // 
             // NetworkSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
@@ -520,6 +508,8 @@
             this.tableLayoutPanel3.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.multicastPanel.ResumeLayout(false);
+            this.multicastPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.multicastPort2Numeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.multicastPort1Numeric)).EndInit();
             this.panel1.ResumeLayout(false);
@@ -529,8 +519,6 @@
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.communicationPortNumeric)).EndInit();
-            this.tableLayoutPanel5.ResumeLayout(false);
-            this.tableLayoutPanel5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -551,7 +539,6 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Panel multicastPanel;
         private System.Windows.Forms.Label labelDevice;
         private System.Windows.Forms.TextBox textBoxStreamName;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
@@ -565,6 +552,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.NumericUpDown communicationPortNumeric;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel5;
+        private System.Windows.Forms.TableLayoutPanel multicastPanel;
     }
 }
