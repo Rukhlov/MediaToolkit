@@ -10,11 +10,14 @@ using System.Linq;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Unity;
+using NLog;
 
 namespace ScreenStreamer.Wpf.Common.Models
 {
     public class StreamViewModel : CustomBindableBase
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public StreamModel Model { get; }
         private IDialogService _dialogService;
 
@@ -43,11 +46,11 @@ namespace ScreenStreamer.Wpf.Common.Models
         public bool IsStarted
         {
             get => Model.IsStarted;
-            set
-            {
-                SetProperty(Model,() => Model.IsStarted, value);
-                OnIsStartedChanged(Model.IsStarted);
-            }
+            //set
+            //{
+            //    SetProperty(Model, () => Model.IsStarted, value);
+            //    OnIsStartedChanged(Model.IsStarted);
+            //}
         }
 
         #endregion IsStarted
@@ -73,6 +76,8 @@ namespace ScreenStreamer.Wpf.Common.Models
         #region Commands
 
         public ICommand StartCommand { get; set; }
+        public ICommand StopCommand { get; set; }
+
         public ICommand EditNameCommand { get; set; }
         public ICommand CopyUrlCommand { get; set; }
         public ICommand PreferencesCommand { get; set; }
@@ -92,6 +97,8 @@ namespace ScreenStreamer.Wpf.Common.Models
             _dialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
             MainViewModel = mainViewModel;
             StartCommand = new DelegateCommand(InverseIsStarted);
+            //StopCommand = new DelegateCommand(InverseIsStarted);
+
             EditNameCommand = new DelegateCommand(EditName);
             CopyUrlCommand = new DelegateCommand(CopyUrl);
             PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
@@ -113,7 +120,11 @@ namespace ScreenStreamer.Wpf.Common.Models
                 DispatcherPriority.Loaded,
                 new Action(() => OnIsStartedChanged(IsStarted))
             );
+
+            Model.OnStreamStateChanged += Model_OnStreamStateChanged;
         }
+
+
 
         private void CopyUrl()
         {
@@ -127,7 +138,14 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         private void InverseIsStarted()
         {
-            IsStarted = !IsStarted;
+            logger.Debug("InverseIsStarted()");
+
+            //IsStarted = !IsStarted;
+
+            Model.SwitchStreamingState();
+
+            //OnIsStartedChanged(IsStarted);
+
             MainViewModel.RaiseIsAllStartedChanged();
         }
 
@@ -145,8 +163,16 @@ namespace ScreenStreamer.Wpf.Common.Models
             _dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
         }
 
+        private void Model_OnStreamStateChanged()
+        {
+            
+            OnIsStartedChanged(IsStarted);
+        }
+
         private void OnIsStartedChanged(bool isStarted)
         {
+            logger.Debug("OnIsStartedChanged(...) " + isStarted);
+
             RaisePropertyChanged(nameof(StartCommandText));
             RaisePropertyChanged(nameof(StartContextMenuText));
             if (isStarted)

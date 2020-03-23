@@ -13,8 +13,8 @@
                     <ResourceDictionary Source="..\Styles\TextBoxStyle.xaml"/>
                     <ResourceDictionary Source="..\Templates\ReferenceTemplate.xaml"/>
                 </ResourceDictionary.MergedDictionaries>
-                <DataTemplate x:Key="toggleContentTemplate">
-                    <StackPanel Orientation="Horizontal">
+                <DataTemplate x:Key="toggleContentTemplate" >
+                    <StackPanel Orientation="Horizontal" >
                         <TextBlock Text="{Binding StartCommandText, Mode=OneWay}"/>
                         <materialDesign:PackIcon Kind="Pause" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
                         <materialDesign:PackIcon Kind="PlayOutline" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
@@ -72,7 +72,7 @@
                           Content="{Binding}"
                           IsChecked="{Binding IsStarted, Mode=OneWay}"
                           Cursor="Hand"
-                          ToolTip="Press to start or stop streaming"/>
+                          ToolTip="Press to start or stop streaming" IsEnabled="true"/>
 
             <!--Clone border-->
             <Border Grid.Column="2" 

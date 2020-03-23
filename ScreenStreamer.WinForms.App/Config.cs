@@ -304,72 +304,6 @@ namespace ScreenStreamer.WinForms.App
         {
             var config = new Config();
 
-            int port = -1;
-
-            var freeTcpPorts = MediaToolkit.Utils.NetworkHelper.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
-            if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
-            {
-                port = freeTcpPorts.FirstOrDefault();
-            }
-
-            var session = new StreamSession
-            {
-                StreamName = Environment.MachineName,
-                NetworkIpAddress = "0.0.0.0",
-                MutlicastAddress = "239.0.0.1",
-                CommunicationPort = port,
-                IsMulticast = false,
-                TransportMode = TransportMode.Tcp,
-
-
-
-            };
-
-            var videoEncoderSettings = new VideoEncoderSettings
-            {
-                Width = 1920,
-                Height = 1080,
-                Encoder = VideoEncoderMode.H264,
-                Profile = H264Profile.Main,
-                BitrateMode = BitrateControlMode.CBR,
-                Bitrate = 2500,
-                MaxBitrate = 5000,
-                FrameRate = 30,
-                LowLatency = true,
-
-            };
-
-
-
-            var videoSettings = new VideoStreamSettings
-            {
-                Enabled = true,
-                Id = "video_" + Guid.NewGuid().ToString(),
-                NetworkSettings = new NetworkSettings(),
-                CaptureDevice = null,
-                EncoderSettings = videoEncoderSettings,
-                StreamFlags = VideoStreamFlags.UseEncoderResoulutionFromSource,
-
-                //ScreenCaptureProperties = captureProperties,
-
-            };
-
-            var audioEncoderSettings = new AudioEncoderSettings
-            {
-                SampleRate = 8000,
-                Channels = 1,
-                Encoding = "PCMU",
-
-            };
-
-            var audioSettings = new AudioStreamSettings
-            {
-                Enabled = false,
-                Id = "audio_" + Guid.NewGuid().ToString(),
-                NetworkSettings = new NetworkSettings(),
-                CaptureDevice = new AudioCaptureDevice(),
-                EncoderSettings = audioEncoderSettings,
-            };
 
             var screenCaptureProperties = new ScreenCaptureProperties
             {
@@ -384,10 +318,8 @@ namespace ScreenStreamer.WinForms.App
             config.SelectAreaRectangle = new Rectangle(0, 0, 640, 480);
             config.ScreenCaptureProperties = screenCaptureProperties;
 
-            session.AudioSettings = audioSettings;
-            session.VideoSettings = videoSettings;
 
-            config.Session = session;
+            config.Session = StreamSession.Default();
 
             return config;
 

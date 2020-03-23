@@ -8,9 +8,18 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         private readonly PropertyBorderModel _model;
         public override string Name => "Show Border";
 
-        #region IsBorderVisible
-        public bool IsBorderVisible { get => _model.IsBorderVisible; set { SetProperty(_model,() => _model.IsBorderVisible, value); DialogService.Handle(_model.IsBorderVisible, Parent.IsStarted ? Parent.BorderViewModel : (IDialogViewModel)Parent.DesignViewModel); } }
-        #endregion IsBorderVisible
+
+        public bool IsBorderVisible
+        {
+            get => _model.IsBorderVisible;
+            set
+            {
+                SetProperty(_model,() => _model.IsBorderVisible, value);
+                DialogService.Handle(_model.IsBorderVisible, Parent.IsStarted ? Parent.BorderViewModel : (IDialogViewModel)Parent.DesignViewModel);
+            }
+        }
+
+
 
         public PropertyBorderViewModel(StreamViewModel parent, PropertyBorderModel model) : base(parent)
         {

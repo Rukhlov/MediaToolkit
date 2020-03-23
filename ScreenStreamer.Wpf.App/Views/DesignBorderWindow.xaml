@@ -93,7 +93,7 @@
                     Width="40"
                     Height="40"
                     MouseDown="Border_MouseDown">
-                    <Image Source="pack://application:,,/ScreenStreamer.Wpf.Common;Component/Icons/drag_border_24.png"
+                    <Image Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/drag_border_24.png"
                        Height="24"
                        Width="24"/>
                 </Border>

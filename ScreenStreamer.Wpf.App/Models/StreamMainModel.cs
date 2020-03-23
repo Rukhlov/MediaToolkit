@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using MediaToolkit.Core;
 using Newtonsoft.Json;
+using NLog;
+using ScreenStreamer.Common;
 using ScreenStreamer.Wpf.Common.Enums;
 using ScreenStreamer.Wpf.Common.Helpers;
 
@@ -16,6 +18,10 @@ namespace ScreenStreamer.Wpf.Common.Models
         private static StreamMainModel CreateDefault()
         {
             var defaultStream = new StreamModel(){Name = "Stream 1"};
+
+            defaultStream.InitStreamer();
+
+
             var @default = new StreamMainModel();
             @default.StreamList.Add(defaultStream);
             return @default;
@@ -26,8 +32,31 @@ namespace ScreenStreamer.Wpf.Common.Models
 
     public class StreamModel
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+        public StreamModel()
+        {
+
+        }
+
         public string Name { get; set; }
-        public bool IsStarted { get; set; }
+        public bool IsStarted
+        {
+            get
+            {
+                bool isStarted = false;
+
+                if(Session !=null && MediaStreamer != null)
+                {
+                    if(MediaStreamer.State == MediaStreamerState.Streamming)
+                    {
+                        isStarted = true;
+                    }
+                }
+
+                return isStarted;
+            }
+            //set;
+        }
 
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
@@ -36,6 +65,128 @@ namespace ScreenStreamer.Wpf.Common.Models
         public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
         public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
+
+
+        public MediaStreamer MediaStreamer { get; private set; } 
+        public StreamSession Session { get; private set; }
+
+
+        public void InitStreamer()
+        {
+            logger.Debug("InitStreamer()");
+
+            MediaStreamer = new MediaStreamer();
+            MediaStreamer.StateChanged += MediaStreamer_StateChanged;
+
+
+            Session = StreamSession.Default();
+
+
+            var screen = System.Windows.Forms.Screen.PrimaryScreen;
+
+            var bounds = screen.Bounds;
+
+            var screenCaptureProperties = new ScreenCaptureProperties
+            {
+                CaptureMouse = true,
+                AspectRatio = true,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+            };
+
+            ScreenCaptureDevice captureDevice = new ScreenCaptureDevice
+            {
+                CaptureRegion = bounds,
+                DisplayRegion = bounds,
+                Name = screen.DeviceName,
+
+                Resolution = bounds.Size,
+                Properties = screenCaptureProperties,
+                DeviceId = screen.DeviceName,
+
+            };
+
+            Session.VideoSettings.CaptureDevice = captureDevice;
+
+        }
+
+        public void SwitchStreamingState()
+        {
+            if (!IsStarted)
+            {
+                StartStreaming();
+            }
+            else
+            {
+                StopStreaming();
+            }
+        }
+
+        public void StartStreaming()
+        {
+            logger.Debug("StartStreaming()");
+
+            if(MediaStreamer.State == MediaStreamerState.Shutdown)
+            {
+                MediaStreamer.Start(Session);
+            }
+            
+        }
+
+        public event Action OnStreamStateChanged;
+
+        private void MediaStreamer_StateChanged()
+        {
+            var state = MediaStreamer.State;
+
+            logger.Debug("MediaStreamer_StateChanged() " + state);
+
+            if(state == MediaStreamerState.Starting)
+            {
+
+            }
+            else if(state == MediaStreamerState.Streamming)
+            {
+
+            }
+            else if(state == MediaStreamerState.Stopping)
+            {
+
+            }
+            else if (state == MediaStreamerState.Stopped)
+            {
+
+                MediaStreamer.Shutdown();
+            }
+
+
+            OnStreamStateChanged?.Invoke();
+
+        }
+
+        public void StopStreaming()
+        {
+            logger.Debug("StopStreaming()");
+
+            MediaStreamer.Stop();
+
+        }
+
+        public void CloseStreamer()
+        {
+            logger.Debug("CloseStreamer()");
+
+            if (MediaStreamer != null)
+            {
+                MediaStreamer.StateChanged -= MediaStreamer_StateChanged;
+
+                //...
+            }
+            
+        }
+
     }
 
     public class PropertyNetworkModel

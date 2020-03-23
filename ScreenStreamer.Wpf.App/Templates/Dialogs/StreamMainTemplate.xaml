@@ -83,7 +83,7 @@
                 
                 <!--Taskbar icon-->
                 <tb:TaskbarIcon PopupActivation="RightClick"
-                                IconSource="/ScreenStreamer.Wpf.Common;Component/Icons/tray_logo.ico">
+                                IconSource="/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico">
                     <tb:TaskbarIcon.TrayPopup>
                         <ContentPresenter ContentTemplate="{StaticResource contextMenuTemplate}"
                                           Content="{Binding}"/>

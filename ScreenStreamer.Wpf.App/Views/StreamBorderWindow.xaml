@@ -51,7 +51,7 @@
                 CornerRadius="4"
                 VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
-                <Image Source="pack://application:,,/ScreenStreamer.Wpf.Common;Component/Icons/gripper.png"
+                <Image Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/gripper.png"
                        Margin="2,0,2,0"
                        Height="22"
                        Width="8"/>

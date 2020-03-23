@@ -36,76 +36,24 @@ namespace ScreenStreamer.WinForms.App
         {
             InitializeComponent();
 
-
             mediaStreamer = new MediaStreamer();
             mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
             //Validate session...
             currentSession = Config.Data.Session;
 
-            var videoSettings = currentSession.VideoSettings;
-            var audioSettings = currentSession.AudioSettings;
 
-
-            UpdateVideoSources();
-
-            UpdateAudioSources();
-
-
-            audioSourceEnableCheckBox.Checked = audioSettings.Enabled;
-            videoSourceEnableCheckBox.Checked = videoSettings.Enabled;
-
-            streamNameTextBox.Text = currentSession.StreamName;
-            captureStatusLabel.Text = "Ready to stream";      
-            captureStatusDescriptionLabel.Text = "";
-
-            videoSourceComboBox.SelectedItem = null;
-            videoSourceComboBox.SelectedValueChanged += videoSourceComboBox_SelectedValueChanged;
-
-            ComboBoxItem videoItem = null;
-            var currentVideoDeviceId = videoSettings?.CaptureDevice?.DeviceId;
-            if (!string.IsNullOrEmpty(currentVideoDeviceId))
-            {
-                videoItem = videoSourceItems.FirstOrDefault(i => i.Tag != null && ((VideoCaptureDevice)i.Tag).DeviceId == currentVideoDeviceId);
-            }
-
-            if(videoItem == null)
-            {
-                videoItem = videoSourceItems.FirstOrDefault();
-            }
-
-            if (videoItem != null)
-            { 
-                videoSourceComboBox.SelectedItem = videoItem;
-            }
-
-            audioSourceComboBox.SelectedItem = null;
-            audioSourceComboBox.SelectedValueChanged += audioSourceComboBox_SelectedValueChanged;
-
-            ComboBoxItem audioItem = audioSourceItems.FirstOrDefault();
-            var currentAudioDeviceId = audioSettings?.CaptureDevice?.DeviceId;
-            if (!string.IsNullOrEmpty(currentAudioDeviceId))
-            {
-                audioItem = audioSourceItems.FirstOrDefault(i => i.Tag != null && ((AudioCaptureDevice)i.Tag).DeviceId == currentAudioDeviceId);
-            }
-
-            if (audioItem == null)
-            {
-                audioItem = audioSourceItems.FirstOrDefault();
-            }
-
-            if (audioItem != null)
-            {
-                audioSourceComboBox.SelectedItem = audioItem;
-            }
+            InitControls();
 
             syncContext = SynchronizationContext.Current;
 
         }
 
-
-        private ScreenStreamer.Common.MediaStreamer mediaStreamer = null;
+ 
+        private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
+        private VideoStreamSettings videoSettings => currentSession?.VideoSettings;
+        private AudioStreamSettings audioSettings => currentSession?.AudioSettings;
 
         private SynchronizationContext syncContext = null;
         private StatisticForm statisticForm = null;
@@ -128,6 +76,7 @@ namespace ScreenStreamer.WinForms.App
             }
 
         }
+
         private void stopStreamingButton_Click(object sender, EventArgs e)
         {
             logger.Debug("stopButton_Click(...) ");
@@ -508,6 +457,63 @@ namespace ScreenStreamer.WinForms.App
         }
 
 
+        private void InitControls()
+        {
+            UpdateVideoSources();
+
+            UpdateAudioSources();
+
+
+            audioSourceEnableCheckBox.Checked = audioSettings.Enabled;
+            videoSourceEnableCheckBox.Checked = videoSettings.Enabled;
+
+            streamNameTextBox.Text = currentSession.StreamName;
+            captureStatusLabel.Text = "Ready to stream";
+            captureStatusDescriptionLabel.Text = "";
+
+
+            videoSourceComboBox.SelectedItem = null;
+            videoSourceComboBox.SelectedValueChanged += videoSourceComboBox_SelectedValueChanged;
+
+            ComboBoxItem videoItem = null;
+            var currentVideoDeviceId = videoSettings?.CaptureDevice?.DeviceId;
+            if (!string.IsNullOrEmpty(currentVideoDeviceId))
+            {
+                videoItem = videoSourceItems.FirstOrDefault(i => i.Tag != null && ((VideoCaptureDevice)i.Tag).DeviceId == currentVideoDeviceId);
+            }
+
+            if (videoItem == null)
+            {
+                videoItem = videoSourceItems.FirstOrDefault();
+            }
+
+            if (videoItem != null)
+            {
+                videoSourceComboBox.SelectedItem = videoItem;
+            }
+
+            audioSourceComboBox.SelectedItem = null;
+            audioSourceComboBox.SelectedValueChanged += audioSourceComboBox_SelectedValueChanged;
+
+            ComboBoxItem audioItem = audioSourceItems.FirstOrDefault();
+            var currentAudioDeviceId = audioSettings?.CaptureDevice?.DeviceId;
+            if (!string.IsNullOrEmpty(currentAudioDeviceId))
+            {
+                audioItem = audioSourceItems.FirstOrDefault(i => i.Tag != null && ((AudioCaptureDevice)i.Tag).DeviceId == currentAudioDeviceId);
+            }
+
+            if (audioItem == null)
+            {
+                audioItem = audioSourceItems.FirstOrDefault();
+            }
+
+            if (audioItem != null)
+            {
+                audioSourceComboBox.SelectedItem = audioItem;
+            }
+        }
+
+
         private BindingList<ComboBoxItem> videoSourceItems = null;
         private void UpdateVideoSources()
         {
@@ -523,7 +529,7 @@ namespace ScreenStreamer.WinForms.App
 
                 var bounds = screen.Bounds;
 
-                ScreenCaptureDevice descr = new ScreenCaptureDevice
+                ScreenCaptureDevice device = new ScreenCaptureDevice
                 {
                     CaptureRegion = bounds,
                     DisplayRegion = bounds,
@@ -551,7 +557,7 @@ namespace ScreenStreamer.WinForms.App
                 items.Add(new ComboBoxItem
                 {
                     Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),
-                    Tag = descr,
+                    Tag = device,
                 });
 
                 monitorIndex++;
@@ -559,7 +565,7 @@ namespace ScreenStreamer.WinForms.App
 
             if (items.Count > 1)
             {
-                ScreenCaptureDevice descr = new ScreenCaptureDevice
+                ScreenCaptureDevice device = new ScreenCaptureDevice
                 {
                     DisplayRegion = SystemInformation.VirtualScreen,
                     CaptureRegion = SystemInformation.VirtualScreen,
@@ -572,7 +578,7 @@ namespace ScreenStreamer.WinForms.App
                 items.Add(new ComboBoxItem
                 {
                     Name = "All Screens",//+ "" + s.Bounds.ToString(),
-                    Tag = descr,
+                    Tag = device,
                 });
 
             }
@@ -620,9 +626,9 @@ namespace ScreenStreamer.WinForms.App
 
             audioSourceItems = new BindingList<ComboBoxItem>();
 
-            var captureDevices = AudioTool.GetAudioCaptureDevices();
+            var audioDevices = AudioTool.GetAudioCaptureDevices();
 
-            foreach(var d in captureDevices)
+            foreach(var d in audioDevices)
             {
                 ComboBoxItem item = new ComboBoxItem
                 {
@@ -663,35 +669,25 @@ namespace ScreenStreamer.WinForms.App
             Rectangle displayRect = Rectangle.Empty;
 
             VideoCaptureDevice captureParams = null;
-            string captDeviceId = "";
 
-            string displayName = "";
             var obj = videoSourceComboBox.SelectedItem;
             if (obj != null)
             {
                 var item = obj as ComboBoxItem;
                 if (item != null)
                 {
-                    displayName = item.Name;
-
                     var tag = item.Tag;
                     if (tag != null)
                     {
                         if (tag is ScreenCaptureDevice)
                         {
-                            var screenDescr = tag as ScreenCaptureDevice;
-                            isCustomRegion = screenDescr.DisplayRegion.IsEmpty;
-
-                            captureParams = screenDescr;
-
-
+                            var captureDevice = ((ScreenCaptureDevice)tag);
+                            isCustomRegion = captureDevice.DisplayRegion.IsEmpty;
+                            captureParams = captureDevice;
                         }
                         else if (tag is UvcDevice)
                         {
-                            var captDevice = tag as UvcDevice;
-
-                            captDeviceId = captDevice.DeviceId;
-                            captureParams = captDevice;
+                            captureParams = (UvcDevice)tag;
                             //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
                         }  
                     }

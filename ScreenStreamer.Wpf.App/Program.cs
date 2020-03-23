@@ -1,4 +1,6 @@
-﻿using NLog;
+﻿using MediaToolkit;
+using MediaToolkit.NativeAPIs;
+using NLog;
 using ScreenStreamer.Wpf.Common.Managers;
 using System;
 using System.Collections.Generic;
@@ -54,6 +56,10 @@ namespace ScreenStreamer.Wpf.UI
 
                 }
 
+                MediaToolkitManager.Startup();
+
+                Shcore.SetProcessPerMonitorDpiAwareness();
+
                 var application = new App();
                 application.InitializeComponent();
 
@@ -75,6 +81,8 @@ namespace ScreenStreamer.Wpf.UI
                     }
                     mutex.Dispose();
                 }
+
+                MediaToolkitManager.Shutdown();
 
                 //...
                 //ConfigurationManager.Save();

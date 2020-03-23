@@ -168,13 +168,22 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private void StartAll()
         {
-            foreach (var s in StreamList) s.IsStarted = true;
+            foreach (var s in StreamList)
+            {
+                //s.IsStarted = true;
+                s.StartCommand.Execute(null);
+            }
             RaisePropertyChanged(nameof(IsAllStarted));
         }
 
         private void StopAll()
         {
-            foreach (var s in StreamList) s.IsStarted = false;
+            foreach (var s in StreamList)
+            {
+                // s.IsStarted = false;
+                s.StartCommand.Execute(null);
+            }
+
             RaisePropertyChanged(nameof(IsAllStarted));
         }
 
