@@ -10,6 +10,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -29,6 +30,9 @@ namespace TestStreamer.Controls
             LoadRateModeItems();
 
             LoadCaptureTypes();
+
+            syncContext = SynchronizationContext.Current;
+
         }
 
         public VideoStreamSettings VideoSettings { get; private set; }
@@ -38,10 +42,6 @@ namespace TestStreamer.Controls
         {
 
             this.VideoSettings = settingsParams;
-
-            //this.addressTextBox.Text = VideoSettings.Address;
-            //this.portNumeric.Value = VideoSettings.Port;
-            //this.transportComboBox.SelectedItem = VideoSettings.TransportMode;
 
             var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
             if (screenCaptureParams != null)
@@ -126,11 +126,6 @@ namespace TestStreamer.Controls
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            //VideoSettings.Address = this.addressTextBox.Text;
-            //VideoSettings.Port = (int)this.portNumeric.Value;
-
-            //VideoSettings.TransportMode = (TransportMode)this.transportComboBox.SelectedItem;
-
             var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
             if (screenCaptureParams != null)
             {
@@ -321,6 +316,109 @@ namespace TestStreamer.Controls
                 aspectRatioCheckBox.Enabled = true;
             }
         }
+
+        private PreviewForm previewForm = null;
+        private D3DImageProvider provider = new D3DImageProvider();
+        private IVideoSource videoSource = null;
+
+        private SynchronizationContext syncContext = null;
+
+        private void previewButton_Click(object sender, EventArgs e)
+        {
+            var captureDescr = this.VideoSettings.CaptureDevice;
+
+            if (videoSource == null)
+            {
+                if (captureDescr.CaptureMode == CaptureMode.UvcDevice)
+                {
+                    videoSource = new VideoCaptureSource();
+                    videoSource.Setup(captureDescr);
+                }
+                else if (captureDescr.CaptureMode == CaptureMode.Screen)
+                {
+                    videoSource = new ScreenSource();
+                    videoSource.Setup(captureDescr);
+                }
+
+                videoSource.CaptureStarted += VideoSource_CaptureStarted;
+                videoSource.CaptureStopped += VideoSource_CaptureStopped;
+            }
+
+            if (videoSource.State == CaptureState.Capturing)
+            {
+                videoSource.Stop();
+            }
+            else
+            {
+                videoSource.Start();
+            }
+
+        }
+
+        private void VideoSource_CaptureStarted()
+        {
+            syncContext.Send(_ => 
+            {
+                OnCaptureStarted();
+            }, null);
+           
+        }
+
+        private void VideoSource_CaptureStopped(object obj)
+        {
+
+            syncContext.Send(_ =>
+            {
+                OnCaptureStopped();
+
+                videoSource.Close(true);
+                videoSource.CaptureStarted -= VideoSource_CaptureStarted;
+                videoSource.CaptureStopped -= VideoSource_CaptureStopped;
+
+                videoSource = null;
+
+            }, null);
+        }
+
+        private void OnCaptureStarted()
+        {
+            if(previewForm == null)
+            {
+                previewForm = new PreviewForm
+                {
+                    StartPosition = FormStartPosition.CenterParent,
+                };
+                previewForm.FormClosed += PreviewForm_FormClosed;
+            }
+
+            provider.Setup(videoSource);
+
+            previewForm.Link(provider);
+
+            var title = "";//"Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps + " Ratio=" + pars.AspectRatio;
+
+            previewForm.Text = title;
+
+            previewForm.Visible = true;
+        }
+
+        private void PreviewForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if(videoSource != null)
+            {
+                videoSource.Stop();
+            }
+        }
+
+        private void OnCaptureStopped()
+        {
+            if (previewForm != null && !previewForm.IsDisposed)
+            {
+                previewForm.Visible = !previewForm.Visible;
+            }
+        }
+
+
 
 
     }

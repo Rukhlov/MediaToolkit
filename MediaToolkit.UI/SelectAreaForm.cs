@@ -84,7 +84,6 @@ namespace MediaToolkit.UI
 
         public bool DebugMode { get; set; } = false;
         private bool capturing = false;
-
         public bool Capturing
         {
             get
@@ -98,6 +97,25 @@ namespace MediaToolkit.UI
                     capturing = value;
 
                     panelMove.Visible = !capturing;
+                    this.Refresh();
+                }
+            }
+        }
+
+        private bool locked = false;
+        public bool Locked
+        {
+            get
+            {
+                return locked;
+            }
+            set
+            {
+                if (locked != value)
+                {
+                    locked = value;
+
+                    panelMove.Visible = !locked;
                     this.Refresh();
                 }
             }
@@ -373,7 +391,7 @@ namespace MediaToolkit.UI
 
 
 
-            if (!capturing)
+            if (!capturing && !locked)
             {
 
                 g.FillRectangle(textureBrush, TopLine);
@@ -510,12 +528,14 @@ namespace MediaToolkit.UI
 
             }
             else
-            {// capture mode
+            {// capture or locked mode
 
-                g.FillRectangle(captureTextureBrush, TopLine);
-                g.FillRectangle(captureTextureBrush, BottomLine);
-                g.FillRectangle(captureTextureBrush, RightLine);
-                g.FillRectangle(captureTextureBrush, LeftLine);
+                var brush = capturing ? captureTextureBrush : textureBrush;
+
+                g.FillRectangle(brush, TopLine);
+                g.FillRectangle(brush, BottomLine);
+                g.FillRectangle(brush, RightLine);
+                g.FillRectangle(brush, LeftLine);
             }
 
 
@@ -566,7 +586,7 @@ namespace MediaToolkit.UI
         {
             base.WndProc(ref message);
 
-            if (!capturing)
+            if (!capturing && !locked)
             {
                 if (message.Msg == WM.NCHITTEST)
                 {

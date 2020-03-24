@@ -18,6 +18,7 @@ using MediaToolkit.Utils;
 using MediaToolkit.NativeAPIs;
 using System.Threading;
 using MediaToolkit.Managers;
+using ScreenStreamer.Common;
 
 namespace TestStreamer.Controls
 {
@@ -71,7 +72,7 @@ namespace TestStreamer.Controls
 
         private VideoStreamSettings videoSettings = null;
         private VideoEncoderSettings videoEncoderSettings = null;
-        private ScreenCaptureDeviceDescription screenCaptureDeviceDescr = null;
+        private ScreenCaptureDevice screenCaptureDeviceDescr = null;
 
 
         private AudioStreamSettings audioSettings = null;
@@ -79,7 +80,7 @@ namespace TestStreamer.Controls
 
         private void InitMediaSettings()
         {
-            screenCaptureDeviceDescr = new ScreenCaptureDeviceDescription
+            screenCaptureDeviceDescr = new ScreenCaptureDevice
             {
                 Resolution = new Size(1920, 1080),
                 CaptureMouse = true,

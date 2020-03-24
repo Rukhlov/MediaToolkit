@@ -410,8 +410,11 @@ namespace ScreenStreamer.WinForms.App
 
             f.Init(currentSession);
 
+            Lock(true);
+
             f.ShowDialog();
 
+            Lock(false);
 
             streamNameTextBox.Text = currentSession.StreamName;
         }
@@ -436,11 +439,26 @@ namespace ScreenStreamer.WinForms.App
 
             f.Setup(currentSession.VideoSettings);
 
+            Lock(true);
+
             f.ShowDialog();
+
+
+            Lock(false);
 
             //videoSettings.NetworkSettings.TransportMode = transportMode;
         }
 
+        private bool locked = false;
+        private void Lock(bool _locked)
+        {
+            this.locked = _locked;
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.Locked = locked;
+            }
+            
+        }
 
         private void audioSourceDetailsButton_Click(object sender, EventArgs e)
         {
@@ -453,9 +471,12 @@ namespace ScreenStreamer.WinForms.App
             };
             f.Setup(currentSession.AudioSettings);
 
+            Lock(true);
+
             f.ShowDialog();
 
-            //audioSettings.NetworkParams.TransportMode = transportMode;
+            Lock(false);
+
         }
 
 
@@ -905,7 +926,7 @@ namespace ScreenStreamer.WinForms.App
             this.Controls.Add(panel);
         }
 
-        const int WS_EX_LAYERED = 0x00080000;
+        //const int WS_EX_LAYERED = 0x00080000;
         //protected override CreateParams CreateParams
         //{
         //    get
@@ -926,7 +947,6 @@ namespace ScreenStreamer.WinForms.App
 
             }
 
-
             private byte tick = 0;
             private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             private void Timer_Tick(object sender, EventArgs e)
@@ -937,6 +957,7 @@ namespace ScreenStreamer.WinForms.App
 
 
             }
+
 
             private void DrawBorder()
             {
@@ -981,9 +1002,12 @@ namespace ScreenStreamer.WinForms.App
 
             protected override void Dispose(bool disposing)
             {
-
-                timer.Tick -= Timer_Tick;
-                timer.Dispose();
+                if (timer != null)
+                {
+                    timer.Tick -= Timer_Tick;
+                    timer.Dispose();
+                    timer = null;
+                }
 
                 base.Dispose(disposing);
             }

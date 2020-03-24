@@ -97,38 +97,47 @@ namespace ScreenStreamer.Common
                     state = MediaStreamerState.Streamming;
                     StateChanged?.Invoke();
                 }
+                var videoEnabled = Session.VideoSettings.Enabled;
+                var audioEnabled = Session.AudioSettings.Enabled;
 
                 while (state == MediaStreamerState.Streamming)
                 {
-                    //TODO: process audio, video events...
-                    if (videoSource != null)
+                    if (videoEnabled)
                     {
-                        if (videoSource.State != CaptureState.Capturing)
+                        //TODO: process audio, video events...
+                        if (videoSource != null)
                         {
-                            logger.Warn("videoSource.State == " + videoSource.State);
+                            if (videoSource.State != CaptureState.Capturing)
+                            {
+                                logger.Warn("videoSource.State == " + videoSource.State);
+                            }
+                        }
+
+                        if (videoStreamer != null)
+                        {
+                            if (videoStreamer.State != StreamerState.Streaming)
+                            {
+                                logger.Warn("videoStreamer.State == " + videoStreamer.State);
+                            }
                         }
                     }
 
-                    if (audioSource != null)
+                    if (audioEnabled)
                     {
-                        if(audioSource.State != CaptureState.Capturing)
+                        if (audioSource != null)
                         {
-                            logger.Warn("audioSource.State == " + audioSource.State);
+                            if (audioSource.State != CaptureState.Capturing)
+                            {
+                                logger.Warn("audioSource.State == " + audioSource.State);
+                            }
+                        }
+
+                        if (audioStreamer != null)
+                        {
+
                         }
                     }
 
-                    if (videoStreamer != null)
-                    {
-                        if (videoStreamer.State != StreamerState.Streaming)
-                        {
-                            logger.Warn("videoStreamer.State == " + videoStreamer.State);
-                        }
-                    }
-
-                    if (audioStreamer != null)
-                    {
-
-                    }
 
                     if (!communicationService.IsOpened)
                     {
