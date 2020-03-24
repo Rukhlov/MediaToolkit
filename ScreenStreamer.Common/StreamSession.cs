@@ -72,10 +72,9 @@ namespace ScreenStreamer.Common
 		public AudioStreamSettings AudioSettings { get; set; } = new AudioStreamSettings();
 
 
-
-		public void PrepareToStream()
+		public void Setup()
 		{
-			logger.Debug("StreamSession::PrepareToStream()");
+			logger.Debug("StreamSession::Setup()");
 
 
 			if (IsMulticast)
@@ -97,14 +96,12 @@ namespace ScreenStreamer.Common
 
 			if (IsMulticast)
 			{
-				var multicastAddr = MutlicastAddress;
-
 				var multicastAudioPort = MutlicastPort1 + 1;
 
-				videoNetworkSettings.RemoteAddr = multicastAddr;
+				videoNetworkSettings.RemoteAddr = MutlicastAddress;
 				videoNetworkSettings.RemotePort = MutlicastPort1;
 
-				audioNetworkSettings.RemoteAddr = multicastAddr;
+				audioNetworkSettings.RemoteAddr = MutlicastAddress;
 				audioNetworkSettings.RemotePort = multicastAudioPort;
 
 			}
@@ -132,7 +129,6 @@ namespace ScreenStreamer.Common
 
 			if (VideoSettings.Enabled)
 			{
-
 				var screenCaptParams = (VideoSettings.CaptureDevice as ScreenCaptureDevice);
 				if (screenCaptParams != null)
 				{
@@ -144,20 +140,20 @@ namespace ScreenStreamer.Common
 				}
 
 				var captureDevice = VideoSettings.CaptureDevice;
-				var resolution = captureDevice.Resolution;
+				var captureResolution = captureDevice.Resolution;
 
-				if (resolution.IsEmpty)
+				if (captureResolution.IsEmpty)
 				{
 					//...
 				}
 
-				int width = resolution.Width;
+				int width = captureResolution.Width;
 				if (width % 2 != 0)
 				{// должно быть четным
 					width--;
 				}
 
-				int height = resolution.Height;
+				int height = captureResolution.Height;
 				if (height % 2 != 0)
 				{
 					height--;
@@ -308,8 +304,6 @@ namespace ScreenStreamer.Common
 				LowLatency = true,
 
 			};
-
-
 
 			var videoSettings = new VideoStreamSettings
 			{

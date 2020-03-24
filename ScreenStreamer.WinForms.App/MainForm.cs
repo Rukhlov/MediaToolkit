@@ -91,6 +91,8 @@ namespace ScreenStreamer.WinForms.App
 
             try
             {
+                currentSession.Setup();
+
                 bool starting = mediaStreamer.Start(currentSession);
                 if (!starting)
                 {

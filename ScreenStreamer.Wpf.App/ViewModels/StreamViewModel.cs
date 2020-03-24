@@ -53,6 +53,11 @@ namespace ScreenStreamer.Wpf.Common.Models
             //}
         }
 
+        public bool IsEnabled
+        {
+            get => !Model.IsBusy;
+        }
+
         #endregion IsStarted
 
         #region IsSelected
@@ -96,7 +101,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel);
             _dialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
             MainViewModel = mainViewModel;
-            StartCommand = new DelegateCommand(InverseIsStarted);
+            StartCommand = new DelegateCommand(SwitchStreamingState);
             //StopCommand = new DelegateCommand(InverseIsStarted);
 
             EditNameCommand = new DelegateCommand(EditName);
@@ -136,9 +141,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             RaisePropertyChanged(nameof(IsMicrophoneEnabled));
         }
 
-        private void InverseIsStarted()
+        private void SwitchStreamingState()
         {
-            logger.Debug("InverseIsStarted()");
+            logger.Debug("SwitchStreamingState()");
 
             //IsStarted = !IsStarted;
 
@@ -175,6 +180,8 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             RaisePropertyChanged(nameof(StartCommandText));
             RaisePropertyChanged(nameof(StartContextMenuText));
+            RaisePropertyChanged(nameof(IsEnabled));
+
             if (isStarted)
             {
                 _dialogService.Hide(DesignViewModel);

@@ -17,7 +17,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         private static StreamMainModel CreateDefault()
         {
-            var defaultStream = new StreamModel(){Name = "Stream 1"};
+            var defaultStream = new StreamModel() { Name = "Stream 1" };
 
             defaultStream.InitStreamer();
 
@@ -33,10 +33,7 @@ namespace ScreenStreamer.Wpf.Common.Models
     public class StreamModel
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
-        public StreamModel()
-        {
 
-        }
 
         public string Name { get; set; }
         public bool IsStarted
@@ -45,12 +42,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             {
                 bool isStarted = false;
 
-                if(Session !=null && MediaStreamer != null)
+                if (Session != null && MediaStreamer != null)
                 {
-                    if(MediaStreamer.State == MediaStreamerState.Streamming)
-                    {
-                        isStarted = true;
-                    }
+                    isStarted = (MediaStreamer.State == MediaStreamerState.Streamming);
                 }
 
                 return isStarted;
@@ -58,6 +52,21 @@ namespace ScreenStreamer.Wpf.Common.Models
             //set;
         }
 
+        public bool IsBusy
+        {
+            get
+            {
+                bool isBusy = false;
+                if (Session != null && MediaStreamer != null)
+                {
+                    isBusy = (MediaStreamer.State == MediaStreamerState.Starting ||
+                        MediaStreamer.State == MediaStreamerState.Stopping);
+                }
+
+                return isBusy;
+            }
+            //set;
+        }
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
         public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
@@ -67,7 +76,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
 
 
-        public MediaStreamer MediaStreamer { get; private set; } 
+        public MediaStreamer MediaStreamer { get; private set; }
         public StreamSession Session { get; private set; }
 
 
@@ -75,11 +84,10 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             logger.Debug("InitStreamer()");
 
+            Session = StreamSession.Default();
+
             MediaStreamer = new MediaStreamer();
             MediaStreamer.StateChanged += MediaStreamer_StateChanged;
-
-
-            Session = StreamSession.Default();
 
 
             var screen = System.Windows.Forms.Screen.PrimaryScreen;
@@ -128,11 +136,13 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             logger.Debug("StartStreaming()");
 
-            if(MediaStreamer.State == MediaStreamerState.Shutdown)
+            if (MediaStreamer.State == MediaStreamerState.Shutdown)
             {
+                Session.Setup();
+
                 MediaStreamer.Start(Session);
             }
-            
+
         }
 
         public event Action OnStreamStateChanged;
@@ -143,15 +153,15 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             logger.Debug("MediaStreamer_StateChanged() " + state);
 
-            if(state == MediaStreamerState.Starting)
+            if (state == MediaStreamerState.Starting)
             {
 
             }
-            else if(state == MediaStreamerState.Streamming)
+            else if (state == MediaStreamerState.Streamming)
             {
-
+      
             }
-            else if(state == MediaStreamerState.Stopping)
+            else if (state == MediaStreamerState.Stopping)
             {
 
             }
@@ -184,7 +194,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
                 //...
             }
-            
+
         }
 
     }

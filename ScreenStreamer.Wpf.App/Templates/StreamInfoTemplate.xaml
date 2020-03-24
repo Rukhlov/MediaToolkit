@@ -72,7 +72,7 @@
                           Content="{Binding}"
                           IsChecked="{Binding IsStarted, Mode=OneWay}"
                           Cursor="Hand"
-                          ToolTip="Press to start or stop streaming" IsEnabled="true"/>
+                          ToolTip="Press to start or stop streaming" IsEnabled="{Binding IsEnabled, Mode=OneWay}"/>
 
             <!--Clone border-->
             <Border Grid.Column="2" 
