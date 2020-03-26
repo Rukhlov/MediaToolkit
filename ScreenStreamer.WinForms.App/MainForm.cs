@@ -181,7 +181,7 @@ namespace ScreenStreamer.WinForms.App
 
         private void OnSteramStarting()
         {
-            //contextMenu.Enabled = false;
+            contextMenu.Enabled = false;
 
             this.Cursor = Cursors.WaitCursor;
 
@@ -211,9 +211,11 @@ namespace ScreenStreamer.WinForms.App
             switchStreamingStateButton.Enabled = true;
             switchStreamingStateButton.Text = "Stop Streaming";
 
-            this.Cursor = Cursors.Default;
+			contextMenu.Enabled = true;
+			startToolStripMenuItem.Text = "Stop";
 
-            //contextMenu.Enabled = true;
+			this.Cursor = Cursors.Default;
+
 
             var ex = mediaStreamer.ExceptionObj;
             if (ex != null)
@@ -285,7 +287,7 @@ namespace ScreenStreamer.WinForms.App
             this.Cursor = Cursors.Default;
 
 
-            //contextMenu.Enabled = true;
+            contextMenu.Enabled = true;
             networkSettingsLayoutPanel.Enabled = true;
             videoSourceSettingsLayoutPanel.Enabled = true;
             audioSourceSettingsLayoutPanel.Enabled = true;
@@ -306,7 +308,7 @@ namespace ScreenStreamer.WinForms.App
             this.Cursor = Cursors.WaitCursor;
 
 
-            //contextMenu.Enabled = false;
+            contextMenu.Enabled = false;
 
             networkSettingsLayoutPanel.Enabled = false;
             videoSourceSettingsLayoutPanel.Enabled = false;
@@ -314,6 +316,7 @@ namespace ScreenStreamer.WinForms.App
             switchStreamingStateButton.Enabled = false;
 
             captureStatusLabel.Text = "Stream stopping...";
+
 
             captureStatusDescriptionLabel.Text = "";
         }
@@ -328,7 +331,9 @@ namespace ScreenStreamer.WinForms.App
             switchStreamingStateButton.Enabled = true;
             switchStreamingStateButton.Text = "Start Streaming";
 
-            //contextMenu.Enabled = true;
+			startToolStripMenuItem.Text = "Start";
+
+			contextMenu.Enabled = true;
 
             captureStatusLabel.Text = "Ready to stream";
 
@@ -434,6 +439,7 @@ namespace ScreenStreamer.WinForms.App
             var f = new VideoSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
+				//Owner = this,
 
             };
 
@@ -457,6 +463,17 @@ namespace ScreenStreamer.WinForms.App
             {
                 selectAreaForm.Locked = locked;
             }
+
+			if (startToolStripMenuItem != null)
+			{
+				startToolStripMenuItem.Enabled = !locked;
+
+			}
+
+			//if (contextMenu != null)
+			//{
+			//	contextMenu.Enabled = !locked;
+			//}
             
         }
 
@@ -864,46 +881,80 @@ namespace ScreenStreamer.WinForms.App
         }
 
 
-        //private void settingToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    this.Visible = true;
-        //}
+		private void settingToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			//if (!locked)
+			{
+				this.Visible = true;
+				if(this.WindowState == FormWindowState.Minimized)
+				{
+					this.WindowState = FormWindowState.Normal;
+				}
+				
+			}
+			//else
+			//{
+			//	this.WindowState = FormWindowState.Normal;
+			//}
+		
+		}
 
-        //private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
-        //{
-        //    if (e.Button == MouseButtons.Left)
-        //    {
-        //        this.allowshowdisplay = true;
+		private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				this.allowshowdisplay = true;
 
-        //        this.Visible = !this.Visible;
-        //    }
-        //}
+				//if(WindowState == FormWindowState.Minimized)
+				//{
+				//	this.Visible = true;
+				//	this.WindowState = FormWindowState.Normal;
+
+				//}
+				//else if (WindowState == FormWindowState.Normal)
+				//{
+				//	this.WindowState = FormWindowState.Minimized;
+				//	this.Visible = false;
+
+				//}
+
+				this.Visible = !this.Visible;
+				//if (this.Visible)
+				//{
+				//	this.WindowState = FormWindowState.Normal;
+				//}
+				//else
+				//{
+				//	this.WindowState = FormWindowState.Minimized;
+				//}
+			}
+		}
 
 
-        //private bool allowshowdisplay = true;
+		private bool allowshowdisplay = true;
 
-        //protected override void SetVisibleCore(bool value)
-        //{
-        //    base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
-        //}
+		protected override void SetVisibleCore(bool value)
+		{
+			base.SetVisibleCore(allowshowdisplay ? value : allowshowdisplay);
+		}
 
-        //protected override void OnClosing(CancelEventArgs e)
-        //{
-        //    if (!closing)
-        //    {
-        //        e.Cancel = true;
-        //        this.Visible = false;
-        //    }
-        //    base.OnClosing(e);
-        //}
+		protected override void OnClosing(CancelEventArgs e)
+		{
+			if (!closing)
+			{
+				e.Cancel = true;
+				this.Visible = false;
+			}
+			base.OnClosing(e);
+		}
 
-        //protected override void OnClosed(EventArgs e)
-        //{
+		protected override void OnClosed(EventArgs e)
+		{
 
-        //    base.OnClosed(e);
-        //}
+			base.OnClosed(e);
+		}
 
-    }
+	}
 
 
     class RegionForm : Form
