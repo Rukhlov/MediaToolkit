@@ -27,7 +27,6 @@ using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
 using namespace MediaToolkit::Logging;
 using namespace System::Threading;
-//using namespace NLog;
 
 namespace FFmpegLib {
 

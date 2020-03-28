@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs
 {
-    public class Shcore
+    public static class Shcore
     {
 
         [DllImport("shcore.dll")]

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs
 {
-    public sealed class Gdi32
+    public static class Gdi32
     {
 
         [DllImport("gdi32.dll")]

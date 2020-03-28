@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs
 {
-    public class SetupApi
+    public static class SetupApi
     {
         /// <summary>
         /// https://docs.microsoft.com/en-us/windows/desktop/api/setupapi/nf-setupapi-setupdigetclassdevsw

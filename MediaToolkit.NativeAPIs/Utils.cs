@@ -12,7 +12,209 @@ using System.Text;
 namespace MediaToolkit.NativeAPIs.Utils
 {
 
-    public class DisplayTool
+	public class WinStationHelper
+	{
+		public enum SessionType
+		{
+			Console,
+			RDP
+		}
+
+		public class WindowsSession
+		{
+			public uint ID { get; internal set; }
+			public string Name { get; internal set; }
+			public SessionType Type { get; internal set; }
+			public string Username { get; internal set; }
+		}
+
+
+		public static List<WindowsSession> GetActiveSessions()
+		{
+			var sessions = new List<WindowsSession>();
+			var consoleSessionId = Kernel32.WTSGetActiveConsoleSessionId();
+
+			sessions.Add(new WindowsSession()
+			{
+				ID = consoleSessionId,
+				Type = SessionType.Console,
+				Name = "Console",
+				Username = GetUsernameFromSessionId(consoleSessionId)
+			});
+
+			IntPtr ppSessionInfo = IntPtr.Zero;
+			var count = 0;
+			var enumSessionResult = WtsApi32.WTSEnumerateSessions(WtsApi32.WTS_CURRENT_SERVER_HANDLE, 0, 1, ref ppSessionInfo, ref count);
+			var dataSize = Marshal.SizeOf(typeof(WtsApi32.WTS_SESSION_INFO));
+			var current = ppSessionInfo;
+
+			if (enumSessionResult != 0)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					WtsApi32.WTS_SESSION_INFO sessionInfo = (WtsApi32.WTS_SESSION_INFO)Marshal.PtrToStructure((System.IntPtr)current, typeof(WtsApi32.WTS_SESSION_INFO));
+					current += dataSize;
+					if (sessionInfo.State == WtsApi32.WTS_CONNECTSTATE_CLASS.WTSActive && sessionInfo.SessionID != consoleSessionId)
+					{
+
+						sessions.Add(new WindowsSession()
+						{
+							ID = sessionInfo.SessionID,
+							Name = sessionInfo.pWinStationName,
+							Type = SessionType.RDP,
+							Username = GetUsernameFromSessionId(sessionInfo.SessionID)
+						});
+					}
+				}
+			}
+
+			return sessions;
+		}
+
+		public static bool GetCurrentDesktop(out string desktopName)
+		{
+			var inputDesktop = OpenInputDesktop();
+			try
+			{
+				byte[] deskBytes = new byte[256];
+				uint lenNeeded;
+				if (!User32.GetUserObjectInformationW(inputDesktop, AdvApi32.UOI_NAME, deskBytes, 256, out lenNeeded))
+				{
+					desktopName = string.Empty;
+					return false;
+				}
+
+				desktopName = Encoding.Unicode.GetString(deskBytes.Take((int)lenNeeded).ToArray()).Replace("\0", "");
+				return true;
+			}
+			finally
+			{
+				User32.CloseDesktop(inputDesktop);
+			}
+		}
+
+		public static string GetUsernameFromSessionId(uint sessionId)
+		{
+			var username = string.Empty;
+
+			if (WtsApi32.WTSQuerySessionInformation(IntPtr.Zero, sessionId, WtsApi32.WTS_INFO_CLASS.WTSUserName, out var buffer, out var strLen) && strLen > 1)
+			{
+				username = Marshal.PtrToStringAnsi(buffer);
+				WtsApi32.WTSFreeMemory(buffer);
+			}
+
+			return username;
+		}
+
+		public static IntPtr OpenInputDesktop()
+		{
+			return User32.OpenInputDesktop(0, true, ACCESS_MASK.GENERIC_ALL);
+		}
+
+		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out AdvApi32.PROCESS_INFORMATION procInfo)
+		{
+			uint winlogonPid = 0;
+			IntPtr hUserTokenDup = IntPtr.Zero, hPToken = IntPtr.Zero, hProcess = IntPtr.Zero;
+			procInfo = new AdvApi32.PROCESS_INFORMATION();
+
+			// Check for RDP session.  If active, use that session ID instead.
+			var activeSessions = GetActiveSessions();
+			var dwSessionId = activeSessions.Last().ID;
+
+			// Obtain the process ID of the winlogon process that is running within the currently active session.
+			Process[] processes = Process.GetProcessesByName("winlogon");
+			foreach (Process p in processes)
+			{
+				if ((uint)p.SessionId == dwSessionId)
+				{
+					winlogonPid = (uint)p.Id;
+				}
+			}
+
+			// Obtain a handle to the winlogon process.
+			hProcess = Kernel32.OpenProcess(AdvApi32.MAXIMUM_ALLOWED, false, winlogonPid);
+
+			// Obtain a handle to the access token of the winlogon process.
+			if (!AdvApi32.OpenProcessToken(hProcess, AdvApi32.TOKEN_DUPLICATE, ref hPToken))
+			{
+				Kernel32.CloseHandle(hProcess);
+				return false;
+			}
+
+			// Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser.
+			AdvApi32.SECURITY_ATTRIBUTES sa = new AdvApi32.SECURITY_ATTRIBUTES();
+			sa.Length = Marshal.SizeOf(sa);
+
+			// Copy the access token of the winlogon process; the newly created token will be a primary token.
+			if (!AdvApi32.DuplicateTokenEx(hPToken, AdvApi32.MAXIMUM_ALLOWED, ref sa, AdvApi32.SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, AdvApi32.TOKEN_TYPE.TokenPrimary, out hUserTokenDup))
+			{
+				Kernel32.CloseHandle(hProcess);
+				Kernel32.CloseHandle(hPToken);
+				return false;
+			}
+
+			// By default, CreateProcessAsUser creates a process on a non-interactive window station, meaning
+			// the window station has a desktop that is invisible and the process is incapable of receiving
+			// user input. To remedy this we set the lpDesktop parameter to indicate we want to enable user 
+			// interaction with the new process.
+			AdvApi32.STARTUPINFO si = new AdvApi32.STARTUPINFO();
+			si.cb = Marshal.SizeOf(si);
+			si.lpDesktop = @"winsta0\" + desktopName;
+
+			// Flags that specify the priority and creation method of the process.
+			uint dwCreationFlags;
+			if (hiddenWindow)
+			{
+				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NO_WINDOW;
+				si.dwFlags = AdvApi32.STARTF_USESHOWWINDOW;
+				si.wShowWindow = 0;
+			}
+			else
+			{
+				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NEW_CONSOLE;
+			}
+
+			// Create a new process in the current user's logon session.
+			bool result = AdvApi32.CreateProcessAsUser(hUserTokenDup, null, applicationName, ref sa, ref sa, false, dwCreationFlags, IntPtr.Zero, null, ref si, out procInfo);
+
+			// Invalidate the handles.
+			Kernel32.CloseHandle(hProcess);
+			Kernel32.CloseHandle(hPToken);
+			Kernel32.CloseHandle(hUserTokenDup);
+
+			return result;
+		}
+
+
+		public static bool SwitchToInputDesktop()
+		{
+			var inputDesktop = OpenInputDesktop();
+			try
+			{
+				if (inputDesktop == IntPtr.Zero)
+				{
+					return false;
+				}
+
+				if (!User32.SetThreadDesktop(inputDesktop) || !User32.SwitchDesktop(inputDesktop))
+				{
+					return false;
+				}
+
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+			finally
+			{
+				User32.CloseDesktop(inputDesktop);
+			}
+		}
+	}
+
+	public class DisplayTool
     {
         public class DisplayInfo
         {

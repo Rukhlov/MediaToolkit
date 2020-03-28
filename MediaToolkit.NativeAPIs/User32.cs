@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MediaToolkit.NativeAPIs
 {
 
-    public sealed class User32
+    public static class User32
     {
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
@@ -207,7 +209,79 @@ namespace MediaToolkit.NativeAPIs
         }
 
 
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool SwitchDesktop(IntPtr hDesktop);
 
-    }
+		public delegate bool EnumDesktopsDelegate(string desktop, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		public static extern bool EnumDesktopsA(IntPtr hwinsta, EnumDesktopsDelegate lpEnumFunc, IntPtr lParam);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern IntPtr OpenInputDesktop(uint dwFlags, bool fInherit, ACCESS_MASK dwDesiredAccess);
+
+		public delegate bool EnumWindowStationsDelegate(string windowsStation, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		public static extern bool EnumWindowStations(EnumWindowStationsDelegate lpEnumFunc, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetShellWindow();
+
+		public sealed class SafeWindowStationHandle : SafeHandleZeroOrMinusOneIsInvalid
+		{
+			public SafeWindowStationHandle()
+				: base(true)
+			{
+			}
+
+			protected override bool ReleaseHandle()
+			{
+				return CloseWindowStation(handle);
+
+			}
+		}
+
+		[return: MarshalAs(UnmanagedType.Bool)]
+		[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+		[DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern bool CloseWindowStation(IntPtr hWinsta);
+
+		[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
+		[DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern SafeWindowStationHandle OpenWindowStation([MarshalAs(UnmanagedType.LPTStr)] string lpszWinSta, [MarshalAs(UnmanagedType.Bool)] bool fInherit, ACCESS_MASK dwDesiredAccess);
+
+		[DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)]
+		public static extern IntPtr OpenWindowStationW([MarshalAs(UnmanagedType.LPTStr)] string lpszWinSta, [MarshalAs(UnmanagedType.Bool)] bool fInherit, ACCESS_MASK dwDesiredAccess);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool SetProcessWindowStation(IntPtr hWinSta);
+
+
+		public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr GetProcessWindowStation();
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool SetThreadDesktop(IntPtr hDesktop);
+
+		[DllImport("user32.dll")]
+		public static extern IntPtr OpenDesktop(string lpszDesktop, uint dwFlags, bool fInherit, ACCESS_MASK dwDesiredAccess);
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool CloseDesktop(IntPtr hDesktop);
+
+		public delegate bool EnumDesktopWindowsDelegate(IntPtr hWnd, int lParam);
+
+		[DllImport("user32.dll")]
+		public static extern bool EnumDesktopWindows(IntPtr hDesktop, EnumDesktopWindowsDelegate lpfn, IntPtr lParam);
+
+
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool GetUserObjectInformationW(IntPtr hObj, int nIndex, [Out] byte[] pvInfo, uint nLength, out uint lpnLengthNeeded);
+
+
+	}
 
 }
