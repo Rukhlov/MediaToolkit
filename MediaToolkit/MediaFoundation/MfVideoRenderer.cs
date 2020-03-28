@@ -2,7 +2,7 @@
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;

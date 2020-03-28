@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿
 using MediaToolkit.Utils;
 using SharpDX;
 using SharpDX.Direct3D11;
@@ -16,13 +16,17 @@ using System.Windows.Threading;
 
 using Direct3D9 = SharpDX.Direct3D9;
 using MediaToolkit.NativeAPIs;
+using System.Diagnostics;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.UI
 {
 
     public class D3DImageProvider : INotifyPropertyChanged
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.UI");
 
         public Dispatcher dispatcher = null;
         

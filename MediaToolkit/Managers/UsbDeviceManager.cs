@@ -1,6 +1,8 @@
-﻿using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.Logging;
+using MediaToolkit.NativeAPIs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,7 +13,9 @@ namespace MediaToolkit.Managers
 {
     public class UsbDeviceManager
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        //private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
 
         public static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
@@ -173,7 +177,7 @@ namespace MediaToolkit.Managers
 
         public static IEnumerable<string> GetPresentedUsbHardwareIds()
         {
-            logger.Trace("GetPresentedUsbHardwareIds()");
+            logger.Verb("GetPresentedUsbHardwareIds()");
 
             List<string> hardwareIds = new List<string>();
 

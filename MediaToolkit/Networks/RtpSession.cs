@@ -1,5 +1,4 @@
-﻿using NLog;
-using MediaToolkit.Utils;
+﻿using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,12 +6,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaToolkit.Logging;
 
-namespace MediaToolkit.RTP
+namespace MediaToolkit.Networks
 {
     public abstract class RtpSession
     {
-        protected static Logger logger = LogManager.GetCurrentClassLogger();
+        //protected static Logger logger = LogManager.GetCurrentClassLogger();
+
+        protected static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Networks");
 
         //public const int MTU = 1300;
 

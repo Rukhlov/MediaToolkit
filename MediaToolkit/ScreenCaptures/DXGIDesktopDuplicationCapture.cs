@@ -25,9 +25,9 @@ using MediaToolkit.Utils;
 using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
+using MediaToolkit.Logging;
 
-
-namespace MediaToolkit
+namespace MediaToolkit.ScreenCaptures
 {
     public class DXGIDesktopDuplicationCapture : ScreenCapture //, IDirect3D11Capture
     {

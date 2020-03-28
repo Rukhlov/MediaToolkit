@@ -17,8 +17,6 @@ namespace MediaToolkit.DeckLink
 {
     public class DeckLinkTools
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
-
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         public static bool GetDeviceByIndex(int inputIndex, out IDeckLink deckLink)

@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 
 using MediaToolkit;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.Networks;
-using MediaToolkit.RTP;
+
 using MediaToolkit.Utils;
-using NLog;
+
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
 
@@ -20,8 +21,8 @@ namespace MediaToolkit
 {
     public class VideoReceiver
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         private Device device = null;
 

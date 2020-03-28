@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using NLog;
+
 
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;

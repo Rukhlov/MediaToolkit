@@ -1,6 +1,8 @@
-﻿using NLog;
+﻿
+using MediaToolkit.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -10,11 +12,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsInput;
 
-namespace MediaToolkit.Core
+namespace MediaToolkit.Managers
 {
     public class DesktopManager
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
 
         private Socket socket = null;
 

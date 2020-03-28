@@ -29,14 +29,14 @@ namespace TestStreamer.Controls
 
         public AudioStreamSettings AudioSettings { get; private set; }
 
-        public void Setup(AudioStreamSettings settingsParams)
+        public void Setup(AudioStreamSettings audioSettings)
         {
 
-            this.AudioSettings = settingsParams;
-            var captureSettings = AudioSettings.CaptureDevice;
+            this.AudioSettings = audioSettings;
+            var captureDevice = AudioSettings.CaptureDevice;
 
-            textBoxDevice.Text = captureSettings.Name;
-            this.captFormatTextBox.Text = captureSettings.Description;
+            textBoxDevice.Text = captureDevice.Name;
+            this.captFormatTextBox.Text = captureDevice.Description;
 
             //this.addressTextBox.Text = AudioSettings.Address;
             //this.portNumeric.Value = AudioSettings.Port;

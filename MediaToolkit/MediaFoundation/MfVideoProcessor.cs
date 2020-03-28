@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
+
 using System.Linq;
 
 using GDI = System.Drawing;

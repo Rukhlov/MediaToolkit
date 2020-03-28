@@ -2,7 +2,6 @@
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
-using NLog;
 using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;

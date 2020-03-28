@@ -1,7 +1,6 @@
 ﻿using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 
-using NLog;
 using SharpDX;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;

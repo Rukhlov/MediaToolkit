@@ -1,14 +1,16 @@
 ﻿using FFmpegLib;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.Networks;
-using MediaToolkit.RTP;
+
 using NAudio.Codecs;
 using NAudio.Gui;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NLog;
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -20,7 +22,9 @@ namespace MediaToolkit
     public class AudioReceiver
     {
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+       // private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         private PCMUSession session = null;
         private IRtpReceiver rtpReceiver = null;

@@ -1,6 +1,6 @@
 ﻿using MediaToolkit.Core;
 using FFmpegLib;
-using NLog;
+
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;

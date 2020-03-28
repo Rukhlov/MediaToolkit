@@ -148,7 +148,12 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public event Action OnStreamStateChanged;
 
-        private void MediaStreamer_StateChanged()
+		public event Action StreamStarting;
+		public event Action StreamStarted;
+		public event Action StreamStopping;
+		public event Action StreamStopped;
+
+		private void MediaStreamer_StateChanged()
         {
             var state = MediaStreamer.State;
 
@@ -156,20 +161,22 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (state == MediaStreamerState.Starting)
             {
+				StreamStarting?.Invoke();
 
-            }
+			}
             else if (state == MediaStreamerState.Streamming)
             {
-      
-            }
+				StreamStarted?.Invoke();
+			}
             else if (state == MediaStreamerState.Stopping)
             {
-
-            }
+				StreamStopping?.Invoke();
+			}
             else if (state == MediaStreamerState.Stopped)
             {
+				StreamStopped?.Invoke();
 
-                MediaStreamer.Shutdown();
+				MediaStreamer.Shutdown();
             }
 
 

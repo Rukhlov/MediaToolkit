@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace MediaToolkit.ScreenCaptures
 {
     /// <summary>
     /// Быстрее всего работает с выключенной композитной отрисовкой

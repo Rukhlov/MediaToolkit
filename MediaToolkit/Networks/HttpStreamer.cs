@@ -1,5 +1,4 @@
 ﻿
-using NLog;
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,13 +11,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaToolkit.Core;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.Networks
 {
 
     public class HttpStreamer
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Networks");
 
         private const string BOUNDARY = "7b3cc56e5f51db803f790dad720ed50a";
 
@@ -222,7 +224,7 @@ namespace MediaToolkit.Networks
                         logger.Debug("Serv response: " + response);
                         stream.Write(respBytes, 0, respBytes.Length);
 
-                        logger.Trace("Response loop BEGIN");
+                        logger.Verb("Response loop BEGIN");
                         while (running)
                         {
                             if (!syncEvent.WaitOne(1000))
@@ -276,7 +278,7 @@ namespace MediaToolkit.Networks
 
                         }// next frame...
 
-                        logger.Trace("Response loop END");
+                        logger.Verb("Response loop END");
                     }
                     catch (IOException ex)
                     {

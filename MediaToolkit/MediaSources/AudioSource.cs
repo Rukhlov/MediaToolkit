@@ -2,7 +2,7 @@
 using MediaToolkit.Logging;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +17,9 @@ namespace MediaToolkit
 
     public class AudioSource
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         private const long ReftimesPerSec = 10000000;
         private const long ReftimesPerMillisec = 10000;
@@ -57,24 +59,26 @@ namespace MediaToolkit
             //set { waveFormat = value; }
         }
 
-
-        public void Setup(string DeviceId, bool useEventSync = false, int audioBufferMillisecondsLength = 100, bool exclusiveMode = false)
+		//public void Setup(string DeviceId, bool useEventSync = false, int audioBufferMillisecondsLength = 100, bool exclusiveMode = false)
+		public void Setup(string deviceId, object captureProperties = null)
         {
-            logger.Debug("AudioSourceEx::Setup(...) " + DeviceId );
+            logger.Debug("AudioSourceEx::Setup(...) " + deviceId );
 
             if (captureState != CaptureState.Closed)
             {
                 throw new InvalidOperationException("Invalid audio capture state " + captureState);
             }
 
-            using (var deviceEnum = new MMDeviceEnumerator())
+			WasapiCaptureProperties wasapiCaptureProperties = captureProperties as WasapiCaptureProperties ?? new WasapiCaptureProperties();
+
+			using (var deviceEnum = new MMDeviceEnumerator())
             {
                 var mmDevices = deviceEnum.EnumerateAudioEndPoints(DataFlow.All, DeviceState.Active);
 
                 for(int i= 0; i< mmDevices.Count; i++)
                 {
                     var d = mmDevices[i];
-                    if(d.ID == DeviceId)
+                    if(d.ID == deviceId)
                     {
                         captureDevice = d;
                         continue;
@@ -88,11 +92,11 @@ namespace MediaToolkit
                 throw new Exception("MMDevice not found...");
             }
 
-            this.isUsingEventSync = useEventSync;
-            this.audioBufferMillisecondsLength = audioBufferMillisecondsLength;
+            this.isUsingEventSync = wasapiCaptureProperties.EventSyncMode;
+            this.audioBufferMillisecondsLength = wasapiCaptureProperties.BufferMilliseconds;
 
             this.audioClient = captureDevice.AudioClient;
-            this.ShareMode = exclusiveMode? AudioClientShareMode.Exclusive : AudioClientShareMode.Shared;
+            this.ShareMode = wasapiCaptureProperties.ExclusiveMode? AudioClientShareMode.Exclusive : AudioClientShareMode.Shared;
 
             this.waveFormat = audioClient.MixFormat;
 

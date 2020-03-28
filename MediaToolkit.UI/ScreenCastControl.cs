@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using MediaToolkit.UI;
 
 using System.Windows.Threading;
-using NLog;
+
 using System.ServiceModel;
 using System.Threading;
 using System.Net.Sockets;

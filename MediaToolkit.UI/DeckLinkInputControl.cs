@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using MediaToolkit.UI;
 
 using System.Windows.Threading;
-using NLog;
+
 using System.ServiceModel;
 using System.Threading;
 using System.Net.Sockets;
@@ -24,12 +24,16 @@ using MediaToolkit.Utils;
 
 using MediaToolkit.SharedTypes;
 using MediaToolkit.DeckLink;
+using System.Diagnostics;
+using MediaToolkit.Logging;
 
 namespace MediaToolkit.UI
 {
     public partial class DeckLinkInputControl : UserControl, IDeckLinkInputControl
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.UI");
 
         public DeckLinkInputControl()
         {

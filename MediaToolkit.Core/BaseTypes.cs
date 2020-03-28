@@ -155,8 +155,10 @@ namespace MediaToolkit.Core
         [XmlIgnore]
         public string Description { get; set; } = "";
 
-        //public AudioCapturesTypes CapturesTypes { get; set; } = AudioCapturesTypes.Wasapi;
-    }
+		[XmlIgnore]
+		public object Properties { get; set; } = new WasapiCaptureProperties();
+		//public AudioCapturesTypes CapturesTypes { get; set; } = AudioCapturesTypes.Wasapi;
+	}
 
     public enum AudioCapturesTypes
     {

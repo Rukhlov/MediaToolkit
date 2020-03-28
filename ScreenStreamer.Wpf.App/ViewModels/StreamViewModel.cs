@@ -181,8 +181,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             RaisePropertyChanged(nameof(StartCommandText));
             RaisePropertyChanged(nameof(StartContextMenuText));
             RaisePropertyChanged(nameof(IsEnabled));
+			RaisePropertyChanged(nameof(IsStarted));
 
-            if (isStarted)
+			if (isStarted)
             {
                 _dialogService.Hide(DesignViewModel);
                 if (IsBorderVisible)

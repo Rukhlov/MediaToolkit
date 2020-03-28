@@ -1,7 +1,7 @@
 ﻿using MediaToolkit.Core;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -100,7 +100,7 @@
 			this.videoSourceDetailsButton.Location = new System.Drawing.Point(463, 2);
 			this.videoSourceDetailsButton.Margin = new System.Windows.Forms.Padding(2);
 			this.videoSourceDetailsButton.Name = "videoSourceDetailsButton";
-			this.videoSourceDetailsButton.Size = new System.Drawing.Size(112, 30);
+			this.videoSourceDetailsButton.Size = new System.Drawing.Size(111, 30);
 			this.videoSourceDetailsButton.TabIndex = 90;
 			this.videoSourceDetailsButton.Text = "Details...";
 			this.videoSourceDetailsButton.UseVisualStyleBackColor = false;
@@ -157,7 +157,7 @@
 			this.audioSourceDetailsButton.Location = new System.Drawing.Point(463, 2);
 			this.audioSourceDetailsButton.Margin = new System.Windows.Forms.Padding(2);
 			this.audioSourceDetailsButton.Name = "audioSourceDetailsButton";
-			this.audioSourceDetailsButton.Size = new System.Drawing.Size(112, 30);
+			this.audioSourceDetailsButton.Size = new System.Drawing.Size(111, 30);
 			this.audioSourceDetailsButton.TabIndex = 90;
 			this.audioSourceDetailsButton.Text = "Details...";
 			this.audioSourceDetailsButton.UseVisualStyleBackColor = false;

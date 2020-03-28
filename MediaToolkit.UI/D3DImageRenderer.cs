@@ -1,6 +1,6 @@
 ﻿using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
-using NLog;
+
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 using System;

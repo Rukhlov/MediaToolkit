@@ -1,5 +1,5 @@
 ﻿using MediaToolkit.Core;
-using NLog;
+
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,13 +12,17 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using MediaToolkit.NativeAPIs;
+using System.Diagnostics;
+using MediaToolkit.Logging;
 
-namespace MediaToolkit
+namespace MediaToolkit.ScreenCaptures
 {
 
     public class DatapathDesktopCapture : ScreenCapture
     {
-        private static Logger _logger = LogManager.GetCurrentClassLogger();
+        //private static Logger _logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource _logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 
         public static bool Initialized { get; private set; }
         public static bool Load()
@@ -201,7 +205,7 @@ namespace MediaToolkit
 
         public override bool UpdateBuffer(int timeout = 10)
         {
-            logger.Trace("Update()");
+            logger.Verb("Update()");
 
             bool success = false;
 

@@ -423,7 +423,18 @@ namespace ScreenStreamer.WinForms.App
         {
             logger.Debug("videoSourceDetailsButton_Click(...)");
 
-            var f = new VideoSettingsForm
+			var settings = currentSession.VideoSettings;
+			if (settings == null)
+			{
+				return;
+			}
+			var captureDevice = settings.CaptureDevice;
+			if (captureDevice == null)
+			{
+				return;
+			}
+
+			var f = new VideoSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
 				//Owner = this,
@@ -467,12 +478,22 @@ namespace ScreenStreamer.WinForms.App
         private void audioSourceDetailsButton_Click(object sender, EventArgs e)
         {
             logger.Debug("audioSourceDetailsButton_Click(...)");
+			var settings = currentSession.AudioSettings;
+			if(settings == null)
+			{
+				return;
+			}
+			var captureDevice = settings.CaptureDevice;
+			if(captureDevice == null)
+			{
+				return;
+			}
 
-            var f = new AudioSettingsForm
+			var f = new AudioSettingsForm
             {
                 StartPosition = FormStartPosition.CenterParent,
-
             };
+
             f.Setup(currentSession.AudioSettings);
 
             Lock(true);
@@ -655,9 +676,13 @@ namespace ScreenStreamer.WinForms.App
 
             var audioDevices = AudioTool.GetAudioCaptureDevices();
 
+			var captureProps = Config.Data.WasapiCaptureProps;
+
             foreach(var d in audioDevices)
             {
-                ComboBoxItem item = new ComboBoxItem
+				d.Properties = captureProps;
+
+				ComboBoxItem item = new ComboBoxItem
                 {
                     Name = d.Name,
                     Tag = d,

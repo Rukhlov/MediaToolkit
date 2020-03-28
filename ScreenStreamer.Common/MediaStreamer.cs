@@ -29,6 +29,7 @@ namespace ScreenStreamer.Common
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
+
         private IVideoSource videoSource = null;
         private VideoStreamer videoStreamer = null;
 
@@ -253,11 +254,12 @@ namespace ScreenStreamer.Common
             {
 
                 audioSource = new AudioSource();
-                var deviceId = audioSettings.CaptureDevice.DeviceId;
-                var eventSyncMode = true;
-                var audioBufferMilliseconds = 50;
-                var exclusiveMode = false;
-                audioSource.Setup(deviceId, eventSyncMode, audioBufferMilliseconds, exclusiveMode);
+				var captureDevice = audioSettings.CaptureDevice;
+
+				var deviceId = captureDevice.DeviceId;
+				var captureProps = captureDevice.Properties;
+
+				audioSource.Setup(deviceId, captureProps);
 
                 if (Session.TransportMode == TransportMode.Tcp || Session.IsMulticast)
                 {

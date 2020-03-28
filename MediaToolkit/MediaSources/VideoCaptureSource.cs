@@ -1,13 +1,14 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 
 using MediaToolkit.NativeAPIs;
 
-using NLog;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -21,7 +22,9 @@ namespace MediaToolkit
 {
     public class VideoCaptureSource : IVideoSource
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         public VideoCaptureSource()
         {

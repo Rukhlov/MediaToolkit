@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Core;
-using MediaToolkit.RTP;
+using MediaToolkit.Logging;
+
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace MediaToolkit.Networks
 {
 
 
     public class RtpUdpSender : IRtpSender
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        //private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Networks");
+
         public RtpUdpSender(RtpSession session)
         {
             this.session = session;

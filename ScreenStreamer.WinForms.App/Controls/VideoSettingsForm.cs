@@ -66,7 +66,7 @@ namespace TestStreamer.Controls
                 WebCamGroup.Visible = false;
                 ScreenCaptureGroup.Visible = true;
 
-                adjustAspectRatioButton.Visible = true;
+                //adjustAspectRatioButton.Visible = true;
 
                 showDebugInfoCheckBox.Checked = screenCaptureParams.Properties.ShowDebugInfo;
                 showCaptureBorderCheckBox.Checked = screenCaptureParams.Properties.ShowDebugBorder;
@@ -100,7 +100,7 @@ namespace TestStreamer.Controls
                 WebCamGroup.Visible = true;
                 ScreenCaptureGroup.Visible = false;
 
-                adjustAspectRatioButton.Visible = false;
+                //adjustAspectRatioButton.Visible = false;
             }
 
             

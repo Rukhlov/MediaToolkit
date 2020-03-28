@@ -8,8 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using GDI = System.Drawing;
+using MediaToolkit.Logging;
 
-namespace MediaToolkit
+namespace MediaToolkit.ScreenCaptures
 {
 
 

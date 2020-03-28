@@ -1,20 +1,21 @@
 ﻿using MediaToolkit.Core;
-using NLog;
+using MediaToolkit.Logging;
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaToolkit
+namespace MediaToolkit.ScreenCaptures
 {
     public abstract class ScreenCapture
     {
-        protected static Logger logger =  LogManager.GetCurrentClassLogger();
-
+        //protected static Logger logger =  LogManager.GetCurrentClassLogger();
+        protected static TraceSource logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 
         public virtual void Init(Rectangle srcRect, Size destSize = new Size())
         {

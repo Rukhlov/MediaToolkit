@@ -1,5 +1,4 @@
 ﻿using MediaToolkit.Core;
-using NLog;
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -9,13 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using MediaToolkit.Logging;
+using MediaToolkit.ScreenCaptures;
 
 namespace MediaToolkit
 {
     public class ScreenSource : IVideoSource
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        // private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         public ScreenSource() { }
 

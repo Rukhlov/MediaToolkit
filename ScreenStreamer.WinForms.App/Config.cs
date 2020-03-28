@@ -42,6 +42,7 @@ namespace ScreenStreamer.WinForms.App
         public Rectangle SelectAreaRectangle { get; set; } = new Rectangle(0, 0, 640, 480);
 
         public ScreenCaptureProperties ScreenCaptureProperties { get; set; } = new ScreenCaptureProperties();
+
         public WasapiCaptureProperties WasapiCaptureProps { get; set; } = new WasapiCaptureProperties();
 
         private static Config data;

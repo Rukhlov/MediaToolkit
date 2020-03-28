@@ -14,8 +14,6 @@ namespace MediaToolkit.DeckLink
 {
     public class DeckLinkDeviceManager : IDeckLinkDeviceNotificationCallback
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
-
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DeckLink");
 
         private IDeckLinkDiscovery deckLinkDiscovery;

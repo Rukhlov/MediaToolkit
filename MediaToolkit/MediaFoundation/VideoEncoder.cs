@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using MediaToolkit.Core;
 using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
-using NLog;
+
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
