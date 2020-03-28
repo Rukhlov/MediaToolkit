@@ -275,7 +275,7 @@
 			this.flowLayoutPanel2.Location = new System.Drawing.Point(480, 4);
 			this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(2, 2, 9, 2);
 			this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-			this.flowLayoutPanel2.Size = new System.Drawing.Size(116, 35);
+			this.flowLayoutPanel2.Size = new System.Drawing.Size(116, 34);
 			this.flowLayoutPanel2.TabIndex = 110;
 			// 
 			// exitButton
@@ -288,7 +288,7 @@
 			this.exitButton.Location = new System.Drawing.Point(2, 2);
 			this.exitButton.Margin = new System.Windows.Forms.Padding(2);
 			this.exitButton.Name = "exitButton";
-			this.exitButton.Size = new System.Drawing.Size(112, 31);
+			this.exitButton.Size = new System.Drawing.Size(112, 30);
 			this.exitButton.TabIndex = 88;
 			this.exitButton.Text = "Exit";
 			this.exitButton.UseVisualStyleBackColor = false;
@@ -303,7 +303,7 @@
 			this.flowLayoutPanel1.Location = new System.Drawing.Point(18, 4);
 			this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(18, 2, 2, 2);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(291, 35);
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(291, 34);
 			this.flowLayoutPanel1.TabIndex = 110;
 			this.flowLayoutPanel1.WrapContents = false;
 			// 
@@ -317,7 +317,7 @@
 			this.switchStreamingStateButton.Location = new System.Drawing.Point(2, 2);
 			this.switchStreamingStateButton.Margin = new System.Windows.Forms.Padding(2);
 			this.switchStreamingStateButton.Name = "switchStreamingStateButton";
-			this.switchStreamingStateButton.Size = new System.Drawing.Size(184, 31);
+			this.switchStreamingStateButton.Size = new System.Drawing.Size(184, 30);
 			this.switchStreamingStateButton.TabIndex = 85;
 			this.switchStreamingStateButton.Text = "Start Streaming";
 			this.switchStreamingStateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -333,7 +333,7 @@
 			this.stopStreamingButton.Location = new System.Drawing.Point(190, 2);
 			this.stopStreamingButton.Margin = new System.Windows.Forms.Padding(2);
 			this.stopStreamingButton.Name = "stopStreamingButton";
-			this.stopStreamingButton.Size = new System.Drawing.Size(99, 31);
+			this.stopStreamingButton.Size = new System.Drawing.Size(99, 30);
 			this.stopStreamingButton.TabIndex = 86;
 			this.stopStreamingButton.Text = "_TEST";
 			this.stopStreamingButton.UseVisualStyleBackColor = false;

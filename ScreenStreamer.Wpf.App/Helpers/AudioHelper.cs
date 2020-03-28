@@ -13,7 +13,8 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             return names.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active)
                         .Cast<MMDevice>()
                         .ToList();
-        }
+
+		}
 
         public static List<MultiMediaDeviceViewModel> GetMultiMediaDeviceViewModels()
         {

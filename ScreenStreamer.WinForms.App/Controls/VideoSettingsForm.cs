@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,15 @@ namespace TestStreamer.Controls
 {
     public partial class VideoSettingsForm : Form
     {
-        public VideoSettingsForm()
+
+
+		private int MinWidth = 64;
+		private int MinHeight = 64;
+
+		private int MaxWidth = 4096;
+		private int MaxHeight = 4096;
+
+		public VideoSettingsForm()
         {
             InitializeComponent();
 
@@ -122,7 +131,16 @@ namespace TestStreamer.Controls
             this.fpsNumeric.Value = videoEncoderPars.FrameRate;
             this.latencyModeCheckBox.Checked = videoEncoderPars.LowLatency;
 
-        }
+			//this.adjustResolutionCheckBox.Checked = adjustResolutionToSrcAspectRatio;
+
+			this.destWidthNumeric.Maximum = MaxWidth;
+			this.destWidthNumeric.Minimum = MinWidth;
+
+			this.destHeightNumeric.Minimum = MinHeight;
+			this.destHeightNumeric.Maximum = MaxHeight;
+
+
+		}
 
         private void applyButton_Click(object sender, EventArgs e)
         {
@@ -182,8 +200,9 @@ namespace TestStreamer.Controls
 
             VideoSettings.EncoderSettings.LowLatency = this.latencyModeCheckBox.Checked;
 
+			//adjustResolutionToSrcAspectRatio = this.adjustResolutionCheckBox.Checked;
 
-            this.Close();
+			this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -283,15 +302,43 @@ namespace TestStreamer.Controls
             var srcSize = new Size (this.CaptureRegion.Width, this.CaptureRegion.Height);
             var destSize= new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
 
+
   
             var ratio = srcSize.Width / (double)srcSize.Height;
             int destWidth = destSize.Width;
-            int destHeight = (int)(destWidth / ratio);
+
+		    int destHeight = (int)(destWidth / ratio);
+			if(destHeight > MaxHeight)
+			{
+				destHeight = MaxHeight;
+				destWidth = (int)(destHeight * ratio);
+			}
+			
+			if(destHeight< MinHeight)
+			{
+				destHeight = MinHeight;
+				destWidth = (int)(destHeight * ratio);
+			}
+
             if (ratio < 1)
             {
                 destHeight = destSize.Height;
                 destWidth = (int)(destHeight * ratio);
-            }
+
+
+				if (destWidth > MaxWidth)
+				{
+					destWidth = MaxWidth;
+					destHeight = (int)(destWidth / ratio);
+				}
+
+				if (destWidth < MinWidth)
+				{
+					destWidth = MinWidth;
+					destHeight = (int)(destWidth / ratio);
+				}
+			}
+			
 
             this.destWidthNumeric.Value = destWidth;
             this.destHeightNumeric.Value = destHeight;
@@ -308,13 +355,16 @@ namespace TestStreamer.Controls
             if (checkBoxResoulutionFromSource.Checked)
             {
                 panelEncoderResoulution.Enabled = false;
-                aspectRatioCheckBox.Enabled = false;
-            }
+                //aspectRatioCheckBox.Enabled = false;
+				adjustAspectRatioButton.Enabled = false;
+			}
             else
             {
                 panelEncoderResoulution.Enabled = true;
-                aspectRatioCheckBox.Enabled = true;
-            }
+                //aspectRatioCheckBox.Enabled = true;
+				adjustAspectRatioButton.Enabled = true;
+
+			}
         }
 
         private PreviewForm previewForm = null;
@@ -418,8 +468,115 @@ namespace TestStreamer.Controls
             }
         }
 
+		private void destWidthNumeric_ValueChanged(object sender, EventArgs e)
+		{
+			Debug.WriteLine("destWidthNumeric_ValueChanged(...)");
+			return;
+
+			if (resolutionEdited)
+			{
+				return;
+			}
+
+			
+
+			var srcSize = new Size(this.CaptureRegion.Width, this.CaptureRegion.Height);
+			var destSize = new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
+
+
+			if (adjustResolutionToSrcAspectRatio)
+			{
 
 
 
-    }
+				var ratio = srcSize.Width / (double)srcSize.Height;
+				int destWidth = destSize.Width;
+				int destHeight = (int)(destWidth / ratio);
+
+				resolutionEdited = true;
+
+				this.destHeightNumeric.Value = destHeight;
+
+				resolutionEdited = false;
+			}
+			else
+			{
+
+			}
+
+
+		}
+
+
+		private bool resolutionEdited = false;
+		private void destHeightNumeric_ValueChanged(object sender, EventArgs e)
+		{
+
+			Debug.WriteLine("destHeightNumeric_ValueChanged(...)");
+			return;
+
+			if (resolutionEdited)
+			{
+				return;
+			}
+
+
+
+			var srcSize = new Size(this.CaptureRegion.Width, this.CaptureRegion.Height);
+			var destSize = new Size((int)this.destWidthNumeric.Value, (int)this.destHeightNumeric.Value);
+			var ratio = srcSize.Width / (double)srcSize.Height;
+
+			if (adjustResolutionToSrcAspectRatio)
+			{
+
+				var destHeight = destSize.Height;
+				var destWidth = (int)(destHeight * ratio);
+
+				if (destWidth > MaxWidth)
+				{
+					destWidth = MaxWidth;
+					destHeight = (int)(destWidth / ratio);
+
+
+					try
+					{
+						resolutionEdited = true;
+						destWidthNumeric.Value = destWidth;
+						destHeightNumeric.Value = destHeight;
+
+					}
+					finally
+					{
+						resolutionEdited = false;
+					}
+
+					return;
+				}
+
+				try
+				{
+					resolutionEdited = true;
+					destWidthNumeric.Value = destWidth;
+
+				}
+				finally
+				{
+					resolutionEdited = false;
+				}
+
+				//this.destHeightNumeric.Value = destHeight;
+			}
+			else
+			{
+
+			}
+		}
+
+		private bool adjustResolutionToSrcAspectRatio = false;
+
+		//private void adjustResolutionCheckBox_CheckedChanged(object sender, EventArgs e)
+		//{
+		//	adjustResolutionToSrcAspectRatio = adjustResolutionCheckBox.Checked;
+		//}
+	}
 }

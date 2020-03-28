@@ -181,17 +181,15 @@ namespace ScreenStreamer.WinForms.App
 
         private void OnSteramStarting()
         {
-            contextMenu.Enabled = false;
+			this.Cursor = Cursors.WaitCursor;
 
-            this.Cursor = Cursors.WaitCursor;
-
+			contextMenu.Enabled = false;
             networkSettingsLayoutPanel.Enabled = false;
             videoSourceSettingsLayoutPanel.Enabled = false;
             audioSourceSettingsLayoutPanel.Enabled = false;
+
             switchStreamingStateButton.Enabled = false;
-
             captureStatusLabel.Text = "Stream starting...";
-
 
             if (selectAreaForm != null)
             {
@@ -203,8 +201,9 @@ namespace ScreenStreamer.WinForms.App
 
         private void OnStreamStarted()
         {
+			this.Cursor = Cursors.Default;
 
-            networkSettingsLayoutPanel.Enabled = false;
+			networkSettingsLayoutPanel.Enabled = false;
             videoSourceSettingsLayoutPanel.Enabled = false;
             audioSourceSettingsLayoutPanel.Enabled = false;
 
@@ -214,9 +213,6 @@ namespace ScreenStreamer.WinForms.App
 			contextMenu.Enabled = true;
 			startToolStripMenuItem.Text = "Stop";
 
-			this.Cursor = Cursors.Default;
-
-
             var ex = mediaStreamer.ExceptionObj;
             if (ex != null)
             {
@@ -224,61 +220,54 @@ namespace ScreenStreamer.WinForms.App
 
                 var iex = ex.InnerException;
                 MessageBox.Show(iex.Message);
-
+				return;
             }
-            else
+
+
+            var videoSettings = currentSession.VideoSettings;
+            if (videoSettings.Enabled)
             {
-                var videoSettings = currentSession.VideoSettings;
-
-                if (videoSettings.Enabled)
+                var captureDescr = videoSettings?.CaptureDevice;
+                if (captureDescr.CaptureMode == CaptureMode.Screen)
                 {
-                    var captureDescr = videoSettings?.CaptureDevice;
-                    if (captureDescr.CaptureMode == CaptureMode.Screen)
+                    var screenDescr = (ScreenCaptureDevice)captureDescr;
+
+                    if (screenDescr.Properties.ShowDebugBorder)
                     {
-                        var screenDescr = (ScreenCaptureDevice)captureDescr;
-
-                        if (screenDescr.Properties.ShowDebugBorder)
-                        {
-                            debugBorderForm = new RegionForm(screenDescr.CaptureRegion);
-                            debugBorderForm.Visible = true;
-                        }
-
-                        if (screenDescr.Properties.ShowDebugInfo)
-                        {
-                            if(statisticForm == null)
-                            {
-                                statisticForm = new StatisticForm();
-                            }
-
-                            statisticForm.Location = screenDescr.CaptureRegion.Location;
-
-                            statisticForm.Start();
-
-                        }
-
-                        //if (selectAreaForm != null)
-                        //{
-                        //    selectAreaForm.Capturing = true;
-                        //}
-
+                        debugBorderForm = new RegionForm(screenDescr.CaptureRegion);
+                        debugBorderForm.Visible = true;
                     }
 
+                    if (screenDescr.Properties.ShowDebugInfo)
+                    {
+                        if(statisticForm == null)
+                        {
+                            statisticForm = new StatisticForm();
+                        }
+                        statisticForm.Location = screenDescr.CaptureRegion.Location;
+                        statisticForm.Start();
+                    }
+
+                    //if (selectAreaForm != null)
+                    //{
+                    //    selectAreaForm.Capturing = true;
+                    //}
+
                 }
-
-                captureStatusLabel.Text = "";
-                var statusDescription = "";
-                var _port = currentSession.CommunicationPort;
-                if (currentSession.CommunicationPort >= 0)
-                {
-                    var listenUri = mediaStreamer.ListenUri;
-                    statusDescription = "Stream running on port " + listenUri.Port;
-                }
-
-
-                //"Waiting for connection at " + _port + " port";
-                captureStatusDescriptionLabel.Text = statusDescription;
-
             }
+
+            captureStatusLabel.Text = "";
+            var statusDescription = "";
+            var _port = currentSession.CommunicationPort;
+            if (currentSession.CommunicationPort >= 0)
+            {
+                var listenUri = mediaStreamer.ListenUri;
+                statusDescription = "Stream running on port " + listenUri.Port;
+            }
+
+            //"Waiting for connection at " + _port + " port";
+            captureStatusDescriptionLabel.Text = statusDescription;
+         
         }
 
 
@@ -307,7 +296,6 @@ namespace ScreenStreamer.WinForms.App
         {
             this.Cursor = Cursors.WaitCursor;
 
-
             contextMenu.Enabled = false;
 
             networkSettingsLayoutPanel.Enabled = false;
@@ -316,7 +304,6 @@ namespace ScreenStreamer.WinForms.App
             switchStreamingStateButton.Enabled = false;
 
             captureStatusLabel.Text = "Stream stopping...";
-
 
             captureStatusDescriptionLabel.Text = "";
         }
