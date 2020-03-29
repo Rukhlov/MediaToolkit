@@ -25,6 +25,8 @@ using MediaToolkit.UI;
 using TestStreamer.Controls;
 using Test.Streamer.Controls;
 using MediaToolkit;
+using MediaToolkit.Managers;
+using MediaToolkit.NativeAPIs;
 
 namespace ScreenStreamer.WinForms.App
 {
@@ -45,12 +47,20 @@ namespace ScreenStreamer.WinForms.App
 
             InitControls();
 
-            syncContext = SynchronizationContext.Current;
+			usbManager = new UsbDeviceManager();
+			
+			usbManager.Init();
+			usbManager.UsbDeviceArrival += UsbManager_UsbDeviceArrival;
+			usbManager.UsbDeviceMoveComplete += UsbManager_UsbDeviceMoveComplete;
+
+			syncContext = SynchronizationContext.Current;
 
         }
 
- 
-        private MediaStreamer mediaStreamer = null;
+		private UsbDeviceManager usbManager = null;
+
+
+		private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
         private VideoStreamSettings videoSettings => currentSession?.VideoSettings;
         private AudioStreamSettings audioSettings => currentSession?.AudioSettings;
@@ -882,7 +892,47 @@ namespace ScreenStreamer.WinForms.App
         }
 
 
-        protected override CreateParams CreateParams
+		protected override void WndProc(ref Message m)
+		{
+			if (this.Disposing)
+			{
+				base.WndProc(ref m);
+				return;
+			}
+
+			base.WndProc(ref m);
+		}
+
+		private void UsbManager_UsbDeviceArrival(string deviceId)
+		{
+			logger.Debug("OnUsbDeviceArrival(...) " + deviceId);
+
+			//TODO: Update devices list..
+		}
+
+		private void UsbManager_UsbDeviceMoveComplete(string deviceId)
+		{
+			logger.Debug("OnUsbDeviceMoveComplete(...) " + deviceId);
+
+			var captureDevice = videoSettings.CaptureDevice;
+			if (captureDevice != null)
+			{
+				if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+				{
+					var _deviceId = captureDevice.DeviceId;
+					if (deviceId.Equals(_deviceId, StringComparison.InvariantCultureIgnoreCase))
+					{
+						logger.Warn("Capture device disconnected " + captureDevice.Name + " " + captureDevice.DeviceId);
+						//TODO: Close if capturing or update device list...
+
+					}
+				}
+			}
+
+		}
+
+
+		protected override CreateParams CreateParams
         {
             get
             {
@@ -962,6 +1012,7 @@ namespace ScreenStreamer.WinForms.App
 
 		protected override void OnClosed(EventArgs e)
 		{
+			usbManager.Close();
 
 			base.OnClosed(e);
 		}

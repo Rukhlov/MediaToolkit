@@ -89,12 +89,6 @@
     <Compile Include="Controls\HttpStreamerControl.Designer.cs">
       <DependentUpon>HttpStreamerControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ScreenStreamerControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\ScreenStreamerControl.Designer.cs">
-      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\WebCamStreamerControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -118,9 +112,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\HttpStreamerControl.resx">
       <DependentUpon>HttpStreamerControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\ScreenStreamerControl.resx">
-      <DependentUpon>ScreenStreamerControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\WebCamStreamerControl.resx">
       <DependentUpon>WebCamStreamerControl.cs</DependentUpon>

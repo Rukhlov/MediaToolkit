@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text;
 
 namespace MediaToolkit.NativeAPIs
@@ -17,7 +18,11 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
-        [DllImport("user32.dll")]
+		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		public static extern IntPtr PostMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+
+		[DllImport("user32.dll")]
         public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
 
         [DllImport("user32.dll")]
@@ -268,6 +273,7 @@ namespace MediaToolkit.NativeAPIs
 
 		[DllImport("user32.dll")]
 		public static extern IntPtr OpenDesktop(string lpszDesktop, uint dwFlags, bool fInherit, ACCESS_MASK dwDesiredAccess);
+
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern bool CloseDesktop(IntPtr hDesktop);
 
@@ -281,6 +287,9 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern bool GetUserObjectInformationW(IntPtr hObj, int nIndex, [Out] byte[] pvInfo, uint nLength, out uint lpnLengthNeeded);
 
+		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+		[ResourceExposure(ResourceScope.Process)]
+		public static extern int GetWindowThreadProcessId(HandleRef hWnd, out int lpdwProcessId);
 
 	}
 

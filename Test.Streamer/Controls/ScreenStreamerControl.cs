@@ -1220,7 +1220,7 @@ namespace TestStreamer.Controls
                     {
                         uint eventCode = (uint)m.WParam;
 
-                        if (eventCode == DBT.DEVICEARRIVAL || eventCode == DBT.DEVICEREMOVECOMPLETE)
+                        if (eventCode == DBT.DEVICEARRIVAL || eventCode == DBT.DEVICEREMOVECOMPLETE )
                         {
                             if (UsbDeviceManager.TryPtrToDeviceName(m.LParam, out string deviceName))
                             {   // получили информацию о подключенном устройстве в виде:

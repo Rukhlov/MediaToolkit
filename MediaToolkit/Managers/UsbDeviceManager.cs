@@ -3,36 +3,65 @@ using MediaToolkit.NativeAPIs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace MediaToolkit.Managers
 {
     public class UsbDeviceManager
     {
-        //private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
 
         public static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
+		private NotifyWindows nativeWindow = null;
 
-        private IntPtr notificationHandle = IntPtr.Zero;
+		public event Action<string> UsbDeviceArrival;
+		public event Action<string> UsbDeviceMoveComplete;
 
-        public bool RegisterNotification(IntPtr handle, Guid classGuid)
+
+		public bool Init()
+		{
+			logger.Debug("UsbDeviceManager::Init()");
+
+			if (nativeWindow == null)
+			{
+				nativeWindow = new NotifyWindows(this);
+				nativeWindow.CreateWindow();
+			}
+
+			var handle = RegisterNotification(nativeWindow.Handle, GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+
+			return (handle != IntPtr.Zero);
+		}
+
+		public void Close()
+		{
+			logger.Debug("UsbDeviceManager::Close()");
+
+			if (nativeWindow != null)
+			{
+				var handle = nativeWindow.Handle;
+				var result = UnregisterNotification(handle);
+
+				nativeWindow.DestroyWindow();
+				
+				nativeWindow = null;
+			}
+		}
+
+        public static IntPtr RegisterNotification(IntPtr handle, Guid classGuid)
         {
             logger.Debug("RegisterNotification() " + handle + " " + classGuid);
 
-            if (notificationHandle != IntPtr.Zero)
-            {
-                //TODO:
-                logger.Warn("RegisterNotificationHandle = " + notificationHandle);
-            }
+			var notificationHandle = IntPtr.Zero;
 
-            bool Success = false;
             try
             {
                 DEV_BROADCAST_DEVICEINTERFACE broadcastInterface = new DEV_BROADCAST_DEVICEINTERFACE
@@ -50,44 +79,85 @@ namespace MediaToolkit.Managers
                 notificationHandle = User32.RegisterDeviceNotification(handle, notificationFilter, 0);
                 //Marshal.FreeHGlobal(notificationFilter);
 
-                if (notificationHandle != IntPtr.Zero)
+                if (notificationHandle == IntPtr.Zero)
                 {
-                    Success = true;
-                }
-                else
-                {
-                    var lastError = Marshal.GetLastWin32Error();
-                    logger.Error("RegisterDeviceNotification() ErrorCode: " + lastError);
-                }
+					var lastError = Marshal.GetLastWin32Error();
+					logger.Error("RegisterDeviceNotification() ErrorCode: " + lastError);
+				}
             }
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
 
-            return Success;
+            return notificationHandle;
         }
 
 
-        public void UnregisterNotification()
+
+		internal bool ProcessMessage(Message m)
+		{
+			bool result = false;
+
+			switch ((uint)m.Msg)
+			{
+				case WM.DEVICECHANGE:
+				{
+					uint eventCode = (uint)m.WParam;
+
+					if (eventCode == DBT.DEVICEARRIVAL || eventCode == DBT.DEVICEREMOVECOMPLETE)
+					{
+						if (TryPtrToDeviceName(m.LParam, out string deviceName))
+						{   // получили информацию о подключенном устройстве в виде:
+							// \\?\USB#VID_0A89&PID_000C#6&2c24ce2e&0&4#{a5dcbf10-6530-11d2-901f-00c04fb951ed}
+							if (eventCode == DBT.DEVICEARRIVAL)
+							{
+								UsbDeviceArrival?.Invoke(deviceName);
+							}
+							else
+							{
+								UsbDeviceMoveComplete?.Invoke(deviceName);
+							}
+							result = true;
+						}
+						else
+						{//TODO:
+							//...
+
+						}
+					}
+
+					//logger.Debug("WM_DEVICECHANGE");
+					break;
+				}
+
+			}
+
+			return result;
+		}
+
+		public static bool UnregisterNotification(IntPtr handle)
         {
 
             logger.Debug("UnregisterNotification()");
-
-            try
-            {
-                if (!User32.UnregisterDeviceNotification(notificationHandle))
-                {
-                    var lastError = Marshal.GetLastWin32Error();
-                    logger.Error("UnregisterDeviceNotification() " + lastError);
-                }
-                notificationHandle = IntPtr.Zero;
-            }
+			bool success = false;
+			try
+			{
+				success = User32.UnregisterDeviceNotification(handle);
+				if (!success)
+				{
+					var lastError = Marshal.GetLastWin32Error();
+					logger.Error("UnregisterDeviceNotification() " + lastError);
+				}
+			}
             catch (Exception ex)
             {
                 logger.Error(ex);
             }
-        }
+
+			return success;
+
+		}
 
         public static bool TryPtrToDeviceName(IntPtr lparam, out string deviceName)
         {
@@ -291,5 +361,92 @@ namespace MediaToolkit.Managers
             }
             return hardwareIds;
         }
-    }
+
+
+		class NotifyWindows : NativeWindow
+		{
+			private const int WmClose = 0x0010;
+
+			
+			private static readonly HandleRef HwndMessage = new HandleRef(null, new IntPtr(-3));
+
+			private readonly UsbDeviceManager owner = null;
+			internal NotifyWindows(UsbDeviceManager o)
+			{
+				this.owner = o;
+			}
+
+			public bool CreateWindow()
+			{
+				if (Handle == IntPtr.Zero)
+				{
+					CreateHandle(new CreateParams
+					{
+						Style = 0,
+						ExStyle = 0,
+						ClassStyle = 0,
+
+						//message-only window
+						Parent = (IntPtr)HwndMessage, 
+					});
+				}
+				return Handle != IntPtr.Zero;
+			}
+
+			protected override void WndProc(ref Message m)
+			{
+
+				base.WndProc(ref m);
+
+				owner.ProcessMessage(m);
+
+			}
+
+			public void DestroyWindow()
+			{
+				DestroyWindow(true, IntPtr.Zero);
+			}
+
+			private bool GetInvokeRequired(IntPtr hWnd)
+			{
+				if (hWnd == IntPtr.Zero) return false;
+				int pid;
+				var hwndThread = User32.GetWindowThreadProcessId(new HandleRef(this, hWnd), out pid);
+				var currentThread = Kernel32.GetCurrentThreadId();
+
+				return (hwndThread != currentThread);
+			}
+
+			private void DestroyWindow(bool destroyHwnd, IntPtr hWnd)
+			{
+				if (hWnd == IntPtr.Zero)
+				{
+					hWnd = Handle;
+				}
+
+				if (GetInvokeRequired(hWnd))
+				{
+					User32.PostMessage(hWnd, WmClose, 0, 0);
+					return;
+				}
+
+				lock (this)
+				{
+					if (destroyHwnd)
+					{
+						base.DestroyHandle();
+					}
+				}
+			}
+
+			public override void DestroyHandle()
+			{
+				DestroyWindow(false, IntPtr.Zero);
+				base.DestroyHandle();
+			}
+
+
+		}
+	
+	}
 }
