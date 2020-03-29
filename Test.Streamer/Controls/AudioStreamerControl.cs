@@ -79,7 +79,7 @@ namespace TestStreamer.Controls
                 audioStreamer.StateChanged -= AudioStreamer_StateChanged;
             }
 
-            audioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
+            //dioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
 
             audioStreamer.StateChanged += AudioStreamer_StateChanged;
             audioStreamer.Setup(audioParams, networkParams);
@@ -91,7 +91,7 @@ namespace TestStreamer.Controls
 
             if (audioStreamer != null)
             {
-                audioStreamer.SetWaveformPainter(null);
+               //udioStreamer.SetWaveformPainter(null);
                 audioStreamer.Close();
             }
         }

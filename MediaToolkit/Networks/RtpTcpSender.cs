@@ -29,10 +29,7 @@ namespace MediaToolkit.Networks
     }
 
     public class RtpTcpSender : IRtpSender
-
     {
-        //rivate static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Networks");
         public RtpTcpSender(RtpSession session)
         {

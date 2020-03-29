@@ -59,7 +59,6 @@ namespace ScreenStreamer.WinForms.App
 
 		private UsbDeviceManager usbManager = null;
 
-
 		private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
         private VideoStreamSettings videoSettings => currentSession?.VideoSettings;
@@ -794,7 +793,7 @@ namespace ScreenStreamer.WinForms.App
             //videoSettings.CaptureDescription.Name = displayName;
             currentSession.VideoSettings.CaptureDevice = captureParams;
 
-            videoSourceDetailsButton.Enabled = true;//!(displayRect.IsEmpty && displayName == string.Empty);
+            videoSourceDetailsButton.Enabled = true;
 
         }
 

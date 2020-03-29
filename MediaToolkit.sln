@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenStreamer.Common", "Sc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenStreamer.WinForms.App", "ScreenStreamer.WinForms.App\ScreenStreamer.WinForms.App.csproj", "{9830873B-F8FE-482D-B15B-B8B800A9ED9A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DeskMan", "Test.DeskMan\Test.DeskMan.csproj", "{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -163,6 +165,14 @@ Global
 		{9830873B-F8FE-482D-B15B-B8B800A9ED9A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9830873B-F8FE-482D-B15B-B8B800A9ED9A}.Release|x86.ActiveCfg = Release|Any CPU
 		{9830873B-F8FE-482D-B15B-B8B800A9ED9A}.Release|x86.Build.0 = Release|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Debug|x86.Build.0 = Debug|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Release|x86.ActiveCfg = Release|Any CPU
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +188,7 @@ Global
 		{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D} = {7306EEA8-EDEC-4D5C-A40F-B00FEF44A8A2}
 		{C19F7863-F6F5-48B1-8802-5BFF5AEBA4B4} = {7306EEA8-EDEC-4D5C-A40F-B00FEF44A8A2}
 		{9830873B-F8FE-482D-B15B-B8B800A9ED9A} = {7306EEA8-EDEC-4D5C-A40F-B00FEF44A8A2}
+		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {691ACD75-ACCB-4862-BC19-0302DCE83B4A}

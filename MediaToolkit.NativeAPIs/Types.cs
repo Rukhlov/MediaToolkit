@@ -504,42 +504,24 @@ namespace MediaToolkit.NativeAPIs
         #endregion
     }
 
-
-    public enum TernaryRasterOperations : uint
+    public static class Defines
     {
-        SRCCOPY = 0x00CC0020,
-        SRCPAINT = 0x00EE0086,
-        SRCAND = 0x008800C6,
-        SRCINVERT = 0x00660046,
-        SRCERASE = 0x00440328,
-        NOTSRCCOPY = 0x00330008,
-        NOTSRCERASE = 0x001100A6,
-        MERGECOPY = 0x00C000CA,
-        MERGEPAINT = 0x00BB0226,
-        PATCOPY = 0x00F00021,
-        PATPAINT = 0x00FB0A09,
-        PATINVERT = 0x005A0049,
-        DSTINVERT = 0x00550009,
-        BLACKNESS = 0x00000042,
-        WHITENESS = 0x00FF0062,
-        CAPTUREBLT = 0x40000000 //only if WinVer >= 5.0.0 (see wingdi.h)
+        //HWND_MESSAGE
+        public static readonly IntPtr HWndMessage = new IntPtr(-3);
+
+        //HWND_DESKTOP
+        public static readonly IntPtr HWndDesktop = IntPtr.Zero;
+
+        //MAX_PATH
+        public const int MaxPath = 260;
+
+        //HWND_BROADCAST
+        public const int HWndBroadcast = 0xFFFF;
+
+        //...
     }
 
-    public class WS 
-    {
-        public const int Overlapped = 0x00000000;
-        public const int MaximizeBox = 0x00010000;
-    }
-
-    public class WS_EX 
-    {
-        public const int Layered = 0x80000;
-        public const int Composited = 0x02000000;
-        public const int ToolWindow = 0x00000080;// 
-        public const int TopMost = 0x00000008;
-    }
-
-    public class WM
+    public static class WM
     {
         public const int HTCLIENT = 1;
         public const int HTCAPTION = 2;
@@ -565,6 +547,41 @@ namespace MediaToolkit.NativeAPIs
         public const int NCLBUTTONDOWN = 0xA1;
 
         public const int DEVICECHANGE = 0x0219;
+    }
+
+
+    public enum TernaryRasterOperations : uint
+    {
+        SRCCOPY = 0x00CC0020,
+        SRCPAINT = 0x00EE0086,
+        SRCAND = 0x008800C6,
+        SRCINVERT = 0x00660046,
+        SRCERASE = 0x00440328,
+        NOTSRCCOPY = 0x00330008,
+        NOTSRCERASE = 0x001100A6,
+        MERGECOPY = 0x00C000CA,
+        MERGEPAINT = 0x00BB0226,
+        PATCOPY = 0x00F00021,
+        PATPAINT = 0x00FB0A09,
+        PATINVERT = 0x005A0049,
+        DSTINVERT = 0x00550009,
+        BLACKNESS = 0x00000042,
+        WHITENESS = 0x00FF0062,
+        CAPTUREBLT = 0x40000000 //only if WinVer >= 5.0.0 (see wingdi.h)
+    }
+
+    public static class WS 
+    {
+        public const int Overlapped = 0x00000000;
+        public const int MaximizeBox = 0x00010000;
+    }
+
+    public static class WS_EX 
+    {
+        public const int Layered = 0x80000;
+        public const int Composited = 0x02000000;
+        public const int ToolWindow = 0x00000080;// 
+        public const int TopMost = 0x00000008;
     }
 
 
@@ -779,7 +796,7 @@ namespace MediaToolkit.NativeAPIs
 
 
     // https://docs.microsoft.com/en-us/windows/desktop/devio/device-management-functions
-    public class DBT
+    public static class DBT
     {
         public const uint CONFIGCHANGECANCELED = 0x0019;
         //A request to change the current configuration (dock or undock) has been canceled.
@@ -1122,11 +1139,11 @@ namespace MediaToolkit.NativeAPIs
         public string viewGdiDeviceName;
     }
 
-    public class KS
+    public static class KS
     {
-        public static readonly Guid KSCATEGORY_CAPTURE = new Guid("65E8773D-8F56-11D0-A3B9-00A0C9223196");
-        public static readonly Guid KSCATEGORY_VIDEO = new Guid("6994AD05-93EF-11D0-A3CC-00A0C9223196");
-        public static readonly Guid KSCATEGORY_VIDEO_CAMERA = new Guid("E5323777-F976-4f5b-9B55-B94699C46E44");
+        public static readonly Guid CATEGORY_CAPTURE = new Guid("65E8773D-8F56-11D0-A3B9-00A0C9223196");
+        public static readonly Guid CATEGORY_VIDEO = new Guid("6994AD05-93EF-11D0-A3CC-00A0C9223196");
+        public static readonly Guid CATEGORY_VIDEO_CAMERA = new Guid("E5323777-F976-4f5b-9B55-B94699C46E44");
     }
 
 

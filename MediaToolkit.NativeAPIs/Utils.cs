@@ -12,7 +12,7 @@ using System.Text;
 namespace MediaToolkit.NativeAPIs.Utils
 {
 
-	public class WinStationHelper
+	public class DesktopManager
 	{
 		public enum SessionType
 		{
@@ -188,30 +188,35 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 		public static bool SwitchToInputDesktop()
 		{
-			var inputDesktop = OpenInputDesktop();
+            bool result = false;
+            var hDesktop = IntPtr.Zero;
 			try
 			{
-				if (inputDesktop == IntPtr.Zero)
-				{
-					return false;
-				}
-
-				if (!User32.SetThreadDesktop(inputDesktop) || !User32.SwitchDesktop(inputDesktop))
-				{
-					return false;
-				}
-
-				return true;
+                hDesktop = OpenInputDesktop();
+                if (hDesktop != IntPtr.Zero)
+                {
+                    result = User32.SetThreadDesktop(hDesktop);
+                    if (result)
+                    {
+                        result = User32.SwitchDesktop(hDesktop);
+                    }
+                }
 			}
-			catch
+			catch(Exception ex)
 			{
-				return false;
+                Debug.WriteLine(ex);
 			}
 			finally
 			{
-				User32.CloseDesktop(inputDesktop);
+                if (hDesktop != IntPtr.Zero)
+                {
+                    User32.CloseDesktop(hDesktop);
+                }
 			}
-		}
+
+            return result;
+
+        }
 	}
 
 	public class DisplayTool

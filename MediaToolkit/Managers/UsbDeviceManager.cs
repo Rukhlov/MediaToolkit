@@ -20,7 +20,7 @@ namespace MediaToolkit.Managers
 
         public static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
-		private NotifyWindows nativeWindow = null;
+		private NotifyWindow nativeWindow = null;
 
 		public event Action<string> UsbDeviceArrival;
 		public event Action<string> UsbDeviceMoveComplete;
@@ -32,11 +32,14 @@ namespace MediaToolkit.Managers
 
 			if (nativeWindow == null)
 			{
-				nativeWindow = new NotifyWindows(this);
+				nativeWindow = new NotifyWindow(this);
 				nativeWindow.CreateWindow();
 			}
 
-			var handle = RegisterNotification(nativeWindow.Handle, GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+            var hWnd = nativeWindow.Handle;
+            var classGuid = KS.CATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+            
+            var handle = RegisterNotification(hWnd, classGuid);
 
 			return (handle != IntPtr.Zero);
 		}
@@ -47,8 +50,8 @@ namespace MediaToolkit.Managers
 
 			if (nativeWindow != null)
 			{
-				var handle = nativeWindow.Handle;
-				var result = UnregisterNotification(handle);
+				var hWnd = nativeWindow.Handle;
+				var result = UnregisterNotification(hWnd);
 
 				nativeWindow.DestroyWindow();
 				
@@ -68,7 +71,7 @@ namespace MediaToolkit.Managers
                 {
                     DeviceType = DBT.DEVTYP_DEVICEINTERFACE,
                     Reserved = 0,
-                    ClassGuid = classGuid, //KSCATEGORY_VIDEO, // KSCATEGORY_CAPTURE,// GUID_CLASS_USB_DEVICE,
+                    ClassGuid = classGuid, 
                 };
 
                 broadcastInterface.Size = Marshal.SizeOf(broadcastInterface);
@@ -363,15 +366,11 @@ namespace MediaToolkit.Managers
         }
 
 
-		class NotifyWindows : NativeWindow
+		class NotifyWindow : NativeWindow
 		{
-			private const int WmClose = 0x0010;
-
-			
-			private static readonly HandleRef HwndMessage = new HandleRef(null, new IntPtr(-3));
 
 			private readonly UsbDeviceManager owner = null;
-			internal NotifyWindows(UsbDeviceManager o)
+			internal NotifyWindow(UsbDeviceManager o)
 			{
 				this.owner = o;
 			}
@@ -380,15 +379,15 @@ namespace MediaToolkit.Managers
 			{
 				if (Handle == IntPtr.Zero)
 				{
-					CreateHandle(new CreateParams
-					{
-						Style = 0,
-						ExStyle = 0,
-						ClassStyle = 0,
+                    CreateHandle(new CreateParams
+                    {
+                        Style = 0,
+                        ExStyle = 0,
+                        ClassStyle = 0,
 
-						//message-only window
-						Parent = (IntPtr)HwndMessage, 
-					});
+                        //message-only window
+                        Parent = Defines.HWndMessage,
+                    });
 				}
 				return Handle != IntPtr.Zero;
 			}
@@ -426,7 +425,7 @@ namespace MediaToolkit.Managers
 
 				if (GetInvokeRequired(hWnd))
 				{
-					User32.PostMessage(hWnd, WmClose, 0, 0);
+					User32.PostMessage(hWnd, WM.CLOSE, 0, 0);
 					return;
 				}
 

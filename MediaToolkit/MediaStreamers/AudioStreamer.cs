@@ -21,8 +21,6 @@ namespace MediaToolkit.MediaStreamers
 
     public class AudioStreamer
     {
-        //private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         public AudioStreamer(AudioSource source)
@@ -32,9 +30,8 @@ namespace MediaToolkit.MediaStreamers
 
         private AudioSource audioSource = null;
 
-        private BufferedWaveProvider bufferedWaveProvider = null;
-
-        private SampleChannel sampleChannel = null;
+        //private BufferedWaveProvider bufferedWaveProvider = null;
+        //private SampleChannel sampleChannel = null;
 
         private AudioEncoder audioResampler = null;
 
@@ -59,24 +56,10 @@ namespace MediaToolkit.MediaStreamers
         public bool IsStreaming { get; private set; }
         private int sampleByteSize = 0;
 
-        private WaveformPainter[] wavePainters = null;
-
-        //public void SetWaveformPainter(WaveformPainter painter)
-        //{
-        //    this.waveformPainter = painter;
-
-        //}
-
-        public void SetWaveformPainter(WaveformPainter[] wavePainters)
-        {
-            this.wavePainters = wavePainters;
-
-        }
-
 
         public void Setup(AudioEncoderSettings encoderSettings, NetworkSettings networkSettings)
         {
-            logger.Debug("AudioLoopbackSource::Start(...) ");
+            logger.Debug("AudioStreamer::Start(...) ");
 
             //FileStream fs = new FileStream("d:\\test_audio_4", FileMode.Create, FileAccess.ReadWrite);
 
@@ -85,11 +68,11 @@ namespace MediaToolkit.MediaStreamers
 
                 // var capture = audioSource.Capture;
                 var waveFormat = audioSource.WaveFormat;
-                bufferedWaveProvider = new BufferedWaveProvider(waveFormat);
-                bufferedWaveProvider.DiscardOnBufferOverflow = true;
 
-                sampleChannel = new SampleChannel(bufferedWaveProvider);
-                sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
+                //bufferedWaveProvider = new BufferedWaveProvider(waveFormat);
+                //bufferedWaveProvider.DiscardOnBufferOverflow = true;
+
+                //sampleChannel = new SampleChannel(bufferedWaveProvider);
 
                 audioResampler = new AudioEncoder();
 
@@ -158,11 +141,11 @@ namespace MediaToolkit.MediaStreamers
             if (data.Length > 0)
             {
 
-                bufferedWaveProvider.AddSamples(data, 0, data.Length);
+                //bufferedWaveProvider.AddSamples(data, 0, data.Length);
 
-                var audioBuffer = new float[data.Length];
+                //var audioBuffer = new float[data.Length];
 
-                sampleChannel.Read(audioBuffer, 0, data.Length);
+                //sampleChannel.Read(audioBuffer, 0, data.Length);
 
                 byte[] dest = null;
                 audioResampler.Resample2(data, out dest);
@@ -186,28 +169,6 @@ namespace MediaToolkit.MediaStreamers
             }
         }
 
-        private void SampleChannel_PreVolumeMeter(object sender, StreamVolumeEventArgs e)
-        {
-            if (wavePainters == null)
-            {
-                return;
-            }
-
-            var samples = e.MaxSampleValues;
-
-            for (int i = 0; i < samples.Length; i++)
-            {
-                var s = samples[i];
-
-                if (i < wavePainters.Length)
-                {
-                    var painter = wavePainters[i];
-
-                    painter?.AddMax(s);
-                }
-            }
-        }
-
         public event Action StateChanged;
 
         private void OnStateChanged()
@@ -217,7 +178,7 @@ namespace MediaToolkit.MediaStreamers
 
         private void Capture_RecordingStopped(object sender, StoppedEventArgs e)
         {
-            logger.Debug("AudioLoopbackSource::Capture_RecordingStopped(...)");
+            logger.Debug("AudioStreamer::Capture_RecordingStopped(...)");
 
             Close();
 
@@ -227,7 +188,7 @@ namespace MediaToolkit.MediaStreamers
 
         public void Close()
         {
-            logger.Debug("AudioLoopbackSource::Close()");
+            logger.Debug("AudioStreamer::Close()");
             closing = true;
 
             if (RtpSender != null)

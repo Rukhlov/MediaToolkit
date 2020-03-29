@@ -29,7 +29,6 @@ namespace MediaToolkit.MediaStreamers
 
     public class VideoStreamer
     {
-        //rivate static Logger logger = LogManager.GetCurrentClassLogger();
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         public readonly IVideoSource videoSource = null;
