@@ -64,31 +64,33 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(212, 298);
-            this.panel1.Margin = new System.Windows.Forms.Padding(2);
+            this.panel1.Location = new System.Drawing.Point(210, 262);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.panel1.Size = new System.Drawing.Size(249, 34);
+            this.panel1.Size = new System.Drawing.Size(249, 31);
             this.panel1.TabIndex = 81;
             // 
             // cancelButton
             // 
+            this.cancelButton.AutoSize = true;
             this.cancelButton.Location = new System.Drawing.Point(138, 2);
             this.cancelButton.Margin = new System.Windows.Forms.Padding(2);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(109, 30);
-            this.cancelButton.TabIndex = 77;
+            this.cancelButton.Size = new System.Drawing.Size(109, 27);
+            this.cancelButton.TabIndex = 110;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // applyButton
             // 
+            this.applyButton.AutoSize = true;
             this.applyButton.Location = new System.Drawing.Point(24, 2);
             this.applyButton.Margin = new System.Windows.Forms.Padding(2);
             this.applyButton.Name = "applyButton";
-            this.applyButton.Size = new System.Drawing.Size(109, 30);
-            this.applyButton.TabIndex = 76;
+            this.applyButton.Size = new System.Drawing.Size(109, 27);
+            this.applyButton.TabIndex = 100;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
@@ -98,11 +100,12 @@
             this.groupBox2.AutoSize = true;
             this.groupBox2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox2.Controls.Add(this.tableLayoutPanel2);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(2, 2);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox2.Size = new System.Drawing.Size(459, 144);
+            this.groupBox2.Size = new System.Drawing.Size(457, 125);
             this.groupBox2.TabIndex = 82;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Capture Settings";
@@ -121,7 +124,7 @@
             this.tableLayoutPanel2.Controls.Add(this.captFormatTextBox, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.textBoxDevice, 1, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 35);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 30);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 4;
@@ -129,17 +132,17 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(447, 94);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(445, 80);
             this.tableLayoutPanel2.TabIndex = 84;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label3.Location = new System.Drawing.Point(2, 62);
+            this.label3.Location = new System.Drawing.Point(2, 52);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 32);
+            this.label3.Size = new System.Drawing.Size(62, 28);
             this.label3.TabIndex = 46;
             this.label3.Text = "Capture:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -148,10 +151,10 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Location = new System.Drawing.Point(2, 31);
+            this.label2.Location = new System.Drawing.Point(2, 26);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 31);
+            this.label2.Size = new System.Drawing.Size(62, 26);
             this.label2.TabIndex = 83;
             this.label2.Text = "Format:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -163,11 +166,11 @@
             this.captureComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.captureComboBox.Enabled = false;
             this.captureComboBox.FormattingEnabled = true;
-            this.captureComboBox.Location = new System.Drawing.Point(70, 64);
+            this.captureComboBox.Location = new System.Drawing.Point(68, 54);
             this.captureComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.captureComboBox.Name = "captureComboBox";
-            this.captureComboBox.Size = new System.Drawing.Size(375, 28);
-            this.captureComboBox.TabIndex = 47;
+            this.captureComboBox.Size = new System.Drawing.Size(375, 24);
+            this.captureComboBox.TabIndex = 88;
             // 
             // labelDevice
             // 
@@ -176,7 +179,7 @@
             this.labelDevice.Location = new System.Drawing.Point(2, 0);
             this.labelDevice.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.labelDevice.Name = "labelDevice";
-            this.labelDevice.Size = new System.Drawing.Size(64, 31);
+            this.labelDevice.Size = new System.Drawing.Size(62, 26);
             this.labelDevice.TabIndex = 85;
             this.labelDevice.Text = "Device:";
             this.labelDevice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -185,22 +188,22 @@
             // 
             this.captFormatTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.captFormatTextBox.Location = new System.Drawing.Point(70, 33);
+            this.captFormatTextBox.Location = new System.Drawing.Point(68, 28);
             this.captFormatTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.captFormatTextBox.Name = "captFormatTextBox";
             this.captFormatTextBox.ReadOnly = true;
-            this.captFormatTextBox.Size = new System.Drawing.Size(375, 27);
-            this.captFormatTextBox.TabIndex = 82;
+            this.captFormatTextBox.Size = new System.Drawing.Size(375, 22);
+            this.captFormatTextBox.TabIndex = 86;
             // 
             // textBoxDevice
             // 
             this.textBoxDevice.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxDevice.Location = new System.Drawing.Point(70, 2);
+            this.textBoxDevice.Location = new System.Drawing.Point(68, 2);
             this.textBoxDevice.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxDevice.Name = "textBoxDevice";
             this.textBoxDevice.ReadOnly = true;
-            this.textBoxDevice.Size = new System.Drawing.Size(375, 27);
+            this.textBoxDevice.Size = new System.Drawing.Size(375, 22);
             this.textBoxDevice.TabIndex = 84;
             // 
             // tableLayoutPanel1
@@ -219,7 +222,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(463, 334);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(461, 295);
             this.tableLayoutPanel1.TabIndex = 83;
             // 
             // groupBox1
@@ -228,11 +231,11 @@
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.tableLayoutPanel3);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(2, 150);
+            this.groupBox1.Location = new System.Drawing.Point(2, 131);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox1.Size = new System.Drawing.Size(459, 144);
+            this.groupBox1.Size = new System.Drawing.Size(457, 125);
             this.groupBox1.TabIndex = 74;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encoder Settings";
@@ -251,7 +254,7 @@
             this.tableLayoutPanel3.Controls.Add(this.sampleRateNumeric, 1, 1);
             this.tableLayoutPanel3.Controls.Add(this.label6, 0, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(6, 35);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(6, 30);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 4;
@@ -259,17 +262,17 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(447, 94);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(445, 80);
             this.tableLayoutPanel3.TabIndex = 84;
             // 
             // label10
             // 
             this.label10.AutoSize = true;
             this.label10.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label10.Location = new System.Drawing.Point(2, 63);
+            this.label10.Location = new System.Drawing.Point(2, 54);
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(96, 31);
+            this.label10.Size = new System.Drawing.Size(93, 26);
             this.label10.TabIndex = 74;
             this.label10.Text = "Channels:";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -278,10 +281,10 @@
             // 
             this.label7.AutoSize = true;
             this.label7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label7.Location = new System.Drawing.Point(2, 32);
+            this.label7.Location = new System.Drawing.Point(2, 28);
             this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(96, 31);
+            this.label7.Size = new System.Drawing.Size(93, 26);
             this.label7.TabIndex = 76;
             this.label7.Text = "Sample Rate:";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -290,7 +293,7 @@
             // 
             this.channelsNumeric.Dock = System.Windows.Forms.DockStyle.Left;
             this.channelsNumeric.Enabled = false;
-            this.channelsNumeric.Location = new System.Drawing.Point(102, 65);
+            this.channelsNumeric.Location = new System.Drawing.Point(99, 56);
             this.channelsNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.channelsNumeric.Maximum = new decimal(new int[] {
             8,
@@ -303,8 +306,8 @@
             0,
             0});
             this.channelsNumeric.Name = "channelsNumeric";
-            this.channelsNumeric.Size = new System.Drawing.Size(125, 27);
-            this.channelsNumeric.TabIndex = 73;
+            this.channelsNumeric.Size = new System.Drawing.Size(125, 22);
+            this.channelsNumeric.TabIndex = 94;
             this.channelsNumeric.Value = new decimal(new int[] {
             1,
             0,
@@ -317,17 +320,17 @@
             this.encoderComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encoderComboBox.Enabled = false;
             this.encoderComboBox.FormattingEnabled = true;
-            this.encoderComboBox.Location = new System.Drawing.Point(102, 2);
+            this.encoderComboBox.Location = new System.Drawing.Point(99, 2);
             this.encoderComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(124, 28);
-            this.encoderComboBox.TabIndex = 47;
+            this.encoderComboBox.Size = new System.Drawing.Size(124, 24);
+            this.encoderComboBox.TabIndex = 90;
             // 
             // sampleRateNumeric
             // 
             this.sampleRateNumeric.Dock = System.Windows.Forms.DockStyle.Left;
             this.sampleRateNumeric.Enabled = false;
-            this.sampleRateNumeric.Location = new System.Drawing.Point(102, 34);
+            this.sampleRateNumeric.Location = new System.Drawing.Point(99, 30);
             this.sampleRateNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.sampleRateNumeric.Maximum = new decimal(new int[] {
             96000,
@@ -340,8 +343,8 @@
             0,
             0});
             this.sampleRateNumeric.Name = "sampleRateNumeric";
-            this.sampleRateNumeric.Size = new System.Drawing.Size(125, 27);
-            this.sampleRateNumeric.TabIndex = 75;
+            this.sampleRateNumeric.Size = new System.Drawing.Size(125, 22);
+            this.sampleRateNumeric.TabIndex = 92;
             this.sampleRateNumeric.Value = new decimal(new int[] {
             8000,
             0,
@@ -355,7 +358,7 @@
             this.label6.Location = new System.Drawing.Point(2, 0);
             this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(96, 32);
+            this.label6.Size = new System.Drawing.Size(93, 28);
             this.label6.TabIndex = 46;
             this.label6.Text = "Encoder:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -368,7 +371,7 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(511, 382);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
@@ -376,6 +379,7 @@
             this.Name = "AudioSettingsForm";
             this.Text = "AudioSettings";
             this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);

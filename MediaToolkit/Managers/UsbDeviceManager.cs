@@ -37,7 +37,10 @@ namespace MediaToolkit.Managers
 			}
 
             var hWnd = nativeWindow.Handle;
-            var classGuid = KS.CATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+
+			// KS.KSCATEGORY_VIDEO_CAMERA <--win10
+			// KS.CATEGORY_CAPTURE <--win7
+			var classGuid = KS.CATEGORY_CAPTURE;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
             
             var handle = RegisterNotification(hWnd, classGuid);
 
