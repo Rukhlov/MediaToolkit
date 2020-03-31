@@ -60,6 +60,8 @@ namespace ScreenStreamer.Wpf.UI
 
                 Shcore.SetProcessPerMonitorDpiAwareness();
 
+                
+
                 var application = new App();
                 application.InitializeComponent();
 
@@ -85,7 +87,7 @@ namespace ScreenStreamer.Wpf.UI
                 MediaToolkitManager.Shutdown();
 
                 //...
-                //ConfigurationManager.Save();
+               ConfigurationManager.Save();
 
                 logger.Info("========== THE END ============");
             }

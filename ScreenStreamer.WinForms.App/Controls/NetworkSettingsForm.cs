@@ -119,6 +119,7 @@ namespace Test.Streamer.Controls
                 Name = "Any",
                 Tag = null,
             };
+
             networks.Add(networkAny);
 
             NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();

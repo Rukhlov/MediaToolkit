@@ -93,14 +93,15 @@
             // videoSourceDetailsButton
             // 
             this.videoSourceDetailsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.videoSourceDetailsButton.AutoSize = true;
             this.videoSourceDetailsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.videoSourceDetailsButton.FlatAppearance.BorderSize = 0;
             this.videoSourceDetailsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.videoSourceDetailsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.videoSourceDetailsButton.Location = new System.Drawing.Point(399, 2);
+            this.videoSourceDetailsButton.Location = new System.Drawing.Point(318, 2);
             this.videoSourceDetailsButton.Margin = new System.Windows.Forms.Padding(2);
             this.videoSourceDetailsButton.Name = "videoSourceDetailsButton";
-            this.videoSourceDetailsButton.Size = new System.Drawing.Size(101, 27);
+            this.videoSourceDetailsButton.Size = new System.Drawing.Size(81, 23);
             this.videoSourceDetailsButton.TabIndex = 78;
             this.videoSourceDetailsButton.Text = "Details...";
             this.videoSourceDetailsButton.UseVisualStyleBackColor = false;
@@ -115,7 +116,7 @@
             this.videoSourceEnableCheckBox.Location = new System.Drawing.Point(2, 2);
             this.videoSourceEnableCheckBox.Margin = new System.Windows.Forms.Padding(2);
             this.videoSourceEnableCheckBox.Name = "videoSourceEnableCheckBox";
-            this.videoSourceEnableCheckBox.Size = new System.Drawing.Size(159, 21);
+            this.videoSourceEnableCheckBox.Size = new System.Drawing.Size(123, 17);
             this.videoSourceEnableCheckBox.TabIndex = 74;
             this.videoSourceEnableCheckBox.Text = "Enable video source";
             this.videoSourceEnableCheckBox.UseVisualStyleBackColor = true;
@@ -128,7 +129,7 @@
             this.audioSourceEnableCheckBox.Location = new System.Drawing.Point(2, 2);
             this.audioSourceEnableCheckBox.Margin = new System.Windows.Forms.Padding(2);
             this.audioSourceEnableCheckBox.Name = "audioSourceEnableCheckBox";
-            this.audioSourceEnableCheckBox.Size = new System.Drawing.Size(160, 21);
+            this.audioSourceEnableCheckBox.Size = new System.Drawing.Size(123, 17);
             this.audioSourceEnableCheckBox.TabIndex = 86;
             this.audioSourceEnableCheckBox.Text = "Enable audio source";
             this.audioSourceEnableCheckBox.UseVisualStyleBackColor = true;
@@ -138,26 +139,27 @@
             // 
             this.audioSourceComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.audioSourceComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.audioSourceComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.audioSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.audioSourceComboBox.FormattingEnabled = true;
             this.audioSourceComboBox.Location = new System.Drawing.Point(2, 2);
             this.audioSourceComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.audioSourceComboBox.Name = "audioSourceComboBox";
-            this.audioSourceComboBox.Size = new System.Drawing.Size(469, 24);
+            this.audioSourceComboBox.Size = new System.Drawing.Size(370, 21);
             this.audioSourceComboBox.TabIndex = 82;
             // 
             // audioSourceDetailsButton
             // 
             this.audioSourceDetailsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.audioSourceDetailsButton.AutoSize = true;
             this.audioSourceDetailsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.audioSourceDetailsButton.FlatAppearance.BorderSize = 0;
             this.audioSourceDetailsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.audioSourceDetailsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.audioSourceDetailsButton.Location = new System.Drawing.Point(400, 2);
+            this.audioSourceDetailsButton.Location = new System.Drawing.Point(318, 2);
             this.audioSourceDetailsButton.Margin = new System.Windows.Forms.Padding(2);
             this.audioSourceDetailsButton.Name = "audioSourceDetailsButton";
-            this.audioSourceDetailsButton.Size = new System.Drawing.Size(100, 27);
+            this.audioSourceDetailsButton.Size = new System.Drawing.Size(81, 23);
             this.audioSourceDetailsButton.TabIndex = 88;
             this.audioSourceDetailsButton.Text = "Details...";
             this.audioSourceDetailsButton.UseVisualStyleBackColor = false;
@@ -170,7 +172,7 @@
             this.label2.Location = new System.Drawing.Point(2, 0);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 17);
+            this.label2.Size = new System.Drawing.Size(112, 13);
             this.label2.TabIndex = 92;
             this.label2.Text = "Audio Source Settings";
             // 
@@ -181,30 +183,34 @@
             this.label3.Location = new System.Drawing.Point(2, 0);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(148, 17);
+            this.label3.Size = new System.Drawing.Size(112, 13);
             this.label3.TabIndex = 93;
             this.label3.Text = "Video Source Settings";
             // 
             // videoSourceUpdateButton
             // 
+            this.videoSourceUpdateButton.AutoSize = true;
+            this.videoSourceUpdateButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.videoSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
-            this.videoSourceUpdateButton.Location = new System.Drawing.Point(474, 1);
+            this.videoSourceUpdateButton.Location = new System.Drawing.Point(375, 1);
             this.videoSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.videoSourceUpdateButton.Name = "videoSourceUpdateButton";
-            this.videoSourceUpdateButton.Size = new System.Drawing.Size(26, 26);
+            this.videoSourceUpdateButton.Size = new System.Drawing.Size(24, 24);
             this.videoSourceUpdateButton.TabIndex = 72;
             this.videoSourceUpdateButton.UseVisualStyleBackColor = true;
             this.videoSourceUpdateButton.Click += new System.EventHandler(this.videoSourceUpdateButton_Click);
             // 
             // audioSourceUpdateButton
             // 
+            this.audioSourceUpdateButton.AutoSize = true;
+            this.audioSourceUpdateButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.audioSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.audioSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
-            this.audioSourceUpdateButton.Location = new System.Drawing.Point(474, 1);
+            this.audioSourceUpdateButton.Location = new System.Drawing.Point(375, 1);
             this.audioSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.audioSourceUpdateButton.Name = "audioSourceUpdateButton";
-            this.audioSourceUpdateButton.Size = new System.Drawing.Size(26, 26);
+            this.audioSourceUpdateButton.Size = new System.Drawing.Size(24, 24);
             this.audioSourceUpdateButton.TabIndex = 84;
             this.audioSourceUpdateButton.UseVisualStyleBackColor = true;
             this.audioSourceUpdateButton.Click += new System.EventHandler(this.audioSourceUpdateButton_Click);
@@ -219,7 +225,7 @@
             this.lineSeparator.Location = new System.Drawing.Point(2, 0);
             this.lineSeparator.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lineSeparator.Name = "lineSeparator";
-            this.lineSeparator.Size = new System.Drawing.Size(528, 2);
+            this.lineSeparator.Size = new System.Drawing.Size(422, 2);
             this.lineSeparator.TabIndex = 105;
             // 
             // label5
@@ -228,10 +234,10 @@
             this.label5.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.label5.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label5.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label5.Location = new System.Drawing.Point(154, 15);
+            this.label5.Location = new System.Drawing.Point(118, 11);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(353, 2);
+            this.label5.Size = new System.Drawing.Size(287, 2);
             this.label5.TabIndex = 106;
             // 
             // label6
@@ -240,10 +246,10 @@
             this.label6.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.label6.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.label6.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.label6.Location = new System.Drawing.Point(154, 15);
+            this.label6.Location = new System.Drawing.Point(118, 11);
             this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(353, 2);
+            this.label6.Size = new System.Drawing.Size(287, 2);
             this.label6.TabIndex = 107;
             // 
             // mainControlsLayoutPanel
@@ -256,14 +262,14 @@
             this.mainControlsLayoutPanel.Controls.Add(this.lineSeparator, 0, 0);
             this.mainControlsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.mainControlsLayoutPanel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.mainControlsLayoutPanel.Location = new System.Drawing.Point(0, 474);
+            this.mainControlsLayoutPanel.Location = new System.Drawing.Point(0, 380);
             this.mainControlsLayoutPanel.Margin = new System.Windows.Forms.Padding(2);
             this.mainControlsLayoutPanel.Name = "mainControlsLayoutPanel";
             this.mainControlsLayoutPanel.RowCount = 2;
             this.mainControlsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.mainControlsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.mainControlsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 22F));
-            this.mainControlsLayoutPanel.Size = new System.Drawing.Size(532, 58);
+            this.mainControlsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 18F));
+            this.mainControlsLayoutPanel.Size = new System.Drawing.Size(426, 46);
             this.mainControlsLayoutPanel.TabIndex = 109;
             // 
             // flowLayoutPanel2
@@ -272,23 +278,23 @@
             this.flowLayoutPanel2.AutoSize = true;
             this.flowLayoutPanel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel2.Controls.Add(this.exitButton);
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(409, 6);
-            this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(2, 4, 9, 2);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(315, 5);
+            this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(2, 3, 7, 2);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(114, 33);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(104, 27);
             this.flowLayoutPanel2.TabIndex = 110;
             // 
             // exitButton
             // 
             this.exitButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.exitButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.exitButton.AutoSize = true;
             this.exitButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.exitButton.FlatAppearance.BorderSize = 0;
             this.exitButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.exitButton.Location = new System.Drawing.Point(2, 2);
             this.exitButton.Margin = new System.Windows.Forms.Padding(2);
             this.exitButton.Name = "exitButton";
-            this.exitButton.Size = new System.Drawing.Size(110, 29);
+            this.exitButton.Size = new System.Drawing.Size(100, 23);
             this.exitButton.TabIndex = 100;
             this.exitButton.Text = "Exit";
             this.exitButton.UseVisualStyleBackColor = false;
@@ -300,16 +306,17 @@
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.switchStreamingStateButton);
             this.flowLayoutPanel1.Controls.Add(this.stopStreamingButton);
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(18, 6);
-            this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(18, 4, 2, 2);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(14, 5);
+            this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(14, 3, 2, 2);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(291, 33);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(203, 27);
             this.flowLayoutPanel1.TabIndex = 108;
             this.flowLayoutPanel1.WrapContents = false;
             // 
             // switchStreamingStateButton
             // 
             this.switchStreamingStateButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.switchStreamingStateButton.AutoSize = true;
             this.switchStreamingStateButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.switchStreamingStateButton.FlatAppearance.BorderSize = 0;
             this.switchStreamingStateButton.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -317,7 +324,7 @@
             this.switchStreamingStateButton.Location = new System.Drawing.Point(2, 2);
             this.switchStreamingStateButton.Margin = new System.Windows.Forms.Padding(2);
             this.switchStreamingStateButton.Name = "switchStreamingStateButton";
-            this.switchStreamingStateButton.Size = new System.Drawing.Size(184, 29);
+            this.switchStreamingStateButton.Size = new System.Drawing.Size(144, 23);
             this.switchStreamingStateButton.TabIndex = 92;
             this.switchStreamingStateButton.Text = "Start Streaming";
             this.switchStreamingStateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -327,13 +334,14 @@
             // stopStreamingButton
             // 
             this.stopStreamingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.stopStreamingButton.AutoSize = true;
             this.stopStreamingButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.stopStreamingButton.FlatAppearance.BorderSize = 0;
             this.stopStreamingButton.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.stopStreamingButton.Location = new System.Drawing.Point(190, 2);
+            this.stopStreamingButton.Location = new System.Drawing.Point(150, 2);
             this.stopStreamingButton.Margin = new System.Windows.Forms.Padding(2);
             this.stopStreamingButton.Name = "stopStreamingButton";
-            this.stopStreamingButton.Size = new System.Drawing.Size(99, 29);
+            this.stopStreamingButton.Size = new System.Drawing.Size(51, 23);
             this.stopStreamingButton.TabIndex = 94;
             this.stopStreamingButton.Text = "_TEST";
             this.stopStreamingButton.UseVisualStyleBackColor = false;
@@ -350,13 +358,13 @@
             this.videoSourceSettingsLayoutPanel.Controls.Add(this.label3, 0, 0);
             this.videoSourceSettingsLayoutPanel.Controls.Add(this.label6, 1, 0);
             this.videoSourceSettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.videoSourceSettingsLayoutPanel.Location = new System.Drawing.Point(12, 140);
-            this.videoSourceSettingsLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 15, 2, 2);
+            this.videoSourceSettingsLayoutPanel.Location = new System.Drawing.Point(10, 112);
+            this.videoSourceSettingsLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 12, 2, 2);
             this.videoSourceSettingsLayoutPanel.Name = "videoSourceSettingsLayoutPanel";
             this.videoSourceSettingsLayoutPanel.RowCount = 2;
             this.videoSourceSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.videoSourceSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.videoSourceSettingsLayoutPanel.Size = new System.Drawing.Size(509, 111);
+            this.videoSourceSettingsLayoutPanel.Size = new System.Drawing.Size(407, 88);
             this.videoSourceSettingsLayoutPanel.TabIndex = 111;
             // 
             // tableLayoutPanel1
@@ -369,14 +377,14 @@
             this.tableLayoutPanel1.Controls.Add(this.videoSourceComboBox, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.videoSourceUpdateButton, 1, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(6, 25);
-            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(6, 8, 2, 2);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(5, 19);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(5, 6, 2, 2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 22F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(501, 84);
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 18F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(400, 67);
             this.tableLayoutPanel1.TabIndex = 113;
             // 
             // panel1
@@ -385,23 +393,23 @@
             this.panel1.Controls.Add(this.videoSourceEnableCheckBox);
             this.panel1.Controls.Add(this.videoSourceDetailsButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 30);
+            this.panel1.Location = new System.Drawing.Point(0, 28);
             this.panel1.Margin = new System.Windows.Forms.Padding(0, 2, 0, 2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(501, 52);
+            this.panel1.Size = new System.Drawing.Size(400, 37);
             this.panel1.TabIndex = 112;
             // 
             // videoSourceComboBox
             // 
             this.videoSourceComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.videoSourceComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.videoSourceComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.videoSourceComboBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.videoSourceComboBox.ForeColor = System.Drawing.SystemColors.ControlText;
             this.videoSourceComboBox.FormattingEnabled = true;
             this.videoSourceComboBox.Location = new System.Drawing.Point(2, 2);
             this.videoSourceComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.videoSourceComboBox.Name = "videoSourceComboBox";
-            this.videoSourceComboBox.Size = new System.Drawing.Size(469, 24);
+            this.videoSourceComboBox.Size = new System.Drawing.Size(370, 21);
             this.videoSourceComboBox.TabIndex = 70;
             // 
             // audioSourceSettingsLayoutPanel
@@ -414,13 +422,13 @@
             this.audioSourceSettingsLayoutPanel.Controls.Add(this.label2, 0, 0);
             this.audioSourceSettingsLayoutPanel.Controls.Add(this.label5, 1, 0);
             this.audioSourceSettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.audioSourceSettingsLayoutPanel.Location = new System.Drawing.Point(12, 268);
-            this.audioSourceSettingsLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 15, 2, 2);
+            this.audioSourceSettingsLayoutPanel.Location = new System.Drawing.Point(10, 214);
+            this.audioSourceSettingsLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 12, 2, 2);
             this.audioSourceSettingsLayoutPanel.Name = "audioSourceSettingsLayoutPanel";
             this.audioSourceSettingsLayoutPanel.RowCount = 2;
             this.audioSourceSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.audioSourceSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.audioSourceSettingsLayoutPanel.Size = new System.Drawing.Size(509, 103);
+            this.audioSourceSettingsLayoutPanel.Size = new System.Drawing.Size(407, 86);
             this.audioSourceSettingsLayoutPanel.TabIndex = 112;
             // 
             // tableLayoutPanel3
@@ -435,13 +443,13 @@
             this.tableLayoutPanel3.Controls.Add(this.audioSourceComboBox, 0, 0);
             this.tableLayoutPanel3.Controls.Add(this.audioSourceUpdateButton, 1, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(6, 25);
-            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(6, 8, 2, 2);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(5, 19);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(5, 6, 2, 2);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(501, 76);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(400, 65);
             this.tableLayoutPanel3.TabIndex = 114;
             // 
             // panel2
@@ -450,10 +458,10 @@
             this.panel2.Controls.Add(this.audioSourceDetailsButton);
             this.panel2.Controls.Add(this.audioSourceEnableCheckBox);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(0, 30);
+            this.panel2.Location = new System.Drawing.Point(0, 28);
             this.panel2.Margin = new System.Windows.Forms.Padding(0, 2, 0, 2);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(501, 44);
+            this.panel2.Size = new System.Drawing.Size(400, 35);
             this.panel2.TabIndex = 113;
             // 
             // tableLayoutPanel2
@@ -468,13 +476,13 @@
             this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.Padding = new System.Windows.Forms.Padding(10, 15, 9, 0);
+            this.tableLayoutPanel2.Padding = new System.Windows.Forms.Padding(8, 12, 7, 0);
             this.tableLayoutPanel2.RowCount = 4;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(532, 474);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(426, 380);
             this.tableLayoutPanel2.TabIndex = 113;
             // 
             // networkSettingsLayoutPanel
@@ -487,13 +495,13 @@
             this.networkSettingsLayoutPanel.Controls.Add(this.networkSeparator, 1, 0);
             this.networkSettingsLayoutPanel.Controls.Add(this.label8, 0, 0);
             this.networkSettingsLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.networkSettingsLayoutPanel.Location = new System.Drawing.Point(12, 17);
+            this.networkSettingsLayoutPanel.Location = new System.Drawing.Point(10, 14);
             this.networkSettingsLayoutPanel.Margin = new System.Windows.Forms.Padding(2);
             this.networkSettingsLayoutPanel.Name = "networkSettingsLayoutPanel";
             this.networkSettingsLayoutPanel.RowCount = 2;
             this.networkSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.networkSettingsLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.networkSettingsLayoutPanel.Size = new System.Drawing.Size(509, 106);
+            this.networkSettingsLayoutPanel.Size = new System.Drawing.Size(407, 84);
             this.networkSettingsLayoutPanel.TabIndex = 110;
             // 
             // tableLayoutPanel5
@@ -506,39 +514,40 @@
             this.tableLayoutPanel5.Controls.Add(this.networkSettingsButton, 0, 1);
             this.tableLayoutPanel5.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel5.Location = new System.Drawing.Point(6, 25);
-            this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(6, 8, 2, 2);
+            this.tableLayoutPanel5.Location = new System.Drawing.Point(5, 19);
+            this.tableLayoutPanel5.Margin = new System.Windows.Forms.Padding(5, 6, 2, 2);
             this.tableLayoutPanel5.Name = "tableLayoutPanel5";
             this.tableLayoutPanel5.RowCount = 2;
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel5.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel5.Size = new System.Drawing.Size(501, 79);
+            this.tableLayoutPanel5.Size = new System.Drawing.Size(400, 63);
             this.tableLayoutPanel5.TabIndex = 103;
             // 
             // streamNameTextBox
             // 
             this.streamNameTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.streamNameTextBox.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.streamNameTextBox.Location = new System.Drawing.Point(104, 2);
+            this.streamNameTextBox.Location = new System.Drawing.Point(80, 2);
             this.streamNameTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.streamNameTextBox.MaxLength = 100;
             this.streamNameTextBox.Name = "streamNameTextBox";
-            this.streamNameTextBox.Size = new System.Drawing.Size(395, 22);
+            this.streamNameTextBox.Size = new System.Drawing.Size(318, 20);
             this.streamNameTextBox.TabIndex = 66;
             this.streamNameTextBox.Text = "RAS-HOME10";
             this.streamNameTextBox.TextChanged += new System.EventHandler(this.streamNameTextBox_TextChanged);
             // 
             // networkSettingsButton
             // 
+            this.networkSettingsButton.AutoSize = true;
             this.networkSettingsButton.BackColor = System.Drawing.SystemColors.ControlLight;
             this.tableLayoutPanel5.SetColumnSpan(this.networkSettingsButton, 2);
             this.networkSettingsButton.FlatAppearance.BorderSize = 0;
             this.networkSettingsButton.ForeColor = System.Drawing.SystemColors.ControlText;
             this.networkSettingsButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.networkSettingsButton.Location = new System.Drawing.Point(2, 28);
+            this.networkSettingsButton.Location = new System.Drawing.Point(2, 26);
             this.networkSettingsButton.Margin = new System.Windows.Forms.Padding(2);
             this.networkSettingsButton.Name = "networkSettingsButton";
-            this.networkSettingsButton.Size = new System.Drawing.Size(130, 27);
+            this.networkSettingsButton.Size = new System.Drawing.Size(89, 23);
             this.networkSettingsButton.TabIndex = 68;
             this.networkSettingsButton.Text = "More settings...";
             this.networkSettingsButton.UseVisualStyleBackColor = false;
@@ -547,13 +556,15 @@
             // label1
             // 
             this.label1.AutoSize = true;
+            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label1.ForeColor = System.Drawing.SystemColors.ControlText;
             this.label1.Location = new System.Drawing.Point(2, 0);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(98, 17);
+            this.label1.Size = new System.Drawing.Size(74, 24);
             this.label1.TabIndex = 102;
             this.label1.Text = "Stream Name:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // networkSeparator
             // 
@@ -561,11 +572,11 @@
             this.networkSeparator.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.networkSeparator.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.networkSeparator.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.networkSeparator.Location = new System.Drawing.Point(120, 15);
+            this.networkSeparator.Location = new System.Drawing.Point(94, 11);
             this.networkSeparator.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.networkSeparator.MaximumSize = new System.Drawing.Size(0, 2);
             this.networkSeparator.Name = "networkSeparator";
-            this.networkSeparator.Size = new System.Drawing.Size(387, 2);
+            this.networkSeparator.Size = new System.Drawing.Size(311, 2);
             this.networkSeparator.TabIndex = 109;
             // 
             // label8
@@ -575,7 +586,7 @@
             this.label8.Location = new System.Drawing.Point(2, 0);
             this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(114, 17);
+            this.label8.Size = new System.Drawing.Size(88, 13);
             this.label8.TabIndex = 101;
             this.label8.Text = "Network Settings";
             // 
@@ -584,10 +595,10 @@
             this.panel3.Controls.Add(this.tableLayoutPanel4);
             this.panel3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel3.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.panel3.Location = new System.Drawing.Point(12, 375);
+            this.panel3.Location = new System.Drawing.Point(10, 304);
             this.panel3.Margin = new System.Windows.Forms.Padding(2);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(509, 97);
+            this.panel3.Size = new System.Drawing.Size(407, 74);
             this.panel3.TabIndex = 113;
             // 
             // tableLayoutPanel4
@@ -600,33 +611,33 @@
             this.tableLayoutPanel4.Controls.Add(this.captureStatusDescriptionLabel, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.captureStatusLabel, 0, 0);
             this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 68);
-            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(12, 2, 2, 2);
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(0, 50);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(10, 2, 2, 2);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             this.tableLayoutPanel4.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
             this.tableLayoutPanel4.RowCount = 1;
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(509, 29);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(407, 24);
             this.tableLayoutPanel4.TabIndex = 3;
             // 
             // captureStatusDescriptionLabel
             // 
             this.captureStatusDescriptionLabel.AutoEllipsis = true;
             this.captureStatusDescriptionLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.captureStatusDescriptionLabel.Location = new System.Drawing.Point(140, 2);
+            this.captureStatusDescriptionLabel.Location = new System.Drawing.Point(107, 2);
             this.captureStatusDescriptionLabel.Margin = new System.Windows.Forms.Padding(0, 2, 2, 2);
             this.captureStatusDescriptionLabel.Name = "captureStatusDescriptionLabel";
-            this.captureStatusDescriptionLabel.Size = new System.Drawing.Size(367, 25);
+            this.captureStatusDescriptionLabel.Size = new System.Drawing.Size(298, 20);
             this.captureStatusDescriptionLabel.TabIndex = 0;
             this.captureStatusDescriptionLabel.Text = "_____Capture Descriptions....";
             // 
             // captureStatusLabel
             // 
             this.captureStatusLabel.AutoSize = true;
-            this.captureStatusLabel.Location = new System.Drawing.Point(14, 2);
-            this.captureStatusLabel.Margin = new System.Windows.Forms.Padding(12, 2, 0, 2);
+            this.captureStatusLabel.Location = new System.Drawing.Point(12, 2);
+            this.captureStatusLabel.Margin = new System.Windows.Forms.Padding(10, 2, 0, 2);
             this.captureStatusLabel.Name = "captureStatusLabel";
-            this.captureStatusLabel.Size = new System.Drawing.Size(126, 17);
+            this.captureStatusLabel.Size = new System.Drawing.Size(95, 13);
             this.captureStatusLabel.TabIndex = 1;
             this.captureStatusLabel.Text = "__Capture Status_";
             // 
@@ -639,32 +650,32 @@
             this.toolStripSeparator1,
             this.exitMenuItem});
             this.contextMenu.Name = "contextMenu";
-            this.contextMenu.Size = new System.Drawing.Size(115, 82);
+            this.contextMenu.Size = new System.Drawing.Size(104, 76);
             // 
             // startToolStripMenuItem
             // 
             this.startToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(114, 24);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.startToolStripMenuItem.Text = "Start";
             this.startToolStripMenuItem.Click += new System.EventHandler(this.switchStreamingStateButton_Click);
             // 
             // settingToolStripMenuItem
             // 
             this.settingToolStripMenuItem.Name = "settingToolStripMenuItem";
-            this.settingToolStripMenuItem.Size = new System.Drawing.Size(114, 24);
+            this.settingToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.settingToolStripMenuItem.Text = "Open";
             this.settingToolStripMenuItem.Click += new System.EventHandler(this.settingToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(111, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(100, 6);
             // 
             // exitMenuItem
             // 
             this.exitMenuItem.Name = "exitMenuItem";
-            this.exitMenuItem.Size = new System.Drawing.Size(114, 24);
+            this.exitMenuItem.Size = new System.Drawing.Size(103, 22);
             this.exitMenuItem.Text = "Exit";
             this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
             // 
@@ -678,33 +689,37 @@
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(532, 532);
+            this.ClientSize = new System.Drawing.Size(426, 426);
             this.Controls.Add(this.tableLayoutPanel2);
             this.Controls.Add(this.mainControlsLayoutPanel);
-            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F);
-            this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(133)))), ((int)(((byte)(151)))), ((int)(((byte)(162)))));
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(540, 540);
+            this.MinimumSize = new System.Drawing.Size(434, 438);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Polywall Streamer";
             this.mainControlsLayoutPanel.ResumeLayout(false);
             this.mainControlsLayoutPanel.PerformLayout();
             this.flowLayoutPanel2.ResumeLayout(false);
+            this.flowLayoutPanel2.PerformLayout();
             this.flowLayoutPanel1.ResumeLayout(false);
+            this.flowLayoutPanel1.PerformLayout();
             this.videoSourceSettingsLayoutPanel.ResumeLayout(false);
             this.videoSourceSettingsLayoutPanel.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.audioSourceSettingsLayoutPanel.ResumeLayout(false);
             this.audioSourceSettingsLayoutPanel.PerformLayout();
             this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);

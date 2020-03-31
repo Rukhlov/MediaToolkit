@@ -34,6 +34,7 @@ namespace ScreenStreamer.Wpf.Common.Managers
             }
             return item ?? StreamMainModel.Default;
         }
+
         public static void Save()
         {
             var model = DependencyInjectionHelper.Container.Resolve<StreamMainModel>();

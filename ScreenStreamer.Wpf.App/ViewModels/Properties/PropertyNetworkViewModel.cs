@@ -18,9 +18,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         private readonly PropertyNetworkModel _model;
         public override string Name => "Network";
 
-
-        #region SelectedNetwork
-
         private IPAddressInfoViewModel _selectedNetwork;
 
         public IPAddressInfoViewModel SelectedNetwork
@@ -29,19 +26,23 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             set
             {
                 SetProperty(ref _selectedNetwork, value);
+               // _model.Network = value?.IPAddressInfo?.ToString() ?? value.DisplayName;
                 _model.Network = value?.IPAddressInfo?.Address?.ToString() ?? value.DisplayName;
                 RaisePropertyChanged(nameof(Info));
             }
         }
 
-        #endregion SelectedNetwork
 
-        #region Port
-        public int Port { get => _model.Port; set { SetProperty(_model, () => _model.Port, value); } }
-        #endregion Port
-
-        #region IsUnicast
-
+        public int Port
+        {
+            get => _model.Port;
+            set
+            {
+                SetProperty(_model, () => _model.Port, value);
+                RaisePropertyChanged(nameof(Port));
+            }
+        }
+ 
         public bool IsUnicast
         {
             get => _model.IsUnicast;
@@ -52,13 +53,15 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        #endregion IsUnicast  
-
-        #region UnicastProtocol
-        public ProtocolKind UnicastProtocol { get => _model.UnicastProtocol; set { SetProperty(_model, () => _model.UnicastProtocol, value); RaisePropertyChanged(nameof(Info)); } }
-        #endregion UnicastProtocol
-
-        #region MulticastIp
+        public ProtocolKind UnicastProtocol
+        {
+            get => _model.UnicastProtocol;
+            set
+            {
+                SetProperty(_model, () => _model.UnicastProtocol, value);
+                RaisePropertyChanged(nameof(Info));
+            }
+        }
 
         public string MulticastIp
         {
@@ -74,7 +77,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        #endregion MulticastIp
+
 
         public PropertyNetworkViewModel(StreamViewModel parent, PropertyNetworkModel model) : base(parent)
         {

@@ -115,6 +115,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
                 StreamList.Remove(streamToDelete);
                 this._model.StreamList.Remove(streamToDelete.Model);
+
+ 
                 IsEdit = false;
                 SelectedStream = null;
 

@@ -49,6 +49,7 @@
                 <Border Height="16" 
                         Width="16"
                         Style="{StaticResource clickableBorder}"
+                        IsEnabled="{Binding IsEditable}"
                         ToolTip="Edit stream name">
                     <materialDesign:PackIcon Kind="ModeEditOutline" VerticalAlignment="Center"/>
                     <i:Interaction.Behaviors>
@@ -79,6 +80,7 @@
                     Height="16" 
                     Width="16"
                     Style="{StaticResource clickableBorder}"
+                    IsEnabled="{Binding IsEditable}"
                     ToolTip="Copy url">
                 <materialDesign:PackIcon Kind="ContentCopy" />
                 <i:Interaction.Behaviors>

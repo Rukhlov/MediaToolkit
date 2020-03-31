@@ -41,10 +41,11 @@ namespace ScreenStreamer.Wpf.Common.Views
             ApplyInitialState();
         }
 
+
         private void VmOnPropertyChanged(AcceptChangesMessage obj)
         {
             //TODO Process changes
-            logger.Debug("VmOnPropertyChanged(...) " + obj);
+            logger.Debug("VmOnPropertyChanged(...) " + obj.ChangedProperty);
 
 
         }

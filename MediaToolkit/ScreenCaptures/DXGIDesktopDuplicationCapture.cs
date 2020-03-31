@@ -122,15 +122,17 @@ namespace MediaToolkit.ScreenCaptures
                     var descr = _output.Description;
 
                     var desktopBounds = descr.DesktopBounds;
-                    if ((desktopBounds.Left > SrcRect.Right) || (desktopBounds.Right < SrcRect.X) ||
-                        (desktopBounds.Top > SrcRect.Bottom) || (desktopBounds.Bottom < SrcRect.Y))
+
+                    var desktopRect = new GDI.Rectangle
                     {
+                        X = desktopBounds.Left,
+                        Y = desktopBounds.Top,
+                        Width = desktopBounds.Right - desktopBounds.Left, 
+                        Height = desktopBounds.Bottom - desktopBounds.Top,
+                    };
 
-                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
-                        continue;
-
-                    }
-                    else
+                    var rect = GDI.Rectangle.Intersect(desktopRect, SrcRect);
+                    if (rect.Width > 0 && rect.Height > 0)
                     {
                         logger.Info("Screen source info: " + adapter.Description.Description + " " + descr.DeviceName);
 
@@ -140,6 +142,11 @@ namespace MediaToolkit.ScreenCaptures
                         deskDupl.CaptureMouse = this.CaptureMouse;
 
                         deskDupls.Add(deskDupl);
+                    }
+                    else
+                    {
+                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
+                        continue;
                     }
 
                     _output.Dispose();

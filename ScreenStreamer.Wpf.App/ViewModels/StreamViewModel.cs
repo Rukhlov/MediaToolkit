@@ -43,6 +43,11 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         #region IsStarted
 
+        public bool IsEditable
+        {
+            get => !Model.IsStarted && !Model.IsBusy;
+        }
+
         public bool IsStarted
         {
             get => Model.IsStarted;
@@ -98,6 +103,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public StreamViewModel(StreamMainViewModel mainViewModel, bool addInitialProperties, StreamModel model)
         {
             Model = model;
+
             AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel);
             _dialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
             MainViewModel = mainViewModel;
@@ -183,7 +189,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             RaisePropertyChanged(nameof(IsEnabled));
 			RaisePropertyChanged(nameof(IsStarted));
 
-			if (isStarted)
+            RaisePropertyChanged(nameof(IsEditable));
+
+            if (isStarted)
             {
                 _dialogService.Hide(DesignViewModel);
                 if (IsBorderVisible)

@@ -16,6 +16,7 @@
             <ContentPresenter ContentTemplate="{StaticResource streamInfoTemplate}" Content="{Binding}"/>
             <Rectangle Style="{StaticResource divider}"  Margin="22,0,4,0"/>
             <ItemsControl ItemsSource="{Binding Properties}"
+                          IsEnabled="{Binding IsEditable}"
                           ItemTemplate="{StaticResource streamPropertyBaseTemplate}"/>
 
             <StackPanel Margin="22,0,0,0">
@@ -25,6 +26,7 @@
                             Style="{StaticResource defaultButtonStyle}" 
                             Background="#FF131223"
                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=3, AncestorType=StackPanel}}"
+                            IsEnabled="{Binding IsEditable}"
                             ToolTip="Delete current stream">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Bin" Foreground="#FFE74444" Margin="10,0,0,0"/>
@@ -35,6 +37,7 @@
                             Style="{StaticResource actionButtonStyle}"
                             Command="{Binding PreferencesCommand}"
                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                            IsEnabled="{Binding IsEditable}"
                             ToolTip="Open advanced settings">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>

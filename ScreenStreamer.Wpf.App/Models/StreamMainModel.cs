@@ -19,7 +19,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             var defaultStream = new StreamModel() { Name = "Stream 1" };
 
-            defaultStream.InitStreamer();
+            //defaultStream.Init();
 
 
             var @default = new StreamMainModel();
@@ -30,21 +30,36 @@ namespace ScreenStreamer.Wpf.Common.Models
         public List<StreamModel> StreamList { get; set; } = new List<StreamModel>();
     }
 
+
     public class StreamModel
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
+        public StreamModel()
+        {
 
-        public string Name { get; set; }
+            mediaStreamer = new MediaStreamer();
+
+            mediaStreamer.StateChanged += MediaStreamer_StateChanged;
+
+        }
+
+        private MediaStreamer mediaStreamer = null;
+        private StreamSession currentSession = null;
+
+        public event Action OnStreamStateChanged;
+
+        public string Name { get; set; } = "";
+
         public bool IsStarted
         {
             get
             {
                 bool isStarted = false;
 
-                if (Session != null && MediaStreamer != null)
+                if (currentSession != null && mediaStreamer != null)
                 {
-                    isStarted = (MediaStreamer.State == MediaStreamerState.Streamming);
+                    isStarted = (mediaStreamer.State == MediaStreamerState.Streamming);
                 }
 
                 return isStarted;
@@ -57,15 +72,13 @@ namespace ScreenStreamer.Wpf.Common.Models
             get
             {
                 bool isBusy = false;
-                if (Session != null && MediaStreamer != null)
+                if (currentSession != null && mediaStreamer != null)
                 {
-                    isBusy = (MediaStreamer.State == MediaStreamerState.Starting ||
-                        MediaStreamer.State == MediaStreamerState.Stopping);
+                    isBusy = (mediaStreamer.State == MediaStreamerState.Starting ||
+                        mediaStreamer.State == MediaStreamerState.Stopping);
                 }
-
                 return isBusy;
             }
-            //set;
         }
 
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
@@ -77,52 +90,11 @@ namespace ScreenStreamer.Wpf.Common.Models
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
 
 
-        public MediaStreamer MediaStreamer { get; private set; }
-        public StreamSession Session { get; private set; }
-
-
-        public void InitStreamer()
-        {
-            logger.Debug("InitStreamer()");
-
-            Session = StreamSession.Default();
-
-            MediaStreamer = new MediaStreamer();
-            MediaStreamer.StateChanged += MediaStreamer_StateChanged;
-
-
-            var screen = System.Windows.Forms.Screen.PrimaryScreen;
-
-            var bounds = screen.Bounds;
-
-            var screenCaptureProperties = new ScreenCaptureProperties
-            {
-                CaptureMouse = true,
-                AspectRatio = true,
-                CaptureType = VideoCaptureType.DXGIDeskDupl,
-                UseHardware = true,
-                Fps = 30,
-                ShowDebugInfo = false,
-            };
-
-            ScreenCaptureDevice captureDevice = new ScreenCaptureDevice
-            {
-                CaptureRegion = bounds,
-                DisplayRegion = bounds,
-                Name = screen.DeviceName,
-
-                Resolution = bounds.Size,
-                Properties = screenCaptureProperties,
-                DeviceId = screen.DeviceName,
-
-            };
-
-            Session.VideoSettings.CaptureDevice = captureDevice;
-
-        }
 
         public void SwitchStreamingState()
         {
+            logger.Debug("SwitchStreamingState()");
+
             if (!IsStarted)
             {
                 StartStreaming();
@@ -137,50 +109,15 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             logger.Debug("StartStreaming()");
 
-            if (MediaStreamer.State == MediaStreamerState.Shutdown)
+            if (mediaStreamer.State == MediaStreamerState.Shutdown)
             {
-                Session.Setup();
+                currentSession = CreateSession();
 
-                MediaStreamer.Start(Session);
+
+                currentSession.Setup();
+
+                mediaStreamer.Start(currentSession);
             }
-
-        }
-
-        public event Action OnStreamStateChanged;
-
-		public event Action StreamStarting;
-		public event Action StreamStarted;
-		public event Action StreamStopping;
-		public event Action StreamStopped;
-
-		private void MediaStreamer_StateChanged()
-        {
-            var state = MediaStreamer.State;
-
-            logger.Debug("MediaStreamer_StateChanged() " + state);
-
-            if (state == MediaStreamerState.Starting)
-            {
-				StreamStarting?.Invoke();
-
-			}
-            else if (state == MediaStreamerState.Streamming)
-            {
-				StreamStarted?.Invoke();
-			}
-            else if (state == MediaStreamerState.Stopping)
-            {
-				StreamStopping?.Invoke();
-			}
-            else if (state == MediaStreamerState.Stopped)
-            {
-				StreamStopped?.Invoke();
-
-				MediaStreamer.Shutdown();
-            }
-
-
-            OnStreamStateChanged?.Invoke();
 
         }
 
@@ -188,19 +125,126 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             logger.Debug("StopStreaming()");
 
-            MediaStreamer.Stop();
+            if (mediaStreamer != null)
+            {
+                mediaStreamer.Stop();
+            }
+        }
+
+		private void MediaStreamer_StateChanged()
+        {
+            var state = mediaStreamer.State;
+
+            logger.Debug("MediaStreamer_StateChanged() " + state);
+
+            if (state == MediaStreamerState.Starting)
+            {
+
+			}
+            else if (state == MediaStreamerState.Streamming)
+            {
+
+			}
+            else if (state == MediaStreamerState.Stopping)
+            {
+
+			}
+            else if (state == MediaStreamerState.Stopped)
+            {
+
+
+				mediaStreamer.Shutdown();
+            }
+
+
+            OnStreamStateChanged?.Invoke();
 
         }
 
-        public void CloseStreamer()
+
+
+        private StreamSession CreateSession()
         {
-            logger.Debug("CloseStreamer()");
 
-            if (MediaStreamer != null)
+            var session = StreamSession.Default();
+
+            var transport = TransportMode.Udp;
+            if (PropertyNetwork.UnicastProtocol == ProtocolKind.TCP)
             {
-                MediaStreamer.StateChanged -= MediaStreamer_StateChanged;
+                transport = TransportMode.Tcp;
+            }
 
-                //...
+
+            session.StreamName = Name;
+            session.NetworkIpAddress = PropertyNetwork.Network ?? "0.0.0.0";
+            session.CommunicationPort = PropertyNetwork.Port;
+            session.TransportMode = transport;
+
+            session.IsMulticast = !PropertyNetwork.IsUnicast;
+
+
+            var videoSettings = session.VideoSettings;
+            var videoEncoderSettings = videoSettings.EncoderSettings;
+
+            videoEncoderSettings.Encoder = AdvancedSettingsModel.VideoEncoder;
+            videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
+            videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
+
+            videoEncoderSettings.FrameRate = AdvancedSettingsModel.Fps;
+            videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
+            videoEncoderSettings.LowLatency = AdvancedSettingsModel.LowLatency;
+
+            int x = (int)PropertyVideo.Left;
+            int y = (int)PropertyVideo.Top;
+            int w = (int)PropertyVideo.ResolutionWidth;
+            int h = (int)PropertyVideo.ResolutionHeight;
+
+            var captureRegion = new Rectangle(x, y, w, h);
+
+            var screenCaptureProperties = new ScreenCaptureProperties
+            {
+                CaptureMouse = PropertyCursor.IsCursorVisible,
+                AspectRatio = PropertyVideo.AspectRatio,
+                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                UseHardware = true,
+                Fps = 30,
+                ShowDebugInfo = false,
+            };
+
+            ScreenCaptureDevice captureDevice = new ScreenCaptureDevice
+            {
+                CaptureRegion = captureRegion,
+                DisplayRegion = captureRegion,
+                Name = PropertyVideo.Display,
+
+                Resolution = captureRegion.Size,
+                Properties = screenCaptureProperties,
+                DeviceId = PropertyVideo.Display,
+
+
+            };
+
+            session.VideoSettings.CaptureDevice = captureDevice;
+
+            return session;
+        }
+
+        public void Dispose()
+        {
+            logger.Debug("Dispose()");
+
+            if (mediaStreamer != null)
+            {
+                if(mediaStreamer!=null && mediaStreamer.State != MediaStreamerState.Shutdown)
+                {
+                    //Stop and shutdown...
+                    logger.Warn("mediaStreamer!=null && mediaStreamer.State != MediaStreamerState.Shutdown");
+                }
+
+                mediaStreamer.StateChanged -= MediaStreamer_StateChanged;
+
+                mediaStreamer.Shutdown();
+
             }
 
         }
@@ -209,11 +253,11 @@ namespace ScreenStreamer.Wpf.Common.Models
 
     public class PropertyNetworkModel
     {
-        public int Port { get; set; } = 2000;
+        public int Port { get; set; } = 808;
         public bool IsUnicast { get; set; } = true;
         public ProtocolKind UnicastProtocol { get; set; } = ProtocolKind.TCP;
         public string MulticastIp { get; set; } = "239.0.0.1";
-        public string Network { get; set; }
+        public string Network { get; set; } = "0.0.0.0";
     }
 
     public class PropertyBorderModel
@@ -227,20 +271,23 @@ namespace ScreenStreamer.Wpf.Common.Models
         public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
         public bool IsRegion { get; set; }
 
-        public double Top { get; set; }
-        public double Left { get; set; }
-        public double ResolutionHeight { get; set; } = 600d;
-        public double ResolutionWidth { get; set; } = 800d;
-        public bool AspectRatio { get; set; }
+        public double Top { get; set; } = 0;
+        public double Left { get; set; } = 0;
+        public double ResolutionHeight { get; set; } = 1920;
+        public double ResolutionWidth { get; set; } = 1080;
+        public bool AspectRatio { get; set; } = true;
     }
+
     public class PropertyQualityModel
     {
         public QualityPreset Preset { get; set; } = QualityPreset.Standard;
     }
+
     public class PropertyCursorModel
     {
         public bool IsCursorVisible { get; set; } = true;
     }
+
     public class PropertyAudioModel
     {
         public bool IsMicrophoneEnabled { get; set; }
@@ -253,7 +300,7 @@ namespace ScreenStreamer.Wpf.Common.Models
     {
         public int Bitrate { get; set; } = 2500;
         public int Fps { get; set; } = 30;
-        public bool LowLatency { get; set; }
+        public bool LowLatency { get; set; } = true;
         public int MaxBitrate { get; set; } = 5000;
         public H264Profile H264Profile { get; set; } = H264Profile.Main;
         public VideoEncoderMode VideoEncoder { get; set; } = VideoEncoderMode.H264;

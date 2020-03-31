@@ -44,10 +44,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             return result;
         }
 
-        internal static string ToDisplayName(this IPAddressInformation ipAddressInfo, NetworkInterface networkInterface)
-        {
-            return $"{networkInterface.Name} ({ipAddressInfo.Address})";
-        }
+
 
         internal static List<IPAddressInfoViewModel> GetIpAddressInfoViewModels()
         {
@@ -56,16 +53,30 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                 new IPAddressInfoViewModel
                 {
                     DisplayName = "All",
-                    IPAddressInfo = null
+                    IPAddressInfo = null,
                 }
             };
 
             var interfaces = GetNetworkInterfaces();
-            interfaces.ForEach(i => result.Add(new IPAddressInfoViewModel
+
+            foreach (var i in interfaces)
             {
-                DisplayName = i.IpAddressInfo.ToDisplayName(i.Network),
-                IPAddressInfo = i.IpAddressInfo
-            }));
+                var network = i.Network;
+                var addrInfo = i.IpAddressInfo;
+
+                result.Add(new IPAddressInfoViewModel
+                {
+                    DisplayName = $"{network.Name} ({addrInfo.Address})",
+                    IPAddressInfo = addrInfo
+                });
+            }
+
+            //interfaces.ForEach(i => result.Add(new IPAddressInfoViewModel
+            //{
+            //    DisplayName = i.IpAddressInfo.ToDisplayName(i.Network),
+            //    IPAddressInfo = i.IpAddressInfo.Address
+            //}));
+
             return result;
         }
 
@@ -83,6 +94,11 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             return source.Address.GetHashCode() +
                    (source.IsDnsEligible ? 1 : -1) +
                    (source.IsTransient ? 10 : -10);
+        }
+
+        internal static string ToDisplayName(this IPAddressInformation ipAddressInfo, NetworkInterface networkInterface)
+        {
+            return $"{networkInterface.Name} ({ipAddressInfo.Address})";
         }
     }
 }
