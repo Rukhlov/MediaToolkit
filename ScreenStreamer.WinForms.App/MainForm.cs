@@ -102,14 +102,19 @@ namespace ScreenStreamer.WinForms.App
             {
                 currentSession.Setup();
 
-                bool starting = mediaStreamer.Start(currentSession);
-                if (!starting)
+                if(currentSession.VideoSettings.Enabled || currentSession.AudioSettings.Enabled)
                 {
-                    //...
-                    logger.Warn("screenStreamer.Start(currentSession) == " + starting);
+                    bool starting = mediaStreamer.Start(currentSession);
+                    if (!starting)
+                    {
+                        //...
+                        logger.Warn("screenStreamer.Start(currentSession) == " + starting);
+                    }
                 }
- 
-
+                else
+                {
+                    logger.Debug("No media stream selected...");
+                }
             }
             catch (Exception ex)
             {
@@ -227,11 +232,19 @@ namespace ScreenStreamer.WinForms.App
             {
                 captureStatusLabel.Text = "Streaming attempt has failed";
 
-                var iex = ex.InnerException;
-                MessageBox.Show(iex.Message);
-				return;
-            }
 
+                var errorMessage = ex.Message;
+                var iex = ex.InnerException;
+                if (iex != null)
+                {
+                    errorMessage = iex.Message;
+                }
+
+                MessageBox.Show(errorMessage);
+
+
+                return;
+            }
 
             var videoSettings = currentSession.VideoSettings;
             if (videoSettings.Enabled)
@@ -365,13 +378,14 @@ namespace ScreenStreamer.WinForms.App
             var ex = mediaStreamer.ExceptionObj;
             if (ex != null)
             {
+                var errorMessage = ex.Message;
                 var iex = ex.InnerException;
-                MessageBox.Show(iex.Message);
-            }
-            else
-            {
+                if (iex != null)
+                {
+                    errorMessage = iex.Message;
+                }
 
-
+                MessageBox.Show(errorMessage);
             }
         }
 
@@ -568,6 +582,8 @@ namespace ScreenStreamer.WinForms.App
             {
                 audioSourceComboBox.SelectedItem = audioItem;
             }
+
+            UpdateMediaSourcesControls();
         }
 
 
@@ -776,7 +792,6 @@ namespace ScreenStreamer.WinForms.App
 
                     selectAreaForm.Tag = captureParams;
 
-
                     selectAreaForm.Visible = true;
                 }
                 else
@@ -786,9 +801,7 @@ namespace ScreenStreamer.WinForms.App
                         selectAreaForm.Visible = false;
                     }
                 }
-
             }
-
 
             //videoSettings.CaptureDescription.Name = displayName;
             currentSession.VideoSettings.CaptureDevice = captureParams;
@@ -835,43 +848,59 @@ namespace ScreenStreamer.WinForms.App
         {
             logger.Debug("audioEnabledCheckBox_CheckedChanged(...)");
 
-            if (currentSession == null)
+            if (audioSettings != null)
             {
-                return;
+                audioSettings.Enabled = audioSourceEnableCheckBox.Checked;
             }
-            var audioSettings = currentSession.AudioSettings;
-            if (audioSettings == null)
-            {
-                return;
-            }
-
-            audioSettings.Enabled = audioSourceEnableCheckBox.Checked;
 
             logger.Debug("AudioSettings.Enabled == " + audioSettings.Enabled);
 
+            UpdateMediaSourcesControls();
+
         }
+
+       
 
         private void videoEnabledCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             logger.Debug("videoEnabledCheckBox_CheckedChanged(...)");
 
-            if(currentSession == null)
+           
+            if (videoSettings != null)
             {
-                return;
+                videoSettings.Enabled = videoSourceEnableCheckBox.Checked;
             }
-
-            var videoSettings = currentSession.VideoSettings;
-
-            if(videoSettings == null)
-            {
-                return;
-            }
-
-            videoSettings.Enabled = videoSourceEnableCheckBox.Checked;
 
             logger.Debug("VideoSettings.Enabled == " + videoSettings.Enabled);
 
+            UpdateMediaSourcesControls();
+
         }
+
+        private void UpdateMediaSourcesControls()
+        {
+
+            var audioEnabled = audioSettings?.Enabled ?? false;
+            audioSourceComboBox.Enabled = audioEnabled;
+            audioSourceUpdateButton.Enabled = audioEnabled;
+            audioSourceDetailsButton.Enabled = audioEnabled;
+
+            bool isScreenRegion = videoSettings.IsScreenRegion;
+            var videoEnabled = videoSettings?.Enabled ?? false;
+            videoSourceComboBox.Enabled = videoEnabled;
+            videoSourceUpdateButton.Enabled = videoEnabled;
+            videoSourceDetailsButton.Enabled = videoEnabled;
+
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.Visible = (videoEnabled && isScreenRegion);
+            }
+
+            switchStreamingStateButton.Enabled = audioEnabled || videoEnabled;
+
+
+        }
+
 
         private AudioCaptureDevice GetCurrentAudioCaptureDevice()
         {

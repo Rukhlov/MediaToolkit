@@ -73,8 +73,6 @@ namespace ScreenStreamer.WinForms.App
                     mutex.Dispose();
                 }
 
-
-
                 logger.Info("========== THE END ============");
             }
 
@@ -87,20 +85,17 @@ namespace ScreenStreamer.WinForms.App
             var obj = e.ExceptionObject;
             if (obj != null)
             {
+                logger.Fatal(obj);
                 ex = obj as Exception;
-                logger.Fatal(ex);
-
             }
+
+            string errorMessage = "Unexpected Error";
             if (ex != null)
             {
-                logger.Fatal(ex);
-            }
-            else
-            {
-                logger.Fatal("FATAL ERROR!!!");
+                errorMessage = ex.Message;
             }
 
-            // MessageBox.Show();
+             MessageBox.Show(errorMessage);
         }
     }
 

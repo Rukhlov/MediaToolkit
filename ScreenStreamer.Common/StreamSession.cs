@@ -35,12 +35,6 @@ namespace ScreenStreamer.Common
 		{
 			get
 			{
-
-				// var communicationAddress = "net.tcp://" + networkIpAddr + ":" + communicationPort + "/ScreenCaster";
-				//var communicationAddress = "net.tcp://" + networkIpAddr +":"+ communicationPort + "/ScreenCaster/" + sourceId;
-				// var communicationAddress = "http://" + "RAS-HOME10:8080"+ "/ScreenCaster/" + sourceId;
-				// var communicationAddress = "net.tcp://" + "RAS-HOME10" + "/ScreenCaster/" + sourceId;
-
 				var address = "net.tcp://" + NetworkIpAddress + "/ScreenCaster/";
 				if (CommunicationPort > 0)
 				{
@@ -76,6 +70,7 @@ namespace ScreenStreamer.Common
 		{
 			logger.Debug("StreamSession::Setup()");
 
+           
 
 			if (IsMulticast)
 			{
@@ -399,9 +394,25 @@ namespace ScreenStreamer.Common
 
 		public VideoEncoderSettings EncoderSettings { get; set; } = new VideoEncoderSettings();
 
-
-
-	}
+        [XmlIgnore]
+        public bool IsScreenRegion
+        {
+            get
+            {
+                bool isScreenRegion = false;
+                if (CaptureDevice != null)
+                {
+                    var screenCapture = CaptureDevice as ScreenCaptureDevice;
+                    if (screenCapture != null)
+                    {
+                        isScreenRegion = screenCapture.DisplayRegion.IsEmpty;
+                    }
+                    
+                }
+                return isScreenRegion;
+            }
+        }
+    }
 
 	public enum VideoStreamFlags : int
 	{

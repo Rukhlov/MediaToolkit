@@ -87,20 +87,18 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(546, 416);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(431, 416);
             this.tableLayoutPanel1.TabIndex = 84;
             // 
             // groupBox1
             // 
-            this.groupBox1.AutoSize = true;
-            this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.tableLayoutPanel3);
-            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox1.Location = new System.Drawing.Point(2, 134);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox1.Size = new System.Drawing.Size(542, 242);
+            this.groupBox1.Size = new System.Drawing.Size(427, 242);
             this.groupBox1.TabIndex = 91;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Streaming Settings";
@@ -123,7 +121,7 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(530, 196);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(415, 196);
             this.tableLayoutPanel3.TabIndex = 85;
             // 
             // panel2
@@ -306,7 +304,7 @@
             this.textBoxStreamName.Location = new System.Drawing.Point(104, 2);
             this.textBoxStreamName.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxStreamName.Name = "textBoxStreamName";
-            this.textBoxStreamName.Size = new System.Drawing.Size(424, 23);
+            this.textBoxStreamName.Size = new System.Drawing.Size(309, 23);
             this.textBoxStreamName.TabIndex = 24;
             // 
             // labelDevice
@@ -327,7 +325,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(273, 382);
+            this.panel1.Location = new System.Drawing.Point(158, 382);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -359,15 +357,13 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.AutoSize = true;
-            this.groupBox2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox2.Controls.Add(this.tableLayoutPanel2);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox2.Location = new System.Drawing.Point(2, 2);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox2.Size = new System.Drawing.Size(542, 128);
+            this.groupBox2.Size = new System.Drawing.Size(427, 128);
             this.groupBox2.TabIndex = 85;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Server Settings";
@@ -392,7 +388,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(530, 82);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(415, 82);
             this.tableLayoutPanel2.TabIndex = 92;
             // 
             // label5
@@ -413,7 +409,7 @@
             this.videoSourceUpdateButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.videoSourceUpdateButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.videoSourceUpdateButton.Image = global::ScreenStreamer.WinForms.App.Properties.Resources.baseline_cached_black_18dp;
-            this.videoSourceUpdateButton.Location = new System.Drawing.Point(505, 1);
+            this.videoSourceUpdateButton.Location = new System.Drawing.Point(390, 1);
             this.videoSourceUpdateButton.Margin = new System.Windows.Forms.Padding(1);
             this.videoSourceUpdateButton.Name = "videoSourceUpdateButton";
             this.videoSourceUpdateButton.Size = new System.Drawing.Size(24, 27);
@@ -430,7 +426,7 @@
             this.networkComboBox.Location = new System.Drawing.Point(69, 2);
             this.networkComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.networkComboBox.Name = "networkComboBox";
-            this.networkComboBox.Size = new System.Drawing.Size(433, 25);
+            this.networkComboBox.Size = new System.Drawing.Size(318, 25);
             this.networkComboBox.TabIndex = 16;
             // 
             // tableLayoutPanel4
@@ -452,7 +448,7 @@
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(522, 39);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(407, 39);
             this.tableLayoutPanel4.TabIndex = 85;
             // 
             // label23
@@ -460,7 +456,7 @@
             this.label23.AutoSize = true;
             this.label23.Dock = System.Windows.Forms.DockStyle.Fill;
             this.label23.Location = new System.Drawing.Point(4, 4);
-            this.label23.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.label23.Margin = new System.Windows.Forms.Padding(4);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(138, 23);
             this.label23.TabIndex = 20;
@@ -472,7 +468,7 @@
             this.findFreePortButton.AutoSize = true;
             this.findFreePortButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.findFreePortButton.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.findFreePortButton.Location = new System.Drawing.Point(404, 2);
+            this.findFreePortButton.Location = new System.Drawing.Point(289, 2);
             this.findFreePortButton.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.findFreePortButton.Name = "findFreePortButton";
             this.findFreePortButton.Size = new System.Drawing.Size(118, 27);
@@ -487,7 +483,7 @@
             this.communicationPortNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
             this.communicationPortNumeric.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.communicationPortNumeric.Location = new System.Drawing.Point(150, 4);
-            this.communicationPortNumeric.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.communicationPortNumeric.Margin = new System.Windows.Forms.Padding(4);
             this.communicationPortNumeric.Maximum = new decimal(new int[] {
             100500,
             0,
@@ -499,7 +495,7 @@
             0,
             -2147483648});
             this.communicationPortNumeric.Name = "communicationPortNumeric";
-            this.communicationPortNumeric.Size = new System.Drawing.Size(248, 23);
+            this.communicationPortNumeric.Size = new System.Drawing.Size(133, 23);
             this.communicationPortNumeric.TabIndex = 19;
             this.communicationPortNumeric.Value = new decimal(new int[] {
             1,
@@ -514,7 +510,7 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(664, 589);
+            this.ClientSize = new System.Drawing.Size(500, 497);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
