@@ -157,7 +157,7 @@ namespace MediaToolkit.Core
 
 		[XmlIgnore]
 		public object Properties { get; set; } = new WasapiCaptureProperties();
-		//public AudioCapturesTypes CapturesTypes { get; set; } = AudioCapturesTypes.Wasapi;
+
 	}
 
     public enum AudioCapturesTypes
@@ -173,7 +173,7 @@ namespace MediaToolkit.Core
     [XmlInclude(typeof(ScreenCaptureDevice))]
     public abstract class VideoCaptureDevice
     {
-        public string Name = "";
+        public string Name { get; set; } = "";
         public string DeviceId { get; set; } = "";
 
         // [XmlIgnore]
@@ -217,7 +217,6 @@ namespace MediaToolkit.Core
     {
         public override CaptureMode CaptureMode => CaptureMode.Screen;
 
-        //[XmlIgnore]
         [XmlElement(typeof(XmlRect))]
         public Rectangle DisplayRegion = new Rectangle(0, 0, 640, 480);
 

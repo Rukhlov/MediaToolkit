@@ -13,12 +13,12 @@ using System.Windows.Forms;
 
 namespace MediaToolkit.Managers
 {
-    public class UsbDeviceManager
+
+	//https://docs.microsoft.com/en-us/windows/win32/medfound/handling-video-device-loss
+	public class UsbDeviceManager
     {
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
-
-        public static readonly Guid GUID_DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
 
 		private NotifyWindow nativeWindow = null;
 
@@ -38,9 +38,10 @@ namespace MediaToolkit.Managers
 
             var hWnd = nativeWindow.Handle;
 
+			//
 			// KS.KSCATEGORY_VIDEO_CAMERA <--win10
 			// KS.CATEGORY_CAPTURE <--win7
-			var classGuid = KS.CATEGORY_CAPTURE;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+			var classGuid = KS.KSCATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
             
             var handle = RegisterNotification(hWnd, classGuid);
 

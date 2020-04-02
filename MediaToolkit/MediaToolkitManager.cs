@@ -25,13 +25,21 @@ namespace MediaToolkit
 
             SharpDX.MediaFoundation.MediaManager.Startup();
 
+			
+			// Debug
             SharpDX.Configuration.EnableObjectTracking = true;
-           // SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
+            SharpDX.Diagnostics.ObjectTracker.StackTraceProvider = null;
 
-            //SharpDX.Configuration.EnableReleaseOnFinalizer = true;
-            //SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = false;
+            SharpDX.Configuration.EnableTrackingReleaseOnFinalizer = true;
+			
 
-            NativeAPIs.WinMM.timeBeginPeriod(1);
+			/*
+			//Release
+			SharpDX.Configuration.EnableObjectTracking = false;
+			*/
+
+
+			NativeAPIs.WinMM.timeBeginPeriod(1);
         }
 
 

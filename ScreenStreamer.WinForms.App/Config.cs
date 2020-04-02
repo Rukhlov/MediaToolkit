@@ -173,7 +173,15 @@ namespace ScreenStreamer.WinForms.App
 
         private bool Validate()
         { //...
-            return true;
+
+			if(ScreenCaptureProperties.CaptureType != VideoCaptureType.DXGIDeskDupl)
+			{
+				logger.Warn("Invalid capture type: " + ScreenCaptureProperties.CaptureType);
+
+				ScreenCaptureProperties.CaptureType = VideoCaptureType.DXGIDeskDupl;
+			}
+
+			return true;
         }
 
         private const int ReadCountMax = 3;

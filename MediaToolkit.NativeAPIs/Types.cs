@@ -1143,10 +1143,15 @@ namespace MediaToolkit.NativeAPIs
     {
         public static readonly Guid CATEGORY_CAPTURE = new Guid("65E8773D-8F56-11D0-A3B9-00A0C9223196");
         public static readonly Guid CATEGORY_VIDEO = new Guid("6994AD05-93EF-11D0-A3CC-00A0C9223196");
-        public static readonly Guid CATEGORY_VIDEO_CAMERA = new Guid("E5323777-F976-4f5b-9B55-B94699C46E44");
+		public static readonly Guid CATEGORY_AUDIO = new Guid("6994AD04-93EF-11D0-A3CC-00A0C9223196");
+
+		public static readonly Guid CATEGORY_VIDEO_CAMERA = new Guid("E5323777-F976-4f5b-9B55-B94699C46E44");
     }
 
-
+	public static class GUID
+	{
+		public static readonly Guid DEVINTERFACE_USB_DEVICE = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED");
+	}
 
 
 

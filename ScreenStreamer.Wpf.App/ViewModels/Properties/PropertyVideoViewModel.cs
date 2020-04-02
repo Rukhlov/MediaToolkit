@@ -20,7 +20,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         public ICommand ShowBorderCommand { get; }
 
-        #region IsRegion
 
         public bool IsRegion
         {
@@ -47,9 +46,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        #endregion
 
-        #region Display
 
         public string Display
         {
@@ -62,29 +59,53 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        #endregion
 
-        #region ResolutionHeight
+        public double ResolutionHeight
+        {
+            get => _model.ResolutionHeight;
+            set
+            {
+                SetProperty(_model, () => _model.ResolutionHeight, value);
+            }
+        }
 
-        public double ResolutionHeight { get => _model.ResolutionHeight; set { SetProperty(_model, () => _model.ResolutionHeight, value); } }
-        #endregion ResolutionHeight
+        public double ResolutionWidth
+        {
+            get => _model.ResolutionWidth;
+            set
+            {
+                SetProperty(_model, () => _model.ResolutionWidth, value);
+            }
+        }
 
-        #region ResolutionWidth
-        public double ResolutionWidth { get => _model.ResolutionWidth; set { SetProperty(_model, () => _model.ResolutionWidth, value); } }
-        #endregion ResolutionWidth
+        public double Top
+        {
+            get => _model.Top;
+            set
+            {
+                SetProperty(_model, () => _model.Top, value);
+            }
+        }
 
-        #region Top
-        public double Top { get => _model.Top; set { SetProperty(_model, () => _model.Top, value); } }
-        #endregion Top
+        public double Left
+        {
+            get => _model.Left;
+            set
+            {
+                SetProperty(_model, () => _model.Left, value);
+            }
+        }
+ 
+        public bool AspectRatio
+        {
+            get => _model.AspectRatio;
 
-        #region Left
-        public double Left { get => _model.Left; set { SetProperty(_model, () => _model.Left, value); } }
-        #endregion Left
-
-        #region AspectRatio
-        public bool AspectRatio { get => _model.AspectRatio; set { SetProperty(_model, () => _model.AspectRatio, value); } }
-        #endregion AspectRatio
-
+            set
+            {
+                SetProperty(_model, () => _model.AspectRatio, value);
+            }
+        }
+ 
         public ICommand AdjustCommand { get; }
 
 

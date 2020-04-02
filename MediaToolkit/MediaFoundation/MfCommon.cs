@@ -683,7 +683,86 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
-        public static bool TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
+		public static bool TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
+		{
+
+			bool result = false;
+
+			var descr = texture.Description;
+			if (descr.Format != Format.B8G8R8A8_UNorm)
+			{
+				Trace.TraceError("Invalid texture format " + descr.Format);
+				return result;
+			}
+
+			if(descr.Width <= 0 || descr.Height <= 0)
+			{
+				Trace.TraceError("Invalid texture size: " + descr.Width + " " + descr.Height);
+				return result;
+			}
+
+			if (bmp == null)
+			{
+				bmp = new GDI.Bitmap(descr.Width, descr.Height, GDI.Imaging.PixelFormat.Format32bppArgb);
+			}
+
+			if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+			{
+				Trace.TraceError("Invalid bitmap format " + bmp.PixelFormat);
+				return result;
+
+			}
+
+			if (bmp.Width != descr.Width || bmp.Height != descr.Height)
+			{
+				Trace.TraceError("Invalid params");
+				return result;
+
+			}
+
+			using (Surface surface = texture.QueryInterface<Surface>())
+			{
+				try
+				{
+					var srcData = surface.Map(SharpDX.DXGI.MapFlags.Read);
+
+					int width = bmp.Width;
+					int height = bmp.Height;
+					var rect = new GDI.Rectangle(0, 0, width, height);
+					var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
+					try
+					{
+						IntPtr srcPtr = srcData.DataPointer;
+						int srcOffset = rect.Top * srcData.Pitch + rect.Left * 4;
+
+						srcPtr = IntPtr.Add(srcPtr, srcOffset);
+
+						var destPtr = destData.Scan0;
+						for (int row = rect.Top; row < rect.Bottom; row++)
+						{
+							Utilities.CopyMemory(destPtr, srcPtr, width * 4);
+							srcPtr = IntPtr.Add(srcPtr, srcData.Pitch);
+							destPtr = IntPtr.Add(destPtr, destData.Stride);
+
+						}
+
+						result = true;
+					}
+					finally
+					{
+						bmp.UnlockBits(destData);
+					}
+				}
+				finally
+				{
+					surface.Unmap();
+				}
+			}
+
+			return result;
+		}
+
+		public static bool _TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
         {
 
             bool success = false;
@@ -692,8 +771,9 @@ namespace MediaToolkit.MediaFoundation
             {
                 throw new InvalidOperationException("Invalid texture format " + descr.Format);
             }
+		    
 
-            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+			if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
             {
                 throw new InvalidOperationException("Invalid bitmap format " + bmp.PixelFormat);
             }
@@ -749,7 +829,8 @@ namespace MediaToolkit.MediaFoundation
             return success;
         }
 
-        public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
+
+		public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
         {
             Texture2D texture = null;
 
@@ -763,25 +844,42 @@ namespace MediaToolkit.MediaFoundation
                 bitmap = _bitmap;
             }
 
-
             var data = bitmap.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
             try
             {
-                var descr = new SharpDX.Direct3D11.Texture2DDescription
-                {
-                    Width = bitmap.Width,
-                    Height = bitmap.Height,
-                    ArraySize = 1,
-                    //BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                    //Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-                    //CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    MipLevels = 1,
-                    //OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                };
+				//Windows 7 
+				var descr = new SharpDX.Direct3D11.Texture2DDescription
+				{
+					Width = bitmap.Width,
+					Height = bitmap.Height,
+					MipLevels = 1,
+					ArraySize = 1,
+					SampleDescription = new SampleDescription(1, 0),
+					Usage = ResourceUsage.Default,
+					Format =Format.B8G8R8A8_UNorm,
+					BindFlags = BindFlags.ShaderResource,
+					CpuAccessFlags = CpuAccessFlags.None,
+					OptionFlags = ResourceOptionFlags.None,
 
-                var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
+				};
+
+				/*
+				var descr = new SharpDX.Direct3D11.Texture2DDescription
+				{
+					Width = bitmap.Width,
+					Height = bitmap.Height,
+					ArraySize = 1,
+					//BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+					//Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+					//CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+					Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+					MipLevels = 1,
+					//OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+					SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+				};
+				*/
+
+				var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
 
                 texture = new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
             }

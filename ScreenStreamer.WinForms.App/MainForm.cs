@@ -44,16 +44,16 @@ namespace ScreenStreamer.WinForms.App
             //Validate session...
             currentSession = Config.Data.Session;
 
-
-            InitControls();
-
 			usbManager = new UsbDeviceManager();
-			
+
 			usbManager.Init();
 			usbManager.UsbDeviceArrival += UsbManager_UsbDeviceArrival;
 			usbManager.UsbDeviceMoveComplete += UsbManager_UsbDeviceMoveComplete;
 
 			syncContext = SynchronizationContext.Current;
+
+			InitControls();
+
 
         }
 
@@ -232,7 +232,6 @@ namespace ScreenStreamer.WinForms.App
             {
                 captureStatusLabel.Text = "Streaming attempt has failed";
 
-
                 var errorMessage = ex.Message;
                 var iex = ex.InnerException;
                 if (iex != null)
@@ -350,12 +349,6 @@ namespace ScreenStreamer.WinForms.App
 
             this.Cursor = Cursors.Default;
 
-            if (mediaStreamer != null)
-            {
-                mediaStreamer.Shutdown();
-
-            }
-
             if (statisticForm != null)
             {
                 statisticForm.Stop();
@@ -374,20 +367,30 @@ namespace ScreenStreamer.WinForms.App
                 selectAreaForm.Capturing = false;
             }
 
+			var errorMessage = "";
+			var ex = mediaStreamer.ExceptionObj;
+			if (ex != null)
+			{
+				errorMessage = ex.Message;
+				var iex = ex.InnerException;
+				if (iex != null)
+				{
+					errorMessage = iex.Message;
+				}
+			}
 
-            var ex = mediaStreamer.ExceptionObj;
-            if (ex != null)
-            {
-                var errorMessage = ex.Message;
-                var iex = ex.InnerException;
-                if (iex != null)
-                {
-                    errorMessage = iex.Message;
-                }
+			if (mediaStreamer != null)
+			{
+				mediaStreamer.Shutdown();
 
-                MessageBox.Show(errorMessage);
-            }
-        }
+			}
+
+			if (!string.IsNullOrEmpty(errorMessage))
+			{
+				MessageBox.Show(errorMessage);
+			}
+			
+		}
 
 
 
@@ -942,33 +945,54 @@ namespace ScreenStreamer.WinForms.App
 		{
 			logger.Debug("OnUsbDeviceMoveComplete(...) " + deviceId);
 
-			var captureDevice = videoSettings.CaptureDevice;
-			if (captureDevice != null)
+			if (videoSettings != null)
 			{
-				if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+				var captureDevice = videoSettings.CaptureDevice;
+				if (captureDevice != null)
 				{
-					var _deviceId = captureDevice.DeviceId;
-					if (deviceId.Equals(_deviceId, StringComparison.InvariantCultureIgnoreCase))
+					if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
 					{
-						logger.Warn("Capture device disconnected " + captureDevice.Name + " " + captureDevice.DeviceId);
-						//TODO: Close if capturing or update device list...
+						var videoDeviceId = captureDevice.DeviceId;
+						if (deviceId.Equals(videoDeviceId, StringComparison.InvariantCultureIgnoreCase))
+						{
+							logger.Warn("Capture device disconnected " + captureDevice.Name + " " + captureDevice.DeviceId);
+							//TODO: Close if capturing or update device list...
 
+						}
 					}
 				}
 			}
+			if (audioSettings != null)
+			{
+				var audioDevice = audioSettings.CaptureDevice;
+
+				if (audioDevice != null)
+				{
+					var audioDeviceId = audioDevice.DeviceId;
+
+					//if (deviceId.Equals(audioDeviceId, StringComparison.InvariantCultureIgnoreCase))
+					//{
+					//	logger.Warn("Capture device disconnected " + audioDevice.Name + " " + audioDevice.DeviceId);
+					//	//TODO: Close if capturing or update device list...
+
+					//}
+
+				}
+			}
+
 
 		}
 
 
-		protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams handleParam = base.CreateParams;
-                handleParam.ExStyle |= 0x02000000;      // WS_EX_COMPOSITED
-                return handleParam;
-            }
-        }
+		//protected override CreateParams CreateParams
+  //      {
+  //          get
+  //          {
+  //              CreateParams handleParam = base.CreateParams;
+  //              handleParam.ExStyle |= 0x02000000;      // WS_EX_COMPOSITED
+  //              return handleParam;
+  //          }
+  //      }
 
 
 		private void settingToolStripMenuItem_Click(object sender, EventArgs e)

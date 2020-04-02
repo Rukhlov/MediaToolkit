@@ -47,6 +47,10 @@ namespace ScreenStreamer.Wpf.Common.Models
         private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
 
+        public AudioStreamSettings AudioSettings => currentSession.AudioSettings;
+        public VideoStreamSettings VideoSettings => currentSession.VideoSettings;
+
+
         public event Action OnStreamStateChanged;
 
         public string Name { get; set; } = "";
@@ -265,6 +269,17 @@ namespace ScreenStreamer.Wpf.Common.Models
         public bool IsBorderVisible { get; set; }
     }
 
+    public class _PropertyVideoModel
+    {
+        public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
+        public bool IsRegion { get; set; }
+
+        public double Top { get; set; } = 0;
+        public double Left { get; set; } = 0;
+        public double ResolutionHeight { get; set; } = 1920;
+        public double ResolutionWidth { get; set; } = 1080;
+        public bool AspectRatio { get; set; } = true;
+    }
 
     public class PropertyVideoModel
     {

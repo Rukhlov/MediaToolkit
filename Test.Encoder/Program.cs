@@ -20,21 +20,111 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
 
-            //var flags = DeviceCreationFlags.VideoSupport |
-            //     DeviceCreationFlags.BgraSupport;
-            ////DeviceCreationFlags.Debug;
 
-            //var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
-            //using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            //{
-            //    multiThread.SetMultithreadProtected(true);
-            //}
+			var flags = DeviceCreationFlags.VideoSupport |
+						DeviceCreationFlags.BgraSupport|
+					    DeviceCreationFlags.Debug;
+
+			var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+			using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+			{
+				multiThread.SetMultithreadProtected(true);
+			}
+
+
+			//var descr = new SharpDX.Direct3D11.Texture2DDescription
+			//{
+			//	Width = 1920,
+			//	Height = 1080,
+			//	MipLevels = 1,
+			//	ArraySize = 1,
+			//	SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+			//	Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+			//	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+			//	BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+			//	CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+			//	OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+	
+			//};
+
+			//var texture = new SharpDX.Direct3D11.Texture2D(device, descr);
+
+
+			var bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
+			var texture = DxTool.GetTexture(bmp, device);
+
+			Texture2D stagingTexture = null;
+			try
+			{
+				// Create Staging texture CPU-accessible
+				stagingTexture = new Texture2D(device,
+					new Texture2DDescription
+					{
+						CpuAccessFlags = CpuAccessFlags.Read,
+						BindFlags = BindFlags.None,
+						Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+						Width = 1920,
+						Height = 1080,
+						MipLevels = 1,
+						ArraySize = 1,
+						SampleDescription = { Count = 1, Quality = 0 },
+						Usage = ResourceUsage.Staging,
+						OptionFlags = ResourceOptionFlags.None,
+					});
+
+				device.ImmediateContext.CopyResource(texture, stagingTexture);
+				device.ImmediateContext.Flush();
+
+				//var destBmp = new System.Drawing.Bitmap(1920, 1080, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+				System.Drawing.Bitmap destBmp = null;
+				int count = 10;
+				while (count-->0)
+				{
+					var result = DxTool.TextureToBitmap(stagingTexture, ref destBmp);
+
+					Thread.Sleep(10);
+				}
+
+
+				destBmp.Save("d:\\test.bmp");
+
+				destBmp.Dispose();
+
+			}
+			finally
+			{
+				stagingTexture?.Dispose();
+			}
+
+			texture.Dispose();
+			device.Dispose();
+			bmp.Dispose();
+
+			var report = SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects();
+			Console.WriteLine(report);
+			Console.ReadKey();
+
+
+			return;
+
+
+
+			//var flags = DeviceCreationFlags.VideoSupport |
+			//     DeviceCreationFlags.BgraSupport;
+			////DeviceCreationFlags.Debug;
+
+			//var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+			//using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+			//{
+			//    multiThread.SetMultithreadProtected(true);
+			//}
 
 
 
 
-            do
-            {
+			do
+			{
                 // var videoSource = new ScreenSource();
                 // ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
                 // {
@@ -111,9 +201,6 @@ namespace Test.Encoder
                     ArraySize = 1,
                     SampleDescription = { Count = 1 },
                 });
-
-                var bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
-                var texture = DxTool.GetTexture(bmp, encDevice);
 
 
 

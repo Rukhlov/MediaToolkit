@@ -202,7 +202,15 @@ namespace ScreenStreamer.Common
                 syncEvent = null;
             }
 
-            state = MediaStreamerState.Shutdown;
+			if (ExceptionObj != null)
+			{
+				logger.Warn(ExceptionObj);
+				ExceptionObj = null;
+			}
+
+			errorCode = 0;
+
+			state = MediaStreamerState.Shutdown;
 
             StateChanged?.Invoke();
 

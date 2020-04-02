@@ -54,7 +54,18 @@ namespace MediaToolkit.ScreenCaptures
 
             base.Init(srcRect, destSize);
 
-            InitDx();
+			try
+			{
+				InitDx();
+			}
+			catch (SharpDXException ex)
+			{
+				// Process error...
+				logger.Error(ex);
+
+				throw new Exception("DXGI initialization error [" + ex.ResultCode + "]");
+			}
+
         }
 
         private void InitDx()
@@ -314,6 +325,9 @@ namespace MediaToolkit.ScreenCaptures
             }
             catch (SharpDXException ex)
             {
+				logger.Error(ex);
+				// Process error...
+
                 CloseDx();
 
                 //throw;
@@ -1275,7 +1289,8 @@ namespace MediaToolkit.ScreenCaptures
                 Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
                 if (lockTaken)
                 {
-                    Result = MediaFoundation.DxTool.TextureToBitmap(texture, videoBuffer.bitmap);
+					var bmp = videoBuffer.bitmap;
+                    Result = MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
                 }
                 else
                 {
