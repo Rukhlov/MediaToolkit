@@ -1,4 +1,4 @@
-﻿namespace TestStreamer.Controls
+﻿namespace ScreenStreamer.WinForms.App
 {
     partial class AudioSettingsForm
     {

@@ -1,6 +1,7 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
 using MediaToolkit.UI;
+using NLog;
 using ScreenStreamer.Common;
 using ScreenStreamer.WinForms.App;
 using System;
@@ -15,11 +16,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TestStreamer.Controls
+namespace ScreenStreamer.WinForms.App
 {
     public partial class VideoSettingsForm : Form
     {
 
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private int MinWidth = 64;
 		private int MinHeight = 64;
@@ -516,9 +518,6 @@ namespace TestStreamer.Controls
         //}
 
 
-
-
-
         private PreviewForm previewForm = null;
         private IVideoSource videoSource = null;
 
@@ -526,7 +525,9 @@ namespace TestStreamer.Controls
 
         private void previewButton_Click(object sender, EventArgs e)
         {
-			try
+            logger.Debug("previewButton_Click(...)");
+
+            try
 			{
 				var captureDevice = this.VideoSettings.CaptureDevice;
 
@@ -545,7 +546,9 @@ namespace TestStreamer.Controls
 
 					videoSource.CaptureStarted += VideoSource_CaptureStarted;
 					videoSource.CaptureStopped += VideoSource_CaptureStopped;
-				}
+
+                    videoSource.BufferUpdated += VideoSource_BufferUpdated;
+                }
 
 
 				if (videoSource.State == CaptureState.Capturing)
@@ -569,7 +572,8 @@ namespace TestStreamer.Controls
 
 				if (videoSource != null)
 				{
-					videoSource.CaptureStarted -= VideoSource_CaptureStarted;
+                    videoSource.BufferUpdated -= VideoSource_BufferUpdated;
+                    videoSource.CaptureStarted -= VideoSource_CaptureStarted;
 					videoSource.CaptureStopped -= VideoSource_CaptureStopped;
 					videoSource.Close(true);
 					videoSource = null;
@@ -578,22 +582,62 @@ namespace TestStreamer.Controls
 			}
         }
 
+
         private void VideoSource_CaptureStarted()
         {
+            logger.Debug("VideoSource_CaptureStarted()");
+
             syncContext.Send(_ =>
             {
-                OnVideoSourceStarted();
+                try
+                {
+                    OnVideoSourceStarted();
+                }
+                catch(Exception ex)
+                {
+                    logger.Error(ex);
+                }
+                finally
+                {
+                    this.Cursor = Cursors.Default;
+                    this.Enabled = true;
+                }
+               
 
             }, null);
 
         }
 
+
+        private void VideoSource_BufferUpdated()
+        {
+            if (previewForm != null)
+            {
+                previewForm.Render();
+            }
+        }
+
+
         private void VideoSource_CaptureStopped(object obj)
         {
+            logger.Debug("VideoSource_CaptureStopped()");
 
             syncContext.Send(_ =>
             {
-                OnVideoSourceStopped();
+                try
+                {
+                    OnVideoSourceStopped();
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex);
+                }
+                finally
+                {
+                    this.Cursor = Cursors.Default;
+                    this.Enabled = true;
+                }
+                
 
             }, null);
 
@@ -603,7 +647,7 @@ namespace TestStreamer.Controls
 
         private void OnVideoSourceStarted()
         {
-
+            logger.Debug("OnVideoSourceStarted()");
             if (previewForm != null && !previewForm.IsDisposed)
             {
                 previewForm.Close();
@@ -611,36 +655,71 @@ namespace TestStreamer.Controls
                 previewForm = null;
             }
 
-
+            var previewSettings = Config.Data.VideoPreviewSettings;
             if (previewForm == null || previewForm.IsDisposed)
             {
+               
                 previewForm = new PreviewForm
                 {
-                    StartPosition = FormStartPosition.CenterParent,
+                    //ClientSize = VideoSettings.CaptureDevice.Resolution,
+                    Size = previewSettings.PreviewSize,
+
+                    StartPosition = FormStartPosition.CenterScreen,
                     Icon = ScreenStreamer.WinForms.App.Properties.Resources.logo,
+
                     //ShowIcon = false,
                 };
 
                 previewForm.FormClosed += PreviewForm_FormClosed;
 
-                previewForm.Setup(videoSource);
+                bool result = previewForm.Setup(videoSource);
 
+                if (!result)
+                {
+                    //...
+                }
             }
 
+            var captureDevice = VideoSettings.CaptureDevice;
+            var resolution = captureDevice.Resolution;
 
-            var caputreDevice = VideoSettings.CaptureDevice;
+            var title = captureDevice.Name;
+            var description = "";
+            if (captureDevice is ScreenCaptureDevice)
+            {
+                var screenCapture = (ScreenCaptureDevice)captureDevice;
+                if (screenCapture.DisplayRegion.IsEmpty)
+                {
+                    description = resolution.Width + "x" + resolution.Height + " " + screenCapture.Properties.Fps + " fps";
+                }
+                    
+            }
+            else if(captureDevice is UvcDevice)
+            {
+                var uvcDevice = (UvcDevice)captureDevice;
 
-            previewForm.Text = caputreDevice.Name;
+                description = resolution.Width + "x" + resolution.Height + " " + uvcDevice.CurrentProfile.FrameRate + " fps";
+            }
 
+            if (!string.IsNullOrEmpty(description))
+            {
+                title += " (" + description + ")";
+            }
+            previewForm.Text = title;
+
+            bool fitVideoToWindow = previewSettings.FitVideoToWindow;
+
+            previewForm.UpdateWindow(fitVideoToWindow, captureDevice.Resolution);
             previewForm.Visible = true;
 
-            this.Cursor = Cursors.Default;
-            this.Enabled = true;
+
 
         }
 
         private void OnVideoSourceStopped()
         {
+            logger.Debug("OnVideoSourceStopped()");
+
             if (previewForm != null && !previewForm.IsDisposed)
             {
                 previewForm.Visible = false;
@@ -652,13 +731,13 @@ namespace TestStreamer.Controls
 
             videoSource = null;
 
-            this.Cursor = Cursors.Default;
-            this.Enabled = true;
         }
 
 
         private void PreviewForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            logger.Debug("PreviewForm_FormClosed()");
+
             if (videoSource != null)
             {
                 videoSource.Stop();
@@ -668,6 +747,7 @@ namespace TestStreamer.Controls
 
         protected override void OnClosed(EventArgs e)
         {
+            logger.Debug("VideoSettingsForm::OnClosed()");
 
             if (previewForm != null && !previewForm.IsDisposed)
             {

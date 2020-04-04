@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TestStreamer.Controls
+namespace ScreenStreamer.WinForms.App
 {
     public partial class AudioSettingsForm : Form
     {

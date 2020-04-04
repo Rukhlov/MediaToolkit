@@ -196,7 +196,7 @@ namespace MediaToolkit.UI
 
                         Draw();
 
-                        waitEvent.WaitOne(1000);
+                        waitEvent?.WaitOne(1000);
                     }
                 }
                 catch (Exception ex)

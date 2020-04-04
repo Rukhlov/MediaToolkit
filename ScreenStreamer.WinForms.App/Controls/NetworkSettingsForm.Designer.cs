@@ -1,4 +1,4 @@
-﻿namespace Test.Streamer.Controls
+﻿namespace ScreenStreamer.WinForms.App
 {
     partial class NetworkSettingsForm
     {

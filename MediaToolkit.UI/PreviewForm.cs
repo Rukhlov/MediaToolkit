@@ -20,16 +20,17 @@ namespace MediaToolkit.UI
         }
 
         private D3DImageRenderer renderer = null;
-        private IVideoSource videoSource = null;
 
-        public void Setup(IVideoSource videoSource)
+        public bool Setup(IVideoSource videoSource)
         {
+            bool result = false;
+            if(renderer != null)
+            {
+                return result;
+            }
+
             if (videoSource != null)
             {
-                this.videoSource = videoSource;
-
-                videoSource.BufferUpdated += VideoSource_BufferUpdated;
-
                 renderer = new D3DImageRenderer();
 
                 var texture = videoSource.SharedTexture;
@@ -37,18 +38,52 @@ namespace MediaToolkit.UI
                 {
                     renderer.Setup(texture);
                     d3DImageControl1.DataContext = renderer;
+                    result = true;
                 }
             }
 
+            return result;
+
         }
 
-        private void VideoSource_BufferUpdated()
+
+        public bool Render()
         {
-            if (renderer != null)
+            bool success = false;
+
+            if (Visible)
             {
-                renderer.Update();
+                if (renderer != null)
+                {
+                    renderer.Update();
+                    success = true;
+                }
             }
 
+            return success;
+        }
+
+        public void UpdateWindow(bool fitToVideo, Size videoSize)
+        {
+            if (!fitToVideo)
+            {
+
+                elementHost1.Dock = DockStyle.Fill;
+                this.MaximumSize = new Size(0, 0);
+            }
+            else
+            {
+
+                elementHost1.Dock = DockStyle.None;
+                elementHost1.Size = videoSize;
+                this.ClientSize = elementHost1.ClientSize;
+
+                int maxWidth = (elementHost1.ClientRectangle.Width + (this.Width - this.ClientSize.Width));
+                int maxHeight = (elementHost1.ClientRectangle.Height + (this.Height - this.ClientSize.Height));
+
+                this.MaximumSize = new Size(maxWidth, maxHeight);
+
+            }
         }
 
         protected override void OnVisibleChanged(EventArgs e)
@@ -74,7 +109,6 @@ namespace MediaToolkit.UI
 
             if (renderer != null)
             {
-                videoSource.BufferUpdated -= VideoSource_BufferUpdated;
                 renderer.Close(true);
                 renderer = null;
             }

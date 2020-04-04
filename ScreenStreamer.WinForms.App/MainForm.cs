@@ -22,8 +22,7 @@ using ScreenStreamer.Common;
 using MediaToolkit.Core;
 using MediaToolkit.UI;
 
-using TestStreamer.Controls;
-using Test.Streamer.Controls;
+
 using MediaToolkit;
 using MediaToolkit.Managers;
 using MediaToolkit.NativeAPIs;
@@ -643,19 +642,21 @@ namespace ScreenStreamer.WinForms.App
 
             if (items.Count > 1)
             {
+                var allScreenRect = SystemInformation.VirtualScreen;
+
                 ScreenCaptureDevice device = new ScreenCaptureDevice
                 {
-                    DisplayRegion = SystemInformation.VirtualScreen,
-                    CaptureRegion = SystemInformation.VirtualScreen,
-                    Resolution = SystemInformation.VirtualScreen.Size,
+                    DisplayRegion = allScreenRect,
+                    CaptureRegion = allScreenRect,
+                    Resolution = allScreenRect.Size,
                     Properties = captureProperties,
-                    Name = "All Screens",
+                    Name = "All Screens (" + allScreenRect.Width + "x" + allScreenRect.Height + ")",
                     DeviceId = "AllScreens",
                 };
 
                 items.Add(new ComboBoxItem
                 {
-                    Name = "All Screens",//+ "" + s.Bounds.ToString(),
+                    Name = device.Name,//+ "" + s.Bounds.ToString(),
                     Tag = device,
                 });
 

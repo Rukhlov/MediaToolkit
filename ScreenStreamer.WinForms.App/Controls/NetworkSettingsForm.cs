@@ -12,10 +12,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TestStreamer;
-using TestStreamer.Controls;
 
-namespace Test.Streamer.Controls
+
+namespace ScreenStreamer.WinForms.App
 {
     public partial class NetworkSettingsForm : Form
     {

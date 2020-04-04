@@ -45,6 +45,8 @@ namespace ScreenStreamer.WinForms.App
 
         public WasapiCaptureProperties WasapiCaptureProps { get; set; } = new WasapiCaptureProperties();
 
+        public VideoPreviewSettings VideoPreviewSettings { get; set; } = new VideoPreviewSettings();
+
         private static Config data;
         public static Config Data
         {
@@ -57,6 +59,7 @@ namespace ScreenStreamer.WinForms.App
                 return data;
             }
         }
+
 
 
         public static bool TempMode { get; private set; }
@@ -333,7 +336,18 @@ namespace ScreenStreamer.WinForms.App
             return config;
 
         }
+
+
     }
 
+    [Serializable]
+    public class VideoPreviewSettings
+    {
+        [XmlElement(typeof(XmlSize))]
+        public Size PreviewSize { get; set; } = new Size(640, 480);
+
+        [XmlAttribute]
+        public bool FitVideoToWindow { get; set; } = true;
+    }
 
 }
