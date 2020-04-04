@@ -20,7 +20,6 @@ namespace MediaToolkit.UI
         }
 
         private D3DImageRenderer renderer = null;
-
         private IVideoSource videoSource = null;
 
         public void Setup(IVideoSource videoSource)

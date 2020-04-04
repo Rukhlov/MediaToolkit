@@ -526,39 +526,56 @@ namespace TestStreamer.Controls
 
         private void previewButton_Click(object sender, EventArgs e)
         {
-            var captureDevice= this.VideoSettings.CaptureDevice;
+			try
+			{
+				var captureDevice = this.VideoSettings.CaptureDevice;
 
-            if (videoSource == null)
-            {
-                if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
-                {
-                    videoSource = new VideoCaptureSource();
-                    videoSource.Setup(captureDevice);
-                }
-                else if (captureDevice.CaptureMode == CaptureMode.Screen)
-                {
-                    videoSource = new ScreenSource();
-                    videoSource.Setup(captureDevice);
-                }
+				if (videoSource == null)
+				{
+					if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+					{
+						videoSource = new VideoCaptureSource();
+						videoSource.Setup(captureDevice);
+					}
+					else if (captureDevice.CaptureMode == CaptureMode.Screen)
+					{
+						videoSource = new ScreenSource();
+						videoSource.Setup(captureDevice);
+					}
 
-                videoSource.CaptureStarted += VideoSource_CaptureStarted;
-                videoSource.CaptureStopped += VideoSource_CaptureStopped;
-            }
-
-
-            if (videoSource.State == CaptureState.Capturing)
-            {
-                videoSource.Stop();
-            }
-            else
-            {
-                videoSource.Start();
-            }
-
-            this.Cursor = Cursors.WaitCursor;
-            this.Enabled = false;
+					videoSource.CaptureStarted += VideoSource_CaptureStarted;
+					videoSource.CaptureStopped += VideoSource_CaptureStopped;
+				}
 
 
+				if (videoSource.State == CaptureState.Capturing)
+				{
+					videoSource.Stop();
+				}
+				else
+				{
+					videoSource.Start();
+				}
+
+				this.Cursor = Cursors.WaitCursor;
+				this.Enabled = false;
+			}
+			catch(Exception ex)
+			{
+				this.Cursor = Cursors.Default;
+				this.Enabled = true;
+
+				MessageBox.Show(ex.Message);
+
+				if (videoSource != null)
+				{
+					videoSource.CaptureStarted -= VideoSource_CaptureStarted;
+					videoSource.CaptureStopped -= VideoSource_CaptureStopped;
+					videoSource.Close(true);
+					videoSource = null;
+				}
+
+			}
         }
 
         private void VideoSource_CaptureStarted()
