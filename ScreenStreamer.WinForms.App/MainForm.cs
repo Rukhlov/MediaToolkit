@@ -630,6 +630,8 @@ namespace ScreenStreamer.WinForms.App
                 //{
                 //    name += " (" + friendlyName + " " + bounds.Width  + "x" + bounds.Height + ") ";
                 //}
+                device.Name = monitorName;
+
                 items.Add(new ComboBoxItem
                 {
                     Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),

@@ -31,14 +31,14 @@ namespace TestStreamer.Controls
         {
             InitializeComponent();
 
-            LoadEncoderProfilesItems();
+            //LoadEncoderProfilesItems();
 
-            //LoadTransportItems();
-            LoadEncoderItems();
+            ////LoadTransportItems();
+            //LoadEncoderItems();
 
-            LoadRateModeItems();
+            //LoadRateModeItems();
 
-            LoadCaptureTypes();
+            //LoadCaptureTypes();
 
             syncContext = SynchronizationContext.Current;
 
@@ -52,26 +52,37 @@ namespace TestStreamer.Controls
 
             this.VideoSettings = settingsParams;
 
-            var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
-            if (screenCaptureParams != null)
+            LoadEncoderProfilesItems();
+
+            LoadEncoderItems();
+
+            LoadRateModeItems();
+
+            LoadCaptureTypes();
+
+            var screenCaptureDevice = VideoSettings.CaptureDevice as ScreenCaptureDevice;
+            if (screenCaptureDevice != null)
             {
                // var captureDescr = screenCaptureParams.CaptureDescription;
-                this.displayTextBox.Text = screenCaptureParams.Name;
+                this.displayTextBox.Text = screenCaptureDevice.Name;
 
-                this.CaptureRegion = screenCaptureParams.CaptureRegion;
-                this.captureMouseCheckBox.Checked = screenCaptureParams.Properties.CaptureMouse;
+                this.CaptureRegion = screenCaptureDevice.CaptureRegion;
+                this.captureMouseCheckBox.Checked = screenCaptureDevice.Properties.CaptureMouse;
 
-                this.aspectRatioCheckBox.Checked = screenCaptureParams.Properties.AspectRatio;
+                this.aspectRatioCheckBox.Checked = screenCaptureDevice.Properties.AspectRatio;
 
-                WebCamGroup.Visible = false;
-                ScreenCaptureGroup.Visible = true;
+                cameraTableLayoutPanel.Visible = false;
+                screenCaptureTableLayoutPanel.Visible = true;
+                screenCaptureDetailsPanel.Visible = true;
+                //WebCamGroup.Visible = false;
+                //ScreenCaptureGroup.Visible = true;
 
                 //adjustAspectRatioButton.Visible = true;
 
-                showDebugInfoCheckBox.Checked = screenCaptureParams.Properties.ShowDebugInfo;
-                showCaptureBorderCheckBox.Checked = screenCaptureParams.Properties.ShowDebugBorder;
+                showDebugInfoCheckBox.Checked = screenCaptureDevice.Properties.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = screenCaptureDevice.Properties.ShowDebugBorder;
 
-                if (screenCaptureParams.DisplayRegion.IsEmpty)
+                if (screenCaptureDevice.DisplayRegion.IsEmpty)
                 {
                     displayTextBox.Visible = false;
                     labelDisplay.Visible = false;
@@ -79,12 +90,12 @@ namespace TestStreamer.Controls
 
             }
 
-            var webCamCaptureParams = VideoSettings.CaptureDevice as UvcDevice;
-            if (webCamCaptureParams != null)
+            var uvcDevice = VideoSettings.CaptureDevice as UvcDevice;
+            if (uvcDevice != null)
             {
-                CaptureDeviceTextBox.Text = webCamCaptureParams.Name;
+                CaptureDeviceTextBox.Text = uvcDevice.Name;
 
-                var profile = webCamCaptureParams?.CurrentProfile;
+                var profile = uvcDevice?.CurrentProfile;
                 List<ComboBoxItem> profileItems = new List<ComboBoxItem>
                 {
                     new ComboBoxItem
@@ -97,8 +108,12 @@ namespace TestStreamer.Controls
                 CaptureDeviceProfilesComboBox.DisplayMember = "Name";
                 CaptureDeviceProfilesComboBox.ValueMember = "Tag";
 
-                WebCamGroup.Visible = true;
-                ScreenCaptureGroup.Visible = false;
+
+                cameraTableLayoutPanel.Visible = true;
+                screenCaptureTableLayoutPanel.Visible = false;
+                screenCaptureDetailsPanel.Visible = false;
+                //WebCamGroup.Visible = true;
+                //ScreenCaptureGroup.Visible = false;
 
                 //adjustAspectRatioButton.Visible = false;
             }
@@ -263,14 +278,35 @@ namespace TestStreamer.Controls
         private void LoadCaptureTypes()
         {
 
-            List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
-            captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
-            captureTypes.Add(VideoCaptureType.GDI);
-            //captureTypes.Add(CaptureType.GDIPlus);
-            captureTypes.Add(VideoCaptureType.Direct3D9);
-            captureTypes.Add(VideoCaptureType.Datapath);
+            //List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
+            //captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
+            //captureTypes.Add(VideoCaptureType.GDI);
+            ////captureTypes.Add(CaptureType.GDIPlus);
+            //captureTypes.Add(VideoCaptureType.Direct3D9);
+            //captureTypes.Add(VideoCaptureType.Datapath);
 
-            captureTypesComboBox.DataSource = captureTypes;
+            //captureTypesComboBox.DataSource = captureTypes;
+
+            List<ComboBoxItem> _captureTypes = new List<ComboBoxItem>();
+
+
+            var captureProps = Config.Data.ScreenCaptureProperties;
+            var caputreDevice = VideoSettings.CaptureDevice;
+
+            var resolution = caputreDevice.Resolution;
+            var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
+
+            // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
+            _captureTypes.Add(new ComboBoxItem
+            {
+                Name = "Desktop Duplication API (" + propsStr + ")",
+                Tag = VideoCaptureType.DXGIDeskDupl,
+            });
+
+
+            captureTypesComboBox.DataSource = _captureTypes;
+            captureTypesComboBox.DisplayMember = "Name";
+            captureTypesComboBox.ValueMember = "Tag";
         }
 
         private Rectangle CaptureRegion = Rectangle.Empty;
@@ -367,108 +403,8 @@ namespace TestStreamer.Controls
 			}
         }
 
-        private PreviewForm previewForm = null;
-        private D3DImageProvider provider = new D3DImageProvider();
-        private IVideoSource videoSource = null;
 
-        private SynchronizationContext syncContext = null;
-
-        private void previewButton_Click(object sender, EventArgs e)
-        {
-            var captureDescr = this.VideoSettings.CaptureDevice;
-
-            if (videoSource == null)
-            {
-                if (captureDescr.CaptureMode == CaptureMode.UvcDevice)
-                {
-                    videoSource = new VideoCaptureSource();
-                    videoSource.Setup(captureDescr);
-                }
-                else if (captureDescr.CaptureMode == CaptureMode.Screen)
-                {
-                    videoSource = new ScreenSource();
-                    videoSource.Setup(captureDescr);
-                }
-
-                videoSource.CaptureStarted += VideoSource_CaptureStarted;
-                videoSource.CaptureStopped += VideoSource_CaptureStopped;
-            }
-
-            if (videoSource.State == CaptureState.Capturing)
-            {
-                videoSource.Stop();
-            }
-            else
-            {
-                videoSource.Start();
-            }
-
-        }
-
-        private void VideoSource_CaptureStarted()
-        {
-            syncContext.Send(_ => 
-            {
-                OnCaptureStarted();
-            }, null);
-           
-        }
-
-        private void VideoSource_CaptureStopped(object obj)
-        {
-
-            syncContext.Send(_ =>
-            {
-                OnCaptureStopped();
-
-                videoSource.Close(true);
-                videoSource.CaptureStarted -= VideoSource_CaptureStarted;
-                videoSource.CaptureStopped -= VideoSource_CaptureStopped;
-
-                videoSource = null;
-
-            }, null);
-        }
-
-        private void OnCaptureStarted()
-        {
-            if(previewForm == null)
-            {
-                previewForm = new PreviewForm
-                {
-                    StartPosition = FormStartPosition.CenterParent,
-                };
-                previewForm.FormClosed += PreviewForm_FormClosed;
-            }
-
-            provider.Setup(videoSource);
-
-            previewForm.Link(provider);
-
-            var title = "";//"Src" + pars.SrcRect + "->Dst" + pars.DestSize + " Fps=" + pars.Fps + " Ratio=" + pars.AspectRatio;
-
-            previewForm.Text = title;
-
-            previewForm.Visible = true;
-        }
-
-        private void PreviewForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            if(videoSource != null)
-            {
-                videoSource.Stop();
-            }
-        }
-
-        private void OnCaptureStopped()
-        {
-            if (previewForm != null && !previewForm.IsDisposed)
-            {
-                previewForm.Visible = !previewForm.Visible;
-            }
-        }
-
-		private void destWidthNumeric_ValueChanged(object sender, EventArgs e)
+        private void destWidthNumeric_ValueChanged(object sender, EventArgs e)
 		{
 			Debug.WriteLine("destWidthNumeric_ValueChanged(...)");
 			return;
@@ -574,9 +510,158 @@ namespace TestStreamer.Controls
 
 		private bool adjustResolutionToSrcAspectRatio = false;
 
-		//private void adjustResolutionCheckBox_CheckedChanged(object sender, EventArgs e)
-		//{
-		//	adjustResolutionToSrcAspectRatio = adjustResolutionCheckBox.Checked;
-		//}
-	}
+        //private void adjustResolutionCheckBox_CheckedChanged(object sender, EventArgs e)
+        //{
+        //	adjustResolutionToSrcAspectRatio = adjustResolutionCheckBox.Checked;
+        //}
+
+
+
+
+
+        private PreviewForm previewForm = null;
+        private IVideoSource videoSource = null;
+
+        private SynchronizationContext syncContext = null;
+
+        private void previewButton_Click(object sender, EventArgs e)
+        {
+            var captureDevice= this.VideoSettings.CaptureDevice;
+
+            if (videoSource == null)
+            {
+                if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+                {
+                    videoSource = new VideoCaptureSource();
+                    videoSource.Setup(captureDevice);
+                }
+                else if (captureDevice.CaptureMode == CaptureMode.Screen)
+                {
+                    videoSource = new ScreenSource();
+                    videoSource.Setup(captureDevice);
+                }
+
+                videoSource.CaptureStarted += VideoSource_CaptureStarted;
+                videoSource.CaptureStopped += VideoSource_CaptureStopped;
+            }
+
+
+            if (videoSource.State == CaptureState.Capturing)
+            {
+                videoSource.Stop();
+            }
+            else
+            {
+                videoSource.Start();
+            }
+
+            this.Cursor = Cursors.WaitCursor;
+            this.Enabled = false;
+
+
+        }
+
+        private void VideoSource_CaptureStarted()
+        {
+            syncContext.Send(_ =>
+            {
+                OnVideoSourceStarted();
+
+            }, null);
+
+        }
+
+        private void VideoSource_CaptureStopped(object obj)
+        {
+
+            syncContext.Send(_ =>
+            {
+                OnVideoSourceStopped();
+
+            }, null);
+
+        }
+
+
+
+        private void OnVideoSourceStarted()
+        {
+
+            if (previewForm != null && !previewForm.IsDisposed)
+            {
+                previewForm.Close();
+                previewForm.FormClosed -= PreviewForm_FormClosed;
+                previewForm = null;
+            }
+
+
+            if (previewForm == null || previewForm.IsDisposed)
+            {
+                previewForm = new PreviewForm
+                {
+                    StartPosition = FormStartPosition.CenterParent,
+                    Icon = ScreenStreamer.WinForms.App.Properties.Resources.logo,
+                    //ShowIcon = false,
+                };
+
+                previewForm.FormClosed += PreviewForm_FormClosed;
+
+                previewForm.Setup(videoSource);
+
+            }
+
+
+            var caputreDevice = VideoSettings.CaptureDevice;
+
+            previewForm.Text = caputreDevice.Name;
+
+            previewForm.Visible = true;
+
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+
+        }
+
+        private void OnVideoSourceStopped()
+        {
+            if (previewForm != null && !previewForm.IsDisposed)
+            {
+                previewForm.Visible = false;
+            }
+
+            videoSource.Close(true);
+            videoSource.CaptureStarted -= VideoSource_CaptureStarted;
+            videoSource.CaptureStopped -= VideoSource_CaptureStopped;
+
+            videoSource = null;
+
+            this.Cursor = Cursors.Default;
+            this.Enabled = true;
+        }
+
+
+        private void PreviewForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (videoSource != null)
+            {
+                videoSource.Stop();
+            }
+        }
+
+
+        protected override void OnClosed(EventArgs e)
+        {
+
+            if (previewForm != null && !previewForm.IsDisposed)
+            {
+                previewForm.Close();
+
+                previewForm.FormClosed -= PreviewForm_FormClosed;
+                previewForm = null;
+            }
+
+            base.OnClosed(e);
+        }
+
+    }
 }

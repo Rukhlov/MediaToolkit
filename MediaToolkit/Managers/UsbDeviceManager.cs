@@ -41,7 +41,7 @@ namespace MediaToolkit.Managers
 			//
 			// KS.KSCATEGORY_VIDEO_CAMERA <--win10
 			// KS.CATEGORY_CAPTURE <--win7
-			var classGuid = KS.KSCATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
+			var classGuid = KS.CATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
             
             var handle = RegisterNotification(hWnd, classGuid);
 

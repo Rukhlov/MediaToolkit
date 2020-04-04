@@ -683,22 +683,18 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
-		public static bool TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
+		public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
 		{
-
-			bool result = false;
 
 			var descr = texture.Description;
 			if (descr.Format != Format.B8G8R8A8_UNorm)
 			{
-				Trace.TraceError("Invalid texture format " + descr.Format);
-				return result;
+				 throw new Exception("Invalid texture format " + descr.Format);
 			}
 
 			if(descr.Width <= 0 || descr.Height <= 0)
 			{
-				Trace.TraceError("Invalid texture size: " + descr.Width + " " + descr.Height);
-				return result;
+				throw new Exception("Invalid texture size: " + descr.Width + " " + descr.Height);
 			}
 
 			if (bmp == null)
@@ -708,15 +704,13 @@ namespace MediaToolkit.MediaFoundation
 
 			if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
 			{
-				Trace.TraceError("Invalid bitmap format " + bmp.PixelFormat);
-				return result;
+				throw new Exception("Invalid bitmap format " + bmp.PixelFormat);
 
 			}
 
 			if (bmp.Width != descr.Width || bmp.Height != descr.Height)
 			{
-				Trace.TraceError("Invalid params");
-				return result;
+				throw new Exception("Invalid params");
 
 			}
 
@@ -732,21 +726,20 @@ namespace MediaToolkit.MediaFoundation
 					var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
 					try
 					{
-						IntPtr srcPtr = srcData.DataPointer;
-						int srcOffset = rect.Top * srcData.Pitch + rect.Left * 4;
+                        int bytesPerPixel = GDI.Image.GetPixelFormatSize(bmp.PixelFormat) / 8;
+                        IntPtr srcPtr = srcData.DataPointer;
+						int srcOffset = rect.Top * srcData.Pitch + rect.Left * bytesPerPixel;
 
 						srcPtr = IntPtr.Add(srcPtr, srcOffset);
 
 						var destPtr = destData.Scan0;
 						for (int row = rect.Top; row < rect.Bottom; row++)
 						{
-							Utilities.CopyMemory(destPtr, srcPtr, width * 4);
+							Utilities.CopyMemory(destPtr, srcPtr, width * bytesPerPixel);
 							srcPtr = IntPtr.Add(srcPtr, srcData.Pitch);
 							destPtr = IntPtr.Add(destPtr, destData.Stride);
 
 						}
-
-						result = true;
 					}
 					finally
 					{
@@ -758,76 +751,26 @@ namespace MediaToolkit.MediaFoundation
 					surface.Unmap();
 				}
 			}
-
-			return result;
 		}
 
-		public static bool _TextureToBitmap(Texture2D texture, GDI.Bitmap bmp)
-        {
+		public static byte[] GetTextureBytes(Texture2D texture)
+		{
+			byte[] textureBytes = null;
+			using (Surface surface = texture.QueryInterface<Surface>())
+			{
+				try
+				{
+					surface.Map(SharpDX.DXGI.MapFlags.Read, out DataStream dataStream);
+					textureBytes = dataStream.ReadRange<byte>((int)dataStream.Length);
+				}
+				finally
+				{
+					surface.Unmap();
+				}
+			}
 
-            bool success = false;
-            var descr = texture.Description;
-            if (descr.Format != Format.B8G8R8A8_UNorm)
-            {
-                throw new InvalidOperationException("Invalid texture format " + descr.Format);
-            }
-		    
-
-			if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
-            {
-                throw new InvalidOperationException("Invalid bitmap format " + bmp.PixelFormat);
-            }
-
-            if (bmp.Width != descr.Width || bmp.Height != descr.Height)
-            {
-                throw new InvalidOperationException("Invalid size " + bmp.PixelFormat);
-
-                //...
-                //logger.Warn(bmp.Width != descr.Width || bmp.Height != descr.Height);
-                //return false;
-            }
-
-            // FIXME: memory leak.......
-            var device = texture.Device; // !!!!!!!!!!!
-            try
-            {
-                var srcData = device.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-
-                int width = bmp.Width;
-                int height = bmp.Height;
-                var rect = new GDI.Rectangle(0, 0, width, height);
-                var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
-                try
-                {
-                    IntPtr srcPtr = srcData.DataPointer;
-                    int srcOffset = rect.Top * srcData.RowPitch + rect.Left * 4;
-
-                    srcPtr = IntPtr.Add(srcPtr, srcOffset);
-
-                    var destPtr = destData.Scan0;
-                    for (int row = rect.Top; row < rect.Bottom; row++)
-                    {
-                        Utilities.CopyMemory(destPtr, srcPtr, width * 4);
-                        srcPtr = IntPtr.Add(srcPtr, srcData.RowPitch);
-                        destPtr = IntPtr.Add(destPtr, destData.Stride);
-
-                    }
-
-                    success = true;
-                }
-                finally
-                {
-                    bmp.UnlockBits(destData);
-                }
-
-            }
-            finally
-            {
-                device.ImmediateContext.UnmapSubresource(texture, 0);
-            }
-
-            return success;
-        }
+			return textureBytes;
+		}
 
 
 		public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)

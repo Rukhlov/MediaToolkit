@@ -1290,7 +1290,8 @@ namespace MediaToolkit.ScreenCaptures
                 if (lockTaken)
                 {
 					var bmp = videoBuffer.bitmap;
-                    Result = MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
+                    MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
+					Result = true;
                 }
                 else
                 {

@@ -19,14 +19,69 @@ namespace MediaToolkit.UI
             InitializeComponent();
         }
 
-        public void Link(D3DImageProvider provider)
+        private D3DImageRenderer renderer = null;
+
+        private IVideoSource videoSource = null;
+
+        public void Setup(IVideoSource videoSource)
         {
-            d3DImageControl1.DataContext = provider;
+            if (videoSource != null)
+            {
+                this.videoSource = videoSource;
+
+                videoSource.BufferUpdated += VideoSource_BufferUpdated;
+
+                renderer = new D3DImageRenderer();
+
+                var texture = videoSource.SharedTexture;
+                if (texture != null)
+                {
+                    renderer.Setup(texture);
+                    d3DImageControl1.DataContext = renderer;
+                }
+            }
+
         }
 
-        public void UnLink()
+        private void VideoSource_BufferUpdated()
         {
+            if (renderer != null)
+            {
+                renderer.Update();
+            }
+
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            if (renderer != null)
+            {
+                if (this.Visible)
+                {
+                    renderer.Start();
+                }
+                else
+                {
+                    renderer.Stop();
+                }
+            }
+
+
+            base.OnVisibleChanged(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+
+            if (renderer != null)
+            {
+                videoSource.BufferUpdated -= VideoSource_BufferUpdated;
+                renderer.Close(true);
+                renderer = null;
+            }
+
             d3DImageControl1.DataContext = null;
+            base.OnClosed(e);
         }
     }
 }

@@ -5,6 +5,7 @@ using SharpDX;
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -79,13 +80,20 @@ namespace Test.Encoder
 
 				System.Drawing.Bitmap destBmp = null;
 				int count = 10;
+
+                byte[] bytes = null;
 				while (count-->0)
 				{
-					var result = DxTool.TextureToBitmap(stagingTexture, ref destBmp);
+					DxTool.TextureToBitmap(stagingTexture, ref destBmp);
+
+					bytes = DxTool.GetTextureBytes(stagingTexture);
+
+
 
 					Thread.Sleep(10);
 				}
 
+                File.WriteAllBytes("d:\\test_argb32.raw", bytes);
 
 				destBmp.Save("d:\\test.bmp");
 
