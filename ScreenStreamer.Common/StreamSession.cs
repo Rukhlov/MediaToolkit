@@ -156,6 +156,8 @@ namespace ScreenStreamer.Common
 
 				captureDevice.Resolution = new Size(width, height);
 
+
+                /*
 				var encodingSettings = VideoSettings.EncoderSettings;
 				if (VideoSettings.UseEncoderResoulutionFromSource)
 				{
@@ -171,7 +173,7 @@ namespace ScreenStreamer.Common
 				{
 					//captureDevice.Resolution = Size.Empty;
 				}
-
+                */
 			}
 
 			if (AudioSettings.Enabled)
@@ -393,6 +395,7 @@ namespace ScreenStreamer.Common
 		public VideoCaptureDevice CaptureDevice { get; set; }
 
 		public VideoEncoderSettings EncoderSettings { get; set; } = new VideoEncoderSettings();
+
 
         [XmlIgnore]
         public bool IsScreenRegion

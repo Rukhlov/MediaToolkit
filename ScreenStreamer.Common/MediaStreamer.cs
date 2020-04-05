@@ -226,8 +226,20 @@ namespace ScreenStreamer.Common
 
             if (videoSettings.Enabled)
             {
-                var captureDevice = videoSettings.CaptureDevice;
+                var captureDevice = (VideoCaptureDevice)videoSettings.CaptureDevice.Clone();
 
+                var videoEncoderSettings = (VideoEncoderSettings)videoSettings.EncoderSettings.Clone();
+                if (videoSettings.UseEncoderResoulutionFromSource)
+                {
+                    videoEncoderSettings.Width = captureDevice.Resolution.Width;
+                    videoEncoderSettings.Height = captureDevice.Resolution.Height;
+                }
+                else
+                {
+                    captureDevice.Resolution = videoEncoderSettings.Resolution;
+                }
+
+  
                 if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
                 {
                     videoSource = new VideoCaptureSource();
@@ -246,7 +258,10 @@ namespace ScreenStreamer.Common
                 {
 
                     videoStreamer = new VideoStreamer(videoSource);
-                    videoStreamer.Setup(videoSettings.EncoderSettings, videoSettings.NetworkSettings);
+
+
+                    videoStreamer.Setup(videoEncoderSettings, videoSettings.NetworkSettings);
+                    //videoStreamer.Setup(videoSettings.EncoderSettings, videoSettings.NetworkSettings);
                 }
 
                 ScreencastChannelInfo videoChannelInfo = Session.GetVideoChannelInfo();

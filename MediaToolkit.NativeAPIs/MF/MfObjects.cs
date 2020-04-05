@@ -8,7 +8,15 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.MF.Objects
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 8)]
+
+	[StructLayout(LayoutKind.Sequential)]
+	public class MFTRegisterTypeInfo
+	{
+		public Guid guidMajorType;
+		public Guid guidSubtype;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = 8)]
     public struct MFVideoInfo
     {
         public int dwWidth;

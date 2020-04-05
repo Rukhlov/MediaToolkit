@@ -217,7 +217,8 @@ namespace MediaToolkit.MediaFoundation
             var outputType = new TRegisterTypeInformation
             {
                 GuidMajorType = MediaTypeGuids.Video,
-                GuidSubtype = VideoFormatGuids.H264
+                 GuidSubtype = VideoFormatGuids.H264
+               // GuidSubtype = VideoFormatGuids.Hevc
             };
 
             //int vendorId = 0;
@@ -387,7 +388,8 @@ namespace MediaToolkit.MediaFoundation
                     logger.Warn("NoMoreOutputTypes");
                     break;
                 }
-
+                //var log = MfTool.LogMediaType(mediaType);
+                //logger.Warn(log);
 
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));

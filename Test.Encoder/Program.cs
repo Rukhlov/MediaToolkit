@@ -1,9 +1,14 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
 using MediaToolkit.MediaFoundation;
+using MediaToolkit.NativeAPIs.MF;
+using MediaToolkit.NativeAPIs.MF.Objects;
+using MediaToolkit.NativeAPIs.Utils;
 using SharpDX;
 using SharpDX.Direct3D11;
+using SharpDX.MediaFoundation;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,10 +21,62 @@ namespace Test.Encoder
 {
     class Program
     {
-        static void Main(string[] args)
+
+
+
+		static void Main(string[] args)
         {
 
             MediaToolkitManager.Startup();
+
+			//Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
+			//Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+
+			////ArrayList inputTypes = new ArrayList();
+			////ArrayList outputTypes = new ArrayList();
+
+			////MFInt inputTypesNum = new MFInt();
+			////MFInt outputTypesNum = new MFInt();
+			////IntPtr ip = IntPtr.Zero;
+			
+			//var result = MfApi.MFTGetInfo(CColorConvertDMO, out string pszName, 
+			//	out IntPtr ppInputTypes, out uint inputTypesNum, 
+			//	out IntPtr ppOutputTypes, out uint outputTypesNum, 
+			//	out IntPtr ppAttributes);
+
+			//MarshalHelper.ToArray(ppInputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] inputTypes);
+			//MarshalHelper.ToArray(ppOutputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
+
+			//MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
+
+
+
+
+			//Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+
+			//SharpDX.MediaFoundation.MediaFactory.TGetInfo(VideoProcessorMFT, IntPtr.Zero, 
+			//	null, out int cInputTypesRef, 
+			//	null, out int cOutputTypesRef, 
+			//	out SharpDX.MediaFoundation.MediaAttributes attrs);
+
+
+			//var transformFlags = TransformEnumFlag.All | // TransformEnumFlag.All |
+			//		 TransformEnumFlag.SortAndFilter;
+
+			//var outputType = new TRegisterTypeInformation
+			//{
+			//	GuidMajorType = MediaTypeGuids.Video,
+			//	GuidSubtype = VideoFormatGuids.H264
+			//	// GuidSubtype = VideoFormatGuids.Hevc
+			//};
+			//var category = SharpDX.MediaFoundation.TransformCategoryGuids.VideoDecoder;
+			//MediaAttributes mediaAttributes = new MediaAttributes();
+			//Activate[] activates = new Activate[1024];
+
+			//SharpDX.MediaFoundation.MediaFactory.TEnum2(category, (int)transformFlags, null, outputType, mediaAttributes, activates, out int activatesNum);
+
+
+
 
 
 			var flags = DeviceCreationFlags.VideoSupport |

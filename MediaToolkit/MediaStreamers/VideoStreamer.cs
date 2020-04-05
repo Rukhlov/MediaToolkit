@@ -106,7 +106,7 @@ namespace MediaToolkit.MediaStreamers
                 //var hwContext = screenSource.hwContext;
                 //var hwDevice = hwContext.device;
 
-                var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
+                //var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
                 //if (encodingSettings.UseResoulutionFromSource)
                 //{

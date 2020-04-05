@@ -38,7 +38,7 @@ namespace MediaToolkit.Core
     }
 
     [Serializable]
-    public class VideoEncoderSettings
+    public class VideoEncoderSettings :ICloneable
     {
         [XmlAttribute]
         public VideoEncoderMode Encoder { get; set; } = VideoEncoderMode.H264;
@@ -47,7 +47,11 @@ namespace MediaToolkit.Core
         public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
 
         [XmlAttribute]
-        public int Width { get; set; } = 1920;
+        public int Width
+        {
+            get;
+            set;
+        } = 1920;
 
         [XmlAttribute]
         public int Height { get; set; } = 1080;
@@ -76,6 +80,10 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 
     public enum VideoEncoderMode
@@ -182,6 +190,11 @@ namespace MediaToolkit.Core
 
         //[XmlIgnore]
         public abstract CaptureMode CaptureMode { get; }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
 
     }
 
