@@ -23,8 +23,8 @@ namespace MediaToolkit.MediaFoundation
 
         public static readonly Dictionary<Guid, SharpDX.DXGI.Format> DxgiFormatsDict = new Dictionary<Guid, SharpDX.DXGI.Format>
         {
-            { VideoFormatGuids.NV12, SharpDX.DXGI.Format.NV12},
-            { VideoFormatGuids.Argb32, SharpDX.DXGI.Format.B8G8R8A8_UNorm},
+            { VideoFormatGuids.NV12, SharpDX.DXGI.Format.NV12 },
+            { VideoFormatGuids.Argb32, SharpDX.DXGI.Format.B8G8R8A8_UNorm },
             //...
         };
 
@@ -1018,7 +1018,13 @@ namespace MediaToolkit.MediaFoundation
     {
         public static readonly Guid Abgr32 = new Guid("00000020-0000-0010-8000-00aa00389b71");
         public static readonly Guid P208 = new Guid("38303250-0000-0010-8000-00aa00389b71");
-        public static readonly Guid V410 = new Guid("30313476-0000-0010-8000-00aa00389b71");
+
+		//30313456-0000-0010-8000-00aa00389b71
+		public static readonly Guid V410 = new Guid("30313476-0000-0010-8000-00aa00389b71");
+
+		public static readonly Guid V216 = new Guid("36313256-0000-0010-8000-00aa00389b71");
+
+		
     }
 
 
@@ -1035,7 +1041,14 @@ namespace MediaToolkit.MediaFoundation
         //CLSID_CResamplerMediaObject
         public static readonly Guid CResamplerMediaObject = new Guid("f447b69e-1884-4a7e-8055-346f74d6edb3");
 
+        //NVIDIA H.264 Encoder MFT
+        Guid NVidiaH264EncoderMFT = new Guid("60F44560-5A20-4857-BFEF-D29773CB8040");
 
+        //Intel® Quick Sync Video H.264 Encoder MFT
+        Guid IntelQSVH264EncoderMFT = new Guid("4BE8D3C0-0515-4A37-AD55-E4BAE19AF471");
+
+        //CLSID_MSH264EncoderMFT
+        public static readonly Guid MSH264EncoderMFT = new Guid("6CA50344-051A-4DED-9779-A43305165E35");
     }
 
     public enum RateControlMode

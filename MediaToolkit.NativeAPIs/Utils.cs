@@ -347,15 +347,16 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 	public class MarshalHelper
 	{
-		public static void ToArray<T>(IntPtr pArray, int length, out T[] outputArray)
-		{// https://stackoverflow.com/questions/6747112/getting-array-of-struct-from-intptr/40376326
+		public static void PtrToArray<T>(IntPtr pArray, int length, out T[] outputArray)// where T : struct
+		{
 			outputArray = new T[length];
-			var size = Marshal.SizeOf(typeof(T));
+			var structSize = Marshal.SizeOf(typeof(T));
 
+			IntPtr ptr = new IntPtr(pArray.ToInt64());
 			for (int i = 0; i < length; i++)
 			{
-				IntPtr ptr = new IntPtr(pArray.ToInt64() + i * size);
 				outputArray[i] = (T)Marshal.PtrToStructure(ptr, typeof(T));
+				ptr = IntPtr.Add(ptr, structSize);
 			}
 		}
 	}

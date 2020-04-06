@@ -23,24 +23,14 @@ namespace ScreenStreamer.WinForms.App
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-		private int EncoderMinWidth = 64;
-		private int EncoderMinHeight = 64;
+        private readonly int maxWidth = MediaToolkit.Core.Config.MaxVideoEncoderWidth;
+        private readonly int minWidth = MediaToolkit.Core.Config.MinVideoEncoderWidth;
+        private readonly int maxHeight = MediaToolkit.Core.Config.MaxVideoEncoderHeight;
+        private readonly int minHeight = MediaToolkit.Core.Config.MinVideoEncoderHeight;
 
-		private int EncoderMaxWidth = 4096;
-		private int EncoderMaxHeight = 4096;
-
-		public VideoSettingsForm()
+        public VideoSettingsForm()
         {
             InitializeComponent();
-
-            //LoadEncoderProfilesItems();
-
-            ////LoadTransportItems();
-            //LoadEncoderItems();
-
-            //LoadRateModeItems();
-
-            //LoadCaptureTypes();
 
             syncContext = SynchronizationContext.Current;
 
@@ -51,8 +41,16 @@ namespace ScreenStreamer.WinForms.App
 
         public void Setup(VideoStreamSettings settingsParams)
         {
+            logger.Debug("Setup(...)");
 
             this.VideoSettings = settingsParams;
+
+            var captureDevice = VideoSettings.CaptureDevice;
+            if (captureDevice == null)
+            {
+                //...
+
+            }
 
             LoadEncoderProfilesItems();
 
@@ -62,16 +60,18 @@ namespace ScreenStreamer.WinForms.App
 
             LoadCaptureTypes();
 
-            this.encWidthNumeric.Maximum = EncoderMaxWidth;
-            this.encWidthNumeric.Minimum = EncoderMinWidth;
+            this.encWidthNumeric.Maximum = maxWidth; 
+            this.encWidthNumeric.Minimum = minWidth;
 
-            this.encHeightNumeric.Minimum = EncoderMinHeight;
-            this.encHeightNumeric.Maximum = EncoderMaxHeight;
+            this.encHeightNumeric.Maximum = maxHeight;
+            this.encHeightNumeric.Minimum = minHeight;
 
-            var screenCaptureDevice = VideoSettings.CaptureDevice as ScreenCaptureDevice;
-            if (screenCaptureDevice != null)
+
+            if(captureDevice.CaptureMode == CaptureMode.Screen)
             {
-               // var captureDescr = screenCaptureParams.CaptureDescription;
+                var screenCaptureDevice = (ScreenCaptureDevice)captureDevice;
+
+                // var captureDescr = screenCaptureParams.CaptureDescription;
                 this.displayTextBox.Text = screenCaptureDevice.Name;
 
                 this.captureRegion = screenCaptureDevice.CaptureRegion;
@@ -90,13 +90,12 @@ namespace ScreenStreamer.WinForms.App
                 {
                     displayTextBox.Visible = false;
                     labelDisplay.Visible = false;
-                }
-
+                }   
             }
-
-            var uvcDevice = VideoSettings.CaptureDevice as UvcDevice;
-            if (uvcDevice != null)
+            else if(captureDevice.CaptureMode == CaptureMode.UvcDevice)
             {
+                var uvcDevice = (UvcDevice)captureDevice;
+
                 CaptureDeviceTextBox.Text = uvcDevice.Name;
 
                 var profile = uvcDevice?.CurrentProfile;
@@ -108,6 +107,7 @@ namespace ScreenStreamer.WinForms.App
                         Tag = profile,
                     },
                 };
+
                 CaptureDeviceProfilesComboBox.DataSource = profileItems;
                 CaptureDeviceProfilesComboBox.DisplayMember = "Name";
                 CaptureDeviceProfilesComboBox.ValueMember = "Tag";
@@ -117,14 +117,14 @@ namespace ScreenStreamer.WinForms.App
                 screenCaptureDetailsPanel.Visible = false;
 
             }
+            else
+            {
 
+            }
 
-            this.captureRegionTextBox.Text =  captureRegion.ToString();
 
             var videoEncoderSettings = VideoSettings.EncoderSettings;
-
             var encoderResolution = videoEncoderSettings.Resolution;
-
             if (encoderResolution.Width <= encWidthNumeric.Maximum && encoderResolution.Width >= encWidthNumeric.Minimum)
             {
                 this.encWidthNumeric.Value = encoderResolution.Width;
@@ -135,7 +135,7 @@ namespace ScreenStreamer.WinForms.App
                 this.encHeightNumeric.Value = encoderResolution.Height;
             }
 
-
+            this.captureRegionTextBox.Text = captureRegion.ToString();
             this.checkBoxResoulutionFromSource.Checked = VideoSettings.UseEncoderResoulutionFromSource;
 
             this.encoderComboBox.SelectedItem = videoEncoderSettings.Encoder;
@@ -151,30 +151,40 @@ namespace ScreenStreamer.WinForms.App
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            var screenCaptureParams = VideoSettings.CaptureDevice as ScreenCaptureDevice;
-            if (screenCaptureParams != null)
+
+            logger.Debug("applyButton_Click(...)");
+
+            if (VideoSettings == null)
             {
+                return;
+            }
+
+            var captureDevice = VideoSettings.CaptureDevice;
+            if (captureDevice.CaptureMode == CaptureMode.Screen)
+            {
+                var screenCaptureParams = (ScreenCaptureDevice)captureDevice;
                 screenCaptureParams.CaptureRegion = this.captureRegion;
                 screenCaptureParams.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
                 screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
-
                 screenCaptureParams.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
                 screenCaptureParams.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
+                
             }
-
-            var deviceDescr = VideoSettings.CaptureDevice as UvcDevice;
-            if (deviceDescr != null)
+            else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
             {
 
             }
+            else
+            {
+
+            }
+
 
             VideoSettings.StreamFlags &= ~VideoStreamFlags.UseEncoderResoulutionFromSource;
             if (this.checkBoxResoulutionFromSource.Checked)
             {
                 VideoSettings.StreamFlags |= VideoStreamFlags.UseEncoderResoulutionFromSource;
             }
-
-            
 
             //if (!VideoSettings.UseEncoderResoulutionFromSource)
             {
@@ -214,105 +224,50 @@ namespace ScreenStreamer.WinForms.App
             this.Close();
         }
 
-        private void LoadRateModeItems()
-        {
-
-            var items = new List<BitrateControlMode>
-            {
-               BitrateControlMode.CBR,
-               BitrateControlMode.VBR,
-               BitrateControlMode.Quality,
-
-            };
-
-            bitrateModeComboBox.DataSource = items;
-        }
-
-        private void LoadEncoderProfilesItems()
-        {
-
-            var items = new List<H264Profile>
-            {
-               H264Profile.Main,
-               H264Profile.Base,
-               H264Profile.High,
-
-            };
-
-            encProfileComboBox.DataSource = items;
-        }
-
-        private void LoadEncoderItems()
-        {
-            var items = new List<VideoEncoderMode>
-            {
-                VideoEncoderMode.H264,
-                VideoEncoderMode.JPEG,
-            };
-
-            encoderComboBox.DataSource = items;
-
-        }
-
-        private void LoadCaptureTypes()
-        {
-
-            List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
-
-
-            var captureProps = Config.Data.ScreenCaptureProperties;
-            var caputreDevice = VideoSettings.CaptureDevice;
-
-            var resolution = caputreDevice.Resolution;
-            var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
-
-            // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
-            captureTypes.Add(new ComboBoxItem
-            {
-                Name = "Desktop Duplication API (" + propsStr + ")",
-                Tag = VideoCaptureType.DXGIDeskDupl,
-            });
-
-
-            captureTypesComboBox.DataSource = captureTypes;
-            captureTypesComboBox.DisplayMember = "Name";
-            captureTypesComboBox.ValueMember = "Tag";
-
-
-
-            //List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
-            //captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
-            //captureTypes.Add(VideoCaptureType.GDI);
-            ////captureTypes.Add(CaptureType.GDIPlus);
-            //captureTypes.Add(VideoCaptureType.Direct3D9);
-            //captureTypes.Add(VideoCaptureType.Datapath);
-
-            //captureTypesComboBox.DataSource = captureTypes;
-
-        }
-
 
 
         private void adjustAspectRatioButton_Click(object sender, EventArgs e)
         {
-            var srcSize = new Size (this.captureRegion.Width, this.captureRegion.Height);
+            logger.Debug("adjustAspectRatioButton_Click(...)");
+
+            if (VideoSettings == null)
+            {
+                return;
+            }
+
+            var srcSize = new Size(this.captureRegion.Width, this.captureRegion.Height);
+
+            var captureDevice = VideoSettings.CaptureDevice;
+            if (captureDevice.CaptureMode == CaptureMode.Screen)
+            {
+                srcSize = ((ScreenCaptureDevice)captureDevice).CaptureRegion.Size;
+            }
+            else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+            {
+                var profile = ((UvcDevice)captureDevice).CurrentProfile;
+                srcSize = profile.FrameSize;
+            }
+
+           
             var destSize= new Size((int)this.encWidthNumeric.Value, (int)this.encHeightNumeric.Value);
 
             var ratio = srcSize.Width / (double)srcSize.Height;
             int destWidth = destSize.Width;
 
-		    int destHeight = (int)(destWidth / ratio);
-			if(destHeight > EncoderMaxHeight)
+
+            int destHeight = (int)(destWidth / ratio);
+			if(destHeight > maxHeight)
 			{
-				destHeight = EncoderMaxHeight;
+				destHeight = maxHeight;
 				destWidth = (int)(destHeight * ratio);
 			}
 			
-			if(destHeight< EncoderMinHeight)
+			if(destHeight< minHeight)
 			{
-				destHeight = EncoderMinHeight;
+				destHeight = minHeight;
 				destWidth = (int)(destHeight * ratio);
 			}
+
 
             if (ratio < 1)
             {
@@ -320,15 +275,15 @@ namespace ScreenStreamer.WinForms.App
                 destWidth = (int)(destHeight * ratio);
 
 
-				if (destWidth > EncoderMaxWidth)
+				if (destWidth > maxWidth)
 				{
-					destWidth = EncoderMaxWidth;
+					destWidth = maxWidth;
 					destHeight = (int)(destWidth / ratio);
 				}
 
-				if (destWidth < EncoderMinWidth)
+				if (destWidth < minWidth)
 				{
-					destWidth = EncoderMinWidth;
+					destWidth = minWidth;
 					destHeight = (int)(destWidth / ratio);
 				}
 			}
@@ -358,6 +313,11 @@ namespace ScreenStreamer.WinForms.App
         private void previewButton_Click(object sender, EventArgs e)
         {
             logger.Debug("previewButton_Click(...)");
+
+            if (VideoSettings == null)
+            {
+                return;
+            }
 
             try
 			{
@@ -595,13 +555,18 @@ namespace ScreenStreamer.WinForms.App
 
         private void snippingToolButton_Click(object sender, EventArgs e)
         {
-            var captureDescr = VideoSettings.CaptureDevice as ScreenCaptureDevice;
-            if (captureDescr == null)
+            if (VideoSettings == null)
+            {
+                return;
+            }
+            var captureDevice = VideoSettings.CaptureDevice;
+            var screenCapture = captureDevice as ScreenCaptureDevice;
+            if (captureDevice == null)
             {
                 return;
             }
 
-            var selectedRegion = SnippingTool.Snip(captureDescr.DisplayRegion);
+            var selectedRegion = SnippingTool.Snip(screenCapture.DisplayRegion);
             if (!selectedRegion.IsEmpty)
             {
                 this.captureRegion = selectedRegion;
@@ -614,6 +579,84 @@ namespace ScreenStreamer.WinForms.App
             }
 
         }
+
+
+        private void LoadRateModeItems()
+        {
+
+            var items = new List<BitrateControlMode>
+            {
+               BitrateControlMode.CBR,
+               BitrateControlMode.VBR,
+               BitrateControlMode.Quality,
+
+            };
+
+            bitrateModeComboBox.DataSource = items;
+        }
+
+        private void LoadEncoderProfilesItems()
+        {
+
+            var items = new List<H264Profile>
+            {
+               H264Profile.Main,
+               H264Profile.Base,
+               H264Profile.High,
+
+            };
+
+            encProfileComboBox.DataSource = items;
+        }
+
+        private void LoadEncoderItems()
+        {
+            var items = new List<VideoEncoderMode>
+            {
+                VideoEncoderMode.H264,
+                VideoEncoderMode.JPEG,
+            };
+
+            encoderComboBox.DataSource = items;
+
+        }
+
+        private void LoadCaptureTypes()
+        {
+
+            List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
+
+
+            var captureProps = Config.Data.ScreenCaptureProperties;
+            var caputreDevice = VideoSettings.CaptureDevice;
+
+            var resolution = caputreDevice.Resolution;
+            var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
+
+            // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
+            captureTypes.Add(new ComboBoxItem
+            {
+                Name = "Desktop Duplication API (" + propsStr + ")",
+                Tag = VideoCaptureType.DXGIDeskDupl,
+            });
+
+
+            captureTypesComboBox.DataSource = captureTypes;
+            captureTypesComboBox.DisplayMember = "Name";
+            captureTypesComboBox.ValueMember = "Tag";
+
+
+            //List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
+            //captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
+            //captureTypes.Add(VideoCaptureType.GDI);
+            ////captureTypes.Add(CaptureType.GDIPlus);
+            //captureTypes.Add(VideoCaptureType.Direct3D9);
+            //captureTypes.Add(VideoCaptureType.Datapath);
+
+            //captureTypesComboBox.DataSource = captureTypes;
+
+        }
+
 
     }
 }

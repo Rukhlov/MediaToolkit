@@ -29,25 +29,70 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
 
-			//Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
-			//Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+			Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
+			Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
-			////ArrayList inputTypes = new ArrayList();
-			////ArrayList outputTypes = new ArrayList();
 
-			////MFInt inputTypesNum = new MFInt();
-			////MFInt outputTypesNum = new MFInt();
-			////IntPtr ip = IntPtr.Zero;
-			
-			//var result = MfApi.MFTGetInfo(CColorConvertDMO, out string pszName, 
-			//	out IntPtr ppInputTypes, out uint inputTypesNum, 
-			//	out IntPtr ppOutputTypes, out uint outputTypesNum, 
-			//	out IntPtr ppAttributes);
+			Guid NVidiaH264EncoderMFT = new Guid("60F44560-5A20-4857-BFEF-D29773CB8040");
+			Guid IntelQSVH264EncoderMFT = new Guid("4BE8D3C0-0515-4A37-AD55-E4BAE19AF471");
 
-			//MarshalHelper.ToArray(ppInputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] inputTypes);
+			//ArrayList inputTypes = new ArrayList();
+			//ArrayList outputTypes = new ArrayList();
+
+			//MFInt inputTypesNum = new MFInt();
+			//MFInt outputTypesNum = new MFInt();
+			//IntPtr ip = IntPtr.Zero;
+
+			var result = MfApi.MFTGetInfo(CColorConvertDMO, out string pszName,
+				out IntPtr ppInputTypes, out uint inputTypesNum,
+				out IntPtr ppOutputTypes, out uint outputTypesNum,
+				out IntPtr ppAttributes);
+
+			if (result == MediaToolkit.NativeAPIs.HResult.S_OK)
+			{
+				MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
+				Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
+
+				Console.WriteLine("InputTypes-------------------------------------");
+				MarshalHelper.PtrToArray(ppInputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] inputTypes);
+
+				foreach (var type in inputTypes)
+				{
+					var majorType = type.guidMajorType;
+					var subType = type.guidSubtype;
+
+					//Console.WriteLine(MfTool.GetMediaTypeName(majorType));
+
+					Console.WriteLine(MfTool.GetMediaTypeName(subType));
+				}
+
+				Console.WriteLine("");
+
+				Console.WriteLine("OutputTypes-------------------------------------");
+				MarshalHelper.PtrToArray(ppOutputTypes, (int)outputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
+				
+
+				foreach (var type in outputTypes)
+				{
+					var majorType = type.guidMajorType;
+					var subType = type.guidSubtype;
+
+					//Console.WriteLine(MfTool.GetMediaTypeName(majorType));
+
+					Console.WriteLine(MfTool.GetMediaTypeName(subType));
+				}
+
+			}
+			Console.WriteLine("Press any key to exit...");
+			Console.ReadKey();
+			return;
+
 			//MarshalHelper.ToArray(ppOutputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
 
 			//MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
+
+
+			//Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
 
 
 

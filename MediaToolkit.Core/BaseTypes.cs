@@ -11,6 +11,20 @@ using System.Xml.Serialization;
 namespace MediaToolkit.Core
 {
 
+    public static class Config
+    {
+        public static int MaximumTransmissionUnit = 1300;
+
+      
+        public static int MaxVideoEncoderWidth = 4096;
+        public static int MaxVideoEncoderHeight = 4096;
+
+        public static int MinVideoEncoderWidth = 64;
+        public static int MinVideoEncoderHeight = 64;
+
+        //...
+    }
+
     public class VideoFormat
     {
         public VideoFormat(int fourCC, string name, string description)
@@ -107,7 +121,7 @@ namespace MediaToolkit.Core
     }
 
     [Serializable]
-    public class AudioEncoderSettings
+    public class AudioEncoderSettings : ICloneable
     {
         [XmlAttribute]
         public int SampleRate { get; set; } = 8000;
@@ -129,6 +143,11 @@ namespace MediaToolkit.Core
 
         [XmlAttribute]
         public AudioEncoderMode Encoder { get; set; } = AudioEncoderMode.G711;
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 
     public enum AudioEncoderMode

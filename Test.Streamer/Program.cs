@@ -51,7 +51,7 @@ namespace TestStreamer
                 }
 
                 bool tempMode = !createdNew;
-                Config.Initialize(tempMode);
+                ScreenStreamer.WinForms.App.Config.Initialize(tempMode);
 
                 MediaToolkitManager.Startup();
 
@@ -128,7 +128,7 @@ namespace TestStreamer
             }
             finally
             {
-                Config.Shutdown();
+                ScreenStreamer.WinForms.App.Config.Shutdown();
 
                 MediaToolkitManager.Shutdown();
 

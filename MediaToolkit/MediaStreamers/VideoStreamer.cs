@@ -46,6 +46,7 @@ namespace MediaToolkit.MediaStreamers
         public RtpSession H264Session { get; private set; }
         public IRtpSender RtpSender { get; private set; }
 
+        public string Id { get; private set; }
         public int ClientsCount
         {
             get
@@ -77,9 +78,11 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("ScreenStreamer::Setup()");
 
+            this.Id = "VideoStreamer_" + Guid.NewGuid().ToString();
+
             this.EncoderSettings = encoderSettings;
             this.NetworkSettings = networkSettings;
-
+            
             try
             {
                 H264Session = new H264Session();
@@ -100,7 +103,7 @@ namespace MediaToolkit.MediaStreamers
                 RtpSender.Setup(networkSettings);
 
                 networkSettings.SSRC = H264Session.SSRC;
-
+                
                 RtpSender.Start();
 
                 //var hwContext = screenSource.hwContext;
@@ -134,7 +137,6 @@ namespace MediaToolkit.MediaStreamers
             }
 
         }
-
 
 
         // private Texture2D SharedTexture = null;

@@ -18,7 +18,7 @@ namespace MediaToolkit.Networks
 
         //public const int MTU = 1300;
 
-        public int MTU { get; set; } = Configuration.MaximumTransmissionUnit;
+        public int MTU { get; set; } = MediaToolkit.Core.Config.MaximumTransmissionUnit;
 
         public uint SSRC { get;  set; } = 0;
         public int CSRC { get; protected set; } = 0;

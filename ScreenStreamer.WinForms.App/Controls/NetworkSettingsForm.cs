@@ -242,7 +242,7 @@ namespace ScreenStreamer.WinForms.App
         {
             int currentPort = (int)communicationPortNumeric.Value;
 
-            var freeTcpPorts = MediaToolkit.Utils.NetworkHelper.GetFreePortRange(ProtocolType.Tcp, 1, currentPort);
+            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(ProtocolType.Tcp, 1, currentPort);
             if (freeTcpPorts != null)
             {
                 var newPort = freeTcpPorts.FirstOrDefault();

@@ -38,7 +38,6 @@ namespace ScreenStreamer.Common
 
         private CommunicationService communicationService = null;
 
-        public List<ScreencastChannelInfo> ScreencastChannelsInfos { get; private set; } = new List<ScreencastChannelInfo>();
         public Uri ListenUri => communicationService?.ListenUri;
 
         public StreamSession Session { get; private set; }
@@ -227,6 +226,22 @@ namespace ScreenStreamer.Common
             if (videoSettings.Enabled)
             {
                 var captureDevice = (VideoCaptureDevice)videoSettings.CaptureDevice.Clone();
+                if(captureDevice.CaptureMode == CaptureMode.Screen)
+                {
+                    var screenDevice = (ScreenCaptureDevice)captureDevice;
+
+                    if (screenDevice.CaptureRegion.Width > MediaToolkit.Core.Config.MaxVideoEncoderWidth)
+                    {
+                        screenDevice.CaptureRegion.Width = MediaToolkit.Core.Config.MaxVideoEncoderWidth;
+                    }
+
+                    if (screenDevice.CaptureRegion.Height > MediaToolkit.Core.Config.MaxVideoEncoderHeight)
+                    {
+                        screenDevice.CaptureRegion.Height = MediaToolkit.Core.Config.MaxVideoEncoderHeight;
+                    }
+
+                    screenDevice.Resolution = MediaToolkit.Utils.GraphicTools.DecreaseToEven(screenDevice.CaptureRegion.Size);
+                }
 
                 var videoEncoderSettings = (VideoEncoderSettings)videoSettings.EncoderSettings.Clone();
                 if (videoSettings.UseEncoderResoulutionFromSource)
@@ -258,16 +273,10 @@ namespace ScreenStreamer.Common
                 {
 
                     videoStreamer = new VideoStreamer(videoSource);
-
-
                     videoStreamer.Setup(videoEncoderSettings, videoSettings.NetworkSettings);
+
                     //videoStreamer.Setup(videoSettings.EncoderSettings, videoSettings.NetworkSettings);
                 }
-
-                ScreencastChannelInfo videoChannelInfo = Session.GetVideoChannelInfo();
-
-                ScreencastChannelsInfos.Add(videoChannelInfo);
-
 
             }
 
@@ -291,11 +300,6 @@ namespace ScreenStreamer.Common
                     audioStreamer.StateChanged += AudioStreamer_StateChanged;
 
                 }
-
-                ScreencastChannelInfo audioChannelInfo = Session.GetAudioChannelInfo();
-
-                ScreencastChannelsInfos.Add(audioChannelInfo);
-
             }
 
             var communicationAddress = Session.CommunicationAddress;
@@ -383,7 +387,7 @@ namespace ScreenStreamer.Common
 			}
 
 
-            ScreencastChannelsInfos.Clear();
+            //ScreencastChannelsInfos.Clear();
 
             communicationService?.Close();
 
@@ -402,19 +406,111 @@ namespace ScreenStreamer.Common
 
         public ScreencastChannelInfo[] GetScreencastInfo()
         {
-            var vci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
-            if (vci != null)
+            var channels = new List<ScreencastChannelInfo>();
+
+            if (videoStreamer != null)
             {
-                vci.ClientsCount = videoStreamer?.ClientsCount ?? 0;
+                //if(videoStreamer.State== StreamerState.Streaming)
+                {
+                    var networkSettings = videoStreamer.NetworkSettings;
+                    var encoderSettings = videoStreamer.EncoderSettings;
+
+                    VideoChannelInfo videoInfo = new VideoChannelInfo
+                    {
+                        Id = videoStreamer.Id,
+                        VideoEncoder = encoderSettings.Encoder,
+                        Resolution = encoderSettings.Resolution,
+                        Bitrate = encoderSettings.Bitrate,
+
+                        Fps = encoderSettings.FrameRate,
+
+
+                    };
+
+                    var address = networkSettings.RemoteAddr;
+                    var port = networkSettings.RemotePort;
+                    var _transportMode = networkSettings.TransportMode;
+                    if (_transportMode == TransportMode.Tcp)
+                    {
+                        address = networkSettings.LocalAddr;
+                        port = networkSettings.LocalPort;
+                    }
+
+                    ScreencastChannelInfo videoChannelInfo = new ScreencastChannelInfo
+                    {
+                        Address = address,//videoSettings.Address,
+                        Port = port, // videoSettings.Port,
+                        Transport = _transportMode,
+                        IsMulticast = Session.IsMulticast,
+                        MediaInfo = videoInfo,
+                        SSRC = networkSettings.SSRC,
+
+                        ClientsCount = videoStreamer.ClientsCount,
+                    };
+
+                    channels.Add(videoChannelInfo);
+                }
+
+
             }
 
-            var aci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is AudioChannelInfo);
-            if (aci != null)
+            if (audioStreamer != null)
             {
-                aci.ClientsCount = videoStreamer?.ClientsCount ?? 0;
+                //if (audioStreamer.IsStreaming)
+                {
+                    var networkSettings = audioStreamer.NetworkSettings;
+                    var encoderSettings = audioStreamer.EncoderSettings;
+
+                    AudioChannelInfo audioInfo = new AudioChannelInfo
+                    {
+                        Id = audioStreamer.Id,
+                        AudioEncoder = encoderSettings.Encoder,
+                        SampleRate = encoderSettings.SampleRate,
+                        Channels = encoderSettings.Channels,
+
+                    };
+
+
+                    var address = networkSettings.RemoteAddr;
+                    var port = networkSettings.RemotePort;
+
+                    var _transportMode = networkSettings.TransportMode;
+                    if (_transportMode == TransportMode.Tcp)
+                    {
+                        address = networkSettings.LocalAddr;
+                        port = networkSettings.LocalPort;
+                    }
+
+                    ScreencastChannelInfo audioChannelInfo = new ScreencastChannelInfo
+                    {
+                        Address = address,
+                        Port = port,
+                        IsMulticast = Session.IsMulticast,
+                        Transport = _transportMode,
+                        MediaInfo = audioInfo,
+                        SSRC = networkSettings.SSRC,
+                        ClientsCount = audioStreamer.ClientsCount
+                    };
+
+                    channels.Add(audioChannelInfo);
+                }
             }
 
-            return ScreencastChannelsInfos?.ToArray();
+            return channels.ToArray();
+
+            //var vci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is VideoChannelInfo);
+            //if (vci != null)
+            //{
+            //    vci.ClientsCount = videoStreamer?.ClientsCount ?? 0;
+            //}
+
+            //var aci = ScreencastChannelsInfos.FirstOrDefault(i => i.MediaInfo is AudioChannelInfo);
+            //if (aci != null)
+            //{
+            //    aci.ClientsCount = audioStreamer?.ClientsCount ?? 0;
+            //}
+
+            //return ScreencastChannelsInfos?.ToArray();
         }
 
 
@@ -625,7 +721,7 @@ namespace ScreenStreamer.Common
 
             public void PostMessage(ServerRequest request)
             {
-                logger.Debug("ScreenCastService::PostMessage(...) " + request.Command);
+                //logger.Trace("ScreenCastService::PostMessage(...) " + request.Command);
 
             }
 

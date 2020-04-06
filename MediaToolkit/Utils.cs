@@ -510,11 +510,11 @@ namespace MediaToolkit.Utils
         }
     }
 
-    public class NetworkHelper
+    public class NetTools
     {
 
         public static IEnumerable<int> GetFreePortRange(ProtocolType protocolType, int portsCount,
-                int leftBound = 49152, int rightBound = 65535, IEnumerable<int> exceptPorts = null)
+        int leftBound = 49152, int rightBound = 65535, IEnumerable<int> exceptPorts = null)
         {
             var totalRange = Enumerable.Range(leftBound, rightBound - leftBound + 1);
 
@@ -574,16 +574,34 @@ namespace MediaToolkit.Utils
             }
             return ipAddrInfos;
         }
-    }
 
-    public class NetTools
-    {
+
         public static bool IsMulticastIpAddr(System.Net.IPAddress remoteIp)
         {
             var bytes = remoteIp.GetAddressBytes();
 
             return (bytes[0] >= 224 && bytes[0] <= 239);
 
+        }
+    }
+
+    public class GraphicTools
+    {
+        public static Size DecreaseToEven(Size size)
+        {
+            int width = size.Width;
+            if (width % 2 != 0)
+            {
+                width--;
+            }
+
+            int height = size.Height;
+            if (height % 2 != 0)
+            {
+                height--;
+            }
+
+            return new Size(width, height);
         }
     }
 

@@ -30,10 +30,15 @@ namespace MediaToolkit.MediaStreamers
 
         private AudioSource audioSource = null;
 
+        public AudioEncoderSettings EncoderSettings { get; private set; }
+        public NetworkSettings NetworkSettings { get; private set; }
+
         //private BufferedWaveProvider bufferedWaveProvider = null;
         //private SampleChannel sampleChannel = null;
 
         private AudioEncoder audioResampler = null;
+
+        public string Id { get; private set; }
 
         public int ClientsCount
         {
@@ -48,7 +53,7 @@ namespace MediaToolkit.MediaStreamers
                 return count;
             }
         }
-
+       
         public IRtpSender RtpSender { get; private set; }
 
         private PCMUSession session = null;
@@ -61,8 +66,10 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("AudioStreamer::Start(...) ");
 
-            //FileStream fs = new FileStream("d:\\test_audio_4", FileMode.Create, FileAccess.ReadWrite);
-
+            this.Id = "AudioStreamer_" + Guid.NewGuid().ToString();
+            this.EncoderSettings = encoderSettings;
+            this.NetworkSettings = networkSettings;
+           
             try
             {
 

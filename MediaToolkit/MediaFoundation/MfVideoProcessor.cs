@@ -70,7 +70,6 @@ namespace MediaToolkit.MediaFoundation
                                 processor.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                             }
 
-                            
                         }
                     }
 
@@ -106,6 +105,7 @@ namespace MediaToolkit.MediaFoundation
                 //InputMediaType.Set(MediaTypeAttributeKeys.FixedSizeSamples, 1);
                 //InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, PackLong(30, 1));
 
+                logger.Debug("VideoProcessor::SetInputType\r\n" + MfTool.LogMediaType(InputMediaType));
                 processor.SetInputType(inputStreamId, InputMediaType, 0);
 
 
@@ -121,7 +121,7 @@ namespace MediaToolkit.MediaFoundation
                         }
 
                         var subType = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                        logger.Info(subType);
+                        //logger.Info(subType);
                         if (subType == outputArgs.Format) //VideoFormatGuids.Argb32)//Argb32)//YUY2)//NV12)
                         {
                             OutputMediaType = mediaType;
@@ -140,7 +140,7 @@ namespace MediaToolkit.MediaFoundation
 
                 if (OutputMediaType == null)
                 {
-                    logger.Warn("Format not supported");
+                    logger.Warn("Format not supported: " + outputArgs.Format);
                     return false;
                 }
 
@@ -155,7 +155,9 @@ namespace MediaToolkit.MediaFoundation
                 //OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
                 //OutputMediaType.Set(MediaTypeAttributeKeys.FixedSizeSamples, 1);
 
+                logger.Debug("VideoProcessor::SetOutputType\r\n" + MfTool.LogMediaType(OutputMediaType));
                 processor.SetOutputType(outputStreamId, OutputMediaType, 0);
+
 
 
             }
@@ -194,7 +196,7 @@ namespace MediaToolkit.MediaFoundation
 
             processor.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
 
-            logger.Debug(streamInformation.CbSize);
+           // logger.Debug(streamInformation.CbSize);
         }
 
 

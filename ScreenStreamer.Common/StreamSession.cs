@@ -70,8 +70,6 @@ namespace ScreenStreamer.Common
 		{
 			logger.Debug("StreamSession::Setup()");
 
-           
-
 			if (IsMulticast)
 			{
 				TransportMode = TransportMode.Udp;
@@ -191,86 +189,11 @@ namespace ScreenStreamer.Common
 		}
 
 
-		internal ScreencastChannelInfo GetVideoChannelInfo()
-		{
-			var videoEncoderPars = VideoSettings.EncoderSettings;
-			var networkSettings = VideoSettings.NetworkSettings;
-
-			VideoChannelInfo videoInfo = new VideoChannelInfo
-			{
-				Id = VideoSettings.Id,
-				VideoEncoder = videoEncoderPars.Encoder,
-				Resolution = videoEncoderPars.Resolution,
-				Bitrate = videoEncoderPars.Bitrate,
-
-				Fps = videoEncoderPars.FrameRate,
-			};
-
-			var address = networkSettings.RemoteAddr;
-			var port = networkSettings.RemotePort;
-			var _transportMode = networkSettings.TransportMode;
-			if (_transportMode == TransportMode.Tcp)
-			{
-				address = networkSettings.LocalAddr;
-				port = networkSettings.LocalPort;
-			}
-
-			ScreencastChannelInfo videoChannelInfo = new ScreencastChannelInfo
-			{
-				Address = address,//videoSettings.Address,
-				Port = port, // videoSettings.Port,
-				Transport = _transportMode,
-				IsMulticast = this.IsMulticast,
-				MediaInfo = videoInfo,
-				SSRC = networkSettings.SSRC,
-			};
-			return videoChannelInfo;
-		}
-
-		internal ScreencastChannelInfo GetAudioChannelInfo()
-		{
-			var networkSettings = AudioSettings.NetworkSettings;
-			var encoderSettings = AudioSettings.EncoderSettings;
-
-			AudioChannelInfo audioInfo = new AudioChannelInfo
-			{
-				Id = AudioSettings.Id,
-				AudioEncoder = encoderSettings.Encoder,
-				SampleRate = encoderSettings.SampleRate,
-				Channels = encoderSettings.Channels,
-
-			};
-
-
-			var address = networkSettings.RemoteAddr;
-			var port = networkSettings.RemotePort;
-
-			var _transportMode = networkSettings.TransportMode;
-			if (_transportMode == TransportMode.Tcp)
-			{
-				address = networkSettings.LocalAddr;
-				port = networkSettings.LocalPort;
-			}
-
-			ScreencastChannelInfo audioChannelInfo = new ScreencastChannelInfo
-			{
-				Address = address,
-				Port = port,
-				IsMulticast = IsMulticast,
-				Transport = _transportMode,
-				MediaInfo = audioInfo,
-				SSRC = networkSettings.SSRC,
-			};
-			return audioChannelInfo;
-		}
-
-
-
 		public static StreamSession Default()
 		{
 			int port = -1;
 
-			var freeTcpPorts = MediaToolkit.Utils.NetworkHelper.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+			var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
 			if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
 			{
 				port = freeTcpPorts.FirstOrDefault();
@@ -305,7 +228,7 @@ namespace ScreenStreamer.Common
 			var videoSettings = new VideoStreamSettings
 			{
 				Enabled = true,
-				Id = "video_" + Guid.NewGuid().ToString(),
+				//Id = "video_" + Guid.NewGuid().ToString(),
 				NetworkSettings = new NetworkSettings(),
 				CaptureDevice = null,
 				EncoderSettings = videoEncoderSettings,
@@ -326,7 +249,7 @@ namespace ScreenStreamer.Common
 			var audioSettings = new AudioStreamSettings
 			{
 				Enabled = false,
-				Id = "audio_" + Guid.NewGuid().ToString(),
+				//Id = "audio_" + Guid.NewGuid().ToString(),
 				NetworkSettings = new NetworkSettings(),
 				CaptureDevice = new AudioCaptureDevice(),
 				EncoderSettings = audioEncoderSettings,
@@ -342,13 +265,14 @@ namespace ScreenStreamer.Common
 	[Serializable]
 	public class AudioStreamSettings
 	{
-		[XmlAttribute]
-		public string Id { get; set; } = "";
+		//[XmlAttribute]
+		//public string Id { get; set; } = "";
 
 		[XmlAttribute]
 		public bool Enabled { get; set; } = false;
 
-		public NetworkSettings NetworkSettings { get; set; } = new NetworkSettings();
+        [XmlIgnore]
+        public NetworkSettings NetworkSettings { get; set; } = new NetworkSettings();
 
 		public AudioEncoderSettings EncoderSettings { get; set; } = new AudioEncoderSettings();
 
@@ -358,9 +282,9 @@ namespace ScreenStreamer.Common
 	[Serializable]
 	public class VideoStreamSettings
 	{
-
-		[XmlAttribute]
-		public string Id { get; set; } = "";
+        //[XmlIgnore]
+		////[XmlAttribute]
+		//public string Id { get; set; } = "";
 
 		[XmlAttribute]
 		public bool Enabled { get; set; } = false;
@@ -390,7 +314,8 @@ namespace ScreenStreamer.Common
 			}
 		}
 
-		public NetworkSettings NetworkSettings { get; set; } = new NetworkSettings();
+        [XmlIgnore]
+        public NetworkSettings NetworkSettings { get; set; } = new NetworkSettings();
 
 		public VideoCaptureDevice CaptureDevice { get; set; }
 
