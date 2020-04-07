@@ -214,6 +214,7 @@ namespace MediaToolkit
                 // Calculate the actual duration of the allocated buffer.
                 long actualDuration = (long)((double)ReftimesPerSec *
                                  bufferFrameCount / waveFormat.SampleRate);
+
                 int sleepMilliseconds = (int)(actualDuration / ReftimesPerMillisec / 2);
                 int waitMilliseconds = (int)(3 * actualDuration / ReftimesPerMillisec);
 

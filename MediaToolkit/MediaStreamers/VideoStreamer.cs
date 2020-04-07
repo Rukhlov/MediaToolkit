@@ -38,6 +38,9 @@ namespace MediaToolkit.MediaStreamers
 
         }
 
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
+
         private volatile StreamerState state = StreamerState.Closed;
         public StreamerState State => state;
 
@@ -61,10 +64,12 @@ namespace MediaToolkit.MediaStreamers
             }
         }
 
-        //private RtpStreamer rtpStreamer = null;
         private StreamStats streamStats = null;
-        //private FFmpegVideoEncoder encoder = null;
+        public StatCounter Statistics => streamStats;
+        
 
+        //private FFmpegVideoEncoder encoder = null;
+        //private RtpStreamer rtpStreamer = null;
         private VideoEncoder videoEncoder = null;
 
 

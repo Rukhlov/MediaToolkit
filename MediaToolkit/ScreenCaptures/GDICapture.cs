@@ -105,7 +105,6 @@ namespace MediaToolkit.ScreenCaptures
 					 ArraySize = 1,
 					 SampleDescription = { Count = 1, Quality = 0 },
 					 Usage = ResourceUsage.Default,
-					 //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
 					 OptionFlags = ResourceOptionFlags.Shared,
 
 				 });
@@ -123,7 +122,7 @@ namespace MediaToolkit.ScreenCaptures
 					 ArraySize = 1,
 					 SampleDescription = { Count = 1, Quality = 0 },
 					 Usage = ResourceUsage.Default,
-					 OptionFlags = ResourceOptionFlags.GdiCompatible,//ResourceOptionFlags.None,
+					 OptionFlags = ResourceOptionFlags.GdiCompatible,
 
 				 });
 

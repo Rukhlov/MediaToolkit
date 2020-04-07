@@ -87,7 +87,7 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(428, 408);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(428, 409);
 			this.tableLayoutPanel1.TabIndex = 84;
 			// 
 			// groupBox1
@@ -327,18 +327,17 @@
 			this.panel1.Controls.Add(this.cancelButton);
 			this.panel1.Controls.Add(this.applyButton);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-			this.panel1.Location = new System.Drawing.Point(155, 374);
+			this.panel1.Location = new System.Drawing.Point(154, 374);
 			this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
 			this.panel1.Name = "panel1";
 			this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.panel1.Size = new System.Drawing.Size(271, 32);
+			this.panel1.Size = new System.Drawing.Size(272, 33);
 			this.panel1.TabIndex = 81;
 			// 
 			// cancelButton
 			// 
 			this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.cancelButton.Location = new System.Drawing.Point(160, 2);
-			this.cancelButton.Margin = new System.Windows.Forms.Padding(4, 2, 2, 2);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(109, 28);
 			this.cancelButton.TabIndex = 50;
@@ -348,8 +347,7 @@
 			// 
 			// applyButton
 			// 
-			this.applyButton.Location = new System.Drawing.Point(43, 2);
-			this.applyButton.Margin = new System.Windows.Forms.Padding(2, 2, 4, 2);
+			this.applyButton.Location = new System.Drawing.Point(45, 2);
 			this.applyButton.Name = "applyButton";
 			this.applyButton.Size = new System.Drawing.Size(109, 28);
 			this.applyButton.TabIndex = 40;

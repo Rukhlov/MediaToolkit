@@ -164,8 +164,13 @@ namespace ScreenStreamer.WinForms.App
 
             if (state == MediaStreamerState.Starting)
             {
-                OnSteramStarting();
-            }
+                syncContext.Send(_ => 
+                {
+                    OnSteramStarting();
+
+                } , null);
+
+        }
             else if (state == MediaStreamerState.Streamming)
             {
                 syncContext.Send(_ =>
@@ -176,7 +181,12 @@ namespace ScreenStreamer.WinForms.App
             }
             else if(state == MediaStreamerState.Stopping)
             {
-                OnStreamStopping();
+                syncContext.Send(_ =>
+                {
+                    OnStreamStopping();
+
+                }, null);
+          
             }
             else if (state == MediaStreamerState.Stopped)
             {

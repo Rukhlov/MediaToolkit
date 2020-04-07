@@ -17,7 +17,6 @@ namespace MediaToolkit.MediaFoundation
 {
     public class VideoEncoder
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 

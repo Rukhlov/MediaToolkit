@@ -91,7 +91,6 @@ namespace ScreenStreamer.Common
                 StartStreaming();
 
 
-
                 if (state == MediaStreamerState.Starting)
                 {
                     state = MediaStreamerState.Streamming;
@@ -104,12 +103,21 @@ namespace ScreenStreamer.Common
                 {
                     if (videoEnabled)
                     {
-                        //TODO: process audio, video events...
+                        //TODO: check audio video state...
+                        // get stats...
                         if (videoSource != null)
                         {
                             if (videoSource.State != CaptureState.Capturing)
                             {
-                                logger.Warn("videoSource.State == " + videoSource.State);
+                                var _errorCode = videoSource.ErrorCode;
+
+                                logger.Warn("videoSource.State == " + videoSource.State + " " + _errorCode);
+                                if (_errorCode != 0)
+                                {
+                                    this.errorCode = _errorCode;
+                                    break;
+                                }
+                                
                             }
                         }
 
@@ -142,11 +150,21 @@ namespace ScreenStreamer.Common
                     if (!communicationService.IsOpened)
                     {
                         logger.Warn("communicationService.IsOpened == false");
+                        //...
                     }
 
                     syncEvent.WaitOne(1000);
 
                 }
+
+                if (errorCode != 0)
+                {
+                    logger.Warn("MediaStreamerState.Stopping: " + errorCode); 
+
+                    state = MediaStreamerState.Stopping;
+                    StateChanged?.Invoke();
+                }
+
             }
             catch (Exception ex)
             {

@@ -38,12 +38,15 @@ namespace MediaToolkit
             }
         }
 
-        public CaptureState State { get; private set; } = CaptureState.Closed;
-        public int ErrorCode { get; private set; } = 0;
+        private volatile CaptureState state = CaptureState.Closed;
+        public CaptureState State => state;
+
+        private volatile int errorCode = 0;
+        public int ErrorCode => errorCode;
 
         //private DXGIDesktopDuplicationCapture hwContext = null;
 
-		private ITexture2DSource hwContext = null;
+        private ITexture2DSource hwContext = null;
 
 		public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -53,7 +56,6 @@ namespace MediaToolkit
 
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
-
 
         private AutoResetEvent syncEvent = null;
 
@@ -67,7 +69,7 @@ namespace MediaToolkit
 
             logger.Debug("ScreenSource::Setup()");
 
-            if (State != CaptureState.Closed)
+            if (state != CaptureState.Closed)
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
@@ -83,23 +85,27 @@ namespace MediaToolkit
             this.CaptureParams = captureParams;
 
             var srcRect = captureParams.CaptureRegion;
-            int x = srcRect.X;
-            int y = srcRect.Y;
 
-            int width = srcRect.Width;
-            if (width % 2!= 0)
-            {
-                width--;
-            }
+            var srcLocation = srcRect.Location;
+            var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
+            srcRect = new Rectangle(srcLocation, srcSize);
 
-            int height = srcRect.Height;
-            if (height % 2 != 0)
-            {
-                height--;
-            }
+            //int x = srcRect.X;
+            //int y = srcRect.Y;
+            //int width = srcRect.Width;
+            //if (width % 2!= 0)
+            //{
+            //    width--;
+            //}
 
-            srcRect = new Rectangle(x, y, width, height);
-            if(captureParams.CaptureRegion != srcRect)
+            //int height = srcRect.Height;
+            //if (height % 2 != 0)
+            //{
+            //    height--;
+            //}
+
+            //srcRect = new Rectangle(x, y, width, height);
+            if (captureParams.CaptureRegion != srcRect)
             {
                 captureParams.CaptureRegion = srcRect;
             }
@@ -146,7 +152,7 @@ namespace MediaToolkit
 
                 deviceReady = true;
 
-                State = CaptureState.Initialized;
+                state = CaptureState.Initialized;
 
 
             }
@@ -154,11 +160,11 @@ namespace MediaToolkit
             {
   
                 logger.Error(ex);
-                ErrorCode = 100504;
+                errorCode = 100504;
 
                 CleanUp();
 
-                State = CaptureState.Closed;
+                state = CaptureState.Closed;
                 throw;
             }
         }
@@ -166,7 +172,7 @@ namespace MediaToolkit
         public void Start()
         {
             logger.Debug("ScreenSource::Start()");
-            if (!(State == CaptureState.Stopped || State == CaptureState.Initialized))
+            if (!(state == CaptureState.Stopped || state == CaptureState.Initialized))
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
@@ -187,7 +193,7 @@ namespace MediaToolkit
                 {
                     logger.Error(ex);
 
-                    this.ErrorCode = 100500;
+                    errorCode = 100500;
                 }
                 finally
                 {
@@ -201,7 +207,7 @@ namespace MediaToolkit
 
         private void DoCapture()
         {
-            State = CaptureState.Capturing;
+            state = CaptureState.Capturing;
 
             CaptureStats captureStats = new CaptureStats();
             try
@@ -219,7 +225,7 @@ namespace MediaToolkit
                 Stopwatch sw = Stopwatch.StartNew();
 
 
-                while (State == CaptureState.Capturing && deviceReady)
+                while (state == CaptureState.Capturing && deviceReady)
                 {
                     sw.Restart();
 
@@ -227,7 +233,7 @@ namespace MediaToolkit
                     {
                         var res = screenCapture.UpdateBuffer(30);
 
-                        if (State != CaptureState.Capturing || !deviceReady)
+                        if (state != CaptureState.Capturing || !deviceReady)
                         {
                             break;
                         }
@@ -284,7 +290,7 @@ namespace MediaToolkit
 
                 Statistic.UnregisterCounter(captureStats);
 
-                this.State = CaptureState.Stopped;
+                state = CaptureState.Stopped;
 
             }
 
@@ -295,7 +301,7 @@ namespace MediaToolkit
         {
             logger.Debug("ScreenSource::Close()");
 
-            State = CaptureState.Stopping;
+            state = CaptureState.Stopping;
 
             syncEvent?.Set();
 
@@ -330,7 +336,7 @@ namespace MediaToolkit
 
             CleanUp();
 
-            State = CaptureState.Closed;
+            state = CaptureState.Closed;
         }
 
         private void CleanUp()

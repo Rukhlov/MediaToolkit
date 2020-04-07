@@ -330,11 +330,11 @@ namespace ScreenStreamer.WinForms.App
 					}
 					else if (captureDevice.CaptureMode == CaptureMode.Screen)
 					{
-						var screenCapture = (ScreenCaptureDevice)captureDevice;
-						var screenCaptureProps = screenCapture.Properties;
-						screenCaptureProps.CaptureType = VideoCaptureType.GDI;
-						screenCaptureProps.UseHardware = true;
-						screenCaptureProps.Fps = 30;
+						//var screenCapture = (ScreenCaptureDevice)captureDevice;
+						//var screenCaptureProps = screenCapture.Properties;
+						//screenCaptureProps.CaptureType = VideoCaptureType.GDI;
+						//screenCaptureProps.UseHardware = true;
+						//screenCaptureProps.Fps = 30;
 
 						videoSource = new ScreenSource();
 						videoSource.Setup(captureDevice);

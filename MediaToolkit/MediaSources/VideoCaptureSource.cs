@@ -22,8 +22,6 @@ namespace MediaToolkit
 {
     public class VideoCaptureSource : IVideoSource
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
-
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
         public VideoCaptureSource()
@@ -400,7 +398,12 @@ namespace MediaToolkit
                 {
                     if (asyncMode)
                     {
-                        syncEvent.WaitOne();
+                        bool res = syncEvent.WaitOne(3000);
+                        if (!res)
+                        {
+                            logger.Warn("syncEvent.WaitOne(3000) == false");
+                            continue;
+                        }
 
                         if (State == CaptureState.Capturing)
                         {
@@ -450,10 +453,13 @@ namespace MediaToolkit
             if (result.Failure)
             {
                 //...
+                logger.Error("SourceReaderCallback_OnReadSample(...) " + result);
             }
 
             if (State != CaptureState.Capturing)
             {
+                logger.Warn("Invalid capture state: " + State);
+
                 return 0;
             }
 
