@@ -31,6 +31,7 @@ namespace MediaToolkit.UI
 
             if (videoSource != null)
             {
+				
                 renderer = new D3DImageRenderer();
 
                 var texture = videoSource.SharedTexture;

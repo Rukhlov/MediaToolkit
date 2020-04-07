@@ -683,6 +683,39 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
+		public static string LogDxAdapters(Adapter1[] adapters)
+		{
+			StringBuilder log = new StringBuilder();
+			log.AppendLine("");
+			foreach (var _adapter in adapters)
+			{
+				var adaptDescr = _adapter.Description1;
+				log.AppendLine("-------------------------------------");
+				log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
+
+				foreach (var _output in _adapter.Outputs)
+				{
+					var outputDescr = _output.Description;
+					var bound = outputDescr.DesktopBounds;
+					var rect = new GDI.Rectangle
+					{
+						X = bound.Left,
+						Y = bound.Top,
+						Width = (bound.Right - bound.Left),
+						Height = (bound.Bottom - bound.Top),
+					};
+
+					log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+
+					_output.Dispose();
+				}
+
+				_adapter.Dispose();
+			}
+
+			return log.ToString();
+		}
+
 		public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
 		{
 

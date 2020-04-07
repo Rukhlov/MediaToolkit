@@ -29,7 +29,14 @@ using MediaToolkit.Logging;
 
 namespace MediaToolkit.ScreenCaptures
 {
-    public class DXGIDesktopDuplicationCapture : ScreenCapture //, IDirect3D11Capture
+	public interface ITexture2DSource
+	{
+		Texture2D SharedTexture { get; }
+		long AdapterId { get; }
+		bool UseHwContext { get; set; }
+	}
+
+	public class DXGIDesktopDuplicationCapture : ScreenCapture, ITexture2DSource
     {
         public DXGIDesktopDuplicationCapture(object[] args) : base()
         { }
@@ -44,7 +51,7 @@ namespace MediaToolkit.ScreenCaptures
         public Texture2D SharedTexture { get; private set; }
         public long AdapterId { get; private set; }
 
-        public bool UseHwContext = true;
+        public bool UseHwContext { get; set; } = true;
 
         private List<DesktopDuplicator> deskDupls = new List<DesktopDuplicator>();
 
@@ -80,7 +87,7 @@ namespace MediaToolkit.ScreenCaptures
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
-                logger.Info(LogDxAdapters(dxgiFactory.Adapters1));
+                logger.Info(MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
                 //var hMonitor = NativeAPIs.User32.GetMonitorFromRect(this.srcRect);
                 //if (hMonitor != IntPtr.Zero)
@@ -1368,38 +1375,7 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        public static string LogDxAdapters(Adapter1[] adapters)
-        {
-            StringBuilder log = new StringBuilder();
-            log.AppendLine("");
-            foreach (var _adapter in adapters)
-            {
-                var adaptDescr = _adapter.Description1;
-                log.AppendLine("-------------------------------------");
-                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
 
-                foreach (var _output in _adapter.Outputs)
-                {
-                    var outputDescr = _output.Description;
-                    var bound = outputDescr.DesktopBounds;
-                    var rect = new GDI.Rectangle
-                    {
-                        X = bound.Left,
-                        Y = bound.Top,
-                        Width = (bound.Right - bound.Left),
-                        Height = (bound.Bottom - bound.Top),
-                    };
-
-                    log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
-
-                    _output.Dispose();
-                }
-
-                _adapter.Dispose();
-            }
-
-            return log.ToString();
-        }
 
 
     }

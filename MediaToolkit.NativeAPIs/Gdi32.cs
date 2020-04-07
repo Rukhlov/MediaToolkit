@@ -36,6 +36,53 @@ namespace MediaToolkit.NativeAPIs
         public static extern bool DeleteObject(IntPtr hObject);
 
 
-    }
+
+		[DllImport("gdi32.dll")]
+		public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+
+		public enum DeviceCap
+		{
+			DRIVERVERSION = 0,
+			TECHNOLOGY = 2,
+			HORZSIZE = 4,
+			VERTSIZE = 6,
+			HORZRES = 8,
+			VERTRES = 10,
+			BITSPIXEL = 12,
+			PLANES = 14,
+			NUMBRUSHES = 16,
+			NUMPENS = 18,
+			NUMMARKERS = 20,
+			NUMFONTS = 22,
+			NUMCOLORS = 24,
+			PDEVICESIZE = 26,
+			CURVECAPS = 28,
+			LINECAPS = 30,
+			POLYGONALCAPS = 32,
+			TEXTCAPS = 34,
+			CLIPCAPS = 36,
+			RASTERCAPS = 38, //Bitblt capabilities
+			ASPECTX = 40,
+			ASPECTY = 42,
+			ASPECTXY = 44,
+			SHADEBLENDCAPS = 45, //Shading and Blending caps
+			LOGPIXELSX = 88,
+			LOGPIXELSY = 90,
+			SIZEPALETTE = 104,
+			NUMRESERVED = 106,
+			COLORRES = 108, //Actual color resolution
+			PHYSICALWIDTH = 110,
+			PHYSICALHEIGHT = 111,
+			PHYSICALOFFSETX = 112,
+			PHYSICALOFFSETY = 113,
+			SCALINGFACTORX = 114,
+			SCALINGFACTORY = 115,
+			VREFRESH = 116,
+			DESKTOPVERTRES = 117,
+			DESKTOPHORZRES = 118,
+			BLTALIGNMENT = 119 // Preferred blt alignment
+		}
+	}
 
 }

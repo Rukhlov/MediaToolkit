@@ -70,28 +70,26 @@ namespace ScreenStreamer.WinForms.App
             if(captureDevice.CaptureMode == CaptureMode.Screen)
             {
                 var screenCaptureDevice = (ScreenCaptureDevice)captureDevice;
+				var captureProps = screenCaptureDevice.Properties;
+				// var captureDescr = screenCaptureParams.CaptureDescription;
+				displayTextBox.Text = screenCaptureDevice.Name;
 
-                // var captureDescr = screenCaptureParams.CaptureDescription;
-                this.displayTextBox.Text = screenCaptureDevice.Name;
-
-                this.captureRegion = screenCaptureDevice.CaptureRegion;
-                this.captureMouseCheckBox.Checked = screenCaptureDevice.Properties.CaptureMouse;
-
-                this.aspectRatioCheckBox.Checked = screenCaptureDevice.Properties.AspectRatio;
-
-                cameraTableLayoutPanel.Visible = false;
-                screenCaptureTableLayoutPanel.Visible = true;
-                screenCaptureDetailsPanel.Visible = true;
-
-                showDebugInfoCheckBox.Checked = screenCaptureDevice.Properties.ShowDebugInfo;
-                showCaptureBorderCheckBox.Checked = screenCaptureDevice.Properties.ShowDebugBorder;
+				captureRegion = screenCaptureDevice.CaptureRegion;
+                captureMouseCheckBox.Checked = captureProps.CaptureMouse;
+                aspectRatioCheckBox.Checked = captureProps.AspectRatio;
+                showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
 
                 if (screenCaptureDevice.DisplayRegion.IsEmpty)
                 {
                     displayTextBox.Visible = false;
                     labelDisplay.Visible = false;
-                }   
-            }
+                }
+
+				cameraTableLayoutPanel.Visible = false;
+				screenCaptureTableLayoutPanel.Visible = true;
+				screenCaptureDetailsPanel.Visible = true;
+			}
             else if(captureDevice.CaptureMode == CaptureMode.UvcDevice)
             {
                 var uvcDevice = (UvcDevice)captureDevice;
@@ -332,6 +330,12 @@ namespace ScreenStreamer.WinForms.App
 					}
 					else if (captureDevice.CaptureMode == CaptureMode.Screen)
 					{
+						var screenCapture = (ScreenCaptureDevice)captureDevice;
+						var screenCaptureProps = screenCapture.Properties;
+						screenCaptureProps.CaptureType = VideoCaptureType.GDI;
+						screenCaptureProps.UseHardware = true;
+						screenCaptureProps.Fps = 30;
+
 						videoSource = new ScreenSource();
 						videoSource.Setup(captureDevice);
 					}

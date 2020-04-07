@@ -41,9 +41,11 @@ namespace MediaToolkit
         public CaptureState State { get; private set; } = CaptureState.Closed;
         public int ErrorCode { get; private set; } = 0;
 
-        private DXGIDesktopDuplicationCapture hwContext = null;
+        //private DXGIDesktopDuplicationCapture hwContext = null;
 
-        public event Action BufferUpdated;
+		private ITexture2DSource hwContext = null;
+
+		public event Action BufferUpdated;
         private void OnBufferUpdated()
         {
             BufferUpdated?.Invoke();
@@ -118,19 +120,29 @@ namespace MediaToolkit
                 screenCapture.CaptureMouse = captureProp.CaptureMouse;
                 screenCapture.AspectRatio = captureProp.AspectRatio;
 
-                screenCapture.Init(srcRect, destSize);
-                //screenCapture.Init(srcRect);
+				var d3d11Capture = screenCapture as ITexture2DSource;
+				if (d3d11Capture != null)
+				{
+					d3d11Capture.UseHwContext = captureProp.UseHardware;
+					this.hwContext = d3d11Capture;
+					this.AdapterId = d3d11Capture.AdapterId;
+				}
 
-                DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
-                if (capture != null)
-                {
-                    capture.UseHwContext = captureProp.UseHardware;
+				//DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
+    //            if (capture != null)
+    //            {
+    //                capture.UseHwContext = captureProp.UseHardware;
 
-                    this.hwContext = capture;
-                    this.AdapterId = capture.AdapterId;
-                }
+    //                this.hwContext = capture;
+    //                this.AdapterId = capture.AdapterId;
+    //            }
 
-                this.SharedBitmap = screenCapture.VideoBuffer;
+
+				screenCapture.Init(srcRect, destSize);
+				//screenCapture.Init(srcRect);
+
+
+				this.SharedBitmap = screenCapture.VideoBuffer;
 
                 deviceReady = true;
 

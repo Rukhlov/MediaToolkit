@@ -391,8 +391,8 @@
 			// applyButton
 			// 
 			this.applyButton.AutoSize = true;
-			this.applyButton.Location = new System.Drawing.Point(18, 2);
-			this.applyButton.Margin = new System.Windows.Forms.Padding(2);
+			this.applyButton.Location = new System.Drawing.Point(14, 2);
+			this.applyButton.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
 			this.applyButton.Name = "applyButton";
 			this.applyButton.Size = new System.Drawing.Size(112, 28);
 			this.applyButton.TabIndex = 200;
@@ -404,7 +404,7 @@
 			// 
 			this.cancelButton.AutoSize = true;
 			this.cancelButton.Location = new System.Drawing.Point(134, 2);
-			this.cancelButton.Margin = new System.Windows.Forms.Padding(2);
+			this.cancelButton.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(109, 28);
 			this.cancelButton.TabIndex = 210;
@@ -861,11 +861,11 @@
 			this.panel1.Controls.Add(this.cancelButton);
 			this.panel1.Controls.Add(this.applyButton);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-			this.panel1.Location = new System.Drawing.Point(318, 594);
+			this.panel1.Location = new System.Drawing.Point(316, 594);
 			this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
 			this.panel1.Name = "panel1";
 			this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-			this.panel1.Size = new System.Drawing.Size(245, 32);
+			this.panel1.Size = new System.Drawing.Size(247, 32);
 			this.panel1.TabIndex = 60;
 			// 
 			// VideoSettingsForm
