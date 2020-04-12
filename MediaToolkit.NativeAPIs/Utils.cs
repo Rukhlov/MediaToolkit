@@ -17,8 +17,8 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 		public static int StartProcessWithSystemToken(string applicationName, string commandLine)
 		{
-			var systemProcessName = "lsass"; //"winlogon";
-
+			var systemProcessName = "lsass";
+			//var systemProcessName = "winlogon";
 			using (Process currentProcess = Process.GetCurrentProcess())
 			{
 				IntPtr hCurrentProcToken = IntPtr.Zero;
@@ -71,12 +71,14 @@ namespace MediaToolkit.NativeAPIs.Utils
 			{
 				hOriginalSystemToken = GetTokenFromProcess(systemProcessName);
 
-				AdvApi32.SECURITY_ATTRIBUTES secAttr = new AdvApi32.SECURITY_ATTRIBUTES();
-				secAttr.bInheritHandle = 0;
-
+	
 				IntPtr hDuplicatedSystemToken = IntPtr.Zero;
 				try
 				{
+					AdvApi32.SECURITY_ATTRIBUTES secAttr = new AdvApi32.SECURITY_ATTRIBUTES();
+					secAttr.bInheritHandle = 0;
+
+
 					bool result = AdvApi32.DuplicateTokenEx(hOriginalSystemToken, 
 								AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, ref secAttr,
 								AdvApi32.SecurityImpersonationLevel.SecurityImpersonation,
@@ -102,11 +104,12 @@ namespace MediaToolkit.NativeAPIs.Utils
 						string lpCurrentDirectory = null;//@"C:\";
 
 						//TODO: setup info...
-						var lpStartupInfo = new AdvApi32.STARTUPINFO();				
+						var lpStartupInfo = new AdvApi32.STARTUPINFO();
 
+						var args = string.Join(" ", applicationName, commandLine);
 						result = AdvApi32.CreateProcessWithTokenW(hDuplicatedSystemToken,
 							dwLogonFlags,
-							applicationName, commandLine,
+							null, args,
 							dwCreationFlags, lpEnvironment, lpCurrentDirectory,
 							ref lpStartupInfo, out lpProcessInformation);
 
@@ -196,6 +199,140 @@ namespace MediaToolkit.NativeAPIs.Utils
 			return hToken;
 		}
 
+		public static System.Security.Principal.WindowsIdentity GetProcIdentity(Process process)
+		{
+			System.Security.Principal.WindowsIdentity wi = null;
+
+			IntPtr hToken = IntPtr.Zero;
+			try
+			{
+				var hProcess = process.Handle;
+				bool res = AdvApi32.OpenProcessToken(hProcess, AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, out hToken);
+				if (!res)
+				{
+					var code = Marshal.GetLastWin32Error();
+					var message = $"Failed to retrieve handle to processes access token. OpenProcessToken failed with error: {code}";
+					throw new Win32Exception(code, message);
+				}
+				wi = new System.Security.Principal.WindowsIdentity(hToken);
+			}
+			finally
+			{
+				if (hToken != IntPtr.Zero)
+				{
+					Kernel32.CloseHandle(hToken);
+				}
+			}
+
+			return wi;
+		}
+
+		public static string GetUserInfo(IntPtr hToken)
+		{
+			string userInfo = string.Empty;
+			uint tokenInfoLength = 0;
+
+			bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenUser, IntPtr.Zero, tokenInfoLength, out tokenInfoLength);
+			if (tokenInfoLength > 0)
+			{
+				IntPtr tokenInfo = IntPtr.Zero;
+				try
+				{
+					tokenInfo = Marshal.AllocHGlobal((int)tokenInfoLength);
+					success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenUser, tokenInfo, tokenInfoLength, out tokenInfoLength);
+					if (success)
+					{
+
+						AdvApi32.TOKEN_USER tokenUser = (AdvApi32.TOKEN_USER)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_USER));
+						int sidAndAttrSize = Marshal.SizeOf(new AdvApi32.SID_AND_ATTRIBUTES());
+
+						IntPtr ptr = IntPtr.Zero;
+						try
+						{
+							var sid = tokenUser.User.Sid;
+							AdvApi32.ConvertSidToStringSid(sid, out ptr);
+							userInfo = Marshal.PtrToStringAuto(ptr);
+						}
+						finally
+						{
+							if (ptr != IntPtr.Zero)
+							{
+								Kernel32.LocalFree(ptr);
+							}
+						}
+					}
+				}
+				finally
+				{
+					if (tokenInfo != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(tokenInfo);
+					}
+				}
+
+			}
+
+			return userInfo;
+		}
+
+		public static string GetGroupLogonId(IntPtr hToken)
+		{
+			string userInfo = string.Empty;
+			uint tokenInfoLength = 0;
+
+			bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenGroups, IntPtr.Zero, tokenInfoLength, out tokenInfoLength);
+			if(tokenInfoLength > 0)
+			{
+				IntPtr tokenInfo = IntPtr.Zero;
+				try
+				{
+					tokenInfo = Marshal.AllocHGlobal((int)tokenInfoLength);
+					success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenGroups, tokenInfo, tokenInfoLength, out tokenInfoLength);
+					if (success)
+					{
+						
+						AdvApi32.TOKEN_GROUPS groups = (AdvApi32.TOKEN_GROUPS)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_GROUPS));
+						int sidAndAttrSize = Marshal.SizeOf(new AdvApi32.SID_AND_ATTRIBUTES());
+						for (int i = 0; i < groups.GroupCount; i++)
+						{
+
+							var infoPtr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + IntPtr.Size);
+
+							AdvApi32.SID_AND_ATTRIBUTES sidAndAttributes = (AdvApi32.SID_AND_ATTRIBUTES)Marshal.PtrToStructure(infoPtr, typeof(AdvApi32.SID_AND_ATTRIBUTES));
+							if ((sidAndAttributes.Attributes & AdvApi32.SE_GROUP_LOGON_ID) == AdvApi32.SE_GROUP_LOGON_ID)
+							{
+								IntPtr ptr = IntPtr.Zero;
+								try
+								{
+									AdvApi32.ConvertSidToStringSid(sidAndAttributes.Sid, out ptr);
+									userInfo = Marshal.PtrToStringAuto(ptr);
+								}
+								finally
+								{
+									if (ptr != IntPtr.Zero)
+									{
+										Kernel32.LocalFree(ptr);
+									}
+								}
+
+								break;
+							}
+						}
+					}
+				}
+				finally
+				{
+					if (tokenInfo != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(tokenInfo);
+					}
+				}
+				
+			}
+
+			return userInfo;
+		}
+
 		public class ATPrivilege
 		{
 			public string Name { get; set; }
@@ -211,12 +348,12 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 				bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenPrivileges, IntPtr.Zero, tokenInfLength, out tokenInfLength);
 
-				//if (success)
+				if (tokenInfLength > 0)
 				{
 					IntPtr tokenInfo = IntPtr.Zero;
 					try
 					{
-						tokenInfo = Marshal.AllocHGlobal(Convert.ToInt32(tokenInfLength));
+						tokenInfo = Marshal.AllocHGlobal((int)tokenInfLength);
 						success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenPrivileges, tokenInfo, tokenInfLength, out tokenInfLength);
 
 						if (success)
@@ -276,6 +413,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 						}
 					}
 
+				}
+				else
+				{
+					var code = Marshal.GetLastWin32Error();
+					var message = $"Failed to retreive session id information for access token. GetTokenInformation failed with error: {code}";
+
+					throw new Win32Exception(code, message);
 				}
 
 				return privs;

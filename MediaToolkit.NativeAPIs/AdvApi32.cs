@@ -70,6 +70,35 @@ namespace MediaToolkit.NativeAPIs
 			public UInt32 Attributes;
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public struct SID_AND_ATTRIBUTES
+		{
+			public IntPtr Sid;
+			public uint Attributes;
+		}
+
+		public struct TOKEN_USER
+		{
+			public SID_AND_ATTRIBUTES User;
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct TOKEN_GROUPS
+		{
+			public UInt32 GroupCount;
+			// Followed by this:
+			[MarshalAs(UnmanagedType.ByValArray)] 
+			public SID_AND_ATTRIBUTES[] Groups;
+		}
+
+		//[StructLayout(LayoutKind.Sequential)]
+		//public struct TOKEN_GROUPS
+		//{
+		//	public int GroupCount;
+		//	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
+		//	public SID_AND_ATTRIBUTES[] Groups;
+		//};
+
 		public class USEROBJECTFLAGS
 		{
 			public int fInherit = 0;
@@ -269,6 +298,12 @@ namespace MediaToolkit.NativeAPIs
 		public const int UOI_HEAPSIZE = 5;
 		public const int UOI_IO = 6;
 
+
+		//https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-token_groups_and_privileges
+		public const uint SE_GROUP_LOGON_ID = 0xC0000000;
+
+
+
 		[DllImport("advapi32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool AdjustTokenPrivileges(IntPtr tokenHandle,
@@ -305,6 +340,11 @@ namespace MediaToolkit.NativeAPIs
 			IntPtr TokenInformation,
 			uint TokenInformationLength,
 			out uint ReturnLength);
+
+
+		[DllImport("advapi32", CharSet = CharSet.Auto, SetLastError = true)]
+		public static extern bool ConvertSidToStringSid(IntPtr pSID, out IntPtr ptrSid);
+
 
 		[DllImport("advapi32.dll", SetLastError = true, BestFitMapping = false, ThrowOnUnmappableChar = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]

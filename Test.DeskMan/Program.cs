@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,85 +24,117 @@ namespace Test.DeskMan
 		static void Main(string[] args)
 		{
 
-			//var applicationName = Path.Combine(Environment.SystemDirectory, "notepad.exe");
 
-			//var res = DesktopManager.OpenInteractiveProcess(applicationName, "default", false, out AdvApi32.PROCESS_INFORMATION procInfo);
-			//Console.WriteLine("OpenInteractiveProcess(...) " + res + " " + procInfo.dwProcessId);
-			//Console.ReadKey();
-			//return;
+			Console.WriteLine("args " + string.Join(" ", args));
 
 
-			if (args != null && args.Length > 0)
+
+			var id = WindowsIdentity.GetCurrent();
+			bool IsElevated = (id.Owner != id.User);
+
+			Console.WriteLine("IsElevated " + IsElevated);
+
+			using (var proc = Process.GetCurrentProcess())
 			{
-				try
+				var wi = ProcessTool.GetProcIdentity(proc);
+
+				var userName = wi.Name;
+				var isSystem = "IsSystem=" +  wi.IsSystem;
+				var isElevated = "IsElevated=" + IsElevated;
+
+				Console.Title = string.Join("; ", userName, isElevated, isSystem);
+			}
+
+			//Console.Title = currentProcess.StartInfo.UserName + " " + IsElevated;
+
+			bool needRestart = false;
+
+			if(IsElevated)
+			{
+				if (args != null && args.Length > 0)
 				{
-					var applicationDir = Directory.GetCurrentDirectory();
-
-					var applicatonFullName = Path.Combine(applicationDir, "Test.DeskMan.exe");
-
-					//applicatonFullName = Path.Combine(@"C:\Windows", "regedit.exe");
-
-					var pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, "");
-
-					if (pid > 0)
+					foreach(var arg in args)
 					{
-						var process = Process.GetProcessById(pid);
-						if (process != null)
+						if (arg.ToLower().StartsWith("-elevate"))
 						{
-							Console.WriteLine("New process started: " + process.ProcessName);
+							needRestart = true;
+							break;
 						}
-
 					}
 				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex);
 
-				}
+			}
 
-				Console.WriteLine("Press any key to exit");
-				Console.ReadKey();
-
-				//Process process = new Process();
-				//var _args = new string[]
-				//{
-				//	"-s",
-				//	"-i",
-				//	"\"" + curFile + "\"",
-
-				//	//"\""  + "\"" + curFile + "\"" + " -test" + "\"",
-
-				//};
-				//ProcessStartInfo pi = new ProcessStartInfo
-				//{
-				//	FileName = "PsExec.exe",
-				//	Arguments = string.Join(" ", _args), //"-s -i Test.DeskMan.exe -test",
-				//	Verb = "runas",
-				//};
-
-				//process.StartInfo = pi;
-
-				//process.Start();
-
-
+			if (needRestart)
+			{
+				RunElevated();
 			}
 			else
 			{
-				Task.Run(() => 
+				Task.Run(() =>
 				{
 
 					StartTest();
+
 				});
-
-
-				Console.WriteLine("Press any key to exit...");
-				Console.ReadKey();
 			}
 
+			Console.WriteLine("Press any key to exit...");
+			Console.ReadKey();
 
 
 		}
 
+		private static void RunElevated()
+		{
+
+			try
+			{
+				var applicationDir = Directory.GetCurrentDirectory();
+
+				var applicatonFullName = Path.Combine(applicationDir, "Test.DeskMan.exe");
+				var commandLine = "";
+				//applicatonFullName = Path.Combine(@"C:\Windows", "regedit.exe");
+
+				var pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
+
+				if (pid > 0)
+				{
+					var process = Process.GetProcessById(pid);
+					if (process != null)
+					{
+						Console.WriteLine("New process started: " + process.ProcessName);
+					}
+
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+
+			}
+
+			//Process process = new Process();
+			//var _args = new string[]
+			//{
+			//	"-s",
+			//	"-i",
+			//	"\"" + curFile + "\"",
+
+			//	//"\""  + "\"" + curFile + "\"" + " -test" + "\"",
+
+			//};
+			//ProcessStartInfo pi = new ProcessStartInfo
+			//{
+			//	FileName = "PsExec.exe",
+			//	Arguments = string.Join(" ", _args), //"-s -i Test.DeskMan.exe -test",
+			//	Verb = "runas",
+			//};
+
+			//process.StartInfo = pi;
+
+			//process.Start();
+		}
 
 		private static void StartTest()
 		{

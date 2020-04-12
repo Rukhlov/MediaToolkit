@@ -83,6 +83,10 @@ namespace MediaToolkit.NativeAPIs
 			}
 		}
 
+
+		[DllImport("kernel32.dll")]
+		public static extern IntPtr LocalFree(IntPtr hMem);
+
 	}
 
 }
