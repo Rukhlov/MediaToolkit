@@ -1,0 +1,1 @@
+"Y:\Users\Alexander\source\repos\ScreenStreamer\Test.DeskMan\bin\Debug\PsExec.exe" -s -i "Y:\Users\Alexander\source\repos\ScreenStreamer\Test.DeskMan\bin\Debug\Test.DeskMan.exe"

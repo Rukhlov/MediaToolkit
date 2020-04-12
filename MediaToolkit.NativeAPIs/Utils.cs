@@ -12,6 +12,300 @@ using System.Text;
 namespace MediaToolkit.NativeAPIs.Utils
 {
 
+	public class ProcessTool
+	{
+
+		public static int StartProcessWithSystemToken(string applicationName, string commandLine)
+		{
+			var systemProcessName = "lsass"; //"winlogon";
+
+			using (Process currentProcess = Process.GetCurrentProcess())
+			{
+				IntPtr hCurrentProcToken = IntPtr.Zero;
+				try
+				{
+					var hCurrentProcess = currentProcess.Handle;
+
+					bool res = AdvApi32.OpenProcessToken(hCurrentProcess, AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, out hCurrentProcToken);
+					if (!res)
+					{
+						var code = Marshal.GetLastWin32Error();
+						var message = $"Failed to retrieve handle to processes access token. OpenProcessToken failed with error: {code}";
+						throw new Win32Exception(code, message);
+					}
+
+					var accessTokenPrivileges = ATPrivilege.GetPrivilegesFromToken(hCurrentProcToken);
+
+					var privilegeNames = new[] { PrivilegeConstants.SE_IMPERSONATE_NAME };
+
+					foreach (var accessTokenPrivilege in accessTokenPrivileges)
+					{
+						foreach (var privName in privilegeNames)
+						{
+							if (accessTokenPrivilege.Name == privName)
+							{
+								var enabled = ((accessTokenPrivilege.Attributes & PrivilegeConstants.SE_PRIVILEGE_ENABLED) == PrivilegeConstants.SE_PRIVILEGE_ENABLED);
+
+								if (!enabled)
+								{
+									//TODO:...
+									//AdjustTokenPrivileges(...)
+								}
+							}
+						}
+					}
+				}
+				finally
+				{
+					if (hCurrentProcToken != IntPtr.Zero)
+					{
+						Kernel32.CloseHandle(hCurrentProcToken);
+					}
+				}
+			}
+
+
+			IntPtr hOriginalSystemToken = IntPtr.Zero;
+
+			try
+			{
+				hOriginalSystemToken = GetTokenFromProcess(systemProcessName);
+
+				AdvApi32.SECURITY_ATTRIBUTES secAttr = new AdvApi32.SECURITY_ATTRIBUTES();
+				secAttr.bInheritHandle = 0;
+
+				IntPtr hDuplicatedSystemToken = IntPtr.Zero;
+				try
+				{
+					bool result = AdvApi32.DuplicateTokenEx(hOriginalSystemToken, 
+								AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, ref secAttr,
+								AdvApi32.SecurityImpersonationLevel.SecurityImpersonation,
+								AdvApi32.TokenType.TokenPrimary,
+								out hDuplicatedSystemToken);
+
+					if (!result)
+					{
+						var code = Marshal.GetLastWin32Error();
+						var message = $"Failed to duplicate new primary token.";
+
+						throw new Win32Exception(code, message);
+					}
+
+
+
+					AdvApi32.PROCESS_INFORMATION lpProcessInformation = default(AdvApi32.PROCESS_INFORMATION);
+					try
+					{
+						var dwLogonFlags = AdvApi32.LogonFlags.NetCredentialsOnly;
+						var dwCreationFlags = AdvApi32.CreationFlags.NewConsole;
+						var lpEnvironment = IntPtr.Zero;
+						string lpCurrentDirectory = null;//@"C:\";
+
+						//TODO: setup info...
+						var lpStartupInfo = new AdvApi32.STARTUPINFO();				
+
+						result = AdvApi32.CreateProcessWithTokenW(hDuplicatedSystemToken,
+							dwLogonFlags,
+							applicationName, commandLine,
+							dwCreationFlags, lpEnvironment, lpCurrentDirectory,
+							ref lpStartupInfo, out lpProcessInformation);
+
+						if (!result)
+						{
+							var code = Marshal.GetLastWin32Error();
+							var message = $"Failed to create shell. CreateProcessWithTokenW failed with error code: {code}";
+							throw new Win32Exception(code, message);
+						}
+
+						return lpProcessInformation.dwProcessId;
+
+					}
+					finally
+					{
+						if (lpProcessInformation.hProcess != IntPtr.Zero)
+						{
+							Kernel32.CloseHandle(lpProcessInformation.hProcess);
+						}
+						if (lpProcessInformation.hThread != IntPtr.Zero)
+						{
+							Kernel32.CloseHandle(lpProcessInformation.hThread);
+						}
+					}
+				}
+				finally
+				{
+					if (hDuplicatedSystemToken != IntPtr.Zero)
+					{
+						Kernel32.CloseHandle(hDuplicatedSystemToken);
+					}
+				}
+			}
+			finally
+			{
+				if (hOriginalSystemToken != IntPtr.Zero)
+				{
+					Kernel32.CloseHandle(hOriginalSystemToken);
+				}
+			}
+
+		}
+
+		private static IntPtr GetTokenFromProcess(string processName)
+		{
+			IntPtr hToken = IntPtr.Zero;
+
+			var process = Process.GetProcessesByName(processName).FirstOrDefault();
+			if (process == null)
+			{
+				throw new Exception($"Failed to find {processName} process.");
+			}
+
+			IntPtr hProcess = IntPtr.Zero;
+			try
+			{
+				int pid = process.Id;
+
+				bool inheritHandle = true;
+				var processAccess = AdvApi32.ProcessAccessFlags.All;
+				hProcess = Kernel32.OpenProcess((uint)processAccess, inheritHandle, (uint)pid);
+				if (hProcess == IntPtr.Zero)
+				{
+					var code = Marshal.GetLastWin32Error();
+					string message = $"Failed to open handle to process '{pid}' with the access flag '{processAccess.ToString()}'";
+					throw new Win32Exception(code, message);
+				}
+
+				var desiredAccess = (AdvApi32.TokenAccess.TOKEN_DUPLICATE | AdvApi32.TokenAccess.TOKEN_QUERY);
+				bool result = AdvApi32.OpenProcessToken(hProcess, desiredAccess, out hToken);
+				if (!result)
+				{
+					var code = Marshal.GetLastWin32Error();
+					var message = $"Failed to retrieve handle to processes access token. OpenProcessToken failed with error: {code}";
+
+					throw new Win32Exception(code, message);
+				}
+			}
+			finally
+			{
+				if (hProcess != IntPtr.Zero)
+				{
+					Kernel32.CloseHandle(hProcess);
+				}
+			}
+
+			return hToken;
+		}
+
+		public class ATPrivilege
+		{
+			public string Name { get; set; }
+			public uint Attributes { get; set; }
+
+
+
+			public static List<ATPrivilege> GetPrivilegesFromToken(IntPtr hToken)
+			{
+				List<ATPrivilege> privs = new List<ATPrivilege>();
+
+				uint tokenInfLength = 0;
+
+				bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenPrivileges, IntPtr.Zero, tokenInfLength, out tokenInfLength);
+
+				//if (success)
+				{
+					IntPtr tokenInfo = IntPtr.Zero;
+					try
+					{
+						tokenInfo = Marshal.AllocHGlobal(Convert.ToInt32(tokenInfLength));
+						success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenPrivileges, tokenInfo, tokenInfLength, out tokenInfLength);
+
+						if (success)
+						{
+							var parsedGroups = new List<ATGroup>();
+
+							AdvApi32.TOKEN_PRIVILEGES privileges = (AdvApi32.TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_PRIVILEGES));
+
+							var sidAndAttrSize = Marshal.SizeOf(new AdvApi32.LUID_AND_ATTRIBUTES());
+							privs = new List<ATPrivilege>();
+							for (int i = 0; i < privileges.PrivilegeCount; i++)
+							{
+								var laa = (AdvApi32.LUID_AND_ATTRIBUTES)Marshal.PtrToStructure(new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + 4), typeof(AdvApi32.LUID_AND_ATTRIBUTES));
+
+								var pname = new StringBuilder();
+								int luidNameLen = 0;
+								IntPtr ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(laa.Luid));
+								Marshal.StructureToPtr(laa.Luid, ptrLuid, true);
+
+								// Get length of name.
+								AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
+								pname.EnsureCapacity(luidNameLen);
+
+								var privilegeName = "";
+								if (!AdvApi32.LookupPrivilegeName(null, ptrLuid, pname, ref luidNameLen))
+								{
+									//Logger.GetInstance().Error($"Failed to lookup privilege name. LookupPrivilegeName failed with error: {Kernel32.GetLastError()}");
+									privilegeName = "UNKNOWN";
+								}
+								else
+								{
+									privilegeName = pname.ToString();
+								}
+
+
+								privs.Add(new ATPrivilege
+								{
+									Name = privilegeName,
+									Attributes = laa.Attributes
+								});
+							}
+
+						}
+						else
+						{
+							var code = Marshal.GetLastWin32Error();
+							var message = $"Failed to retreive session id information for access token. GetTokenInformation failed with error: {code}";
+
+							throw new Win32Exception(code, message);
+						}
+					}
+					finally
+					{
+						if (tokenInfo != IntPtr.Zero)
+						{
+							Marshal.FreeHGlobal(tokenInfo);
+						}
+					}
+
+				}
+
+				return privs;
+
+			}
+		}
+
+		public class ATGroup
+		{
+
+			public string SIDString { get; }
+			public IntPtr SIDPtr { get; }
+			public int Attributes { get; }
+			public string Name { get; }
+			public string Domain { get; }
+			public AdvApi32.SidNameUse Type { get; }
+
+			public ATGroup(string sidName, IntPtr sidPtr, int attributes, string name, string domain, AdvApi32.SidNameUse tpe)
+			{
+				this.SIDPtr = sidPtr;
+				this.SIDString = sidName;
+				this.Attributes = attributes;
+				this.Name = name;
+				this.Domain = domain;
+				this.Type = tpe;
+			}
+		}
+
+	}
+
 	public class DesktopManager
 	{
 		public enum SessionType
@@ -111,81 +405,6 @@ namespace MediaToolkit.NativeAPIs.Utils
 			return User32.OpenInputDesktop(0, true, ACCESS_MASK.GENERIC_ALL);
 		}
 
-		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out AdvApi32.PROCESS_INFORMATION procInfo)
-		{
-			uint winlogonPid = 0;
-			IntPtr hUserTokenDup = IntPtr.Zero, hPToken = IntPtr.Zero, hProcess = IntPtr.Zero;
-			procInfo = new AdvApi32.PROCESS_INFORMATION();
-
-			// Check for RDP session.  If active, use that session ID instead.
-			var activeSessions = GetActiveSessions();
-			var dwSessionId = activeSessions.Last().ID;
-
-			// Obtain the process ID of the winlogon process that is running within the currently active session.
-			Process[] processes = Process.GetProcessesByName("winlogon");
-			foreach (Process p in processes)
-			{
-				if ((uint)p.SessionId == dwSessionId)
-				{
-					winlogonPid = (uint)p.Id;
-				}
-			}
-
-			// Obtain a handle to the winlogon process.
-			hProcess = Kernel32.OpenProcess(AdvApi32.MAXIMUM_ALLOWED, false, winlogonPid);
-
-			// Obtain a handle to the access token of the winlogon process.
-			if (!AdvApi32.OpenProcessToken(hProcess, AdvApi32.TOKEN_DUPLICATE, ref hPToken))
-			{
-				Kernel32.CloseHandle(hProcess);
-				return false;
-			}
-
-			// Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser.
-			AdvApi32.SECURITY_ATTRIBUTES sa = new AdvApi32.SECURITY_ATTRIBUTES();
-			sa.Length = Marshal.SizeOf(sa);
-
-			// Copy the access token of the winlogon process; the newly created token will be a primary token.
-			if (!AdvApi32.DuplicateTokenEx(hPToken, AdvApi32.MAXIMUM_ALLOWED, ref sa, AdvApi32.SECURITY_IMPERSONATION_LEVEL.SecurityIdentification, AdvApi32.TOKEN_TYPE.TokenPrimary, out hUserTokenDup))
-			{
-				Kernel32.CloseHandle(hProcess);
-				Kernel32.CloseHandle(hPToken);
-				return false;
-			}
-
-			// By default, CreateProcessAsUser creates a process on a non-interactive window station, meaning
-			// the window station has a desktop that is invisible and the process is incapable of receiving
-			// user input. To remedy this we set the lpDesktop parameter to indicate we want to enable user 
-			// interaction with the new process.
-			AdvApi32.STARTUPINFO si = new AdvApi32.STARTUPINFO();
-			si.cb = Marshal.SizeOf(si);
-			si.lpDesktop = @"winsta0\" + desktopName;
-
-			// Flags that specify the priority and creation method of the process.
-			uint dwCreationFlags;
-			if (hiddenWindow)
-			{
-				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NO_WINDOW;
-				si.dwFlags = AdvApi32.STARTF_USESHOWWINDOW;
-				si.wShowWindow = 0;
-			}
-			else
-			{
-				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NEW_CONSOLE;
-			}
-
-			// Create a new process in the current user's logon session.
-			bool result = AdvApi32.CreateProcessAsUser(hUserTokenDup, null, applicationName, ref sa, ref sa, false, dwCreationFlags, IntPtr.Zero, null, ref si, out procInfo);
-
-			// Invalidate the handles.
-			Kernel32.CloseHandle(hProcess);
-			Kernel32.CloseHandle(hPToken);
-			Kernel32.CloseHandle(hUserTokenDup);
-
-			return result;
-		}
-
-
 		public static bool SwitchToInputDesktop()
 		{
             bool result = false;
@@ -217,6 +436,99 @@ namespace MediaToolkit.NativeAPIs.Utils
             return result;
 
         }
+
+
+		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out AdvApi32.PROCESS_INFORMATION procInfo)
+		{ //работает если только если запускать из сервиса !!!
+
+			uint winlogonPid = 0;
+
+			IntPtr hUserTokenDup = IntPtr.Zero;
+			IntPtr hPToken = IntPtr.Zero;
+			IntPtr hProcess = IntPtr.Zero;
+
+			procInfo = new AdvApi32.PROCESS_INFORMATION();
+
+			// Check for RDP session.  If active, use that session ID instead.
+			var activeSessions = GetActiveSessions();
+			var dwSessionId = activeSessions.Last().ID;
+
+			// Obtain the process ID of the winlogon process that is running within the currently active session.
+			Process[] processes = Process.GetProcessesByName("winlogon");
+			foreach (Process p in processes)
+			{
+				if ((uint)p.SessionId == dwSessionId)
+				{
+					winlogonPid = (uint)p.Id;
+				}
+			}
+
+
+
+			// Obtain a handle to the winlogon process.
+			hProcess = Kernel32.OpenProcess(AdvApi32.MAXIMUM_ALLOWED, false, winlogonPid);
+
+			// Obtain a handle to the access token of the winlogon process.
+			if (!AdvApi32.OpenProcessToken(hProcess, AdvApi32.TokenAccess.TOKEN_DUPLICATE, out hPToken))
+			{
+				Kernel32.CloseHandle(hProcess);
+				return false;
+			}
+
+			// Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser.
+			AdvApi32.SECURITY_ATTRIBUTES sa = new AdvApi32.SECURITY_ATTRIBUTES();
+			sa.Length = Marshal.SizeOf(sa);
+
+			// Copy the access token of the winlogon process; the newly created token will be a primary token.
+			if (!AdvApi32.DuplicateTokenEx(hPToken, /*AdvApi32.MAXIMUM_ALLOWED*/ AdvApi32.TokenAccess.TOKEN_ALL_ACCESS,
+				ref sa,
+				AdvApi32.SecurityImpersonationLevel.SecurityIdentification,
+				AdvApi32.TokenType.TokenPrimary,
+				out hUserTokenDup))
+			{
+				Kernel32.CloseHandle(hProcess);
+				Kernel32.CloseHandle(hPToken);
+				return false;
+			}
+
+			// By default, CreateProcessAsUser creates a process on a non-interactive window station, meaning
+			// the window station has a desktop that is invisible and the process is incapable of receiving
+			// user input. To remedy this we set the lpDesktop parameter to indicate we want to enable user 
+			// interaction with the new process.
+			AdvApi32.STARTUPINFO si = new AdvApi32.STARTUPINFO();
+			si.cb = Marshal.SizeOf(si);
+			si.lpDesktop = @"winsta0\" + desktopName;
+
+			// Flags that specify the priority and creation method of the process.
+			uint dwCreationFlags;
+			if (hiddenWindow)
+			{
+				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NO_WINDOW;
+				si.dwFlags = AdvApi32.STARTF_USESHOWWINDOW;
+				si.wShowWindow = 0;
+			}
+			else
+			{
+				dwCreationFlags = AdvApi32.NORMAL_PRIORITY_CLASS | AdvApi32.CREATE_UNICODE_ENVIRONMENT | AdvApi32.CREATE_NEW_CONSOLE;
+			}
+
+			// Create a new process in the current user's logon session.
+			//bool result = AdvApi32.CreateProcessAsUser(hUserTokenDup, null, applicationName, ref sa, ref sa, false, dwCreationFlags, IntPtr.Zero, null, ref si, out procInfo);
+			bool result = AdvApi32.CreateProcessAsUser(hUserTokenDup, applicationName, "", ref sa, ref sa, false, dwCreationFlags, IntPtr.Zero, null, ref si, out procInfo);
+
+
+			//bool result = AdvApi32.CreateProcessAsUser(IntPtr.Zero, applicationName, "", ref sa, ref sa, false, dwCreationFlags, IntPtr.Zero, null, ref si, out procInfo);
+
+
+			// Invalidate the handles.
+			Kernel32.CloseHandle(hProcess);
+			Kernel32.CloseHandle(hPToken);
+			Kernel32.CloseHandle(hUserTokenDup);
+
+			return result;
+		}
+
+
 	}
 
 	public class DisplayTool

@@ -10,6 +10,44 @@ namespace MediaToolkit.NativeAPIs
 	public static class AdvApi32
 	{
 
+		[Flags]
+		public enum ProcessAccessFlags : uint
+		{
+			All = 0x001F0FFF,
+			Terminate = 0x00000001,
+			CreateThread = 0x00000002,
+			VirtualMemoryOperation = 0x00000008,
+			VirtualMemoryRead = 0x00000010,
+			VirtualMemoryWrite = 0x00000020,
+			DuplicateHandle = 0x00000040,
+			CreateProcess = 0x000000080,
+			SetQuota = 0x00000100,
+			SetInformation = 0x00000200,
+			QueryInformation = 0x00000400,
+			QueryLimitedInformation = 0x00001000,
+			Synchronize = 0x00100000
+		}
+
+		public enum TokenAccess
+		{
+			TOKEN_ASSIGN_PRIMARY = 0x0001,
+			TOKEN_DUPLICATE = 0x0002,
+			TOKEN_IMPERSONATE = 0x0004,
+			TOKEN_QUERY = 0x0008,
+			TOKEN_QUERY_SOURCE = 0x0010,
+			TOKEN_ADJUST_PRIVILEGES = 0x0020,
+			TOKEN_ADJUST_GROUPS = 0x0040,
+			TOKEN_ADJUST_DEFAULT = 0x0080,
+			TOKEN_ADJUST_SESSIONID = 0x0100,
+			STANDARD_RIGHTS_REQUIRED = 0x000F0000,
+			STANDARD_RIGHTS_READ = 0x00020000,
+			TOKEN_READ = (STANDARD_RIGHTS_READ | TOKEN_QUERY),
+			TOKEN_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED | TOKEN_ASSIGN_PRIMARY |
+				TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_QUERY_SOURCE |
+				TOKEN_ADJUST_PRIVILEGES | TOKEN_ADJUST_GROUPS | TOKEN_ADJUST_DEFAULT |
+				TOKEN_ADJUST_SESSIONID)
+		}
+
 		public struct TOKEN_PRIVILEGES
 		{
 			public struct LUID
@@ -18,16 +56,18 @@ namespace MediaToolkit.NativeAPIs
 				public Int32 HighPart;
 			}
 
-			[StructLayout(LayoutKind.Sequential, Pack = 4)]
-			public struct LUID_AND_ATTRIBUTES
-			{
-				public LUID Luid;
-				public UInt32 Attributes;
-			}
+
 
 			public int PrivilegeCount;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = ANYSIZE_ARRAY)]
 			public LUID_AND_ATTRIBUTES[] Privileges;
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 4)]
+		public struct LUID_AND_ATTRIBUTES
+		{
+			public LUID Luid;
+			public UInt32 Attributes;
 		}
 
 		public class USEROBJECTFLAGS
@@ -42,7 +82,8 @@ namespace MediaToolkit.NativeAPIs
 		{
 			public int Length;
 			public IntPtr lpSecurityDescriptor;
-			public bool bInheritHandle;
+			public int bInheritHandle;
+			//public bool bInheritHandle;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -78,7 +119,8 @@ namespace MediaToolkit.NativeAPIs
 			public IntPtr hStdError;
 		}
 
-		public enum TOKEN_INFORMATION_CLASS
+		//TOKEN_INFORMATION_CLASS
+		public enum TokenInformationClass
 		{
 			TokenUser = 1,
 			TokenGroups,
@@ -111,7 +153,8 @@ namespace MediaToolkit.NativeAPIs
 			MaxTokenInfoClass
 		}
 
-		public enum LOGON_TYPE
+		//LOGON_TYPE
+		public enum LogonType
 		{
 			LOGON32_LOGON_INTERACTIVE = 2,
 			LOGON32_LOGON_NETWORK,
@@ -121,7 +164,9 @@ namespace MediaToolkit.NativeAPIs
 			LOGON32_LOGON_NETWORK_CLEARTEXT,
 			LOGON32_LOGON_NEW_CREDENTIALS
 		}
-		public enum LOGON_PROVIDER
+
+		//LOGON_PROVIDER
+		public enum LogonProvider
 		{
 			LOGON32_PROVIDER_DEFAULT,
 			LOGON32_PROVIDER_WINNT35,
@@ -149,13 +194,15 @@ namespace MediaToolkit.NativeAPIs
 			INHERIT_PARENT_AFFINITY = 0x00010000
 		}
 
-		public enum TOKEN_TYPE : int
+		//TOKEN_TYPE
+		public enum TokenType : int
 		{
 			TokenPrimary = 1,
 			TokenImpersonation = 2
 		}
 
-		public enum SECURITY_IMPERSONATION_LEVEL : int
+		//SECURITY_IMPERSONATION_LEVEL
+		public enum SecurityImpersonationLevel : int
 		{
 			SecurityAnonymous = 0,
 			SecurityIdentification = 1,
@@ -163,6 +210,35 @@ namespace MediaToolkit.NativeAPIs
 			SecurityDelegation = 3,
 		}
 
+		//SID_NAME_USE
+		public enum SidNameUse
+		{
+			SidTypeUser = 1,
+			SidTypeGroup,
+			SidTypeDomain,
+			SidTypeAlias,
+			SidTypeWellKnownGroup,
+			SidTypeDeletedAccount,
+			SidTypeInvalid,
+			SidTypeUnknown,
+			SidTypeComputer
+		}
+
+		public enum LogonFlags
+		{
+			WithProfile = 1,
+			NetCredentialsOnly
+		}
+		public enum CreationFlags
+		{
+			DefaultErrorMode = 0x04000000,
+			NewConsole = 0x00000010,
+			NewProcessGroup = 0x00000200,
+			SeparateWOWVDM = 0x00000800,
+			Suspended = 0x00000004,
+			UnicodeEnvironment = 0x00000400,
+			ExtendedStartupInfoPresent = 0x00080000
+		}
 
 		public const int TOKEN_DUPLICATE = 0x0002;
 		public const uint MAXIMUM_ALLOWED = 0x2000000;
@@ -241,20 +317,39 @@ namespace MediaToolkit.NativeAPIs
 			out IntPtr phToken);
 
 		[DllImport("advapi32", SetLastError = true), SuppressUnmanagedCodeSecurityAttribute]
-		public static extern bool OpenProcessToken(IntPtr ProcessHandle, int DesiredAccess, ref IntPtr TokenHandle);
+		public static extern bool OpenProcessToken(IntPtr ProcessHandle, TokenAccess DesiredAccess, out IntPtr TokenHandle);
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 		public extern static bool DuplicateTokenEx(
 			IntPtr hExistingToken,
-			uint dwDesiredAccess,
+			TokenAccess dwDesiredAccess,
+			//uint dwDesiredAccess,
 			ref SECURITY_ATTRIBUTES lpTokenAttributes,
-			SECURITY_IMPERSONATION_LEVEL ImpersonationLevel,
-			TOKEN_TYPE TokenType,
+			SecurityImpersonationLevel ImpersonationLevel,
+			TokenType TokenType,
 			out IntPtr phNewToken);
 
 		[DllImport("advapi32.dll", SetLastError = false)]
 		public static extern uint LsaNtStatusToWinError(uint status);
 
 
+
+		[DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+		public static extern bool CreateProcessWithTokenW(
+			IntPtr hToken,
+			LogonFlags dwLogonFlags,
+			string lpApplicationName,
+			string lpCommandLine,
+			CreationFlags dwCreationFlags,
+			IntPtr lpEnvironment,
+			string lpCurrentDirectory,
+			[In] ref STARTUPINFO lpStartupInfo,
+			out PROCESS_INFORMATION lpProcessInformation);
+
+
+
+		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool LookupPrivilegeName(string lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref int cchName);
 	}
 }

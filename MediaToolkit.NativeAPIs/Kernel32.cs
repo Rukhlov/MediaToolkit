@@ -9,7 +9,16 @@ namespace MediaToolkit.NativeAPIs
 
     public static class Kernel32
     {
-        [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CopyMemory")]
+		[DllImport("kernel32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetCurrentProcess();
+
+		[DllImport("kernel32.dll", ExactSpelling = true)]
+		public static extern IntPtr GetCurrentThread();
+
+		[DllImport("kernel32.dll")]
+		public static extern uint GetLastError();
+
+		[DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CopyMemory")]
         public static extern void CopyMemory(IntPtr destination, IntPtr source, uint length);
 
         [DllImport("kernel32.dll", CharSet = CharSet.None, EntryPoint = "RtlZeroMemory", ExactSpelling = false)]
