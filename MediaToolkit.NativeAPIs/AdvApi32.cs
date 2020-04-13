@@ -50,13 +50,11 @@ namespace MediaToolkit.NativeAPIs
 
 		public struct TOKEN_PRIVILEGES
 		{
-			public struct LUID
-			{
-				public UInt32 LowPart;
-				public Int32 HighPart;
-			}
-
-
+			//public struct LUID
+			//{
+			//	public uint LowPart;
+			//	public int HighPart;
+			//}
 
 			public int PrivilegeCount;
 			[MarshalAs(UnmanagedType.ByValArray, SizeConst = ANYSIZE_ARRAY)]
@@ -67,7 +65,7 @@ namespace MediaToolkit.NativeAPIs
 		public struct LUID_AND_ATTRIBUTES
 		{
 			public LUID Luid;
-			public UInt32 Attributes;
+			public uint Attributes;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -85,19 +83,11 @@ namespace MediaToolkit.NativeAPIs
 		[StructLayout(LayoutKind.Sequential)]
 		public struct TOKEN_GROUPS
 		{
-			public UInt32 GroupCount;
-			// Followed by this:
+			public uint GroupCount;
+
 			[MarshalAs(UnmanagedType.ByValArray)] 
 			public SID_AND_ATTRIBUTES[] Groups;
 		}
-
-		//[StructLayout(LayoutKind.Sequential)]
-		//public struct TOKEN_GROUPS
-		//{
-		//	public int GroupCount;
-		//	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
-		//	public SID_AND_ATTRIBUTES[] Groups;
-		//};
 
 		public class USEROBJECTFLAGS
 		{
@@ -128,20 +118,20 @@ namespace MediaToolkit.NativeAPIs
 		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 		public struct STARTUPINFO
 		{
-			public Int32 cb;
+			public int cb;
 			public string lpReserved;
 			public string lpDesktop;
 			public string lpTitle;
-			public Int32 dwX;
-			public Int32 dwY;
-			public Int32 dwXSize;
-			public Int32 dwYSize;
-			public Int32 dwXCountChars;
-			public Int32 dwYCountChars;
-			public Int32 dwFillAttribute;
-			public Int32 dwFlags;
-			public Int16 wShowWindow;
-			public Int16 cbReserved2;
+			public int dwX;
+			public int dwY;
+			public int dwXSize;
+			public int dwYSize;
+			public int dwXCountChars;
+			public int dwYCountChars;
+			public int dwFillAttribute;
+			public int dwFlags;
+			public short wShowWindow;
+			public short cbReserved2;
 			public IntPtr lpReserved2;
 			public IntPtr hStdInput;
 			public IntPtr hStdOutput;
@@ -285,11 +275,9 @@ namespace MediaToolkit.NativeAPIs
 		public const int NORMAL_PRIORITY_CLASS = 0x20;
 		public const int HIGH_PRIORITY_CLASS = 0x80;
 		public const int REALTIME_PRIORITY_CLASS = 0x100;
-		public const UInt32 SE_PRIVILEGE_ENABLED_BY_DEFAULT = 0x00000001;
-		public const UInt32 SE_PRIVILEGE_ENABLED = 0x00000002;
-		public const UInt32 SE_PRIVILEGE_REMOVED = 0x00000004;
-		public const UInt32 SE_PRIVILEGE_USED_FOR_ACCESS = 0x80000000;
-		public const Int32 ANYSIZE_ARRAY = 1;
+
+
+		public const int ANYSIZE_ARRAY = 1;
 
 		public const int UOI_FLAGS = 1;
 		public const int UOI_NAME = 2;

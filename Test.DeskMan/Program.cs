@@ -36,13 +36,16 @@ namespace Test.DeskMan
 
 			using (var proc = Process.GetCurrentProcess())
 			{
-				var wi = ProcessTool.GetProcIdentity(proc);
+				using (var wi = ProcessTool.GetProcIdentity(proc))
+				{
+					var userName = wi.Name;
+					var isSystem = "IsSystem=" + wi.IsSystem;
+					var isElevated = "IsElevated=" + IsElevated;
 
-				var userName = wi.Name;
-				var isSystem = "IsSystem=" +  wi.IsSystem;
-				var isElevated = "IsElevated=" + IsElevated;
+					Console.Title = string.Join("; ", userName, isElevated, isSystem);
+				}
 
-				Console.Title = string.Join("; ", userName, isElevated, isSystem);
+
 			}
 
 			//Console.Title = currentProcess.StartInfo.UserName + " " + IsElevated;

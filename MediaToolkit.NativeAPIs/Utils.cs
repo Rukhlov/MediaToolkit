@@ -36,24 +36,24 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 					var accessTokenPrivileges = ATPrivilege.GetPrivilegesFromToken(hCurrentProcToken);
 
-					var privilegeNames = new[] { PrivilegeConstants.SE_IMPERSONATE_NAME };
-
-					foreach (var accessTokenPrivilege in accessTokenPrivileges)
+					//https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createprocesswithtokenw
+					//The process that calls CreateProcessWithTokenW must have the SE_IMPERSONATE_NAME privilege. 
+					//If this function fails with ERROR_PRIVILEGE_NOT_HELD(1314), use the CreateProcessAsUser or CreateProcessWithLogonW function instead.			
+					var impersonatePrivilege = accessTokenPrivileges.FirstOrDefault(t => t.Name == PrivilegeConstants.SE_IMPERSONATE_NAME);
+					if(impersonatePrivilege == null)
 					{
-						foreach (var privName in privilegeNames)
-						{
-							if (accessTokenPrivilege.Name == privName)
-							{
-								var enabled = ((accessTokenPrivilege.Attributes & PrivilegeConstants.SE_PRIVILEGE_ENABLED) == PrivilegeConstants.SE_PRIVILEGE_ENABLED);
-
-								if (!enabled)
-								{
-									//TODO:...
-									//AdjustTokenPrivileges(...)
-								}
-							}
-						}
+						//TODO:
+						throw new NotSupportedException();
 					}
+
+					if (!((impersonatePrivilege.Attributes & PrivilegeConstants.SE_PRIVILEGE_ENABLED) == PrivilegeConstants.SE_PRIVILEGE_ENABLED))
+					{
+						//TODO:...
+						//AdjustTokenPrivileges(...)
+
+						throw new NotImplementedException(PrivilegeConstants.SE_IMPERSONATE_NAME + " disabled" );
+					}
+					
 				}
 				finally
 				{
@@ -71,7 +71,6 @@ namespace MediaToolkit.NativeAPIs.Utils
 			{
 				hOriginalSystemToken = GetTokenFromProcess(systemProcessName);
 
-	
 				IntPtr hDuplicatedSystemToken = IntPtr.Zero;
 				try
 				{
@@ -80,10 +79,10 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 
 					bool result = AdvApi32.DuplicateTokenEx(hOriginalSystemToken, 
-								AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, ref secAttr,
-								AdvApi32.SecurityImpersonationLevel.SecurityImpersonation,
-								AdvApi32.TokenType.TokenPrimary,
-								out hDuplicatedSystemToken);
+									AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, ref secAttr,
+									AdvApi32.SecurityImpersonationLevel.SecurityImpersonation,
+									AdvApi32.TokenType.TokenPrimary,
+									out hDuplicatedSystemToken);
 
 					if (!result)
 					{
@@ -98,8 +97,8 @@ namespace MediaToolkit.NativeAPIs.Utils
 					AdvApi32.PROCESS_INFORMATION lpProcessInformation = default(AdvApi32.PROCESS_INFORMATION);
 					try
 					{
-						var dwLogonFlags = AdvApi32.LogonFlags.NetCredentialsOnly;
-						var dwCreationFlags = AdvApi32.CreationFlags.NewConsole;
+						var dwLogonFlags = AdvApi32.LogonFlags.NetCredentialsOnly;//???
+						var dwCreationFlags = AdvApi32.CreationFlags.NewConsole;// ??
 						var lpEnvironment = IntPtr.Zero;
 						string lpCurrentDirectory = null;//@"C:\";
 
@@ -333,12 +332,10 @@ namespace MediaToolkit.NativeAPIs.Utils
 			return userInfo;
 		}
 
-		public class ATPrivilege
+		class ATPrivilege
 		{
 			public string Name { get; set; }
 			public uint Attributes { get; set; }
-
-
 
 			public static List<ATPrivilege> GetPrivilegesFromToken(IntPtr hToken)
 			{
@@ -366,28 +363,25 @@ namespace MediaToolkit.NativeAPIs.Utils
 							privs = new List<ATPrivilege>();
 							for (int i = 0; i < privileges.PrivilegeCount; i++)
 							{
-								var laa = (AdvApi32.LUID_AND_ATTRIBUTES)Marshal.PtrToStructure(new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + 4), typeof(AdvApi32.LUID_AND_ATTRIBUTES));
+								var ptr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + 4);
+								var laa = (AdvApi32.LUID_AND_ATTRIBUTES)Marshal.PtrToStructure(ptr, typeof(AdvApi32.LUID_AND_ATTRIBUTES));
 
 								var pname = new StringBuilder();
 								int luidNameLen = 0;
 								IntPtr ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(laa.Luid));
 								Marshal.StructureToPtr(laa.Luid, ptrLuid, true);
 
+								var privilegeName = "UNKNOWN";
 								// Get length of name.
 								AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
-								pname.EnsureCapacity(luidNameLen);
-
-								var privilegeName = "";
-								if (!AdvApi32.LookupPrivilegeName(null, ptrLuid, pname, ref luidNameLen))
+								if (luidNameLen > 0)
 								{
-									//Logger.GetInstance().Error($"Failed to lookup privilege name. LookupPrivilegeName failed with error: {Kernel32.GetLastError()}");
-									privilegeName = "UNKNOWN";
+									pname.EnsureCapacity(luidNameLen);
+									if (AdvApi32.LookupPrivilegeName(null, ptrLuid, pname, ref luidNameLen))
+									{
+										privilegeName = pname.ToString();
+									}
 								}
-								else
-								{
-									privilegeName = pname.ToString();
-								}
-
 
 								privs.Add(new ATPrivilege
 								{
@@ -427,7 +421,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 			}
 		}
 
-		public class ATGroup
+		class ATGroup
 		{
 
 			public string SIDString { get; }
@@ -534,11 +528,30 @@ namespace MediaToolkit.NativeAPIs.Utils
 		public static string GetUsernameFromSessionId(uint sessionId)
 		{
 			var username = string.Empty;
+			var result = WtsApi32.WTSQuerySessionInformation(IntPtr.Zero, sessionId, WtsApi32.WTS_INFO_CLASS.WTSUserName, out var buffer, out var strLen);
 
-			if (WtsApi32.WTSQuerySessionInformation(IntPtr.Zero, sessionId, WtsApi32.WTS_INFO_CLASS.WTSUserName, out var buffer, out var strLen) && strLen > 1)
+			if (result)
 			{
-				username = Marshal.PtrToStringAnsi(buffer);
-				WtsApi32.WTSFreeMemory(buffer);
+				if (strLen > 0)
+				{
+					try
+					{
+						username = Marshal.PtrToStringAnsi(buffer);
+					}
+					finally
+					{
+						WtsApi32.WTSFreeMemory(buffer);
+					}
+				}
+				else
+				{
+					//...
+				}
+			}
+			else
+			{
+				var code = Marshal.GetLastWin32Error();
+				//...
 			}
 
 			return username;
@@ -556,18 +569,33 @@ namespace MediaToolkit.NativeAPIs.Utils
 			try
 			{
                 hDesktop = OpenInputDesktop();
-                if (hDesktop != IntPtr.Zero)
-                {
-                    result = User32.SetThreadDesktop(hDesktop);
-                    if (result)
-                    {
-                        result = User32.SwitchDesktop(hDesktop);
-                    }
-                }
+				if (hDesktop != IntPtr.Zero)
+				{
+					result = User32.SetThreadDesktop(hDesktop);
+					if (result)
+					{
+						result = User32.SwitchDesktop(hDesktop);
+						if (!result)
+						{
+							var code = Marshal.GetLastWin32Error();
+							Console.WriteLine("SwitchDesktop() code: " + code);
+						}
+					}
+					else
+					{
+						var code = Marshal.GetLastWin32Error();
+						Console.WriteLine("SetThreadDesktop() code: " + code);
+					}
+				}
+				else
+				{
+					var code = Marshal.GetLastWin32Error();
+					Console.WriteLine("OpenInputDesktop() code: " + code);
+				}
 			}
 			catch(Exception ex)
 			{
-                Debug.WriteLine(ex);
+				Console.WriteLine(ex);
 			}
 			finally
 			{
