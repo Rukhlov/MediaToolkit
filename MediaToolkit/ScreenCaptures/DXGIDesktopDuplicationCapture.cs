@@ -723,11 +723,16 @@ namespace MediaToolkit.ScreenCaptures
                         {
 
                             logger.Warn(ex.Descriptor.ToString());
+
+
+                           // NativeAPIs.Utils.DesktopManager.SwitchToInputDesktop();
                         }
                         else
                         {
                             logger.Error(ex);
                         }
+
+
 
                         Result = false;
                     }

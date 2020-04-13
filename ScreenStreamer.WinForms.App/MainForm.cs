@@ -53,6 +53,17 @@ namespace ScreenStreamer.WinForms.App
 
 			InitControls();
 
+            var startupParams = Program.StartupParams;
+
+            if (startupParams.IsSystem)
+            {
+                var caption = this.Text;
+
+                caption = caption + " (" + startupParams.UserName + ")";
+
+                this.Text = caption;
+            }
+
 
         }
 

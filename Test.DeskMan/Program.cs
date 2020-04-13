@@ -23,50 +23,41 @@ namespace Test.DeskMan
 	{
 		static void Main(string[] args)
 		{
+            Console.WriteLine("================ START ====================");
+
+            CommandLineParams commandLine = CommandLineParams.Parse(args);
 
 
-			Console.WriteLine("args " + string.Join(" ", args));
+            bool IsElevated = false;
+            using (var id = WindowsIdentity.GetCurrent())
+            {
 
+                IsElevated = (id.Owner != id.User);
 
+                var userName = id.Name;
+                var isSystem = "IsSystem=" + id.IsSystem;
+                var isElevated = "IsElevated=" + IsElevated;
 
-			var id = WindowsIdentity.GetCurrent();
-			bool IsElevated = (id.Owner != id.User);
+                Console.Title = string.Join("; ", userName, isElevated, isSystem);
 
-			Console.WriteLine("IsElevated " + IsElevated);
+                Console.WriteLine("UserName: " + id.Name);
+                Console.WriteLine("Owner SID: " + id.Owner);
+                Console.WriteLine("User SID: " + id.User);
+                Console.WriteLine("Groups: ----------------------------------");
+                foreach (var group in id.Groups)
+                {
+                    Console.WriteLine(group.Value);
 
-			using (var proc = Process.GetCurrentProcess())
-			{
-				using (var wi = ProcessTool.GetProcIdentity(proc))
-				{
-					var userName = wi.Name;
-					var isSystem = "IsSystem=" + wi.IsSystem;
-					var isElevated = "IsElevated=" + IsElevated;
+                }
 
-					Console.Title = string.Join("; ", userName, isElevated, isSystem);
-				}
-
-
-			}
-
-			//Console.Title = currentProcess.StartInfo.UserName + " " + IsElevated;
-
-			bool needRestart = false;
-
+                Console.WriteLine("----------------------------------");
+            }
+ 
+            bool needRestart = false;
 			if(IsElevated)
 			{
-				if (args != null && args.Length > 0)
-				{
-					foreach(var arg in args)
-					{
-						if (arg.ToLower().StartsWith("-elevate"))
-						{
-							needRestart = true;
-							break;
-						}
-					}
-				}
-
-			}
+                needRestart = !commandLine.NoRestart;
+            }
 
 			if (needRestart)
 			{
@@ -80,13 +71,46 @@ namespace Test.DeskMan
 					StartTest();
 
 				});
-			}
 
-			Console.WriteLine("Press any key to exit...");
-			Console.ReadKey();
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
 
+            //Console.WriteLine("Press any key to exit...");
+            //Console.ReadKey();
 
-		}
+            Console.WriteLine("================ THE END ===================");
+
+        }
+
+        public class CommandLineParams
+        {
+
+            public bool NoRestart = false;
+
+            public static CommandLineParams Parse(string[] args)
+            {
+                Console.WriteLine("CommandLine: " + string.Join(" ", args));
+
+                CommandLineParams commandLine = new CommandLineParams();
+
+                foreach(var arg in args)
+                {
+                    if(arg?.ToLower() == "-norestart")
+                    {
+                        commandLine.NoRestart = true;
+                    }
+                    else
+                    {
+                        //...
+                    }
+                }
+
+                return commandLine;
+            }
+            //....
+        }
+
 
 		private static void RunElevated()
 		{
@@ -96,8 +120,9 @@ namespace Test.DeskMan
 				var applicationDir = Directory.GetCurrentDirectory();
 
 				var applicatonFullName = Path.Combine(applicationDir, "Test.DeskMan.exe");
-				var commandLine = "";
-				//applicatonFullName = Path.Combine(@"C:\Windows", "regedit.exe");
+				var commandLine = "-norestart";
+
+				//var applicatonFullName = Path.Combine(@"C:\Windows", "regedit.exe");
 
 				var pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
 

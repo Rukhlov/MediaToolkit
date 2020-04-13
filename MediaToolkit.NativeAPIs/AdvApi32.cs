@@ -50,16 +50,13 @@ namespace MediaToolkit.NativeAPIs
 
 		public struct TOKEN_PRIVILEGES
 		{
-			//public struct LUID
-			//{
-			//	public uint LowPart;
-			//	public int HighPart;
-			//}
-
 			public int PrivilegeCount;
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst = ANYSIZE_ARRAY)]
-			public LUID_AND_ATTRIBUTES[] Privileges;
-		}
+            public IntPtr Privileges;
+
+            //[MarshalAs(UnmanagedType.ByValArray, SizeConst = ANYSIZE_ARRAY)]
+            //public LUID_AND_ATTRIBUTES[] Privileges;
+
+        }
 
 		[StructLayout(LayoutKind.Sequential, Pack = 4)]
 		public struct LUID_AND_ATTRIBUTES
@@ -379,5 +376,6 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool LookupPrivilegeName(string lpSystemName, IntPtr lpLuid, StringBuilder lpName, ref int cchName);
-	}
+
+    }
 }

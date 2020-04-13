@@ -14,10 +14,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 	public class ProcessTool
 	{
+        private static TraceSource tracer = new TraceSource("MediaToolkit.NativeAPIs");
 
-		public static int StartProcessWithSystemToken(string applicationName, string commandLine)
+        public static int StartProcessWithSystemToken(string applicationName, string commandLine)
 		{
-			var systemProcessName = "lsass";
+            tracer.TraceEvent(TraceEventType.Verbose, 0, "StartProcessWithSystemToken(...) " + applicationName + " " + commandLine);
+
+            var systemProcessName = "lsass";
 			//var systemProcessName = "winlogon";
 			using (Process currentProcess = Process.GetCurrentProcess())
 			{
@@ -227,8 +230,8 @@ namespace MediaToolkit.NativeAPIs.Utils
 		}
 
 		public static string GetUserInfo(IntPtr hToken)
-		{
-			string userInfo = string.Empty;
+        {// не нужно можно получить с помощью System.Security.Principal.WindowsIdentity
+            string userInfo = string.Empty;
 			uint tokenInfoLength = 0;
 
 			bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenUser, IntPtr.Zero, tokenInfoLength, out tokenInfoLength);
@@ -291,11 +294,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 					{
 						
 						AdvApi32.TOKEN_GROUPS groups = (AdvApi32.TOKEN_GROUPS)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_GROUPS));
-						int sidAndAttrSize = Marshal.SizeOf(new AdvApi32.SID_AND_ATTRIBUTES());
-						for (int i = 0; i < groups.GroupCount; i++)
-						{
+						int sidAndAttrSize = Marshal.SizeOf(typeof(AdvApi32.SID_AND_ATTRIBUTES));
 
-							var infoPtr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + IntPtr.Size);
+                        var infoPtr = new IntPtr(tokenInfo.ToInt64() + IntPtr.Size);
+
+                        for (int i = 0; i < groups.GroupCount; i++)
+						{
+							//var infoPtr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + IntPtr.Size);
 
 							AdvApi32.SID_AND_ATTRIBUTES sidAndAttributes = (AdvApi32.SID_AND_ATTRIBUTES)Marshal.PtrToStructure(infoPtr, typeof(AdvApi32.SID_AND_ATTRIBUTES));
 							if ((sidAndAttributes.Attributes & AdvApi32.SE_GROUP_LOGON_ID) == AdvApi32.SE_GROUP_LOGON_ID)
@@ -316,7 +321,10 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 								break;
 							}
-						}
+
+                            infoPtr += sidAndAttrSize;
+
+                        }
 					}
 				}
 				finally
@@ -355,46 +363,69 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 						if (success)
 						{
-							var parsedGroups = new List<ATGroup>();
+							AdvApi32.TOKEN_PRIVILEGES tokenPrivileges = (AdvApi32.TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_PRIVILEGES));
 
-							AdvApi32.TOKEN_PRIVILEGES privileges = (AdvApi32.TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_PRIVILEGES));
+                            IntPtr privArrayPtr = new IntPtr(tokenInfo.ToInt64() + 4); //x86 ?? 
 
-							var sidAndAttrSize = Marshal.SizeOf(new AdvApi32.LUID_AND_ATTRIBUTES());
-							privs = new List<ATPrivilege>();
-							for (int i = 0; i < privileges.PrivilegeCount; i++)
-							{
-								var ptr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + 4);
-								var laa = (AdvApi32.LUID_AND_ATTRIBUTES)Marshal.PtrToStructure(ptr, typeof(AdvApi32.LUID_AND_ATTRIBUTES));
+                            var privilegeCount = tokenPrivileges.PrivilegeCount;
+   
+                            MarshalHelper.PtrToArray(privArrayPtr, privilegeCount, out AdvApi32.LUID_AND_ATTRIBUTES[] attrs);
 
-								var pname = new StringBuilder();
-								int luidNameLen = 0;
-								IntPtr ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(laa.Luid));
-								Marshal.StructureToPtr(laa.Luid, ptrLuid, true);
+                            foreach(var attr in attrs)
+                            {
+                                var privilegeName = "";
+ 
+                                IntPtr ptrLuid = IntPtr.Zero;
+                                try
+                                {
+                                    ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(attr.Luid));
+                                    Marshal.StructureToPtr(attr.Luid, ptrLuid, true);
+       
+                                    int luidNameLen = 0;
+                                    AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
 
-								var privilegeName = "UNKNOWN";
-								// Get length of name.
-								AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
-								if (luidNameLen > 0)
-								{
-									pname.EnsureCapacity(luidNameLen);
-									if (AdvApi32.LookupPrivilegeName(null, ptrLuid, pname, ref luidNameLen))
-									{
-										privilegeName = pname.ToString();
-									}
-								}
+                                    //Debug.Assert(luidNameLen > 0, "luidNameLen > 0");
 
-								privs.Add(new ATPrivilege
-								{
-									Name = privilegeName,
-									Attributes = laa.Attributes
-								});
-							}
+                                    if (luidNameLen > 0)
+                                    {
+                                        var buf = new StringBuilder(luidNameLen);
+                                        if(AdvApi32.LookupPrivilegeName(null, ptrLuid, buf, ref luidNameLen))
+                                        {
+                                            privilegeName = buf.ToString();
+                                        }
+                                    }
+                                }
+                                finally
+                                {
+                                    if (ptrLuid != IntPtr.Zero)
+                                    {
+                                        Marshal.FreeHGlobal(ptrLuid);
+                                    }
+                                }
 
-						}
-						else
+                                if (string.IsNullOrEmpty(privilegeName))
+                                {
+                                    var code = Marshal.GetLastWin32Error();
+                                    var message = $"Failed to retreive privelege name: {code}";
+
+                                    throw new Win32Exception(code, message);
+                                }
+
+                                Console.WriteLine("PrivilegeName: " + privilegeName + " " + attr.Attributes);
+                                //tracer.TraceEvent(TraceEventType.Verbose, 0, "PrivilegeName: " + privilegeName);
+
+                                privs.Add(new ATPrivilege
+                                {
+                                    Name = privilegeName,
+                                    Attributes = attr.Attributes
+                                });
+                            }
+
+                        }
+                        else
 						{
 							var code = Marshal.GetLastWin32Error();
-							var message = $"Failed to retreive session id information for access token. GetTokenInformation failed with error: {code}";
+							var message = $"GetTokenInformation failed with error: {code}";
 
 							throw new Win32Exception(code, message);
 						}
@@ -411,7 +442,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 				else
 				{
 					var code = Marshal.GetLastWin32Error();
-					var message = $"Failed to retreive session id information for access token. GetTokenInformation failed with error: {code}";
+					var message = $"GetTokenInformation failed with error: {code}";
 
 					throw new Win32Exception(code, message);
 				}
