@@ -695,7 +695,10 @@ namespace MediaToolkit.NativeAPIs
         public const int NCLBUTTONDOWN = 0xA1;
 
         public const int DEVICECHANGE = 0x0219;
-    }
+
+		public const int WTSSESSION_CHANGE = 0x02B1;
+
+	}
 
 
     public enum TernaryRasterOperations : uint

@@ -94,6 +94,7 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Managers\WTSSessionManager.cs" />
     <Compile Include="MediaFoundation\MediaRenderSession.cs" />
     <Compile Include="MediaFoundation\MfAudioRenderer.cs" />
     <Compile Include="MediaFoundation\MfVideoRenderer.cs" />

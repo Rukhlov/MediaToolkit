@@ -230,7 +230,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 		}
 
 		public static string GetUserInfo(IntPtr hToken)
-        {// не нужно можно получить с помощью System.Security.Principal.WindowsIdentity
+        {// можно получить с помощью System.Security.Principal.WindowsIdentity
             string userInfo = string.Empty;
 			uint tokenInfoLength = 0;
 
@@ -536,24 +536,58 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 		public static bool GetCurrentDesktop(out string desktopName)
 		{
-			var inputDesktop = OpenInputDesktop();
+			bool result = false;
+			desktopName = "";
+
+			IntPtr hDesktop = IntPtr.Zero;
 			try
 			{
-				byte[] deskBytes = new byte[256];
-				uint lenNeeded;
-				if (!User32.GetUserObjectInformationW(inputDesktop, AdvApi32.UOI_NAME, deskBytes, 256, out lenNeeded))
-				{
-					desktopName = string.Empty;
-					return false;
-				}
+				hDesktop = OpenInputDesktop();
 
-				desktopName = Encoding.Unicode.GetString(deskBytes.Take((int)lenNeeded).ToArray()).Replace("\0", "");
-				return true;
+				IntPtr pvInfo = IntPtr.Zero;
+				try
+				{ 
+					uint nLenght = 256;
+					pvInfo = Marshal.AllocHGlobal((int)nLenght);
+
+					result = User32.GetUserObjectInformationW(hDesktop, AdvApi32.UOI_NAME, pvInfo, nLenght, out var lenNeeded);
+					if (result)
+					{
+						Debug.Assert(lenNeeded > 0, "lenNeeded > 0");
+						desktopName = Marshal.PtrToStringAuto(pvInfo);
+					}
+					
+  				    //User32.GetUserObjectInformationW(hDesktop, AdvApi32.UOI_NAME, IntPtr.Zero, 0, out var lenNeeded);
+					//if(lenNeeded > 0)
+					//{
+					//	uint nLenght = lenNeeded;
+					//	pvInfo = Marshal.AllocHGlobal((int)nLenght);
+
+					//	result = User32.GetUserObjectInformationW(hDesktop, AdvApi32.UOI_NAME, pvInfo, nLenght, out lenNeeded);
+					//	if (result)
+					//	{
+					//		desktopName = Marshal.PtrToStringUni(pvInfo);//, (int)lenNeeded);
+					//	}
+					//}
+
+				}
+				finally
+				{
+					if(pvInfo!= IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(pvInfo);
+					}
+				}
 			}
 			finally
 			{
-				User32.CloseDesktop(inputDesktop);
+				if (hDesktop != IntPtr.Zero)
+				{
+					User32.CloseDesktop(hDesktop);
+				}		
 			}
+
+			return result;
 		}
 
 		public static string GetUsernameFromSessionId(uint sessionId)

@@ -58,6 +58,8 @@ namespace MediaToolkit.UI
 
             panelMove.Visible = !capturing;
 
+			//this.Cursor = Cursors.Cross;
+
         }
 
 

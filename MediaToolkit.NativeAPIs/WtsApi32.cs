@@ -8,6 +8,9 @@ namespace MediaToolkit.NativeAPIs
 {
 	public static class WtsApi32
 	{
+		public const int NOTIFY_FOR_THIS_SESSION = 0;
+		public const int NOTIFY_FOR_ALL_SESSIONS = 1;
+
 		public static IntPtr WTS_CURRENT_SERVER_HANDLE = IntPtr.Zero;
 
 		public enum WTS_CONNECTSTATE_CLASS
@@ -54,6 +57,14 @@ namespace MediaToolkit.NativeAPIs
 		}
 
 
+
+		[DllImport("wtsapi32.dll")]
+		public static extern bool WTSRegisterSessionNotification(IntPtr hWnd, int dwFlags);
+
+		[DllImport("wtsapi32.dll")]
+		public static extern bool WTSUnRegisterSessionNotification(IntPtr hWnd);
+
+
 		[DllImport("wtsapi32.dll", SetLastError = true)]
 		public static extern int WTSEnumerateSessions(IntPtr hServer,int Reserved, int Version,
 			ref System.IntPtr ppSessionInfo, ref int pCount);
@@ -71,9 +82,29 @@ namespace MediaToolkit.NativeAPIs
 		public struct WTS_SESSION_INFO
 		{
 			public uint SessionID;
+
 			[MarshalAs(UnmanagedType.LPStr)]
 			public string pWinStationName;
+
 			public WTS_CONNECTSTATE_CLASS State;
 		}
+		
+
+		public static class WTS
+		{
+			public const int CONSOLE_CONNECT = 0x1;
+			public const int CONSOLE_DISCONNECT = 0x2;
+
+			public const int REMOTE_CONNECT = 0x3;
+			public const int REMOTE_DISCONNECT = 0x4;
+
+			public const int SESSION_LOCK = 0x7;
+			public const int SESSION_UNLOCK = 0x8;
+			//...
+		}
+
+
 	}
+
+
 }

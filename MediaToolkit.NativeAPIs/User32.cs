@@ -287,6 +287,9 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("user32.dll", SetLastError = true)]
 		public static extern bool GetUserObjectInformationW(IntPtr hObj, int nIndex, [Out] byte[] pvInfo, uint nLength, out uint lpnLengthNeeded);
 
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool GetUserObjectInformationW(IntPtr hObj, int nIndex, [Out] IntPtr pvInfo, uint nLength, out uint lpnLengthNeeded);
+
 		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
 		[ResourceExposure(ResourceScope.Process)]
 		public static extern int GetWindowThreadProcessId(HandleRef hWnd, out int lpdwProcessId);

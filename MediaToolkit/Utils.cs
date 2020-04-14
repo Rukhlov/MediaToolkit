@@ -16,13 +16,98 @@ using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace MediaToolkit.Utils
 {
 
+	public interface IWndMessageProcessor
+	{
+		bool ProcessMessage(System.Windows.Forms.Message m);
+	}
 
-    public abstract class StatCounter
+	public class NotifyWindow : NativeWindow
+	{
+
+		private readonly IWndMessageProcessor processor = null;
+		internal NotifyWindow(IWndMessageProcessor p)
+		{
+			this.processor = p;
+		}
+
+		public bool CreateWindow()
+		{
+			if (Handle == IntPtr.Zero)
+			{                   
+				CreateHandle(new CreateParams
+				{//create message-only window
+					Style = 0,
+					ExStyle = 0,
+					ClassStyle = 0,
+
+					Parent = Defines.HWndMessage,
+				});
+			}
+			return Handle != IntPtr.Zero;
+		}
+
+		protected override void WndProc(ref System.Windows.Forms.Message m)
+		{
+
+			base.WndProc(ref m);
+
+			processor.ProcessMessage(m);
+
+		}
+
+		public void DestroyWindow()
+		{
+			DestroyWindow(true, IntPtr.Zero);
+		}
+
+		private bool GetInvokeRequired(IntPtr hWnd)
+		{
+			if (hWnd == IntPtr.Zero) return false;
+			int pid;
+			var hwndThread = User32.GetWindowThreadProcessId(new HandleRef(this, hWnd), out pid);
+			var currentThread = Kernel32.GetCurrentThreadId();
+
+			return (hwndThread != currentThread);
+		}
+
+		private void DestroyWindow(bool destroyHwnd, IntPtr hWnd)
+		{
+			if (hWnd == IntPtr.Zero)
+			{
+				hWnd = Handle;
+			}
+
+			if (GetInvokeRequired(hWnd))
+			{
+				User32.PostMessage(hWnd, WM.CLOSE, 0, 0);
+				return;
+			}
+
+			lock (this)
+			{
+				if (destroyHwnd)
+				{
+					base.DestroyHandle();
+				}
+			}
+		}
+
+		public override void DestroyHandle()
+		{
+			DestroyWindow(false, IntPtr.Zero);
+			base.DestroyHandle();
+		}
+
+
+	}
+
+	public abstract class StatCounter
     {
         public abstract string GetReport();
         public abstract void Reset();

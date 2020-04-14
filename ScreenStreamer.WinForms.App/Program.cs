@@ -96,8 +96,9 @@ namespace ScreenStreamer.WinForms.App
         }
 
         private static int RestartElevated()
-        {
-            logger.Debug("RestartElevated()");
+		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
+		 // перезапускам процесс с системными правами
+			logger.Debug("RestartElevated()");
 
             int pid = 0;
             try

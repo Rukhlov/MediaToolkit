@@ -17,7 +17,6 @@ namespace MediaToolkit
 
     public class AudioSource
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 

@@ -15,7 +15,6 @@ namespace MediaToolkit.Core
     {
         public static int MaximumTransmissionUnit = 1300;
 
-      
         public static int MaxVideoEncoderWidth = 4096;
         public static int MaxVideoEncoderHeight = 4096;
 
