@@ -30,6 +30,8 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
 
 
+			DxTool.FindAdapter1(4313);
+
             var videoEncoders = MfTool.FindVideoEncoders();
 
             foreach(var enc in videoEncoders)

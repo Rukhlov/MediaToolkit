@@ -859,7 +859,38 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
-        public static string LogDxAdapters(Adapter1[] adapters)
+		public static Adapter1 FindAdapter1(long adapterId)
+		{
+			Adapter1 adapter1 = null;
+			using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+			{
+
+				if (adapterId > 0)
+				{
+					var adapters = dxgiFactory.Adapters1;
+					for (int i = 0; i < adapters.Length; i++)
+					{
+						var _adapter = adapters[i];
+						if (_adapter.Description1.Luid == adapterId)
+						{
+							adapter1 = _adapter;
+							continue;
+						}
+
+						_adapter.Dispose();
+					}
+				}
+
+				if (adapter1 == null)
+				{
+					adapter1 = dxgiFactory.GetAdapter1(0);
+				}
+			}
+
+			return adapter1;
+		}
+
+		public static string LogDxAdapters(Adapter1[] adapters)
         {
             StringBuilder log = new StringBuilder();
             log.AppendLine("");
