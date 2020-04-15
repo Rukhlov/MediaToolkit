@@ -171,10 +171,15 @@ namespace Test.DeskMan
 			//var res = DesktopManager.OpenInteractiveProcess("Notepad.exe", "default", false, out AdvApi32.PROCESS_INFORMATION procInfo);
 			//Console.WriteLine("OpenInteractiveProcess(...) " + res + " " +  procInfo.dwProcessId);
 			//Console.ReadKey();
-
+			
 			SystemEvents.SessionSwitch += (o, a) =>
 			{
 				Console.WriteLine("SystemEvents.SessionSwitch " + a.Reason);
+			};
+
+			SystemEvents.SessionEnded += (o, a) =>
+			{
+				Console.WriteLine("SystemEvents.SessionEnded " + a.Reason);
 			};
 
 			SystemEvents.DisplaySettingsChanged += (o, a) =>
@@ -185,6 +190,11 @@ namespace Test.DeskMan
 			SystemEvents.UserPreferenceChanged += (o, a) =>
 			{
 				Console.WriteLine("SystemEvents.UserPreferenceChanged " + a.Category);
+			};
+
+			SystemEvents.PowerModeChanged+= (o, a) =>
+			{
+				Console.WriteLine("SystemEvents.PowerModeChanged " + a.Mode);
 			};
 
 			var sessions = DesktopManager.GetActiveSessions();

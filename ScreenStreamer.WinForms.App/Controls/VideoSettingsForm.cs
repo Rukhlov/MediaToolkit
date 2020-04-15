@@ -204,7 +204,7 @@ namespace ScreenStreamer.WinForms.App
             }
 
 
-            VideoSettings.EncoderSettings.Encoder = (VideoEncoderMode)this.encoderComboBox.SelectedItem;
+            VideoSettings.EncoderSettings.Encoder = (VideoCodingFormat)this.encoderComboBox.SelectedItem;
             VideoSettings.EncoderSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
             VideoSettings.EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
             VideoSettings.EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
@@ -615,10 +615,10 @@ namespace ScreenStreamer.WinForms.App
 
         private void LoadEncoderItems()
         {
-            var items = new List<VideoEncoderMode>
+            var items = new List<VideoCodingFormat>
             {
-                VideoEncoderMode.H264,
-                VideoEncoderMode.JPEG,
+                VideoCodingFormat.H264,
+                VideoCodingFormat.JPEG,
             };
 
             encoderComboBox.DataSource = items;

@@ -858,6 +858,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 
                     var di = new DisplayInfo
                     {
+                        
                         Name = monitorInfo.monitorFriendlyDeviceName,
                         Path = monitorInfo.monitorDevicePath,
                         DisplayId = displayModes[i].id,

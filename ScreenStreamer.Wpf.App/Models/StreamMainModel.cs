@@ -318,6 +318,6 @@ namespace ScreenStreamer.Wpf.Common.Models
         public bool LowLatency { get; set; } = true;
         public int MaxBitrate { get; set; } = 5000;
         public H264Profile H264Profile { get; set; } = H264Profile.Main;
-        public VideoEncoderMode VideoEncoder { get; set; } = VideoEncoderMode.H264;
+        public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
     }
 }

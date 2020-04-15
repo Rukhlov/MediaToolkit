@@ -10,7 +10,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         private readonly AdvancedSettingsModel _model;
         public override string Caption => "Advanced Settings";
 
-        public VideoEncoderMode VideoEncoder
+        public VideoCodingFormat VideoEncoder
         {
             get => _model.VideoEncoder;
             set
@@ -65,10 +65,10 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        public ObservableCollection<VideoEncoderMode> VideoEncoderModes { get; } = new ObservableCollection<VideoEncoderMode>()
+        public ObservableCollection<VideoCodingFormat> VideoEncoderModes { get; } = new ObservableCollection<VideoCodingFormat>()
         {
-            VideoEncoderMode.H264,
-            VideoEncoderMode.JPEG
+            VideoCodingFormat.H264,
+            VideoCodingFormat.JPEG
         };
 
         public ObservableCollection<H264Profile> H264Profiles { get; } = new ObservableCollection<H264Profile>()

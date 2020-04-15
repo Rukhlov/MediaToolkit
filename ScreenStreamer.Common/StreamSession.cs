@@ -215,7 +215,7 @@ namespace ScreenStreamer.Common
 			{
 				Width = 1920,
 				Height = 1080,
-				Encoder = VideoEncoderMode.H264,
+				Encoder = VideoCodingFormat.H264,
 				Profile = H264Profile.Main,
 				BitrateMode = BitrateControlMode.CBR,
 				Bitrate = 2500,

@@ -19,14 +19,14 @@ namespace MediaToolkit.Managers
 
 		private NotifyWindow nativeWindow = null;
 
-
 		public event Action SessionLock;
+
 		public event Action SessionUnlock;
 
 
 		public bool Init()
 		{
-			logger.Debug("UsbDeviceManager::Init()");
+			logger.Debug("WTSSessionManager::Init()");
 
 			if (nativeWindow == null)
 			{
@@ -41,7 +41,7 @@ namespace MediaToolkit.Managers
 
 		public void Close()
 		{
-			logger.Debug("UsbDeviceManager::Close()");
+			logger.Debug("WTSSessionManager::Close()");
 
 			if (nativeWindow != null)
 			{
@@ -83,14 +83,21 @@ namespace MediaToolkit.Managers
 
 			if (m.Msg == WM.WTSSESSION_CHANGE)
 			{
-				if (m.WParam.ToInt32() == WtsApi32.WTS.SESSION_LOCK)
+				var wParams = (int)m.WParam;
+				if (wParams == WtsApi32.WTS.SESSION_LOCK)
 				{
 					SessionLock?.Invoke();
 				}
-				else if (m.WParam.ToInt32() == WtsApi32.WTS.SESSION_UNLOCK)
+				else if (wParams == WtsApi32.WTS.SESSION_UNLOCK)
 				{
 					SessionUnlock?.Invoke();
 				}
+				else
+				{
+					
+				}
+
+				logger.Debug("WTSSESSION_CHANGE: " + wParams);
 			}
 
 			return result;
@@ -107,7 +114,7 @@ namespace MediaToolkit.Managers
 				if (!success)
 				{
 					var lastError = Marshal.GetLastWin32Error();
-					logger.Error("UnregisterDeviceNotification() " + lastError);
+					logger.Error("WTSUnRegisterSessionNotification() " + lastError);
 				}
 			}
 			catch (Exception ex)

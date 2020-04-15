@@ -702,7 +702,7 @@ namespace ScreenStreamer.WinForms.App
                 Tag = customRegionDescr,
             });
 
-            var captDevices = MediaToolkit.MediaFoundation.MfTool.GetVideoCaptureDevices();
+            var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
             if (captDevices.Count > 0)
             {
                 var captItems = captDevices.Select(d => new ComboBoxItem

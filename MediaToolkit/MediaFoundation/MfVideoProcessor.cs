@@ -51,11 +51,21 @@ namespace MediaToolkit.MediaFoundation
 
             //Debug.Assert(device != null, "device != null");
 
+            //var winVersion = Environment.OSVersion.Version;
+            //bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
+
+            //if (!isCompatibleOSVersion)
+            //{
+            //    throw new NotSupportedException("Windows versions earlier than 8 are not supported.");
+            //}
+
             try
             {
-                //processor = new Transform(CLSID.MJPEGDecoderMFT);
+                
                 processor = new Transform(ClsId.VideoProcessorMFT);
                 // processor = new Transform(CLSID.CColorConvertDMO);
+                //processor = new Transform(CLSID.MJPEGDecoderMFT);
+
                 if (device != null)
                 {
                     using (var attr = processor.Attributes)

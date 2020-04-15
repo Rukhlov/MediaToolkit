@@ -22,7 +22,6 @@ namespace MediaToolkit.MediaFoundation
 
     public class MfEncoderAsync
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
@@ -161,15 +160,15 @@ namespace MediaToolkit.MediaFoundation
             int width = args.Width;
             int height = args.Height;
 
-            if (width % 2 != 0)
-            {// должно быть четным...
-                width++;
-            }
+            //if (width % 2 != 0)
+            //{// должно быть четным...
+            //    width++;
+            //}
 
-            if (height % 2 != 0)
-            {
-                height++;
-            }
+            //if (height % 2 != 0)
+            //{
+            //    height++;
+            //}
 
             Format format = MfTool.GetDXGIFormatFromVideoFormatGuid(args.Format);
 
@@ -193,7 +192,6 @@ namespace MediaToolkit.MediaFoundation
             MediaBuffer mediaBuffer = null;
             try
             {
-                //mediaBuffer = MediaFactory.CreateMemoryBuffer(4 * width * height);
                 MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out mediaBuffer);
                 bufSample = MediaFactory.CreateSample();
                 bufSample.AddBuffer(mediaBuffer);

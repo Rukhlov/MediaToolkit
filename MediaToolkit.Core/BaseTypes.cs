@@ -54,7 +54,7 @@ namespace MediaToolkit.Core
     public class VideoEncoderSettings :ICloneable
     {
         [XmlAttribute]
-        public VideoEncoderMode Encoder { get; set; } = VideoEncoderMode.H264;
+        public VideoCodingFormat Encoder { get; set; } = VideoCodingFormat.H264;
 
         [XmlIgnore]
         public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
@@ -99,10 +99,12 @@ namespace MediaToolkit.Core
         }
     }
 
-    public enum VideoEncoderMode
+    public enum VideoCodingFormat
     {
+        Unknown,
         H264,
-        JPEG
+        HEVC,
+        JPEG,
     }
 
     public enum H264Profile
@@ -240,6 +242,29 @@ namespace MediaToolkit.Core
         public override string ToString()
         {
             return FrameSize.Width + "x" + FrameSize.Height + " " + FrameRate.ToString("0.0") + " fps " + Format; 
+        }
+    }
+
+    public class VideoEncoderDescription
+    {
+        public string Name { get; set; } = "";
+
+        public VideoCodingFormat Format { get; set; } = VideoCodingFormat.Unknown;
+        public bool IsHardware { get; set; } = true;
+
+        public string Description { get; set; } = "";
+
+        public bool Activatable = false;
+
+        public int VendorId = -1;
+        public Guid ClsId = Guid.Empty;
+        public string HardwareUrl = "";
+        public object Tags = null;
+
+        public override string ToString()
+        {
+            return string.Join("; ", Name, Format, IsHardware, Activatable);
+            //return base.ToString();
         }
     }
 
@@ -524,7 +549,7 @@ namespace MediaToolkit.Core
     public class VideoChannelInfo : MediaChannelInfo
     {
         [DataMember]
-        public VideoEncoderMode VideoEncoder { get; set; }
+        public VideoCodingFormat VideoEncoder { get; set; }
 
         [DataMember]
         public int Bitrate { get; set; }

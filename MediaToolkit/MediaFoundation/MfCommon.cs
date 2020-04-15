@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using MediaToolkit.Logging;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
@@ -18,6 +19,8 @@ namespace MediaToolkit.MediaFoundation
 
     public class MfTool
     {
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation.MfTool");
+
         public static readonly Dictionary<Guid, string> AttrsDict = new Dictionary<Guid, string>();
         public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();
 
@@ -25,6 +28,14 @@ namespace MediaToolkit.MediaFoundation
         {
             { VideoFormatGuids.NV12, SharpDX.DXGI.Format.NV12 },
             { VideoFormatGuids.Argb32, SharpDX.DXGI.Format.B8G8R8A8_UNorm },
+            //...
+        };
+
+        public static readonly Dictionary<Guid, Core.VideoCodingFormat> MediaCodingFormatDict = new Dictionary<Guid, Core.VideoCodingFormat>
+        {
+            { VideoFormatGuids.H264, Core.VideoCodingFormat.H264},
+            { VideoFormatGuids.Hevc, Core.VideoCodingFormat.HEVC },
+            { VideoFormatGuids.Mjpg, Core.VideoCodingFormat.JPEG },
             //...
         };
 
@@ -309,10 +320,10 @@ namespace MediaToolkit.MediaFoundation
         {
             Guid videoGuid = Guid.Empty;
 
-            foreach(var guid in DxgiFormatsDict.Keys)
+            foreach (var guid in DxgiFormatsDict.Keys)
             {
                 var _format = DxgiFormatsDict[guid];
-                if(format == _format)
+                if (format == _format)
                 {
                     videoGuid = guid;
                     break;
@@ -582,8 +593,173 @@ namespace MediaToolkit.MediaFoundation
             return inputMediaType;
         }
 
+        public static List<Core.VideoEncoderDescription> FindVideoEncoders()
+        {
+            List<Core.VideoEncoderDescription> encoderDescriptions = new List<Core.VideoEncoderDescription>();
 
-        public static List<Core.UvcDevice> GetVideoCaptureDevices()
+
+            Activate[] activates = null;
+            try
+            {
+                var category = TransformCategoryGuids.VideoEncoder;
+                var transformFlags = TransformEnumFlag.All | TransformEnumFlag.SortAndFilter;
+
+                //var outputType = new TRegisterTypeInformation
+                //{
+                //    GuidMajorType = MediaTypeGuids.Video,
+                //    GuidSubtype = VideoFormatGuids.H264
+                //    // GuidSubtype = VideoFormatGuids.Hevc
+                //};
+
+                activates = MediaFactory.FindTransform(category, transformFlags, null, null);
+                foreach (var activate in activates)
+                {
+                    //var actLog = LogMediaAttributes(activate);
+                    //Console.WriteLine("\r\nActivator:\r\n-----------------\r\n" + actLog);
+
+                    Core.VideoEncoderDescription encoderDescription = new Core.VideoEncoderDescription();
+
+                    for (int i = 0; i < activate.Count; i++)
+                    {
+                        Guid guid = Guid.Empty;
+                        object obj = null;
+
+                        obj = activate.GetByIndex(i, out guid);
+
+                        if (obj == null || guid == Guid.Empty)
+                        {
+                            continue;
+                        }
+
+                        if (guid == TransformAttributeKeys.MftOutputTypesAttributes.Guid)
+                        {
+                            var data = obj as byte[];
+                            if (GetRegTypeInfo(data, out var ti))
+                            {
+                                if (ti.GuidMajorType == MediaTypeGuids.Video)
+                                {
+                                    var subtype = ti.GuidSubtype;
+                                    if (MediaCodingFormatDict.ContainsKey(subtype))
+                                    {
+                                        encoderDescription.Format = MediaCodingFormatDict[subtype];
+                                    }
+                                }
+                            }
+                        }
+                        else if (guid == TransformAttributeKeys.MftFriendlyNameAttribute.Guid)
+                        {
+                            encoderDescription.Name = obj.ToString();
+                        }
+                        else if (guid == TransformAttributeKeys.MftEnumHardwareVendorIdAttribute.Guid)
+                        {
+                            string venIdStr = obj.ToString();
+                            if (!string.IsNullOrEmpty(venIdStr))
+                            {
+                                if (TryGetVendorId(venIdStr, out int vendorId))
+                                {
+                                    encoderDescription.VendorId = vendorId;
+                                }
+                            }
+                        }
+                        else if (guid == TransformAttributeKeys.TransformFlagsAttribute.Guid)
+                        {// TODO: видеокарт может быть несколько, 
+                            //не понятно как связать полученый IMFTransform c Direct3D если установлено несколько видокарт или гибридный режим
+                           
+                            TransformEnumFlag enumFlags = (TransformEnumFlag)obj;
+                            encoderDescription.IsHardware = enumFlags.HasFlag(TransformEnumFlag.Hardware);
+                        }
+                        else if (guid == TransformAttributeKeys.MftTransformClsidAttribute.Guid)
+                        {
+                            encoderDescription.ClsId = (Guid)obj;
+                        }
+                        else if (guid == TransformAttributeKeys.MftEnumHardwareUrlAttribute.Guid)
+                        {
+                            encoderDescription.HardwareUrl = obj.ToString();
+                        }
+                    }
+
+                    if (encoderDescription.Format != Core.VideoCodingFormat.Unknown)
+                    {
+                        Transform transform = null;
+                        try
+                        {// x.з как по другому понять будет энкодер работать или нет!!
+                            // т.к могут быть энкодеры связанные с оключенными или удаленными видеокартами
+                            transform = activate.ActivateObject<Transform>();
+                            encoderDescription.Activatable = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Debug(ex.Message);
+
+                        }
+                        finally
+                        {
+                            if (transform != null)
+                            {
+                                transform.Dispose();
+                                transform = null;
+                            }
+                        }
+
+                        encoderDescriptions.Add(encoderDescription);
+                    }
+
+                }
+
+            }
+            finally
+            {
+                if (activates != null)
+                {
+                    foreach(var a in activates)
+                    {
+                        if (a != null)
+                        {
+                            a.Dispose();
+                        }
+                    }
+                }
+            }
+
+            return encoderDescriptions;
+        }
+
+        private static bool GetRegTypeInfo(Activate activate, out TRegisterTypeInformation typeInfo)
+        {
+            var result = false;
+
+            typeInfo = default(TRegisterTypeInformation);
+            var data = activate.Get(TransformAttributeKeys.MftOutputTypesAttributes);
+            if (data != null)
+            {
+                result = GetRegTypeInfo(data, out typeInfo);
+            }
+
+            return result;
+        }
+
+        private unsafe static bool GetRegTypeInfo(byte[] data, out TRegisterTypeInformation typeInfo)
+        {
+            bool result = false;
+            typeInfo = default(TRegisterTypeInformation);
+            try
+            {
+                fixed (byte* ptr = data)
+                {
+                    typeInfo = (TRegisterTypeInformation)Marshal.PtrToStructure((IntPtr)ptr, typeof(TRegisterTypeInformation));
+                    result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Debug.Fail(ex.Message);
+            }
+
+            return result;
+        }
+
+        public static List<Core.UvcDevice> FindUvcDevices()
         {
             List<Core.UvcDevice> deviceDescriptions = new List<Core.UvcDevice>();
 
@@ -613,14 +789,14 @@ namespace MediaToolkit.MediaFoundation
                             {
                                 using (var mediaSource = activate.ActivateObject<MediaSource>())
                                 {
-                                    using (var mediaType = MediaToolkit.MediaFoundation.MfTool.GetCurrentMediaType(mediaSource))
+                                    using (var mediaType = GetCurrentMediaType(mediaSource))
                                     {
 
-                                        var frameSize = MfTool.GetFrameSize(mediaType);
-                                        var frameRate = MfTool.GetFrameRate(mediaType);
+                                        var frameSize = GetFrameSize(mediaType);
+                                        var frameRate = GetFrameRate(mediaType);
 
                                         var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                                        var subtypeName = MfTool.GetMediaTypeName(subtype);
+                                        var subtypeName = GetMediaTypeName(subtype);
 
                                         var profile = new Core.UvcProfile
                                         {
@@ -641,13 +817,13 @@ namespace MediaToolkit.MediaFoundation
                             }
                             catch (Exception ex)
                             {
-                               // logger.Warn("Device not supported: " + friendlyName + " " + symbolicLink);
+                                logger.Info("Device not supported: " + friendlyName + " " + symbolicLink);
                             }
 
                         }
                         catch (Exception ex)
                         {
-                           // logger.Error(ex);
+                            logger.Error(ex);
                         }
 
                     }
@@ -683,130 +859,130 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
-		public static string LogDxAdapters(Adapter1[] adapters)
-		{
-			StringBuilder log = new StringBuilder();
-			log.AppendLine("");
-			foreach (var _adapter in adapters)
-			{
-				var adaptDescr = _adapter.Description1;
-				log.AppendLine("-------------------------------------");
-				log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
+        public static string LogDxAdapters(Adapter1[] adapters)
+        {
+            StringBuilder log = new StringBuilder();
+            log.AppendLine("");
+            foreach (var _adapter in adapters)
+            {
+                var adaptDescr = _adapter.Description1;
+                log.AppendLine("-------------------------------------");
+                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
 
-				foreach (var _output in _adapter.Outputs)
-				{
-					var outputDescr = _output.Description;
-					var bound = outputDescr.DesktopBounds;
-					var rect = new GDI.Rectangle
-					{
-						X = bound.Left,
-						Y = bound.Top,
-						Width = (bound.Right - bound.Left),
-						Height = (bound.Bottom - bound.Top),
-					};
+                foreach (var _output in _adapter.Outputs)
+                {
+                    var outputDescr = _output.Description;
+                    var bound = outputDescr.DesktopBounds;
+                    var rect = new GDI.Rectangle
+                    {
+                        X = bound.Left,
+                        Y = bound.Top,
+                        Width = (bound.Right - bound.Left),
+                        Height = (bound.Bottom - bound.Top),
+                    };
 
-					log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+                    log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
 
-					_output.Dispose();
-				}
+                    _output.Dispose();
+                }
 
-				_adapter.Dispose();
-			}
+                _adapter.Dispose();
+            }
 
-			return log.ToString();
-		}
+            return log.ToString();
+        }
 
-		public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
-		{
+        public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
+        {
 
-			var descr = texture.Description;
-			if (descr.Format != Format.B8G8R8A8_UNorm)
-			{
-				 throw new Exception("Invalid texture format " + descr.Format);
-			}
+            var descr = texture.Description;
+            if (descr.Format != Format.B8G8R8A8_UNorm)
+            {
+                throw new Exception("Invalid texture format " + descr.Format);
+            }
 
-			if(descr.Width <= 0 || descr.Height <= 0)
-			{
-				throw new Exception("Invalid texture size: " + descr.Width + " " + descr.Height);
-			}
+            if (descr.Width <= 0 || descr.Height <= 0)
+            {
+                throw new Exception("Invalid texture size: " + descr.Width + " " + descr.Height);
+            }
 
-			if (bmp == null)
-			{
-				bmp = new GDI.Bitmap(descr.Width, descr.Height, GDI.Imaging.PixelFormat.Format32bppArgb);
-			}
+            if (bmp == null)
+            {
+                bmp = new GDI.Bitmap(descr.Width, descr.Height, GDI.Imaging.PixelFormat.Format32bppArgb);
+            }
 
-			if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
-			{
-				throw new Exception("Invalid bitmap format " + bmp.PixelFormat);
+            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+            {
+                throw new Exception("Invalid bitmap format " + bmp.PixelFormat);
 
-			}
+            }
 
-			if (bmp.Width != descr.Width || bmp.Height != descr.Height)
-			{
-				throw new Exception("Invalid params");
+            if (bmp.Width != descr.Width || bmp.Height != descr.Height)
+            {
+                throw new Exception("Invalid params");
 
-			}
+            }
 
-			using (Surface surface = texture.QueryInterface<Surface>())
-			{
-				try
-				{
-					var srcData = surface.Map(SharpDX.DXGI.MapFlags.Read);
+            using (Surface surface = texture.QueryInterface<Surface>())
+            {
+                try
+                {
+                    var srcData = surface.Map(SharpDX.DXGI.MapFlags.Read);
 
-					int width = bmp.Width;
-					int height = bmp.Height;
-					var rect = new GDI.Rectangle(0, 0, width, height);
-					var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
-					try
-					{
+                    int width = bmp.Width;
+                    int height = bmp.Height;
+                    var rect = new GDI.Rectangle(0, 0, width, height);
+                    var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
+                    try
+                    {
                         int bytesPerPixel = GDI.Image.GetPixelFormatSize(bmp.PixelFormat) / 8;
                         IntPtr srcPtr = srcData.DataPointer;
-						int srcOffset = rect.Top * srcData.Pitch + rect.Left * bytesPerPixel;
+                        int srcOffset = rect.Top * srcData.Pitch + rect.Left * bytesPerPixel;
 
-						srcPtr = IntPtr.Add(srcPtr, srcOffset);
+                        srcPtr = IntPtr.Add(srcPtr, srcOffset);
 
-						var destPtr = destData.Scan0;
-						for (int row = rect.Top; row < rect.Bottom; row++)
-						{
-							Utilities.CopyMemory(destPtr, srcPtr, width * bytesPerPixel);
-							srcPtr = IntPtr.Add(srcPtr, srcData.Pitch);
-							destPtr = IntPtr.Add(destPtr, destData.Stride);
+                        var destPtr = destData.Scan0;
+                        for (int row = rect.Top; row < rect.Bottom; row++)
+                        {
+                            Utilities.CopyMemory(destPtr, srcPtr, width * bytesPerPixel);
+                            srcPtr = IntPtr.Add(srcPtr, srcData.Pitch);
+                            destPtr = IntPtr.Add(destPtr, destData.Stride);
 
-						}
-					}
-					finally
-					{
-						bmp.UnlockBits(destData);
-					}
-				}
-				finally
-				{
-					surface.Unmap();
-				}
-			}
-		}
+                        }
+                    }
+                    finally
+                    {
+                        bmp.UnlockBits(destData);
+                    }
+                }
+                finally
+                {
+                    surface.Unmap();
+                }
+            }
+        }
 
-		public static byte[] GetTextureBytes(Texture2D texture)
-		{
-			byte[] textureBytes = null;
-			using (Surface surface = texture.QueryInterface<Surface>())
-			{
-				try
-				{
-					surface.Map(SharpDX.DXGI.MapFlags.Read, out DataStream dataStream);
-					textureBytes = dataStream.ReadRange<byte>((int)dataStream.Length);
-				}
-				finally
-				{
-					surface.Unmap();
-				}
-			}
+        public static byte[] GetTextureBytes(Texture2D texture)
+        {
+            byte[] textureBytes = null;
+            using (Surface surface = texture.QueryInterface<Surface>())
+            {
+                try
+                {
+                    surface.Map(SharpDX.DXGI.MapFlags.Read, out DataStream dataStream);
+                    textureBytes = dataStream.ReadRange<byte>((int)dataStream.Length);
+                }
+                finally
+                {
+                    surface.Unmap();
+                }
+            }
 
-			return textureBytes;
-		}
+            return textureBytes;
+        }
 
 
-		public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
+        public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
         {
             Texture2D texture = null;
 
@@ -823,23 +999,23 @@ namespace MediaToolkit.MediaFoundation
             var data = bitmap.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
             try
             {
-				//Windows 7 
-				var descr = new SharpDX.Direct3D11.Texture2DDescription
-				{
-					Width = bitmap.Width,
-					Height = bitmap.Height,
-					MipLevels = 1,
-					ArraySize = 1,
-					SampleDescription = new SampleDescription(1, 0),
-					Usage = ResourceUsage.Default,
-					Format =Format.B8G8R8A8_UNorm,
-					BindFlags = BindFlags.ShaderResource,
-					CpuAccessFlags = CpuAccessFlags.None,
-					OptionFlags = ResourceOptionFlags.None,
+                //Windows 7 
+                var descr = new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = bitmap.Width,
+                    Height = bitmap.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Default,
+                    Format = Format.B8G8R8A8_UNorm,
+                    BindFlags = BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    OptionFlags = ResourceOptionFlags.None,
 
-				};
+                };
 
-				/*
+                /*
 				var descr = new SharpDX.Direct3D11.Texture2DDescription
 				{
 					Width = bitmap.Width,
@@ -855,7 +1031,7 @@ namespace MediaToolkit.MediaFoundation
 				};
 				*/
 
-				var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
+                var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
 
                 texture = new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
             }
@@ -1052,12 +1228,12 @@ namespace MediaToolkit.MediaFoundation
         public static readonly Guid Abgr32 = new Guid("00000020-0000-0010-8000-00aa00389b71");
         public static readonly Guid P208 = new Guid("38303250-0000-0010-8000-00aa00389b71");
 
-		//30313456-0000-0010-8000-00aa00389b71
-		public static readonly Guid V410 = new Guid("30313476-0000-0010-8000-00aa00389b71");
+        //30313456-0000-0010-8000-00aa00389b71
+        public static readonly Guid V410 = new Guid("30313476-0000-0010-8000-00aa00389b71");
 
-		public static readonly Guid V216 = new Guid("36313256-0000-0010-8000-00aa00389b71");
+        public static readonly Guid V216 = new Guid("36313256-0000-0010-8000-00aa00389b71");
 
-		
+
     }
 
 

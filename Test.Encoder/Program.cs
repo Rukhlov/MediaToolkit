@@ -29,6 +29,20 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
 
+
+            var videoEncoders = MfTool.FindVideoEncoders();
+
+            foreach(var enc in videoEncoders)
+            {
+                Console.WriteLine(enc.ToString());
+            }
+
+
+            Console.ReadKey();
+            Console.WriteLine("-------------------------------");
+            return;
+
+
 			Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
 			Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
