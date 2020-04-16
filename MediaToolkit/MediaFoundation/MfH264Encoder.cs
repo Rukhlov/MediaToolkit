@@ -51,6 +51,7 @@ namespace MediaToolkit.MediaFoundation
         private volatile bool stopping = false;
         private volatile bool closing = false;
 
+        private bool syncMode = false;
 
         public MfEncoderAsync(SharpDX.Direct3D11.Device d = null)
         {
@@ -103,6 +104,11 @@ namespace MediaToolkit.MediaFoundation
                     SetupSampleBuffer(args);
 
                     encoder = FindEncoder(adapterVenId);
+                    syncMode = false;
+
+                    //encoder = new Transform(ClsId.MSH264EncoderMFT);
+                    //syncMode = true;
+
                 }
 
                 if (encoder == null)
@@ -207,7 +213,7 @@ namespace MediaToolkit.MediaFoundation
         {
             logger.Debug("FindEncoder(...) " + adapterVenId);
 
-            Transform preferEncoder = null;
+            Transform preferTransform = null;
 
             var transformFlags = TransformEnumFlag.All | // TransformEnumFlag.All |
                                  TransformEnumFlag.SortAndFilter;
@@ -227,33 +233,35 @@ namespace MediaToolkit.MediaFoundation
             //}
 
 
-            var transformActivators = MediaFactory.FindTransform(TransformCategoryGuids.VideoEncoder, transformFlags, null, outputType);
+            var activates = MediaFactory.FindTransform(TransformCategoryGuids.VideoEncoder, transformFlags, null, outputType);
             try
             {
-                Activate preferActivator = null;
-                foreach (var activator in transformActivators)
+                Activate preferActivate = null;
+                foreach (var activate in activates)
                 {
-                    var actLog = MfTool.LogMediaAttributes(activator);
+                    var actLog = MfTool.LogMediaAttributes(activate);
 
                     logger.Debug("\r\nActivator:\r\n-----------------\r\n" + actLog);
 
-                    string name = activator.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
-                    Guid clsid = activator.Get(TransformAttributeKeys.MftTransformClsidAttribute);
-                    TransformEnumFlag flags = (TransformEnumFlag)activator.Get(TransformAttributeKeys.TransformFlagsAttribute);
+                    string name = activate.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
+                    Guid clsid = activate.Get(TransformAttributeKeys.MftTransformClsidAttribute);
+                    TransformEnumFlag flags = (TransformEnumFlag)activate.Get(TransformAttributeKeys.TransformFlagsAttribute);
 
                     bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
                     isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
                     bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
 
+   
                     if (isHardware)
                     {
-                        string venIdStr = activator.Get(TransformAttributeKeys.MftEnumHardwareVendorIdAttribute);
+                        string venIdStr = activate.Get(TransformAttributeKeys.MftEnumHardwareVendorIdAttribute);
 
                         if (MfTool.TryGetVendorId(venIdStr, out int activatorVendId))
                         {
                             if (activatorVendId == adapterVenId)
                             {
-                                preferActivator = activator;
+                                preferActivate = activate;
+                                syncMode = false;
                             }
                         }
                     }
@@ -283,22 +291,22 @@ namespace MediaToolkit.MediaFoundation
 
                 // preferEncoder = transformActivators[0].ActivateObject<Transform>();
 
-                if (preferActivator != null)
+                if (preferActivate != null)
                 {
-                    preferEncoder = preferActivator.ActivateObject<Transform>();
+                    preferTransform = preferActivate.ActivateObject<Transform>();
 
                 }
 
             }
             finally
             {
-                foreach (var activator in transformActivators)
+                foreach (var activator in activates)
                 {
                     activator.Dispose();
                 }
             }
 
-            return preferEncoder;
+            return preferTransform;
         }
 
 
@@ -311,15 +319,18 @@ namespace MediaToolkit.MediaFoundation
             var width = args.Width;
             var height = args.Height;
 
-            if (width % 2 != 0)
-            {// должно быть четным...
-                width++;
-            }
+            int avgBitrate = args.AvgBitrate * 1000;
+            int maxBitrate = args.MaxBitrate * 1000;
+            int mpegProfile = (int)args.Profile;
+            //if (width % 2 != 0)
+            //{// должно быть четным...
+            //    width++;
+            //}
 
-            if (height % 2 != 0)
-            {
-                height++;
-            }
+            //if (height % 2 != 0)
+            //{
+            //    height++;
+            //}
 
             //var inputFormat = VideoFormatGuids.Argb32;
             var inputFormat = args.Format; //VideoFormatGuids.NV12;
@@ -330,28 +341,29 @@ namespace MediaToolkit.MediaFoundation
                 // TODO:
                 // log pref
 
-                var transformAsync = (attr.Get(TransformAttributeKeys.TransformAsync) == 1);
-                if (transformAsync)
+                if (!syncMode)
                 {
-                    attr.Set(TransformAttributeKeys.TransformAsyncUnlock, 1);
-                    attr.Set(TransformAttributeKeys.MftSupportDynamicFormatChange, true);
-
-                    bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
-                    if (d3d11Aware)
+                    var transformAsync = (attr.Get(TransformAttributeKeys.TransformAsync) == 1);
+                    if (transformAsync)
                     {
-                        using (var devMan = new DXGIDeviceManager())
+                        attr.Set(TransformAttributeKeys.TransformAsyncUnlock, 1);
+                        attr.Set(TransformAttributeKeys.MftSupportDynamicFormatChange, true);
+
+                        bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
+                        if (d3d11Aware)
                         {
-                            devMan.ResetDevice(device);
-                            encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            using (var devMan = new DXGIDeviceManager())
+                            {
+                                devMan.ResetDevice(device);
+                                encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            }
                         }
-
                     }
-
-                    attr.Set(CodecApiPropertyKeys.AVLowLatencyMode, args.LowLatency);
-                    attr.Set(CodecApiPropertyKeys.AVEncCommonRateControlMode, args.BitrateMode);
-                    attr.Set(CodecApiPropertyKeys.AVEncCommonQuality, args.Quality);
-
                 }
+
+                attr.Set(CodecApiPropertyKeys.AVLowLatencyMode, args.LowLatency);
+                attr.Set(CodecApiPropertyKeys.AVEncCommonRateControlMode, args.BitrateMode);
+                attr.Set(CodecApiPropertyKeys.AVEncCommonQuality, args.Quality);
 
                 var attrLog = MfTool.LogMediaAttributes(attr);
 
@@ -391,17 +403,11 @@ namespace MediaToolkit.MediaFoundation
 
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
-
-                mediaType.Set(MediaTypeAttributeKeys.Mpeg2Profile, (int)args.Profile);
-
+                mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));             
                 mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
-                int avgBitrate = args.AvgBitrate * 1000;
-
+                mediaType.Set(MediaTypeAttributeKeys.Mpeg2Profile, mpegProfile);
                 mediaType.Set(MediaTypeAttributeKeys.AvgBitrate, avgBitrate);
-
-                int maxBitrate = args.MaxBitrate * 1000;
                 mediaType.Set(CodecApiPropertyKeys.AVEncCommonMaxBitRate, maxBitrate);
 
                 encoder.SetOutputType(outputStreamId, mediaType, 0);
@@ -504,12 +510,14 @@ namespace MediaToolkit.MediaFoundation
             //Notifies a Media Foundation transform (MFT) that the first sample is about to be processed.
             encoder.ProcessMessage(TMessageType.NotifyStartOfStream, IntPtr.Zero);
 
-
-            Task.Run(() =>
+            if (!syncMode)
             {
-                EventProc();
+                Task.Run(() =>
+                {
+                    EventProc();
 
-            });
+                });
+            }
 
         }
 
@@ -722,43 +730,14 @@ namespace MediaToolkit.MediaFoundation
 
                 if (res == SharpDX.Result.Ok)
                 {
-
                     if (outputSample == null)
                     {
                         outputSample = outputDataBuffer[0].PSample;
                     }
 
-
                     Debug.Assert(outputSample != null, "res.Success && outputSample != null");
 
-                    var buffer = outputSample.ConvertToContiguousBuffer();
-                    try
-                    {
-                        var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
-                        try
-                        {
-                            if (cbCurrentLength > 0)
-                            {
-                                byte[] buf = new byte[cbCurrentLength];
-                                Marshal.Copy(ptr, buf, 0, buf.Length);
-
-                                OnDataReady(buf);
-
-                                //var ts = sw.ElapsedMilliseconds;
-                                //Console.WriteLine("ElapsedMilliseconds " + ts);
-                            }
-                        }
-                        finally
-                        {
-                            buffer.Unlock();
-                        }
-
-                        //// logger.Info(outputSample.SampleTime + " " + buffer.CurrentLength);
-                    }
-                    finally
-                    {
-                        buffer?.Dispose();
-                    }
+                    SampleReady?.Invoke(outputSample);
  
                 }
                 else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
@@ -791,50 +770,174 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public event Action<byte[]> DataReady;
-
-        private void OnDataReady(byte[] buf)
-        {
-            DataReady?.Invoke(buf);
-        }
-
-
-        public void WriteTexture(Texture2D texture)
+        private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+        public Sample ProcessSample(Sample sample)
         {
             if (stopping)
             {
-                logger.Warn("WriteTexture(...) stopping");
-                return;
+                logger.Warn("ProcessSample(...) stopping");
+                return null;
             }
 
             if (closing)
             {
-                logger.Warn("WriteTexture(...) closing");
-                return;
+                logger.Warn("ProcessSample(...) closing");
+                return null;
             }
 
-            lock (syncRoot)
+            Sample outputSample = null;
+            if (!syncMode)
             {
-                //using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
-                //{
-                //    using (var sharedTexture = device.OpenSharedResource<Texture2D>(sharedRes.SharedHandle))
-                //    {
-                //        device.ImmediateContext.CopyResource(sharedTexture, bufTexture);
+                EncodeSampleAsync(sample);
+            }
+            else
+            {
+                var result = EncodeSample(sample, out outputSample);
+                if (!result)
+                {
+                    //...
+                }
 
-                //        needUpdate = true;
-
-                //        ProcessInput();
-                //    }
-                //}
-
-                device.ImmediateContext.CopyResource(texture, bufTexture);
-                needUpdate = true;
-
-                ProcessInput();
             }
 
+            return outputSample;
         }
 
+        private void EncodeSampleAsync(Sample sample)
+        {
+
+            using (var buffer = sample.ConvertToContiguousBuffer())
+            {
+                using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
+                {
+                    dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
+                    using (Texture2D texture = new Texture2D(intPtr))
+                    {
+                        lock (syncRoot)
+                        {
+                            bufSample.SampleTime = sample.SampleTime;
+                            bufSample.SampleDuration = sample.SampleDuration;
+                            //..
+
+                            device.ImmediateContext.CopyResource(texture, bufTexture);
+                            needUpdate = true;
+
+                            ProcessInput();
+
+                        }
+                    };
+                }
+            }
+        }
+
+        public event Action<Sample> SampleReady;
+
+        private void OnSampleReady(Sample sample)
+        {
+            SampleReady?.Invoke(sample);
+        }
+
+
+        public unsafe bool EncodeSample(Sample inputSample, out Sample outputSample)
+        {
+            bool Result = false;
+            outputSample = null;
+
+            if (inputSample == null)
+            {
+                return false;
+            }
+
+            encoder.ProcessInput(0, inputSample, 0);
+
+            //if (processor.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
+            {
+
+                encoder.GetOutputStreamInfo(0, out TOutputStreamInformation streamInfo);
+
+                MftOutputStreamInformationFlags flags = (MftOutputStreamInformationFlags)streamInfo.DwFlags;
+                bool createSample = !flags.HasFlag(MftOutputStreamInformationFlags.MftOutputStreamProvidesSamples);
+
+                // Create output sample
+                if (createSample)
+                {
+                    outputSample = MediaFactory.CreateSample();
+
+                    outputSample.SampleTime = inputSample.SampleTime;
+                    outputSample.SampleDuration = inputSample.SampleDuration;
+                    outputSample.SampleFlags = inputSample.SampleFlags;
+
+                    using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize))
+                    {
+                        outputSample.AddBuffer(mediaBuffer);
+                    }
+
+                }
+
+                TOutputDataBuffer[] outputDataBuffer = new TOutputDataBuffer[1];
+
+                var data = new TOutputDataBuffer
+                {
+                    DwStatus = 0,
+                    DwStreamID = 0,
+                    PSample = outputSample,
+                    PEvents = null,
+                };
+                outputDataBuffer[0] = data;
+
+                var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, outputDataBuffer, out TransformProcessOutputStatus status);
+                if (res == SharpDX.Result.Ok)
+                {
+                    if (outputSample == null)
+                    {
+                        outputSample = outputDataBuffer[0].PSample;
+                    }
+
+                    Debug.Assert(outputSample != null, "res.Success && outputSample != null");
+
+                    Result = true;
+                }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
+                {
+                    logger.Warn(res.ToString() + " TransformNeedMoreInput");
+
+                    Result = true;
+                }
+                else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
+                {
+                    logger.Warn(res.ToString() + " TransformStreamChange");
+
+                    MediaType newOutputType = null;
+                    try
+                    {
+                        encoder.TryGetOutputAvailableType(outputStreamId, 0, out newOutputType);
+                        encoder.SetOutputType(outputStreamId, newOutputType, 0);
+
+                        if (OutputMediaType != null)
+                        {
+                            OutputMediaType.Dispose();
+                            OutputMediaType = null;
+                        }
+                        OutputMediaType = newOutputType;
+
+                        logger.Info("============== NEW OUTPUT TYPE==================");
+                        logger.Info(MfTool.LogMediaType(OutputMediaType));
+                    }
+                    finally
+                    {
+                        newOutputType?.Dispose();
+                        newOutputType = null;
+                    }
+                }
+                else
+                {
+                    res.CheckError();
+                }
+
+            }
+
+            return Result;
+        }
 
         public void Stop()
         {

@@ -651,7 +651,7 @@ namespace MediaToolkit.MediaFoundation
                             encoderDescription.Name = obj.ToString();
                         }
                         else if (guid == TransformAttributeKeys.MftEnumHardwareVendorIdAttribute.Guid)
-                        {
+                        {// >=win8
                             string venIdStr = obj.ToString();
                             if (!string.IsNullOrEmpty(venIdStr))
                             {
@@ -1193,10 +1193,15 @@ namespace MediaToolkit.MediaFoundation
     /// </summary>
     public static class MFAttributeKeys
     {
+		// MFT_ENUM_ADAPTER_LUID 
+		// https://docs.microsoft.com/en-us/windows/win32/medfound/mft-enum-adapter-luid
+		// Specifies the unique identifier for a video adapter. Use this attribute when calling MFTEnum2 to enumerate MFTs associated with a specific adapter.
+		// Min supported client: Windows 10, version 1703 [desktop apps only]
+		// Minimum supported server: Windows Server 2016 [desktop apps only]
+		public static readonly MediaAttributeKey<byte[]> MFT_ENUM_ADAPTER_LUID = new MediaAttributeKey<byte[]>("1d39518c-e220-4da8-a07f-ba172552d6b1");
 
-
-        // MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
-        public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
+		// MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
+		public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
 
         /// <summary>
         /// For hardware MFTs, this attribute allows the HMFT to report the graphics driver version.

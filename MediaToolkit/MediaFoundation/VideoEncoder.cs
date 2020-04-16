@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MediaToolkit.Core;
@@ -28,11 +29,13 @@ namespace MediaToolkit.MediaFoundation
         }
 
         private MfEncoderAsync encoder = null;
+
         private MfVideoProcessor processor = null;
 
         private Texture2D bufTexture = null;
 
-        public void Open( VideoEncoderSettings destParams)
+
+        public void Open(VideoEncoderSettings destParams)
         {
             logger.Debug("VideoEncoder::Setup(...)");
 
@@ -40,12 +43,12 @@ namespace MediaToolkit.MediaFoundation
             // var hwDevice = hwContext.Device3D11;
 
             var hwBuffer = videoSource.SharedTexture;
-           
+
             var hwDescr = hwBuffer.Description;
 
             var srcSize = new Size(hwDescr.Width, hwDescr.Height);
             var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
-           
+
 
             var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
 
@@ -61,7 +64,7 @@ namespace MediaToolkit.MediaFoundation
             //var refCount = ((IUnknown)hwDevice).Release();
 
             var profile = eAVEncH264VProfile.Main;
-            if(destParams.Profile == H264Profile.High)
+            if (destParams.Profile == H264Profile.High)
             {
                 profile = eAVEncH264VProfile.High;
             }
@@ -71,17 +74,17 @@ namespace MediaToolkit.MediaFoundation
             }
 
             var bitrateMode = RateControlMode.CBR;
-            if(destParams.BitrateMode == BitrateControlMode.VBR)
+            if (destParams.BitrateMode == BitrateControlMode.VBR)
             {
                 bitrateMode = RateControlMode.LowDelayVBR;
             }
-            else if(destParams.BitrateMode == BitrateControlMode.Quality)
+            else if (destParams.BitrateMode == BitrateControlMode.Quality)
             {
                 bitrateMode = RateControlMode.Quality;
             }
 
-            encoder = new MfEncoderAsync();
-            encoder.Setup(new MfVideoArgs
+
+            var encArgs = new MfVideoArgs
             {
                 Width = srcSize.Width,
                 Height = srcSize.Height,
@@ -94,9 +97,17 @@ namespace MediaToolkit.MediaFoundation
                 BitrateMode = bitrateMode,
                 MaxBitrate = destParams.MaxBitrate,
 
-            });
+            };
 
-            var encDevice = encoder.device;
+
+            //softEncoder = new MfH264EncoderMS();
+            //softEncoder.Setup(encArgs);
+
+            encoder = new MfEncoderAsync();
+            encoder.Setup(encArgs);
+
+
+            var encDevice = encoder?.device;
 
             processor = new MfVideoProcessor(encDevice);
             var inProcArgs = new MfVideoArgs
@@ -116,7 +127,7 @@ namespace MediaToolkit.MediaFoundation
             processor.Setup(inProcArgs, outProcArgs);
 
 
-            bufTexture = new Texture2D(encDevice, 
+            bufTexture = new Texture2D(encDevice,
                 new Texture2DDescription
                 {
                     // Format = Format.NV12,
@@ -128,18 +139,19 @@ namespace MediaToolkit.MediaFoundation
                     SampleDescription = { Count = 1 },
                 });
 
-   
-            encoder.DataReady += MfEncoder_DataReady;
-
             processor?.Start();
 
+
+            encoder.SampleReady += Encoder_SampleReady;
+            //encoder.DataReady += MfEncoder_DataReady;
             encoder.Start();
+
+
+
+
         }
 
-        private void MfEncoder_DataReady(byte[] obj)
-        {
-            OnDataReady(obj);
-        }
+
 
         public void Encode()
         {
@@ -152,76 +164,119 @@ namespace MediaToolkit.MediaFoundation
 
         public void Encode(Texture2D texture)
         {
-            using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
-            {
-                var device = encoder.device;
-                using (var sharedTexture = device.OpenSharedResource<Texture2D>(sharedRes.SharedHandle))
-                {
-                    device.ImmediateContext.CopyResource(sharedTexture, bufTexture);
+            var device = encoder?.device;
 
+            if (device != null)
+            {
+                using (var sharedRes = texture.QueryInterface<SharpDX.DXGI.Resource>())
+                {
+                    using (var sharedTexture = device.OpenSharedResource<Texture2D>(sharedRes.SharedHandle))
+                    {
+                        device.ImmediateContext.CopyResource(sharedTexture, bufTexture);
+
+                    }
                 }
 
             }
 
-
-            if(processor != null)
+            Sample inputSample = null;
+            try
             {
-                Sample inputSample = null;
+                MediaBuffer mediaBuffer = null;
                 try
                 {
-                    MediaBuffer mediaBuffer = null;
+                    MediaFactory.CreateDXGISurfaceBuffer(uuidTexture2d, bufTexture, 0, false, out mediaBuffer);
+                    inputSample = MediaFactory.CreateSample();
+                    inputSample.AddBuffer(mediaBuffer);
+
+                    inputSample.SampleTime = 0;
+                    inputSample.SampleDuration = 0;
+                }
+                finally
+                {
+                    mediaBuffer?.Dispose();
+                }
+
+                if (processor != null)
+                {
+                    Sample processedSample = null;
                     try
                     {
-                        MediaFactory.CreateDXGISurfaceBuffer(uuidTexture2d, bufTexture, 0, false, out mediaBuffer);
-                        inputSample = MediaFactory.CreateSample();
-                        inputSample.AddBuffer(mediaBuffer);
-
-                        inputSample.SampleTime = 0;
-                        inputSample.SampleDuration = 0;
-                    }
-                    finally
-                    {
-                        mediaBuffer?.Dispose();
-                    }
-
-                    Sample nv12Sample = null;
-                    try
-                    {
-                        bool result = processor.ProcessSample(inputSample, out nv12Sample);
+                        bool result = processor.ProcessSample(inputSample, out processedSample);
                         if (result)
                         {
-                            using (var buffer = nv12Sample.ConvertToContiguousBuffer())
-                            {
-                                using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
-                                {
-
-                                    dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
-                                    using (Texture2D nv12Texture = new Texture2D(intPtr))
-                                    {
-                                        encoder.WriteTexture(nv12Texture);
-                                    };
-                                }
-                            }
+                            EncodeSample(processedSample);
                         }
                     }
                     finally
                     {
-                        nv12Sample?.Dispose();
+                        processedSample?.Dispose();
                     }
                 }
-                finally
+                else
                 {
-                    inputSample?.Dispose();
+                    EncodeSample(inputSample);
                 }
+
+
             }
-            else
+            finally
             {
-                encoder.WriteTexture(bufTexture);
+                inputSample?.Dispose();
             }
+
 
 
         }
 
+        private void EncodeSample(Sample sample)
+        {
+            Sample encodedSample = null;
+            try
+            {
+                encodedSample = encoder.ProcessSample(sample);
+                if (encodedSample != null)
+                {
+                    FinalizeSample(encodedSample);
+                }
+
+            }
+            finally
+            {
+                if (encodedSample != null)
+                {
+                    encodedSample.Dispose();
+                    encodedSample = null;
+                }
+            }
+        }
+
+        private void FinalizeSample(Sample encodedSample)
+        {
+            using (var buffer = encodedSample.ConvertToContiguousBuffer())
+            {
+                var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
+                try
+                {
+                    if (cbCurrentLength > 0)
+                    {
+                        byte[] buf = new byte[cbCurrentLength];
+                        Marshal.Copy(ptr, buf, 0, buf.Length);
+
+                        OnDataReady(buf);
+                    }
+                }
+                finally
+                {
+                    buffer.Unlock();
+                }
+            }
+        }
+
+        private void Encoder_SampleReady(Sample outputSample)
+        {
+            FinalizeSample(outputSample);
+        }
 
         public void Close()
         {
@@ -229,7 +284,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (encoder != null)
             {
-                encoder.DataReady -= MfEncoder_DataReady;
+                encoder.SampleReady -= Encoder_SampleReady;
                 encoder.Stop();
                 //encoder.Close();
             }

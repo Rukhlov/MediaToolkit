@@ -30,227 +30,180 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
 
 
-			DxTool.FindAdapter1(4313);
+            NewMethod1();
 
-            var videoEncoders = MfTool.FindVideoEncoders();
 
-            foreach(var enc in videoEncoders)
+
+            ////DxTool.FindAdapter1(4313);
+
+            //var videoEncoders = MfTool.FindVideoEncoders();
+
+            //foreach(var enc in videoEncoders)
+            //{
+            //    Console.WriteLine(enc.ToString());
+            //}
+
+
+            //Console.ReadKey();
+            //Console.WriteLine("-------------------------------");
+            //return;
+
+
+            //NewMethod();
+
+
+            //return;
+
+
+
+            //MarshalHelper.ToArray(ppOutputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
+
+            //MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
+
+
+            //Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
+
+
+
+
+            //Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+
+            //SharpDX.MediaFoundation.MediaFactory.TGetInfo(VideoProcessorMFT, IntPtr.Zero, 
+            //	null, out int cInputTypesRef, 
+            //	null, out int cOutputTypesRef, 
+            //	out SharpDX.MediaFoundation.MediaAttributes attrs);
+
+
+            //var transformFlags = TransformEnumFlag.All | // TransformEnumFlag.All |
+            //		 TransformEnumFlag.SortAndFilter;
+
+            //var outputType = new TRegisterTypeInformation
+            //{
+            //	GuidMajorType = MediaTypeGuids.Video,
+            //	GuidSubtype = VideoFormatGuids.H264
+            //	// GuidSubtype = VideoFormatGuids.Hevc
+            //};
+            //var category = SharpDX.MediaFoundation.TransformCategoryGuids.VideoDecoder;
+            //MediaAttributes mediaAttributes = new MediaAttributes();
+            //Activate[] activates = new Activate[1024];
+
+            //SharpDX.MediaFoundation.MediaFactory.TEnum2(category, (int)transformFlags, null, outputType, mediaAttributes, activates, out int activatesNum);
+
+
+
+
+
+            var flags = DeviceCreationFlags.VideoSupport |
+                        DeviceCreationFlags.BgraSupport |
+                        DeviceCreationFlags.Debug;
+
+            var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
             {
-                Console.WriteLine(enc.ToString());
+                multiThread.SetMultithreadProtected(true);
             }
 
 
-            Console.ReadKey();
-            Console.WriteLine("-------------------------------");
-            return;
+            //var descr = new SharpDX.Direct3D11.Texture2DDescription
+            //{
+            //	Width = 1920,
+            //	Height = 1080,
+            //	MipLevels = 1,
+            //	ArraySize = 1,
+            //	SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+            //	Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+            //	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+            //	BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+            //	CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+            //	OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
 
+            //};
 
-			Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
-			Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+            //var texture = new SharpDX.Direct3D11.Texture2D(device, descr);
 
 
-			Guid NVidiaH264EncoderMFT = new Guid("60F44560-5A20-4857-BFEF-D29773CB8040");
-			Guid IntelQSVH264EncoderMFT = new Guid("4BE8D3C0-0515-4A37-AD55-E4BAE19AF471");
+            var bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
+            var texture = DxTool.GetTexture(bmp, device);
 
-			//ArrayList inputTypes = new ArrayList();
-			//ArrayList outputTypes = new ArrayList();
+            //Texture2D stagingTexture = null;
+            //try
+            //{
+            //    // Create Staging texture CPU-accessible
+            //    stagingTexture = new Texture2D(device,
+            //        new Texture2DDescription
+            //        {
+            //            CpuAccessFlags = CpuAccessFlags.Read,
+            //            BindFlags = BindFlags.None,
+            //            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+            //            Width = 1920,
+            //            Height = 1080,
+            //            MipLevels = 1,
+            //            ArraySize = 1,
+            //            SampleDescription = { Count = 1, Quality = 0 },
+            //            Usage = ResourceUsage.Staging,
+            //            OptionFlags = ResourceOptionFlags.None,
+            //        });
 
-			//MFInt inputTypesNum = new MFInt();
-			//MFInt outputTypesNum = new MFInt();
-			//IntPtr ip = IntPtr.Zero;
+            //    device.ImmediateContext.CopyResource(texture, stagingTexture);
+            //    device.ImmediateContext.Flush();
 
-			var result = MfApi.MFTGetInfo(CColorConvertDMO, out string pszName,
-				out IntPtr ppInputTypes, out uint inputTypesNum,
-				out IntPtr ppOutputTypes, out uint outputTypesNum,
-				out IntPtr ppAttributes);
+            //    //var destBmp = new System.Drawing.Bitmap(1920, 1080, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-			if (result == MediaToolkit.NativeAPIs.HResult.S_OK)
-			{
-				MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
-				Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
+            //    System.Drawing.Bitmap destBmp = null;
+            //    int count = 10;
 
-				Console.WriteLine("InputTypes-------------------------------------");
-				MarshalHelper.PtrToArray(ppInputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] inputTypes);
+            //    byte[] bytes = null;
+            //    while (count-- > 0)
+            //    {
+            //        DxTool.TextureToBitmap(stagingTexture, ref destBmp);
 
-				foreach (var type in inputTypes)
-				{
-					var majorType = type.guidMajorType;
-					var subType = type.guidSubtype;
+            //        bytes = DxTool.GetTextureBytes(stagingTexture);
 
-					//Console.WriteLine(MfTool.GetMediaTypeName(majorType));
 
-					Console.WriteLine(MfTool.GetMediaTypeName(subType));
-				}
 
-				Console.WriteLine("");
+            //        Thread.Sleep(10);
+            //    }
 
-				Console.WriteLine("OutputTypes-------------------------------------");
-				MarshalHelper.PtrToArray(ppOutputTypes, (int)outputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
-				
+            //    File.WriteAllBytes("d:\\test_argb32.raw", bytes);
 
-				foreach (var type in outputTypes)
-				{
-					var majorType = type.guidMajorType;
-					var subType = type.guidSubtype;
+            //    destBmp.Save("d:\\test.bmp");
 
-					//Console.WriteLine(MfTool.GetMediaTypeName(majorType));
+            //    destBmp.Dispose();
 
-					Console.WriteLine(MfTool.GetMediaTypeName(subType));
-				}
+            //}
+            //finally
+            //{
+            //    stagingTexture?.Dispose();
+            //}
 
-			}
-			Console.WriteLine("Press any key to exit...");
-			Console.ReadKey();
-			return;
+            //texture.Dispose();
+            //device.Dispose();
+            //bmp.Dispose();
 
-			//MarshalHelper.ToArray(ppOutputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
+            //var report = SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects();
+            //Console.WriteLine(report);
+            //Console.ReadKey();
 
-			//MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
 
+            //return;
 
-			//Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
 
 
+            //var flags = DeviceCreationFlags.VideoSupport |
+            //     DeviceCreationFlags.BgraSupport;
+            ////DeviceCreationFlags.Debug;
 
+            //var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+            //using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            //{
+            //    multiThread.SetMultithreadProtected(true);
+            //}
 
-			//Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
-			//SharpDX.MediaFoundation.MediaFactory.TGetInfo(VideoProcessorMFT, IntPtr.Zero, 
-			//	null, out int cInputTypesRef, 
-			//	null, out int cOutputTypesRef, 
-			//	out SharpDX.MediaFoundation.MediaAttributes attrs);
 
 
-			//var transformFlags = TransformEnumFlag.All | // TransformEnumFlag.All |
-			//		 TransformEnumFlag.SortAndFilter;
-
-			//var outputType = new TRegisterTypeInformation
-			//{
-			//	GuidMajorType = MediaTypeGuids.Video,
-			//	GuidSubtype = VideoFormatGuids.H264
-			//	// GuidSubtype = VideoFormatGuids.Hevc
-			//};
-			//var category = SharpDX.MediaFoundation.TransformCategoryGuids.VideoDecoder;
-			//MediaAttributes mediaAttributes = new MediaAttributes();
-			//Activate[] activates = new Activate[1024];
-
-			//SharpDX.MediaFoundation.MediaFactory.TEnum2(category, (int)transformFlags, null, outputType, mediaAttributes, activates, out int activatesNum);
-
-
-
-
-
-			var flags = DeviceCreationFlags.VideoSupport |
-						DeviceCreationFlags.BgraSupport|
-					    DeviceCreationFlags.Debug;
-
-			var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
-			using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-			{
-				multiThread.SetMultithreadProtected(true);
-			}
-
-
-			//var descr = new SharpDX.Direct3D11.Texture2DDescription
-			//{
-			//	Width = 1920,
-			//	Height = 1080,
-			//	MipLevels = 1,
-			//	ArraySize = 1,
-			//	SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-			//	Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-			//	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-			//	BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-			//	CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-			//	OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-	
-			//};
-
-			//var texture = new SharpDX.Direct3D11.Texture2D(device, descr);
-
-
-			var bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
-			var texture = DxTool.GetTexture(bmp, device);
-
-			Texture2D stagingTexture = null;
-			try
-			{
-				// Create Staging texture CPU-accessible
-				stagingTexture = new Texture2D(device,
-					new Texture2DDescription
-					{
-						CpuAccessFlags = CpuAccessFlags.Read,
-						BindFlags = BindFlags.None,
-						Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-						Width = 1920,
-						Height = 1080,
-						MipLevels = 1,
-						ArraySize = 1,
-						SampleDescription = { Count = 1, Quality = 0 },
-						Usage = ResourceUsage.Staging,
-						OptionFlags = ResourceOptionFlags.None,
-					});
-
-				device.ImmediateContext.CopyResource(texture, stagingTexture);
-				device.ImmediateContext.Flush();
-
-				//var destBmp = new System.Drawing.Bitmap(1920, 1080, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-
-				System.Drawing.Bitmap destBmp = null;
-				int count = 10;
-
-                byte[] bytes = null;
-				while (count-->0)
-				{
-					DxTool.TextureToBitmap(stagingTexture, ref destBmp);
-
-					bytes = DxTool.GetTextureBytes(stagingTexture);
-
-
-
-					Thread.Sleep(10);
-				}
-
-                File.WriteAllBytes("d:\\test_argb32.raw", bytes);
-
-				destBmp.Save("d:\\test.bmp");
-
-				destBmp.Dispose();
-
-			}
-			finally
-			{
-				stagingTexture?.Dispose();
-			}
-
-			texture.Dispose();
-			device.Dispose();
-			bmp.Dispose();
-
-			var report = SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects();
-			Console.WriteLine(report);
-			Console.ReadKey();
-
-
-			return;
-
-
-
-			//var flags = DeviceCreationFlags.VideoSupport |
-			//     DeviceCreationFlags.BgraSupport;
-			////DeviceCreationFlags.Debug;
-
-			//var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
-			//using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-			//{
-			//    multiThread.SetMultithreadProtected(true);
-			//}
-
-
-
-
-			do
-			{
+            do
+            {
                 // var videoSource = new ScreenSource();
                 // ScreenCaptureDeviceDescription captureParams = new ScreenCaptureDeviceDescription
                 // {
@@ -316,17 +269,17 @@ namespace Test.Encoder
                 var encDevice = encoder.device;
 
 
-               var bufTexture = new Texture2D(encDevice,
-                new Texture2DDescription
-                {
-                                // Format = Format.NV12,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Width = 1920,
-                    Height = 1080,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1 },
-                });
+                var bufTexture = new Texture2D(encDevice,
+                 new Texture2DDescription
+                 {
+                     // Format = Format.NV12,
+                     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                     Width = 1920,
+                     Height = 1080,
+                     MipLevels = 1,
+                     ArraySize = 1,
+                     SampleDescription = { Count = 1 },
+                 });
 
 
 
@@ -351,7 +304,7 @@ namespace Test.Encoder
                 encoder.Start();
 
                 int count = 3;
-                while (count-->0)
+                while (count-- > 0)
                 {
                     //encDevice.ImmediateContext.CopyResource(texture, bufTexture);
 
@@ -371,7 +324,7 @@ namespace Test.Encoder
                 bufTexture.Dispose();
                 texture.Dispose();
                 // videoEncoder.Close();
-                
+
 
 
                 //videoSource.Close();
@@ -396,7 +349,7 @@ namespace Test.Encoder
                     break;
                 }
 
-                
+
 
             } while (true);
 
@@ -406,6 +359,179 @@ namespace Test.Encoder
             MediaToolkitManager.Shutdown();
 
 
+        }
+
+        private static void NewMethod1()
+        {
+
+            var flags = DeviceCreationFlags.VideoSupport |
+            DeviceCreationFlags.BgraSupport |
+            DeviceCreationFlags.Debug;
+
+            var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+
+
+            System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
+            Texture2D rgbTexture = DxTool.GetTexture(bmp, device);
+
+            var bufTexture = new Texture2D(device,
+                new Texture2DDescription
+                {
+                                // Format = Format.NV12,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    Width = 1920,
+                    Height = 1080,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1 },
+                });
+
+            device.ImmediateContext.CopyResource(rgbTexture, bufTexture);
+
+            var processor = new MfVideoProcessor(null);
+            var inProcArgs = new MfVideoArgs
+            {
+                Width = 1920,
+                Height = 1080,
+                Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+            };
+
+            var outProcArgs = new MfVideoArgs
+            {
+                Width = 1920,
+                Height = 1080,
+                Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
+            };
+
+            processor.Setup(inProcArgs, outProcArgs);
+            processor.Start();
+
+
+            var msEncoder = new MfH264EncoderMS();
+
+            var encArgs = new MfVideoArgs
+            {
+                Width = 1920,
+                Height = 1080,
+                FrameRate = 30,
+                Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,
+
+            };
+
+            msEncoder.Setup(encArgs);
+
+            msEncoder.Start();
+
+            var rgbSample = MediaFactory.CreateVideoSampleFromSurface(null);
+
+            // Create the media buffer from the texture
+            MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out var mediaBuffer);
+
+            using (var buffer2D = mediaBuffer.QueryInterface<Buffer2D>())
+            {
+                mediaBuffer.CurrentLength = buffer2D.ContiguousLength;
+            }
+
+            rgbSample.AddBuffer(mediaBuffer);
+
+
+
+            while (true)
+            {
+                rgbSample.SampleTime = 0;
+                rgbSample.SampleDuration = 0;
+
+               var result = processor.ProcessSample(rgbSample, out var nv12Sampel);
+
+                if (result)
+                {
+                    result = msEncoder.ProcessSample(nv12Sampel, out var outputSample);
+
+                    if (result)
+                    {
+
+                    }
+
+                }
+
+
+                Thread.Sleep(300);
+            }
+
+
+
+
+
+
+
+            //Console.ReadKey();
+            //Console.WriteLine("-------------------------------");
+            //return;
+        }
+
+        private static void NewMethod()
+        {
+            Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");
+            Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+
+
+            Guid NVidiaH264EncoderMFT = new Guid("60F44560-5A20-4857-BFEF-D29773CB8040");
+            Guid IntelQSVH264EncoderMFT = new Guid("4BE8D3C0-0515-4A37-AD55-E4BAE19AF471");
+
+            //ArrayList inputTypes = new ArrayList();
+            //ArrayList outputTypes = new ArrayList();
+
+            //MFInt inputTypesNum = new MFInt();
+            //MFInt outputTypesNum = new MFInt();
+            //IntPtr ip = IntPtr.Zero;
+
+            var result = MfApi.MFTGetInfo(CColorConvertDMO, out string pszName,
+                out IntPtr ppInputTypes, out uint inputTypesNum,
+                out IntPtr ppOutputTypes, out uint outputTypesNum,
+                out IntPtr ppAttributes);
+
+            if (result == MediaToolkit.NativeAPIs.HResult.S_OK)
+            {
+                MediaAttributes mediaAttributes = new MediaAttributes(ppAttributes);
+                Console.WriteLine(MfTool.LogMediaAttributes(mediaAttributes));
+
+                Console.WriteLine("InputTypes-------------------------------------");
+                MarshalHelper.PtrToArray(ppInputTypes, (int)inputTypesNum, out MFTRegisterTypeInfo[] inputTypes);
+
+                foreach (var type in inputTypes)
+                {
+                    var majorType = type.guidMajorType;
+                    var subType = type.guidSubtype;
+
+                    //Console.WriteLine(MfTool.GetMediaTypeName(majorType));
+
+                    Console.WriteLine(MfTool.GetMediaTypeName(subType));
+                }
+
+                Console.WriteLine("");
+
+                Console.WriteLine("OutputTypes-------------------------------------");
+                MarshalHelper.PtrToArray(ppOutputTypes, (int)outputTypesNum, out MFTRegisterTypeInfo[] outputTypes);
+
+
+                foreach (var type in outputTypes)
+                {
+                    var majorType = type.guidMajorType;
+                    var subType = type.guidSubtype;
+
+                    //Console.WriteLine(MfTool.GetMediaTypeName(majorType));
+
+                    Console.WriteLine(MfTool.GetMediaTypeName(subType));
+                }
+
+            }
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+            return;
         }
     }
 }
