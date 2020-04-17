@@ -1182,7 +1182,10 @@ namespace MediaToolkit.MediaFoundation
 
         public static readonly MediaAttributeKey<int> AVEncCommonQuality = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
 
-        public static readonly MediaAttributeKey<int> AVEncCommonMaxBitRate = new MediaAttributeKey<int>("fcbf57a3-7ea5-4b0c-9644-69b40c39c391");
+        public static readonly MediaAttributeKey<int> AVEncCommonMaxBitRate = new MediaAttributeKey<int>("9651eae4-39b9-4ebf-85ef-d7f444ec7465");
+
+        public static readonly MediaAttributeKey<int> AVEncMPVDefaultBPictureCount = new MediaAttributeKey<int>(new Guid(0x8d390aac, 0xdc5c, 0x4200, 0xb5, 0x7f, 0x81, 0x4d, 0x04, 0xba, 0xba, 0xb2));
+        
 
 
     }

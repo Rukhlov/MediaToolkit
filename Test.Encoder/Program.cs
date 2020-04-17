@@ -256,7 +256,7 @@ namespace Test.Encoder
                 //}
 
 
-                var encoder = new MfEncoderAsync(null);
+                var encoder = new MfH264Encoder(null);
                 encoder.Setup(new MfVideoArgs
                 {
                     Width = 1920,

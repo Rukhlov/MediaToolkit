@@ -20,7 +20,7 @@ using MediaToolkit.Logging;
 namespace MediaToolkit.MediaFoundation
 {
 
-    public class MfEncoderAsync
+    public class MfH264Encoder
     {
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
@@ -53,7 +53,7 @@ namespace MediaToolkit.MediaFoundation
 
         private bool syncMode = false;
 
-        public MfEncoderAsync(SharpDX.Direct3D11.Device d = null)
+        public MfH264Encoder(SharpDX.Direct3D11.Device d = null)
         {
             this.device = d;
 
@@ -108,6 +108,9 @@ namespace MediaToolkit.MediaFoundation
 
                     //encoder = new Transform(ClsId.MSH264EncoderMFT);
                     //syncMode = true;
+
+
+
 
                 }
 
@@ -322,6 +325,7 @@ namespace MediaToolkit.MediaFoundation
             int avgBitrate = args.AvgBitrate * 1000;
             int maxBitrate = args.MaxBitrate * 1000;
             int mpegProfile = (int)args.Profile;
+
             //if (width % 2 != 0)
             //{// должно быть четным...
             //    width++;
@@ -364,6 +368,8 @@ namespace MediaToolkit.MediaFoundation
                 attr.Set(CodecApiPropertyKeys.AVLowLatencyMode, args.LowLatency);
                 attr.Set(CodecApiPropertyKeys.AVEncCommonRateControlMode, args.BitrateMode);
                 attr.Set(CodecApiPropertyKeys.AVEncCommonQuality, args.Quality);
+
+                attr.Set(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount, 0);
 
                 var attrLog = MfTool.LogMediaAttributes(attr);
 
@@ -410,6 +416,8 @@ namespace MediaToolkit.MediaFoundation
                 mediaType.Set(MediaTypeAttributeKeys.AvgBitrate, avgBitrate);
                 mediaType.Set(CodecApiPropertyKeys.AVEncCommonMaxBitRate, maxBitrate);
 
+                //mediaType.Set(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount, 0);
+
                 encoder.SetOutputType(outputStreamId, mediaType, 0);
 
                 OutputMediaType = mediaType;
@@ -443,7 +451,7 @@ namespace MediaToolkit.MediaFoundation
                         InputMediaType = availableType;
                         availableType = null;
                         //logger.Debug("inputFormat " + inputFormat);
-                        //break;
+                        break;
                     }
 
                     if (availableType != null)
@@ -480,9 +488,13 @@ namespace MediaToolkit.MediaFoundation
             logger.Debug("\r\nInputMediaType:\r\n-----------------\r\n" + mediaLog);
 
 
-            //mediaEventGenerator = encoder.QueryInterface<MediaEventGenerator>();
-            //eventHandler = new MediaEventHandler(mediaEventGenerator);
-            //eventHandler.EventReceived += HandleMediaEvent;
+            //if (!syncMode)
+            //{
+            //    mediaEventGenerator = encoder.QueryInterface<MediaEventGenerator>();
+            //    eventHandler = new MediaEventHandler(mediaEventGenerator);
+            //    eventHandler.EventReceived += HandleMediaEvent;
+            //}
+
 
 
             //encoder.GetInputStreamInfo(0, out TInputStreamInformation inputStreamInfo);
@@ -493,6 +505,13 @@ namespace MediaToolkit.MediaFoundation
             //var outputInfoFlags = (MftOutputStreamInformationFlags)outputStreamInfo.DwFlags;
             //logger.Debug(MfTool.LogEnumFlags(outputInfoFlags));
 
+
+            //var guid = new Guid("901db4c7-31ce-41a2-85dc-8fa0bf41b8da");
+            //encoder.QueryInterface(guid, out var pUnk);
+
+            //var codecApi = (NativeAPIs.DShow.ICodecAPI)Marshal.GetObjectForIUnknown(pUnk);
+            ////var code = codecApi.GetParameterRange(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount.Guid, out var valMin, out var valMax, out var sDelta);
+            //var code = codecApi.GetValue(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount.Guid, out var val);
 
         }
 
@@ -742,11 +761,8 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
                 {
-
                     //logger.Debug(res.ToString() + " TransformNeedMoreInput");
-
                     //Result = true;
-
                 }
                 else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
                 {// не должны приходить для энкодера...
@@ -791,7 +807,7 @@ namespace MediaToolkit.MediaFoundation
                 EncodeSampleAsync(sample);
             }
             else
-            {
+            {// энкодим синхронно
                 var result = EncodeSample(sample, out outputSample);
                 if (!result)
                 {
@@ -817,7 +833,7 @@ namespace MediaToolkit.MediaFoundation
                         {
                             bufSample.SampleTime = sample.SampleTime;
                             bufSample.SampleDuration = sample.SampleDuration;
-                            //..
+                            bufSample.SampleFlags = sample.SampleFlags;
 
                             device.ImmediateContext.CopyResource(texture, bufTexture);
                             needUpdate = true;
@@ -832,13 +848,7 @@ namespace MediaToolkit.MediaFoundation
 
         public event Action<Sample> SampleReady;
 
-        private void OnSampleReady(Sample sample)
-        {
-            SampleReady?.Invoke(sample);
-        }
-
-
-        public unsafe bool EncodeSample(Sample inputSample, out Sample outputSample)
+        public bool EncodeSample(Sample inputSample, out Sample outputSample)
         {
             bool Result = false;
             outputSample = null;
@@ -858,7 +868,6 @@ namespace MediaToolkit.MediaFoundation
                 MftOutputStreamInformationFlags flags = (MftOutputStreamInformationFlags)streamInfo.DwFlags;
                 bool createSample = !flags.HasFlag(MftOutputStreamInformationFlags.MftOutputStreamProvidesSamples);
 
-                // Create output sample
                 if (createSample)
                 {
                     outputSample = MediaFactory.CreateSample();
@@ -955,8 +964,63 @@ namespace MediaToolkit.MediaFoundation
                 encoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 encoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
 
+                if (syncMode)
+                {
+                    Drain();
+                    Close();
+                }
             }
 
+        }
+
+        private void Drain()
+        {
+            encoder.GetOutputStreamInfo(0, out TOutputStreamInformation streamInfo);
+
+            MftOutputStreamInformationFlags flags = (MftOutputStreamInformationFlags)streamInfo.DwFlags;
+            bool createSample = !flags.HasFlag(MftOutputStreamInformationFlags.MftOutputStreamProvidesSamples);
+
+            bool drain = true;
+            do
+            {
+                Sample outputSample = null;
+                try
+                {
+                    if (createSample)
+                    {
+                        outputSample = MediaFactory.CreateSample();
+                        outputSample.SampleTime = 0;
+                        outputSample.SampleDuration = 0;
+
+                        using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize))
+                        {
+                            outputSample.AddBuffer(mediaBuffer);
+                        }
+                    }
+
+                    TOutputDataBuffer[] outputDataBuffer = new TOutputDataBuffer[1];
+
+                    var data = new TOutputDataBuffer
+                    {
+                        DwStatus = 0,
+                        DwStreamID = 0,
+                        PSample = outputSample,
+                        PEvents = null,
+                    };
+                    outputDataBuffer[0] = data;
+
+                    var res = encoder.TryProcessOutput(TransformProcessOutputFlags.None, outputDataBuffer, out var status);
+
+                    drain = res.Success; //(res != SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput);
+                }
+                finally
+                {
+
+                    outputSample?.Dispose();
+                }
+
+            }
+            while (drain);
         }
 
         public void Close()

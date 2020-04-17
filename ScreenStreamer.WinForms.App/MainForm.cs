@@ -100,7 +100,8 @@ namespace ScreenStreamer.WinForms.App
         {
             logger.Debug("stopButton_Click(...) ");
 
-            Stop();
+            Console.WriteLine(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
+            //Stop();
 
         }
 

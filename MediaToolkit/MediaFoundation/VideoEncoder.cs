@@ -28,7 +28,7 @@ namespace MediaToolkit.MediaFoundation
             this.videoSource = source;
         }
 
-        private MfEncoderAsync encoder = null;
+        private MfH264Encoder encoder = null;
 
         private MfVideoProcessor processor = null;
 
@@ -86,9 +86,10 @@ namespace MediaToolkit.MediaFoundation
 
             var encArgs = new MfVideoArgs
             {
-                Width = srcSize.Width,
-                Height = srcSize.Height,
+                Width = destSize.Width, //srcSize.Width,
+                Height = destSize.Height, //srcSize.Height,
                 Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
+
                 FrameRate = destParams.FrameRate,
                 AvgBitrate = destParams.Bitrate,
                 LowLatency = destParams.LowLatency,
@@ -99,13 +100,8 @@ namespace MediaToolkit.MediaFoundation
 
             };
 
-
-            //softEncoder = new MfH264EncoderMS();
-            //softEncoder.Setup(encArgs);
-
-            encoder = new MfEncoderAsync();
+            encoder = new MfH264Encoder();
             encoder.Setup(encArgs);
-
 
             var encDevice = encoder?.device;
 
@@ -119,9 +115,9 @@ namespace MediaToolkit.MediaFoundation
 
             var outProcArgs = new MfVideoArgs
             {
-                Width = destSize.Width,
-                Height = destSize.Height,
-                Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
+                Width = encArgs.Width,
+                Height = encArgs.Height,
+                Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
             };
 
             processor.Setup(inProcArgs, outProcArgs);
@@ -145,9 +141,6 @@ namespace MediaToolkit.MediaFoundation
             encoder.SampleReady += Encoder_SampleReady;
             //encoder.DataReady += MfEncoder_DataReady;
             encoder.Start();
-
-
-
 
         }
 
