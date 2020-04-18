@@ -16,6 +16,7 @@ using SharpDX.MediaFoundation;
 
 namespace MediaToolkit.MediaFoundation
 {
+
     public class VideoEncoder
     {
 
@@ -28,13 +29,17 @@ namespace MediaToolkit.MediaFoundation
             this.videoSource = source;
         }
 
-        private MfH264Encoder encoder = null;
+        private IMfVideoEncoder encoder = null;
+
+        //private MfH264Encoder encoder = null;
+        //private MfH264EncoderEx encoder = null;
+        //private FFmpegLib.H264Encoder ffEncoder = null;
 
         private MfVideoProcessor processor = null;
 
         private Texture2D bufTexture = null;
 
-
+        private Device device = null;
         public void Open(VideoEncoderSettings destParams)
         {
             logger.Debug("VideoEncoder::Setup(...)");
@@ -49,19 +54,28 @@ namespace MediaToolkit.MediaFoundation
             var srcSize = new Size(hwDescr.Width, hwDescr.Height);
             var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
 
-
             var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
 
-            //var hwDevice = hwBuffer.Device;
-            //long adapterLuid = -1;
-            //using (var dxgiDevice = hwDevice.QueryInterface<SharpDX.DXGI.Device>())
-            //{
-            //    using (var adapter = dxgiDevice.Adapter)
-            //    {
-            //        adapterLuid = adapter.Description.Luid;
-            //    }
-            //}
-            //var refCount = ((IUnknown)hwDevice).Release();
+            var adapterId = videoSource.AdapterId;
+      
+            using (var adapter = DxTool.FindAdapter1(adapterId))
+            {
+                var descr = adapter.Description;
+                int adapterVenId = descr.VendorId;
+
+                logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+
+                var flags = DeviceCreationFlags.VideoSupport |
+                                DeviceCreationFlags.BgraSupport;
+                                //DeviceCreationFlags.Debug;
+
+                device = new SharpDX.Direct3D11.Device(adapter, flags);
+                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                {
+                    multiThread.SetMultithreadProtected(true);
+                }
+
+            }
 
             var profile = eAVEncH264VProfile.Main;
             if (destParams.Profile == H264Profile.High)
@@ -100,12 +114,9 @@ namespace MediaToolkit.MediaFoundation
 
             };
 
-            encoder = new MfH264Encoder();
-            encoder.Setup(encArgs);
 
-            var encDevice = encoder?.device;
 
-            processor = new MfVideoProcessor(encDevice);
+            processor = new MfVideoProcessor(device);
             var inProcArgs = new MfVideoArgs
             {
                 Width = srcSize.Width,
@@ -123,7 +134,7 @@ namespace MediaToolkit.MediaFoundation
             processor.Setup(inProcArgs, outProcArgs);
 
 
-            bufTexture = new Texture2D(encDevice,
+            bufTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     // Format = Format.NV12,
@@ -138,26 +149,31 @@ namespace MediaToolkit.MediaFoundation
             processor?.Start();
 
 
-            encoder.SampleReady += Encoder_SampleReady;
-            //encoder.DataReady += MfEncoder_DataReady;
+            encoder = new MfH264EncoderEx(device);
+            //encoder = new MfFFMpegVideoEncoder();
+
+            encoder.Setup(encArgs);
+
+            encoder.DataEncoded += Encoder_DataEncoded;
+
+            ////encoder.DataReady += MfEncoder_DataReady;
             encoder.Start();
 
         }
-
-
 
         public void Encode()
         {
             var texture = videoSource?.SharedTexture;
 
             Encode(texture);
+
         }
 
         private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
 
         public void Encode(Texture2D texture)
         {
-            var device = encoder?.device;
+           // var device = encoder?.device;
 
             if (device != null)
             {
@@ -198,7 +214,8 @@ namespace MediaToolkit.MediaFoundation
                         bool result = processor.ProcessSample(inputSample, out processedSample);
                         if (result)
                         {
-                            EncodeSample(processedSample);
+                            encoder.ProcessSample(processedSample);
+                            //EncodeSample(processedSample);
                         }
                     }
                     finally
@@ -208,7 +225,8 @@ namespace MediaToolkit.MediaFoundation
                 }
                 else
                 {
-                    EncodeSample(inputSample);
+                    encoder.ProcessSample(inputSample);
+                    //EncodeSample(inputSample);
                 }
 
 
@@ -218,68 +236,33 @@ namespace MediaToolkit.MediaFoundation
                 inputSample?.Dispose();
             }
 
-
-
         }
 
-        private void EncodeSample(Sample sample)
+
+        private void Encoder_DataEncoded(IntPtr data, int size, double timestamp)
         {
-            Sample encodedSample = null;
-            try
-            {
-                encodedSample = encoder.ProcessSample(sample);
-                if (encodedSample != null)
-                {
-                    FinalizeSample(encodedSample);
-                }
+            var buf = new byte[size];
+            Marshal.Copy(data, buf, 0, size);
 
-            }
-            finally
-            {
-                if (encodedSample != null)
-                {
-                    encodedSample.Dispose();
-                    encodedSample = null;
-                }
-            }
+            OnDataReady(buf, timestamp);
         }
 
-        private void FinalizeSample(Sample encodedSample)
-        {
-            using (var buffer = encodedSample.ConvertToContiguousBuffer())
-            {
-                var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
-                try
-                {
-                    if (cbCurrentLength > 0)
-                    {
-                        byte[] buf = new byte[cbCurrentLength];
-                        Marshal.Copy(ptr, buf, 0, buf.Length);
-
-                        OnDataReady(buf);
-                    }
-                }
-                finally
-                {
-                    buffer.Unlock();
-                }
-            }
-        }
-
-        private void Encoder_SampleReady(Sample outputSample)
-        {
-            FinalizeSample(outputSample);
-        }
-
+ 
         public void Close()
         {
             logger.Debug("VideoEncoder::Close()");
 
             if (encoder != null)
             {
-                encoder.SampleReady -= Encoder_SampleReady;
+                encoder.DataEncoded -= Encoder_DataEncoded;
                 encoder.Stop();
                 //encoder.Close();
+            }
+
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
             }
 
             if (processor != null)
@@ -294,18 +277,141 @@ namespace MediaToolkit.MediaFoundation
                 bufTexture = null;
             }
 
-
         }
 
+        public event Action<byte[], double> DataEncoded;
 
-        public event Action<byte[]> DataEncoded;
-
-        private void OnDataReady(byte[] buf)
+        private void OnDataReady(byte[] buf, double time)
         {
-            DataEncoded?.Invoke(buf);
+            DataEncoded?.Invoke(buf, time);
         }
 
+        //private void EncodeSample(Sample sample)
+        //{
+        //    Sample encodedSample = null;
+        //    try
+        //    {
+        //        encodedSample = encoder.ProcessSample(sample);
+
+        //        if (encodedSample != null)
+        //        {
+        //            FinalizeSample(encodedSample);
+        //        }
+
+        //    }
+        //    finally
+        //    {
+        //        if (encodedSample != null)
+        //        {
+        //            encodedSample.Dispose();
+        //            encodedSample = null;
+        //        }
+        //    }
+        //}
+
+        //private void FinalizeSample(Sample encodedSample)
+        //{
+        //    using (var buffer = encodedSample.ConvertToContiguousBuffer())
+        //    {
+        //        var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
+        //        try
+        //        {
+        //            if (cbCurrentLength > 0)
+        //            {
+        //                byte[] buf = new byte[cbCurrentLength];
+        //                Marshal.Copy(ptr, buf, 0, buf.Length);
+
+        //                OnDataReady(buf);
+        //            }
+        //        }
+        //        finally
+        //        {
+        //            buffer.Unlock();
+        //        }
+        //    }
+        //}
+        //private void Encoder_SampleReady(Sample outputSample)
+        //{
+        //    FinalizeSample(outputSample);
+        //}
 
     }
+
+
+    public interface IMfVideoEncoder
+    {
+        void Setup(MfVideoArgs args);
+        void Start();
+        Sample ProcessSample(Sample sample);
+        void Stop();
+        void Close();
+
+        event Action<IntPtr, int, double> DataEncoded;
+    }
+
+    class MfFFMpegVideoEncoder : IMfVideoEncoder
+    {
+
+        private FFmpegLib.H264Encoder ffEncoder = null;
+
+        public void Setup(MfVideoArgs args)
+        {
+
+            ffEncoder = new FFmpegLib.H264Encoder();
+            VideoEncoderSettings settings = new VideoEncoderSettings
+            {
+                EncoderName = "libx264",
+                FrameRate = args.FrameRate,
+                Width = args.Width,
+                Height = args.Height,
+
+            };
+
+            ffEncoder.Setup(settings);
+            ffEncoder.DataEncoded += FfEncoder_DataEncoded;
+        }
+
+        private void FfEncoder_DataEncoded(IntPtr arg1, int arg2, double arg3)
+        {
+            DataEncoded?.Invoke(arg1, arg2, arg3);
+        }
+
+        public void Start()
+        {
+
+        }
+
+        public Sample ProcessSample(Sample sample)
+        {
+            using (var buffer = sample.ConvertToContiguousBuffer())
+            {
+                var ptr = buffer.Lock(out var maxLen, out var curLen);
+                ffEncoder.Encode(ptr, curLen, 0);
+
+                buffer.Unlock();
+            }
+
+            return null;
+        }
+
+        public void Stop()
+        {
+            Close();
+        }
+
+        public void Close()
+        {
+            if (ffEncoder != null)
+            {
+                ffEncoder.DataEncoded -= FfEncoder_DataEncoded;
+                ffEncoder.Close();
+                ffEncoder = null;
+            }
+        }
+
+        public event Action<IntPtr, int, double> DataEncoded;
+    }
+
+
 
 }

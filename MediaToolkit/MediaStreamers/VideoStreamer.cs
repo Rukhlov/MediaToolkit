@@ -250,7 +250,7 @@ namespace MediaToolkit.MediaStreamers
 
         // FileStream file = new FileStream(@"d:\test_enc3.h264", FileMode.Create);
         //private void MfEncoder_DataReady(byte[] buf)
-        private void VideoEncoder_DataEncoded(byte[] buf)
+        private void VideoEncoder_DataEncoded(byte[] buf, double _time)
         {
             //throw new NotImplementedException();
             var time = MediaTimer.GetRelativeTime();

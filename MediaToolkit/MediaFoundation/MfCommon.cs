@@ -859,19 +859,19 @@ namespace MediaToolkit.MediaFoundation
     public class DxTool
     {
 
-		public static Adapter1 FindAdapter1(long adapterId)
+		public static Adapter1 FindAdapter1(long luid)
 		{
 			Adapter1 adapter1 = null;
 			using (var dxgiFactory = new SharpDX.DXGI.Factory1())
 			{
 
-				if (adapterId > 0)
+				if (luid > 0)
 				{
 					var adapters = dxgiFactory.Adapters1;
 					for (int i = 0; i < adapters.Length; i++)
 					{
 						var _adapter = adapters[i];
-						if (_adapter.Description1.Luid == adapterId)
+						if (_adapter.Description1.Luid == luid)
 						{
 							adapter1 = _adapter;
 							continue;

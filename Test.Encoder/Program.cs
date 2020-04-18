@@ -1,4 +1,5 @@
-﻿using MediaToolkit;
+﻿using FFmpegLib;
+using MediaToolkit;
 using MediaToolkit.Core;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs.MF;
@@ -308,7 +309,7 @@ namespace Test.Encoder
                 {
                     //encDevice.ImmediateContext.CopyResource(texture, bufTexture);
 
-                    encoder.WriteTexture(texture);
+                    //encoder.WriteTexture(texture);
 
                     Thread.Sleep(100);
 
@@ -438,7 +439,13 @@ namespace Test.Encoder
 
             rgbSample.AddBuffer(mediaBuffer);
 
-
+            var ffEncoder = new H264Encoder();
+            ffEncoder.Setup(new VideoEncoderSettings
+            {
+                Width = encArgs.Width,
+                Height  = encArgs.Height,
+                FrameRate = 30,
+            });
 
             while (true)
             {
@@ -449,15 +456,25 @@ namespace Test.Encoder
 
                 if (result)
                 {
-                    result = msEncoder.ProcessSample(nv12Sampel, out var outputSample);
-
-                    if (result)
+                    using (var buffer = nv12Sampel.ConvertToContiguousBuffer())
                     {
+                        var ptr = buffer.Lock(out var maxLen, out var curLen);
+                        ffEncoder.Encode(ptr, curLen, 0);
 
+                        buffer.Unlock();
                     }
+
+
+                    //result = msEncoder.ProcessSample(nv12Sampel, out var outputSample);
+
+                    //if (result)
+                    //{
+
+                    //}
 
                 }
 
+                nv12Sampel?.Dispose();
 
                 Thread.Sleep(300);
             }
