@@ -109,37 +109,6 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        private Adapter1 FindAdapter(long adapterId)
-        {
-            Adapter1 adapter1 = null;
-            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-            {
-
-                if (adapterId > 0)
-                {
-                    var adapters = dxgiFactory.Adapters1;
-                    for (int i = 0; i < adapters.Length; i++)
-                    {
-                        var _adapter = adapters[i];
-                        if (_adapter.Description1.Luid == adapterId)
-                        {
-                            adapter1 = _adapter;
-                            continue;
-                        }
-
-                        _adapter.Dispose();
-                    }
-                }
-
-                if (adapter1 == null)
-                {
-                    adapter1 = dxgiFactory.GetAdapter1(0);
-                }
-            }
-
-            return adapter1;
-        }
-
         private void SetupSampleBuffer(MfVideoArgs args)
         {
             logger.Debug("SetupSampleBuffer(...)");
@@ -743,39 +712,35 @@ namespace MediaToolkit.MediaFoundation
         }
 
         private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
-        public Sample ProcessSample(Sample sample)
+        public bool ProcessSample(Sample sample)
         {
+
+			bool Result = false;
             if (stopping)
             {
                 logger.Warn("ProcessSample(...) stopping");
-                return null;
+                return Result;
             }
 
             if (closing)
             {
                 logger.Warn("ProcessSample(...) closing");
-                return null;
+                return Result;
             }
 
-            Sample outputSample = null;
+			try
+			{
+				EncodeSampleAsync(sample);
+				Result = true;
+			}
+			catch(Exception ex)
+			{
+				Result = false;
+				logger.Error(ex);
+			}
+            
 
-            //if (!syncMode)
-            //{
-            //    EncodeSampleAsync(sample);
-            //}
-            //else
-            //{// энкодим синхронно
-            //    var result = EncodeSample(sample, out outputSample);
-            //    if (!result)
-            //    {
-            //        //...
-            //    }
-
-            //}
-
-            EncodeSampleAsync(sample);
-
-            return outputSample;
+            return Result;
         }
 
         private void EncodeSampleAsync(Sample sample)

@@ -41,127 +41,111 @@ namespace MediaToolkit.MediaFoundation
 
         private Device device = null;
         public void Open(VideoEncoderSettings destParams)
-        {
-            logger.Debug("VideoEncoder::Setup(...)");
+		{
+			logger.Debug("VideoEncoder::Setup(...)");
 
-            //var hwContext = videoSource.hwContext;
-            // var hwDevice = hwContext.Device3D11;
+			//var hwContext = videoSource.hwContext;
+			// var hwDevice = hwContext.Device3D11;
 
-            var hwBuffer = videoSource.SharedTexture;
+			var hwBuffer = videoSource.SharedTexture;
 
-            var hwDescr = hwBuffer.Description;
+			var hwDescr = hwBuffer.Description;
 
-            var srcSize = new Size(hwDescr.Width, hwDescr.Height);
-            var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
+			var srcSize = new Size(hwDescr.Width, hwDescr.Height);
+			var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
 
-            var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
+			var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
 
-            var adapterId = videoSource.AdapterId;
-      
-            using (var adapter = DxTool.FindAdapter1(adapterId))
-            {
-                var descr = adapter.Description;
-                int adapterVenId = descr.VendorId;
+			var adapterId = videoSource.AdapterId;
 
-                logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+			using (var adapter = DxTool.FindAdapter1(adapterId))
+			{
+				var descr = adapter.Description;
+				int adapterVenId = descr.VendorId;
 
-                var flags = DeviceCreationFlags.VideoSupport |
-                                DeviceCreationFlags.BgraSupport;
-                                //DeviceCreationFlags.Debug;
+				logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-                device = new SharpDX.Direct3D11.Device(adapter, flags);
-                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                {
-                    multiThread.SetMultithreadProtected(true);
-                }
+				var flags = DeviceCreationFlags.VideoSupport |
+								DeviceCreationFlags.BgraSupport;
+				//DeviceCreationFlags.Debug;
 
-            }
+				device = new SharpDX.Direct3D11.Device(adapter, flags);
+				using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+				{
+					multiThread.SetMultithreadProtected(true);
+				}
 
-            var profile = eAVEncH264VProfile.Main;
-            if (destParams.Profile == H264Profile.High)
-            {
-                profile = eAVEncH264VProfile.High;
-            }
-            else if (destParams.Profile == H264Profile.Base)
-            {
-                profile = eAVEncH264VProfile.Base;
-            }
+			}
+			var profile = MfTool.GetMfH264Profile(destParams.Profile);
 
-            var bitrateMode = RateControlMode.CBR;
-            if (destParams.BitrateMode == BitrateControlMode.VBR)
-            {
-                bitrateMode = RateControlMode.LowDelayVBR;
-            }
-            else if (destParams.BitrateMode == BitrateControlMode.Quality)
-            {
-                bitrateMode = RateControlMode.Quality;
-            }
+			var bitrateMode = MfTool.GetMfBitrateMode(destParams.BitrateMode);
 
+			var encArgs = new MfVideoArgs
+			{
+				Width = destSize.Width, //srcSize.Width,
+				Height = destSize.Height, //srcSize.Height,
+				Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
 
-            var encArgs = new MfVideoArgs
-            {
-                Width = destSize.Width, //srcSize.Width,
-                Height = destSize.Height, //srcSize.Height,
-                Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
+				FrameRate = destParams.FrameRate,
+				AvgBitrate = destParams.Bitrate,
+				LowLatency = destParams.LowLatency,
+				AdapterId = videoSource.AdapterId,
+				Profile = profile,
+				BitrateMode = bitrateMode,
+				MaxBitrate = destParams.MaxBitrate,
 
-                FrameRate = destParams.FrameRate,
-                AvgBitrate = destParams.Bitrate,
-                LowLatency = destParams.LowLatency,
-                AdapterId = videoSource.AdapterId,
-                Profile = profile,
-                BitrateMode = bitrateMode,
-                MaxBitrate = destParams.MaxBitrate,
-
-            };
+			};
 
 
 
-            processor = new MfVideoProcessor(device);
-            var inProcArgs = new MfVideoArgs
-            {
-                Width = srcSize.Width,
-                Height = srcSize.Height,
-                Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
-            };
+			processor = new MfVideoProcessor(device);
+			var inProcArgs = new MfVideoArgs
+			{
+				Width = srcSize.Width,
+				Height = srcSize.Height,
+				Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+			};
 
-            var outProcArgs = new MfVideoArgs
-            {
-                Width = encArgs.Width,
-                Height = encArgs.Height,
-                Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
-            };
+			var outProcArgs = new MfVideoArgs
+			{
+				Width = encArgs.Width,
+				Height = encArgs.Height,
+				Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
+			};
 
-            processor.Setup(inProcArgs, outProcArgs);
-
-
-            bufTexture = new Texture2D(device,
-                new Texture2DDescription
-                {
-                    // Format = Format.NV12,
-                    Format = hwDescr.Format,//SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Width = srcSize.Width,
-                    Height = srcSize.Height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1 },
-                });
-
-            processor?.Start();
+			processor.Setup(inProcArgs, outProcArgs);
 
 
-            encoder = new MfH264EncoderEx(device);
-            //encoder = new MfFFMpegVideoEncoder();
+			bufTexture = new Texture2D(device,
+				new Texture2DDescription
+				{
+					// Format = Format.NV12,
+					Format = hwDescr.Format,//SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+					Width = srcSize.Width,
+					Height = srcSize.Height,
+					MipLevels = 1,
+					ArraySize = 1,
+					SampleDescription = { Count = 1 },
+				});
 
-            encoder.Setup(encArgs);
+			processor?.Start();
 
-            encoder.DataEncoded += Encoder_DataEncoded;
 
-            ////encoder.DataReady += MfEncoder_DataReady;
-            encoder.Start();
+			encoder = new MfH264EncoderEx(device);
+			//encoder = new MfFFMpegVideoEncoder();
 
-        }
+			encoder.Setup(encArgs);
 
-        public void Encode()
+			encoder.DataEncoded += Encoder_DataEncoded;
+
+			////encoder.DataReady += MfEncoder_DataReady;
+			encoder.Start();
+
+		}
+
+
+
+		public void Encode()
         {
             var texture = videoSource?.SharedTexture;
 
@@ -286,55 +270,6 @@ namespace MediaToolkit.MediaFoundation
             DataEncoded?.Invoke(buf, time);
         }
 
-        //private void EncodeSample(Sample sample)
-        //{
-        //    Sample encodedSample = null;
-        //    try
-        //    {
-        //        encodedSample = encoder.ProcessSample(sample);
-
-        //        if (encodedSample != null)
-        //        {
-        //            FinalizeSample(encodedSample);
-        //        }
-
-        //    }
-        //    finally
-        //    {
-        //        if (encodedSample != null)
-        //        {
-        //            encodedSample.Dispose();
-        //            encodedSample = null;
-        //        }
-        //    }
-        //}
-
-        //private void FinalizeSample(Sample encodedSample)
-        //{
-        //    using (var buffer = encodedSample.ConvertToContiguousBuffer())
-        //    {
-        //        var ptr = buffer.Lock(out int cbMaxLength, out int cbCurrentLength);
-        //        try
-        //        {
-        //            if (cbCurrentLength > 0)
-        //            {
-        //                byte[] buf = new byte[cbCurrentLength];
-        //                Marshal.Copy(ptr, buf, 0, buf.Length);
-
-        //                OnDataReady(buf);
-        //            }
-        //        }
-        //        finally
-        //        {
-        //            buffer.Unlock();
-        //        }
-        //    }
-        //}
-        //private void Encoder_SampleReady(Sample outputSample)
-        //{
-        //    FinalizeSample(outputSample);
-        //}
-
     }
 
 
@@ -342,8 +277,9 @@ namespace MediaToolkit.MediaFoundation
     {
         void Setup(MfVideoArgs args);
         void Start();
-        Sample ProcessSample(Sample sample);
-        void Stop();
+		bool ProcessSample(Sample sample);
+
+		void Stop();
         void Close();
 
         event Action<IntPtr, int, double> DataEncoded;
@@ -351,13 +287,13 @@ namespace MediaToolkit.MediaFoundation
 
     class MfFFMpegVideoEncoder : IMfVideoEncoder
     {
-
-        private FFmpegLib.H264Encoder ffEncoder = null;
+		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
+		private FFmpegLib.H264Encoder encoder = null;
 
         public void Setup(MfVideoArgs args)
         {
 
-            ffEncoder = new FFmpegLib.H264Encoder();
+            encoder = new FFmpegLib.H264Encoder();
             VideoEncoderSettings settings = new VideoEncoderSettings
             {
                 EncoderName = "libx264",
@@ -367,11 +303,11 @@ namespace MediaToolkit.MediaFoundation
 
             };
 
-            ffEncoder.Setup(settings);
-            ffEncoder.DataEncoded += FfEncoder_DataEncoded;
+            encoder.Setup(settings);
+            encoder.DataEncoded += Encoder_DataEncoded;
         }
 
-        private void FfEncoder_DataEncoded(IntPtr arg1, int arg2, double arg3)
+        private void Encoder_DataEncoded(IntPtr arg1, int arg2, double arg3)
         {
             DataEncoded?.Invoke(arg1, arg2, arg3);
         }
@@ -381,17 +317,29 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public Sample ProcessSample(Sample sample)
+        public bool ProcessSample(Sample sample)
         {
-            using (var buffer = sample.ConvertToContiguousBuffer())
-            {
-                var ptr = buffer.Lock(out var maxLen, out var curLen);
-                ffEncoder.Encode(ptr, curLen, 0);
+			var Result = false;
+			try
+			{
+				using (var buffer = sample.ConvertToContiguousBuffer())
+				{
+					var ptr = buffer.Lock(out var maxLen, out var curLen);
+					encoder.Encode(ptr, curLen, 0);
 
-                buffer.Unlock();
-            }
+					buffer.Unlock();
 
-            return null;
+					Result = true;
+				}
+			}
+			catch(Exception ex)
+			{
+				logger.Error(ex);
+				Result = false;
+			}
+
+
+            return Result;
         }
 
         public void Stop()
@@ -401,11 +349,11 @@ namespace MediaToolkit.MediaFoundation
 
         public void Close()
         {
-            if (ffEncoder != null)
+            if (encoder != null)
             {
-                ffEncoder.DataEncoded -= FfEncoder_DataEncoded;
-                ffEncoder.Close();
-                ffEncoder = null;
+                encoder.DataEncoded -= Encoder_DataEncoded;
+                encoder.Close();
+                encoder = null;
             }
         }
 

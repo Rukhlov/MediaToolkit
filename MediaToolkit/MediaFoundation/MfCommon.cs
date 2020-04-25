@@ -316,7 +316,38 @@ namespace MediaToolkit.MediaFoundation
             return format;
         }
 
-        public static Guid GetVideoFormatGuidFromDXGIFormat(Format format)
+		public static eAVEncH264VProfile GetMfH264Profile(MediaToolkit.Core.H264Profile h264Profile)
+		{
+			eAVEncH264VProfile profile = eAVEncH264VProfile.Main;
+
+			if (h264Profile == MediaToolkit.Core.H264Profile.High)
+			{
+				profile = eAVEncH264VProfile.High;
+			}
+			else if (h264Profile == MediaToolkit.Core.H264Profile.Base)
+			{
+				profile = eAVEncH264VProfile.Base;
+			}
+
+			return profile;
+		}
+
+		public static RateControlMode GetMfBitrateMode(MediaToolkit.Core.BitrateControlMode mode)
+		{
+			RateControlMode bitrateMode = RateControlMode.CBR;
+			if (mode == MediaToolkit.Core.BitrateControlMode.VBR)
+			{
+				bitrateMode = RateControlMode.LowDelayVBR;
+			}
+			else if (mode == MediaToolkit.Core.BitrateControlMode.Quality)
+			{
+				bitrateMode = RateControlMode.Quality;
+			}
+
+			return bitrateMode;
+		}
+
+		public static Guid GetVideoFormatGuidFromDXGIFormat(Format format)
         {
             Guid videoGuid = Guid.Empty;
 
@@ -385,17 +416,17 @@ namespace MediaToolkit.MediaFoundation
         public static string LogMediaSource(MediaSource mediaSource)
         {
             StringBuilder log = new StringBuilder();
-            PresentationDescriptor presentationDescriptor = null;
+            PresentationDescriptor presentDescriptor = null;
             try
             {
-                mediaSource.CreatePresentationDescriptor(out presentationDescriptor);
+                mediaSource.CreatePresentationDescriptor(out presentDescriptor);
 
-                for (int streamIndex = 0; streamIndex < presentationDescriptor.StreamDescriptorCount; streamIndex++)
+                for (int streamIndex = 0; streamIndex < presentDescriptor.StreamDescriptorCount; streamIndex++)
                 {
 
                     log.AppendLine("StreamIndex " + streamIndex + "---------------------------------------");
 
-                    using (var steamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(streamIndex, out SharpDX.Mathematics.Interop.RawBool selected))
+                    using (var steamDescriptor = presentDescriptor.GetStreamDescriptorByIndex(streamIndex, out var selected))
                     {
 
                         using (var mediaHandler = steamDescriptor.MediaTypeHandler)
@@ -417,7 +448,7 @@ namespace MediaToolkit.MediaFoundation
             }
             finally
             {
-                presentationDescriptor?.Dispose();
+                presentDescriptor?.Dispose();
             }
 
             return log.ToString();
@@ -426,29 +457,31 @@ namespace MediaToolkit.MediaFoundation
         public static MediaType GetCurrentMediaType(MediaSource mediaSource)
         {
             MediaType mediaType = null;
-            PresentationDescriptor presentationDescriptor = null;
+            PresentationDescriptor presentDescriptor = null;
             try
             {
-                mediaSource.CreatePresentationDescriptor(out presentationDescriptor);
+                mediaSource.CreatePresentationDescriptor(out presentDescriptor);
 
-                for (int streamIndex = 0; streamIndex < presentationDescriptor.StreamDescriptorCount; streamIndex++)
+                for (int streamIndex = 0; streamIndex < presentDescriptor.StreamDescriptorCount; streamIndex++)
                 {
-                    using (var steamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(streamIndex, out SharpDX.Mathematics.Interop.RawBool selected))
+                    using (var steamDescriptor = presentDescriptor.GetStreamDescriptorByIndex(streamIndex, out var selected))
                     {
                         if (selected)
                         {
                             using (var mediaHandler = steamDescriptor.MediaTypeHandler)
                             {
                                 mediaType = mediaHandler.CurrentMediaType;
-
+								break;
                             }
                         }
                     }
-                }
+
+					mediaType?.Dispose();
+				}
             }
             finally
             {
-                presentationDescriptor?.Dispose();
+                presentDescriptor?.Dispose();
             }
 
             return mediaType;
@@ -469,17 +502,22 @@ namespace MediaToolkit.MediaFoundation
                 {
                     try
                     {
-                        var nativeMediaType = sourceReader.GetNativeMediaType(streamIndex, mediaIndex);
+						MediaType nativeMediaType = null;
+						try
+						{
+							nativeMediaType = sourceReader.GetNativeMediaType(streamIndex, mediaIndex);
+							if (_streamIndex != streamIndex)
+							{
+								_streamIndex = streamIndex;
+								log.AppendLine("====================== StreamIndex#" + streamIndex + "=====================");
+							}
 
-                        if (_streamIndex != streamIndex)
-                        {
-                            _streamIndex = streamIndex;
-                            log.AppendLine("====================== StreamIndex#" + streamIndex + "=====================");
-                        }
-
-                        log.AppendLine(MfTool.LogMediaType(nativeMediaType));
-                        nativeMediaType?.Dispose();
-
+							log.AppendLine(LogMediaType(nativeMediaType));
+						}
+						finally
+						{
+							nativeMediaType?.Dispose();
+						}
                     }
                     catch (SharpDX.SharpDXException ex)
                     {
