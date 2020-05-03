@@ -40,7 +40,7 @@
             this.videoPanel.Location = new System.Drawing.Point(0, 0);
             this.videoPanel.Margin = new System.Windows.Forms.Padding(0);
             this.videoPanel.Name = "videoPanel";
-            this.videoPanel.Size = new System.Drawing.Size(418, 319);
+            this.videoPanel.Size = new System.Drawing.Size(557, 393);
             this.videoPanel.TabIndex = 0;
             // 
             // statusLabel
@@ -51,18 +51,19 @@
             this.statusLabel.Location = new System.Drawing.Point(0, 0);
             this.statusLabel.Margin = new System.Windows.Forms.Padding(0);
             this.statusLabel.Name = "statusLabel";
-            this.statusLabel.Size = new System.Drawing.Size(16, 13);
+            this.statusLabel.Size = new System.Drawing.Size(18, 19);
             this.statusLabel.TabIndex = 3;
             this.statusLabel.Text = "...";
             // 
             // VideoForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.Red;
-            this.ClientSize = new System.Drawing.Size(644, 486);
+            this.ClientSize = new System.Drawing.Size(859, 598);
             this.Controls.Add(this.videoPanel);
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "VideoForm";

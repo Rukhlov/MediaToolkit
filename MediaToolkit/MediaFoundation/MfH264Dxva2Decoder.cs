@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 using System.Linq;
 
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
-using Device = SharpDX.Direct3D11.Device;
+
 using System.IO;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.Logging;
+using SharpDX.Direct3D9;
+using SharpDX.MediaFoundation.DirectX;
 
 namespace MediaToolkit.MediaFoundation
 {
     /// <summary>
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
     /// </summary>
-    public class MfH264Decoder
+    public class MfH264Dxva2Decoder
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
+
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public Device device = null;
@@ -32,56 +32,27 @@ namespace MediaToolkit.MediaFoundation
         private int inputStreamId = -1;
         private int outputStreamId = -1;
 
-        private long frameNumber = -1;
-        private long frameDuration;
-
-        public MfH264Decoder(Device device)
+        public MfH264Dxva2Decoder(Direct3DDeviceManager devMan)
         {
-            this.device = device;
+            this.d3dDeviceManager = devMan;
 
         }
 
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
-
+        public Direct3DDeviceManager d3dDeviceManager = null;
 
         public void Setup(MfVideoArgs inputArgs)
         {
-            logger.Debug("MfH264Decoder::Setup(...)");
-
-
-            var frameRate = inputArgs.FrameRate;
-            frameDuration = MfTool.TicksPerSecond / frameRate;
-
+            logger.Debug("MfH264Dxva2Decoder::Setup(...)");
+  
             var width = inputArgs.Width;
             var height = inputArgs.Height;
-            var bufSize = width * height * 4;
-
             var inputFormat = VideoFormatGuids.H264;
+            var frameRate = inputArgs.FrameRate;
 
             try
             {
-                //device = new Device(adapter, DeviceCreationFlags.BgraSupport);
-                if (device == null)
-                {
-                    using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-                    {
-                        using (var adapter = dxgiFactory.GetAdapter1(0))
-                        {
-                            device = new Device(adapter,
-                               //DeviceCreationFlags.Debug |
-                               DeviceCreationFlags.VideoSupport |
-                               DeviceCreationFlags.BgraSupport);
-
-                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                            {
-                                multiThread.SetMultithreadProtected(true);
-                            }
-                        }
-                    }
-                }
-
-
                 var transformFlags = //TransformEnumFlag.Hardware |
                                      TransformEnumFlag.SortAndFilter;
                 var inputType = new TRegisterTypeInformation
@@ -142,20 +113,18 @@ namespace MediaToolkit.MediaFoundation
 
                 using (var attr = decoder.Attributes)
                 {
+
                     bool d3dAware = attr.Get(TransformAttributeKeys.D3DAware);
-
-                    bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
-                    if (d3d11Aware)
+                    if (d3dAware)
                     {
-                        using (DXGIDeviceManager devMan = new DXGIDeviceManager())
+                        if (d3dDeviceManager != null)
                         {
-                            devMan.ResetDevice(device);
-                            decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            decoder.ProcessMessage(TMessageType.SetD3DManager, d3dDeviceManager.NativePointer);
                         }
-
+ 
                     }
 
-                    //attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
 
                     //attr.Set(MFAttributeKeys.MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
                 }
@@ -293,7 +262,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Start()
         {
-            logger.Debug("MfH264Decoder::Start()");
+            logger.Debug("MfH264Dxva2Decoder::Start()");
 
             decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
             decoder.ProcessMessage(TMessageType.NotifyBeginStreaming, IntPtr.Zero);
@@ -319,11 +288,6 @@ namespace MediaToolkit.MediaFoundation
                 return false;
             }
 
-            //FIXME:
-            frameNumber++;
-            inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
-            inputSample.SampleDuration = frameDuration;
-
             decoder.ProcessInput(0, inputSample, 0);
 
             //if (decoder.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
@@ -344,7 +308,7 @@ namespace MediaToolkit.MediaFoundation
                         pSample.SampleTime = inputSample.SampleTime;
                         pSample.SampleDuration = inputSample.SampleDuration;
                         pSample.SampleFlags = inputSample.SampleFlags;
-                        logger.Debug("CreateSample: " + inputSample.SampleTime);
+                        //logger.Debug("CreateSample: " + inputSample.SampleTime);
 
                         using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize))
                         {
@@ -444,15 +408,6 @@ namespace MediaToolkit.MediaFoundation
                         Result = false;
                         break;
                     }
-
-                    //if (outputSample != null)
-                    //{
-                    //   // logger.Debug("DisposeSample: " + outputSample?.SampleTime);
-                    //    outputSample?.Dispose();
-                    //    outputSample = null;
-                    //}
-
-
                 }
                 while (true);
 
@@ -464,11 +419,14 @@ namespace MediaToolkit.MediaFoundation
 
         public void Stop()
         {
-            logger.Debug("MfH264Decoder::Stop()");
+            logger.Debug("MfH264Dxva2Decoder::Stop()");
 
             if (decoder != null)
             {
                 decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+                //TODO: clear buffers..
+                //ProcessOutput(...)
+
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
@@ -479,7 +437,7 @@ namespace MediaToolkit.MediaFoundation
 
         public void Close()
         {
-            logger.Debug("MfH264Decoder::Close()");
+            logger.Debug("MfH264Dxva2Decoder::Close()");
 
             if (InputMediaType != null)
             {

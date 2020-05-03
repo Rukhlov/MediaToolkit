@@ -107,6 +107,7 @@ namespace FFmpegLib {
 
 					}
 
+					logger->TraceEvent(TraceEventType::Verbose, 0, "zerolatency");
 					av_dict_set(&param, "tune", "zerolatency", 0);
 
 				}

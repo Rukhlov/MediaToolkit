@@ -404,7 +404,7 @@ namespace MediaToolkit.Networks
 
             byte firstByte = payload[0];
             byte unitType = (byte)(firstByte & 0x1f);
-
+            //logger.Verb("unitType " + unitType);
             // RFC6184 Section 6 Packetization Mode:
             // 0 or not present: Single NAL mode (Only nals from 1-23 are allowed) - All receivers MUST support this mode.
             // 1: Non-interleaved Mode: 1-23, 24 (STAP-A), 28 (FU-A) are allowed. - This mode SHOULD be supported
@@ -457,13 +457,27 @@ namespace MediaToolkit.Networks
 
                 if (unitType == 1)
                 {// Coded slice of a non-IDR picture
+
+                    //logger.Verb("---------------------");
                     return nalData;
                 }
+                else if(unitType == 6)
+                {//Supplemental enhancement information (SEI)
 
-                //if(unitType != 9)
+                }
+                else if(unitType == 7)
+                {// Sequence parameter set
+
+                }
+                else if(unitType == 8)
+                {// Picture parameter set
+
+                }
+                //else if (unitType != 9)
                 //{ //Access unit delimiter
                 //    return nalData;
                 //}
+
 
                 // !!!!!!!!!!!!! 
                 payloadBuffer.Add(nalData);
@@ -537,6 +551,7 @@ namespace MediaToolkit.Networks
                         }
                         payloadBuffer.Clear();
 
+                        //logger.Verb("---------------------");
                         return nalUnit;
 
                     }

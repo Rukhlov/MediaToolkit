@@ -323,7 +323,7 @@ namespace ScreenStreamer.WinForms.App
                 AspectRatio = true,
                 CaptureType = VideoCaptureType.DXGIDeskDupl,
                 UseHardware = true,
-                Fps = 30,
+                Fps = 60,//30,
                 ShowDebugInfo = false,
             };
 

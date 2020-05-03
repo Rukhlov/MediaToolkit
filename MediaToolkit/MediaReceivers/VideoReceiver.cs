@@ -228,46 +228,12 @@ namespace MediaToolkit
                         }
                     }
 
-                    var res = decoder.ProcessSample(encodedSample, out Sample decodedSample);
+                    var res = decoder.ProcessSample(encodedSample, OnSampleDecoded);
 
-                    if (res)
+                    if (!res)
                     {
-                        if (decodedSample != null)
-                        {
-                            res = processor.ProcessSample(decodedSample, out Sample rgbSample);
-
-                            if (res)
-                            {
-                                if (rgbSample != null)
-                                {
-                                    var rgbBuffer = rgbSample.ConvertToContiguousBuffer();
-                                    try
-                                    {
-                                        using (var dxgiBuffer = rgbBuffer.QueryInterface<DXGIBuffer>())
-                                        {
-                                            dxgiBuffer.GetResource(GuidTexture2D, out IntPtr intPtr);
-                                            using (Texture2D rgbTexture = new Texture2D(intPtr))
-                                            {
-                                                device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
-                                                device.ImmediateContext.Flush();
-                                            };
-
-                                            OnUpdateBuffer();
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        rgbBuffer?.Dispose();
-                                    }
-
-                                }
-                            }
-
-                            rgbSample?.Dispose();
-                        }
+                        //...
                     }
-
-                    decodedSample?.Dispose();
                 }
                 finally
                 {
@@ -278,6 +244,63 @@ namespace MediaToolkit
             {
                 logger.Error(ex);
             }
+
+        }
+
+        private void OnSampleDecoded(Sample sample)
+        {
+            try
+            {
+                if (sample != null)
+                {
+                    var _res = processor.ProcessSample(sample, out Sample rgbSample);
+                    try
+                    {
+                        if (_res)
+                        {
+                            if (rgbSample != null)
+                            {
+                                var rgbBuffer = rgbSample.ConvertToContiguousBuffer();
+                                try
+                                {
+                                    using (var dxgiBuffer = rgbBuffer.QueryInterface<DXGIBuffer>())
+                                    {
+                                        dxgiBuffer.GetResource(GuidTexture2D, out IntPtr intPtr);
+                                        using (Texture2D rgbTexture = new Texture2D(intPtr))
+                                        {
+                                            device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
+                                            device.ImmediateContext.Flush();
+                                        };
+
+                                        OnUpdateBuffer();
+                                    }
+                                }
+                                finally
+                                {
+                                    rgbBuffer?.Dispose();
+                                    rgbBuffer = null;
+                                }
+
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        rgbSample?.Dispose();
+                        rgbSample = null;
+                    }
+
+                }
+            }
+            finally
+            {
+
+                sample?.Dispose();
+                sample = null;
+
+
+            }
+
 
         }
 

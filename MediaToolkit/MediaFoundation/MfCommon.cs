@@ -1234,12 +1234,20 @@ namespace MediaToolkit.MediaFoundation
     /// </summary>
     public static class MFAttributeKeys
     {
-		// MFT_ENUM_ADAPTER_LUID 
-		// https://docs.microsoft.com/en-us/windows/win32/medfound/mft-enum-adapter-luid
-		// Specifies the unique identifier for a video adapter. Use this attribute when calling MFTEnum2 to enumerate MFTs associated with a specific adapter.
-		// Min supported client: Windows 10, version 1703 [desktop apps only]
-		// Minimum supported server: Windows Server 2016 [desktop apps only]
-		public static readonly MediaAttributeKey<byte[]> MFT_ENUM_ADAPTER_LUID = new MediaAttributeKey<byte[]>("1d39518c-e220-4da8-a07f-ba172552d6b1");
+
+        //MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT
+        public static readonly MediaAttributeKey<int> MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT = new MediaAttributeKey<int>("851745d5-c3d6-476d-9527-498ef2d10d18");
+
+
+        //MF_MT_D3D_DECODE_PROFILE_GUID
+        public static readonly MediaAttributeKey<Guid> MF_MT_D3D_DECODE_PROFILE_GUID = new MediaAttributeKey<Guid>("657c3e17-3341-41a7-9ae6-37a9d699851f");
+
+        // MFT_ENUM_ADAPTER_LUID 
+        // https://docs.microsoft.com/en-us/windows/win32/medfound/mft-enum-adapter-luid
+        // Specifies the unique identifier for a video adapter. Use this attribute when calling MFTEnum2 to enumerate MFTs associated with a specific adapter.
+        // Min supported client: Windows 10, version 1703 [desktop apps only]
+        // Minimum supported server: Windows Server 2016 [desktop apps only]
+        public static readonly MediaAttributeKey<byte[]> MFT_ENUM_ADAPTER_LUID = new MediaAttributeKey<byte[]>("1d39518c-e220-4da8-a07f-ba172552d6b1");
 
 		// MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
 		public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
@@ -1421,6 +1429,11 @@ namespace MediaToolkit.MediaFoundation
 
         public int InterlaceMode { get; set; } = 2; //Progressive
 
+    }
+
+    public static class IID
+    {
+        public readonly static Guid D3D9Surface = Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Surface));
     }
 
 }

@@ -28,13 +28,13 @@ using MediaToolkit.Logging;
 
 namespace MediaToolkit.UI
 {
-    public partial class ScreenCastControl : UserControl, IScreenCasterControl
+    public partial class ScreenCastControlEx : UserControl, IScreenCasterControl
     {
-        private static readonly TraceSource tracer = TraceManager.GetTrace("MediaToolkit.UI");
+        private static readonly TraceSource logger = TraceManager.GetTrace("MediaToolkit.UI");
 
         //private static Logger logger = LogManager.GetCurrentClassLogger();
          
-        public ScreenCastControl()
+        public ScreenCastControlEx()
         {
             InitializeComponent();
 
@@ -42,19 +42,10 @@ namespace MediaToolkit.UI
 
             debugPanel.Visible = false;
 
-            videoRenderer = new D3DImageRenderer();
-            videoRenderer.RenderStarted += videoRenderer_RenderStarted;
-            videoRenderer.RenderStopped += videoRenderer_RenderStopped;
-
-            d3dImageControl.DataContext = videoRenderer;
-
-            //imageProvider.Status = "_TEST";
 
             _UpdateControls();
         }
 
-
-        private D3DImageRenderer videoRenderer = null;
 
         private volatile ClientState state = ClientState.Disconnected;
         public ClientState State => state;
@@ -69,9 +60,10 @@ namespace MediaToolkit.UI
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
         private volatile bool cancelled = false;
 
-        public VideoReceiver VideoReceiver { get; private set; }
+        public VideoReceiverEx VideoReceiver { get; private set; }
         public AudioReceiver AudioReceiver { get; private set; }
 
+        public VideoRendererSink videoRendererSink { get; private set; }
 
         public string ClientId { get; private set; }
         public string ServerId { get; private set; }
@@ -80,6 +72,8 @@ namespace MediaToolkit.UI
         public int ServerPort { get; private set; }
 
         private ChannelFactory<IScreenCastService> factory = null;
+
+        private IntPtr VideoHandle = IntPtr.Zero;
 
         public bool ShowDebugPanel
         {
@@ -98,7 +92,7 @@ namespace MediaToolkit.UI
 
         private void connectButton_Click(object sender, EventArgs e)
         {
-            tracer.Verb("ScreenCastControl::connectButton_Click(...)");
+            logger.Verb("ScreenCastControl::connectButton_Click(...)");
 
            // logger.Debug("connectButton_Click()");
 
@@ -110,7 +104,7 @@ namespace MediaToolkit.UI
 
                     var uri = new Uri("net.tcp://" + addrStr);
 
-                    tracer.Info("Connect to: " + uri.ToString());
+                    logger.Info("Connect to: " + uri.ToString());
                     //logger.Info("Connect to: " + uri.ToString());
 
                     var host = uri.Host;
@@ -126,7 +120,7 @@ namespace MediaToolkit.UI
             catch (Exception ex)
             {
                 //logger.Error(ex);
-                tracer.Error(ex);
+                logger.Error(ex);
             }
 
         }
@@ -134,43 +128,46 @@ namespace MediaToolkit.UI
         private void Factory_Closed(object sender, EventArgs e)
         {
             //logger.Debug("Factory_Closed()");
-            tracer.Verb("ScreenCastControl::Factory_Closed()");
+            logger.Verb("ScreenCastControl::Factory_Closed()");
         }
 
 
         private void videoRenderer_RenderStarted()
         {
-            tracer.Verb("ScreenCastControl::videoRenderer_RenderStarted()");
+            logger.Verb("ScreenCastControl::videoRenderer_RenderStarted()");
             //logger.Debug("videoRenderer_RenderStarted()");
         }
 
         private void videoRenderer_RenderStopped(object obj)
         {
-            tracer.Verb("ScreenCastControl::videoRenderer_RenderStopped()");
+            logger.Verb("ScreenCastControl::videoRenderer_RenderStopped()");
 
             //logger.Debug("videoRenderer_RenderStopped(...) ");
         }
 
-        private IntPtr hWnd = IntPtr.Zero;
+        
         protected override void OnResize(EventArgs e)
         {
-
-            //if (VideoReceiver != null)
-            //{
-            //    var render = VideoReceiver.videoRenderer;
-            //    if (render != null)
-            //    {
-            //        render.Resize(new Rectangle(0, 0, this.Width, this.Height));
-            //    }
-            //}
+            videoRendererSink?.Resize(this.ClientRectangle);
             base.OnResize(e);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            videoRendererSink?.Repaint();
+            base.OnPaint(e);
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            base.OnPaintBackground(e);
         }
 
         private Task mainTask = null;
         public void Connect(string addr, int port)
         {
-            tracer.Verb("ScreenCastControl::Connecting(...) " + addr + " " + port);
-            hWnd = this.Handle;//this.Parent.Parent.Handle;
+            logger.Verb("ScreenCastControl::Connecting(...) " + addr + " " + port);
+            VideoHandle = this.Handle;
             //logger.Debug("RemoteDesktopClient::Connecting(...) " + addr + " " + port);
 
             state = ClientState.Connecting;
@@ -192,7 +189,7 @@ namespace MediaToolkit.UI
             //Console.WriteLine(address);
 
             UpdateControls();
-
+            var clientRect = this.ClientRectangle;
             mainTask = Task.Run(() =>
             {
                 int maxTryCount = 10;
@@ -200,7 +197,7 @@ namespace MediaToolkit.UI
 
                 while (tryCount <= maxTryCount && !cancelled)
                 {
-                    tracer.Verb("ScreenCastControl::Connecting count: " + tryCount);
+                    logger.Verb("ScreenCastControl::Connecting count: " + tryCount);
 
                     //logger.Debug("Connecting count: " + tryCount);
                     //errorMessage = "";
@@ -252,6 +249,8 @@ namespace MediaToolkit.UI
                                     throw new Exception("Server is busy");
                                 }
                                 SetupVideo(videoChannelInfo);
+
+                                videoRendererSink.Resize(clientRect);
                             }
 
                             var audioChannelInfo = channelInfos.FirstOrDefault(c => c.MediaInfo is AudioChannelInfo);
@@ -269,7 +268,8 @@ namespace MediaToolkit.UI
                             if (VideoReceiver != null)
                             {
                                 VideoReceiver.Play();
-                                videoRenderer.Start();
+
+                                videoRendererSink.Start();
                             }
 
                             if (AudioReceiver != null)
@@ -288,9 +288,9 @@ namespace MediaToolkit.UI
                                 try
                                 {
                                     channel.PostMessage(new ServerRequest { Command = "Ping" });
-                                    if (videoRenderer.ErrorCode != 0)
+                                    if (videoRendererSink.ErrorCode != 0)
                                     {
-                                        tracer.Warn("ScreenCastControl::imageProvider.ErrorCode: " + videoRenderer.ErrorCode);
+                                        logger.Warn("ScreenCastControl::imageProvider.ErrorCode: " + videoRendererSink.ErrorCode);
 
                                        // logger.Debug("imageProvider.ErrorCode: " + videoRenderer.ErrorCode);
                                         //Process render error...
@@ -317,7 +317,7 @@ namespace MediaToolkit.UI
                     {
                         errorCode = ErrorCode.NotFound;
 
-                        tracer.Error(ex.Message);
+                        logger.Error(ex.Message);
 
                         //logger.Error(ex.Message);
 
@@ -325,7 +325,7 @@ namespace MediaToolkit.UI
                     }
                     catch (Exception ex)
                     {
-                        tracer.Error(ex);
+                        logger.Error(ex);
                         //logger.Error(ex);
 
                         if (errorCode == ErrorCode.Ok)
@@ -379,7 +379,7 @@ namespace MediaToolkit.UI
 
         private void SetupAudio(ScreencastChannelInfo audioChannelInfo)
         {
-            tracer.Verb("ScreenCastControl::SetupAudio(...)");
+            logger.Verb("ScreenCastControl::SetupAudio(...)");
 
             //logger.Debug("SetupAudio(...)");
 
@@ -415,7 +415,7 @@ namespace MediaToolkit.UI
             }
             catch (Exception ex)
             {
-                tracer.Error(ex);
+                logger.Error(ex);
                 //logger.Error(ex);
             }
 
@@ -434,7 +434,7 @@ namespace MediaToolkit.UI
 
         private void SetupVideo(ScreencastChannelInfo videoChannelInfo)
         {
-            tracer.Verb("ScreenCastControl::SetupVideo(...)");
+            logger.Verb("ScreenCastControl::SetupVideo(...)");
 
 
            //logger.Debug("SetupVideo(...)");
@@ -454,7 +454,7 @@ namespace MediaToolkit.UI
             }
 
             var videoPort = videoChannelInfo.Port;
-            var inputPars = new VideoEncoderSettings
+            var encoderSettings = new VideoEncoderSettings
             {
                 //Resolution = videoInfo.Resolution,
                 Width = videoInfo.Resolution.Width,
@@ -462,17 +462,7 @@ namespace MediaToolkit.UI
                 FrameRate = videoInfo.Fps,
             };
 
-            var outputPars = new VideoEncoderSettings
-            {
-                //Resolution = videoInfo.Resolution,
-                Width = videoInfo.Resolution.Width,
-                Height = videoInfo.Resolution.Height,
-                //Resolution = new System.Drawing.Size(1920, 1080);
-
-                FrameRate = videoInfo.Fps,
-            };
-
-            var networkPars = new NetworkSettings
+            var networkSettings = new NetworkSettings
             {
                 LocalAddr = videoAddr,
                 LocalPort = videoPort,
@@ -480,33 +470,44 @@ namespace MediaToolkit.UI
                 SSRC = videoChannelInfo.SSRC,
             };
 
-            VideoReceiver = new VideoReceiver();
+            VideoReceiver = new VideoReceiverEx();
 
-            VideoReceiver.UpdateBuffer += VideoReceiver_UpdateBuffer;
+            VideoReceiver.DataReceived += VideoReceiver_DataReceived;
 
-            VideoReceiver.Setup(inputPars, outputPars, networkPars);
+            VideoReceiver.Setup(networkSettings);
 
-            videoRenderer.Setup(VideoReceiver.sharedTexture);
+            videoRendererSink = new VideoRendererSink();
+            videoRendererSink.Setup(encoderSettings, VideoHandle);
 
         }
 
-        private void VideoReceiver_UpdateBuffer()
+
+
+        double prevTime = 0;
+        private void VideoReceiver_DataReceived(byte[] data, double time)
         {
-            videoRenderer?.Update();
+
+            //logger.Debug("time " + time + " " + (time - prevTime));
+
+            videoRendererSink?.ProcessData(data, time);
+            // videoRenderer?.ProcessData(data, 0);
+
+            //prevTime += 0.033;
+            //prevTime = time;
         }
 
 
         public void Close()
         {
-            if (videoRenderer != null)
+            if (videoRendererSink != null)
             {
-                videoRenderer.Close();
+                videoRendererSink.Stop();
 
             }
 
             if (VideoReceiver != null)
             {
-                VideoReceiver.UpdateBuffer -= VideoReceiver_UpdateBuffer;
+                VideoReceiver.DataReceived -= VideoReceiver_DataReceived;
                 VideoReceiver.Stop();
                 VideoReceiver = null;
             }
@@ -535,7 +536,7 @@ namespace MediaToolkit.UI
 
         private void findServiceButton_Click(object sender, EventArgs e)
         {
-            tracer.Verb("ScreenCastControl::findServiceButton_Click(...)");
+            logger.Verb("ScreenCastControl::findServiceButton_Click(...)");
 
             //logger.Debug("findServiceButton_Click(...)");
 
@@ -580,7 +581,7 @@ namespace MediaToolkit.UI
 
         private void DiscoveryClient_FindProgressChanged(object sender, FindProgressChangedEventArgs e)
         {
-            tracer.Verb("ScreenCastControl::FindProgressChanged(...) " + e.EndpointDiscoveryMetadata.Address.ToString());
+            logger.Verb("ScreenCastControl::FindProgressChanged(...) " + e.EndpointDiscoveryMetadata.Address.ToString());
 
 
             //logger.Debug("FindProgressChanged(...) " + e.EndpointDiscoveryMetadata.Address.ToString());
@@ -588,7 +589,7 @@ namespace MediaToolkit.UI
 
         private void DiscoveryClient_FindCompleted(object sender, FindCompletedEventArgs e)
         {
-            tracer.TraceEvent(TraceEventType.Verbose, 0, "ScreenCastControl::FindCompleted(...)");
+            logger.TraceEvent(TraceEventType.Verbose, 0, "ScreenCastControl::FindCompleted(...)");
 
            // logger.Debug("FindCompleted(...)");
 
@@ -599,12 +600,12 @@ namespace MediaToolkit.UI
             if (e.Cancelled)
             {
                 //logger.Debug("Cancelled");
-                tracer.Verb("ScreenCastControl::FindCompleted(...) Cancelled");
+                logger.Verb("ScreenCastControl::FindCompleted(...) Cancelled");
             }
             if (e.Error != null)
             {
                // logger.Debug(e.Error.ToString());
-                tracer.Error(e.Error);
+                logger.Error(e.Error);
 
             }
 
@@ -678,7 +679,7 @@ namespace MediaToolkit.UI
                         }
                         catch (Exception ex)
                         {
-                            tracer.TraceData(TraceEventType.Verbose, 0, ex);
+                            logger.TraceData(TraceEventType.Verbose, 0, ex);
                             //logger.Debug(ex);
                         }
 
@@ -799,7 +800,7 @@ namespace MediaToolkit.UI
 
                 statusLabel.Text = "Cancelling...";
 
-                videoRenderer.Status = "Cancelling...";
+                //videoRenderer.Status = "Cancelling...";
             }
 
             //controlPanel.Enabled = true;
@@ -847,18 +848,17 @@ namespace MediaToolkit.UI
             }
             catch (Exception ex)
             {
-                tracer.Error(ex);
+                logger.Error(ex);
                 //logger.Error(ex);
             }
         }
-    }
 
-    class ComboBoxItem
-    {
-        public string Name { get; set; }
-        public object Tag { get; set; }
+        class ComboBoxItem
+        {
+            public string Name { get; set; }
+            public object Tag { get; set; }
+        }
     }
-
 
 
 }

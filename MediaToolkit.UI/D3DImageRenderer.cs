@@ -36,6 +36,7 @@ namespace MediaToolkit.UI
             this.dispatcher = dispatcher;
         }
 
+       // private System.Timers.Timer timer = new System.Timers.Timer();
         private AutoResetEvent waitEvent = null;
 
         private Direct3DEx direct3D = null;
@@ -160,6 +161,10 @@ namespace MediaToolkit.UI
 
                 state = RendererState.Initialized;
 
+                //timer.Enabled = true;
+                //timer.Interval = 1000;
+                //timer.Elapsed += Timer_Elapsed;
+
             }
             catch (Exception ex)
             {
@@ -170,6 +175,16 @@ namespace MediaToolkit.UI
             }
 
         }
+
+        private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            logger.Debug("Render fps: " + framePerSec);
+            framePerSec = 0;
+        }
+
+        private int totalFramesCount = 0;
+        private int framePerSec = 0;
+
 
         private Task renderTask = null;
         public void Start()
@@ -212,6 +227,8 @@ namespace MediaToolkit.UI
                     logger.Debug("Render thread stopped...)");
                 }
             });
+
+           // timer.Start();
         }
 
         public void Stop()
@@ -221,16 +238,24 @@ namespace MediaToolkit.UI
             state = RendererState.Stopping;
             VideoSource = null;
             waitEvent?.Set();
-        }
 
+            //timer.Stop();
+        }
+        //Stopwatch sw = new Stopwatch();
         public void Update()
         {
+            ////logger.Debug("ElapsedMilliseconds " + sw.ElapsedMilliseconds);
+            //totalFramesCount++;
+            //framePerSec++;
+
             waitEvent?.Set();
+            //sw.Restart();
         }
 
 
         private void Draw()
         {
+
 
             dispatcher.Invoke(() =>
             {
@@ -252,6 +277,9 @@ namespace MediaToolkit.UI
                         VideoSource.AddDirtyRect(new Int32Rect(0, 0, VideoSource.PixelWidth, VideoSource.PixelHeight));
 
                         VideoSource.Unlock();
+
+                        //totalFramesCount++;
+                        //framePerSec++;
                     }
 
                 }

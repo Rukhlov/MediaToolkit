@@ -1,10 +1,13 @@
 ﻿using MediaToolkit.Core;
 using MediaToolkit.MediaFoundation;
+using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NLog;
+using SharpDX.Direct3D11;
+using SharpDX.Direct3D9;
 using SharpDX.MediaFoundation;
 using SharpDX.Multimedia;
 using System;
@@ -103,7 +106,8 @@ namespace Test.VideoRenderer
             videoRenderer.Setup(new VideoRendererArgs
             {
                 hWnd = videoForm.Handle,
-                FourCC = 0x59565955, //"UYVY",
+                FourCC = new FourCC("NV12"),
+                //FourCC = 0x59565955, //"UYVY",
                 Resolution = new Size(1920, 1080),
                 FrameRate = new Tuple<int, int>(60, 1),
 
@@ -168,10 +172,12 @@ namespace Test.VideoRenderer
 
                 var UYVYFourCC = new FourCC(0x59565955);
 
-                // var format = VideoFormatGuids.FromFourCC(v210FourCC);
-                var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+                var NV12FourCC = new FourCC("NV12");
 
-                //var format = VideoFormatGuids.NV12;
+                // var format = VideoFormatGuids.FromFourCC(v210FourCC);
+                // var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+
+                var format = VideoFormatGuids.FromFourCC(NV12FourCC); //VideoFormatGuids.NV12;
                 var sampleArgs = new MfVideoArgs
                 {
                     Width = 1920,
@@ -283,7 +289,141 @@ namespace Test.VideoRenderer
             {
                 running = false;
             }
+
+            public  void Start1()
+            {
+
+                var flags = DeviceCreationFlags.VideoSupport |
+                DeviceCreationFlags.BgraSupport |
+                DeviceCreationFlags.Debug;
+
+                var device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags);
+                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                {
+                    multiThread.SetMultithreadProtected(true);
+                }
+
+
+                System.Drawing.Bitmap bmp = new System.Drawing.Bitmap(@"D:\Temp\4.bmp");
+                Texture2D rgbTexture = DxTool.GetTexture(bmp, device);
+
+                var bufTexture = new Texture2D(device,
+                    new Texture2DDescription
+                    {
+                    // Format = Format.NV12,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                        Width = 1920,
+                        Height = 1080,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1 },
+                    });
+
+                device.ImmediateContext.CopyResource(rgbTexture, bufTexture);
+
+                var processor = new MfVideoProcessor(device);
+                var inProcArgs = new MfVideoArgs
+                {
+                    Width = 1920,
+                    Height = 1080,
+                    Format = SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+                };
+
+
+
+                var outProcArgs = new MfVideoArgs
+                {
+                    Width = 1920,
+                    Height = 1080,
+                    Format = SharpDX.MediaFoundation.VideoFormatGuids.NV12,//.Argb32,
+                };
+
+                processor.Setup(inProcArgs, outProcArgs);
+                processor.Start();
+
+
+                var rgbSample = MediaFactory.CreateVideoSampleFromSurface(null);
+
+                // Create the media buffer from the texture
+                MediaFactory.CreateDXGISurfaceBuffer(typeof(Texture2D).GUID, bufTexture, 0, false, out var mediaBuffer);
+
+                using (var buffer2D = mediaBuffer.QueryInterface<Buffer2D>())
+                {
+                    mediaBuffer.CurrentLength = buffer2D.ContiguousLength;
+                }
+
+                rgbSample.AddBuffer(mediaBuffer);
+
+                rgbSample.SampleTime = 0;
+                rgbSample.SampleDuration = 0;
+
+                var result = processor.ProcessSample(rgbSample, out var nv12Sample);
+
+                Task.Run(() =>
+                {
+
+
+                    Stopwatch sw = new Stopwatch();
+                    int fps = 60;
+                    int interval = (int)(1000.0 / fps);
+
+                    int _count = 1;
+
+                    long globalTime = 0;
+
+
+                    while (true)
+                    {
+
+                        if (result)
+                        {
+
+                            sw.Restart();
+
+                            globalTime += sw.ElapsedMilliseconds;
+                            nv12Sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
+                            nv12Sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+
+                            //sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
+                            //sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+
+                            SampleReady?.Invoke(nv12Sample);
+
+
+                            var msec = sw.ElapsedMilliseconds;
+
+                            var delay = interval - msec;
+                            if (delay < 0)
+                            {
+                                delay = 1;
+                            }
+
+                            // var delay = 1;
+                            Thread.Sleep((int)delay);
+                            var elapsedMilliseconds = sw.ElapsedMilliseconds;
+                            globalTime += elapsedMilliseconds;
+                            _count++;
+
+
+
+                        }
+
+                        //nv12Sample?.Dispose();
+
+                        Thread.Sleep(30);
+                    }
+
+                });
+
+
+
+            }
+
+
+
+
         }
+
 
 
 
@@ -319,8 +459,9 @@ namespace Test.VideoRenderer
 
                 presentationClock.Start(0);
                 //videoRenderer.Start(time);
-                sampleSource.Start();
 
+               // sampleSource.Start();
+                sampleSource.Start1();
             }
 
         }
@@ -683,6 +824,46 @@ namespace Test.VideoRenderer
         private void button1_Click(object sender, EventArgs e)
         {
             GC.Collect();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var direct3D = new SharpDX.Direct3D9.Direct3DEx();
+
+            var hWnd = User32.GetDesktopWindow();
+
+            var presentParams = new PresentParameters
+            {
+                //Windowed = true,
+                //SwapEffect = SharpDX.Direct3D9.SwapEffect.Discard,
+                //DeviceWindowHandle = IntPtr.Zero,
+                //PresentationInterval = SharpDX.Direct3D9.PresentInterval.Default
+                //BackBufferCount = 1,
+
+                Windowed = true,
+                MultiSampleType = MultisampleType.None,
+                SwapEffect = SwapEffect.Discard,
+                PresentFlags = PresentFlags.None,
+            };
+
+            var flags = CreateFlags.HardwareVertexProcessing |
+                        CreateFlags.Multithreaded |
+                        CreateFlags.FpuPreserve;
+
+            int adapterIndex = 0;
+
+            var device = new DeviceEx(direct3D, adapterIndex, DeviceType.Hardware, hWnd, flags, presentParams);
+            var format = (Format)(842094158);
+
+            //var format = Format.A8R8G8B8;
+            using (var texture3d9 = new SharpDX.Direct3D9.Texture(device, 1920, 1080, 1, Usage.RenderTarget, format, Pool.Default))
+            {
+                var surface = texture3d9.GetSurfaceLevel(0);
+                //videoRenderer.ProcessTexture(surface);
+
+            };
+
+            
         }
     }
 }

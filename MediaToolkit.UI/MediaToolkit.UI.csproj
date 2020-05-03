@@ -114,11 +114,11 @@
     <Compile Include="DeckLinkInputControl.Designer.cs">
       <DependentUpon>DeckLinkInputControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="ScreenCastControl.cs">
+    <Compile Include="ScreenCastControlEx.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ScreenCastControl.Designer.cs">
-      <DependentUpon>ScreenCastControl.cs</DependentUpon>
+    <Compile Include="ScreenCastControlEx.Designer.cs">
+      <DependentUpon>ScreenCastControlEx.cs</DependentUpon>
     </Compile>
     <Compile Include="SelectAreaForm.cs">
       <SubType>Form</SubType>
@@ -143,8 +143,8 @@
     <EmbeddedResource Include="DeckLinkInputControl.resx">
       <DependentUpon>DeckLinkInputControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ScreenCastControl.resx">
-      <DependentUpon>ScreenCastControl.cs</DependentUpon>
+    <EmbeddedResource Include="ScreenCastControlEx.resx">
+      <DependentUpon>ScreenCastControlEx.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SelectAreaForm.resx">
       <DependentUpon>SelectAreaForm.cs</DependentUpon>
