@@ -89,6 +89,7 @@ namespace MediaToolkit
             var frame = h264Session.Depacketize(packet);
             if (frame != null)
             {
+                //logger.Info("h264Session.Depacketize(...) " + frame.Time);
                 sw.Restart();
 
                 var frameData = frame.Data;

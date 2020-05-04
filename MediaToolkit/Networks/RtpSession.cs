@@ -334,61 +334,147 @@ namespace MediaToolkit.Networks
         }
 
         private long lastTimestamp = RtpConst.NoTimestamp;
-        private double monotonicTime = 0;
+        private long unwrappedTimestamp = 0;
+
+        //private double monotonicTime = 0;
         private ushort lastSequence = 0;
+
+        List<NALUnit> naluBuffer = new List<NALUnit>();
 
         public override MediaFrame Depacketize(RtpPacket pkt)
         {
             MediaFrame frame = null;
+
             if (pkt.Sequence != (lastSequence + 1))
             {
                 logger.Warn("Bad sequence " + lastSequence + " != " + pkt.Sequence);
                 // TODO:
                 // Добавляем в буфер и пытаемся упорядочить  
             }
-            lastSequence = pkt.Sequence;
 
+            lastSequence = pkt.Sequence;
+            bool newTimestampSequence = false;
             var timestamp = pkt.Timestamp;
             if (timestamp != RtpConst.NoTimestamp && timestamp != lastTimestamp)
             {
                 if (lastTimestamp != RtpConst.NoTimestamp)
                 {
                     var diff = (timestamp - lastTimestamp);
-                    monotonicTime += (diff / (double)ClockRate);
-
-                    //logger.Trace("monotonicTime " + monotonicTime + " " + diff);
-
+                    if (diff < 0)
+                    { // TODO:
+                    }
+       
+                    unwrappedTimestamp += diff;
                 }
+
                 lastTimestamp = timestamp;
+                newTimestampSequence = true;
+
+               // logger.Warn(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ");
             }
 
+            if (newTimestampSequence)
+            { // группируем по временным меткам 
+                // т.е сервер должен передавать данные с правильным вр.метками иначе работать не будет...
 
-            byte[] data = null;
+                if (naluBuffer.Count > 0)
+                {
+                    var firstNalu = naluBuffer[0];
+
+                    // все вр.метки должны быть одинаковые...
+                    var naluTimestamp = firstNalu.timestamp;
+
+                    var dataBuffer = new List<byte[]>();
+                    int totalLength = 0;
+                    foreach (var nal in naluBuffer)
+                    {
+                        if(naluTimestamp  != nal.timestamp)
+                        {
+                            logger.Warn("naluTimstamp  != nal.timestamp");
+                        }
+
+                        var data = nal.data;
+                        dataBuffer.Add(data);
+                        totalLength += data.Length;
+                    }
+
+                    //var dataBuffer = naluBuffer.Select(n => n.data);
+                    //var totalLength = dataBuffer.Sum(n => n.Length);
+
+                    var nalUnitData = new byte[totalLength];
+                    int offset = 0;
+                    foreach (var data in dataBuffer)
+                    {
+                        Array.Copy(data, 0, nalUnitData, offset, data.Length);
+                        offset += data.Length;
+                    }
+
+                    var naluTime = (naluTimestamp / (double)ClockRate);
+
+                    frame = new MediaFrame
+                    {
+                        Data = nalUnitData,
+                        Time = naluTime,
+                    };
+
+                    naluBuffer.Clear();
+                }
+
+            }
+
+            if(naluBuffer.Count> 256)
+            {
+                if(timestamp == RtpConst.NoTimestamp || lastTimestamp == RtpConst.NoTimestamp 
+                    || timestamp == 0 || lastTimestamp == 0)
+                {// если не удается получить правильные вр.метки - сбрасываем буфер
+                    // т.к декодировать не сгруппированные данные не все декодеры могу...
+
+                    logger.Error("No valid timestamp received; drop buffer");
+                    naluBuffer.Clear();
+                }
+            }
+
+            NALUnit nalUnit = null;
 
             byte[] payload = pkt.Payload.ToArray();
             if (payload != null && payload.Length > 0)
             {
-
-                data = HandleH264NalUnit(payload, 0);
+                nalUnit = ParseH264Payload(payload, unwrappedTimestamp);
             }
 
-            if (data != null)
+            if (nalUnit != null)
             {
-                frame = new MediaFrame
-                {
-                    Data = data,
-                    Time = monotonicTime,
-                };
+                naluBuffer.Add(nalUnit);
             }
 
             return frame;
+
+            //if (data != null)
+            //{
+            //    frame = new MediaFrame
+            //    {
+            //        Data = data,
+            //        Time = monotonicTime,
+            //    };
+            //}
+
+            //return frame;
+        }
+
+
+        class NALUnit
+        {
+            public byte[] data = null;
+            public long timestamp = 0;
+            public int type = 0;
+            public bool iFrame = false;
         }
 
         private List<byte[]> payloadBuffer = new List<byte[]>();
-        private readonly byte[] startSequence = { 0, 0, 0, 1 };
+        private bool iFrameFlag = false;
+        private readonly static byte[] startSequence = { 0, 0, 0, 1 };
 
-
-        unsafe public byte[] HandleH264NalUnit(byte[] payload, double arrival)
+        unsafe private NALUnit ParseH264Payload(byte[] payload, long timestamp)
         {
             if (payload == null)
             {
@@ -402,9 +488,7 @@ namespace MediaToolkit.Networks
                 return null;
             }
 
-            byte firstByte = payload[0];
-            byte unitType = (byte)(firstByte & 0x1f);
-            //logger.Verb("unitType " + unitType);
+
             // RFC6184 Section 6 Packetization Mode:
             // 0 or not present: Single NAL mode (Only nals from 1-23 are allowed) - All receivers MUST support this mode.
             // 1: Non-interleaved Mode: 1-23, 24 (STAP-A), 28 (FU-A) are allowed. - This mode SHOULD be supported
@@ -425,23 +509,49 @@ namespace MediaToolkit.Networks
                fragments are concatenated in their sending order to recover the NAL
                unit, which is then passed to the decoder.
              */
+
+            /*
+                Type Name
+                   0[unspecified]
+                   1 Coded slice
+                   2 Data Partition A
+                   3 Data Partition B
+                   4 Data Partition C
+                   5 IDR(Instantaneous Decoding Refresh) Picture
+                   6 SEI(Supplemental Enhancement Information)
+                   7 SPS(Sequence Parameter Set)
+                   8 PPS(Picture Parameter Set)
+                   9 Access Unit Delimiter
+                  10 EoS(End of Sequence)
+                  11 EoS(End of Stream)
+                  12 Filter Data
+                13 - 23[extended]
+                24 - 31[unspecified]
+            */
+
+            byte firstByte = payload[0];
+            byte unitType = (byte)(firstByte & 0x1f);
+
+            //logger.Verb("unitType " + unitType + " "+ timestamp);
+
             if (unitType >= 1 && unitType <= 23) // в одном пакете - один NAL unit ()
             {// Single NAL Unit Packet
-             //  TODO: доделать 
-             //logger.Debug("unitType = " + unitType);
-             /*
-              *   0                   1                   2                   3
-                  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-                 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                 |F|NRI|  Type   |                                               |
-                 +-+-+-+-+-+-+-+-+                                               |
-                 |                                                               |
-                 |               Bytes 2..n of a single NAL unit                 |
-                 |                                                               |
-                 |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                 |                               :...OPTIONAL RTP padding        |
-              */
 
+                /*
+                 *   0                   1                   2                   3
+                     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+                    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                    |F|NRI|  Type   |                                               |
+                    +-+-+-+-+-+-+-+-+                                               |
+                    |                                                               |
+                    |               Bytes 2..n of a single NAL unit                 |
+                    |                                                               |
+                    |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                    |                               :...OPTIONAL RTP padding        |
+                 */
+
+
+                //logger.Debug("unitType = " + unitType);
                 int size = startSequence.Length + payloadLength;
                 byte[] nalData = new byte[size];
 
@@ -453,39 +563,46 @@ namespace MediaToolkit.Networks
                 Array.Copy(payload, 0, nalData, offset, payloadLength);
                 offset += payloadLength;
 
-                //return nalData;
+                //if (unitType == 1)
+                //{// Coded slice of a non-IDR picture
+                //    //logger.Verb("--------------------- " + arrival);
+                //    // return nalData;
+                //}
+                //else if (unitType == 5)
+                //{// IDR(Instantaneous Decoding Refresh) Picture
+                //    ////logger.Verb(" ========================== isIFrame =============================== " + arrival);
+                //    //return nalUnit;
+                //}
+                //else if (unitType == 6)
+                //{//Supplemental enhancement information (SEI)
 
-                if (unitType == 1)
-                {// Coded slice of a non-IDR picture
+                //}
+                //else if (unitType == 7)
+                //{// Sequence parameter set
 
-                    //logger.Verb("---------------------");
-                    return nalData;
-                }
-                else if(unitType == 6)
-                {//Supplemental enhancement information (SEI)
+                //}
+                //else if (unitType == 8)
+                //{// Picture parameter set
 
-                }
-                else if(unitType == 7)
-                {// Sequence parameter set
-
-                }
-                else if(unitType == 8)
-                {// Picture parameter set
-
-                }
-                //else if (unitType != 9)
+                //}
+                //else if (unitType == 9)
                 //{ //Access unit delimiter
-                //    return nalData;
+                //    //return nalData;
                 //}
 
+                iFrameFlag = (unitType == 5);
 
-                // !!!!!!!!!!!!! 
-                payloadBuffer.Add(nalData);
+                return new NALUnit
+                {
+                    data = nalData,
+                    timestamp = timestamp,
+                    type = unitType,
+                    iFrame = iFrameFlag,
+                };
 
-                //System.Diagnostics.Debug.WriteLine("unitType {0} bufferOffset {1}", unitType, bufferOffset);
             }
             else if (unitType == 28) // фрагментированный пакет (FU-A)
-            {   
+            {
                 /* RFC6184 5.8.Fragmentation Units(FUs)
                  *   0                   1                   2                   3
                      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -502,16 +619,12 @@ namespace MediaToolkit.Networks
                 //logger.Debug("unitType = " + unitType);
                 if (payloadLength > 1)
                 {
-                    // logger.Debug("payloadLength > 1");
-
                     byte fuHeader = payload[1];
                     byte startBit = (byte)(fuHeader >> 7);
                     byte endBit = (byte)((fuHeader & 0x40) >> 6);
                     //byte forbiddenBit = (byte)((fuHeader & 0x40) >> 7);
 
                     byte nalUnitType = (byte)(fuHeader & 0x1f); // идентификатор пакета
-
-                    //logger.Debug("nalUnitType = " + nalUnitType);
 
                     int payloadDataOffset = 2;// смещение 2 байта
 
@@ -526,6 +639,12 @@ namespace MediaToolkit.Networks
 
                     if (startBit == 1) //начало фрагмента
                     {
+                        iFrameFlag = (nalUnitType == 5 && ((fuHeader & 0x80) == 128));
+                        //if (iFrameFlag)
+                        //{
+                        //    logger.Verb(" ========================== isIFrame =============================== ");
+                        //}
+
                         Array.Copy(startSequence, fuBytes, startSequence.Length);
                         offset += startSequence.Length;
 
@@ -541,23 +660,29 @@ namespace MediaToolkit.Networks
                     if (endBit == 1)
                     {
                         var totalLength = payloadBuffer.Sum(n => n.Length);
-                        var nalUnit = new byte[totalLength];
+                        var nalData = new byte[totalLength];
 
                         int bufferOffset = 0;
                         foreach (var buf in payloadBuffer)
-                        {
-                            Array.Copy(buf, 0, nalUnit, bufferOffset, buf.Length);
+                        {// TODO: убрать копирование в промежуточный буфер
+                            Array.Copy(buf, 0, nalData, bufferOffset, buf.Length);
                             bufferOffset += buf.Length;
                         }
                         payloadBuffer.Clear();
 
-                        //logger.Verb("---------------------");
-                        return nalUnit;
+                        //logger.Verb("--------------------- " + arrival);
+                        return new NALUnit
+                        {
+                            data = nalData,
+                            timestamp = timestamp,
+                            type = nalUnitType,
+                            iFrame = iFrameFlag
+                        };
 
                     }
                 }
             }
-            else if (unitType == 24)
+            else if (unitType == 24) // этот режим может понадобится для приема данных от сторонних RTSP серверов
             { // STAP-A (one packet, multiple nals)
                 /*
                  *  0                   1                   2                   3
@@ -582,11 +707,11 @@ namespace MediaToolkit.Networks
 
                 int naluPointer = 1; //STAP-A NAL HDR
                 while (naluPointer < payload.Length - 1)
-                {                
+                {
                     int naluSize = BigEndian.ReadInt16(payload, naluPointer); //NALU 1 Size
                     naluPointer += 2;
 
-                    if(naluSize > (payload.Length - naluPointer))
+                    if (naluSize > (payload.Length - naluPointer))
                     {
                         logger.Error("naluSize > (payload.Length - naluPointer) ");
                     }
@@ -602,16 +727,21 @@ namespace MediaToolkit.Networks
                 }
 
                 var totalLength = nals.Sum(n => n.Length);
-                var nalUnit = new byte[totalLength];
+                var nalData = new byte[totalLength];
                 {
                     int offset = 0;
                     foreach (var buf in nals)
                     {
-                        Array.Copy(buf, 0, nalUnit, offset, buf.Length);
+                        Array.Copy(buf, 0, nalData, offset, buf.Length);
                         offset += buf.Length;
                     }
                 }
-                return nalUnit;
+                return new NALUnit
+                {
+                    data = nalData,
+                    timestamp = timestamp,
+                    type = unitType,
+                };
 
             }
             if (unitType == 25 || unitType == 26 || unitType == 27 || unitType == 29) // Interleaved Mode
@@ -629,11 +759,15 @@ namespace MediaToolkit.Networks
 
             return null;
         }
+
     }
 
     public class MediaFrame
     {
         public double Time = double.NaN;
         public byte[] Data = null;
+        public int Flags = 0;
+
+
     }
 }

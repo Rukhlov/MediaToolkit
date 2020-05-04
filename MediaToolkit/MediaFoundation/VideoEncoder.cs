@@ -131,8 +131,8 @@ namespace MediaToolkit.MediaFoundation
 			processor?.Start();
 
 
-			encoder = new MfH264EncoderEx(device);
-			//encoder = new MfFFMpegVideoEncoder();
+			//encoder = new MfH264EncoderEx(device);
+			encoder = new MfFFMpegVideoEncoder();
 
 			encoder.Setup(encArgs);
 
