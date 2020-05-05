@@ -21,13 +21,15 @@ namespace Test.VideoRenderer
             //DwmApi.DisableAero(true);
             Shcore.SetProcessPerMonitorDpiAwareness();
 
+			WinMM.timeBeginPeriod(1);
 
-            Application.EnableVisualStyles();
+			Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
 
+			WinMM.timeEndPeriod(1);
 
 
-        }
+		}
     }
 }

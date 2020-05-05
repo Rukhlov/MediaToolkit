@@ -34,6 +34,9 @@ namespace MediaToolkit
         private volatile ErrorCode errorCode = ErrorCode.Ok;
         public ErrorCode ErrorCode => errorCode;
 
+        public bool UseHardware = true;
+        public bool LowLatency = true;
+
         public void Setup(VideoEncoderSettings inputPars, IntPtr hwnd)
         {
 
@@ -71,10 +74,10 @@ namespace MediaToolkit
                 hWnd = hWnd,
                 FourCC = new SharpDX.Multimedia.FourCC("NV12"),
                 //FourCC = 0x59565955, //"UYVY",
-                //Resolution = inputPars.Resolution, // 
+                Resolution = inputPars.Resolution, // 
 
                 
-                Resolution = new System.Drawing.Size(1920, 1088),
+                //Resolution = new System.Drawing.Size(1920, 1088),
                 FrameRate = new Tuple<int, int>(inputPars.FrameRate, 1),
 
             });
@@ -85,14 +88,21 @@ namespace MediaToolkit
             videoRenderer.SetPresentationClock(presentationClock);
             videoRenderer.Resize(new System.Drawing.Rectangle(0, 0, 100, 100));
 
-            var d3dManager = videoRenderer.D3DManager;
+            SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager d3dManager = null;
+            if (UseHardware)
+            {
+                d3dManager = videoRenderer.D3DDeviceManager;
+            }
 
             decoder = new MfH264Dxva2Decoder(d3dManager);
+
+            decoder.LowLatency = LowLatency;
 
             decoder.Setup(inputArgs);
         }
 
 
+        private long presentationAdjust = long.MaxValue;
         public void Start()
         {
             logger.Debug("VideoRendererSink::Start()");
@@ -114,33 +124,54 @@ namespace MediaToolkit
                 {
                     using (MediaBuffer mb = MediaFactory.CreateMemoryBuffer(data.Length))
                     {
-                        var dest = mb.Lock(out int cbMaxLength, out int cbCurrentLength);
-                        //logger.Debug(sampleCount + " Marshal.Copy(...) " + nal.Length);
-                        Marshal.Copy(data, 0, dest, data.Length);
+                        try
+                        {
+                            var dest = mb.Lock(out int cbMaxLength, out int cbCurrentLength);
+                            Marshal.Copy(data, 0, dest, data.Length);
 
-                        mb.CurrentLength = data.Length;
-                        mb.Unlock();
+                            mb.CurrentLength = data.Length;
+                        }
+                        finally
+                        {
+                            mb.Unlock();
+                        }
 
                         encodedSample.AddBuffer(mb);
-
-                        if (!double.IsNaN(time) && time > 0)
-                        {
-                            // может глючить рендерер если метки будут кривые!!
-                            // TODO: сделать валидацию вр.меток до декодера и после...
-                            var sampleTime = MfTool.SecToMfTicks(time); 
-                            encodedSample.SampleTime = sampleTime; 
-                            encodedSample.SampleDuration = 0;// MfTool.SecToMfTicks(0.033);
-                        }
-                        else
-                        {
-                            encodedSample.SampleTime = 0;
-                            encodedSample.SampleDuration = 0;
-                        }
                     }
+                    
+
+
+                    if (!double.IsNaN(time) && time > 0)
+                    {
+
+   
+                        // может глючить рендерер если метки будут кривые!!
+                        // TODO: сделать валидацию вр.меток до декодера и после...
+                        var sampleTime = MfTool.SecToMfTicks(time);
+
+                        if (presentationAdjust == long.MaxValue)
+                        {
+                            var presentaionTime = presentationClock.Time;
+                            presentationAdjust = presentaionTime - sampleTime;
+
+                        }
+
+
+
+
+                        encodedSample.SampleTime = sampleTime;// + presentationAdjust; 
+                        encodedSample.SampleDuration = 0;// MfTool.SecToMfTicks(0.033);
+                    }
+                    else
+                    {
+                        encodedSample.SampleTime = 0;
+                        encodedSample.SampleDuration = 0;
+                    }
+                    
 
                     //logger.Debug("ProcessData " + time);
 
-                    var res = decoder.ProcessSample(encodedSample, OnSampleDecoded);
+                    var res = decoder.ProcessSample(encodedSample, OnSampleDecoded, OnMediaTypeChanged);
                     if (!res)
                     {
                         logger.Debug("decoder.ProcessSample() " + res);
@@ -161,9 +192,17 @@ namespace MediaToolkit
 
         }
 
+        private void OnMediaTypeChanged(SharpDX.MediaFoundation.MediaType mediaType)
+        {
+            if (videoRenderer != null)
+            {
+                videoRenderer.SetMediaType(mediaType);
+            }
+        }
+
         private long prevSampleTime = 0;
         private long unwrappedSampleTime = 0;
-       
+        long _sampleTime = 0;
         private void OnSampleDecoded(Sample sample)
         {
             if (sample == null)
@@ -173,11 +212,18 @@ namespace MediaToolkit
 
             try
             {
+
                 var sampleTime = sample.SampleTime;
-                if(prevSampleTime == 0)
+
+
+                //sampleTime += presentationAdjust;
+
+                if (prevSampleTime == 0)
                 {
                     prevSampleTime = sampleTime;
                 }
+                //_sampleTime += 33333;
+
                 var timeDiff = (sampleTime - prevSampleTime);
 
                 if (timeDiff < 0)
@@ -193,7 +239,14 @@ namespace MediaToolkit
 
                 sample.SampleTime = unwrappedSampleTime;
 
-                videoRenderer.ProcessDxva2Sample(sample);
+                if (UseHardware)
+                {
+                    videoRenderer.ProcessDxva2Sample(sample);
+                }
+                else
+                {
+                    videoRenderer.ProcessSample(sample);
+                }
 
                 prevSampleTime = sampleTime;
 
@@ -242,6 +295,10 @@ namespace MediaToolkit
                 videoRenderer.Close();
                 videoRenderer = null;
             }
+
+            this.Close();
+
+            Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
         }
 

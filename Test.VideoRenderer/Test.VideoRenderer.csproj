@@ -123,13 +123,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TestBmp\1920x1080_Argb32.raw" />
+    <Content Include="TestBmp\1920x1080_Argb32.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestBmp\1920x1080_bmdFormat10BitYUV.raw">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="TestBmp\1920x1080_bmdFormat8BitYUV.raw">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TestBmp\1920x1088_Nv12.raw" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">

@@ -143,6 +143,9 @@ namespace MediaToolkit.UI
             logger.Verb("ScreenCastControl::videoRenderer_RenderStopped()");
 
             //logger.Debug("videoRenderer_RenderStopped(...) ");
+
+
+       
         }
 
         
@@ -363,6 +366,8 @@ namespace MediaToolkit.UI
                 UpdateControls();
 
                 Disconnected?.Invoke(null);
+
+                Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
             });
         }
 
@@ -477,6 +482,9 @@ namespace MediaToolkit.UI
             VideoReceiver.Setup(networkSettings);
 
             videoRendererSink = new VideoRendererSink();
+            videoRendererSink.LowLatency = true;
+            videoRendererSink.UseHardware = true;
+
             videoRendererSink.Setup(encoderSettings, VideoHandle);
 
         }
@@ -502,6 +510,8 @@ namespace MediaToolkit.UI
             if (videoRendererSink != null)
             {
                 videoRendererSink.Stop();
+               //videoRendererSink.Close();
+                videoRendererSink = null;
 
             }
 
@@ -527,6 +537,7 @@ namespace MediaToolkit.UI
             }
 
             //state = ClientState.Disconnected;
+
         }
 
 

@@ -33,7 +33,10 @@ namespace Test.VideoRenderer
         public Form1()
         {
             InitializeComponent();
-        }
+
+			
+
+		}
 
         private MfVideoRenderer videoRenderer = new MfVideoRenderer();
         private VideoForm videoForm = null;
@@ -43,9 +46,9 @@ namespace Test.VideoRenderer
 
         long globalTime = 0;
         private PresentationClock presentationClock = null;
+		Stopwatch stopwatch = new Stopwatch();
 
-
-        private List<byte[]> testBitmapSequence = new List<byte[]>();
+		private List<byte[]> testBitmapSequence = new List<byte[]>();
         private void buttonSetup_Click(object sender, EventArgs e)
         {
             logger.Debug("buttonSetup_Click(...)");
@@ -106,10 +109,11 @@ namespace Test.VideoRenderer
             videoRenderer.Setup(new VideoRendererArgs
             {
                 hWnd = videoForm.Handle,
-                FourCC = new FourCC("NV12"),
-                //FourCC = 0x59565955, //"UYVY",
+               // FourCC = new FourCC("NV12"),
+               //FourCC = 0x59565955, //"UYVY",
+                FourCC = new FourCC((int)Format.A8R8G8B8),
                 Resolution = new Size(1920, 1080),
-                FrameRate = new Tuple<int, int>(60, 1),
+                FrameRate = new Tuple<int, int>(30, 1),
 
             });
 
@@ -124,22 +128,65 @@ namespace Test.VideoRenderer
             videoRenderer.Resize(videoForm.ClientRectangle);
             sampleSource = new SampleSource();
 
+
+			bool isFirstTimestamp = true;
+
+			long timeAdjust = 0;
+
             sampleSource.SampleReady += (sample) =>
             {
-                sample.SampleTime = presentationClock.Time;
-                sample.SampleDuration = 0;
+				if (isFirstTimestamp)
+				{
+					var _sampleTime = sample.SampleTime;
 
-                videoRenderer?.ProcessSample(sample);
+					var presetnationTime = presentationClock.Time;
+					var stopwatchTime = MfTool.SecToMfTicks(stopwatch.ElapsedMilliseconds / 1000.0);
+					timeAdjust = presetnationTime - _sampleTime; //stopwatchTime;
+					Console.WriteLine(presetnationTime + " - " + _sampleTime +  " = " + timeAdjust);
+
+					isFirstTimestamp = false;
+				}
+
+				//var sampleTime = sample.SampleTime;
+				//var presetnationTime = presentationClock.Time;
+
+				//var diff = sampleTime - presetnationTime;
+				//Console.WriteLine(MfTool.MfTicksToSec(sampleTime) + " " + MfTool.MfTicksToSec(presetnationTime) + " " + MfTool.MfTicksToSec(diff));
+
+				//var stopwatchTime = MfTool.SecToMfTicks(stopwatch.ElapsedMilliseconds / 1000.0);
+				//var diff2 = stopwatchTime - presetnationTime;
+
+				//Console.WriteLine (MfTool.MfTicksToSec(stopwatchTime) + " "  + MfTool.MfTicksToSec(presetnationTime) + " " + MfTool.MfTicksToSec(diff2));
+
+
+				var sampleTime = sample.SampleTime;
+
+				sample.SampleTime = sampleTime + timeAdjust;
+
+				//sample.SampleDuration = 0;
+
+
+
+
+				videoRenderer?.ProcessSample(sample);
 
                 //sample?.Dispose();
             };
 
         }
 
+
+
+
+
         private SampleSource sampleSource = null;
 
         class SampleSource
         {
+            
+
+
+
             public void Start()
             {
                 if (running)
@@ -159,7 +206,9 @@ namespace Test.VideoRenderer
 
                 var testFile5 = @".\TestBmp\1920x1080_bmdFormat10BitYUV.raw";
                 var testFile2 = @".\TestBmp\1920x1080_bmdFormat8BitYUV.raw";
-                //var testFile3 = @".\TestBmp\1920x1080_Argb32.raw";
+                var testFile3 = @".\TestBmp\1920x1080_Argb32.raw";
+
+                var testArgb = File.ReadAllBytes(testFile3);
 
                 //var canvaspng = @".\TestBmp\canvas.png";
                 var testBytes = File.ReadAllBytes(testFile2);
@@ -177,7 +226,9 @@ namespace Test.VideoRenderer
                 // var format = VideoFormatGuids.FromFourCC(v210FourCC);
                 // var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
 
-                var format = VideoFormatGuids.FromFourCC(NV12FourCC); //VideoFormatGuids.NV12;
+                //var format = VideoFormatGuids.FromFourCC(NV12FourCC); //VideoFormatGuids.NV12;
+
+                var format = VideoFormatGuids.Argb32;
                 var sampleArgs = new MfVideoArgs
                 {
                     Width = 1920,
@@ -194,26 +245,46 @@ namespace Test.VideoRenderer
 
                     running = true;
                     Stopwatch sw = new Stopwatch();
-                    int fps = 60;
+                    int fps = 30;
                     int interval = (int)(1000.0 / fps);
 
                     int _count = 1;
 
                     long globalTime = 0;
 
+                    Bitmap bmp = new Bitmap(1920, 1080, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+
+                    var g = Graphics.FromImage(bmp);
+                    g.DrawString(DateTime.Now.ToString("HH:mm:ss.fff"), new System.Drawing.Font(FontFamily.GenericMonospace, 120), Brushes.Yellow, 0f, 0f);
+
+
+                    var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+                    var size = data.Stride * data.Height;
+                   
+
                     var sample = MediaFactory.CreateSample();
-                    using (var mb = MediaFactory.CreateMemoryBuffer(testBytes.Length))
-                    {
-                        var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+                    var mb = MediaFactory.CreateMemoryBuffer(size);
+                    
+                    var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
 
-                        Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
+                    Kernel32.CopyMemory(pBuffer, data.Scan0, (uint)size);
+                    //Marshal.Copy(testArgb, 0, pBuffer, testArgb.Length);
 
-                        mb.CurrentLength = testBytes.Length;
-                        mb.Unlock();
+                    mb.CurrentLength = size;
 
-                        sample.AddBuffer(mb);
-                    }
+                    mb.Unlock();
+                       
+                    sample.AddBuffer(mb);
+   
+                    bmp.UnlockBits(data);
+                    g.Dispose();
 
+
+
+                    Random rnd = new Random();
+
+					Stopwatch timer = Stopwatch.StartNew();
                     while (running)
                     {
 
@@ -224,26 +295,27 @@ namespace Test.VideoRenderer
                         }
 
 
-                        sw.Restart();
+                        UpdateSample(bmp, mb);
 
 
-                        //var sample = MediaFactory.CreateSample();
-                        //using (var mb = MediaFactory.CreateMemoryBuffer(testBytes.Length))
-                        //{
-                        //    var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+						globalTime += sw.ElapsedMilliseconds;
+						sw.Restart();
 
-                        //    //Marshal.Copy(testBytes, 0, pBuffer, testBytes.Length);
+						var _rndOffset = 0;//rnd.Next(-16, 16);
 
-                        //    mb.CurrentLength = testBytes.Length;
-                        //    mb.Unlock();
+						//if (_count%2 == 0)
+						//{
+						//	_rndOffset = 66;
+						//}
 
-                        //    sample.AddBuffer(mb);
-                        //}
+						
+						//globalTime += _rndOffset;
 
+						var time = timer.ElapsedMilliseconds + _rndOffset;
+						sample.SampleTime = MfTool.SecToMfTicks((time / 1000.0) );
 
-                        globalTime += sw.ElapsedMilliseconds;
-                        sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
-                        sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
+						//sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0) );
+						sample.SampleDuration = MfTool.SecToMfTicks((interval / 1000.0));
 
                         //sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
                         //sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
@@ -258,23 +330,57 @@ namespace Test.VideoRenderer
                         {
                             delay = 1;
                         }
+						//Console.WriteLine(delay);
+						// var delay = 1;
+						Thread.Sleep((int)delay);
+						//var elapsedMilliseconds = sw.ElapsedMilliseconds;
+						//sw.Restart();
 
-                        // var delay = 1;
-                        Thread.Sleep((int)delay);
-                        var elapsedMilliseconds = sw.ElapsedMilliseconds;
-                        globalTime += elapsedMilliseconds;
-                        _count++;
+						//globalTime += elapsedMilliseconds;
+						_count++;
 
-                        //Console.WriteLine(elapsedMilliseconds);
-                        //Console.SetCursorPosition(0, Console.CursorTop - 1);
+						//Console.WriteLine(globalTime/1000.0 + " " + _count + " " + delay);
 
-                        
-                    }
+						//Console.SetCursorPosition(0, Console.CursorTop - 1);
+
+					}
 
                     sample?.Dispose();
 
+                    mb.Dispose();
+                    bmp.Dispose();
+
                 });
             }
+
+
+
+            public void UpdateSample(Bitmap bmp, MediaBuffer mb)
+            {
+                var g = Graphics.FromImage(bmp);
+
+                g.FillRectangle(Brushes.Black, new Rectangle(0, 0, bmp.Width, bmp.Height));
+                g.DrawString(DateTime.Now.ToString("HH:mm:ss.fff"), new System.Drawing.Font(FontFamily.GenericMonospace, 120), Brushes.Yellow, 0f, 0f);
+
+                var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+                var size = data.Stride * data.Height;
+
+                var pBuffer = mb.Lock(out int cbMaxLen, out int cbCurLen);
+
+                Kernel32.CopyMemory(pBuffer, data.Scan0, (uint)size);
+                //Marshal.Copy(testArgb, 0, pBuffer, testArgb.Length);
+
+                mb.CurrentLength = size;
+
+                mb.Unlock();
+
+
+
+                bmp.UnlockBits(data);
+                g.Dispose();
+                //bmp.Dispose();
+            }
+
 
             public event Action<Sample> SampleReady;
             public void Pause()
@@ -310,8 +416,9 @@ namespace Test.VideoRenderer
                 var bufTexture = new Texture2D(device,
                     new Texture2DDescription
                     {
-                    // Format = Format.NV12,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+
+						// Format = Format.NV12,
+						Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
                         Width = 1920,
                         Height = 1080,
                         MipLevels = 1,
@@ -378,9 +485,10 @@ namespace Test.VideoRenderer
                         if (result)
                         {
 
-                            sw.Restart();
+							globalTime += sw.ElapsedMilliseconds;
+							sw.Restart();
 
-                            globalTime += sw.ElapsedMilliseconds;
+                            
                             nv12Sample.SampleTime = MfTool.SecToMfTicks((globalTime / 1000.0));
                             nv12Sample.SampleDuration = MfTool.SecToMfTicks(((int)interval / 1000.0));
 
@@ -410,7 +518,7 @@ namespace Test.VideoRenderer
 
                         //nv12Sample?.Dispose();
 
-                        Thread.Sleep(30);
+                        //Thread.Sleep(30);
                     }
 
                 });
@@ -457,11 +565,13 @@ namespace Test.VideoRenderer
                 var time = MfTool.SecToMfTicks((globalTime / 1000.0));
                 logger.Debug("renderer.Start(...) " + time);
 
-                presentationClock.Start(0);
+				stopwatch.Start();
+
+				presentationClock.Start(0);
                 //videoRenderer.Start(time);
 
-               // sampleSource.Start();
-                sampleSource.Start1();
+                sampleSource.Start();
+               // sampleSource.Start1();
             }
 
         }
@@ -472,7 +582,8 @@ namespace Test.VideoRenderer
 
             if (videoRenderer != null)
             {
-                presentationClock.Stop();
+				stopwatch.Stop();
+				presentationClock.Stop();
 
                 //videoRenderer.Stop();
 
@@ -853,17 +964,120 @@ namespace Test.VideoRenderer
             int adapterIndex = 0;
 
             var device = new DeviceEx(direct3D, adapterIndex, DeviceType.Hardware, hWnd, flags, presentParams);
-            var format = (Format)(842094158);
+            //var format = (Format)(842094158);
 
-            //var format = Format.A8R8G8B8;
-            using (var texture3d9 = new SharpDX.Direct3D9.Texture(device, 1920, 1080, 1, Usage.RenderTarget, format, Pool.Default))
-            {
-                var surface = texture3d9.GetSurfaceLevel(0);
-                //videoRenderer.ProcessTexture(surface);
+            var format = Format.A8R8G8B8;
 
-            };
+            var srcSurface = Surface.CreateOffscreenPlain(device, 1920, 1080, format, Pool.SystemMemory);
 
-            
+            //using (var texture3d9 = new SharpDX.Direct3D9.Texture(device, 1920, 1080, 1, Usage.RenderTarget, format, Pool.Default))
+            //{
+            //    var surface = texture3d9.GetSurfaceLevel(0);
+            //    //videoRenderer.ProcessTexture(surface);
+
+            //};
+
+
+            Bitmap bmp = new Bitmap(@"D:\Temp\4.bmp");
+
+            BitBlt(srcSurface, bmp);
+
+            bmp.Dispose();
+
         }
+
+
+        private bool BitBlt(Surface surface, Bitmap bmp)
+        {
+            bool success;
+            var surfDescr = surface.Description;
+            IntPtr hdcDest = IntPtr.Zero;
+            Graphics graphDest = null;
+
+            IntPtr hdcSrc = surface.GetDC();
+            try
+            {
+                graphDest = System.Drawing.Graphics.FromImage(bmp);
+                hdcDest = graphDest.GetHdc();
+                Size destSize = bmp.Size;
+
+                int nXDest = 0;
+                int nYDest = 0;
+                int nWidth = destSize.Width;
+                int nHeight = destSize.Height;
+
+                int nXSrc = 0;//SrcRect.Left;
+                int nYSrc = 0;//SrcRect.Top;
+
+                int nWidthSrc = surfDescr.Width;//SrcRect.Width;
+                int nHeightSrc = surfDescr.Height;//SrcRect.Height;
+
+                var dwRop = TernaryRasterOperations.SRCCOPY;
+
+                success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+            }
+            finally
+            {
+                graphDest?.ReleaseHdc(hdcDest);
+                graphDest?.Dispose();
+                graphDest = null;
+
+                surface.ReleaseDC(hdcSrc);
+
+            }
+
+            return success;
+        }
+
+
+        private void DrawBitmap(Bitmap bmp, IntPtr hWnd)
+        {
+
+            IntPtr hdc = IntPtr.Zero;
+            IntPtr hdcBmp = IntPtr.Zero;
+            IntPtr hBitmap = IntPtr.Zero;
+            try
+            {
+                hdc = User32.GetDC(hWnd);
+                hdcBmp = Gdi32.CreateCompatibleDC(hdc);
+                hBitmap = bmp.GetHbitmap();
+
+                IntPtr hOld = IntPtr.Zero;
+                try
+                {
+                    hOld = Gdi32.SelectObject(hdcBmp, hBitmap);
+
+                    Gdi32.BitBlt(hdc, 0, 0, bmp.Width, bmp.Height, hdcBmp, 0, 0, TernaryRasterOperations.SRCCOPY);
+                }
+                finally
+                {
+                    Gdi32.SelectObject(hdcBmp, hOld);
+                }
+            }
+            finally
+            {
+                if (hBitmap != IntPtr.Zero)
+                {
+                    Gdi32.DeleteObject(hBitmap);
+                    hBitmap = IntPtr.Zero;
+                }
+
+                if (hdcBmp != IntPtr.Zero)
+                {
+                    Gdi32.DeleteDC(hdcBmp);
+                    hdcBmp = IntPtr.Zero;
+                }
+
+                if (hdc != IntPtr.Zero)
+                {
+                    User32.ReleaseDC(hWnd, hdc);
+                    // NativeAPIs.Gdi32.DeleteDC(hdc);
+                    hdc = IntPtr.Zero;
+                }
+
+            }
+
+        }
+
     }
 }

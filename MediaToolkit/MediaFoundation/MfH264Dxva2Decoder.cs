@@ -42,6 +42,8 @@ namespace MediaToolkit.MediaFoundation
         public MediaType OutputMediaType { get; private set; }
         public Direct3DDeviceManager d3dDeviceManager = null;
 
+        public bool LowLatency = true;
+
         public void Setup(MfVideoArgs inputArgs)
         {
             logger.Debug("MfH264Dxva2Decoder::Setup(...)");
@@ -121,10 +123,14 @@ namespace MediaToolkit.MediaFoundation
                         {
                             decoder.ProcessMessage(TMessageType.SetD3DManager, d3dDeviceManager.NativePointer);
                         }
+                        else
+                        {
+                            attr.Set(TransformAttributeKeys.D3DAware, false);
+                        }
  
                     }
 
-                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    attr.Set(SinkWriterAttributeKeys.LowLatency, LowLatency);
 
                     //attr.Set(MFAttributeKeys.MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
                 }
@@ -194,53 +200,23 @@ namespace MediaToolkit.MediaFoundation
                 InputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.H264);
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
-
                // InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
-
                 InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+
                 decoder.SetInputType(inputStreamId, InputMediaType, 0);
 
                 logger.Info("============== INPUT TYPE==================");
                 logger.Info(MfTool.LogMediaType(InputMediaType));
 
 
-
-                //MediaType outputMediaType = null;
-                //for (int i = 0; ; i++)
-                //{
-                //    res = decoder.TryGetOutputAvailableType(outputStreamId, i, out outputMediaType);
-
-                //    if (!res)
-                //    {
-                //        break;
-                //    }
-
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
-
-                //    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                //    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
-
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
-
-                //    decoder.SetOutputType(outputStreamId, outputMediaType, 0);
-
-
-                //    outputMediaType.Dispose();
-                //    outputMediaType = null;
-                //    break;
-                //}
-
                 OutputMediaType = new MediaType();
-
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
                 OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
-
                 OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);
@@ -277,7 +253,7 @@ namespace MediaToolkit.MediaFoundation
         }
 
 
-        public bool ProcessSample(Sample inputSample, Action<Sample> OnSampleDecoded)
+        public bool ProcessSample(Sample inputSample, Action<Sample> OnSampleDecoded, Action<MediaType> OnMediaTypeChanged = null)
         {
  
             bool Result = false;
@@ -371,6 +347,13 @@ namespace MediaToolkit.MediaFoundation
                     else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
                     {
                         //logger.Info("-------------------------");
+
+                        if (pSample != null)
+                        {
+                            pSample.Dispose();
+                            pSample = null;
+                        }
+
                         Result = true;
 
                         break;
@@ -394,11 +377,15 @@ namespace MediaToolkit.MediaFoundation
 
                             logger.Info("============== NEW OUTPUT TYPE==================");
                             logger.Info(MfTool.LogMediaType(OutputMediaType));
+
+
+                            OnMediaTypeChanged?.Invoke(OutputMediaType);
+
                         }
                         finally
                         {
-                            newOutputType?.Dispose();
-                            newOutputType = null;
+                            //newOutputType?.Dispose();
+                            //newOutputType = null;
                         }
                     }
                     else
@@ -408,6 +395,8 @@ namespace MediaToolkit.MediaFoundation
                         Result = false;
                         break;
                     }
+
+
                 }
                 while (true);
 

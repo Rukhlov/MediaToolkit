@@ -711,7 +711,7 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
+
         public bool ProcessSample(Sample sample)
         {
 
@@ -750,7 +750,7 @@ namespace MediaToolkit.MediaFoundation
             {
                 using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
                 {
-                    dxgiBuffer.GetResource(uuidTexture2d, out IntPtr intPtr);
+                    dxgiBuffer.GetResource(IID.D3D11Texture2D, out IntPtr intPtr);
                     using (Texture2D texture = new Texture2D(intPtr))
                     {
                         lock (syncRoot)

@@ -412,8 +412,20 @@ namespace MediaToolkit.MediaFoundation
             return frameSize;
         }
 
+		public long FrameRateToAverageTimePerFrame(int numerator, int denominator)
+		{		
+			MediaFactory.FrameRateToAverageTimePerFrame(numerator, denominator, out long averageTimePerFrame);
+			return averageTimePerFrame;
+		}
 
-        public static string LogMediaSource(MediaSource mediaSource)
+		public Tuple<int, int> AverageTimePerFrameToFrameRate(long averageTimePerFrame)
+		{
+			MediaFactory.AverageTimePerFrameToFrameRate(averageTimePerFrame, out int num, out int den);
+			return new Tuple<int, int>(num, den);
+		}
+
+
+		public static string LogMediaSource(MediaSource mediaSource)
         {
             StringBuilder log = new StringBuilder();
             PresentationDescriptor presentDescriptor = null;
@@ -1434,6 +1446,8 @@ namespace MediaToolkit.MediaFoundation
     public static class IID
     {
         public readonly static Guid D3D9Surface = Utilities.GetGuidFromType(typeof(SharpDX.Direct3D9.Surface));
-    }
+
+		public readonly static Guid D3D11Texture2D = Utilities.GetGuidFromType(typeof(SharpDX.Direct3D11.Texture2D));
+	}
 
 }

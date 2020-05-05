@@ -153,7 +153,6 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        private static Guid uuidTexture2d = SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
 
         public void Encode(Texture2D texture)
         {
@@ -178,7 +177,7 @@ namespace MediaToolkit.MediaFoundation
                 MediaBuffer mediaBuffer = null;
                 try
                 {
-                    MediaFactory.CreateDXGISurfaceBuffer(uuidTexture2d, bufTexture, 0, false, out mediaBuffer);
+                    MediaFactory.CreateDXGISurfaceBuffer(IID.D3D11Texture2D, bufTexture, 0, false, out mediaBuffer);
                     inputSample = MediaFactory.CreateSample();
                     inputSample.AddBuffer(mediaBuffer);
 

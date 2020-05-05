@@ -201,7 +201,6 @@ namespace MediaToolkit
 
         }
 
-        private readonly static Guid GuidTexture2D= SharpDX.Utilities.GetGuidFromType(typeof(Texture2D));
         private static object syncRoot = new object();
         private void Decode(byte[] nal, double time)
         {
@@ -265,7 +264,7 @@ namespace MediaToolkit
                                 {
                                     using (var dxgiBuffer = rgbBuffer.QueryInterface<DXGIBuffer>())
                                     {
-                                        dxgiBuffer.GetResource(GuidTexture2D, out IntPtr intPtr);
+                                        dxgiBuffer.GetResource(IID.D3D11Texture2D, out IntPtr intPtr);
                                         using (Texture2D rgbTexture = new Texture2D(intPtr))
                                         {
                                             device.ImmediateContext.CopyResource(rgbTexture, sharedTexture);
