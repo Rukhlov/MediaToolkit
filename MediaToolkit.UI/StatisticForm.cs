@@ -77,9 +77,10 @@ namespace MediaToolkit.UI
             get
             {
                 CreateParams cp = base.CreateParams;
-                cp.ExStyle |= 0x00000008; //WS_EX_TOPMOST
-                cp.ExStyle |= 0x80; //WS_EX_NOACTIVATE
-                cp.ExStyle |= 0x00000020; //WS_EX_TRANSPARENT
+				cp.ExStyle |= NativeAPIs.WS_EX.TopMost;//0x00000008; //WS_EX_TOPMOST
+
+				cp.ExStyle |= NativeAPIs.WS_EX.NoActivate; //WS_EX_NOACTIVATE
+                cp.ExStyle |= NativeAPIs.WS_EX.Transparent; //WS_EX_TRANSPARENT
                 return cp;
             }
         }

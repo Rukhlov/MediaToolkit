@@ -101,6 +101,7 @@
     <Compile Include="MediaFoundation\MfH264EncoderEx.cs" />
     <Compile Include="MediaFoundation\MfH264EncoderMS.cs" />
     <Compile Include="MediaFoundation\MfVideoRenderer.cs" />
+    <Compile Include="MediaFoundation\MfVideoRendererEx.cs" />
     <Compile Include="MediaReceivers\AudioReceiver.cs" />
     <Compile Include="MediaReceivers\VideoReceiverEx.cs" />
     <Compile Include="MediaSinks\VideoRendererSink.cs" />

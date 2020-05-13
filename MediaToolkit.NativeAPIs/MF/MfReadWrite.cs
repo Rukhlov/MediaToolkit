@@ -159,8 +159,8 @@ namespace MediaToolkit.NativeAPIs.MF.ReadWrite
     }
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
-    InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
-    Guid("deec8d99-fa1d-4d82-84c2-2c8969944867")]
+		InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+		Guid("deec8d99-fa1d-4d82-84c2-2c8969944867")]
     public interface IMFSourceReaderCallback
     {
         [PreserveSig]
@@ -201,6 +201,8 @@ namespace MediaToolkit.NativeAPIs.MF.ReadWrite
         AllEffectsRemoved = 0x00000200,
         StreamTick = 0x00000100
     }
+
+
 
 
 }

@@ -729,11 +729,16 @@ namespace MediaToolkit.NativeAPIs
 
     public static class WS_EX 
     {
-        public const int Layered = 0x80000;
+			
+		public const int Layered = 0x80000;
         public const int Composited = 0x02000000;
         public const int ToolWindow = 0x00000080;// 
         public const int TopMost = 0x00000008;
-    }
+
+		public const int NoActivate = 0x08000000;
+
+		public const int Transparent = 0x00000020;
+	}
 
 
 

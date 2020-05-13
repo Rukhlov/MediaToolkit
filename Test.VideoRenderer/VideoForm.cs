@@ -24,10 +24,10 @@ namespace Test.VideoRenderer
 
         }
 
-        protected override void OnPaintBackground(PaintEventArgs pevent)
-        {
-            //...
-        }
+        //protected override void OnPaintBackground(PaintEventArgs pevent)
+        //{
+        //    //...
+        //}
 
         protected override void WndProc(ref Message m)
         {

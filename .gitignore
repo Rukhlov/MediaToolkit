@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 /MediaToolkit.Install/Output
+/Resources/Utils/trace_7324.etl

@@ -55,8 +55,8 @@ namespace MediaToolkit.MediaFoundation
             FillAttrDict(typeof(SinkWriterAttributeKeys));
 
             FillAttrDict(typeof(MFAttributeKeys));
-
-        }
+			FillAttrDict(typeof(SampleAttributeKeys));
+		}
 
         public static string GetMediaTypeName(Guid guid, bool GetFullName = false)
         {
@@ -291,7 +291,14 @@ namespace MediaToolkit.MediaFoundation
             return new GDI.Size(pars[0], pars[1]);
         }
 
-        public static long PackToLong(int left, int right)
+		public static Tuple<int, int> LongToInts(long val)
+		{
+			var pars = UnPackLongToInts(val);
+
+			return new Tuple<int, int>(pars[0], pars[1]);
+		}
+
+		public static long PackToLong(int left, int right)
         {
             return ((long)left << 32 | (uint)right);
         }
