@@ -114,6 +114,12 @@
     <Compile Include="DeckLinkInputControl.Designer.cs">
       <DependentUpon>DeckLinkInputControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ScreenCastControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ScreenCastControl.Designer.cs">
+      <DependentUpon>ScreenCastControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="ScreenCastControlEx.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -142,6 +148,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DeckLinkInputControl.resx">
       <DependentUpon>DeckLinkInputControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ScreenCastControl.resx">
+      <DependentUpon>ScreenCastControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ScreenCastControlEx.resx">
       <DependentUpon>ScreenCastControlEx.cs</DependentUpon>

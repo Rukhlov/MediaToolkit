@@ -98,7 +98,7 @@ namespace Test.VideoRenderer
 
 			fileSource = new VideoFileSource();
 
-			fileSource.Setup(sourceVideoFile);//, videoRenderer.D3DDeviceManager);
+			fileSource.Setup(sourceVideoFile, videoRenderer.D3DDeviceManager);
 
 			//videoRenderer.Prerolled += () => 
 			//{
@@ -138,8 +138,12 @@ namespace Test.VideoRenderer
 						Thread.Sleep(delay);
 					}
 
-					//videoRenderer._ProcessDxva2Sample(sample);
-					videoRenderer.ProcessSample(sample);
+					sample.SampleTime = 0;
+					sample.SampleDuration = 0;
+
+					//videoRenderer.ProcessDxva2Sample(sample);
+					videoRenderer._ProcessDxva2Sample(sample);
+                    //videoRenderer.ProcessSample(sample);
 					sample.Dispose();
 					count++;
 				}

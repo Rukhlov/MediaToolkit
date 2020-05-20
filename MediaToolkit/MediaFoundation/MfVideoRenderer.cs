@@ -383,7 +383,11 @@ namespace MediaToolkit.MediaFoundation
                 MediaFactory.GetService(buffer, MediaServiceKeys.Buffer, IID.D3D9Surface, out var pSurf);
 
                 videoSurface = new SharpDX.Direct3D9.Surface(pSurf);
-                device3d9 = videoSurface.Device;
+
+				//var descr = videoSurface.Description;
+				//logger.Debug(descr.Format);
+
+				device3d9 = videoSurface.Device;
             }
             
 
@@ -559,11 +563,16 @@ namespace MediaToolkit.MediaFoundation
                             videoSample.SampleTime = srcSample.SampleTime;
                             videoSample.SampleDuration = srcSample.SampleDuration;
                             videoSample.SampleFlags = srcSample.SampleFlags;
+                            videoSample.CopyAllItems(srcSample);
+
 
                             //device3d9.UpdateSurface(srcSurf, videoSurface);
                             device3d9.StretchRectangle(srcSurf, videoSurface, SharpDX.Direct3D9.TextureFilter.None);
 
                             newSampleReceived = true;
+                            syncEvent.Set();
+
+
                             //Thread.Sleep(1); //<-- сатанизм! иначе изображение может дрожать
 
                             //logger.Debug("videoSample " + MfTool.MfTicksToSec(videoSample.SampleTime));
@@ -578,7 +587,7 @@ namespace MediaToolkit.MediaFoundation
 
                             //newSampleReceived = true;
 
-                            syncEvent.Set();
+                            //syncEvent.Set();
 
                         }
                         else
@@ -623,6 +632,7 @@ namespace MediaToolkit.MediaFoundation
                     videoSample.SampleTime = sample.SampleTime;
                     videoSample.SampleDuration = sample.SampleDuration;
                     videoSample.SampleFlags = sample.SampleFlags;
+                    videoSample.CopyAllItems(sample);
 
                     using (var srcBuffer = sample.ConvertToContiguousBuffer())
                     {
@@ -701,116 +711,6 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-
-        public void Start(long time)
-        {
-            logger.Debug("MfVideoRenderer::Start(...) " + time);
-
-            if (rendererState == RendererState.Closed || rendererState == RendererState.Started)
-            {
-                logger.Warn("Start(...) return invalid render state: " + rendererState);
-                return;
-            }
-
-            lock (syncLock)
-            {
-
-                if (presentationClock != null)
-                {
-                    presentationClock.Dispose();
-                    presentationClock = null;
-                }
-
-                MediaFactory.CreatePresentationClock(out presentationClock);
-
-                PresentationTimeSource timeSource = null;
-                try
-                {
-                    MediaFactory.CreateSystemTimeSource(out timeSource);
-
-                    presentationClock.TimeSource = timeSource;
-
-                    videoSink.PresentationClock = presentationClock;
-
-                }
-                finally
-                {
-                    timeSource?.Dispose();
-                }
-
-
-                presentationClock.GetState(0, out ClockState state);
-                if (state != ClockState.Running)
-                {
-                    //var time = presentationClock.Time;
-
-                    presentationClock.Start(time);
-                }
-                else
-                {
-                    logger.Warn("Start(...) return invalid clock state: " + state);
-                }
-            }
-        }
-
-
-
-        public void Stop()
-        {
-            logger.Debug("MfVideoRenderer::Stop()");
-
-            if (!IsRunning)
-            {
-                logger.Warn("Stop() return invalid render state: " + rendererState);
-
-                return;
-            }
-
-            lock (syncLock)
-            {
-                streamSinkRequestSample = 0;
-
-                presentationClock.GetState(0, out ClockState state);
-                if (state != ClockState.Stopped)
-                {
-                    presentationClock.Stop();
-                }
-                else
-                {
-                    logger.Warn("Stop() return invalid clock state: " + state);
-                }
-            }
-        }
-
-        public void Pause()
-        {
-            logger.Debug("MfVideoRenderer::Pause()");
-            if (!IsRunning)
-            {
-                logger.Warn("Pause() return invalid render state: " + rendererState);
-                return;
-            }
-
-            lock (syncLock)
-            {
-                presentationClock.GetState(0, out ClockState state);
-                if (state == ClockState.Running)
-                {
-                    presentationClock.Pause();
-
-                    //streamSink.Flush();
-                }
-                else if (state == ClockState.Paused)
-                {
-                    presentationClock.Start(long.MaxValue);
-                }
-                else
-                {
-                    logger.Warn("Pause() return invalid clock state: " + state);
-                }
-            }
-
-        }
 
         public void Repaint()
         {

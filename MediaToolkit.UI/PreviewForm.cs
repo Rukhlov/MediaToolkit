@@ -1,4 +1,5 @@
 ﻿using MediaToolkit;
+using MediaToolkit.MediaFoundation;
 using MediaToolkit.UI;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace MediaToolkit.UI
             InitializeComponent();
         }
 
+        private D3D11RendererProvider d3dProvider = null;
         private D3DImageRenderer renderer = null;
 
         public bool Setup(IVideoSource videoSource)
@@ -31,14 +33,21 @@ namespace MediaToolkit.UI
 
             if (videoSource != null)
             {
-				
+                d3dProvider = new D3D11RendererProvider();
+              
+
                 renderer = new D3DImageRenderer();
 
                 var texture = videoSource.SharedTexture;
                 if (texture != null)
                 {
-                    renderer.Setup(texture);
+                    d3dProvider.Init(texture);
+
+                    //renderer.Setup(texture);
                     d3DImageControl1.DataContext = renderer;
+
+                    renderer.Run(d3dProvider);
+
                     result = true;
                 }
             }
@@ -54,11 +63,18 @@ namespace MediaToolkit.UI
 
             if (Visible)
             {
-                if (renderer != null)
+
+                if (d3dProvider != null)
                 {
-                    renderer.Update();
+                    d3dProvider.OnNewDataAvailable();
                     success = true;
                 }
+
+                //if (renderer != null)
+                //{
+                //    renderer.Update();
+                //    success = true;
+                //}
             }
 
             return success;
@@ -93,11 +109,15 @@ namespace MediaToolkit.UI
             {
                 if (this.Visible)
                 {
-                    renderer.Start();
+                    renderer.Run(d3dProvider);
+                    //renderer.Start();
                 }
                 else
                 {
-                    renderer.Stop();
+                    renderer.Shutdown();
+
+                    d3dProvider?.Close();
+                   // renderer.Stop();
                 }
             }
 
@@ -108,9 +128,15 @@ namespace MediaToolkit.UI
         protected override void OnClosed(EventArgs e)
         {
 
+            if (d3dProvider != null)
+            {
+                d3dProvider.Close();
+            }
+
             if (renderer != null)
             {
-                renderer.Close(true);
+                renderer.Shutdown();
+                // renderer.Close(true);
                 renderer = null;
             }
 

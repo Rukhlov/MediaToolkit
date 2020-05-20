@@ -63,7 +63,7 @@ namespace MediaToolkit.UI
         public VideoReceiverEx VideoReceiver { get; private set; }
         public AudioReceiver AudioReceiver { get; private set; }
 
-        public VideoRendererSink videoRendererSink { get; private set; }
+        public D3D9RendererSink videoRendererSink { get; private set; }
 
         public string ClientId { get; private set; }
         public string ServerId { get; private set; }
@@ -481,9 +481,9 @@ namespace MediaToolkit.UI
 
             VideoReceiver.Setup(networkSettings);
 
-            videoRendererSink = new VideoRendererSink();
-            videoRendererSink.LowLatency = true;
-            videoRendererSink.UseHardware = true;
+            videoRendererSink = new D3D9RendererSink();
+            encoderSettings.LowLatency = true;
+            encoderSettings.UseHardware = true;
 
             videoRendererSink.Setup(encoderSettings, VideoHandle);
 

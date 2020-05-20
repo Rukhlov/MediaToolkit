@@ -419,13 +419,13 @@ namespace MediaToolkit.MediaFoundation
             return frameSize;
         }
 
-		public long FrameRateToAverageTimePerFrame(int numerator, int denominator)
+		public static long FrameRateToAverageTimePerFrame(int numerator, int denominator)
 		{		
 			MediaFactory.FrameRateToAverageTimePerFrame(numerator, denominator, out long averageTimePerFrame);
 			return averageTimePerFrame;
 		}
 
-		public Tuple<int, int> AverageTimePerFrameToFrameRate(long averageTimePerFrame)
+		public static Tuple<int, int> AverageTimePerFrameToFrameRate(long averageTimePerFrame)
 		{
 			MediaFactory.AverageTimePerFrameToFrameRate(averageTimePerFrame, out int num, out int den);
 			return new Tuple<int, int>(num, den);

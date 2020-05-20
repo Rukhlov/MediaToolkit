@@ -95,6 +95,7 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Managers\WTSSessionManager.cs" />
+    <Compile Include="MediaFoundation\D3DRenderer.cs" />
     <Compile Include="MediaFoundation\MediaRenderSession.cs" />
     <Compile Include="MediaFoundation\MfAudioRenderer.cs" />
     <Compile Include="MediaFoundation\MfH264Dxva2Decoder.cs" />
@@ -104,7 +105,7 @@
     <Compile Include="MediaFoundation\MfVideoRendererEx.cs" />
     <Compile Include="MediaReceivers\AudioReceiver.cs" />
     <Compile Include="MediaReceivers\VideoReceiverEx.cs" />
-    <Compile Include="MediaSinks\VideoRendererSink.cs" />
+    <Compile Include="MediaSinks\D3D9RendererSink.cs" />
     <Compile Include="MediaStreamers\AudioStreamer.cs" />
     <Compile Include="Managers\DesktopManager.cs" />
     <Compile Include="Managers\UsbDeviceManager.cs" />

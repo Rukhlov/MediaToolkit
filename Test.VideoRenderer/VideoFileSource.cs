@@ -53,8 +53,8 @@ namespace Test.VideoRenderer
 					//mediaAttributes.Set(SourceReaderAttributeKeys.DisableDxva, 0);
 					mediaAttributes.Set(SourceReaderAttributeKeys.D3DManager, devMan);
 				}
-
-				sourceReader = new SourceReader(mediaSource, mediaAttributes);
+                //mediaAttributes.Set(CodecApiPropertyKeys.AVLowLatencyMode, false);
+                sourceReader = new SourceReader(mediaSource, mediaAttributes);
 			}
 
 

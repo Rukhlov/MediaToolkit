@@ -42,7 +42,7 @@ namespace MediaToolkit.MediaFoundation
         public MediaType OutputMediaType { get; private set; }
         public Direct3DDeviceManager d3dDeviceManager = null;
 
-        public bool LowLatency = true;
+        public bool LowLatency { get; set; } = true;
 
         public void Setup(MfVideoArgs inputArgs)
         {
@@ -52,6 +52,7 @@ namespace MediaToolkit.MediaFoundation
             var height = inputArgs.Height;
             var inputFormat = VideoFormatGuids.H264;
             var frameRate = inputArgs.FrameRate;
+            LowLatency = inputArgs.LowLatency;
 
             try
             {
@@ -210,10 +211,11 @@ namespace MediaToolkit.MediaFoundation
                 logger.Info(MfTool.LogMediaType(InputMediaType));
 
 
+
                 OutputMediaType = new MediaType();
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
-                OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
+                //OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));

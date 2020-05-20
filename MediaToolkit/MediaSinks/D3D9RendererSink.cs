@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using MediaToolkit;
@@ -19,7 +20,7 @@ using SharpDX.MediaFoundation;
 
 namespace MediaToolkit
 {
-    public class VideoRendererSink
+    public class D3D9RendererSink
     {
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
@@ -34,22 +35,22 @@ namespace MediaToolkit
         private volatile ErrorCode errorCode = ErrorCode.Ok;
         public ErrorCode ErrorCode => errorCode;
 
-        public bool UseHardware = true;
-        public bool LowLatency = true;
+        //public bool UseHardware = true;
+        //public bool LowLatency = true;
 
-        public void Setup(VideoEncoderSettings inputPars, IntPtr hwnd)
+        public VideoEncoderSettings EncoderSettings { get; private set; }
+
+        public void Setup(VideoEncoderSettings settings, IntPtr hwnd)
         {
 
-            logger.Debug("VideoRendererSink::Setup()");
+            logger.Debug("D3D9RendererSink::Setup()");
 
             this.hWnd = hwnd;
+            this.EncoderSettings = settings;
 
-            var inputArgs = new MfVideoArgs
-            {
-                Width = inputPars.Resolution.Width,
-                Height = inputPars.Resolution.Height,
-                FrameRate = inputPars.FrameRate,
-            };
+
+            var avgTimePerFrame = MfTool.FrameRateToAverageTimePerFrame(EncoderSettings.FrameRate, 1);
+            this.EncoderSettings.AverageTimePerFrame = avgTimePerFrame;
 
             MediaFactory.CreatePresentationClock(out presentationClock);
 
@@ -74,11 +75,11 @@ namespace MediaToolkit
                 hWnd = hWnd,
                 FourCC = new SharpDX.Multimedia.FourCC("NV12"),
                 //FourCC = 0x59565955, //"UYVY",
-                Resolution = inputPars.Resolution, // 
+                Resolution = settings.Resolution, // 
 
                 
                 //Resolution = new System.Drawing.Size(1920, 1088),
-                FrameRate = new Tuple<int, int>(inputPars.FrameRate, 1),
+                FrameRate = new Tuple<int, int>(settings.FrameRate, 1),
 
             });
 
@@ -89,14 +90,20 @@ namespace MediaToolkit
             videoRenderer.Resize(new System.Drawing.Rectangle(0, 0, 100, 100));
 
             SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager d3dManager = null;
-            if (UseHardware)
+            if (EncoderSettings.UseHardware)
             {
                 d3dManager = videoRenderer.D3DDeviceManager;
             }
 
             decoder = new MfH264Dxva2Decoder(d3dManager);
 
-            decoder.LowLatency = LowLatency;
+            var inputArgs = new MfVideoArgs
+            {
+                Width = EncoderSettings.Resolution.Width,
+                Height = EncoderSettings.Resolution.Height,
+                FrameRate = EncoderSettings.FrameRate,
+                LowLatency = EncoderSettings.LowLatency,
+            };
 
             decoder.Setup(inputArgs);
         }
@@ -105,7 +112,7 @@ namespace MediaToolkit
         private long presentationAdjust = long.MaxValue;
         public void Start()
         {
-            logger.Debug("VideoRendererSink::Start()");
+            logger.Debug("D3D9RendererSink::Start()");
 
             decoder.Start();
 
@@ -161,6 +168,8 @@ namespace MediaToolkit
 
                         encodedSample.SampleTime = sampleTime;// + presentationAdjust; 
                         encodedSample.SampleDuration = 0;// MfTool.SecToMfTicks(0.033);
+
+                        //logger.Debug(">>>>>>>>>>> " + sampleTime);
                     }
                     else
                     {
@@ -202,7 +211,7 @@ namespace MediaToolkit
 
         private long prevSampleTime = 0;
         private long unwrappedSampleTime = 0;
-        long _sampleTime = 0;
+
         private void OnSampleDecoded(Sample sample)
         {
             if (sample == null)
@@ -213,7 +222,17 @@ namespace MediaToolkit
             try
             {
 
-                var sampleTime = sample.SampleTime;
+				//using (var buffer = sample.ConvertToContiguousBuffer())
+				//{
+				//	MediaFactory.GetService(buffer, MediaServiceKeys.Buffer, IID.D3D9Surface, out var pSurf);
+
+				//	var surf = new SharpDX.Direct3D9.Surface(pSurf);
+
+				//	var descr = surf.Description;
+				//	logger.Debug(descr.Format);
+				//}
+
+				var sampleTime = sample.SampleTime;
 
 
                 //sampleTime += presentationAdjust;
@@ -226,20 +245,58 @@ namespace MediaToolkit
 
                 var timeDiff = (sampleTime - prevSampleTime);
 
-                if (timeDiff < 0)
-                {
-                    logger.Warn("Not monotonic time: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff));
-                }
-                else if (timeDiff > MfTool.SecToMfTicks(1))
-                {
-                    logger.Warn("Large time gap: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff));
-                }
+                //if (timeDiff < 0)
+                //{
+                //    logger.Warn("Not monotonic time: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff));
+                //}
+                //else if (timeDiff > MfTool.SecToMfTicks(0.033))
+                //{
+                //    //logger.Warn("Large time gap: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff));
+
+                //    var _delay = MfTool.MfTicksToSec(timeDiff - MfTool.SecToMfTicks(0.033)) * 1000;
+
+                   
+                //    //logger.Warn("Large time gap: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff, _delay));
+                //    Thread.Sleep((int)_delay);
+                //}
 
                 unwrappedSampleTime += timeDiff;
-
                 sample.SampleTime = unwrappedSampleTime;
 
-                if (UseHardware)
+
+                var avgTimePerFrame = EncoderSettings.AverageTimePerFrame;
+                sample.SampleDuration = avgTimePerFrame; // MfTool.SecToMfTicks(0.033);
+
+                var presentationTime = presentationClock.Time;
+
+                if (!EncoderSettings.LowLatency)
+                {
+                    var delta = unwrappedSampleTime - presentationTime;
+
+                    
+                    //var avgDuration = MfTool.SecToMfTicks(0.033);
+                    if (delta < 0)
+                    {
+                        //logger.Warn("delta: " + string.Join(" ",  delta));
+                    }
+                    else if (delta > avgTimePerFrame)
+                    {
+                        //logger.Warn("Large time gap: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff));
+
+                        var _delay = MfTool.MfTicksToSec(delta - avgTimePerFrame) * 1000;
+
+
+                        logger.Warn("Large time gap: " + string.Join(" ", sampleTime, prevSampleTime, timeDiff, _delay));
+                        Thread.Sleep((int)_delay);
+                    }
+                }
+
+
+                sample.SampleTime = 0;
+                sample.SampleDuration = 0;
+
+
+                if (EncoderSettings.UseHardware)
                 {
                     videoRenderer.ProcessDxva2Sample(sample);
                 }
@@ -304,7 +361,7 @@ namespace MediaToolkit
 
         public void Stop()
         {
-            logger.Debug("VideoRendererSink::Stop()");
+            logger.Debug("D3D9RendererSink::Stop()");
 
             decoder.Stop();
 
@@ -315,7 +372,7 @@ namespace MediaToolkit
         public void Close()
         {
 
-            logger.Debug("VideoRendererSink::Close()");
+            logger.Debug("D3D9RendererSink::Close()");
 
             if (presentationClock != null)
             {       

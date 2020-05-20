@@ -93,6 +93,12 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
+        [XmlAttribute]
+        public bool UseHardware { get; set; } = true;
+
+        [XmlIgnore]
+        public long AverageTimePerFrame { get; set; } = 0;
+
         public object Clone()
         {
             return this.MemberwiseClone();

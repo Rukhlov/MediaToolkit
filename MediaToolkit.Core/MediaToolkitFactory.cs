@@ -37,7 +37,7 @@ namespace MediaToolkit.SharedTypes
                 InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll");
 
                 InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
-                InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll");
+                InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll", "ScreenCastControl");
 
                 InstanceFactory.RegisterType<IDeckLinkInputControl>("MediaToolkit.UI.dll");
                 //...
@@ -146,18 +146,18 @@ namespace MediaToolkit.SharedTypes
 
         private static Dictionary<Type, Type> Dict = new Dictionary<Type, Type>();
 
-        public static bool RegisterType<T>(string assemblyFileName, bool throwExceptions = false) where T : class
+        public static bool RegisterType<T>(string assemblyFileName, string className = "", bool throwExceptions = false) where T : class
         {
             OnLog("RegisterType: " + typeof(T).ToString() + " AssemblyFileName " + assemblyFileName);
 
-            Type TargetType = typeof(T);
+            Type targetType = typeof(T);
 
             string assemblyFileFullName = Path.Combine(AssemblyPath, assemblyFileName);
 
             bool Result = false;
             try
             {
-                if (Dict.ContainsKey(TargetType) == false)
+                if (Dict.ContainsKey(targetType) == false)
                 {
                     AssemblyName assemblyName = AssemblyName.GetAssemblyName(assemblyFileFullName);
 
@@ -187,20 +187,42 @@ namespace MediaToolkit.SharedTypes
                     }
                     if (assembly != null)
                     {
-                        foreach (Type AssemblyType in assembly.GetTypes())
+                        foreach (Type assemblyType in assembly.GetTypes())
                         {
-                            var AssemblyInterfaces = AssemblyType.GetInterfaces();
-                            foreach (var _interface in AssemblyInterfaces)
+                            var assemblyInterfaces = assemblyType.GetInterfaces();
+                            foreach (var _interface in assemblyInterfaces)
                             {
                                 //logger.Trace(_interface.ToString());
 
                             }
 
-                            if (AssemblyInterfaces.Contains(TargetType))
+                            if (assemblyInterfaces.Contains(targetType))
                             {
-                                Dict.Add(TargetType, AssemblyType);
-                                Result = true;
-                                break;
+
+                                if (!string.IsNullOrEmpty(className))
+                                {
+                                    if(assemblyType.Name == className)
+                                    {
+                                        if (!Dict.ContainsKey(targetType))
+                                        {
+                                            Dict.Add(targetType, assemblyType);
+                                            Result = true;
+                                            break;
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    if (!Dict.ContainsKey(targetType))
+                                    {
+                                        Dict.Add(targetType, assemblyType);
+                                        Result = true;
+                                        break;
+                                    }
+                                }
+
+       
                             }
                         }
                     }

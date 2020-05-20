@@ -25,6 +25,7 @@ using MediaToolkit.Utils;
 using MediaToolkit.SharedTypes;
 using System.Diagnostics;
 using MediaToolkit.Logging;
+using MediaToolkit.MediaFoundation;
 
 namespace MediaToolkit.UI
 {
@@ -42,11 +43,15 @@ namespace MediaToolkit.UI
 
             debugPanel.Visible = false;
 
-            videoRenderer = new D3DImageRenderer();
-            videoRenderer.RenderStarted += videoRenderer_RenderStarted;
-            videoRenderer.RenderStopped += videoRenderer_RenderStopped;
+            //videoRenderer = new D3DImageRenderer();
 
-            d3dImageControl.DataContext = videoRenderer;
+            d3dRenderer = new D3DImageRenderer();
+
+
+            //d3dRenderer.RenderStarted += videoRenderer_RenderStarted;
+            //d3dRenderer.RenderStopped += videoRenderer_RenderStopped;
+
+            d3dImageControl.DataContext = d3dRenderer;
 
             //imageProvider.Status = "_TEST";
 
@@ -54,7 +59,10 @@ namespace MediaToolkit.UI
         }
 
 
-        private D3DImageRenderer videoRenderer = null;
+        //private D3DImageRenderer videoRenderer = null;
+        private D3DImageRenderer d3dRenderer = null;
+
+        private D3D11RendererProvider d3dProvider = null;
 
         private volatile ClientState state = ClientState.Disconnected;
         public ClientState State => state;
@@ -269,7 +277,7 @@ namespace MediaToolkit.UI
                             if (VideoReceiver != null)
                             {
                                 VideoReceiver.Play();
-                                videoRenderer.Start();
+                               // d3dRenderer.Start();
                             }
 
                             if (AudioReceiver != null)
@@ -288,9 +296,9 @@ namespace MediaToolkit.UI
                                 try
                                 {
                                     channel.PostMessage(new ServerRequest { Command = "Ping" });
-                                    if (videoRenderer.ErrorCode != 0)
+                                    if (d3dRenderer.ErrorCode != 0)
                                     {
-                                        tracer.Warn("ScreenCastControl::imageProvider.ErrorCode: " + videoRenderer.ErrorCode);
+                                        tracer.Warn("ScreenCastControl::imageProvider.ErrorCode: " + d3dRenderer.ErrorCode);
 
                                        // logger.Debug("imageProvider.ErrorCode: " + videoRenderer.ErrorCode);
                                         //Process render error...
@@ -486,21 +494,34 @@ namespace MediaToolkit.UI
 
             VideoReceiver.Setup(inputPars, outputPars, networkPars);
 
-            videoRenderer.Setup(VideoReceiver.sharedTexture);
+            d3dProvider = new D3D11RendererProvider();
+            d3dProvider.Init(VideoReceiver.sharedTexture);
+
+
+            //d3dRenderer.Setup(VideoReceiver.sharedTexture);
+
 
         }
 
         private void VideoReceiver_UpdateBuffer()
         {
-            videoRenderer?.Update();
+            d3dProvider?.OnNewDataAvailable();
+            //d3dRenderer?.Update();
         }
 
 
         public void Close()
         {
-            if (videoRenderer != null)
+
+            if (d3dProvider != null)
             {
-                videoRenderer.Close();
+                d3dProvider.Close();
+                d3dProvider = null;
+            }
+
+            if (d3dRenderer != null)
+            {
+                d3dRenderer.Shutdown();
 
             }
 
@@ -696,6 +717,15 @@ namespace MediaToolkit.UI
             {
                 _UpdateControls();
 
+                if (state == ClientState.Running)
+                {
+                    d3dRenderer.Run(d3dProvider);
+                }
+                else
+                {
+                    d3dRenderer.Shutdown();
+                }
+
             }, null);
 
         }
@@ -799,7 +829,7 @@ namespace MediaToolkit.UI
 
                 statusLabel.Text = "Cancelling...";
 
-                videoRenderer.Status = "Cancelling...";
+                d3dRenderer.Status = "Cancelling...";
             }
 
             //controlPanel.Enabled = true;

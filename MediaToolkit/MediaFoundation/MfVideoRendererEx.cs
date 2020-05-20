@@ -367,7 +367,7 @@ namespace MediaToolkit.MediaFoundation
 
 		}
 
-
+        private volatile bool deviceChanged = false;
 		Stopwatch sw = new Stopwatch();
 		private void StreamSinkEventHandler_EventReceived(MediaEvent mediaEvent)
 		{
@@ -414,8 +414,9 @@ namespace MediaToolkit.MediaFoundation
 					else if (typeInfo == MediaEventTypes.StreamSinkDeviceChanged)
 					{
 						logger.Debug(typeInfo);
+                        deviceChanged = true;
 
-						OnDeviceChanged();
+                        OnDeviceChanged();
 					}
 					else if (typeInfo == MediaEventTypes.StreamSinkFormatChanged)
 					{
@@ -579,19 +580,6 @@ namespace MediaToolkit.MediaFoundation
 							//device3d9.UpdateSurface(srcSurf, videoSurface);
 							device3d9.StretchRectangle(srcSurf, videoSurface, SharpDX.Direct3D9.TextureFilter.None);
 
-							//newSampleReceived = true;
-							////Thread.Sleep(1); //<-- сатанизм! иначе изображение может дрожать
-
-							////logger.Debug("videoSample " + MfTool.MfTicksToSec(videoSample.SampleTime));
-							////// if (streamSinkRequestSample > 0)
-							//// {
-							////     streamSink.ProcessSample(videoSample);
-							////     streamSinkRequestSample--;
-							////     newSampleReceived = false;
-							//// }
-
-							////
-
 							streamSink.ProcessSample(videoSample);
 							streamSinkRequestSample--;
 							//newSampleReceived = true;
@@ -623,6 +611,13 @@ namespace MediaToolkit.MediaFoundation
 		private volatile uint sampleCount = 0;
 		public void ProcessSample(Sample sample)
 		{
+            if (deviceChanged)
+            {
+                logger.Debug("MfVideoRenderer::ProcessSample(...) deviceChanged " + deviceChanged);
+                //OnRequestSample();
+                return;
+            }
+
 			if (!IsRunning)
 			{
 				logger.Debug("MfVideoRenderer::ProcessSample(...) return invalid render state: " + rendererState);
@@ -892,24 +887,28 @@ namespace MediaToolkit.MediaFoundation
 				CloseSampleAllocator();
 
 				videoSample?.Dispose();
+                videoSample = null;
 
-				//InitSampleAllocator();
+                InitSampleAllocator();
 
 
 
-				//if (buffer != null && buffer.Length > 0)
-				//{
-				//    using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
-				//    {
-				//        using (var buffer2D = dxBuffer.QueryInterface<Buffer2D>())
-				//        {
-				//            buffer2D.ContiguousCopyFrom(buffer, buffer.Length);
-				//        }
-				//    }
-				//    streamSink.ProcessSample(videoSample);
-				//}
+                //if (buffer != null && buffer.Length > 0)
+                //{
+                //    using (var dxBuffer = videoSample.ConvertToContiguousBuffer())
+                //    {
+                //        using (var buffer2D = dxBuffer.QueryInterface<Buffer2D>())
+                //        {
+                //            buffer2D.ContiguousCopyFrom(buffer, buffer.Length);
+                //        }
+                //    }
+                //    streamSink.ProcessSample(videoSample);
+                //}
 
-			}
+
+                deviceChanged = false;
+
+            }
 		}
 
 		private void HandleQualityNotifyEvent(MediaEvent mediaEvent)

@@ -2,10 +2,12 @@
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
+using MediaToolkit.Utils;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NLog;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.Direct3D9;
 using SharpDX.MediaFoundation;
@@ -726,5 +728,143 @@ namespace Test.VideoRenderer
 
         }
 
-    }
+
+		SimpleRenderer renderer = null;
+		private void button3_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				var testFile3 = @".\TestBmp\1920x1088_Nv12.raw";
+
+				var bytes = File.ReadAllBytes(testFile3);
+
+				renderer = new SimpleRenderer();
+
+				renderer.Setup();
+
+				d3DImageControl1.DataContext = renderer;
+
+				//var devMan = renderer.D3DDeviceManager;
+				//devMan.OpenDeviceHandle(out var hDevice);
+
+				//SharpDX.Direct3D9.DeviceEx device = new SharpDX.Direct3D9.DeviceEx(hDevice);
+				var device = renderer.device;
+
+
+				var NV12FourCC = new FourCC("NV12");
+
+				// var format = VideoFormatGuids.FromFourCC(v210FourCC);
+				// var format = VideoFormatGuids.FromFourCC(UYVYFourCC);
+
+				var format = (Format)(uint)NV12FourCC; //VideoFormatGuids.NV12;
+				//var format = (Format)(842094158);
+				//var format = Format.A8R8G8B8;
+
+				var nv12Surface = Surface.CreateOffscreenPlain(device, 1920, 1088, (Format)(842094158), Pool.Default);
+				var argb32Surface = Surface.CreateOffscreenPlain(device, 1920, 1080, Format.A8R8G8B8, Pool.Default);
+
+
+				//DataRectangle dataRect = nv12Surface.LockRectangle(LockFlags.None);
+
+				//Marshal.Copy(bytes, 0, dataRect.DataPointer, bytes.Length);
+
+				//nv12Surface.UnlockRectangle();
+
+
+				//var data = nv12Surface.LockRectangle(LockFlags.ReadOnly);
+
+				//TestTools.WriteFile(data.DataPointer, 3133440, @"d:\test.raw");
+
+				//nv12Surface.UnlockRectangle();
+
+
+				//Bitmap sourceBitmap = new Bitmap(@"D:\Temp\4.bmp");
+				//Bitmap argb32Bitmap = new Bitmap(sourceBitmap.Width, sourceBitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				//var g = Graphics.FromImage(argb32Bitmap);
+				//g.DrawImage(sourceBitmap, 0, 0);
+				//g.Dispose();
+
+				//BitmapToSurface(argb32Surface, argb32Bitmap);
+
+				//argb32Bitmap.Dispose();
+
+				var sample = MediaFactory.CreateVideoSampleFromSurface(nv12Surface);
+
+				sample.SampleDuration = 0;
+				sample.SampleTime = 0;
+
+				renderer.ProcessSample(sample);
+
+
+				//devMan.CloseDeviceHandle(hDevice);
+
+				renderer.Start();
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+
+		}
+
+		private bool BitmapToSurface(Surface surface, Bitmap bmp)
+		{
+			bool result = false;
+
+			var surfDescr = surface.Description;
+
+			if (bmp.Width != surfDescr.Width || bmp.Height != surfDescr.Height)
+			{
+				//...
+				logger.Warn("bmp.Width != surfDescr.Width || bmp.Height != surfDescr.Height");
+				return result;
+			}
+
+			if (!(surfDescr.Format == Format.A8R8G8B8 || surfDescr.Format == Format.X8R8G8B8))
+			{
+				logger.Warn("Unsupported surface format " + surfDescr.Format);
+				return result;
+			}
+
+			var bitmapData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+			try
+			{
+				DataRectangle dataRect = surface.LockRectangle(LockFlags.None);
+				try
+				{
+
+					int height = bmp.Height;
+					int width = bmp.Width;
+					int pictWidth = width * 4;
+
+					var sourcePtr = bitmapData.Scan0;
+					var destPtr = dataRect.DataPointer;
+					for (int line = 0; line < height; line++)
+					{
+						Utilities.CopyMemory(destPtr, sourcePtr, bitmapData.Stride);
+
+						sourcePtr = IntPtr.Add(sourcePtr, bitmapData.Stride);
+						destPtr = IntPtr.Add(destPtr, dataRect.Pitch );
+					}
+					result = true;
+				}
+				finally
+				{
+					surface.UnlockRectangle();
+				}
+			}
+			finally
+			{
+				bmp.UnlockBits(bitmapData);
+			}
+
+			return result;
+
+		}
+
+		private void button4_Click(object sender, EventArgs e)
+		{
+
+		}
+	}
 }

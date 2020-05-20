@@ -115,8 +115,8 @@ namespace MediaToolkit.SharedTypes
     {
 
         void Setup(VideoRendererArgs args);
-        void Start(long time);
-        void Stop();
+        //void Start(long time);
+        //void Stop();
         void Close();
 
 
