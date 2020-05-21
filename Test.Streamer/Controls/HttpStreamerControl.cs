@@ -109,7 +109,7 @@ namespace TestStreamer.Controls
                 Height = destSize.Height, // options.Height,
                 //Resolution = destSize,
                 FrameRate = (int)fps,
-                EncoderName = "mjpeg",
+                EncoderId = "mjpeg",
             };
 
             httpStreamer.Setup(encodingParams, networkParams);

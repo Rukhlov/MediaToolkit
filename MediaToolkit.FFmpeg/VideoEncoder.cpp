@@ -45,7 +45,7 @@ namespace FFmpegLib {
 		void Open(VideoEncoderSettings^ encodingParams) {
 
 			logger->TraceEvent(TraceEventType::Verbose, 0, "FFmpegVideoEncoder::Open(...) " +
-				encodingParams->Resolution.Width + "x" + encodingParams->Resolution.Height + " " + encodingParams->EncoderName);
+				encodingParams->Resolution.Width + "x" + encodingParams->Resolution.Height + " " + encodingParams->EncoderId);
 
 			try {
 
@@ -79,7 +79,7 @@ namespace FFmpegLib {
 				IntPtr pEncoderName = IntPtr::Zero;
 				try {
 
-					pEncoderName = Marshal::StringToHGlobalAnsi(encodingParams->EncoderName);
+					pEncoderName = Marshal::StringToHGlobalAnsi(encodingParams->EncoderId);
 
 					encoder = avcodec_find_encoder_by_name((char*)pEncoderName.ToPointer());
 				}

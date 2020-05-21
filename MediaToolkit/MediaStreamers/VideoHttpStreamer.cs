@@ -53,7 +53,7 @@ namespace MediaToolkit.MediaStreamers
         public void Setup(VideoEncoderSettings encPars, NetworkSettings networkParams)
         {
             logger.Debug("VideoHttpStreamer::Setup(...) "
-                + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " " + encPars.EncoderName);
+                + encPars.Resolution.Width + "x" + encPars.Resolution.Height + " " + encPars.EncoderId);
 
             if (State != MediaState.Closed)
             {

@@ -436,7 +436,7 @@ namespace ScreenStreamer.Common
                     VideoChannelInfo videoInfo = new VideoChannelInfo
                     {
                         Id = videoStreamer.Id,
-                        VideoEncoder = encoderSettings.Encoder,
+                        VideoEncoder = encoderSettings.EncoderFormat,
                         Resolution = encoderSettings.Resolution,
                         Bitrate = encoderSettings.Bitrate,
 

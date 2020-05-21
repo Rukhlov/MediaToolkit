@@ -41,35 +41,51 @@ namespace FFmpegLib {
 
 		event Action<IntPtr, int, double>^ DataEncoded;
 
-		void Setup(VideoEncoderSettings^ encodingParams) {
+		void Setup(VideoEncoderSettings^ encodingSettings) {
 
 			logger->TraceEvent(TraceEventType::Verbose, 0, "H264Encoder::Setup(...) " +
-				encodingParams->Resolution.Width + "x" + encodingParams->Resolution.Height + " " + encodingParams->EncoderName);
+				encodingSettings->Resolution.Width + "x" + encodingSettings->Resolution.Height + " " + encodingSettings->EncoderId);
 
 			try {
 
 				cleanedup = false;
+				
+				String^ encoderName = encodingSettings->EncoderId;
 
-				AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
+				if (String::IsNullOrEmpty(encoderName)) {
+					encoderName = "libx264";
+				}
+
+				//AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
 				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_nvenc");
 
-				//AVCodec* encoder = avcodec_find_encoder(AV_CODEC_ID_H264 /*AV_CODEC_ID_MPEG4*/); 
-				//AVCodec* encoder = avcodec_find_encoder_by_name("h264_qsv");
+				AVCodec* encoder = NULL;
+
+				IntPtr pName = IntPtr::Zero;
+				try {
+
+					pName = Marshal::StringToHGlobalAnsi(encoderName);
+					encoder = avcodec_find_encoder_by_name((const char*)(pName.ToPointer()));				
+				}
+				finally{
+
+					if (pName != IntPtr::Zero) {
+						Marshal::FreeHGlobal(pName);
+					}			
+				}
+			    
+			    if (encoder == NULL) {
+					throw gcnew Exception("Could not find video codec");
+				}
+
 
 				encoder_ctx = avcodec_alloc_context3(encoder);
 
-				int den = (encodingParams->FrameRate > 0 && encodingParams->FrameRate <= 60) ? encodingParams->FrameRate : 30;
+				int den = (encodingSettings->FrameRate > 0 && encodingSettings->FrameRate <= 60) ? encodingSettings->FrameRate : 30;
 				encoder_ctx->time_base = { 1, den };
 
-				encoder_ctx->width = encodingParams->Resolution.Width;
-				encoder_ctx->height = encodingParams->Resolution.Height;
-
-				encoder_ctx->gop_size = 60;
-				encoder_ctx->max_b_frames = 0;
-
-				//encoder_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
-				//encoder_ctx->rtp_payload_size = 1470;
+				encoder_ctx->width = encodingSettings->Resolution.Width;
+				encoder_ctx->height = encodingSettings->Resolution.Height;
 
 				//if (encoder->pix_fmts) {
 
@@ -82,50 +98,42 @@ namespace FFmpegLib {
 
 				encoder_ctx->pix_fmt = AV_PIX_FMT_NV12;//AV_PIX_FMT_YUV420P;
 
-				int profile = 0;
-				if (encoder_ctx->codec_id == AV_CODEC_ID_H264) {
-					profile = FF_PROFILE_H264_HIGH; //FF_PROFILE_H264_BASELINE; FF_PROFILE_H264_MAIN
-
-					//encoder_ctx->max_b_frames = 0;
+				int profile = FF_PROFILE_H264_MAIN;
+				if (encodingSettings->Profile == H264Profile::High) {
+					profile = FF_PROFILE_H264_HIGH;
+				}
+				else if (encodingSettings->Profile == H264Profile::Base) {
+					profile = FF_PROFILE_H264_BASELINE;
 				}
 
 				encoder_ctx->profile = profile;
+				encoder_ctx->max_b_frames = 0;
+				encoder_ctx->gop_size = 60;
+				//...
 
 				AVDictionary *param = 0;
-				if (encoder->id == AV_CODEC_ID_H264) {
 
+				if (strcmp(encoder->name, "libx264") == 0)
+				{
+					//av_dict_set(&param, "preset", "medium", 0);
+					av_dict_set(&param, "preset", "ultrafast", 0);
 
-					if (strcmp(encoder->name, "h264_nvenc") == 0) {
+				}
+				else if (strcmp(encoder->name, "h264_nvenc") == 0) {
 
-						av_dict_set(&param, "preset", "llhq", 0); //lowlatency HQ 
-						//av_dict_set(&param, "rc", "ll_2pass_size", 1478); 
-					}
-					else if (strcmp(encoder->name, "libx264") == 0)
-					{
-						//av_dict_set(&param, "preset", "medium", 0);
-						av_dict_set(&param, "preset", "ultrafast", 0);
+					av_dict_set(&param, "preset", "llhq", 0); //lowlatency HQ 
+					//av_dict_set(&param, "rc", "ll_2pass_size", 1478); 
+				}
 
-					}
+				if (encodingSettings->LowLatency) {
 
 					logger->TraceEvent(TraceEventType::Verbose, 0, "zerolatency");
 					av_dict_set(&param, "tune", "zerolatency", 0);
-
 				}
-
 
 				if (avcodec_open2(encoder_ctx, encoder, &param) < 0) {
 					throw gcnew Exception("Unable to open video codec");
 				}
-
-				//int extaSize = encoder_ctx->extradata_size;
-
-				//array<Byte>^ extraData = gcnew array<Byte>(extaSize);
-				//Marshal::Copy((IntPtr)encoder_ctx->extradata, extraData, 0, extaSize);
-				//System::IO::File::WriteAllBytes("d:\\extadata.txt", extraData);
-
-				//byte[] extraData = gcnew byte[encoder_ctx->]
-				//encoder_ctx->extradata
-
 
 
 				frame = av_frame_alloc();

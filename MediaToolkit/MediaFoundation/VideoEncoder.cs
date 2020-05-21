@@ -40,7 +40,7 @@ namespace MediaToolkit.MediaFoundation
         private Texture2D bufTexture = null;
 
         private Device device = null;
-        public void Open(VideoEncoderSettings destParams)
+        public void Open(VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Setup(...)");
 
@@ -54,7 +54,7 @@ namespace MediaToolkit.MediaFoundation
 			var srcSize = new Size(hwDescr.Width, hwDescr.Height);
 			var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
 
-			var destSize = destParams.Resolution;//new Size(destParams.Width, destParams.Height);
+			var destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
 
 			var adapterId = videoSource.AdapterId;
 
@@ -76,9 +76,9 @@ namespace MediaToolkit.MediaFoundation
 				}
 
 			}
-			var profile = MfTool.GetMfH264Profile(destParams.Profile);
+			var profile = MfTool.GetMfH264Profile(encoderSettings.Profile);
 
-			var bitrateMode = MfTool.GetMfBitrateMode(destParams.BitrateMode);
+			var bitrateMode = MfTool.GetMfBitrateMode(encoderSettings.BitrateMode);
 
 			var encArgs = new MfVideoArgs
 			{
@@ -86,14 +86,15 @@ namespace MediaToolkit.MediaFoundation
 				Height = destSize.Height, //srcSize.Height,
 				Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
 
-				FrameRate = destParams.FrameRate,
-				AvgBitrate = destParams.Bitrate,
-				LowLatency = destParams.LowLatency,
+				FrameRate = encoderSettings.FrameRate,
+				AvgBitrate = encoderSettings.Bitrate,
+				LowLatency = encoderSettings.LowLatency,
 				AdapterId = videoSource.AdapterId,
 				Profile = profile,
 				BitrateMode = bitrateMode,
-				MaxBitrate = destParams.MaxBitrate,
-
+				MaxBitrate = encoderSettings.MaxBitrate,
+               
+                EncoderId = encoderSettings.EncoderId,
 			};
 
 
@@ -130,10 +131,17 @@ namespace MediaToolkit.MediaFoundation
 
 			processor?.Start();
 
+            var encoderName = encoderSettings.EncoderId;
 
-			encoder = new MfH264EncoderEx(device);
-			//encoder = new MfFFMpegVideoEncoder();
-
+            if (encoderName == "libx264" || encoderName == "h264_nvenc")
+            {
+                encoder = new MfFFMpegVideoEncoder();
+            }
+            else
+            {
+                encoder = new MfH264EncoderEx(device);
+            }
+           
 			encoder.Setup(encArgs);
 
 			encoder.DataEncoded += Encoder_DataEncoded;
@@ -295,7 +303,7 @@ namespace MediaToolkit.MediaFoundation
             encoder = new FFmpegLib.H264Encoder();
             VideoEncoderSettings settings = new VideoEncoderSettings
             {
-                EncoderName = "libx264",
+                EncoderId = "libx264",
                 FrameRate = args.FrameRate,
                 Width = args.Width,
                 Height = args.Height,

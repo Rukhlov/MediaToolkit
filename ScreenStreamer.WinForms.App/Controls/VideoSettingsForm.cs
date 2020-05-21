@@ -52,29 +52,43 @@ namespace ScreenStreamer.WinForms.App
 
             }
 
-            LoadEncoderProfilesItems();
 
             LoadEncoderItems();
+
+            LoadEncoderProfilesItems();
 
             LoadRateModeItems();
 
             LoadCaptureTypes();
 
-            this.encWidthNumeric.Maximum = maxWidth; 
+
+            var encoderSettings = VideoSettings.EncoderSettings;
+
+            var encoderId = encoderSettings.EncoderId;
+            var encoderItem = encoderItems.FirstOrDefault(e => e.Tag != null && ((VideoEncoderDescription)e.Tag).Id == encoderId);
+            if(encoderItem == null)
+            {
+                encoderItem = encoderItems.FirstOrDefault();
+            }
+
+            encoderComboBox.SelectedItem = encoderItem;
+
+
+            this.encWidthNumeric.Maximum = maxWidth;
             this.encWidthNumeric.Minimum = minWidth;
 
             this.encHeightNumeric.Maximum = maxHeight;
             this.encHeightNumeric.Minimum = minHeight;
 
 
-            if(captureDevice.CaptureMode == CaptureMode.Screen)
+            if (captureDevice.CaptureMode == CaptureMode.Screen)
             {
                 var screenCaptureDevice = (ScreenCaptureDevice)captureDevice;
-				var captureProps = screenCaptureDevice.Properties;
-				// var captureDescr = screenCaptureParams.CaptureDescription;
-				displayTextBox.Text = screenCaptureDevice.Name;
+                var captureProps = screenCaptureDevice.Properties;
+                // var captureDescr = screenCaptureParams.CaptureDescription;
+                displayTextBox.Text = screenCaptureDevice.Name;
 
-				captureRegion = screenCaptureDevice.CaptureRegion;
+                captureRegion = screenCaptureDevice.CaptureRegion;
                 captureMouseCheckBox.Checked = captureProps.CaptureMouse;
                 aspectRatioCheckBox.Checked = captureProps.AspectRatio;
                 showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
@@ -86,11 +100,11 @@ namespace ScreenStreamer.WinForms.App
                     labelDisplay.Visible = false;
                 }
 
-				cameraTableLayoutPanel.Visible = false;
-				screenCaptureTableLayoutPanel.Visible = true;
-				screenCaptureDetailsPanel.Visible = true;
-			}
-            else if(captureDevice.CaptureMode == CaptureMode.UvcDevice)
+                cameraTableLayoutPanel.Visible = false;
+                screenCaptureTableLayoutPanel.Visible = true;
+                screenCaptureDetailsPanel.Visible = true;
+            }
+            else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
             {
                 var uvcDevice = (UvcDevice)captureDevice;
 
@@ -136,7 +150,7 @@ namespace ScreenStreamer.WinForms.App
             this.captureRegionTextBox.Text = captureRegion.ToString();
             this.checkBoxResoulutionFromSource.Checked = VideoSettings.UseEncoderResoulutionFromSource;
 
-            this.encoderComboBox.SelectedItem = videoEncoderSettings.Encoder;
+            this.encoderComboBox.SelectedItem = videoEncoderSettings.EncoderFormat;
             this.encProfileComboBox.SelectedItem = videoEncoderSettings.Profile;
             this.bitrateModeComboBox.SelectedItem = videoEncoderSettings.BitrateMode;
             this.MaxBitrateNumeric.Value = videoEncoderSettings.MaxBitrate;
@@ -145,7 +159,7 @@ namespace ScreenStreamer.WinForms.App
             this.latencyModeCheckBox.Checked = videoEncoderSettings.LowLatency;
 
 
-		}
+        }
 
         private void applyButton_Click(object sender, EventArgs e)
         {
@@ -166,7 +180,7 @@ namespace ScreenStreamer.WinForms.App
                 screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
                 screenCaptureParams.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
                 screenCaptureParams.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
-                
+
             }
             else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
             {
@@ -203,8 +217,19 @@ namespace ScreenStreamer.WinForms.App
                 VideoSettings.EncoderSettings.Height = height;
             }
 
+            var item = encoderComboBox.SelectedItem as ComboBoxItem;
+            if (item != null)
+            {
+                var tag = item.Tag;
+                if (tag != null)
+                {
+                    var encoderDescr = (VideoEncoderDescription)tag;
+                    VideoSettings.EncoderSettings.EncoderId = encoderDescr.Id;
+                    VideoSettings.EncoderSettings.EncoderFormat = encoderDescr.Format; //(VideoCodingFormat)this.encoderComboBox.SelectedItem;
+                }
 
-            VideoSettings.EncoderSettings.Encoder = (VideoCodingFormat)this.encoderComboBox.SelectedItem;
+            }
+
             VideoSettings.EncoderSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
             VideoSettings.EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
             VideoSettings.EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
@@ -214,7 +239,7 @@ namespace ScreenStreamer.WinForms.App
 
             //TODO: Validate settings...
 
-			this.Close();
+            this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -246,25 +271,25 @@ namespace ScreenStreamer.WinForms.App
                 srcSize = profile.FrameSize;
             }
 
-           
-            var destSize= new Size((int)this.encWidthNumeric.Value, (int)this.encHeightNumeric.Value);
+
+            var destSize = new Size((int)this.encWidthNumeric.Value, (int)this.encHeightNumeric.Value);
 
             var ratio = srcSize.Width / (double)srcSize.Height;
             int destWidth = destSize.Width;
 
 
             int destHeight = (int)(destWidth / ratio);
-			if(destHeight > maxHeight)
-			{
-				destHeight = maxHeight;
-				destWidth = (int)(destHeight * ratio);
-			}
-			
-			if(destHeight< minHeight)
-			{
-				destHeight = minHeight;
-				destWidth = (int)(destHeight * ratio);
-			}
+            if (destHeight > maxHeight)
+            {
+                destHeight = maxHeight;
+                destWidth = (int)(destHeight * ratio);
+            }
+
+            if (destHeight < minHeight)
+            {
+                destHeight = minHeight;
+                destWidth = (int)(destHeight * ratio);
+            }
 
 
             if (ratio < 1)
@@ -273,23 +298,23 @@ namespace ScreenStreamer.WinForms.App
                 destWidth = (int)(destHeight * ratio);
 
 
-				if (destWidth > maxWidth)
-				{
-					destWidth = maxWidth;
-					destHeight = (int)(destWidth / ratio);
-				}
+                if (destWidth > maxWidth)
+                {
+                    destWidth = maxWidth;
+                    destHeight = (int)(destWidth / ratio);
+                }
 
-				if (destWidth < minWidth)
-				{
-					destWidth = minWidth;
-					destHeight = (int)(destWidth / ratio);
-				}
-			}
-			
+                if (destWidth < minWidth)
+                {
+                    destWidth = minWidth;
+                    destHeight = (int)(destWidth / ratio);
+                }
+            }
+
 
             this.encWidthNumeric.Value = destWidth;
             this.encHeightNumeric.Value = destHeight;
-            
+
         }
 
 
@@ -307,7 +332,7 @@ namespace ScreenStreamer.WinForms.App
 
         private SynchronizationContext syncContext = null;
 
-   
+
         private void previewButton_Click(object sender, EventArgs e)
         {
             logger.Debug("previewButton_Click(...)");
@@ -318,64 +343,64 @@ namespace ScreenStreamer.WinForms.App
             }
 
             try
-			{
-				var captureDevice = this.VideoSettings.CaptureDevice;
+            {
+                var captureDevice = this.VideoSettings.CaptureDevice;
 
-				if (videoSource == null)
-				{
-					if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
-					{
-						videoSource = new VideoCaptureSource();
-						videoSource.Setup(captureDevice);
-					}
-					else if (captureDevice.CaptureMode == CaptureMode.Screen)
-					{
-						//var screenCapture = (ScreenCaptureDevice)captureDevice;
-						//var screenCaptureProps = screenCapture.Properties;
-						//screenCaptureProps.CaptureType = VideoCaptureType.GDI;
-						//screenCaptureProps.UseHardware = true;
-						//screenCaptureProps.Fps = 30;
+                if (videoSource == null)
+                {
+                    if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+                    {
+                        videoSource = new VideoCaptureSource();
+                        videoSource.Setup(captureDevice);
+                    }
+                    else if (captureDevice.CaptureMode == CaptureMode.Screen)
+                    {
+                        //var screenCapture = (ScreenCaptureDevice)captureDevice;
+                        //var screenCaptureProps = screenCapture.Properties;
+                        //screenCaptureProps.CaptureType = VideoCaptureType.GDI;
+                        //screenCaptureProps.UseHardware = true;
+                        //screenCaptureProps.Fps = 30;
 
-						videoSource = new ScreenSource();
-						videoSource.Setup(captureDevice);
-					}
+                        videoSource = new ScreenSource();
+                        videoSource.Setup(captureDevice);
+                    }
 
-					videoSource.CaptureStarted += VideoSource_CaptureStarted;
-					videoSource.CaptureStopped += VideoSource_CaptureStopped;
+                    videoSource.CaptureStarted += VideoSource_CaptureStarted;
+                    videoSource.CaptureStopped += VideoSource_CaptureStopped;
 
                     videoSource.BufferUpdated += VideoSource_BufferUpdated;
                 }
 
 
-				if (videoSource.State == CaptureState.Capturing)
-				{
-					videoSource.Stop();
-				}
-				else
-				{
-					videoSource.Start();
-				}
+                if (videoSource.State == CaptureState.Capturing)
+                {
+                    videoSource.Stop();
+                }
+                else
+                {
+                    videoSource.Start();
+                }
 
-				this.Cursor = Cursors.WaitCursor;
-				this.Enabled = false;
-			}
-			catch(Exception ex)
-			{
-				this.Cursor = Cursors.Default;
-				this.Enabled = true;
+                this.Cursor = Cursors.WaitCursor;
+                this.Enabled = false;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.Enabled = true;
 
-				MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message);
 
-				if (videoSource != null)
-				{
+                if (videoSource != null)
+                {
                     videoSource.BufferUpdated -= VideoSource_BufferUpdated;
                     videoSource.CaptureStarted -= VideoSource_CaptureStarted;
-					videoSource.CaptureStopped -= VideoSource_CaptureStopped;
-					videoSource.Close(true);
-					videoSource = null;
-				}
+                    videoSource.CaptureStopped -= VideoSource_CaptureStopped;
+                    videoSource.Close(true);
+                    videoSource = null;
+                }
 
-			}
+            }
         }
 
 
@@ -389,7 +414,7 @@ namespace ScreenStreamer.WinForms.App
                 {
                     OnVideoSourceStarted();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.Error(ex);
                 }
@@ -398,7 +423,7 @@ namespace ScreenStreamer.WinForms.App
                     this.Cursor = Cursors.Default;
                     this.Enabled = true;
                 }
-               
+
 
             }, null);
 
@@ -433,7 +458,7 @@ namespace ScreenStreamer.WinForms.App
                     this.Cursor = Cursors.Default;
                     this.Enabled = true;
                 }
-                
+
             }, null);
 
         }
@@ -453,7 +478,7 @@ namespace ScreenStreamer.WinForms.App
             var previewSettings = Config.Data.VideoPreviewSettings;
             if (previewForm == null || previewForm.IsDisposed)
             {
-               
+
                 previewForm = new PreviewForm
                 {
                     //ClientSize = VideoSettings.CaptureDevice.Resolution,
@@ -487,9 +512,9 @@ namespace ScreenStreamer.WinForms.App
                 {
                     description = resolution.Width + "x" + resolution.Height + " " + screenCapture.Properties.Fps + " fps";
                 }
-                    
+
             }
-            else if(captureDevice is UvcDevice)
+            else if (captureDevice is UvcDevice)
             {
                 var uvcDevice = (UvcDevice)captureDevice;
 
@@ -613,17 +638,7 @@ namespace ScreenStreamer.WinForms.App
             encProfileComboBox.DataSource = items;
         }
 
-        private void LoadEncoderItems()
-        {
-            var items = new List<VideoCodingFormat>
-            {
-                VideoCodingFormat.H264,
-                VideoCodingFormat.JPEG,
-            };
 
-            encoderComboBox.DataSource = items;
-
-        }
 
         private void LoadCaptureTypes()
         {
@@ -658,6 +673,65 @@ namespace ScreenStreamer.WinForms.App
             //captureTypes.Add(VideoCaptureType.Datapath);
 
             //captureTypesComboBox.DataSource = captureTypes;
+
+        }
+
+        //private void LoadEncoderItems()
+        //{
+        //    var items = new List<VideoCodingFormat>
+        //    {
+        //        VideoCodingFormat.H264,
+        //        VideoCodingFormat.JPEG,
+        //    };
+
+        //    encoderComboBox.DataSource = items;
+
+        //}
+
+
+        private List<ComboBoxItem> encoderItems = new List<ComboBoxItem>();
+        private void LoadEncoderItems()
+        {
+
+            encoderItems.Clear();
+
+            var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
+
+            foreach(var enc in encoders)
+            {
+                if(enc.Activatable && enc.Format == VideoCodingFormat.H264)
+                {
+                    var item = new ComboBoxItem
+                    {
+                        Name = enc.Name,
+                        Tag = enc,
+                    };
+
+                    encoderItems.Add(item);
+                }
+
+            }
+
+            VideoEncoderDescription libx264Description = new VideoEncoderDescription
+            {
+                Id = "libx264",
+                Name = "libx264",
+                Format = VideoCodingFormat.H264,
+                IsHardware = false,
+                Activatable = true,
+               
+            };
+
+            encoderItems.Add(new ComboBoxItem
+            {
+                Name = libx264Description.Name,
+                Tag = libx264Description,
+            });
+
+            encoderComboBox.DisplayMember = "Name";
+            encoderComboBox.ValueMember = "Tag";
+            encoderComboBox.DataSource = encoderItems;
+
 
         }
 

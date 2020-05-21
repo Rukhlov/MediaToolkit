@@ -31,23 +31,31 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
 
 
-            NewMethod1();
+           // NewMethod1();
 
 
 
             ////DxTool.FindAdapter1(4313);
 
-            //var videoEncoders = MfTool.FindVideoEncoders();
+            var videoEncoders = MfTool.FindVideoEncoders();
 
-            //foreach(var enc in videoEncoders)
-            //{
-            //    Console.WriteLine(enc.ToString());
-            //}
+            foreach (var enc in videoEncoders)
+            {
+                Console.WriteLine(enc.ToString());
+            }
 
 
-            //Console.ReadKey();
-            //Console.WriteLine("-------------------------------");
-            //return;
+            foreach (var enc in videoEncoders)
+            {
+               if(enc.Format == VideoCodingFormat.H264 && enc.Activatable)
+               {
+                    Console.WriteLine(enc.Name + " " + enc.ClsId +  " isHardware: " + enc.IsHardware);
+               }
+            }
+
+            Console.ReadKey();
+            Console.WriteLine("-------------------------------");
+            return;
 
 
             //NewMethod();

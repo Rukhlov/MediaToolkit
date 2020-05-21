@@ -53,27 +53,27 @@ namespace MediaToolkit.Core
     [Serializable]
     public class VideoEncoderSettings :ICloneable
     {
+
         [XmlAttribute]
-        public VideoCodingFormat Encoder { get; set; } = VideoCodingFormat.H264;
+        public string EncoderId { get; set; } = "";
+
+        [XmlAttribute]
+        public VideoCodingFormat EncoderFormat { get; set; } = VideoCodingFormat.H264;
+
+        [XmlIgnore]
+        public VideoEncoderDescription EncoderDescription { get; set; } = new VideoEncoderDescription();
 
         [XmlIgnore]
         public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
 
         [XmlAttribute]
-        public int Width
-        {
-            get;
-            set;
-        } = 1920;
+        public int Width { get; set; } = 1920;
 
         [XmlAttribute]
         public int Height { get; set; } = 1080;
 
         [XmlAttribute]
         public int FrameRate { get; set; } = 30;
-
-        [XmlAttribute]
-        public string EncoderName { get; set; } = "";
 
         [XmlAttribute]
         public int Bitrate { get; set; } = 2500;
@@ -253,6 +253,8 @@ namespace MediaToolkit.Core
 
     public class VideoEncoderDescription
     {
+        public string Id = string.Empty;
+
         public string Name { get; set; } = "";
 
         public VideoCodingFormat Format { get; set; } = VideoCodingFormat.Unknown;

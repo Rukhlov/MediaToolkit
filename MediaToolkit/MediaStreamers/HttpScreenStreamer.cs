@@ -102,11 +102,12 @@ namespace MediaToolkit.MediaStreamers
 
             VideoEncoderSettings encodingParams = new VideoEncoderSettings
             {
+                EncoderFormat = VideoCodingFormat.JPEG,
                 //Resolution = destSize,
                 Width = destSize.Width,
                 Height = destSize.Height,
                 FrameRate = captureParams.Properties.Fps,
-                EncoderName = "mjpeg",
+                EncoderId = "mjpeg",
             };
 
             NetworkSettings networkParams = new NetworkSettings

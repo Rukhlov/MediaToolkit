@@ -67,10 +67,13 @@ namespace MediaToolkit.MediaFoundation
             var winVersion = Environment.OSVersion.Version;
             bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
 
+
             if (!isCompatibleOSVersion)
             {
                 throw new NotSupportedException("Windows versions earlier than 8 are not supported.");
             }
+
+
 
             try
             {
@@ -86,8 +89,19 @@ namespace MediaToolkit.MediaFoundation
                 //encoder = new Transform(ClsId.MSH264EncoderMFT);
                 //syncMode = true;
 
-                encoder = FindEncoder(adapterVenId);
-                syncMode = false;
+                var encoderId = args.EncoderId;
+                Guid.TryParse(encoderId, out var clsId);
+                if(clsId != Guid.Empty)
+                {
+                    encoder = new Transform(clsId);
+
+                }
+                else
+                {
+                    encoder = FindEncoder(adapterVenId);
+                    //syncMode = false;
+                }
+
 
                 SetupSampleBuffer(args);
 
@@ -162,6 +176,7 @@ namespace MediaToolkit.MediaFoundation
         private Transform FindEncoder(int adapterVenId)
         {
             logger.Debug("FindEncoder(...) " + adapterVenId);
+
 
             Transform preferTransform = null;
 
@@ -292,11 +307,21 @@ namespace MediaToolkit.MediaFoundation
                 // TODO:
                 // log pref
 
+                try
+                {
+                    syncMode = !(attr.Get(TransformAttributeKeys.TransformAsync) == 1);
+                }
+                catch (SharpDX.SharpDXException ex)
+                {
+                    syncMode = true;
+                }
+                
+
                 if (!syncMode)
                 {
-                    var transformAsync = (attr.Get(TransformAttributeKeys.TransformAsync) == 1);
-                    if (transformAsync)
-                    {
+                    //var transformAsync = (attr.Get(TransformAttributeKeys.TransformAsync) == 1);
+                    //if (transformAsync)
+                    //{
                         attr.Set(TransformAttributeKeys.TransformAsyncUnlock, 1);
                         attr.Set(TransformAttributeKeys.MftSupportDynamicFormatChange, true);
 
@@ -309,7 +334,7 @@ namespace MediaToolkit.MediaFoundation
                                 encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                             }
                         }
-                    }
+                    //}
                 }
 
                 attr.Set(CodecApiPropertyKeys.AVLowLatencyMode, args.LowLatency);

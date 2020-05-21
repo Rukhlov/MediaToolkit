@@ -190,7 +190,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             var videoSettings = session.VideoSettings;
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
-            videoEncoderSettings.Encoder = AdvancedSettingsModel.VideoEncoder;
+            videoEncoderSettings.EncoderFormat = AdvancedSettingsModel.VideoEncoder;
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
 

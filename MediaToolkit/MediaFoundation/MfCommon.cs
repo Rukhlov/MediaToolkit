@@ -727,7 +727,10 @@ namespace MediaToolkit.MediaFoundation
                         }
                         else if (guid == TransformAttributeKeys.MftTransformClsidAttribute.Guid)
                         {
-                            encoderDescription.ClsId = (Guid)obj;
+                            var clsid = (Guid)obj;
+
+                            encoderDescription.Id = clsid.ToString();
+                            encoderDescription.ClsId = clsid;
                         }
                         else if (guid == TransformAttributeKeys.MftEnumHardwareUrlAttribute.Guid)
                         {
@@ -1425,6 +1428,7 @@ namespace MediaToolkit.MediaFoundation
 
     public class MfVideoArgs
     {
+        public string EncoderId { get; set; } = "";
 
         public int Width { get; set; } = 1280;
         public int Height { get; set; } = 720;
