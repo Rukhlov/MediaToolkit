@@ -130,10 +130,13 @@ namespace MediaToolkit.MediaFoundation
                             break;
                         }
 
+
                         var subType = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                        //logger.Info(subType);
+						
+                        logger.Info(MfTool.GetMediaTypeName(subType, true));
                         if (subType == outputArgs.Format) //VideoFormatGuids.Argb32)//Argb32)//YUY2)//NV12)
                         {
+
                             OutputMediaType = mediaType;
                             break;
                         }
@@ -150,7 +153,7 @@ namespace MediaToolkit.MediaFoundation
 
                 if (OutputMediaType == null)
                 {
-                    logger.Warn("Format not supported: " + outputArgs.Format);
+                    logger.Warn("Format not supported: " + MfTool.GetMediaTypeName(outputArgs.Format, true));
                     return false;
                 }
 

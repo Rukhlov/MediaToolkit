@@ -690,7 +690,31 @@ namespace MediaToolkit.MediaFoundation
                 else if (res == SharpDX.MediaFoundation.ResultCode.TransformStreamChange)
                 {// не должны приходить для энкодера...
 
+                    // но приходят для Intel MFT !!!
                     logger.Warn(res.ToString() + " TransformStreamChange");
+
+                    MediaType newOutputType = null;
+                    try
+                    {
+                        encoder.TryGetOutputAvailableType(outputStreamId, 0, out newOutputType);
+                        encoder.SetOutputType(outputStreamId, newOutputType, 0);
+
+                        if (OutputMediaType != null)
+                        {
+                            OutputMediaType.Dispose();
+                            OutputMediaType = null;
+                        }
+                        OutputMediaType = newOutputType;
+
+                        logger.Info("============== NEW OUTPUT TYPE==================");
+                        logger.Info(MfTool.LogMediaType(OutputMediaType));
+                    }
+                    finally
+                    {
+                        newOutputType?.Dispose();
+                        newOutputType = null;
+                    }
+
                 }
                 else
                 {
@@ -978,11 +1002,6 @@ namespace MediaToolkit.MediaFoundation
 
             closing = true;
 
-            //if (device != null)
-            //{
-            //    device.Dispose();
-            //    device = null;
-            //}
 
             if (InputMediaType != null)
             {

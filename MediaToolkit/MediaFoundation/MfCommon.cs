@@ -79,23 +79,10 @@ namespace MediaToolkit.MediaFoundation
         }
 
         public static string GetMediaSubtypeName(MediaType mediaType, bool GetFullName = false)
-        {
-            string typeName = "UnknownType";
+        {        
             var guid = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-            if (TypesDict.ContainsKey(guid))
-            {
-                typeName = TypesDict[guid];
-                if (GetFullName)
-                {
-                    typeName += " {" + guid + "}";
-                }
-            }
-            else
-            {
-                typeName = "{" + guid + "}";
-            }
 
-            return typeName;
+			return GetMediaTypeName(guid, GetFullName);
         }
 
         public static string LogMediaType(MediaType mediaType)

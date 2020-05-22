@@ -82,6 +82,9 @@ namespace MediaToolkit.Core
         public int MaxBitrate { get; set; } = 5000;
 
         [XmlAttribute]
+        public int GOPSize { get; set; } = 30;
+
+        [XmlAttribute]
         public bool LowLatency { get; set; } = true;
 
         [XmlAttribute]
