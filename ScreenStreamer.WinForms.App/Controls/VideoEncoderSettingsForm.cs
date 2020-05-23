@@ -30,7 +30,9 @@ namespace ScreenStreamer.WinForms
 
             LoadRateModeItems();
 
-            this.Text = descr.Name;
+			LoadAspectRatioItems();
+
+			this.Text = descr.Name;
 
             this.formatTextBox.Text = EncoderSettings.EncoderFormat.ToString();
 
@@ -40,9 +42,19 @@ namespace ScreenStreamer.WinForms
             this.bitrateNumeric.Value = EncoderSettings.Bitrate;
             this.fpsNumeric.Value = EncoderSettings.FrameRate;
             this.latencyModeCheckBox.Checked = EncoderSettings.LowLatency;
+			this.qualityNumeric.Value = EncoderSettings.Quality;
             this.gopSizeNumeric.Value = EncoderSettings.GOPSize;
 
-        }
+
+			var aspectRatio = EncoderSettings.AspectRatio ?? AspectRatio.Default;
+			var aspectItem = aspectRatios.FirstOrDefault(i => i.Width == aspectRatio.Width && i.Height == aspectRatio.Height);
+			if(aspectItem == null)
+			{
+				aspectItem = aspectRatios.FirstOrDefault();
+			}
+			this.aspectRatioComboBox.SelectedItem = aspectItem;
+
+		}
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
@@ -50,24 +62,48 @@ namespace ScreenStreamer.WinForms
 
         }
 
-        private void applyButton_Click(object sender, EventArgs e)
-        {
+		private void applyButton_Click(object sender, EventArgs e)
+		{
 
-            EncoderSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
-            EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
-            EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
-            EncoderSettings.Bitrate = (int)this.bitrateNumeric.Value;
-            EncoderSettings.FrameRate = (int)this.fpsNumeric.Value;
-            EncoderSettings.LowLatency = this.latencyModeCheckBox.Checked;
+			EncoderSettings.Profile = (H264Profile)this.encProfileComboBox.SelectedItem;
+			EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
+			EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
+			EncoderSettings.Bitrate = (int)this.bitrateNumeric.Value;
+			EncoderSettings.FrameRate = (int)this.fpsNumeric.Value;
+			EncoderSettings.LowLatency = this.latencyModeCheckBox.Checked;
 
-            EncoderSettings.GOPSize = (int)this.gopSizeNumeric.Value;
+			EncoderSettings.Quality = (int)qualityNumeric.Value;
+			EncoderSettings.GOPSize = (int)this.gopSizeNumeric.Value;
 
-            this.Close();
+			AspectRatio aspectRatio = null;
+			var item = aspectRatioComboBox.SelectedItem;
+			if (item != null)
+			{
+				aspectRatio = item as AspectRatio;
+			}
+
+			EncoderSettings.AspectRatio = aspectRatio ?? AspectRatio.Default;
+
+			this.Close();
         }
 
+		private List<AspectRatio> aspectRatios = new List<AspectRatio>();
+		private void LoadAspectRatioItems()
+		{
 
+			aspectRatios = new List<AspectRatio>
+			{
+			   AspectRatio.Default,
+			   AspectRatio.AspectRatio_4_3,
+			   AspectRatio.AspectRatio_5_4,
+			   AspectRatio.AspectRatio_16_9,
+			   AspectRatio.AspectRatio_16_10,
+			};
 
-        private void LoadRateModeItems()
+			aspectRatioComboBox.DataSource = aspectRatios;
+		}
+
+		private void LoadRateModeItems()
         {
 
             var items = new List<BitrateControlMode>
@@ -77,8 +113,9 @@ namespace ScreenStreamer.WinForms
                BitrateControlMode.Quality,
 
             };
+			
 
-            bitrateModeComboBox.DataSource = items;
+			bitrateModeComboBox.DataSource = items;
         }
 
         private void LoadEncoderProfilesItems()

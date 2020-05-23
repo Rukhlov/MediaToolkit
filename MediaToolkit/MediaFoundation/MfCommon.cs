@@ -278,11 +278,9 @@ namespace MediaToolkit.MediaFoundation
             return new GDI.Size(pars[0], pars[1]);
         }
 
-		public static Tuple<int, int> LongToInts(long val)
+		public static long PackToLong(Tuple<int, int> tuple)
 		{
-			var pars = UnPackLongToInts(val);
-
-			return new Tuple<int, int>(pars[0], pars[1]);
+			return ((long)tuple.Item1 << 32 | (uint)tuple.Item2);
 		}
 
 		public static long PackToLong(int left, int right)
@@ -300,7 +298,15 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public static Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
+		public static Tuple<int, int> LongToInts(long val)
+		{
+			var pars = UnPackLongToInts(val);
+
+			return new Tuple<int, int>(pars[0], pars[1]);
+		}
+
+
+		public static Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
         {
             Format format = Format.Unknown;
             if (DxgiFormatsDict.ContainsKey(guid))
@@ -1438,6 +1444,8 @@ namespace MediaToolkit.MediaFoundation
         public eAVEncH264VProfile Profile { get; set; } = eAVEncH264VProfile.Main;
 
         public int InterlaceMode { get; set; } = 2; //Progressive
+
+		public long AspectRatio { get; set; } = MfTool.PackToLong(1, 1);
 
     }
 

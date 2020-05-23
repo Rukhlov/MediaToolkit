@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Core;
 using ScreenStreamer.Common;
+using ScreenStreamer.WinForms.App;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,9 @@ namespace ScreenStreamer.WinForms
         {
             InitializeComponent();
 
-        }
+			LoadCaptureTypes();
+
+		}
 
         private ScreenCaptureDevice CaptDeviceSettings = null;
 
@@ -29,8 +32,20 @@ namespace ScreenStreamer.WinForms
             var captureProps = CaptDeviceSettings.Properties;
 
             captureMouseCheckBox.Checked = captureProps.CaptureMouse;
-            //aspectRatioCheckBox.Checked = captureProps.AspectRatio;
-            showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
+
+			var fps = captureProps.Fps;
+			if (fps > fpsNumeric.Maximum)
+			{
+				fps = (int)fpsNumeric.Maximum;
+			}
+			else if(fps < fpsNumeric.Minimum)
+			{
+				fps = (int)fpsNumeric.Minimum;
+			}
+
+			fpsNumeric.Value = fps;
+
+			showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
             showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
 
             screenCaptureDetailsPanel.Visible = true;
@@ -41,12 +56,14 @@ namespace ScreenStreamer.WinForms
         private void applyButton_Click(object sender, EventArgs e)
         {
             CaptDeviceSettings.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
-            //screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
+
             CaptDeviceSettings.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
             CaptDeviceSettings.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
 
+			CaptDeviceSettings.Properties.Fps = (int)fpsNumeric.Value;
 
-            this.Close();
+
+			this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -57,5 +74,40 @@ namespace ScreenStreamer.WinForms
 
         }
 
-    }
+
+		private void LoadCaptureTypes()
+		{
+
+			List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
+
+
+			captureTypes.Add(new ComboBoxItem
+			{
+				Name = "Desktop Duplication API",
+				Tag = VideoCaptureType.DXGIDeskDupl,
+			});
+
+			captureTypes.Add(new ComboBoxItem
+			{
+				Name = "GDI",
+				Tag = VideoCaptureType.GDI,
+			});
+
+			captureTypesComboBox.DataSource = captureTypes;
+			captureTypesComboBox.DisplayMember = "Name";
+			captureTypesComboBox.ValueMember = "Tag";
+
+
+			//List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
+			//captureTypes.Add(VideoCaptureType.DXGIDeskDupl);
+			//captureTypes.Add(VideoCaptureType.GDI);
+			////captureTypes.Add(CaptureType.GDIPlus);
+			//captureTypes.Add(VideoCaptureType.Direct3D9);
+			//captureTypes.Add(VideoCaptureType.Datapath);
+
+			captureTypesComboBox.DataSource = captureTypes;
+
+		}
+
+	}
 }

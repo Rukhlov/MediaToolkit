@@ -80,6 +80,7 @@ namespace MediaToolkit.MediaFoundation
 
 			var bitrateMode = MfTool.GetMfBitrateMode(encoderSettings.BitrateMode);
 
+			var aspectRatio = encoderSettings.AspectRatio;
 			var encArgs = new MfVideoArgs
 			{
 				Width = destSize.Width, //srcSize.Width,
@@ -95,6 +96,8 @@ namespace MediaToolkit.MediaFoundation
 				MaxBitrate = encoderSettings.MaxBitrate,
                
                 EncoderId = encoderSettings.EncoderId,
+
+				AspectRatio= MfTool.PackToLong(aspectRatio)
 			};
 
 

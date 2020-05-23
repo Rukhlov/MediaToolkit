@@ -318,7 +318,7 @@ namespace MediaToolkit.MediaFoundation
         {
             logger.Debug("SetupEncoder(...)");
 
-            var fps = args.FrameRate;
+            var frameRate = args.FrameRate;
             var width = args.Width;
             var height = args.Height;
 
@@ -339,7 +339,7 @@ namespace MediaToolkit.MediaFoundation
             //var inputFormat = VideoFormatGuids.Argb32;
             var inputFormat = args.Format; //VideoFormatGuids.NV12;
 
-            logger.Info("Encoder input params: " + width + "x" + height + " fps=" + fps + " {" + inputFormat + "}");
+            logger.Info("Encoder input params: " + width + "x" + height + " fps=" + frameRate + " {" + inputFormat + "}");
             using (var attr = encoder.Attributes)
             {
                 // TODO:
@@ -409,7 +409,7 @@ namespace MediaToolkit.MediaFoundation
 
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));             
+                mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));             
                 mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 mediaType.Set(MediaTypeAttributeKeys.Mpeg2Profile, mpegProfile);
@@ -478,7 +478,7 @@ namespace MediaToolkit.MediaFoundation
             //InputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
             //InputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
             InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-            InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(fps, 1));
+            InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
 
             InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
             InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);

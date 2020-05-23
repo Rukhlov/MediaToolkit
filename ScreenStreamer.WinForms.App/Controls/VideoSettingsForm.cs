@@ -59,7 +59,7 @@ namespace ScreenStreamer.WinForms.App
 
             //LoadRateModeItems();
 
-            LoadCaptureTypes();
+            UpdateCaptureInfo();
 
 
             var encoderSettings = VideoSettings.EncoderSettings;
@@ -92,7 +92,7 @@ namespace ScreenStreamer.WinForms.App
 
 
                 //captureMouseCheckBox.Checked = captureProps.CaptureMouse;
-                ////aspectRatioCheckBox.Checked = captureProps.AspectRatio;
+                aspectRatioCheckBox.Checked = captureProps.AspectRatio;
                 //showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
                 //showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
 
@@ -184,7 +184,7 @@ namespace ScreenStreamer.WinForms.App
 
 
                 //screenCaptureParams.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
-                ////screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
+                screenCaptureParams.Properties.AspectRatio = this.aspectRatioCheckBox.Checked;
                 //screenCaptureParams.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
                 //screenCaptureParams.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
 
@@ -338,6 +338,7 @@ namespace ScreenStreamer.WinForms.App
 
             panelEncoderResoulution.Enabled = !useResoulutionFromSource;
             adjustAspectRatioButton.Enabled = !useResoulutionFromSource;
+            aspectRatioCheckBox.Enabled = !useResoulutionFromSource;
 
         }
 
@@ -626,7 +627,7 @@ namespace ScreenStreamer.WinForms.App
 
 
 
-        private void LoadCaptureTypes()
+        private void UpdateCaptureInfo()
         {
 
             List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
@@ -638,17 +639,21 @@ namespace ScreenStreamer.WinForms.App
             var resolution = caputreDevice.Resolution;
             var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
 
-            // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
-            captureTypes.Add(new ComboBoxItem
-            {
-                Name = "Desktop Duplication API (" + propsStr + ")",
-                Tag = VideoCaptureType.DXGIDeskDupl,
-            });
+   //         // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
+   //         captureTypes.Add(new ComboBoxItem
+   //         {
+   //             Name = "Desktop Duplication API (" + propsStr + ")",
+   //             Tag = VideoCaptureType.DXGIDeskDupl,
+   //         });
 
+			//captureTypesComboBox.DataSource = captureTypes;
+			//captureTypesComboBox.DisplayMember = "Name";
+			//captureTypesComboBox.ValueMember = "Tag";
 
-            captureTypesComboBox.DataSource = captureTypes;
-            captureTypesComboBox.DisplayMember = "Name";
-            captureTypesComboBox.ValueMember = "Tag";
+			var captInfo = "Desktop Duplication API (" + propsStr + ")";
+
+			captInfoTextBox.Text = captInfo;
+
 
 
             //List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
@@ -779,7 +784,10 @@ namespace ScreenStreamer.WinForms.App
                 f.Setup(VideoSettings.CaptureDevice);
 
                 f.ShowDialog();
-            }
+
+				UpdateCaptureInfo();
+
+			}
 
         }
     }

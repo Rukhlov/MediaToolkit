@@ -35,12 +35,12 @@
             this.snippingToolButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
             this.screenCaptureTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
             this.captureRegionTextBox = new System.Windows.Forms.TextBox();
             this.displayTextBox = new System.Windows.Forms.TextBox();
             this.labelDisplay = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.captInfoTextBox = new System.Windows.Forms.TextBox();
             this.cameraTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
             this.CaptureDeviceProfilesComboBox = new System.Windows.Forms.ComboBox();
@@ -59,8 +59,9 @@
             this.encWidthNumeric = new System.Windows.Forms.NumericUpDown();
             this.adjustAspectRatioButton = new System.Windows.Forms.Button();
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
-            this.checkBoxResoulutionFromSource = new System.Windows.Forms.CheckBox();
             this.encoderSettingsButton = new System.Windows.Forms.Button();
+            this.checkBoxResoulutionFromSource = new System.Windows.Forms.CheckBox();
+            this.aspectRatioCheckBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ScreenCaptureGroup.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -86,7 +87,7 @@
             this.ScreenCaptureGroup.Margin = new System.Windows.Forms.Padding(2);
             this.ScreenCaptureGroup.Name = "ScreenCaptureGroup";
             this.ScreenCaptureGroup.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.ScreenCaptureGroup.Size = new System.Drawing.Size(463, 233);
+            this.ScreenCaptureGroup.Size = new System.Drawing.Size(464, 223);
             this.ScreenCaptureGroup.TabIndex = 70;
             this.ScreenCaptureGroup.TabStop = false;
             this.ScreenCaptureGroup.Text = "Capture Settings";
@@ -111,7 +112,7 @@
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(451, 187);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(452, 177);
             this.tableLayoutPanel2.TabIndex = 82;
             // 
             // tableLayoutPanel3
@@ -128,21 +129,22 @@
             this.tableLayoutPanel3.Controls.Add(this.snippingToolButton, 1, 0);
             this.tableLayoutPanel3.Controls.Add(this.previewButton, 2, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(141, 150);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(145, 145);
+            this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(307, 34);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(307, 32);
             this.tableLayoutPanel3.TabIndex = 82;
             // 
             // captureSettingsButton
             // 
-            this.captureSettingsButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.captureSettingsButton.AutoSize = true;
             this.captureSettingsButton.Location = new System.Drawing.Point(216, 2);
             this.captureSettingsButton.Margin = new System.Windows.Forms.Padding(2);
             this.captureSettingsButton.Name = "captureSettingsButton";
-            this.captureSettingsButton.Size = new System.Drawing.Size(89, 30);
+            this.captureSettingsButton.Size = new System.Drawing.Size(89, 28);
             this.captureSettingsButton.TabIndex = 114;
             this.captureSettingsButton.Text = "Settings";
             this.captureSettingsButton.UseVisualStyleBackColor = true;
@@ -150,11 +152,10 @@
             // 
             // snippingToolButton
             // 
-            this.snippingToolButton.Dock = System.Windows.Forms.DockStyle.Fill;
             this.snippingToolButton.Location = new System.Drawing.Point(2, 2);
             this.snippingToolButton.Margin = new System.Windows.Forms.Padding(2);
             this.snippingToolButton.Name = "snippingToolButton";
-            this.snippingToolButton.Size = new System.Drawing.Size(112, 30);
+            this.snippingToolButton.Size = new System.Drawing.Size(112, 28);
             this.snippingToolButton.TabIndex = 88;
             this.snippingToolButton.Text = "Select Region";
             this.snippingToolButton.UseVisualStyleBackColor = true;
@@ -163,11 +164,11 @@
             // 
             // previewButton
             // 
-            this.previewButton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.previewButton.AutoSize = true;
             this.previewButton.Location = new System.Drawing.Point(118, 2);
             this.previewButton.Margin = new System.Windows.Forms.Padding(2);
             this.previewButton.Name = "previewButton";
-            this.previewButton.Size = new System.Drawing.Size(94, 30);
+            this.previewButton.Size = new System.Drawing.Size(94, 28);
             this.previewButton.TabIndex = 86;
             this.previewButton.Text = "Preview";
             this.previewButton.UseVisualStyleBackColor = true;
@@ -181,12 +182,12 @@
             this.tableLayoutPanel2.SetColumnSpan(this.screenCaptureTableLayoutPanel, 2);
             this.screenCaptureTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.screenCaptureTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.screenCaptureTableLayoutPanel.Controls.Add(this.captureTypesComboBox, 1, 2);
             this.screenCaptureTableLayoutPanel.Controls.Add(this.captureRegionTextBox, 1, 1);
             this.screenCaptureTableLayoutPanel.Controls.Add(this.displayTextBox, 1, 0);
             this.screenCaptureTableLayoutPanel.Controls.Add(this.labelDisplay, 0, 0);
             this.screenCaptureTableLayoutPanel.Controls.Add(this.label5, 0, 2);
             this.screenCaptureTableLayoutPanel.Controls.Add(this.label9, 0, 1);
+            this.screenCaptureTableLayoutPanel.Controls.Add(this.captInfoTextBox, 1, 2);
             this.screenCaptureTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.screenCaptureTableLayoutPanel.Location = new System.Drawing.Point(2, 62);
             this.screenCaptureTableLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
@@ -196,20 +197,8 @@
             this.screenCaptureTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.screenCaptureTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.screenCaptureTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.screenCaptureTableLayoutPanel.Size = new System.Drawing.Size(449, 83);
+            this.screenCaptureTableLayoutPanel.Size = new System.Drawing.Size(450, 81);
             this.screenCaptureTableLayoutPanel.TabIndex = 80;
-            // 
-            // captureTypesComboBox
-            // 
-            this.captureTypesComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.captureTypesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.captureTypesComboBox.Enabled = false;
-            this.captureTypesComboBox.FormattingEnabled = true;
-            this.captureTypesComboBox.Location = new System.Drawing.Point(68, 56);
-            this.captureTypesComboBox.Margin = new System.Windows.Forms.Padding(2);
-            this.captureTypesComboBox.Name = "captureTypesComboBox";
-            this.captureTypesComboBox.Size = new System.Drawing.Size(379, 25);
-            this.captureTypesComboBox.TabIndex = 77;
             // 
             // captureRegionTextBox
             // 
@@ -218,7 +207,7 @@
             this.captureRegionTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.captureRegionTextBox.Name = "captureRegionTextBox";
             this.captureRegionTextBox.ReadOnly = true;
-            this.captureRegionTextBox.Size = new System.Drawing.Size(379, 23);
+            this.captureRegionTextBox.Size = new System.Drawing.Size(380, 23);
             this.captureRegionTextBox.TabIndex = 76;
             // 
             // displayTextBox
@@ -228,7 +217,7 @@
             this.displayTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(379, 23);
+            this.displayTextBox.Size = new System.Drawing.Size(380, 23);
             this.displayTextBox.TabIndex = 73;
             // 
             // labelDisplay
@@ -250,7 +239,7 @@
             this.label5.Location = new System.Drawing.Point(2, 54);
             this.label5.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(62, 29);
+            this.label5.Size = new System.Drawing.Size(62, 27);
             this.label5.TabIndex = 82;
             this.label5.Text = "Capture:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -266,6 +255,16 @@
             this.label9.TabIndex = 81;
             this.label9.Text = "Region:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // captInfoTextBox
+            // 
+            this.captInfoTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.captInfoTextBox.Location = new System.Drawing.Point(68, 56);
+            this.captInfoTextBox.Margin = new System.Windows.Forms.Padding(2);
+            this.captInfoTextBox.Name = "captInfoTextBox";
+            this.captInfoTextBox.ReadOnly = true;
+            this.captInfoTextBox.Size = new System.Drawing.Size(380, 23);
+            this.captInfoTextBox.TabIndex = 83;
             // 
             // cameraTableLayoutPanel
             // 
@@ -288,7 +287,7 @@
             this.cameraTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.cameraTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.cameraTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.cameraTableLayoutPanel.Size = new System.Drawing.Size(449, 56);
+            this.cameraTableLayoutPanel.Size = new System.Drawing.Size(450, 56);
             this.cameraTableLayoutPanel.TabIndex = 80;
             // 
             // CaptureDeviceTextBox
@@ -298,7 +297,7 @@
             this.CaptureDeviceTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.CaptureDeviceTextBox.Name = "CaptureDeviceTextBox";
             this.CaptureDeviceTextBox.ReadOnly = true;
-            this.CaptureDeviceTextBox.Size = new System.Drawing.Size(386, 23);
+            this.CaptureDeviceTextBox.Size = new System.Drawing.Size(387, 23);
             this.CaptureDeviceTextBox.TabIndex = 60;
             // 
             // CaptureDeviceProfilesComboBox
@@ -310,7 +309,7 @@
             this.CaptureDeviceProfilesComboBox.Location = new System.Drawing.Point(61, 29);
             this.CaptureDeviceProfilesComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.CaptureDeviceProfilesComboBox.Name = "CaptureDeviceProfilesComboBox";
-            this.CaptureDeviceProfilesComboBox.Size = new System.Drawing.Size(386, 25);
+            this.CaptureDeviceProfilesComboBox.Size = new System.Drawing.Size(387, 25);
             this.CaptureDeviceProfilesComboBox.TabIndex = 62;
             // 
             // label3
@@ -378,7 +377,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(467, 515);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(468, 505);
             this.tableLayoutPanel1.TabIndex = 79;
             // 
             // EncoderSettingsGroup
@@ -386,11 +385,11 @@
             this.EncoderSettingsGroup.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.EncoderSettingsGroup.Controls.Add(this.tableLayoutPanel4);
             this.EncoderSettingsGroup.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.EncoderSettingsGroup.Location = new System.Drawing.Point(2, 239);
+            this.EncoderSettingsGroup.Location = new System.Drawing.Point(2, 229);
             this.EncoderSettingsGroup.Margin = new System.Windows.Forms.Padding(2);
             this.EncoderSettingsGroup.Name = "EncoderSettingsGroup";
             this.EncoderSettingsGroup.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.EncoderSettingsGroup.Size = new System.Drawing.Size(463, 236);
+            this.EncoderSettingsGroup.Size = new System.Drawing.Size(464, 236);
             this.EncoderSettingsGroup.TabIndex = 74;
             this.EncoderSettingsGroup.TabStop = false;
             this.EncoderSettingsGroup.Text = "Encoder Settings";
@@ -403,19 +402,21 @@
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel4.Controls.Add(this.label4, 0, 0);
-            this.tableLayoutPanel4.Controls.Add(this.panelEncoderResoulution, 0, 3);
+            this.tableLayoutPanel4.Controls.Add(this.panelEncoderResoulution, 0, 4);
             this.tableLayoutPanel4.Controls.Add(this.encoderComboBox, 1, 0);
-            this.tableLayoutPanel4.Controls.Add(this.checkBoxResoulutionFromSource, 0, 2);
             this.tableLayoutPanel4.Controls.Add(this.encoderSettingsButton, 1, 1);
+            this.tableLayoutPanel4.Controls.Add(this.checkBoxResoulutionFromSource, 0, 2);
+            this.tableLayoutPanel4.Controls.Add(this.aspectRatioCheckBox, 0, 3);
             this.tableLayoutPanel4.Location = new System.Drawing.Point(13, 33);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-            this.tableLayoutPanel4.RowCount = 5;
+            this.tableLayoutPanel4.RowCount = 6;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel4.Size = new System.Drawing.Size(444, 161);
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(445, 186);
             this.tableLayoutPanel4.TabIndex = 81;
             // 
             // label4
@@ -445,13 +446,14 @@
             this.panelEncoderResoulution.Controls.Add(this.label13, 0, 0);
             this.panelEncoderResoulution.Controls.Add(this.encWidthNumeric, 1, 0);
             this.panelEncoderResoulution.Controls.Add(this.adjustAspectRatioButton, 3, 1);
-            this.panelEncoderResoulution.Location = new System.Drawing.Point(7, 99);
+            this.panelEncoderResoulution.Location = new System.Drawing.Point(7, 124);
             this.panelEncoderResoulution.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.panelEncoderResoulution.Name = "panelEncoderResoulution";
             this.panelEncoderResoulution.RowCount = 3;
             this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.panelEncoderResoulution.Size = new System.Drawing.Size(251, 59);
             this.panelEncoderResoulution.TabIndex = 80;
             // 
@@ -551,15 +553,28 @@
             this.encoderComboBox.Location = new System.Drawing.Point(71, 2);
             this.encoderComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.encoderComboBox.Name = "encoderComboBox";
-            this.encoderComboBox.Size = new System.Drawing.Size(371, 25);
+            this.encoderComboBox.Size = new System.Drawing.Size(372, 25);
             this.encoderComboBox.TabIndex = 98;
             this.encoderComboBox.SelectedValueChanged += new System.EventHandler(this.encoderComboBox_SelectedValueChanged);
+            // 
+            // encoderSettingsButton
+            // 
+            this.encoderSettingsButton.AutoSize = true;
+            this.encoderSettingsButton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.encoderSettingsButton.Location = new System.Drawing.Point(350, 31);
+            this.encoderSettingsButton.Margin = new System.Windows.Forms.Padding(5, 2, 2, 2);
+            this.encoderSettingsButton.Name = "encoderSettingsButton";
+            this.encoderSettingsButton.Size = new System.Drawing.Size(93, 27);
+            this.encoderSettingsButton.TabIndex = 113;
+            this.encoderSettingsButton.Text = "Settings";
+            this.encoderSettingsButton.UseVisualStyleBackColor = true;
+            this.encoderSettingsButton.Click += new System.EventHandler(this.encoderSettingsButton_Click);
             // 
             // checkBoxResoulutionFromSource
             // 
             this.checkBoxResoulutionFromSource.AutoSize = true;
             this.tableLayoutPanel4.SetColumnSpan(this.checkBoxResoulutionFromSource, 2);
-            this.checkBoxResoulutionFromSource.Location = new System.Drawing.Point(5, 73);
+            this.checkBoxResoulutionFromSource.Location = new System.Drawing.Point(5, 70);
             this.checkBoxResoulutionFromSource.Margin = new System.Windows.Forms.Padding(5, 10, 2, 2);
             this.checkBoxResoulutionFromSource.Name = "checkBoxResoulutionFromSource";
             this.checkBoxResoulutionFromSource.Size = new System.Drawing.Size(265, 21);
@@ -568,18 +583,17 @@
             this.checkBoxResoulutionFromSource.UseVisualStyleBackColor = true;
             this.checkBoxResoulutionFromSource.CheckedChanged += new System.EventHandler(this.checkBoxResoulutionFromSource_CheckedChanged);
             // 
-            // encoderSettingsButton
+            // aspectRatioCheckBox
             // 
-            this.encoderSettingsButton.AutoSize = true;
-            this.encoderSettingsButton.Dock = System.Windows.Forms.DockStyle.Right;
-            this.encoderSettingsButton.Location = new System.Drawing.Point(349, 31);
-            this.encoderSettingsButton.Margin = new System.Windows.Forms.Padding(5, 2, 2, 2);
-            this.encoderSettingsButton.Name = "encoderSettingsButton";
-            this.encoderSettingsButton.Size = new System.Drawing.Size(93, 30);
-            this.encoderSettingsButton.TabIndex = 113;
-            this.encoderSettingsButton.Text = "Settings";
-            this.encoderSettingsButton.UseVisualStyleBackColor = true;
-            this.encoderSettingsButton.Click += new System.EventHandler(this.encoderSettingsButton_Click);
+            this.aspectRatioCheckBox.AutoSize = true;
+            this.tableLayoutPanel4.SetColumnSpan(this.aspectRatioCheckBox, 2);
+            this.aspectRatioCheckBox.Location = new System.Drawing.Point(5, 98);
+            this.aspectRatioCheckBox.Margin = new System.Windows.Forms.Padding(5, 5, 2, 2);
+            this.aspectRatioCheckBox.Name = "aspectRatioCheckBox";
+            this.aspectRatioCheckBox.Size = new System.Drawing.Size(147, 21);
+            this.aspectRatioCheckBox.TabIndex = 115;
+            this.aspectRatioCheckBox.Text = "Keep Aspect Ratio";
+            this.aspectRatioCheckBox.UseVisualStyleBackColor = true;
             // 
             // panel1
             // 
@@ -588,7 +602,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(220, 481);
+            this.panel1.Location = new System.Drawing.Point(221, 471);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -601,7 +615,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(554, 654);
+            this.ClientSize = new System.Drawing.Size(782, 672);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -615,6 +629,7 @@
             this.tableLayoutPanel2.ResumeLayout(false);
             this.tableLayoutPanel2.PerformLayout();
             this.tableLayoutPanel3.ResumeLayout(false);
+            this.tableLayoutPanel3.PerformLayout();
             this.screenCaptureTableLayoutPanel.ResumeLayout(false);
             this.screenCaptureTableLayoutPanel.PerformLayout();
             this.cameraTableLayoutPanel.ResumeLayout(false);
@@ -642,7 +657,6 @@
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.TextBox displayTextBox;
         private System.Windows.Forms.Label labelDisplay;
-        private System.Windows.Forms.ComboBox captureTypesComboBox;
         private System.Windows.Forms.TextBox captureRegionTextBox;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label2;
@@ -671,5 +685,7 @@
         private System.Windows.Forms.Button encoderSettingsButton;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.Button captureSettingsButton;
+		private System.Windows.Forms.TextBox captInfoTextBox;
+        private System.Windows.Forms.CheckBox aspectRatioCheckBox;
     }
 }

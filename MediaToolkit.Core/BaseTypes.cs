@@ -93,6 +93,9 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public H264Profile Profile { get; set; } = H264Profile.Main;
 
+		[XmlElement]
+		public AspectRatio AspectRatio { get; set; } = AspectRatio.Default;
+
         [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
 
@@ -107,6 +110,62 @@ namespace MediaToolkit.Core
             return this.MemberwiseClone();
         }
     }
+
+
+	[Serializable]
+	public class AspectRatio
+	{
+		public AspectRatio()
+		{
+			this.Width = 1;
+			this.Height = 1;
+		}
+
+		public AspectRatio(int w, int h)
+		{
+			this.Width = w;
+			this.Height = h;
+		}
+
+
+		[XmlAttribute]
+		public int Width { get; set; } = 1;
+
+		[XmlAttribute]
+		public int Height { get; set; } = 1;
+
+		public override string ToString()
+		{
+			if(Width == 1 && Height == 1)
+			{
+				return "Default";
+			}
+			else
+			{
+				return Width + ":" + Height;
+			}
+
+		}
+
+		public static readonly AspectRatio Default = new AspectRatio(1, 1);
+
+		public static readonly AspectRatio AspectRatio_16_9 = new AspectRatio(16, 9 );
+		public static readonly AspectRatio AspectRatio_16_10 = new AspectRatio(16, 10 );
+
+		public static readonly AspectRatio AspectRatio_4_3 = new AspectRatio(4, 3);
+		public static readonly AspectRatio AspectRatio_5_4 = new AspectRatio(5, 4);
+
+		public static implicit operator AspectRatio(Tuple<int, int> tuple)
+		{
+			return new AspectRatio(tuple.Item1, tuple.Item2);
+		}
+
+		public static implicit operator Tuple<int, int>(AspectRatio aspectRatio)
+		{
+			return new Tuple<int, int> ( aspectRatio.Width, aspectRatio.Height );
+		}
+
+	} 
 
     public enum VideoCodingFormat
     {
