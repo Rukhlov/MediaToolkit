@@ -72,6 +72,7 @@
       <HintPath>..\packages\Prism.Wpf.7.2.0.1422\lib\net45\Prism.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -158,6 +159,7 @@
     <Compile Include="ViewModels\Dialogs\CursorSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\DeleteViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\NetworkSettingsViewModel.cs" />
+    <Compile Include="ViewModels\Dialogs\StreamerViewModelBase.cs" />
     <Compile Include="ViewModels\IPAddressInfoViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyBorderViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\PropertyWindowViewModel.cs" />
@@ -191,6 +193,7 @@
     <Compile Include="Services\StreamDialogService.cs" />
     <Compile Include="ValidationRules\IpAddressRule.cs" />
     <Compile Include="ValidationRules\ResolutionRule.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\DebugContextMenu.xaml.cs">
       <DependentUpon>DebugContextMenu.xaml</DependentUpon>
     </Compile>

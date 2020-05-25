@@ -9,36 +9,36 @@ using Unity;
 
 namespace ScreenStreamer.Wpf.Common.Models
 {
-    public class CustomBindableBase : BindableBase
-    {
-        protected bool SetProperty<TObject, TProperty>(TObject storageObject,
-            Expression<Func<dynamic>> storageObjectPropertyExpression, TProperty value, [CallerMemberName] string propertyName = null)
-        {
-            var storagePropertyName = _PropertySupport.ExtractPropertyName(storageObjectPropertyExpression);
+    //public class CustomBindableBase : BindableBase
+    //{
+    //    protected bool SetProperty<TObject, TProperty>(TObject storageObject,
+    //        Expression<Func<dynamic>> storageObjectPropertyExpression, TProperty value, [CallerMemberName] string propertyName = null)
+    //    {
+    //        var storagePropertyName = Polywall.Share.UI.PropertySupport.ExtractPropertyName(storageObjectPropertyExpression);
 
-            dynamic val = _PropertySupport.GetPropertyValue<TObject, TProperty>(storageObject, storagePropertyName);
-            if ((val as object)?.GetType().IsValueType ?? false && val != null && value != null)
-            {
-                if (val.Equals(value))
-                {
-                    return false;
-                }
-            }
-            else if (val == value)
-                return false;
+    //        dynamic val = Polywall.Share.UI.PropertySupport.GetPropertyValue<TObject, TProperty>(storageObject, storagePropertyName);
+    //        if ((val as object)?.GetType().IsValueType ?? false && val != null && value != null)
+    //        {
+    //            if (val.Equals(value))
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //        else if (val == value)
+    //            return false;
 
-            _PropertySupport.SetPropertyValue(storageObject, storagePropertyName, value);
+    //        Polywall.Share.UI.PropertySupport.SetPropertyValue(storageObject, storagePropertyName, value);
 
-            {
-                RaisePropertyChanged(propertyName);
-                DependencyInjectionHelper.Container.Resolve<IMessenger>().Send<AcceptChangesMessage>(new AcceptChangesMessage
-                {
-                    Model = this,
-                    ChangedProperty = propertyName
-                });
-            }
+    //        {
+    //            RaisePropertyChanged(propertyName);
+    //            DependencyInjectionHelper.Container.Resolve<IMessenger>().Send<AcceptChangesMessage>(new AcceptChangesMessage
+    //            {
+    //                Model = this,
+    //                ChangedProperty = propertyName
+    //            });
+    //        }
 
-            return true;
-        }
-    }
+    //        return true;
+    //    }
+    //}
 }

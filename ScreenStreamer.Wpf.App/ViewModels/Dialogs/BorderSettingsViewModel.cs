@@ -6,7 +6,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     {
         public override string Caption => "Border";
 
-        public BorderSettingsViewModel(PropertyBorderViewModel property) : base(property)
+        public BorderSettingsViewModel(PropertyBorderViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
         }
     }

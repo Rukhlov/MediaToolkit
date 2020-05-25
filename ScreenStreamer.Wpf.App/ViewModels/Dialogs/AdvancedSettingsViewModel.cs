@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using Prism.Commands;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -10,6 +11,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         private readonly AdvancedSettingsModel _model;
         public override string Caption => "Advanced Settings";
 
+
+        [Track]
         public VideoCodingFormat VideoEncoder
         {
             get => _model.VideoEncoder;
@@ -19,6 +22,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
+
+        [Track]
         public H264Profile H264Profile
         {
             get => _model.H264Profile;
@@ -28,6 +33,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
+
+        [Track]
         public int Bitrate
         {
             get => _model.Bitrate;
@@ -38,6 +45,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         }
 
 
+        [Track]
         public int MaxBitrate
         {
             get => _model.MaxBitrate;
@@ -47,23 +55,27 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-
+        [Track]
         public int Fps
         {
             get => _model.Fps;
             set
-            { SetProperty(_model,() => _model.Fps, value);
+            {
+                SetProperty(_model,() => _model.Fps, value);
             }
         }
 
 
+        [Track]
         public bool LowLatency
         {
             get => _model.LowLatency;
             set
-            { SetProperty(_model,() => _model.LowLatency, value);
+            {
+                SetProperty(_model,() => _model.LowLatency, value);
             }
         }
+
 
         public ObservableCollection<VideoCodingFormat> VideoEncoderModes { get; } = new ObservableCollection<VideoCodingFormat>()
         {
@@ -78,7 +90,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             H264Profile.High
         };
 
-        public AdvancedSettingsViewModel(AdvancedSettingsModel model)
+        public AdvancedSettingsViewModel(AdvancedSettingsModel model, StreamerViewModelBase parent) :base(parent)
         {
             _model = model;
             

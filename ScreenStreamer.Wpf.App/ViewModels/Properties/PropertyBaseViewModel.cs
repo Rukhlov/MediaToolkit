@@ -9,7 +9,7 @@ using Unity;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
-    public abstract class PropertyBaseViewModel : CustomBindableBase
+    public abstract class PropertyBaseViewModel : StreamerViewModelBase
     {
         protected readonly int MaxInfoLength = 60;
 
@@ -23,7 +23,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected IDialogService DialogService { get; private set; }
 
-        public PropertyBaseViewModel(StreamViewModel parent)
+        public PropertyBaseViewModel(StreamViewModel parent) : base(parent)
         {
             Parent = parent;
             DialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();

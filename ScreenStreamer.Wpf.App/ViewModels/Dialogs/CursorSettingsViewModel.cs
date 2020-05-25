@@ -6,7 +6,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     {
         public override string Caption => "Cursor";
 
-        public CursorSettingsViewModel(PropertyCursorViewModel property) : base(property)
+        public CursorSettingsViewModel(PropertyCursorViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
         }
     }

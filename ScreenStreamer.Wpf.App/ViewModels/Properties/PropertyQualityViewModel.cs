@@ -12,13 +12,14 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         #region SelectedQualityPreset
         private QualityPresetViewModel _selectedQualityPreset;
-
+        [Track]
         public QualityPresetViewModel SelectedQualityPreset
         {
             get => _selectedQualityPreset;
             set
             {
-                SetProperty(ref _selectedQualityPreset, value);
+                _selectedQualityPreset = value;
+                RaisePropertyChanged(() => SelectedQualityPreset);
                 _model.Preset = value.Preset;
                 RaisePropertyChanged(nameof(Info));
             }
@@ -45,7 +46,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
-            return new QualitySettingsViewModel(this);
+            return new QualitySettingsViewModel(this,Parent);
         }
     }
 }

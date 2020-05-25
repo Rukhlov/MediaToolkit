@@ -43,7 +43,6 @@
             this.captInfoTextBox = new System.Windows.Forms.TextBox();
             this.cameraTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
-            this.CaptureDeviceProfilesComboBox = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.applyButton = new System.Windows.Forms.Button();
@@ -63,6 +62,7 @@
             this.checkBoxResoulutionFromSource = new System.Windows.Forms.CheckBox();
             this.aspectRatioCheckBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.uvcProfileInfotextBox = new System.Windows.Forms.TextBox();
             this.ScreenCaptureGroup.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -275,9 +275,9 @@
             this.cameraTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.cameraTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.cameraTableLayoutPanel.Controls.Add(this.CaptureDeviceTextBox, 1, 0);
-            this.cameraTableLayoutPanel.Controls.Add(this.CaptureDeviceProfilesComboBox, 1, 1);
             this.cameraTableLayoutPanel.Controls.Add(this.label3, 0, 1);
             this.cameraTableLayoutPanel.Controls.Add(this.label2, 0, 0);
+            this.cameraTableLayoutPanel.Controls.Add(this.uvcProfileInfotextBox, 1, 1);
             this.cameraTableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.cameraTableLayoutPanel.Location = new System.Drawing.Point(2, 2);
             this.cameraTableLayoutPanel.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
@@ -299,18 +299,6 @@
             this.CaptureDeviceTextBox.ReadOnly = true;
             this.CaptureDeviceTextBox.Size = new System.Drawing.Size(387, 23);
             this.CaptureDeviceTextBox.TabIndex = 60;
-            // 
-            // CaptureDeviceProfilesComboBox
-            // 
-            this.CaptureDeviceProfilesComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.CaptureDeviceProfilesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CaptureDeviceProfilesComboBox.Enabled = false;
-            this.CaptureDeviceProfilesComboBox.FormattingEnabled = true;
-            this.CaptureDeviceProfilesComboBox.Location = new System.Drawing.Point(61, 29);
-            this.CaptureDeviceProfilesComboBox.Margin = new System.Windows.Forms.Padding(2);
-            this.CaptureDeviceProfilesComboBox.Name = "CaptureDeviceProfilesComboBox";
-            this.CaptureDeviceProfilesComboBox.Size = new System.Drawing.Size(387, 25);
-            this.CaptureDeviceProfilesComboBox.TabIndex = 62;
             // 
             // label3
             // 
@@ -609,6 +597,15 @@
             this.panel1.Size = new System.Drawing.Size(245, 32);
             this.panel1.TabIndex = 60;
             // 
+            // uvcProfileInfotextBox
+            // 
+            this.uvcProfileInfotextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.uvcProfileInfotextBox.Location = new System.Drawing.Point(62, 30);
+            this.uvcProfileInfotextBox.Name = "uvcProfileInfotextBox";
+            this.uvcProfileInfotextBox.ReadOnly = true;
+            this.uvcProfileInfotextBox.Size = new System.Drawing.Size(385, 23);
+            this.uvcProfileInfotextBox.TabIndex = 82;
+            // 
             // VideoSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
@@ -661,7 +658,6 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox CaptureDeviceProfilesComboBox;
         private System.Windows.Forms.TextBox CaptureDeviceTextBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Panel panel1;
@@ -687,5 +683,6 @@
         private System.Windows.Forms.Button captureSettingsButton;
 		private System.Windows.Forms.TextBox captInfoTextBox;
         private System.Windows.Forms.CheckBox aspectRatioCheckBox;
+        private System.Windows.Forms.TextBox uvcProfileInfotextBox;
     }
 }

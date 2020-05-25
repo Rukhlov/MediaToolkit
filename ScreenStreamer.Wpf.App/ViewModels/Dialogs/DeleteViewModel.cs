@@ -20,7 +20,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private StreamViewModel _stream;
 
-        public DeleteViewModel(StreamViewModel stream)
+        public DeleteViewModel(StreamViewModel stream):base(stream)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             DeleteCommand = new DelegateCommand<Window>(SetDialogResult);

@@ -10,7 +10,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         #region IsCursorVisible
         private bool _isCursorVisible = true;
-        public bool IsCursorVisible { get => _model.IsCursorVisible; set { SetProperty(_model,() => _model.IsCursorVisible, value); } }
+        [Track]
+        public bool IsCursorVisible { get => _model.IsCursorVisible; set { SetProperty(_model, () => _model.IsCursorVisible, value); } }
         #endregion IsCursorVisible
 
         public PropertyCursorViewModel(StreamViewModel parent, PropertyCursorModel model) : base(parent)
@@ -29,7 +30,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
-            return new CursorSettingsViewModel(this);
+            return new CursorSettingsViewModel(this, Parent);
         }
     }
 }

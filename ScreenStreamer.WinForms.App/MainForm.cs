@@ -178,7 +178,7 @@ namespace ScreenStreamer.WinForms.App
             {
                 syncContext.Send(_ => 
                 {
-                    OnSteramStarting();
+                    OnStearmStarting();
 
                 } , null);
 
@@ -214,7 +214,7 @@ namespace ScreenStreamer.WinForms.App
             }
         }
 
-        private void OnSteramStarting()
+        private void OnStearmStarting()
         {
 			this.Cursor = Cursors.WaitCursor;
 

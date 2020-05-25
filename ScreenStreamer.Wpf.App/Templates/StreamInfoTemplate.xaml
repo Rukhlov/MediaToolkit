@@ -13,8 +13,8 @@
                     <ResourceDictionary Source="..\Styles\TextBoxStyle.xaml"/>
                     <ResourceDictionary Source="..\Templates\ReferenceTemplate.xaml"/>
                 </ResourceDictionary.MergedDictionaries>
-                <DataTemplate x:Key="toggleContentTemplate" >
-                    <StackPanel Orientation="Horizontal" >
+                <DataTemplate x:Key="toggleContentTemplate">
+                    <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding StartCommandText, Mode=OneWay}"/>
                         <materialDesign:PackIcon Kind="Pause" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
                         <materialDesign:PackIcon Kind="PlayOutline" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
@@ -30,11 +30,13 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" Grid.Column="0">
-                <TextBox IsReadOnly="{Binding IsEditName, Mode=OneWay, Converter={converters:InverseBooleanConverter}}" 
+                <TextBox IsReadOnly="{Binding MainViewModel.IsEdit, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
                          Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                          Margin="16,0,8,0"
                          Style="{StaticResource captionTextBoxStyle}"
-                         Focusable="{Binding IsEditName}">
+                         MinWidth="50"
+                         Focusable="{Binding MainViewModel.IsEdit, Mode=OneWay}"
+                         >
                     <i:Interaction.Behaviors>
                         <behaviors:StreamEditNameBehavior/>
                     </i:Interaction.Behaviors>
@@ -49,15 +51,15 @@
                 <Border Height="16" 
                         Width="16"
                         Style="{StaticResource clickableBorder}"
-                        IsEnabled="{Binding IsEditable}"
-                        ToolTip="Edit stream name">
+                        Visibility="{Binding MainViewModel.IsEdit, Mode=OneWay,Converter={converters:InvertedBooleanToVisibilityConverter}}"
+                        ToolTip="Edit stream">
                     <materialDesign:PackIcon Kind="ModeEditOutline" VerticalAlignment="Center"/>
                     <i:Interaction.Behaviors>
                         <behaviors:HandleMouseDownBorderBehavior/>
                     </i:Interaction.Behaviors>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="PreviewMouseDown">
-                            <i:InvokeCommandAction Command="{Binding Path=EditNameCommand}"/>
+                            <i:InvokeCommandAction Command="{Binding Path=EditModeCommand}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Border>

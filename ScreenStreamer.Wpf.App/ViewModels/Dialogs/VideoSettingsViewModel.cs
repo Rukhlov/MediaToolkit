@@ -10,9 +10,22 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public override string Caption => "Video Stream";
         public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
 
-        public VideoSettingsViewModel(PropertyVideoViewModel property) : base(property)
+        public VideoSettingsViewModel(PropertyVideoViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
+            this.parent.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(IsChanged))
+                {
+                    RaisePropertyChanged(() => IsChanged);
+                }
+            };
             Displays.AddRange(ScreenHelper.GetScreens());
         }
+
+        protected override bool CheckChanges()
+        {
+            return base.CheckChanges() || parent.IsChanged;
+        }
+
     }
 }

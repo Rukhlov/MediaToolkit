@@ -853,6 +853,7 @@ namespace MediaToolkit.MediaFoundation
 
                                         var profile = new Core.UvcProfile
                                         {
+                                            Name = "Default",
                                             FrameSize = frameSize,
                                             FrameRate = frameRate,
                                             Format = subtypeName,

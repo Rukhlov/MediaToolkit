@@ -8,6 +8,21 @@ using System.Text;
 
 namespace MediaToolkit.NativeAPIs.Ole
 {
+    public class OleAut32
+    {
+        [DllImport("oleaut32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        static extern int OleCreatePropertyFrame(IntPtr hwndOwner, 
+        int x, int y,
+        [MarshalAs(UnmanagedType.LPWStr)] string lpszCaption,
+        int cObjects,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4, ArraySubType = UnmanagedType.IUnknown)] object[] lplpUnk,
+        int cPages,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 6)] Guid[] lpPageClsID,
+        int lcid,
+        int dwReserved,
+        int lpvReserved);
+
+    }
 
 
     [StructLayout(LayoutKind.Explicit)]

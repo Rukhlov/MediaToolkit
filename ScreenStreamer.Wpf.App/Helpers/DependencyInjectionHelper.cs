@@ -37,10 +37,8 @@ namespace ScreenStreamer.Wpf.Common.Helpers
         {
             //unityContainer.RegisterFactory<IMapper>(container => AutoMapperManager.BuildMapper(),  new SingletonLifetimeManager());
             unityContainer.RegisterType<IDialogService, StreamDialogService>(new ContainerControlledLifetimeManager());
-
             unityContainer.RegisterFactory<StreamMainModel>(container => ConfigurationManager.LoadConfigurations(), new SingletonLifetimeManager()); 
             unityContainer.RegisterFactory<IMessenger>(container => Messenger.Default, new SingletonLifetimeManager());
-
             //unityContainer.RegisterFactory<StreamMainViewModel>(container => new StreamMainViewModel(), new SingletonLifetimeManager());
         }
     }

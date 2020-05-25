@@ -79,11 +79,12 @@ namespace ScreenStreamer.Wpf.Common.Services
             #endregion DesignBorderViewModel
             else
             {
-				var setInitialPosition = true;
+                var setInitialPosition = true;
+
                 if (!_windows.ContainsKey(viewModel))
                 {
                     _windows[viewModel] = new StreamBaseWindow(viewModel);
-	                setInitialPosition = true;
+                    setInitialPosition = true;
                 }
                 if (viewModel is PropertyWindowViewModel propertyWindowViewModel &&
                     setInitialPosition)
@@ -96,9 +97,14 @@ namespace ScreenStreamer.Wpf.Common.Services
 
                     var mainWindow = _windows.Single(w => w.Key is StreamMainViewModel).Value;
 
-                    _windows[viewModel].Top = mainWindow.Top + 116 + 30* propertyIndex;
+                    _windows[viewModel].Top = mainWindow.Top + 116 + 30 * propertyIndex;
                     _windows[viewModel].Left = mainWindow.Width + mainWindow.Left;
                     _windows[viewModel].WindowStartupLocation = System.Windows.WindowStartupLocation.Manual;
+
+                    foreach (var key in _windows.Keys.Where(model => model != viewModel && !(model is StreamMainViewModel)))
+                    {
+                        Hide(key);
+                    }
                 }
                 _windows[viewModel].Show();
             }
@@ -145,60 +151,61 @@ namespace ScreenStreamer.Wpf.Common.Services
             foreach (var w in _windows) if (w.Key is StreamMainViewModel) w.Value.Close();
         }
 
-		public void Close(IDialogViewModel viewModel)
-		{
-			if (_windows.ContainsKey(viewModel))
-			{
-				_windows[viewModel].Close();
-				_windows.Remove(viewModel);
-			}
-			if (_dialogs.ContainsKey(viewModel))
-			{
-				_dialogs[viewModel].Close();
-				_dialogs.Remove(viewModel);
-			}
-		}
+        public void Close(IDialogViewModel viewModel)
+        {
+            if (_windows.ContainsKey(viewModel))
+            {
+                _windows[viewModel].Close();
+                _windows.Remove(viewModel);
+            }
+            if (_dialogs.ContainsKey(viewModel))
+            {
+                _dialogs[viewModel].Close();
+                _dialogs.Remove(viewModel);
+            }
+        }
 
-		public void Close(StreamBorderViewModel viewModel)
-		{
-			if (_streamBorders.ContainsKey(viewModel))
-			{
-				_streamBorders[viewModel].Close();
-				_streamBorders.Remove(viewModel);
-			}
-		}
+        public void Close(StreamBorderViewModel viewModel)
+        {
+            if (_streamBorders.ContainsKey(viewModel))
+            {
+                _streamBorders[viewModel].Close();
+                _streamBorders.Remove(viewModel);
+            }
+        }
 
-	    public void Close(DesignBorderViewModel viewModel)
-	    {
-		    if (_designBorders.ContainsKey(viewModel))
-		    {
-			    _designBorders[viewModel].Close();
-			    _designBorders.Remove(viewModel);
-		    }
-	    }
+        public void Close(DesignBorderViewModel viewModel)
+        {
+            if (_designBorders.ContainsKey(viewModel))
+            {
+                _designBorders[viewModel].Close();
+                _designBorders.Remove(viewModel);
+            }
+        }
 
-		public void Activate()
-		{
-			var mainViewModel = _windows.Single(w => w.Key is StreamMainViewModel);
-			if ((mainViewModel.Key as StreamMainViewModel).IsVisible)
-			{
-				//0. Get visible Dialog
-				var visibleDialog = _dialogs.FirstOrDefault(d => d.Value.IsVisible);
-				var visibleWindow = _windows.FirstOrDefault(w => w.Value.IsVisible && w.Key != mainViewModel.Key);
-				if (visibleDialog.Value != null){
-					visibleDialog.Value.Activate();
-				}
-				//1. get visible window
-				else if (visibleWindow.Value != null)
-				{
-					visibleWindow.Value.Activate();
-				}
-				//2. activate main
-				else
-				{
-					mainViewModel.Value.Activate();
-				}
-			}
-		}
-	}
+        public void Activate()
+        {
+            var mainViewModel = _windows.Single(w => w.Key is StreamMainViewModel);
+            if ((mainViewModel.Key as StreamMainViewModel).IsVisible)
+            {
+                //0. Get visible Dialog
+                var visibleDialog = _dialogs.FirstOrDefault(d => d.Value.IsVisible);
+                var visibleWindow = _windows.FirstOrDefault(w => w.Value.IsVisible && w.Key != mainViewModel.Key);
+                if (visibleDialog.Value != null)
+                {
+                    visibleDialog.Value.Activate();
+                }
+                //1. get visible window
+                else if (visibleWindow.Value != null)
+                {
+                    visibleWindow.Value.Activate();
+                }
+                //2. activate main
+                else
+                {
+                    mainViewModel.Value.Activate();
+                }
+            }
+        }
+    }
 }

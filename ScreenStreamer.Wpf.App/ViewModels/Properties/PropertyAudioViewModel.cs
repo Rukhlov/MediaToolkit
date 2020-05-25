@@ -11,14 +11,15 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         public override string Name => "Audio";
 
         #region IsMicrophoneEnabled
+        [Track]
 
         public bool IsMicrophoneEnabled { get => _model.IsMicrophoneEnabled; set { SetProperty(_model, () => _model.IsMicrophoneEnabled, value); Parent?.OnMicrophoneEnabledChanged(); } }
 
         #endregion IsMicrophoneEnabled
 
         #region IsComputerSoundEnabled
-
-        public bool IsComputerSoundEnabled { get => _model.IsComputerSoundEnabled; set { SetProperty(_model,() => _model.IsComputerSoundEnabled, value); } }
+        [Track]
+        public bool IsComputerSoundEnabled { get => _model.IsComputerSoundEnabled; set { SetProperty(_model, () => _model.IsComputerSoundEnabled, value); } }
 
         #endregion IsComputerSoundEnabled
 
@@ -31,7 +32,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             get => _selectedMicrophone;
             set
             {
-                SetProperty(ref _selectedMicrophone, value);
+                _selectedMicrophone = value;
+                RaisePropertyChanged(() => SelectedMicrophone);
                 _model.DeviceId = value.Device?.ID;
             }
         }
@@ -58,7 +60,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
-            return new AudioSettingsViewModel(this);
+            return new AudioSettingsViewModel(this, Parent);
         }
     }
 }

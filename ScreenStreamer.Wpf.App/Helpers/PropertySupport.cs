@@ -10,7 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace ScreenStreamer.Wpf.Common.Helpers
 {
-    public static class _PropertySupport
+    public static class PropertySupport
     {
         private static readonly string expressionCannotBeNullMessage = "The expression cannot be null.";
         private static readonly string invalidExpressionMessage = "Invalid expression.";

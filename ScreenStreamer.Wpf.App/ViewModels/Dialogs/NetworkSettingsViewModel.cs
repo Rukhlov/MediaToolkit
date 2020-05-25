@@ -12,7 +12,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ObservableCollection<IPAddressInfoViewModel> Networks { get; set; } = new ObservableCollection<IPAddressInfoViewModel>();
         public ObservableCollection<ProtocolKind> UnicastProtocols { get; set; } = new ObservableCollection<ProtocolKind>();
 
-        public NetworkSettingsViewModel(PropertyNetworkViewModel property) : base(property)
+        public NetworkSettingsViewModel(PropertyNetworkViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
             UnicastProtocols.AddRange(NetworkHelper.GetUnicastProtocolTypes());
             Networks.AddRange(NetworkHelper.GetIpAddressInfoViewModels());

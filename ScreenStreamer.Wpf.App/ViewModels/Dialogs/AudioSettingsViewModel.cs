@@ -10,7 +10,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public ObservableCollection<MultiMediaDeviceViewModel> Microphones { get; set; } = new ObservableCollection<MultiMediaDeviceViewModel>();
 
-        public AudioSettingsViewModel(PropertyAudioViewModel property) : base(property)
+        public AudioSettingsViewModel(PropertyAudioViewModel property, StreamerViewModelBase parent) : base(property,parent)
         {
             Microphones.AddRange(AudioHelper.GetMultiMediaDeviceViewModels());
         }

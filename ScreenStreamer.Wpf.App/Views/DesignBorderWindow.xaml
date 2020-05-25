@@ -55,36 +55,68 @@
             BorderBrush="{StaticResource borderBrush}" 
             Background="Transparent">
             <Grid>
-                <materialDesign:PackIcon 
-                    Foreground="#E74444"  
-                    Kind="HideOutline" 
-                    Margin="20" 
-                    Cursor="Hand"
-                    Style="{StaticResource packIconDefault}"
-                    HorizontalAlignment="Right" 
-                    VerticalAlignment="Top">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="MouseDown">
-                            <i:InvokeCommandAction Command="{Binding Stream.HideBorderCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </materialDesign:PackIcon>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                    <TextBlock Margin="50,20"> 
+                <Border Grid.Row="0" 
+                        Background="#FF17162A"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Height="32"
+                        Margin="10"
+                        CornerRadius="4">
+                    <StackPanel Orientation="Horizontal"  >
+                        <Image Source="pack://application:,,/ScreenStreamer.Wpf.Resources;Component/Icons/gripper.png"
+                               MouseDown="Border_MouseDown"
+                       Margin="2,0,2,0"
+                       Height="22"
+                       Width="8"/>
+                        <TextBlock Text="{Binding Stream.Name, Mode=OneWay}"
+                           Margin="5,0,0,0"/>
+
+                        <!--Stream settings button-->
+                        <Border Style="{StaticResource clickableBorder}"
+                        Background="Transparent"
+                        ToolTip="Settings">
+                            <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="MouseDown">
+                                    <i:InvokeCommandAction Command="{Binding Stream.MainViewModel.ShowStreamSettingsCommand}"
+                                                   CommandParameter="{Binding Stream}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </Border>
+
+                        <!--Hide border button-->
+
+                        <materialDesign:PackIcon 
+                            Foreground="#E74444"  
+                            Kind="HideOutline" 
+                            Margin="10,0" 
+                            Cursor="Hand"
+                            Style="{StaticResource packIconDefault}"
+                           >
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="MouseDown">
+                                    <i:InvokeCommandAction Command="{Binding Stream.HideBorderCommand}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </materialDesign:PackIcon>
+
+
+                        <TextBlock Margin="10,0"> 
                     
-                        <Run Text="Top: "/> 
-                        <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" /> 
+                    <Run Text="Top: "/> 
+                    <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" /> 
 
-                        <Run Text=" Left: "/> 
-                        <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
+                    <Run Text=" Left: "/> 
+                    <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
 
-                        <Run Text=" Height: "/> 
-                        <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
+                    <Run Text=" Height: "/> 
+                    <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
 
-                        <Run Text=" Width: "/> 
-                        <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
-                    </TextBlock>
-                </StackPanel>
+                    <Run Text=" Width: "/> 
+                    <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+           
                 <Border HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Background="{StaticResource lightBlack}"

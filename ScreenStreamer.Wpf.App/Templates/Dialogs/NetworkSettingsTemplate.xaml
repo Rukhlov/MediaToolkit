@@ -38,7 +38,7 @@
                 <TextBlock Text="Port" />
 
                 <TextBox Grid.Column="1"
-                         Text="{Binding Property.Port, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
+                         Text="{Binding Property.Port, Converter={converters:IntegerToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource defaultTextBoxStyle}">
                     <i:Interaction.Behaviors>
                         <behaviors:RestrictedInputTextBoxBehavior/>

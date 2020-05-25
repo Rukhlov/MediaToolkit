@@ -46,6 +46,8 @@
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AdvApi32.cs" />
+    <Compile Include="DShow\Objidl.cs" />
+    <Compile Include="DShow\Ocidl.cs" />
     <Compile Include="DShow\Strmif.cs" />
     <Compile Include="DwmApi.cs" />
     <Compile Include="Gdi32.cs" />

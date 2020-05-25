@@ -10,7 +10,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public ObservableCollection<QualityPresetViewModel> Presets { get; } = new ObservableCollection<QualityPresetViewModel>();
 
-        public QualitySettingsViewModel(PropertyQualityViewModel property) : base(property)
+        public QualitySettingsViewModel(PropertyQualityViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
             Presets.AddRange(QualityPresetsHelper.GetQualityPresetViewModels());
         }

@@ -21,12 +21,12 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
         }
 
         private void AssociatedObject_Deactivated(object sender, System.EventArgs e)
-    {
-        if (AssociatedObject.DataContext is IWindowViewModel windowViewModel &&
-                windowViewModel.IsClosableOnLostFocus)
+        {
+            if (AssociatedObject.DataContext is IWindowViewModel windowViewModel &&
+                    windowViewModel.IsClosableOnLostFocus)
             {
 
-            DependencyInjectionHelper.Container.Resolve<IDialogService>().Hide(windowViewModel);
+                DependencyInjectionHelper.Container.Resolve<IDialogService>().Hide(windowViewModel);
             }
         }
     }

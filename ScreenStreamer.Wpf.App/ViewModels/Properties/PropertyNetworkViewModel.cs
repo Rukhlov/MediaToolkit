@@ -18,31 +18,32 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         private readonly PropertyNetworkModel _model;
         public override string Name => "Network";
 
-        private IPAddressInfoViewModel _selectedNetwork;
 
+        #region SelectedNetwork
+
+        private IPAddressInfoViewModel _selectedNetwork;
+        [Track]
         public IPAddressInfoViewModel SelectedNetwork
         {
             get => _selectedNetwork;
             set
             {
-                SetProperty(ref _selectedNetwork, value);
-               // _model.Network = value?.IPAddressInfo?.ToString() ?? value.DisplayName;
+                _selectedNetwork = value;
+                RaisePropertyChanged(() => SelectedNetwork);
                 _model.Network = value?.IPAddressInfo?.Address?.ToString() ?? value.DisplayName;
                 RaisePropertyChanged(nameof(Info));
             }
         }
 
+        #endregion SelectedNetwork
 
-        public int Port
-        {
-            get => _model.Port;
-            set
-            {
-                SetProperty(_model, () => _model.Port, value);
-                RaisePropertyChanged(nameof(Port));
-            }
-        }
- 
+        #region Port
+        [Track]
+        public int Port { get => _model.Port; set { SetProperty(_model, () => _model.Port, value); } }
+        #endregion Port
+
+        #region IsUnicast
+        [Track]
         public bool IsUnicast
         {
             get => _model.IsUnicast;
@@ -53,16 +54,15 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        public ProtocolKind UnicastProtocol
-        {
-            get => _model.UnicastProtocol;
-            set
-            {
-                SetProperty(_model, () => _model.UnicastProtocol, value);
-                RaisePropertyChanged(nameof(Info));
-            }
-        }
+        #endregion IsUnicast  
 
+        #region UnicastProtocol
+        [Track]
+        public ProtocolKind UnicastProtocol { get => _model.UnicastProtocol; set { SetProperty(_model, () => _model.UnicastProtocol, value); RaisePropertyChanged(nameof(Info)); } }
+        #endregion UnicastProtocol
+
+        #region MulticastIp
+        [Track]
         public string MulticastIp
         {
             get => _model.MulticastIp;
@@ -77,7 +77,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-
+        #endregion MulticastIp
 
         public PropertyNetworkViewModel(StreamViewModel parent, PropertyNetworkModel model) : base(parent)
         {
@@ -92,7 +92,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
-            return new NetworkSettingsViewModel(this);
+            return new NetworkSettingsViewModel(this, Parent);
         }
 
         public override string Info

@@ -303,6 +303,7 @@ namespace MediaToolkit.Core
 
     public class UvcProfile
     {
+        public string Name = "";
         public Size FrameSize = Size.Empty;
         public double FrameRate = 0;
         public string Format = "";

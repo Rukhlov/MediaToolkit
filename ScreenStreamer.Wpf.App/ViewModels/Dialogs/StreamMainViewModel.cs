@@ -19,7 +19,16 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         #region IsEdit
 
         private bool _isEdit = false;
-        public bool IsEdit { get => _isEdit; set { SetProperty(ref _isEdit, value); _selectedStream.IsEditName = false; } }
+        public bool IsEdit
+        {
+            get => _isEdit;
+            set
+            {
+                _isEdit = value;
+                RaisePropertyChanged(() => IsEdit);
+                _selectedStream.IsEditName = false;
+            }
+        }
 
         #endregion IsEdit
 
@@ -48,8 +57,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                     _selectedStream.IsSelected = false;
                     _selectedStream.IsEditName = false;
                 }
-
-                SetProperty(ref _selectedStream, value);
+                _selectedStream = value;
+                RaisePropertyChanged(() => SelectedStream);
 
                 if (_selectedStream != null)
                 {
@@ -80,7 +89,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public bool IsAllStarted => StreamList.All(s => s.IsStarted);
 
-        public StreamMainViewModel(StreamMainModel model)
+        public StreamMainViewModel(StreamMainModel model) : base(null)
         {
             _model = model;
             StreamList = new ObservableCollection<StreamViewModel>(_model.StreamList.Select(m => new StreamViewModel(this, true, m)));
@@ -115,8 +124,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
                 StreamList.Remove(streamToDelete);
                 this._model.StreamList.Remove(streamToDelete.Model);
-
- 
                 IsEdit = false;
                 SelectedStream = null;
 
@@ -129,8 +136,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         private void Add()
         {
             var model = new StreamModel { Name = $"Stream {this.StreamList.Count + 1}" };
-
             var streamViewModel = new StreamViewModel(this, true, model);
+
 
             this.StreamList.Add(streamViewModel);
             this._model.StreamList.Add(model);

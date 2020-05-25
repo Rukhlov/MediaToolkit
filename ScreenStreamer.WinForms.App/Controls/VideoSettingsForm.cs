@@ -115,18 +115,26 @@ namespace ScreenStreamer.WinForms.App
                 CaptureDeviceTextBox.Text = uvcDevice.Name;
 
                 var profile = uvcDevice?.CurrentProfile;
-                List<ComboBoxItem> profileItems = new List<ComboBoxItem>
-                {
-                    new ComboBoxItem
-                    {
-                        Name = profile?.ToString() ?? "",
-                        Tag = profile,
-                    },
-                };
 
-                CaptureDeviceProfilesComboBox.DataSource = profileItems;
-                CaptureDeviceProfilesComboBox.DisplayMember = "Name";
-                CaptureDeviceProfilesComboBox.ValueMember = "Tag";
+                var frameSize = profile.FrameSize;
+                var propsStr = frameSize.Width + "x" + frameSize.Height + ", " + profile.FrameRate + "fps" + ", " + profile.Format;
+
+                var _profile = profile.Name + " (" + propsStr + ")";
+
+                uvcProfileInfotextBox.Text = _profile;
+
+                //List<ComboBoxItem> profileItems = new List<ComboBoxItem>
+                //{
+                //    new ComboBoxItem
+                //    {
+                //        Name = profile?.ToString() ?? "",
+                //        Tag = profile,
+                //    },
+                //};
+
+                //CaptureDeviceProfilesComboBox.DataSource = profileItems;
+                //CaptureDeviceProfilesComboBox.DisplayMember = "Name";
+                //CaptureDeviceProfilesComboBox.ValueMember = "Tag";
 
                 cameraTableLayoutPanel.Visible = true;
                 screenCaptureTableLayoutPanel.Visible = false;

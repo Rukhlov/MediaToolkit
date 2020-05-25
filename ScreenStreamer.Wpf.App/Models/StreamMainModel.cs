@@ -47,8 +47,8 @@ namespace ScreenStreamer.Wpf.Common.Models
         private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
 
-        public AudioStreamSettings AudioSettings => currentSession.AudioSettings;
-        public VideoStreamSettings VideoSettings => currentSession.VideoSettings;
+        public AudioStreamSettings AudioSettings => currentSession?.AudioSettings;
+        public VideoStreamSettings VideoSettings => currentSession?.VideoSettings;
 
 
         public event Action OnStreamStateChanged;

@@ -19,10 +19,10 @@
         Background="Transparent"
         Icon="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/logo_24.png"
         Visibility="{Binding IsVisible, Converter={converters:BooleanToVisibilityConverter}, Mode=OneWay}">
-    
+
     <Window.Resources>
         <ResourceDictionary>
-            
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
                 <ResourceDictionary Source="..\Templates\Dialogs\AdvancedSettingsTemplate.xaml"/>
@@ -37,6 +37,7 @@
                 <ResourceDictionary Source="..\Templates\ContextMenuTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\DefaultCaptionTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\StreamMainCaptionTemplate.xaml"/>
+                <ResourceDictionary Source="..\Styles\ButtonStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <contenttemplateselectors:FormContentTemplateSelector x:Key="formContentTemplateSelector"
@@ -54,13 +55,13 @@
                                         DefaultTemplate="{StaticResource defaultCaptionTemplate}"
                                         StreamMainTemplate="{StaticResource streamMainCaptionTemplate}"/>
         </ResourceDictionary>
-        
+
     </Window.Resources>
 
     <i:Interaction.Behaviors>
         <behaviors:CloseOnLostFocusWindowBehavior/>
     </i:Interaction.Behaviors>
-    
+
     <Border CornerRadius="8" BorderBrush="Transparent" Background="#FF1B1931">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -98,7 +99,8 @@
                             Height="24"
                             Width="24"
                             Style="{StaticResource clickableBorder}"
-                            ToolTip="Close">
+                            ToolTip="Close"
+                            Visibility="{Binding IsChanged, Mode=OneWay, Converter={converters:InvertedBooleanToVisibilityConverter}}">
                         <materialDesign:PackIcon Kind="WindowClose" 
                                                  VerticalAlignment="Center"
                                                  HorizontalAlignment="Center"/>
@@ -108,6 +110,32 @@
                             </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </Border>
+
+                    <StackPanel Grid.ColumnSpan="2" Grid.Column="0"
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Visibility="{Binding IsChanged, Mode=OneWay, Converter={converters:BooleanToVisibilityConverter}}"
+                                VerticalAlignment="Center">
+
+                        <Button HorizontalAlignment="Left"  Margin="5,0"
+                                Style="{StaticResource defaultButtonStyle}" 
+                                Background="#FF131223"
+                                Command="{Binding DiscardChangesCommand}"
+                                ToolTip="Discard changes">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Bin" Foreground="#FFE74444" Margin="10,0,0,0"/>
+                                <TextBlock Foreground="#FFE74444" Margin="4,0,10,0">Discard</TextBlock>
+                            </StackPanel>
+                        </Button>
+
+
+                        <!--Save changes-->
+                        <Button Style="{StaticResource actionButtonStyle}" Background="#FF42CF4C" 
+                                ToolTip="Save changes"
+                                Command="{Binding AcceptChangesCommand}">
+                            <TextBlock Margin="4,0,10,0">Save changes</TextBlock>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Border>
             <Rectangle Grid.Row="1" Grid.Column="1" Style="{StaticResource divider}"/>
@@ -119,7 +147,7 @@
                               ContentTemplateSelector="{StaticResource formContentTemplateSelector}"/>
 
             <Rectangle Grid.Row="3" Grid.Column="1" Style="{StaticResource divider}"/>
-            
+
             <!--Overlaw-->
             <Border Grid.Row="0" 
                     Grid.Column="0"

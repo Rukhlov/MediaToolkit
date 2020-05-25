@@ -20,7 +20,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         public ICommand ShowBorderCommand { get; }
 
-
+        #region IsRegion
+        [Track]
         public bool IsRegion
         {
             get => _model.IsRegion;
@@ -46,8 +47,10 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
+        #endregion
 
-
+        #region Display
+        [Track]
         public string Display
         {
             get => _model.Display;
@@ -59,53 +62,33 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
+        #endregion
 
-        public double ResolutionHeight
-        {
-            get => _model.ResolutionHeight;
-            set
-            {
-                SetProperty(_model, () => _model.ResolutionHeight, value);
-            }
-        }
+        #region ResolutionHeight
+        [Track]
+        public double ResolutionHeight { get => _model.ResolutionHeight; set { SetProperty(_model, () => _model.ResolutionHeight, value); } }
+        #endregion ResolutionHeight
 
-        public double ResolutionWidth
-        {
-            get => _model.ResolutionWidth;
-            set
-            {
-                SetProperty(_model, () => _model.ResolutionWidth, value);
-            }
-        }
+        #region ResolutionWidth
+        [Track]
+        public double ResolutionWidth { get => _model.ResolutionWidth; set { SetProperty(_model, () => _model.ResolutionWidth, value); } }
+        #endregion ResolutionWidth
 
-        public double Top
-        {
-            get => _model.Top;
-            set
-            {
-                SetProperty(_model, () => _model.Top, value);
-            }
-        }
+        #region Top
+        [Track]
+        public double Top { get => _model.Top; set { SetProperty(_model, () => _model.Top, value); } }
+        #endregion Top
 
-        public double Left
-        {
-            get => _model.Left;
-            set
-            {
-                SetProperty(_model, () => _model.Left, value);
-            }
-        }
- 
-        public bool AspectRatio
-        {
-            get => _model.AspectRatio;
+        #region Left
+        [Track]
+        public double Left { get => _model.Left; set { SetProperty(_model, () => _model.Left, value); } }
+        #endregion Left
 
-            set
-            {
-                SetProperty(_model, () => _model.AspectRatio, value);
-            }
-        }
- 
+        #region AspectRatio
+        [Track]
+        public bool AspectRatio { get => _model.AspectRatio; set { SetProperty(_model, () => _model.AspectRatio, value); } }
+        #endregion AspectRatio
+
         public ICommand AdjustCommand { get; }
 
 
@@ -143,7 +126,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
-            return new VideoSettingsViewModel(this);
+            return new VideoSettingsViewModel(this,Parent);
         }
 
         public override string Info
