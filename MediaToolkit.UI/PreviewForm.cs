@@ -93,7 +93,7 @@ namespace MediaToolkit.UI
 
                 elementHost1.Dock = DockStyle.None;
                 elementHost1.Size = videoSize;
-                this.ClientSize = elementHost1.ClientSize;
+                //this.ClientSize = elementHost1.ClientSize;
 
                 int maxWidth = (elementHost1.ClientRectangle.Width + (this.Width - this.ClientSize.Width));
                 int maxHeight = (elementHost1.ClientRectangle.Height + (this.Height - this.ClientSize.Height));

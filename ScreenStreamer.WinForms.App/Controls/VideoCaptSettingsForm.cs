@@ -43,7 +43,14 @@ namespace ScreenStreamer.WinForms
 				fps = (int)fpsNumeric.Minimum;
 			}
 
-			fpsNumeric.Value = fps;
+            var captureType = captureProps.CaptureType;
+
+            var captureItem = captureTypes.FirstOrDefault(i => (VideoCaptureType)i.Tag == captureType) 
+                ?? captureTypes.FirstOrDefault();
+
+            captureTypesComboBox.SelectedItem = captureItem;
+
+            fpsNumeric.Value = fps;
 
 			showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
             showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
@@ -62,8 +69,12 @@ namespace ScreenStreamer.WinForms
 
 			CaptDeviceSettings.Properties.Fps = (int)fpsNumeric.Value;
 
+            var captureItem = (ComboBoxItem)captureTypesComboBox.SelectedItem;
+            var captureType = (VideoCaptureType)captureItem.Tag;
 
-			this.Close();
+            CaptDeviceSettings.Properties.CaptureType = captureType;
+
+            this.Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -74,14 +85,13 @@ namespace ScreenStreamer.WinForms
 
         }
 
-
-		private void LoadCaptureTypes()
+        private List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
+        private void LoadCaptureTypes()
 		{
 
-			List<ComboBoxItem> captureTypes = new List<ComboBoxItem>();
+            captureTypes.Clear();
 
-
-			captureTypes.Add(new ComboBoxItem
+            captureTypes.Add(new ComboBoxItem
 			{
 				Name = "Desktop Duplication API",
 				Tag = VideoCaptureType.DXGIDeskDupl,

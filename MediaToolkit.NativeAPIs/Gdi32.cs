@@ -8,7 +8,7 @@ namespace MediaToolkit.NativeAPIs
     public static class Gdi32
     {
 
-        [DllImport("gdi32.dll")]
+        [DllImport("gdi32.dll", SetLastError = true)]
         public static extern bool BitBlt(IntPtr hObject, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hObjSource, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
 
         [DllImport("gdi32.dll")]

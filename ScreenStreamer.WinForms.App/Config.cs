@@ -181,7 +181,7 @@ namespace ScreenStreamer.WinForms.App
 			{
 				logger.Warn("Invalid capture type: " + ScreenCaptureProperties.CaptureType);
 
-				ScreenCaptureProperties.CaptureType = VideoCaptureType.DXGIDeskDupl;
+				//ScreenCaptureProperties.CaptureType = VideoCaptureType.DXGIDeskDupl;
 			}
 
 			return true;

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using MediaToolkit.NativeAPIs;
 using System.Diagnostics;
 using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -203,15 +204,15 @@ namespace MediaToolkit.ScreenCaptures
             }
         }
 
-        public override bool UpdateBuffer(int timeout = 10)
+        public override ErrorCode UpdateBuffer(int timeout = 10)
         {
-            logger.Verb("Update()");
+            logger.Verb("Update(...) " + timeout);
 
-            bool success = false;
+            ErrorCode errorCode = ErrorCode.Unexpected;
 
             if (!Initialized)
             {
-                return false;
+                return ErrorCode.NotInitialized;
             }
 
             var bufSize = bmi.bmiHeader.biSizeImage;
@@ -240,7 +241,7 @@ namespace MediaToolkit.ScreenCaptures
 
                             Kernel32.CopyMemory(scan0, this.pBuffer, (uint)bufSize);
 
-                            success = true;
+                            errorCode = ErrorCode.Ok;
 
                         }
                         finally
@@ -263,7 +264,7 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            return success;
+            return errorCode;
 
             // Console.WriteLine("DCaptCreateCapture() " + result);
         }

@@ -238,7 +238,7 @@ namespace MediaToolkit
                             break;
                         }
 
-                        if (res)
+                        if (res == SharedTypes.ErrorCode.Ok)
                         {
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
@@ -253,10 +253,22 @@ namespace MediaToolkit
                             captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
 
                         }
-                        else
+                        else if (res == SharedTypes.ErrorCode.WaitTimeout)
+                        {
+                            //logger.Warn("No screen buffer...");
+                        }
+                        else if (res == SharedTypes.ErrorCode.AccessDenied)
                         {
                             //logger.Warn("No screen buffer...");
 
+                            logger.Warn("screenCapture.UpdateBuffer(...) == ERROR_ACCESS_DENIED try SwitchToInputDesktop()");
+
+                            NativeAPIs.Utils.DesktopManager.SwitchToInputDesktop();
+
+                        }
+                        else
+                        {
+                            logger.Warn("screenCapture.UpdateBuffer(...): " + res);
                         }
 
 

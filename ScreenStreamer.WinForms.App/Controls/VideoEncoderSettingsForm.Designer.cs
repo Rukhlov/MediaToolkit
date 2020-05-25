@@ -78,7 +78,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(311, 362);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(339, 362);
             this.tableLayoutPanel1.TabIndex = 80;
             // 
             // panel1
@@ -88,7 +88,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(64, 328);
+            this.panel1.Location = new System.Drawing.Point(92, 328);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -128,7 +128,7 @@
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 15);
-            this.groupBox1.Size = new System.Drawing.Size(305, 318);
+            this.groupBox1.Size = new System.Drawing.Size(333, 318);
             this.groupBox1.TabIndex = 61;
             this.groupBox1.TabStop = false;
             // 
@@ -175,7 +175,7 @@
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel6.Size = new System.Drawing.Size(293, 281);
+            this.tableLayoutPanel6.Size = new System.Drawing.Size(321, 281);
             this.tableLayoutPanel6.TabIndex = 81;
             // 
             // aspectRatioComboBox
@@ -183,7 +183,7 @@
             this.aspectRatioComboBox.Dock = System.Windows.Forms.DockStyle.Right;
             this.aspectRatioComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.aspectRatioComboBox.FormattingEnabled = true;
-            this.aspectRatioComboBox.Location = new System.Drawing.Point(99, 89);
+            this.aspectRatioComboBox.Location = new System.Drawing.Point(127, 89);
             this.aspectRatioComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.aspectRatioComboBox.Name = "aspectRatioComboBox";
             this.aspectRatioComboBox.Size = new System.Drawing.Size(192, 25);
@@ -196,7 +196,7 @@
             this.label16.Location = new System.Drawing.Point(2, 60);
             this.label16.Margin = new System.Windows.Forms.Padding(2);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(92, 25);
+            this.label16.Size = new System.Drawing.Size(120, 25);
             this.label16.TabIndex = 55;
             this.label16.Text = "Mode:";
             this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -204,7 +204,7 @@
             // bitrateNumeric
             // 
             this.bitrateNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-            this.bitrateNumeric.Location = new System.Drawing.Point(181, 119);
+            this.bitrateNumeric.Location = new System.Drawing.Point(209, 119);
             this.bitrateNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.bitrateNumeric.Maximum = new decimal(new int[] {
             50000,
@@ -227,9 +227,9 @@
             this.label7.Location = new System.Drawing.Point(2, 119);
             this.label7.Margin = new System.Windows.Forms.Padding(2);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(92, 23);
+            this.label7.Size = new System.Drawing.Size(120, 23);
             this.label7.TabIndex = 50;
-            this.label7.Text = "Bitrate:";
+            this.label7.Text = "Bitrate, kbps:";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // bitrateModeComboBox
@@ -237,7 +237,7 @@
             this.bitrateModeComboBox.Dock = System.Windows.Forms.DockStyle.Right;
             this.bitrateModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.bitrateModeComboBox.FormattingEnabled = true;
-            this.bitrateModeComboBox.Location = new System.Drawing.Point(99, 60);
+            this.bitrateModeComboBox.Location = new System.Drawing.Point(127, 60);
             this.bitrateModeComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.bitrateModeComboBox.Name = "bitrateModeComboBox";
             this.bitrateModeComboBox.Size = new System.Drawing.Size(192, 25);
@@ -253,7 +253,7 @@
             this.latencyModeCheckBox.Location = new System.Drawing.Point(6, 258);
             this.latencyModeCheckBox.Margin = new System.Windows.Forms.Padding(6, 6, 2, 2);
             this.latencyModeCheckBox.Name = "latencyModeCheckBox";
-            this.latencyModeCheckBox.Size = new System.Drawing.Size(285, 21);
+            this.latencyModeCheckBox.Size = new System.Drawing.Size(313, 21);
             this.latencyModeCheckBox.TabIndex = 110;
             this.latencyModeCheckBox.Text = "Low Latency Mode";
             this.latencyModeCheckBox.UseVisualStyleBackColor = true;
@@ -261,7 +261,7 @@
             // MaxBitrateNumeric
             // 
             this.MaxBitrateNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-            this.MaxBitrateNumeric.Location = new System.Drawing.Point(181, 146);
+            this.MaxBitrateNumeric.Location = new System.Drawing.Point(209, 146);
             this.MaxBitrateNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.MaxBitrateNumeric.Maximum = new decimal(new int[] {
             50000,
@@ -280,7 +280,7 @@
             // fpsNumeric
             // 
             this.fpsNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-            this.fpsNumeric.Location = new System.Drawing.Point(181, 173);
+            this.fpsNumeric.Location = new System.Drawing.Point(209, 173);
             this.fpsNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.fpsNumeric.Maximum = new decimal(new int[] {
             60,
@@ -308,7 +308,7 @@
             this.label1.Location = new System.Drawing.Point(2, 173);
             this.label1.Margin = new System.Windows.Forms.Padding(2);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(92, 23);
+            this.label1.Size = new System.Drawing.Size(120, 23);
             this.label1.TabIndex = 6;
             this.label1.Text = "FPS:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -320,7 +320,7 @@
             this.label6.Location = new System.Drawing.Point(2, 2);
             this.label6.Margin = new System.Windows.Forms.Padding(2);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(92, 25);
+            this.label6.Size = new System.Drawing.Size(120, 25);
             this.label6.TabIndex = 46;
             this.label6.Text = "Format:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -332,7 +332,7 @@
             this.label14.Location = new System.Drawing.Point(2, 31);
             this.label14.Margin = new System.Windows.Forms.Padding(2);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(92, 25);
+            this.label14.Size = new System.Drawing.Size(120, 25);
             this.label14.TabIndex = 52;
             this.label14.Text = "Profile:";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -342,7 +342,7 @@
             this.encProfileComboBox.Dock = System.Windows.Forms.DockStyle.Right;
             this.encProfileComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.encProfileComboBox.FormattingEnabled = true;
-            this.encProfileComboBox.Location = new System.Drawing.Point(99, 31);
+            this.encProfileComboBox.Location = new System.Drawing.Point(127, 31);
             this.encProfileComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.encProfileComboBox.Name = "encProfileComboBox";
             this.encProfileComboBox.Size = new System.Drawing.Size(192, 25);
@@ -351,7 +351,7 @@
             // formatTextBox
             // 
             this.formatTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.formatTextBox.Location = new System.Drawing.Point(99, 3);
+            this.formatTextBox.Location = new System.Drawing.Point(127, 3);
             this.formatTextBox.Name = "formatTextBox";
             this.formatTextBox.ReadOnly = true;
             this.formatTextBox.Size = new System.Drawing.Size(191, 23);
@@ -364,9 +364,9 @@
             this.label15.Location = new System.Drawing.Point(2, 146);
             this.label15.Margin = new System.Windows.Forms.Padding(2);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(92, 23);
+            this.label15.Size = new System.Drawing.Size(120, 23);
             this.label15.TabIndex = 55;
-            this.label15.Text = "Bitrate Max:";
+            this.label15.Text = "Max Bitrate, kbps:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label2
@@ -376,7 +376,7 @@
             this.label2.Location = new System.Drawing.Point(2, 227);
             this.label2.Margin = new System.Windows.Forms.Padding(2);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(92, 23);
+            this.label2.Size = new System.Drawing.Size(120, 23);
             this.label2.TabIndex = 114;
             this.label2.Text = "GOP Size:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -384,7 +384,7 @@
             // gopSizeNumeric
             // 
             this.gopSizeNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-            this.gopSizeNumeric.Location = new System.Drawing.Point(181, 227);
+            this.gopSizeNumeric.Location = new System.Drawing.Point(209, 227);
             this.gopSizeNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.gopSizeNumeric.Maximum = new decimal(new int[] {
             600,
@@ -408,7 +408,7 @@
             // qualityNumeric
             // 
             this.qualityNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-            this.qualityNumeric.Location = new System.Drawing.Point(181, 200);
+            this.qualityNumeric.Location = new System.Drawing.Point(209, 200);
             this.qualityNumeric.Margin = new System.Windows.Forms.Padding(2);
             this.qualityNumeric.Name = "qualityNumeric";
             this.qualityNumeric.Size = new System.Drawing.Size(110, 23);
@@ -421,7 +421,7 @@
             this.label3.Location = new System.Drawing.Point(2, 200);
             this.label3.Margin = new System.Windows.Forms.Padding(2);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(92, 23);
+            this.label3.Size = new System.Drawing.Size(120, 23);
             this.label3.TabIndex = 118;
             this.label3.Text = "Quality:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -433,7 +433,7 @@
             this.label4.Location = new System.Drawing.Point(2, 89);
             this.label4.Margin = new System.Windows.Forms.Padding(2);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(92, 26);
+            this.label4.Size = new System.Drawing.Size(120, 26);
             this.label4.TabIndex = 119;
             this.label4.Text = "Aspect Ratio:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;

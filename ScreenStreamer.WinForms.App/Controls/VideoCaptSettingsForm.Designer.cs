@@ -34,13 +34,13 @@
 			this.applyButton = new System.Windows.Forms.Button();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.screenCaptureDetailsPanel = new System.Windows.Forms.TableLayoutPanel();
+			this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
 			this.captureMouseCheckBox = new System.Windows.Forms.CheckBox();
+			this.label5 = new System.Windows.Forms.Label();
 			this.fpsNumeric = new System.Windows.Forms.NumericUpDown();
 			this.label1 = new System.Windows.Forms.Label();
 			this.showDebugInfoCheckBox = new System.Windows.Forms.CheckBox();
 			this.showCaptureBorderCheckBox = new System.Windows.Forms.CheckBox();
-			this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
-			this.label5 = new System.Windows.Forms.Label();
 			this.tableLayoutPanel1.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -62,7 +62,7 @@
 			this.tableLayoutPanel1.RowCount = 2;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(359, 212);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(438, 212);
 			this.tableLayoutPanel1.TabIndex = 80;
 			// 
 			// panel1
@@ -72,7 +72,7 @@
 			this.panel1.Controls.Add(this.cancelButton);
 			this.panel1.Controls.Add(this.applyButton);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-			this.panel1.Location = new System.Drawing.Point(112, 178);
+			this.panel1.Location = new System.Drawing.Point(191, 178);
 			this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
 			this.panel1.Name = "panel1";
 			this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -112,7 +112,7 @@
 			this.groupBox1.Location = new System.Drawing.Point(3, 3);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 15);
-			this.groupBox1.Size = new System.Drawing.Size(353, 168);
+			this.groupBox1.Size = new System.Drawing.Size(432, 168);
 			this.groupBox1.TabIndex = 61;
 			this.groupBox1.TabStop = false;
 			// 
@@ -141,8 +141,19 @@
 			this.screenCaptureDetailsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.screenCaptureDetailsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.screenCaptureDetailsPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.screenCaptureDetailsPanel.Size = new System.Drawing.Size(341, 131);
+			this.screenCaptureDetailsPanel.Size = new System.Drawing.Size(420, 131);
 			this.screenCaptureDetailsPanel.TabIndex = 109;
+			// 
+			// captureTypesComboBox
+			// 
+			this.captureTypesComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.captureTypesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.captureTypesComboBox.FormattingEnabled = true;
+			this.captureTypesComboBox.Location = new System.Drawing.Point(147, 2);
+			this.captureTypesComboBox.Margin = new System.Windows.Forms.Padding(2);
+			this.captureTypesComboBox.Name = "captureTypesComboBox";
+			this.captureTypesComboBox.Size = new System.Drawing.Size(271, 25);
+			this.captureTypesComboBox.TabIndex = 83;
 			// 
 			// captureMouseCheckBox
 			// 
@@ -154,15 +165,27 @@
 			this.captureMouseCheckBox.Location = new System.Drawing.Point(5, 58);
 			this.captureMouseCheckBox.Margin = new System.Windows.Forms.Padding(5, 2, 2, 2);
 			this.captureMouseCheckBox.Name = "captureMouseCheckBox";
-			this.captureMouseCheckBox.Size = new System.Drawing.Size(334, 21);
+			this.captureMouseCheckBox.Size = new System.Drawing.Size(413, 21);
 			this.captureMouseCheckBox.TabIndex = 80;
 			this.captureMouseCheckBox.Text = "Capture Mouse";
 			this.captureMouseCheckBox.UseVisualStyleBackColor = true;
 			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.label5.Location = new System.Drawing.Point(2, 2);
+			this.label5.Margin = new System.Windows.Forms.Padding(2);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(141, 25);
+			this.label5.TabIndex = 84;
+			this.label5.Text = "Capture Type:";
+			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
 			// fpsNumeric
 			// 
 			this.fpsNumeric.Dock = System.Windows.Forms.DockStyle.Right;
-			this.fpsNumeric.Location = new System.Drawing.Point(268, 31);
+			this.fpsNumeric.Location = new System.Drawing.Point(347, 31);
 			this.fpsNumeric.Margin = new System.Windows.Forms.Padding(2);
 			this.fpsNumeric.Maximum = new decimal(new int[] {
             60,
@@ -190,9 +213,9 @@
 			this.label1.Location = new System.Drawing.Point(2, 31);
 			this.label1.Margin = new System.Windows.Forms.Padding(2);
 			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(62, 23);
+			this.label1.Size = new System.Drawing.Size(141, 23);
 			this.label1.TabIndex = 6;
-			this.label1.Text = "FPS:";
+			this.label1.Text = "Screen Capture FPS:";
 			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// showDebugInfoCheckBox
@@ -223,36 +246,13 @@
 			this.showCaptureBorderCheckBox.Text = "Show Capture Frame";
 			this.showCaptureBorderCheckBox.UseVisualStyleBackColor = true;
 			// 
-			// captureTypesComboBox
-			// 
-			this.captureTypesComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.captureTypesComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.captureTypesComboBox.FormattingEnabled = true;
-			this.captureTypesComboBox.Location = new System.Drawing.Point(68, 2);
-			this.captureTypesComboBox.Margin = new System.Windows.Forms.Padding(2);
-			this.captureTypesComboBox.Name = "captureTypesComboBox";
-			this.captureTypesComboBox.Size = new System.Drawing.Size(271, 25);
-			this.captureTypesComboBox.TabIndex = 83;
-			// 
-			// label5
-			// 
-			this.label5.AutoSize = true;
-			this.label5.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.label5.Location = new System.Drawing.Point(2, 2);
-			this.label5.Margin = new System.Windows.Forms.Padding(2);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(62, 25);
-			this.label5.TabIndex = 84;
-			this.label5.Text = "Capture:";
-			this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
 			// VideoCaptSettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.AutoSize = true;
 			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.ClientSize = new System.Drawing.Size(436, 325);
+			this.ClientSize = new System.Drawing.Size(492, 330);
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;

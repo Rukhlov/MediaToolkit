@@ -26,13 +26,14 @@ namespace Test.PolywallClient
             logger = LogManager.GetCurrentClassLogger();
 
             logger.Info("========== START ============");
-            var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-            //var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+			//var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
+			//var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+			var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
 
-            //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
-            //@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
+			//var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
+			//@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
 
-            if (!System.IO.Directory.Exists(mediaToolkitPath))
+			if (!System.IO.Directory.Exists(mediaToolkitPath))
             {
                 FolderBrowserDialog dlg = new FolderBrowserDialog();
                 if (dlg.ShowDialog() == DialogResult.OK)

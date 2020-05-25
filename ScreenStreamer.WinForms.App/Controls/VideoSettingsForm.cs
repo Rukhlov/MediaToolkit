@@ -497,7 +497,7 @@ namespace ScreenStreamer.WinForms.App
                 previewForm = new PreviewForm
                 {
                     //ClientSize = VideoSettings.CaptureDevice.Resolution,
-                    Size = previewSettings.PreviewSize,
+                    Size = new Size(640, 480),//previewSettings.PreviewSize,
 
                     StartPosition = FormStartPosition.CenterScreen,
                     Icon = ScreenStreamer.WinForms.App.Properties.Resources.logo,
@@ -636,23 +636,20 @@ namespace ScreenStreamer.WinForms.App
             var captureProps = Config.Data.ScreenCaptureProperties;
             var caputreDevice = VideoSettings.CaptureDevice;
 
+            var captType = "Unknown";
+            if (captureProps.CaptureType == VideoCaptureType.DXGIDeskDupl)
+            {
+                captType = "Desktop Duplication API";
+            }
+            else if (captureProps.CaptureType == VideoCaptureType.GDI)
+            {
+                captType = "GDI";
+            }
+
             var resolution = caputreDevice.Resolution;
             var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
 
-   //         // var propsStr = resolution.Width + "x" + resolution.Height + (captureProps.UseHardware ? "GPU" : "CPU") + ", " + captureProps.Fps + " Fps";
-   //         captureTypes.Add(new ComboBoxItem
-   //         {
-   //             Name = "Desktop Duplication API (" + propsStr + ")",
-   //             Tag = VideoCaptureType.DXGIDeskDupl,
-   //         });
-
-			//captureTypesComboBox.DataSource = captureTypes;
-			//captureTypesComboBox.DisplayMember = "Name";
-			//captureTypesComboBox.ValueMember = "Tag";
-
-			var captInfo = "Desktop Duplication API (" + propsStr + ")";
-
-			captInfoTextBox.Text = captInfo;
+			captInfoTextBox.Text = captType + " (" + propsStr + ")"; ;
 
 
 

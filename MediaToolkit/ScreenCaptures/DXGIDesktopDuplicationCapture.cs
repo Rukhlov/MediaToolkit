@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
 using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -122,6 +123,7 @@ namespace MediaToolkit.ScreenCaptures
                     DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
 
+                
                 device = new Device(adapter, deviceCreationFlags);
                 using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                 {
@@ -275,9 +277,9 @@ namespace MediaToolkit.ScreenCaptures
         }
 
         private bool deviceReady = false;
-        public override bool UpdateBuffer(int timeout = 10)
+        public override ErrorCode UpdateBuffer(int timeout = 10)
         {
-            bool Result = false;
+            ErrorCode Result = ErrorCode.Ok;
 
             try
             {
@@ -288,14 +290,14 @@ namespace MediaToolkit.ScreenCaptures
 
                 foreach (var dupl in deskDupls)
                 {
-                    var result = dupl.TryGetScreenTexture(out Texture2D screenTexture);
+                    var errorCode = dupl.TryGetScreenTexture(out Texture2D screenTexture);
 
-                    if (!result)
+                    if (errorCode!= ErrorCode.Ok)
                     {
                         CloseDx();
 
                         Thread.Sleep(100);
-                        return false;
+                        return errorCode;
 
                     }
                     var duplRect = dupl.duplRect;
@@ -345,9 +347,9 @@ namespace MediaToolkit.ScreenCaptures
             return Result;
         }
 
-        private bool FinalyzeTexture(Texture2D texture)
+        private ErrorCode FinalyzeTexture(Texture2D texture)
         {
-            bool Result;
+            ErrorCode errorCode = ErrorCode.Unexpected;
             var deviceContext = device.ImmediateContext;
 
             if (UseHwContext)
@@ -356,7 +358,7 @@ namespace MediaToolkit.ScreenCaptures
                 deviceContext.CopyResource(texture, SharedTexture);
                 deviceContext.Flush();
 
-                Result = true;
+                errorCode = ErrorCode.Ok;
             }
             else
             {
@@ -382,7 +384,7 @@ namespace MediaToolkit.ScreenCaptures
                     deviceContext.CopyResource(texture, stagingTexture);
                     deviceContext.Flush();
 
-                    Result = CopyToGdiBuffer(stagingTexture);
+                    errorCode = CopyToGdiBuffer(stagingTexture);
 
                 }
                 finally
@@ -391,7 +393,7 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            return Result;
+            return errorCode;
         }
 
         private void DrawScreen(SharpDX.Direct2D1.RenderTarget renderTarget, Texture2D texture)
@@ -600,14 +602,14 @@ namespace MediaToolkit.ScreenCaptures
             }
 
             private bool deviceReady = false;
-            public bool TryGetScreenTexture(out Texture2D texture, int timeout = 0)
+            public ErrorCode TryGetScreenTexture(out Texture2D texture, int timeout = 0)
             {
                 texture = null;
 
-                bool Result = false;
+                ErrorCode Result = ErrorCode.Unexpected;
                 if (!deviceReady)
                 {
-                    return false;
+                    return ErrorCode.NotReady;
                 }
 
                 try
@@ -622,7 +624,7 @@ namespace MediaToolkit.ScreenCaptures
                         {
                             if (acquireResult == SharpDX.DXGI.ResultCode.WaitTimeout)
                             {
-                                return true;
+                                return ErrorCode.Ok;
                             }
                             else
                             {
@@ -691,7 +693,7 @@ namespace MediaToolkit.ScreenCaptures
                         //texture = duplTexture;
 
 
-                        Result = true;
+                        Result = 0;
                     }
                     finally
                     {
@@ -708,33 +710,32 @@ namespace MediaToolkit.ScreenCaptures
                 {
                     if (ex.ResultCode == SharpDX.DXGI.ResultCode.WaitTimeout)
                     {
-                        return true;
+                        return 0;
                     }
                     else
                     {
-
-                        const int E_ACCESSDENIED = -2147024891;// 0x80070005;
-
                         if (ex.ResultCode == SharpDX.DXGI.ResultCode.AccessLost ||
                             ex.ResultCode == SharpDX.DXGI.ResultCode.AccessDenied ||
                             ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceReset ||
                             ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceRemoved ||
-                            ex.HResult == E_ACCESSDENIED)
+                            ex.HResult == (int)NativeAPIs.HResult.E_ACCESSDENIED)
                         {
 
                             logger.Warn(ex.Descriptor.ToString());
 
+                            Result = ErrorCode.AccessDenied;
 
-                           // NativeAPIs.Utils.DesktopManager.SwitchToInputDesktop();
+
                         }
                         else
                         {
                             logger.Error(ex);
+                            Result = ErrorCode.Unexpected;
                         }
 
 
 
-                        Result = false;
+                        
                     }
 
                 }
@@ -1289,10 +1290,10 @@ namespace MediaToolkit.ScreenCaptures
         }
 
 
-        private bool CopyToGdiBuffer(Texture2D texture)
+        private ErrorCode CopyToGdiBuffer(Texture2D texture)
         {
 
-            bool Result = false;
+            ErrorCode Result = ErrorCode.Unexpected;
 
             var syncRoot = videoBuffer.syncRoot;
             bool lockTaken = false;
@@ -1303,7 +1304,7 @@ namespace MediaToolkit.ScreenCaptures
                 {
 					var bmp = videoBuffer.bitmap;
                     MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
-					Result = true;
+					Result = ErrorCode.Ok;
                 }
                 else
                 {

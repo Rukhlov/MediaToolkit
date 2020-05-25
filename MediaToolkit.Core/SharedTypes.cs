@@ -254,9 +254,12 @@ namespace MediaToolkit.SharedTypes
         Cancelled, 
         Interrupted,
         IsBusy,
+        NotInitialized,
         NotFound, 
         NotReady,
         NotSupported,
+        WaitTimeout,
+        AccessDenied
         //...
 
     }

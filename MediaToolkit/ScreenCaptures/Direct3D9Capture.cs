@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using GDI = System.Drawing;
 using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -124,11 +125,13 @@ namespace MediaToolkit.ScreenCaptures
 
         private Stopwatch sw = new Stopwatch();
 
-        public override bool UpdateBuffer(int timeout = 10)
+        public override ErrorCode UpdateBuffer(int timeout = 10)
         {
             sw.Restart();
-            bool success = false;
+
+            ErrorCode errorCode = ErrorCode.Unexpected;
             
+
             Result result = device.TestCooperativeLevel();
             if (result != ResultCode.Success)
             {
@@ -151,7 +154,7 @@ namespace MediaToolkit.ScreenCaptures
 
                     Thread.Sleep(100);
 
-                    return false;
+                    return ErrorCode.NotReady;
                 }
 
             }
@@ -174,7 +177,7 @@ namespace MediaToolkit.ScreenCaptures
             catch(SharpDXException ex)
             {
                 logger.Error(ex);
-                return false;
+                return errorCode;
             }
 
             var syncRoot = videoBuffer.syncRoot;
@@ -187,7 +190,11 @@ namespace MediaToolkit.ScreenCaptures
                 {
                     //success = BitBlt(srcSurface, videoBuffer.bitmap);
 
-                    success = SurfaceToBitmap(destSurface, videoBuffer.bitmap );
+                    bool success = SurfaceToBitmap(destSurface, videoBuffer.bitmap );
+                    if (success)
+                    {
+                        errorCode = ErrorCode.Ok;
+                    }
                 }
 
             }
@@ -201,7 +208,7 @@ namespace MediaToolkit.ScreenCaptures
 
             //logger.Debug("CopyToBitmap(...) " + sw.ElapsedMilliseconds);
 
-            return success;
+            return errorCode;
         }
 
         private bool BitBlt(Surface surface, GDI.Bitmap bmp)

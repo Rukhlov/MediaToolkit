@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.SharedTypes;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,14 +14,14 @@ namespace MediaToolkit.ScreenCaptures
     class GDIPlusCapture : ScreenCapture
     {
 
-        public override bool UpdateBuffer(int timeout = 10)
+        public override ErrorCode UpdateBuffer(int timeout = 10)
         {
             return TryGetScreen(SrcRect, ref videoBuffer, timeout);
         }
 
-        public static bool TryGetScreen(Rectangle bounds, ref VideoBuffer videoBuffer, int timeout = 10)
+        public static ErrorCode TryGetScreen(Rectangle bounds, ref VideoBuffer videoBuffer, int timeout = 10)
         {
-            bool success = false;
+            ErrorCode code = ErrorCode.Unexpected;
 
             var syncRoot = videoBuffer.syncRoot;
 
@@ -41,7 +42,7 @@ namespace MediaToolkit.ScreenCaptures
                         try
                         {
                             g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0, srcSize, CopyPixelOperation.SourceCopy | CopyPixelOperation.CaptureBlt);
-                            success = true;
+                            code = ErrorCode.Ok;
                         }
                         finally
                         {
@@ -64,7 +65,7 @@ namespace MediaToolkit.ScreenCaptures
                                 try
                                 {
                                     _g.DrawImage(buf, 0, 0);
-                                    success = true;
+                                    code = ErrorCode.Ok;
                                 }
                                 finally
                                 {
@@ -97,7 +98,7 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            return success;
+            return code;
         }
 
 

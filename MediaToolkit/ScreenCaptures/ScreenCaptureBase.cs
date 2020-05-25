@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Core;
 using MediaToolkit.Logging;
+using MediaToolkit.SharedTypes;
 using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public VideoBuffer VideoBuffer { get => videoBuffer; }
 
-        public abstract bool UpdateBuffer(int timeout = 10);
+        public abstract ErrorCode UpdateBuffer(int timeout = 10);
 
 
         public bool CaptureMouse { get; set; }

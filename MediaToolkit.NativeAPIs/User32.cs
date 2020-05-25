@@ -22,7 +22,7 @@ namespace MediaToolkit.NativeAPIs
 		public static extern IntPtr PostMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
 
-		[DllImport("user32.dll")]
+		[DllImport("user32.dll", SetLastError = true)]
         public static extern bool GetIconInfo(IntPtr hIcon, out ICONINFO piconinfo);
 
         [DllImport("user32.dll")]
@@ -54,23 +54,39 @@ namespace MediaToolkit.NativeAPIs
                 if (pci.flags == CURSOR_SHOWING)
                 {
                     var hIcon = CopyIcon(pci.hCursor);
+                    try
+                    {
+                        ICONINFO pIconInfo = default(ICONINFO);
+                        try
+                        {
+                            bool result = GetIconInfo(hIcon, out pIconInfo);
+                            if (!result)
+                            {
+                                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+                            }
 
-                    if (GetIconInfo(hIcon, out ICONINFO pIconInfo))
+                            var pos = pci.ptScreenPos;
+                            int x = pos.x - pIconInfo.xHotspot - screenX;
+                            int y = pos.y - pIconInfo.yHotspot - screenY;
+                            result = DrawIconEx(hDc, x, y, hIcon, 0, 0, 0, IntPtr.Zero, DI_NORMAL);
+
+                            if (!result)
+                            {
+                                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+
+                            }
+                        }
+                        finally
+                        {
+                            Gdi32.DeleteObject(pIconInfo.hbmColor);
+                            Gdi32.DeleteObject(pIconInfo.hbmMask);
+                        }
+                    }
+                    finally
                     {
 
-                        var pos = pci.ptScreenPos;
-                        int x = pos.x - pIconInfo.xHotspot - screenX;
-                        int y = pos.y - pIconInfo.yHotspot - screenY;
-                        DrawIconEx(hDc, x, y, hIcon, 0, 0, 0, IntPtr.Zero, DI_NORMAL);
-
-                        //DrawIcon(hDc, x, y, pci.hCursor);
-
-                        Gdi32.DeleteObject(pIconInfo.hbmColor);
-                        Gdi32.DeleteObject(pIconInfo.hbmMask);
+                        DestroyIcon(hIcon);
                     }
-
-                    DestroyIcon(hIcon);
-
                 }
             }
         }
