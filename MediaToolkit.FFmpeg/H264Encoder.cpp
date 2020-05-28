@@ -81,8 +81,10 @@ namespace FFmpegLib {
 
 				encoder_ctx = avcodec_alloc_context3(encoder);
 
-				int den = (encodingSettings->FrameRate > 0 && encodingSettings->FrameRate <= 60) ? encodingSettings->FrameRate : 30;
-				encoder_ctx->time_base = { 1, den };
+				MediaRatio^ frameRate = encodingSettings->FrameRate;
+
+				//int den = (encodingSettings->FrameRate > 0 && encodingSettings->FrameRate <= 60) ? encodingSettings->FrameRate : 30;
+				encoder_ctx->time_base = { frameRate->Den, frameRate->Num }; // 1/fps
 
 				encoder_ctx->width = encodingSettings->Resolution.Width;
 				encoder_ctx->height = encodingSettings->Resolution.Height;

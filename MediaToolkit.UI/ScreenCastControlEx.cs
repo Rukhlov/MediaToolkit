@@ -464,7 +464,7 @@ namespace MediaToolkit.UI
                 //Resolution = videoInfo.Resolution,
                 Width = videoInfo.Resolution.Width,
                 Height = videoInfo.Resolution.Height,
-                FrameRate = videoInfo.Fps,
+                FrameRate = new MediaRatio(videoInfo.Fps, 1),
             };
 
             var networkSettings = new NetworkSettings

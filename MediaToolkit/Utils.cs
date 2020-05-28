@@ -57,7 +57,7 @@ namespace MediaToolkit.Utils
 
 			base.WndProc(ref m);
 
-			processor.ProcessMessage(m);
+			processor?.ProcessMessage(m);
 
 		}
 

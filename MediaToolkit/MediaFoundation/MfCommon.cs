@@ -412,7 +412,13 @@ namespace MediaToolkit.MediaFoundation
             return frameSize;
         }
 
-		public static long FrameRateToAverageTimePerFrame(int numerator, int denominator)
+        public static long FrameRateToAverageTimePerFrame(Tuple<int, int> ratio)
+        {
+            MediaFactory.FrameRateToAverageTimePerFrame(ratio.Item1, ratio.Item2, out long averageTimePerFrame);
+            return averageTimePerFrame;
+        }
+
+        public static long FrameRateToAverageTimePerFrame(int numerator, int denominator)
 		{		
 			MediaFactory.FrameRateToAverageTimePerFrame(numerator, denominator, out long averageTimePerFrame);
 			return averageTimePerFrame;
@@ -1427,16 +1433,18 @@ namespace MediaToolkit.MediaFoundation
         public int Width { get; set; } = 1280;
         public int Height { get; set; } = 720;
 
-        public int FrameRate { get; set; } = 15;
+
+        public long FrameRate { get; set; } = MfTool.PackToLong(30, 1);
         public int Quality { get; set; } = 70;
 
         public Guid Format { get; set; } = VideoFormatGuids.NV12;
 
         public long AdapterId { get; set; } = -1;
 
-        public int AvgBitrate { get; set; } = 2500;
+        // bit per sec
+        public int AvgBitrate { get; set; } = 2_500_000;
 
-        public int MaxBitrate { get; set; } = 5000;
+        public int MaxBitrate { get; set; } = 5_000_000;
 
         public RateControlMode BitrateMode { get; set; } = RateControlMode.CBR;
 

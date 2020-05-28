@@ -140,7 +140,7 @@ namespace ScreenStreamer.WinForms.App
                 screenCaptureTableLayoutPanel.Visible = false;
                 //screenCaptureDetailsPanel.Visible = false;
 
-                captureSettingsButton.Enabled = false;
+                //captureSettingsButton.Enabled = false;
             }
             else
             {
@@ -779,7 +779,9 @@ namespace ScreenStreamer.WinForms.App
         private void captureSettingsButton_Click(object sender, EventArgs e)
         {
 
-            if(VideoSettings.CaptureDevice.CaptureMode == CaptureMode.Screen)
+            var captDevice = VideoSettings.CaptureDevice;
+
+            if (captDevice.CaptureMode == CaptureMode.Screen)
             {
                 VideoCaptSettingsForm f = new VideoCaptSettingsForm
                 {
@@ -793,6 +795,12 @@ namespace ScreenStreamer.WinForms.App
 				UpdateCaptureInfo();
 
 			}
+            else
+            {
+                var deviceName = captDevice.Name;
+
+                MediaToolkit.NativeAPIs.DShow.DsUtils.ShowVideoDevicePropertyPages(deviceName, this.Handle);
+            }
 
         }
     }

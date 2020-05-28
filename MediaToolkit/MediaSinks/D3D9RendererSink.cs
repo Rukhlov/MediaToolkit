@@ -49,7 +49,7 @@ namespace MediaToolkit
             this.EncoderSettings = settings;
 
 
-            var avgTimePerFrame = MfTool.FrameRateToAverageTimePerFrame(EncoderSettings.FrameRate, 1);
+            var avgTimePerFrame = MfTool.FrameRateToAverageTimePerFrame(EncoderSettings.FrameRate);
             this.EncoderSettings.AverageTimePerFrame = avgTimePerFrame;
 
             MediaFactory.CreatePresentationClock(out presentationClock);
@@ -77,9 +77,9 @@ namespace MediaToolkit
                 //FourCC = 0x59565955, //"UYVY",
                 Resolution = settings.Resolution, // 
 
-                
+
                 //Resolution = new System.Drawing.Size(1920, 1088),
-                FrameRate = new Tuple<int, int>(settings.FrameRate, 1),
+                FrameRate = settings.FrameRate, //new Tuple<int, int>(settings.FrameRate, 1),
 
             });
 
@@ -101,7 +101,7 @@ namespace MediaToolkit
             {
                 Width = EncoderSettings.Resolution.Width,
                 Height = EncoderSettings.Resolution.Height,
-                FrameRate = EncoderSettings.FrameRate,
+                FrameRate = MfTool.PackToLong(EncoderSettings.FrameRate),
                 LowLatency = EncoderSettings.LowLatency,
             };
 

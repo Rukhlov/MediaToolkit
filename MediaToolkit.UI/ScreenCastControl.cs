@@ -467,7 +467,7 @@ namespace MediaToolkit.UI
                 //Resolution = videoInfo.Resolution,
                 Width = videoInfo.Resolution.Width,
                 Height = videoInfo.Resolution.Height,
-                FrameRate = videoInfo.Fps,
+                FrameRate = new MediaRatio(videoInfo.Fps, 1),
             };
 
             var outputPars = new VideoEncoderSettings
@@ -477,7 +477,7 @@ namespace MediaToolkit.UI
                 Height = videoInfo.Resolution.Height,
                 //Resolution = new System.Drawing.Size(1920, 1080);
 
-                FrameRate = videoInfo.Fps,
+                FrameRate = new MediaRatio(videoInfo.Fps, 1),
             };
 
             var networkPars = new NetworkSettings

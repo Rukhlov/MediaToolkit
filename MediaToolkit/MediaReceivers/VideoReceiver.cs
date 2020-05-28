@@ -45,7 +45,7 @@ namespace MediaToolkit
             {
                 Width = inputPars.Resolution.Width,
                 Height = inputPars.Resolution.Height,
-                FrameRate = inputPars.FrameRate,
+                FrameRate = MfTool.PackToLong(inputPars.FrameRate),
             };
 
             var outputArgs = new MfVideoArgs
@@ -54,7 +54,7 @@ namespace MediaToolkit
                 Width = outputPars.Resolution.Width,
                 Height = outputPars.Resolution.Height,
 
-                FrameRate = outputPars.FrameRate,
+                FrameRate = MfTool.PackToLong(outputPars.FrameRate),
             };
 
 

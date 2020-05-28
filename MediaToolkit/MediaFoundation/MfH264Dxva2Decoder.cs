@@ -200,7 +200,7 @@ namespace MediaToolkit.MediaFoundation
                 InputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 InputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.H264);
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
+                InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
                // InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
                 InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
@@ -218,7 +218,7 @@ namespace MediaToolkit.MediaFoundation
                 //OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
+                OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
                 OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);

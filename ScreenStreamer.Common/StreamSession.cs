@@ -220,7 +220,7 @@ namespace ScreenStreamer.Common
 				BitrateMode = BitrateControlMode.CBR,
 				Bitrate = 2500,
 				MaxBitrate = 5000,
-				FrameRate = 30,
+				FrameRate = new MediaRatio(30, 1),
 				LowLatency = true,
 
 			};

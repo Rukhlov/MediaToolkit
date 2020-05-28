@@ -49,6 +49,8 @@
     <Compile Include="DShow\Objidl.cs" />
     <Compile Include="DShow\Ocidl.cs" />
     <Compile Include="DShow\Strmif.cs" />
+    <Compile Include="DShow\DsUtils.cs" />
+    <Compile Include="DShow\Uuids.cs" />
     <Compile Include="DwmApi.cs" />
     <Compile Include="Gdi32.cs" />
     <Compile Include="Kernel32.cs" />

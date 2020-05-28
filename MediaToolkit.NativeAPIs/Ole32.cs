@@ -11,7 +11,7 @@ namespace MediaToolkit.NativeAPIs.Ole
     public class OleAut32
     {
         [DllImport("oleaut32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
-        static extern int OleCreatePropertyFrame(IntPtr hwndOwner, 
+        public static extern int OleCreatePropertyFrame(IntPtr hwndOwner, 
         int x, int y,
         [MarshalAs(UnmanagedType.LPWStr)] string lpszCaption,
         int cObjects,

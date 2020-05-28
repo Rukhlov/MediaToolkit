@@ -40,14 +40,16 @@ namespace ScreenStreamer.WinForms
             this.bitrateModeComboBox.SelectedItem = EncoderSettings.BitrateMode;
             this.MaxBitrateNumeric.Value = EncoderSettings.MaxBitrate;
             this.bitrateNumeric.Value = EncoderSettings.Bitrate;
-            this.fpsNumeric.Value = EncoderSettings.FrameRate;
+
+            this.fpsNumeric.Value = EncoderSettings.FrameRate.Num;
+
             this.latencyModeCheckBox.Checked = EncoderSettings.LowLatency;
 			this.qualityNumeric.Value = EncoderSettings.Quality;
             this.gopSizeNumeric.Value = EncoderSettings.GOPSize;
 
 
-			var aspectRatio = EncoderSettings.AspectRatio ?? AspectRatio.Default;
-			var aspectItem = aspectRatios.FirstOrDefault(i => i.Width == aspectRatio.Width && i.Height == aspectRatio.Height);
+			var aspectRatio = EncoderSettings.AspectRatio ?? AspectRatio.AspectRatio_1_1;
+			var aspectItem = aspectRatios.FirstOrDefault(i => i.Den == aspectRatio.Den && i.Num == aspectRatio.Num);
 			if(aspectItem == null)
 			{
 				aspectItem = aspectRatios.FirstOrDefault();
@@ -69,35 +71,36 @@ namespace ScreenStreamer.WinForms
 			EncoderSettings.BitrateMode = (BitrateControlMode)this.bitrateModeComboBox.SelectedItem;
 			EncoderSettings.MaxBitrate = (int)this.MaxBitrateNumeric.Value;
 			EncoderSettings.Bitrate = (int)this.bitrateNumeric.Value;
-			EncoderSettings.FrameRate = (int)this.fpsNumeric.Value;
+
+			EncoderSettings.FrameRate = new MediaRatio((int)this.fpsNumeric.Value, 1);
 			EncoderSettings.LowLatency = this.latencyModeCheckBox.Checked;
 
 			EncoderSettings.Quality = (int)qualityNumeric.Value;
 			EncoderSettings.GOPSize = (int)this.gopSizeNumeric.Value;
 
-			AspectRatio aspectRatio = null;
+			MediaRatio aspectRatio = null;
 			var item = aspectRatioComboBox.SelectedItem;
 			if (item != null)
 			{
-				aspectRatio = item as AspectRatio;
+				aspectRatio = item as MediaRatio;
 			}
 
-			EncoderSettings.AspectRatio = aspectRatio ?? AspectRatio.Default;
+			EncoderSettings.AspectRatio = aspectRatio ?? AspectRatio.AspectRatio_1_1;
 
 			this.Close();
         }
 
-		private List<AspectRatio> aspectRatios = new List<AspectRatio>();
+		private List<MediaRatio> aspectRatios = new List<MediaRatio>();
 		private void LoadAspectRatioItems()
 		{
 
-			aspectRatios = new List<AspectRatio>
+			aspectRatios = new List<MediaRatio>
 			{
-			   AspectRatio.Default,
-			   AspectRatio.AspectRatio_4_3,
-			   AspectRatio.AspectRatio_5_4,
-			   AspectRatio.AspectRatio_16_9,
-			   AspectRatio.AspectRatio_16_10,
+               AspectRatio.AspectRatio_1_1,
+               AspectRatio.AspectRatio_4_3,
+               AspectRatio.AspectRatio_5_4,
+               AspectRatio.AspectRatio_16_9,
+               AspectRatio.AspectRatio_16_10,
 			};
 
 			aspectRatioComboBox.DataSource = aspectRatios;

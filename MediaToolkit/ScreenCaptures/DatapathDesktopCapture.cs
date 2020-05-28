@@ -21,7 +21,6 @@ namespace MediaToolkit.ScreenCaptures
 
     public class DatapathDesktopCapture : ScreenCapture
     {
-        //private static Logger _logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource _logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 

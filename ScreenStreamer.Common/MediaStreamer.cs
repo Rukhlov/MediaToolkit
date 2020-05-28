@@ -248,14 +248,14 @@ namespace ScreenStreamer.Common
                 {
                     var screenDevice = (ScreenCaptureDevice)captureDevice;
 
-                    if (screenDevice.CaptureRegion.Width > MediaToolkit.Core.Config.MaxVideoEncoderWidth)
+                    if (screenDevice.CaptureRegion.Width > Config.MaxVideoEncoderWidth)
                     {
-                        screenDevice.CaptureRegion.Width = MediaToolkit.Core.Config.MaxVideoEncoderWidth;
+                        screenDevice.CaptureRegion.Width = Config.MaxVideoEncoderWidth;
                     }
 
-                    if (screenDevice.CaptureRegion.Height > MediaToolkit.Core.Config.MaxVideoEncoderHeight)
+                    if (screenDevice.CaptureRegion.Height > Config.MaxVideoEncoderHeight)
                     {
-                        screenDevice.CaptureRegion.Height = MediaToolkit.Core.Config.MaxVideoEncoderHeight;
+                        screenDevice.CaptureRegion.Height = Config.MaxVideoEncoderHeight;
                     }
 
                     screenDevice.Resolution = MediaToolkit.Utils.GraphicTools.DecreaseToEven(screenDevice.CaptureRegion.Size);
@@ -433,6 +433,7 @@ namespace ScreenStreamer.Common
                     var networkSettings = videoStreamer.NetworkSettings;
                     var encoderSettings = videoStreamer.EncoderSettings;
 
+
                     VideoChannelInfo videoInfo = new VideoChannelInfo
                     {
                         Id = videoStreamer.Id,
@@ -440,7 +441,7 @@ namespace ScreenStreamer.Common
                         Resolution = encoderSettings.Resolution,
                         Bitrate = encoderSettings.Bitrate,
 
-                        Fps = encoderSettings.FrameRate,
+                        Fps = (int)encoderSettings.FramePerSec, //encoderSettings.FrameRate.Num,
 
 
                     };

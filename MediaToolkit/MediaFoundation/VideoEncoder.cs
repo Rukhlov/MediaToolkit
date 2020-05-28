@@ -87,13 +87,15 @@ namespace MediaToolkit.MediaFoundation
 				Height = destSize.Height, //srcSize.Height,
 				Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
 
-				FrameRate = encoderSettings.FrameRate,
-				AvgBitrate = encoderSettings.Bitrate,
+				FrameRate = MfTool.PackToLong(encoderSettings.FrameRate),
+
+                MaxBitrate = encoderSettings.MaxBitrate * 1000, //kbps->bps
+				AvgBitrate = encoderSettings.Bitrate * 1000,
 				LowLatency = encoderSettings.LowLatency,
 				AdapterId = videoSource.AdapterId,
 				Profile = profile,
 				BitrateMode = bitrateMode,
-				MaxBitrate = encoderSettings.MaxBitrate,
+				
                
                 EncoderId = encoderSettings.EncoderId,
 
@@ -307,7 +309,7 @@ namespace MediaToolkit.MediaFoundation
             VideoEncoderSettings settings = new VideoEncoderSettings
             {
                 EncoderId = "libx264",
-                FrameRate = args.FrameRate,
+                FrameRate = MfTool.LongToInts(args.FrameRate),
                 Width = args.Width,
                 Height = args.Height,
 

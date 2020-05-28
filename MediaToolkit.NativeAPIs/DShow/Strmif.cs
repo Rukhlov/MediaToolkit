@@ -9,6 +9,30 @@ namespace MediaToolkit.NativeAPIs.DShow
 {
 
     [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
+		Guid("29840822-5B84-11D0-BD3B-00A0C911CE86"),
+		InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface ICreateDevEnum
+    {
+        [PreserveSig]
+        int CreateClassEnumerator([In, MarshalAs(UnmanagedType.LPStruct)] Guid pType, [Out] out IEnumMoniker ppEnumMoniker, [In] CDef dwFlags);
+    }
+
+    [Flags]
+    public enum CDef
+    {
+        None = 0,
+        ClassDefault = 0x0001,
+        BypassClassManager = 0x0002,
+        ClassLegacy = 0x0004,
+        MeritAboveDoNotUse = 0x0008,
+        DevmonCMGRDevice = 0x0010,
+        DevmonDMO = 0x0020,
+        DevmonPNPDevice = 0x0040,
+        DevmonFilter = 0x0080,
+        DevmonSelectiveMask = 0x00f0
+    }
+
+    [ComImport, System.Security.SuppressUnmanagedCodeSecurity,
         Guid("56a86899-0ad4-11ce-b03a-0020af0ba770"),
         InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IMediaFilter : IPersist
@@ -377,6 +401,13 @@ namespace MediaToolkit.NativeAPIs.DShow
             [In] int dw2
             );
     }
+
+    [ComImport, Guid("62BE5D10-60EB-11d0-BD3B-00A0C911CE86")]
+    public class CreateDevEnum
+    {
+    }
+
+
 
     [Flags]
     public enum VfwCompressDialogs

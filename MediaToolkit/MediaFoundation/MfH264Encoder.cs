@@ -322,8 +322,8 @@ namespace MediaToolkit.MediaFoundation
             var width = args.Width;
             var height = args.Height;
 
-            int avgBitrate = args.AvgBitrate * 1000;
-            int maxBitrate = args.MaxBitrate * 1000;
+            int avgBitrate = args.AvgBitrate;
+            int maxBitrate = args.MaxBitrate;
             int mpegProfile = (int)args.Profile;
 
             //if (width % 2 != 0)
@@ -409,7 +409,7 @@ namespace MediaToolkit.MediaFoundation
 
                 mediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 mediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                mediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));             
+                mediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);             
                 mediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 mediaType.Set(MediaTypeAttributeKeys.Mpeg2Profile, mpegProfile);
@@ -478,7 +478,7 @@ namespace MediaToolkit.MediaFoundation
             //InputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
             //InputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
             InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-            InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
+            InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
 
             InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
             InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);

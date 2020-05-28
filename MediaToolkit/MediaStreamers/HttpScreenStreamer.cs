@@ -106,7 +106,7 @@ namespace MediaToolkit.MediaStreamers
                 //Resolution = destSize,
                 Width = destSize.Width,
                 Height = destSize.Height,
-                FrameRate = captureParams.Properties.Fps,
+                FrameRate = new MediaRatio(captureParams.Properties.Fps,1),
                 EncoderId = "mjpeg",
             };
 

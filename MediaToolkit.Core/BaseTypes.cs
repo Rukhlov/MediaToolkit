@@ -64,7 +64,7 @@ namespace MediaToolkit.Core
         public VideoEncoderDescription EncoderDescription { get; set; } = new VideoEncoderDescription();
 
         [XmlIgnore]
-        public Size Resolution => new Size(Width, Height); //{ get; set; } = Size.Empty;
+        public Size Resolution => new Size(Width, Height);
 
         [XmlAttribute]
         public int Width { get; set; } = 1920;
@@ -72,12 +72,21 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public int Height { get; set; } = 1080;
 
-        [XmlAttribute]
-        public int FrameRate { get; set; } = 30;
+        [XmlElement]
+        public MediaRatio FrameRate { get; set; } = new MediaRatio(30, 1);
 
+        [XmlIgnore]
+        public double FramePerSec => FrameRate.Num / (double)FrameRate.Den;
+
+        /// <summary>
+        /// Avarage bitrate  kbit/sec
+        /// </summary>
         [XmlAttribute]
         public int Bitrate { get; set; } = 2500;
 
+        /// <summary>
+        /// Max bitrate kbit/sec
+        /// </summary>
         [XmlAttribute]
         public int MaxBitrate { get; set; } = 5000;
 
@@ -94,7 +103,7 @@ namespace MediaToolkit.Core
         public H264Profile Profile { get; set; } = H264Profile.Main;
 
 		[XmlElement]
-		public AspectRatio AspectRatio { get; set; } = AspectRatio.Default;
+		public MediaRatio AspectRatio { get; set; } = MediaToolkit.Core.AspectRatio.AspectRatio_1_1;
 
         [XmlAttribute]
         public BitrateControlMode BitrateMode { get; set; } = BitrateControlMode.CBR;
@@ -111,60 +120,54 @@ namespace MediaToolkit.Core
         }
     }
 
+    public static class AspectRatio
+    {
+        public static readonly MediaRatio AspectRatio_1_1 = new MediaRatio(1, 1);
 
-	[Serializable]
-	public class AspectRatio
+        public static readonly MediaRatio AspectRatio_16_9 = new MediaRatio(16, 9);
+        public static readonly MediaRatio AspectRatio_16_10 = new MediaRatio(16, 10);
+
+        public static readonly MediaRatio AspectRatio_4_3 = new MediaRatio(4, 3);
+        public static readonly MediaRatio AspectRatio_5_4 = new MediaRatio(5, 4);
+
+    }
+
+    [Serializable]
+	public class MediaRatio
 	{
-		public AspectRatio()
+		public MediaRatio()
 		{
-			this.Width = 1;
-			this.Height = 1;
+            this.Num = 1;
+            this.Den = 1;
 		}
 
-		public AspectRatio(int w, int h)
+		public MediaRatio(int num, int den)
 		{
-			this.Width = w;
-			this.Height = h;
+            this.Num = num;
+            this.Den = den;
+
 		}
 
+        [XmlAttribute]
+        public int Num { get; set; } = 1;
 
-		[XmlAttribute]
-		public int Width { get; set; } = 1;
-
-		[XmlAttribute]
-		public int Height { get; set; } = 1;
+        [XmlAttribute]
+		public int Den { get; set; } = 1;
 
 		public override string ToString()
-		{
-			if(Width == 1 && Height == 1)
-			{
-				return "Default";
-			}
-			else
-			{
-				return Width + ":" + Height;
-			}
+        {
+            return Num + ":" + Den;
+        }
 
+        public static implicit operator MediaRatio(Tuple<int, int> tuple)
+		{
+			return new MediaRatio(tuple.Item1, tuple.Item2);
 		}
 
-		public static readonly AspectRatio Default = new AspectRatio(1, 1);
-
-		public static readonly AspectRatio AspectRatio_16_9 = new AspectRatio(16, 9 );
-		public static readonly AspectRatio AspectRatio_16_10 = new AspectRatio(16, 10 );
-
-		public static readonly AspectRatio AspectRatio_4_3 = new AspectRatio(4, 3);
-		public static readonly AspectRatio AspectRatio_5_4 = new AspectRatio(5, 4);
-
-		public static implicit operator AspectRatio(Tuple<int, int> tuple)
+		public static implicit operator Tuple<int, int>(MediaRatio aspectRatio)
 		{
-			return new AspectRatio(tuple.Item1, tuple.Item2);
+			return new Tuple<int, int> (aspectRatio.Num, aspectRatio.Den);
 		}
-
-		public static implicit operator Tuple<int, int>(AspectRatio aspectRatio)
-		{
-			return new Tuple<int, int> ( aspectRatio.Width, aspectRatio.Height );
-		}
-
 	} 
 
     public enum VideoCodingFormat

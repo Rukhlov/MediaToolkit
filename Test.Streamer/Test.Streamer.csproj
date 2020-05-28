@@ -103,7 +103,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Utils.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="Controls\AudioPreviewForm.resx">
       <DependentUpon>AudioPreviewForm.cs</DependentUpon>
     </EmbeddedResource>

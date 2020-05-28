@@ -80,7 +80,7 @@ namespace MediaToolkit.MediaFoundation
                     outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 8_000_000);
                     outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                     outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(Args.FrameRate, 1));
+                    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Args.FrameRate);
                     outputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
 
@@ -96,7 +96,7 @@ namespace MediaToolkit.MediaFoundation
                     inputMediaType.Set(MediaTypeAttributeKeys.Subtype, inputFormat);
                     inputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                     inputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(Args.FrameRate, 1));
+                    inputMediaType.Set(MediaTypeAttributeKeys.FrameRate, Args.FrameRate);
                     inputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                     inputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
