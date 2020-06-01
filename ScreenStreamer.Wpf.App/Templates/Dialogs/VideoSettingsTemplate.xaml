@@ -29,6 +29,8 @@
 
                 <ComboBox Grid.Column="1" 
                           ItemsSource="{Binding Displays}" 
+                          DisplayMemberPath="Name"
+
                           IsEnabled="{Binding Property.IsRegion, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
                           SelectedItem="{Binding Property.Display}"
                           Cursor="Hand"/>
@@ -70,9 +72,9 @@
 
                 <TextBox Grid.Column="1" 
                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
-                         Style="{StaticResource defaultTextBoxStyle}">
+                         Style="{StaticResource defaultTextBoxStyle}" >
                     <TextBox.Text>
-                        <MultiBinding Converter="{converters:MultiDoubleToStringConverter}" UpdateSourceTrigger="PropertyChanged">
+                        <MultiBinding Converter="{converters:ResolutionToStringConverter}" UpdateSourceTrigger="PropertyChanged">
                             <MultiBinding.ValidationRules>
                                 <validationrules:ResolutionRule/>
                             </MultiBinding.ValidationRules>

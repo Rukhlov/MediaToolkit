@@ -47,7 +47,7 @@
             this.exitButton = new System.Windows.Forms.Button();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.switchStreamingStateButton = new System.Windows.Forms.Button();
-            this.stopStreamingButton = new System.Windows.Forms.Button();
+            this.infoButton = new System.Windows.Forms.Button();
             this.videoSourceSettingsLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -305,13 +305,14 @@
             this.flowLayoutPanel1.AutoSize = true;
             this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.flowLayoutPanel1.Controls.Add(this.switchStreamingStateButton);
-            this.flowLayoutPanel1.Controls.Add(this.stopStreamingButton);
+            this.flowLayoutPanel1.Controls.Add(this.infoButton);
             this.flowLayoutPanel1.Location = new System.Drawing.Point(18, 6);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(18, 4, 2, 2);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(266, 34);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(288, 34);
             this.flowLayoutPanel1.TabIndex = 108;
             this.flowLayoutPanel1.WrapContents = false;
+
             // 
             // switchStreamingStateButton
             // 
@@ -331,22 +332,21 @@
             this.switchStreamingStateButton.UseVisualStyleBackColor = false;
             this.switchStreamingStateButton.Click += new System.EventHandler(this.switchStreamingStateButton_Click);
             // 
-            // stopStreamingButton
+            // infoButton
             // 
-            this.stopStreamingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.stopStreamingButton.AutoSize = true;
-            this.stopStreamingButton.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.stopStreamingButton.FlatAppearance.BorderSize = 0;
-            this.stopStreamingButton.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.stopStreamingButton.Location = new System.Drawing.Point(186, 2);
-            this.stopStreamingButton.Margin = new System.Windows.Forms.Padding(2);
-            this.stopStreamingButton.Name = "stopStreamingButton";
-            this.stopStreamingButton.Size = new System.Drawing.Size(78, 30);
-            this.stopStreamingButton.TabIndex = 94;
-            this.stopStreamingButton.Text = "_TEST";
-            this.stopStreamingButton.UseVisualStyleBackColor = false;
-            this.stopStreamingButton.Visible = false;
-            this.stopStreamingButton.Click += new System.EventHandler(this.stopStreamingButton_Click);
+            this.infoButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.infoButton.AutoSize = true;
+            this.infoButton.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.infoButton.FlatAppearance.BorderSize = 0;
+            this.infoButton.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.infoButton.Location = new System.Drawing.Point(186, 2);
+            this.infoButton.Margin = new System.Windows.Forms.Padding(2);
+            this.infoButton.Name = "infoButton";
+            this.infoButton.Size = new System.Drawing.Size(100, 30);
+            this.infoButton.TabIndex = 94;
+            this.infoButton.Text = "Info";
+            this.infoButton.UseVisualStyleBackColor = false;
+            this.infoButton.Click += new System.EventHandler(this.infoButton_Click);
             // 
             // videoSourceSettingsLayoutPanel
             // 
@@ -700,7 +700,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(540, 540);
+            this.MinimumSize = new System.Drawing.Size(539, 538);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Polywall Streamer";
@@ -762,7 +762,7 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.Button switchStreamingStateButton;
-        private System.Windows.Forms.Button stopStreamingButton;
+        private System.Windows.Forms.Button infoButton;
         private System.Windows.Forms.Button exitButton;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;

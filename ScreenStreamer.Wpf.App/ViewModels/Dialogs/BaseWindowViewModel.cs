@@ -24,7 +24,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public virtual double MinWidth => 370d;
 
-        #region IsBottomVisible
 
         private bool _isBottomVisible = true;
 
@@ -38,9 +37,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        #endregion IsBottomVisible
 
-        #region IsModalOpened
+
         private bool _isModalOpened = false;
 
         public bool IsModalOpened
@@ -53,9 +51,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        #endregion IsModalOpened
-
-        #region IsVisible
 
         private bool _isVisible = true;
 
@@ -69,7 +64,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        #endregion IsVisible
+
 
         public bool IsClosableOnLostFocus => this is PropertyWindowViewModel && !IsChanged;
 

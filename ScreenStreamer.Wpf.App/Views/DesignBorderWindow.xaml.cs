@@ -30,6 +30,8 @@ namespace ScreenStreamer.Wpf.Common.Views
             this.SizeChanged += DesignBorderWindow_SizeChanged;
         }
 
+        //TODO: пересчитать размеры формы для разных DPI...
+
         private void DesignBorderWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Console.WriteLine(e.NewSize.Height + ";" + e.NewSize.Width+"; or:"+this.Height+";"+this.Width);

@@ -13,6 +13,7 @@ namespace ScreenStreamer.Wpf.Common.Services
     {
         private IDictionary<StreamBorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<StreamBorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
+
         private IDictionary<IDialogViewModel, StreamBaseWindow> _windows = new Dictionary<IDialogViewModel, StreamBaseWindow>();
         private IDictionary<IDialogViewModel, StreamBaseWindow> _dialogs = new Dictionary<IDialogViewModel, StreamBaseWindow>();
 
@@ -51,7 +52,7 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Show(IDialogViewModel viewModel)
         {
-            #region StreamBorderViewModel
+
             if (viewModel is StreamBorderViewModel streamBorderViewModel)
             {
                 if (!_streamBorders.ContainsKey(streamBorderViewModel))
@@ -63,8 +64,6 @@ namespace ScreenStreamer.Wpf.Common.Services
                 }
                 _streamBorders[streamBorderViewModel].Show();
             }
-            #endregion StreamBorderViewModel
-            #region DesignBorderViewModel
             else if (viewModel is DesignBorderViewModel designBorderViewModel)
             {
                 if (!_designBorders.ContainsKey(designBorderViewModel))
@@ -76,7 +75,6 @@ namespace ScreenStreamer.Wpf.Common.Services
                 }
                 _designBorders[designBorderViewModel].Show();
             }
-            #endregion DesignBorderViewModel
             else
             {
                 var setInitialPosition = true;

@@ -122,15 +122,19 @@ namespace ScreenStreamer.Common
 
 			if (VideoSettings.Enabled)
 			{
-				var screenCaptParams = (VideoSettings.CaptureDevice as ScreenCaptureDevice);
-				if (screenCaptParams != null)
+                string videoLog = "";
+				var screenCaptDevice = (VideoSettings.CaptureDevice as ScreenCaptureDevice);
+				if (screenCaptDevice != null)
 				{
-					if (screenCaptParams.DisplayRegion.IsEmpty)
+					if (screenCaptDevice.DisplayRegion.IsEmpty)
 					{
 						logger.Debug("VideoSource DisplayRegion.IsEmpty");
 						//videoSettings.Enabled = false;
 					}
-				}
+
+                    videoLog = screenCaptDevice.DeviceId + ", " + screenCaptDevice.CaptureRegion.ToString();
+
+                }
 
 				var captureDevice = VideoSettings.CaptureDevice;
 				var captureResolution = captureDevice.Resolution;
@@ -172,6 +176,8 @@ namespace ScreenStreamer.Common
 					//captureDevice.Resolution = Size.Empty;
 				}
                 */
+
+                logger.Info("VideoSettings: " + videoLog);
 			}
 
 			if (AudioSettings.Enabled)

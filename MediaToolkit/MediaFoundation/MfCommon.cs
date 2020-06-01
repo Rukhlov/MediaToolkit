@@ -337,7 +337,8 @@ namespace MediaToolkit.MediaFoundation
 			RateControlMode bitrateMode = RateControlMode.CBR;
 			if (mode == MediaToolkit.Core.BitrateControlMode.VBR)
 			{
-				bitrateMode = RateControlMode.LowDelayVBR;
+				//bitrateMode = RateControlMode.LowDelayVBR;
+                bitrateMode = RateControlMode.UnconstrainedVBR;
 			}
 			else if (mode == MediaToolkit.Core.BitrateControlMode.Quality)
 			{
@@ -1245,8 +1246,9 @@ namespace MediaToolkit.MediaFoundation
         public static readonly MediaAttributeKey<int> AVEncCommonMaxBitRate = new MediaAttributeKey<int>("9651eae4-39b9-4ebf-85ef-d7f444ec7465");
 
         public static readonly MediaAttributeKey<int> AVEncMPVDefaultBPictureCount = new MediaAttributeKey<int>(new Guid(0x8d390aac, 0xdc5c, 0x4200, 0xb5, 0x7f, 0x81, 0x4d, 0x04, 0xba, 0xba, 0xb2));
-        
 
+        //https://docs.microsoft.com/en-us/windows/win32/directshow/avencmpvgopsize-property
+        public static readonly MediaAttributeKey<int> AVEncMPVGOPSize = new MediaAttributeKey<int>(new Guid(0x95f31b26, 0x95a4, 0x41aa, 0x93, 0x03, 0x24, 0x6a, 0x7f, 0xc6, 0xee, 0xf1));
 
     }
 
@@ -1435,6 +1437,12 @@ namespace MediaToolkit.MediaFoundation
 
 
         public long FrameRate { get; set; } = MfTool.PackToLong(30, 1);
+
+        /// <summary>
+        /// Sets the quality level.
+        /// This property applies when the rate control mode is quality-based VBR (eAVEncCommonRateControlMode_Quality). 
+        /// The valid range is 1–100. The default value is 70. 
+        /// </summary>
         public int Quality { get; set; } = 70;
 
         public Guid Format { get; set; } = VideoFormatGuids.NV12;
@@ -1455,6 +1463,15 @@ namespace MediaToolkit.MediaFoundation
         public int InterlaceMode { get; set; } = 2; //Progressive
 
 		public long AspectRatio { get; set; } = MfTool.PackToLong(1, 1);
+
+        /// <summary>
+        /// Sets the number of pictures from one GOP header to the next, including the leading anchor but not the following one.
+        /// The valid range is [0 ... 2³²–1]. If zero, the encoder selects the GOP size.
+        /// </summary>
+        public int GopSize { get; set; } = 0;
+
+
+        public int MaxBFrame { get; set; } = 0;
 
     }
 

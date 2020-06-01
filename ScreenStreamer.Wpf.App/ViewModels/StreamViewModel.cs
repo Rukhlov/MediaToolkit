@@ -18,6 +18,9 @@ namespace ScreenStreamer.Wpf.Common.Models
     public class StreamViewModel : StreamerViewModelBase
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
+
+
+
         public StreamModel Model { get; }
         private IDialogService _dialogService;
 
@@ -41,13 +44,11 @@ namespace ScreenStreamer.Wpf.Common.Models
         [Track]
         public PropertyNetworkViewModel PropertyNetwork { get; set; }
 
-        #region Name
+
         [Track]
         public string Name { get => Model.Name; set { SetProperty(Model, () => Model.Name, value); RaisePropertyChanged(nameof(StartContextMenuText)); } }
 
-        #endregion Name
 
-        #region IsStarted
 
         public bool IsEditable
         {
@@ -70,13 +71,6 @@ namespace ScreenStreamer.Wpf.Common.Models
             get => !Model.IsBusy;
         }
 
-        #endregion IsStarted
-
-
-
-
-
-        #region IsSelected
 
         private bool _isSelected = false;
 
@@ -90,9 +84,6 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
         }
 
-        #endregion IsSelected
-
-        #region IsEditName
 
         private bool _isEditName = false;
 
@@ -107,13 +98,12 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
         }
 
-        #endregion IsEditName
+
 
         public string StartCommandText => IsStarted ? "Stop Stream" : "Start Stream";
 
         public string StartContextMenuText => IsStarted ? $"Stop {Name}" : $"Start {Name}";
 
-        #region Commands
 
         public ICommand StartCommand { get; set; }
         public ICommand EditNameCommand { get; set; }
@@ -122,7 +112,6 @@ namespace ScreenStreamer.Wpf.Common.Models
         public ICommand HideBorderCommand { get; set; }
         public ICommand EditModeCommand { get; set; }
 
-        #endregion Commands
 
         public bool IsMicrophoneEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsMicrophoneEnabled;
         public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
@@ -155,7 +144,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             BorderViewModel = new StreamBorderViewModel(this);
             DesignViewModel = new DesignBorderViewModel(this);
 
-            Dispatcher.CurrentDispatcher.BeginInvoke(
+            dispatcher = Dispatcher.CurrentDispatcher;
+
+            dispatcher.BeginInvoke(
                 DispatcherPriority.Loaded,
                 new Action(() => OnIsStartedChanged(IsStarted))
         
@@ -164,7 +155,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             Model.OnStreamStateChanged += Model_OnStreamStateChanged;
         }
 
-
+        private Dispatcher dispatcher = null;
 
         private void CopyUrl()
         {
@@ -200,6 +191,8 @@ namespace ScreenStreamer.Wpf.Common.Models
             //{
             //    MainViewModel.IsEdit = true;
             //}
+
+
             IsEditName = !_isEditName;
         }
 
@@ -207,10 +200,16 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             _dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
         }
+
+
         private void Model_OnStreamStateChanged()
         {
 
-            OnIsStartedChanged(IsStarted);
+            dispatcher.Invoke(() =>
+            {
+                OnIsStartedChanged(IsStarted);
+            });
+            
         }
 
         private void OnIsStartedChanged(bool isStarted)
@@ -243,8 +242,12 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         private void HideBorder()
         {
+            
             if (Properties.Single(p => p is PropertyBorderViewModel) is PropertyBorderViewModel borderViewModel)
+            {
                 borderViewModel.IsBorderVisible = false;
+            }
+               
             _dialogService.Hide(BorderViewModel);
         }
     }

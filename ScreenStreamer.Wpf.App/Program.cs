@@ -16,7 +16,7 @@ namespace ScreenStreamer.Wpf.UI
 
         public const string ApplicationId = ApplicationName + "_" + "E7B28EAF-A330-4467-98F8-F3BCA7613268";
 
-        public const string ApplicationName = "ScreenStreamer";
+        public const string ApplicationName = "ScreenStreamerWPF";
 
     }
 

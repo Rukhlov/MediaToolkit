@@ -16,7 +16,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     {
         private readonly StreamMainModel _model;
 
-        #region IsEdit
 
         private bool _isEdit = false;
         public bool IsEdit
@@ -29,10 +28,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 _selectedStream.IsEditName = false;
             }
         }
-
-        #endregion IsEdit
-
-        #region SeletectedStream
 
         private StreamViewModel _selectedStream = null;
         public StreamViewModel SelectedStream
@@ -67,11 +62,10 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        #endregion SeletectedStream
 
         public bool HasNoStreams => StreamList.Count == 0;
 
-        #region Commands
+
 
         public ICommand DeleteCommand { get; set; }
         public ICommand AddCommand { get; set; }
@@ -83,7 +77,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ICommand StartAllCommand { get; set; }
         public ICommand ShowStreamSettingsCommand { get; set; }
 
-        #endregion Commands
 
         public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
 
@@ -148,7 +141,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
 
-        #region Show/Hide
+
         private void ShowMainWindow()
         {
             IsVisible = true;
@@ -158,7 +151,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         {
             IsVisible = false;
         }
-        #endregion Show/Hide
+
 
         public void RaiseIsAllStartedChanged()
         {

@@ -55,9 +55,6 @@ namespace ScreenStreamer.WinForms.App
 
             LoadEncoderItems();
 
-            //LoadEncoderProfilesItems();
-
-            //LoadRateModeItems();
 
             UpdateCaptureInfo();
 

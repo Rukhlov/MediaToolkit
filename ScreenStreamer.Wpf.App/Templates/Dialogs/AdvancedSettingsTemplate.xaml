@@ -32,8 +32,10 @@
 
             <TextBlock Text="Encoder" Grid.Row="0" Grid.Column="0"/>
             <ComboBox Grid.Row="0" Grid.Column="1" 
-                      ItemsSource="{Binding VideoEncoderModes}" 
+                      ItemsSource="{Binding VideoEncoders}" 
+                      DisplayMemberPath="Name"
                       SelectedItem="{Binding VideoEncoder}"
+                      
                       Cursor="Hand"/>
             
             <TextBlock Text="Profile" Grid.Row="1" Grid.Column="0"/>

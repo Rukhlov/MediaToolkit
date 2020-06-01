@@ -19,10 +19,14 @@ namespace Polywall.Share.UI
         bool HasErrors { get; }
         void ResetChanges();
     }
+
+
     public class ViewModelBase : GalaSoft.MvvmLight.ViewModelBase, IDataErrorInfo, IStorableBladeModel
     {
-        private readonly Type _trackNestedPropertiesAttr;
         protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+        private readonly Type _trackNestedPropertiesAttr;
+        
         public ViewModelBase(ViewModelBase parent = null, Type trackNestedPropertiesAttr = null)
         {
             _trackNestedPropertiesAttr = trackNestedPropertiesAttr;

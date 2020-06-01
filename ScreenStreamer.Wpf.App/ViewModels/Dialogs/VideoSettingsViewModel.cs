@@ -8,7 +8,9 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     public class VideoSettingsViewModel : PropertyWindowViewModel
     {
         public override string Caption => "Video Stream";
-        public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
+        public ObservableCollection<DisplayItem> Displays { get; set; } = new ObservableCollection<DisplayItem>();
+
+        //public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
 
         public VideoSettingsViewModel(PropertyVideoViewModel property, StreamerViewModelBase parent) : base(property, parent)
         {
@@ -19,7 +21,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                     RaisePropertyChanged(() => IsChanged);
                 }
             };
-            Displays.AddRange(ScreenHelper.GetScreens());
+
+
+            Displays.AddRange(ScreenHelper.GetDisplayItems());
+
+            //Displays.AddRange(ScreenHelper.GetScreens());
         }
 
         protected override bool CheckChanges()

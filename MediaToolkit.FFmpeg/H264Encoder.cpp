@@ -110,7 +110,8 @@ namespace FFmpegLib {
 
 				encoder_ctx->profile = profile;
 				encoder_ctx->max_b_frames = 0;
-				encoder_ctx->gop_size = 60;
+				encoder_ctx->gop_size = encodingSettings->GOPSize;
+				//encoder_ctx->global_quality = encodingSettings->Quality;
 				//...
 
 				AVDictionary *param = 0;

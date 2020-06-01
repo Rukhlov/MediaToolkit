@@ -391,11 +391,6 @@
             0,
             0,
             0});
-            this.gopSizeNumeric.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.gopSizeNumeric.Name = "gopSizeNumeric";
             this.gopSizeNumeric.Size = new System.Drawing.Size(110, 23);
             this.gopSizeNumeric.TabIndex = 115;

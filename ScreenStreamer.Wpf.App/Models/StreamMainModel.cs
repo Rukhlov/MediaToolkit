@@ -190,11 +190,11 @@ namespace ScreenStreamer.Wpf.Common.Models
             var videoSettings = session.VideoSettings;
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
-            videoEncoderSettings.EncoderFormat = AdvancedSettingsModel.VideoEncoder;
+            videoEncoderSettings.EncoderId = AdvancedSettingsModel.VideoEncoder.Id;
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
 
-            videoEncoderSettings.FrameRate = AdvancedSettingsModel.Fps;
+            videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
             videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
             videoEncoderSettings.LowLatency = AdvancedSettingsModel.LowLatency;
 
@@ -219,14 +219,14 @@ namespace ScreenStreamer.Wpf.Common.Models
             {
                 CaptureRegion = captureRegion,
                 DisplayRegion = captureRegion,
-                Name = PropertyVideo.Display,
+                Name = PropertyVideo.Display.Name,
 
                 Resolution = captureRegion.Size,
                 Properties = screenCaptureProperties,
-                DeviceId = PropertyVideo.Display,
-
-
+                DeviceId = PropertyVideo.Display.DeviceId,
             };
+
+            logger.Info("CaptureDevice: " + captureRegion);
 
             session.VideoSettings.CaptureDevice = captureDevice;
 
@@ -283,13 +283,16 @@ namespace ScreenStreamer.Wpf.Common.Models
 
     public class PropertyVideoModel
     {
-        public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
+        //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
+
+        public DisplayItem Display { get; set; }//= new ScreenItem();
+
         public bool IsRegion { get; set; }
 
-        public double Top { get; set; } = 0;
-        public double Left { get; set; } = 0;
-        public double ResolutionHeight { get; set; } = 1920;
-        public double ResolutionWidth { get; set; } = 1080;
+        public int Top { get; set; } = 0;
+        public int Left { get; set; } = 0;
+        public int ResolutionHeight { get; set; } = 1920;
+        public int ResolutionWidth { get; set; } = 1080;
         public bool AspectRatio { get; set; } = true;
     }
 
@@ -318,6 +321,9 @@ namespace ScreenStreamer.Wpf.Common.Models
         public bool LowLatency { get; set; } = true;
         public int MaxBitrate { get; set; } = 5000;
         public H264Profile H264Profile { get; set; } = H264Profile.Main;
-        public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
+
+        public EncoderItem VideoEncoder { get; set; }
+
+        //public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
     }
 }

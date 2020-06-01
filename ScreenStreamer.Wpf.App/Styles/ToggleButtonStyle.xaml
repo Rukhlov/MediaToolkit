@@ -49,9 +49,13 @@
                             <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Pressed.Background}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
+
+                            <Setter Property="Opacity" Value=".5" />
+                            <Setter Property="Cursor" Value="No" />
+                            
+                            <!--<Setter Property="Background" TargetName="border" Value="{StaticResource Button.Disabled.Background}"/>
                             <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Disabled.Border}"/>
-                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>
+                            <Setter Property="TextElement.Foreground" TargetName="contentPresenter" Value="{StaticResource Button.Disabled.Foreground}"/>-->
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

@@ -24,4 +24,6 @@ namespace ScreenStreamer.Wpf.Common.Views
             InitializeComponent();
         }
     }
+
+    //TODO: пересчитать размеры формы для разных DPI...
 }

@@ -95,7 +95,8 @@ namespace MediaToolkit.MediaFoundation
 				AdapterId = videoSource.AdapterId,
 				Profile = profile,
 				BitrateMode = bitrateMode,
-				
+				GopSize = encoderSettings.GOPSize,
+                Quality = encoderSettings.Quality,
                
                 EncoderId = encoderSettings.EncoderId,
 

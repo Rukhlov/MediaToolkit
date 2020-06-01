@@ -280,28 +280,19 @@ namespace MediaToolkit.MediaFoundation
         {
             logger.Debug("SetupEncoder(...)");
 
-            var frameRate = args.FrameRate;
+
             var width = args.Width;
             var height = args.Height;
 
+            var frameRate = args.FrameRate;
             int avgBitrate = args.AvgBitrate;
             int maxBitrate = args.MaxBitrate;
             int mpegProfile = (int)args.Profile;
 
 			long pixelAspectRatio = args.AspectRatio;
 
-            //if (width % 2 != 0)
-            //{// должно быть четным...
-            //    width++;
-            //}
-
-            //if (height % 2 != 0)
-            //{
-            //    height++;
-            //}
-
-            //var inputFormat = VideoFormatGuids.Argb32;
-            var inputFormat = args.Format; //VideoFormatGuids.NV12;
+            //var inputFormat = VideoFormatGuids.Argb32;//VideoFormatGuids.NV12;
+            var inputFormat = args.Format; 
 
             logger.Info("Encoder input params: " + width + "x" + height + " fps=" + frameRate + " {" + inputFormat + "}");
             using (var attr = encoder.Attributes)
@@ -343,7 +334,13 @@ namespace MediaToolkit.MediaFoundation
                 attr.Set(CodecApiPropertyKeys.AVEncCommonRateControlMode, args.BitrateMode);
                 attr.Set(CodecApiPropertyKeys.AVEncCommonQuality, args.Quality);
 
+                attr.Set(CodecApiPropertyKeys.AVEncMPVGOPSize, args.GopSize);
+
+                // отключаем B-фреймы
                 attr.Set(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount, 0);
+
+
+                //attr.Set(CodecApiPropertyKeys.AVEncNumWorkerThreads, 4);
 
                 var attrLog = MfTool.LogMediaAttributes(attr);
 
@@ -391,8 +388,6 @@ namespace MediaToolkit.MediaFoundation
 				mediaType.Set(CodecApiPropertyKeys.AVEncCommonMaxBitRate, maxBitrate);
 
 				mediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, pixelAspectRatio);
-
-				//mediaType.Set(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount, 0);
 
 				encoder.SetOutputType(outputStreamId, mediaType, 0);
 

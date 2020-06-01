@@ -26,6 +26,7 @@ using MediaToolkit.UI;
 using MediaToolkit;
 using MediaToolkit.Managers;
 using MediaToolkit.NativeAPIs;
+using ScreenStreamer.WinForms.App.Controls;
 
 namespace ScreenStreamer.WinForms.App
 {
@@ -96,9 +97,31 @@ namespace ScreenStreamer.WinForms.App
 
         }
 
-        private void stopStreamingButton_Click(object sender, EventArgs e)
+
+        private StreamInfoForm infoForm = null;
+        private void infoButton_Click(object sender, EventArgs e)
         {
-            logger.Debug("stopButton_Click(...) ");
+            logger.Debug("infoButton_Click(...) ");
+
+            if(infoForm == null || infoForm.IsDisposed )
+            {
+                infoForm = new StreamInfoForm
+                {
+                    ShowInTaskbar = false,
+                    
+                    StartPosition = FormStartPosition.CenterScreen,
+                    ShowIcon = false,
+                };
+
+                infoForm.Setup(currentSession);
+
+                infoForm.Show();
+            }
+            else
+            {
+                infoForm.Close();
+                infoForm = null;
+            }
 
             Console.WriteLine(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
             //Stop();
@@ -178,7 +201,7 @@ namespace ScreenStreamer.WinForms.App
             {
                 syncContext.Send(_ => 
                 {
-                    OnStearmStarting();
+                    OnStreamStarting();
 
                 } , null);
 
@@ -214,11 +237,12 @@ namespace ScreenStreamer.WinForms.App
             }
         }
 
-        private void OnStearmStarting()
+        private void OnStreamStarting()
         {
 			this.Cursor = Cursors.WaitCursor;
 
-			contextMenu.Enabled = false;
+            infoButton.Enabled = false;
+            contextMenu.Enabled = false;
             networkSettingsLayoutPanel.Enabled = false;
             videoSourceSettingsLayoutPanel.Enabled = false;
             audioSourceSettingsLayoutPanel.Enabled = false;
@@ -238,7 +262,9 @@ namespace ScreenStreamer.WinForms.App
         {
 			this.Cursor = Cursors.Default;
 
-			networkSettingsLayoutPanel.Enabled = false;
+            infoButton.Enabled = true;
+
+            networkSettingsLayoutPanel.Enabled = false;
             videoSourceSettingsLayoutPanel.Enabled = false;
             audioSourceSettingsLayoutPanel.Enabled = false;
 
@@ -304,7 +330,7 @@ namespace ScreenStreamer.WinForms.App
             if (currentSession.CommunicationPort >= 0)
             {
                 var listenUri = mediaStreamer.ListenUri;
-                statusDescription = "Stream running on port " + listenUri.Port;
+                statusDescription = "Stream running on: " + listenUri.Host + ":" + listenUri.Port;
             }
 
             //"Waiting for connection at " + _port + " port";
@@ -317,7 +343,7 @@ namespace ScreenStreamer.WinForms.App
         {
             this.Cursor = Cursors.Default;
 
-
+            infoButton.Enabled = true;
             contextMenu.Enabled = true;
             networkSettingsLayoutPanel.Enabled = true;
             videoSourceSettingsLayoutPanel.Enabled = true;
@@ -344,6 +370,7 @@ namespace ScreenStreamer.WinForms.App
             videoSourceSettingsLayoutPanel.Enabled = false;
             audioSourceSettingsLayoutPanel.Enabled = false;
             switchStreamingStateButton.Enabled = false;
+            infoButton.Enabled = false;
 
             captureStatusLabel.Text = "Stream stopping...";
 
@@ -352,6 +379,8 @@ namespace ScreenStreamer.WinForms.App
 
         private void OnStreamStopped()
         {
+
+            infoButton.Enabled = true;
 
             networkSettingsLayoutPanel.Enabled = true;
             videoSourceSettingsLayoutPanel.Enabled = true;
@@ -1094,7 +1123,8 @@ namespace ScreenStreamer.WinForms.App
 			base.OnClosed(e);
 		}
 
-	}
+
+    }
 
 
     class RegionForm : Form

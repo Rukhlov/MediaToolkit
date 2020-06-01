@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Core;
 using Prism.Commands;
+using ScreenStreamer.Wpf.Common.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -12,8 +13,18 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public override string Caption => "Advanced Settings";
 
 
+        //[Track]
+        //public VideoCodingFormat VideoEncoder
+        //{
+        //    get => _model.VideoEncoder;
+        //    set
+        //    {
+        //        SetProperty(_model, () => _model.VideoEncoder, value);
+        //    }
+        //}
+
         [Track]
-        public VideoCodingFormat VideoEncoder
+        public EncoderItem VideoEncoder
         {
             get => _model.VideoEncoder;
             set
@@ -76,12 +87,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
+        public ObservableCollection<EncoderItem> VideoEncoders { get; } = new ObservableCollection<EncoderItem>();
 
-        public ObservableCollection<VideoCodingFormat> VideoEncoderModes { get; } = new ObservableCollection<VideoCodingFormat>()
-        {
-            VideoCodingFormat.H264,
-            VideoCodingFormat.JPEG
-        };
+        //public ObservableCollection<VideoCodingFormat> VideoEncoderModes { get; } = new ObservableCollection<VideoCodingFormat>()
+        //{
+        //    VideoCodingFormat.H264,
+        //    VideoCodingFormat.JPEG
+        //};
 
         public ObservableCollection<H264Profile> H264Profiles { get; } = new ObservableCollection<H264Profile>()
         {
@@ -93,7 +105,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public AdvancedSettingsViewModel(AdvancedSettingsModel model, StreamerViewModelBase parent) :base(parent)
         {
             _model = model;
-            
+
+
+            VideoEncoders.AddRange(EncoderHelper.GetVideoEncoderItems());
+
+
         }
 
 
