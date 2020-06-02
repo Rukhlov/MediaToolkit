@@ -231,6 +231,10 @@
       <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.UI\MediaToolkit.UI.csproj">
+      <Project>{6EC45781-0060-4F0A-AD0E-1452704F0740}</Project>
+      <Name>MediaToolkit.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
       <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>
       <Name>MediaToolkit</Name>

@@ -8,6 +8,7 @@ using NLog;
 using ScreenStreamer.Common;
 using ScreenStreamer.Wpf.Common.Enums;
 using ScreenStreamer.Wpf.Common.Helpers;
+using System.Linq;
 
 namespace ScreenStreamer.Wpf.Common.Models
 {
@@ -17,9 +18,12 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         private static StreamMainModel CreateDefault()
         {
-            var defaultStream = new StreamModel() { Name = "Stream 1" };
+            var defaultStream = new StreamModel()
+            {
+                Name = $"{Environment.MachineName} (Stream 1)"
+            };
 
-            //defaultStream.Init();
+           // defaultStream.Init();
 
 
             var @default = new StreamMainModel();
@@ -37,11 +41,10 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public StreamModel()
         {
-
             mediaStreamer = new MediaStreamer();
-
             mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
+            Init();
         }
 
         private MediaStreamer mediaStreamer = null;
@@ -85,6 +88,8 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
         }
 
+
+
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
         public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
@@ -93,7 +98,14 @@ namespace ScreenStreamer.Wpf.Common.Models
         public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
 
+        public void Init()
+        {
+            AdvancedSettingsModel.Init();
+            PropertyVideo.Init();
 
+            PropertyNetwork.Init();
+            //...
+        }
 
         public void SwitchStreamingState()
         {
@@ -181,7 +193,20 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             session.StreamName = Name;
             session.NetworkIpAddress = PropertyNetwork.Network ?? "0.0.0.0";
-            session.CommunicationPort = PropertyNetwork.Port;
+
+            int port = PropertyNetwork.Port;
+            if(port <= 0)
+            {// если порт не задан - ищем свободный начиная с 808
+                
+                var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+                if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+                {
+                    port = freeTcpPorts.FirstOrDefault();
+                }
+            }
+
+
+            session.CommunicationPort = port;
             session.TransportMode = transport;
 
             session.IsMulticast = !PropertyNetwork.IsUnicast;
@@ -215,16 +240,32 @@ namespace ScreenStreamer.Wpf.Common.Models
                 ShowDebugInfo = false,
             };
 
-            ScreenCaptureDevice captureDevice = new ScreenCaptureDevice
+            VideoCaptureDevice captureDevice = null;
+            var videoSourceItem = PropertyVideo.Display;
+            if (videoSourceItem.IsUvcDevice)
             {
-                CaptureRegion = captureRegion,
-                DisplayRegion = captureRegion,
-                Name = PropertyVideo.Display.Name,
+                captureDevice = new UvcDevice
+                {
 
-                Resolution = captureRegion.Size,
-                Properties = screenCaptureProperties,
-                DeviceId = PropertyVideo.Display.DeviceId,
-            };
+                    Name = videoSourceItem.Name,
+                    Resolution = captureRegion.Size,
+                    DeviceId = videoSourceItem.DeviceId,
+                };
+            }
+            else
+            {
+                captureDevice = new ScreenCaptureDevice
+                {
+                    CaptureRegion = captureRegion,
+                    DisplayRegion = captureRegion,
+                    Name = PropertyVideo.Display.Name,
+
+                    Resolution = captureRegion.Size,
+                    Properties = screenCaptureProperties,
+                    DeviceId = PropertyVideo.Display.DeviceId,
+                };
+            }
+
 
             logger.Info("CaptureDevice: " + captureRegion);
 
@@ -257,11 +298,27 @@ namespace ScreenStreamer.Wpf.Common.Models
 
     public class PropertyNetworkModel
     {
-        public int Port { get; set; } = 808;
+
+        public int Port { get; set; } = -1;
         public bool IsUnicast { get; set; } = true;
         public ProtocolKind UnicastProtocol { get; set; } = ProtocolKind.TCP;
         public string MulticastIp { get; set; } = "239.0.0.1";
         public string Network { get; set; } = "0.0.0.0";
+
+        public void Init()
+        {
+            //var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange((System.Net.Sockets.ProtocolType)UnicastProtocol, 1, Port);
+            //if (freeTcpPorts != null)
+            //{// может в любой момент изменится и свободный порт будет занят !!!
+            //    var newPort = freeTcpPorts.FirstOrDefault();
+
+            //    Port = newPort;
+            //}
+            //else
+            //{
+            //    //No avaliable tcp ports..;
+            //}
+        }
     }
 
     public class PropertyBorderModel
@@ -285,7 +342,7 @@ namespace ScreenStreamer.Wpf.Common.Models
     {
         //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
 
-        public DisplayItem Display { get; set; }//= new ScreenItem();
+        public VideoSourceItem Display { get; set; }//= new ScreenItem();
 
         public bool IsRegion { get; set; }
 
@@ -294,6 +351,14 @@ namespace ScreenStreamer.Wpf.Common.Models
         public int ResolutionHeight { get; set; } = 1920;
         public int ResolutionWidth { get; set; } = 1080;
         public bool AspectRatio { get; set; } = true;
+
+        public void Init()
+        {
+            if(Display == null)
+            {
+                Display = ScreenHelper.GetDisplayItems().FirstOrDefault();
+            }
+        }
     }
 
     public class PropertyQualityModel
@@ -324,6 +389,15 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public EncoderItem VideoEncoder { get; set; }
 
+        public void Init()
+        {
+            if(VideoEncoder == null)
+            {
+                VideoEncoder = EncoderHelper.GetVideoEncoderItems().FirstOrDefault();
+
+            }
+        }
+        
         //public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
     }
 }

@@ -211,14 +211,10 @@ namespace MediaToolkit.ScreenCaptures
                         {
                             throw new Win32Exception(Marshal.GetLastWin32Error());
                         }
-
                         if (CaptureMouse)
                         {
                             User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
                         }
-
-                        device.ImmediateContext.CopyResource(gdiTexture, SharedTexture);
-                        device.ImmediateContext.Flush();
 
                         errorCode = ErrorCode.Ok;
 
@@ -243,7 +239,14 @@ namespace MediaToolkit.ScreenCaptures
                     surf.ReleaseDC();
                 }
 
-            }
+				if(errorCode == ErrorCode.Ok)
+				{
+					device.ImmediateContext.CopyResource(gdiTexture, SharedTexture);
+					device.ImmediateContext.Flush();
+				}
+
+
+			}
 
             return errorCode;
         }

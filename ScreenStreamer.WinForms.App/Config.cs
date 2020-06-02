@@ -29,11 +29,12 @@ namespace ScreenStreamer.WinForms.App
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         public static readonly string ApplicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
+        public static readonly string CommonAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
         public static readonly string CurrentDirectory = Directory.GetCurrentDirectory();// new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName;
 
+        public static readonly string ConfigPath = Path.Combine(CommonAppDataPath, "Polywall\\ScreenStreamer");
 
-        public static readonly string ConfigPath = Path.Combine(ApplicationDataPath, "Polywall\\ScreenStreamer");
+        //public static readonly string ConfigPath = Path.Combine(ApplicationDataPath, "Polywall\\ScreenStreamer");
         public static readonly string ConfigFullName = Path.Combine(ConfigPath, AppConsts.ConfigFileName);
 
         public StreamSession Session { get; set; } = new StreamSession();

@@ -64,11 +64,11 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(206, 270);
+            this.panel1.Location = new System.Drawing.Point(215, 270);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.panel1.Size = new System.Drawing.Size(250, 33);
+            this.panel1.Size = new System.Drawing.Size(241, 33);
             this.panel1.TabIndex = 81;
             // 
             // cancelButton
@@ -76,7 +76,7 @@
             this.cancelButton.AutoSize = true;
             this.cancelButton.Location = new System.Drawing.Point(138, 2);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(109, 28);
+            this.cancelButton.Size = new System.Drawing.Size(100, 28);
             this.cancelButton.TabIndex = 110;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
@@ -85,9 +85,9 @@
             // applyButton
             // 
             this.applyButton.AutoSize = true;
-            this.applyButton.Location = new System.Drawing.Point(23, 2);
+            this.applyButton.Location = new System.Drawing.Point(32, 2);
             this.applyButton.Name = "applyButton";
-            this.applyButton.Size = new System.Drawing.Size(109, 28);
+            this.applyButton.Size = new System.Drawing.Size(100, 28);
             this.applyButton.TabIndex = 100;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;

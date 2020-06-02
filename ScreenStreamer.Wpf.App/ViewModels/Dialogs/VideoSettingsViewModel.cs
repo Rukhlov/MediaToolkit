@@ -8,7 +8,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     public class VideoSettingsViewModel : PropertyWindowViewModel
     {
         public override string Caption => "Video Stream";
-        public ObservableCollection<DisplayItem> Displays { get; set; } = new ObservableCollection<DisplayItem>();
+        public ObservableCollection<VideoSourceItem> Displays { get; set; } = new ObservableCollection<VideoSourceItem>();
 
         //public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
 

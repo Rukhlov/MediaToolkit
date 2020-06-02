@@ -45,6 +45,7 @@
             this.CaptureDeviceTextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.uvcProfileInfotextBox = new System.Windows.Forms.TextBox();
             this.applyButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -62,7 +63,6 @@
             this.checkBoxResoulutionFromSource = new System.Windows.Forms.CheckBox();
             this.aspectRatioCheckBox = new System.Windows.Forms.CheckBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.uvcProfileInfotextBox = new System.Windows.Forms.TextBox();
             this.ScreenCaptureGroup.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
@@ -129,13 +129,13 @@
             this.tableLayoutPanel3.Controls.Add(this.snippingToolButton, 1, 0);
             this.tableLayoutPanel3.Controls.Add(this.previewButton, 2, 0);
             this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Right;
-            this.tableLayoutPanel3.Location = new System.Drawing.Point(145, 145);
+            this.tableLayoutPanel3.Location = new System.Drawing.Point(144, 145);
             this.tableLayoutPanel3.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel3.Name = "tableLayoutPanel3";
             this.tableLayoutPanel3.RowCount = 2;
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(307, 32);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(308, 32);
             this.tableLayoutPanel3.TabIndex = 82;
             // 
             // captureSettingsButton
@@ -144,7 +144,7 @@
             this.captureSettingsButton.Location = new System.Drawing.Point(216, 2);
             this.captureSettingsButton.Margin = new System.Windows.Forms.Padding(2);
             this.captureSettingsButton.Name = "captureSettingsButton";
-            this.captureSettingsButton.Size = new System.Drawing.Size(89, 28);
+            this.captureSettingsButton.Size = new System.Drawing.Size(90, 28);
             this.captureSettingsButton.TabIndex = 114;
             this.captureSettingsButton.Text = "Settings";
             this.captureSettingsButton.UseVisualStyleBackColor = true;
@@ -324,13 +324,22 @@
             this.label2.Text = "Device:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // uvcProfileInfotextBox
+            // 
+            this.uvcProfileInfotextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.uvcProfileInfotextBox.Location = new System.Drawing.Point(62, 30);
+            this.uvcProfileInfotextBox.Name = "uvcProfileInfotextBox";
+            this.uvcProfileInfotextBox.ReadOnly = true;
+            this.uvcProfileInfotextBox.Size = new System.Drawing.Size(385, 23);
+            this.uvcProfileInfotextBox.TabIndex = 82;
+            // 
             // applyButton
             // 
             this.applyButton.AutoSize = true;
-            this.applyButton.Location = new System.Drawing.Point(16, 2);
+            this.applyButton.Location = new System.Drawing.Point(30, 2);
             this.applyButton.Margin = new System.Windows.Forms.Padding(2);
             this.applyButton.Name = "applyButton";
-            this.applyButton.Size = new System.Drawing.Size(112, 28);
+            this.applyButton.Size = new System.Drawing.Size(100, 28);
             this.applyButton.TabIndex = 200;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
@@ -342,7 +351,7 @@
             this.cancelButton.Location = new System.Drawing.Point(134, 2);
             this.cancelButton.Margin = new System.Windows.Forms.Padding(2);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(109, 28);
+            this.cancelButton.Size = new System.Drawing.Size(100, 28);
             this.cancelButton.TabIndex = 210;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
@@ -549,10 +558,10 @@
             // 
             this.encoderSettingsButton.AutoSize = true;
             this.encoderSettingsButton.Dock = System.Windows.Forms.DockStyle.Right;
-            this.encoderSettingsButton.Location = new System.Drawing.Point(350, 31);
+            this.encoderSettingsButton.Location = new System.Drawing.Point(353, 31);
             this.encoderSettingsButton.Margin = new System.Windows.Forms.Padding(5, 2, 2, 2);
             this.encoderSettingsButton.Name = "encoderSettingsButton";
-            this.encoderSettingsButton.Size = new System.Drawing.Size(93, 27);
+            this.encoderSettingsButton.Size = new System.Drawing.Size(90, 27);
             this.encoderSettingsButton.TabIndex = 113;
             this.encoderSettingsButton.Text = "Settings";
             this.encoderSettingsButton.UseVisualStyleBackColor = true;
@@ -590,21 +599,12 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(221, 471);
+            this.panel1.Location = new System.Drawing.Point(230, 471);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.panel1.Size = new System.Drawing.Size(245, 32);
+            this.panel1.Size = new System.Drawing.Size(236, 32);
             this.panel1.TabIndex = 60;
-            // 
-            // uvcProfileInfotextBox
-            // 
-            this.uvcProfileInfotextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.uvcProfileInfotextBox.Location = new System.Drawing.Point(62, 30);
-            this.uvcProfileInfotextBox.Name = "uvcProfileInfotextBox";
-            this.uvcProfileInfotextBox.ReadOnly = true;
-            this.uvcProfileInfotextBox.Size = new System.Drawing.Size(385, 23);
-            this.uvcProfileInfotextBox.TabIndex = 82;
             // 
             // VideoSettingsForm
             // 

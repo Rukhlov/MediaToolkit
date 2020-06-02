@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using ScreenStreamer.Wpf.Common.Managers;
 using Unity;
+using System;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
@@ -128,7 +129,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private void Add()
         {
-            var model = new StreamModel { Name = $"Stream {this.StreamList.Count + 1}" };
+            var model = new StreamModel
+            {
+                Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})"
+            };
+
             var streamViewModel = new StreamViewModel(this, true, model);
 
 

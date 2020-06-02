@@ -65,7 +65,7 @@
                 <ComboBox Grid.Column="1" 
                           ItemsSource="{Binding UnicastProtocols}" 
                           SelectedItem="{Binding Property.UnicastProtocol}"
-                          IsEnabled="{Binding Property.IsUnicast, Mode=OneWay}"
+                          IsEnabled= "{Binding Property.IsUnicast, Mode=OneWay}"
                           Cursor="Hand"/>
             </Grid>
 

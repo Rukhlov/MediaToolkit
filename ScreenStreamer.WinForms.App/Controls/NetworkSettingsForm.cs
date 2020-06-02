@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -24,6 +25,17 @@ namespace ScreenStreamer.WinForms.App
             SetupRoutingSchema();
             LoadNetworks();
             LoadTransportItems();
+
+            var startupParams = Program.StartupParams;
+            if (!startupParams.IsElevated)
+            {
+                AddShieldToButton(runasButton);
+            }
+            else
+            {
+                runasButton.Visible = !startupParams.IsSystem;
+            }
+           
         }
 
         private TransportMode transportMode = TransportMode.Tcp;
@@ -256,5 +268,41 @@ namespace ScreenStreamer.WinForms.App
         }
 
 
+        private static void AddShieldToButton(Button batton)
+        {
+            const int BCM_SETSHIELD = 0x160C;
+
+            batton.FlatStyle = FlatStyle.System;
+            MediaToolkit.NativeAPIs.User32.SendMessage(batton.Handle, BCM_SETSHIELD, 0, 1);
+        }
+
+        private void runasButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var fileName = Process.GetCurrentProcess().MainModule.FileName;
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Process process = new Process
+                {
+                    StartInfo = startInfo,
+                };
+
+                process.Start();
+
+                Application.Exit();
+
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+        }
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows.Input;
 //using Polywall.Share.Exceptions;
 using Prism.Commands;
+using MediaToolkit.UI;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
@@ -31,21 +32,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
                 UpdateRegion();
                 RaisePropertyChanged(nameof(Info));
-            }
-        }
-
-        private Rectangle GetRegion()
-        {
-
-            if (IsRegion)
-            {
-                return new Rectangle(Top, Left, ResolutionWidth, ResolutionHeight);
-            }
-            else
-            {
-                return Display?.CaptureRegion??Rectangle.Empty;
-
-                //return ScreenHelper.GetScreenBounds(Display) ?? Rectangle.Empty;
             }
         }
 
@@ -77,8 +63,10 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         //    }
         //}
 
+
+
         [Track]
-        public DisplayItem Display
+        public VideoSourceItem Display
         {
             get => _model.Display;
             set
@@ -86,6 +74,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
                 SetProperty(_model, () => _model.Display, value);
 
+                
                 UpdateRegion();
                 RaisePropertyChanged(nameof(Info));
             }
@@ -169,14 +158,35 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             AdjustCommand = new DelegateCommand(Adjust);
         }
 
+
+        private SelectAreaForm selectAreaForm = null;
         private void UpdateRegion()
         {
-            var region = GetRegion();
+            if(!IsRegion)
+            {
+                var region =  Display?.CaptureRegion ?? Rectangle.Empty;
 
-            this.Top = region.Top;
-            this.Left = region.Left;
-            this.ResolutionHeight = region.Height;
-            this.ResolutionWidth = region.Width;
+                this.Top = region.Top;
+                this.Left = region.Left;
+                this.ResolutionHeight = region.Height;
+                this.ResolutionWidth = region.Width;
+
+            }
+
+
+            //var sourceItem = _model.Display;
+            //bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
+            //if (isRegionItem)
+            //{
+            //    if (selectAreaForm == null)
+            //    {
+            //        selectAreaForm = new SelectAreaForm();
+            //    }
+            //}
+            //if (selectAreaForm != null)
+            //{
+            //    selectAreaForm.Visible = isRegionItem;
+            //}
         }
 
         private void Adjust()

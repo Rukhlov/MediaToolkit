@@ -24,7 +24,7 @@
                 </Grid.ColumnDefinitions>
                 <RadioButton  GroupName="display"
                               IsChecked="{Binding Property.IsRegion, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
-                              Content="Display" 
+                              Content="Video Sources" 
                               Style="{StaticResource defaultRadioButtonStyle}"/>
 
                 <ComboBox Grid.Column="1" 
@@ -43,7 +43,7 @@
                 </Grid.ColumnDefinitions>
                 <RadioButton  GroupName="display"
                               IsChecked="{Binding Property.IsRegion, Mode=TwoWay}"
-                              Content="Region" 
+                              Content="Use Display Region" 
                               Style="{StaticResource defaultRadioButtonStyle}"/>
 
 
@@ -144,7 +144,7 @@
                     Width="75"
                     Height="16"
                     VerticalAlignment="Top"
-                    HorizontalAlignment="Right"/>
+                    HorizontalAlignment="Right" Visibility="Collapsed"/>
 
             <!--<Rectangle  Style="{StaticResource divider}"/>-->
 

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ScreenStreamer.Wpf.UI
 {
@@ -35,9 +36,6 @@ namespace ScreenStreamer.Wpf.UI
 
             logger.Info("========== START ============");
 
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
-
             bool createdNew = false;
             Mutex mutex = null;
             try
@@ -63,6 +61,7 @@ namespace ScreenStreamer.Wpf.UI
                 
 
                 var application = new App();
+                application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
                 application.InitializeComponent();
 
                 logger.Info("============ RUN ===============");
@@ -96,17 +95,12 @@ namespace ScreenStreamer.Wpf.UI
             return exitCode;
         }
 
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            Exception ex = null;
+            e.Handled = true;
 
-            var obj = e.ExceptionObject;
-            if (obj != null)
-            {
-                ex = obj as Exception;
-                logger.Fatal(ex);
+            Exception ex = e.Exception;
 
-            }
             if (ex != null)
             {
                 logger.Fatal(ex);
@@ -115,6 +109,9 @@ namespace ScreenStreamer.Wpf.UI
             {
                 logger.Fatal("FATAL ERROR!!!");
             }
+
+            MessageBox.Show(ex.Message);
         }
+
     }
 }

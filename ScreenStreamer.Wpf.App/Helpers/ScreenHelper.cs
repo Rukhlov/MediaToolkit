@@ -69,16 +69,19 @@ namespace ScreenStreamer.Wpf.Common.Helpers
         }
     }
 
-    public class DisplayItem
+   
+    public class VideoSourceItem
     {
         public string Name { get; set; }
         public string DeviceId { get; set; }
         public Rectangle CaptureRegion { get; set; }
 
+        public bool IsUvcDevice { get; set; } = false;
+
         public override bool Equals(object obj)
         {
-            if (!(obj is DisplayItem)) return false;
-            return (DeviceId == ((DisplayItem)obj).DeviceId);
+            if (!(obj is VideoSourceItem)) return false;
+            return (DeviceId == ((VideoSourceItem)obj).DeviceId);
         }
 
         public override int GetHashCode()
@@ -92,10 +95,10 @@ namespace ScreenStreamer.Wpf.Common.Helpers
     public class ScreenHelper
     {
 
-        public static List<DisplayItem> GetDisplayItems()
+        public static List<VideoSourceItem> GetDisplayItems()
         {
 
-            List<DisplayItem> items = new List<DisplayItem>();
+            List<VideoSourceItem> items = new List<VideoSourceItem>();
 
             //var captureProperties = Config.Data.ScreenCaptureProperties;
 
@@ -133,7 +136,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                 //}
                 device.Name = monitorName;
 
-                items.Add(new DisplayItem
+                items.Add(new VideoSourceItem
                 {
                     Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),
                     DeviceId = device.DeviceId,
@@ -142,6 +145,27 @@ namespace ScreenStreamer.Wpf.Common.Helpers
 
                 monitorIndex++;
             }
+
+            //var customRegion = new Rectangle(10, 10, 640, 480);
+            //ScreenCaptureDevice customRegionDescr = new ScreenCaptureDevice
+            //{
+            //    CaptureRegion = customRegion,
+            //    DisplayRegion = Rectangle.Empty,
+
+            //    Resolution = customRegion.Size,
+
+            //    Name = "Screen Region",
+            //    DeviceId = "ScreenRegion",
+
+            //};
+
+            //items.Add(new VideoSourceItem
+            //{
+            //    Name = customRegionDescr.Name,//+ "" + s.Bounds.ToString(),
+            //    DeviceId = customRegionDescr.DeviceId,
+            //    CaptureRegion = customRegionDescr.CaptureRegion,
+            //});
+
 
             if (items.Count > 1)
             {
@@ -157,7 +181,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                     DeviceId = "AllScreens",
                 };
 
-                items.Add(new DisplayItem
+                items.Add(new VideoSourceItem
                 {
                     Name = device.Name,//+ "" + s.Bounds.ToString(),
                     DeviceId = device.DeviceId,
@@ -166,18 +190,19 @@ namespace ScreenStreamer.Wpf.Common.Helpers
 
             }
 
-            //var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
-            //if (captDevices.Count > 0)
-            //{
-            //    var captItems = captDevices.Select(d => new DisplayItem
-            //    {
-            //        Name = d.Name,
-            //        DeviceId = d.DeviceId,
-            //        CaptureRegion = new Rectangle(new Point(0, 0), d.Resolution),
-            //    });
+            var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
+            if (captDevices.Count > 0)
+            {
+                var captItems = captDevices.Select(d => new VideoSourceItem
+                {
+                    Name = d.Name,
+                    DeviceId = d.DeviceId,
+                    CaptureRegion = new Rectangle(new Point(0, 0), d.Resolution),
+                    IsUvcDevice = true,
+                });
 
-            //    items.AddRange(captItems);
-            //}
+                items.AddRange(captItems);
+            }
 
             return items;
         }

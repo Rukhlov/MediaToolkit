@@ -20,7 +20,7 @@ namespace ScreenStreamer.WinForms.App
         [STAThread]
         static void Main(string[] args)
         {
-
+            //Kernel32.AllocConsole();
             logger = LogManager.GetCurrentClassLogger();
 
             logger.Info("========== START ============");
@@ -33,7 +33,7 @@ namespace ScreenStreamer.WinForms.App
             {
                 if (!StartupParams.NoRestart)
                 {//Restart application with system permissions...
-                    if (RestartElevated() > 0)
+                    if (RestartAsSystem() > 0)
                     {
                         return;
                     }
@@ -62,6 +62,8 @@ namespace ScreenStreamer.WinForms.App
                 Config.Initialize(tempMode);
 
                 MediaToolkitManager.Startup();
+
+
 
                 //DwmApi.DisableAero(true);
                 Shcore.SetProcessPerMonitorDpiAwareness();
@@ -94,11 +96,12 @@ namespace ScreenStreamer.WinForms.App
             }
 
         }
+        
 
-        private static int RestartElevated()
+        private static int RestartAsSystem()
 		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
 		 // перезапускам процесс с системными правами
-			logger.Debug("RestartElevated()");
+			logger.Debug("RestartAsSystem()");
 
             int pid = 0;
             try
