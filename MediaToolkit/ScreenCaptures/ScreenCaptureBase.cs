@@ -52,10 +52,14 @@ namespace MediaToolkit.ScreenCaptures
         {
             ScreenCapture capture = null;
 
-            if (type == VideoCaptureType.GDI)
+            if (type == VideoCaptureType.GDI || type == VideoCaptureType.GDILayered)
             {
-                capture = new GDICapture();
-            }
+				var gdiCapt = new GDICapture();
+				gdiCapt.CaptureAllLayers = (type == VideoCaptureType.GDILayered);
+
+				capture = gdiCapt;
+
+			}
             else if (type == VideoCaptureType.Direct3D9)
             {
                 capture = new Direct3D9Capture(args);

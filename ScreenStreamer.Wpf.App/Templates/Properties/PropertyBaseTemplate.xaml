@@ -21,6 +21,7 @@
                                         PropertyNetworkTemplate="{StaticResource streamPropertySimpleTemplate}"
                                         PropertyBorderTemplate="{StaticResource streamPropertyBorderTemplate}"/>
             </ResourceDictionary>
+            
         </DataTemplate.Resources>
 
         <DockPanel  Margin="22,3,4,3">

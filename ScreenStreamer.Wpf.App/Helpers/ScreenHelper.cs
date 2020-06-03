@@ -146,25 +146,25 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                 monitorIndex++;
             }
 
-            //var customRegion = new Rectangle(10, 10, 640, 480);
-            //ScreenCaptureDevice customRegionDescr = new ScreenCaptureDevice
-            //{
-            //    CaptureRegion = customRegion,
-            //    DisplayRegion = Rectangle.Empty,
+            var customRegion = new Rectangle(10, 10, 640, 480);
+            ScreenCaptureDevice customRegionDescr = new ScreenCaptureDevice
+            {
+                CaptureRegion = customRegion,
+                DisplayRegion = Rectangle.Empty,
 
-            //    Resolution = customRegion.Size,
+                Resolution = customRegion.Size,
 
-            //    Name = "Screen Region",
-            //    DeviceId = "ScreenRegion",
+                Name = "Screen Region",
+                DeviceId = "ScreenRegion",
 
-            //};
+            };
 
-            //items.Add(new VideoSourceItem
-            //{
-            //    Name = customRegionDescr.Name,//+ "" + s.Bounds.ToString(),
-            //    DeviceId = customRegionDescr.DeviceId,
-            //    CaptureRegion = customRegionDescr.CaptureRegion,
-            //});
+            items.Add(new VideoSourceItem
+            {
+                Name = customRegionDescr.Name,//+ "" + s.Bounds.ToString(),
+                DeviceId = customRegionDescr.DeviceId,
+                CaptureRegion = customRegionDescr.CaptureRegion,
+            });
 
 
             if (items.Count > 1)

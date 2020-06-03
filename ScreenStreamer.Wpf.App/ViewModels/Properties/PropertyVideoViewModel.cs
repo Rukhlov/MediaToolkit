@@ -65,7 +65,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-        [Track]
+        //[Track]
         public VideoSourceItem Display
         {
             get => _model.Display;
@@ -82,7 +82,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-        [Track]
+        //[Track]
         public int ResolutionHeight
         {
             get => _model.ResolutionHeight;
@@ -94,7 +94,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-        [Track]
+        //[Track]
         public int ResolutionWidth
         {
             get => _model.ResolutionWidth;
@@ -105,7 +105,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         }
 
 
-        [Track]
+        //[Track]
         public string Resolution
         {
             get => (_model.ResolutionWidth + "x" + _model.ResolutionHeight);
@@ -114,7 +114,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-        [Track]
+       // [Track]
         public int Top
         {
             get => _model.Top;
@@ -124,7 +124,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        [Track]
+        //[Track]
         public int Left
         {
             get => _model.Left;
@@ -156,37 +156,66 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             _model = model;
             ShowBorderCommand = new DelegateCommand(ShowBorder);
             AdjustCommand = new DelegateCommand(Adjust);
+
+            UpdateRegion();
         }
 
 
-        private SelectAreaForm selectAreaForm = null;
+        public SelectAreaForm selectAreaForm = null;
         private void UpdateRegion()
         {
-            if(!IsRegion)
+            //if(!IsRegion)
+            //{
+            //    var region =  Display?.CaptureRegion ?? Rectangle.Empty;
+
+            //    this.Top = region.Top;
+            //    this.Left = region.Left;
+            //    this.ResolutionHeight = region.Height;
+            //    this.ResolutionWidth = region.Width;
+
+            //}
+
+
+            var sourceItem = _model.Display;
+            bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
+            if (!isRegionItem)
             {
-                var region =  Display?.CaptureRegion ?? Rectangle.Empty;
+                var region = Display?.CaptureRegion ?? Rectangle.Empty;
 
                 this.Top = region.Top;
                 this.Left = region.Left;
                 this.ResolutionHeight = region.Height;
                 this.ResolutionWidth = region.Width;
+            }
+            else
+            {
+                if (selectAreaForm == null)
+                {
+                    selectAreaForm = new SelectAreaForm
+                    {
+                        StartPosition = System.Windows.Forms.FormStartPosition.Manual,
 
+                        Left = this.Left,
+                        Top = this.Top,
+                        Size = new Size(ResolutionWidth, ResolutionHeight),
+
+                    };
+                    selectAreaForm.AreaChanged += SelectAreaForm_AreaChanged;
+                }
             }
 
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.Visible = isRegionItem;
+            }
+        }
 
-            //var sourceItem = _model.Display;
-            //bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
-            //if (isRegionItem)
-            //{
-            //    if (selectAreaForm == null)
-            //    {
-            //        selectAreaForm = new SelectAreaForm();
-            //    }
-            //}
-            //if (selectAreaForm != null)
-            //{
-            //    selectAreaForm.Visible = isRegionItem;
-            //}
+        private void SelectAreaForm_AreaChanged(Rectangle region)
+        {
+            this.Top = region.Top;
+            this.Left = region.Left;
+            this.ResolutionHeight = region.Height;
+            this.ResolutionWidth = region.Width;
         }
 
         private void Adjust()
@@ -233,6 +262,16 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                     return builder.ToString(0, MaxInfoLength - 3) + "...";
                 }
                 return builder.ToString();
+            }
+        }
+
+        public void Close()
+        {
+            if (selectAreaForm != null)
+            {
+                selectAreaForm.AreaChanged -= SelectAreaForm_AreaChanged;
+                selectAreaForm.Close();
+                selectAreaForm = null;
             }
         }
     }

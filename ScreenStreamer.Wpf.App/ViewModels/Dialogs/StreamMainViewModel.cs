@@ -116,6 +116,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 dialogService.Close(streamToDelete.DesignViewModel);
                 dialogService.Close(streamToDelete.AdvancedSettingsViewModel);
 
+                streamToDelete.Close();
+
                 StreamList.Remove(streamToDelete);
                 this._model.StreamList.Remove(streamToDelete.Model);
                 IsEdit = false;

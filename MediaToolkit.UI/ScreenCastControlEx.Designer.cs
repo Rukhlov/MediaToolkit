@@ -114,7 +114,7 @@
             this.hostAddressTextBox.Name = "hostAddressTextBox";
             this.hostAddressTextBox.Size = new System.Drawing.Size(248, 22);
             this.hostAddressTextBox.TabIndex = 27;
-            this.hostAddressTextBox.Text = "192.168.1.135";
+            this.hostAddressTextBox.Text = "127.0.0.1:808";
             // 
             // findServiceButton
             // 

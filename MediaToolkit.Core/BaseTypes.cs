@@ -389,6 +389,7 @@ namespace MediaToolkit.Core
     public enum VideoCaptureType
     {
         GDI,
+		GDILayered,
         Direct3D9,
         GDIPlus,
         Datapath,

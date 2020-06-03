@@ -99,9 +99,17 @@ namespace ScreenStreamer.WinForms
 
 			captureTypes.Add(new ComboBoxItem
 			{
+				Name = "GDI Layered",
+				Tag = VideoCaptureType.GDILayered,
+			});
+
+			captureTypes.Add(new ComboBoxItem
+			{
 				Name = "GDI",
 				Tag = VideoCaptureType.GDI,
 			});
+
+
 
 			captureTypesComboBox.DataSource = captureTypes;
 			captureTypesComboBox.DisplayMember = "Name";

@@ -87,7 +87,7 @@ namespace MediaToolkit.ScreenCaptures
             try
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
-
+                
                 logger.Info(MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
                 //var hMonitor = NativeAPIs.User32.GetMonitorFromRect(this.srcRect);

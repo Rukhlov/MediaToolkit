@@ -348,8 +348,12 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public int Top { get; set; } = 0;
         public int Left { get; set; } = 0;
-        public int ResolutionHeight { get; set; } = 1920;
-        public int ResolutionWidth { get; set; } = 1080;
+
+        public int ResolutionWidth { get; set; } = 1920;
+
+        public int ResolutionHeight { get; set; } = 1080;
+        
+
         public bool AspectRatio { get; set; } = true;
 
         public void Init()

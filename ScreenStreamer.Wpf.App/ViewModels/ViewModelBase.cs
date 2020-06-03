@@ -70,7 +70,6 @@ namespace Polywall.Share.UI
             }
         }
 
-        #region Changes Tracking
 
         private readonly IDictionary<string, dynamic> _initialValues = new Dictionary<string, dynamic>();
 
@@ -140,9 +139,6 @@ namespace Polywall.Share.UI
             //    ChangedCallback?.Invoke(OnChangedArgs.Default);
         }
 
-        #endregion
-
-        #region Validation
 
         /// <summary>
         /// Sets value to the Model object's property
@@ -250,19 +246,18 @@ namespace Polywall.Share.UI
             }
         }
 
-        #endregion
 
         public bool HasErrors => CheckErrors();
 
         public bool IsChanged => CheckChanges();
 
-        #region IDataErrorInfo
+
 
         public string this[string propertyName] => OnValidate(propertyName);
 
         public string Error => null;
 
-        #endregion
+
 
         public bool IsBusy
         {

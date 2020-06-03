@@ -650,8 +650,12 @@ namespace ScreenStreamer.WinForms.App
             {
                 captType = "GDI";
             }
+			else if (captureProps.CaptureType == VideoCaptureType.GDILayered)
+			{
+				captType = "GDI Layered";
+			}
 
-            var resolution = caputreDevice.Resolution;
+			var resolution = caputreDevice.Resolution;
             var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
 
 			captInfoTextBox.Text = captType + " (" + propsStr + ")"; ;

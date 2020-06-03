@@ -14,9 +14,15 @@ namespace ScreenStreamer.Wpf.Common.Managers
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static string configName = "Configuration.json";
-        private static string configPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
 
-        private static string configFileFullName = System.IO.Path.Combine(configPath, configName);
+        public static readonly string CommonAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
+        public static readonly string ConfigPath = Path.Combine(CommonAppDataPath, "Polywall\\ScreenStreamer.Wpf.App");
+
+        
+        // private static string configPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+
+        private static string configFileFullName = System.IO.Path.Combine(ConfigPath, configName);
 
   
         public static StreamMainModel LoadConfigurations()

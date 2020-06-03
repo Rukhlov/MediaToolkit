@@ -1,5 +1,7 @@
-﻿using System;
+﻿using MediaToolkit.Logging;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,8 +10,12 @@ namespace MediaToolkit
 {
     public class MediaToolkitManager
     {
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
+
         public static void Startup()
         {
+            logger.Debug("MediaToolkitManager::Startup()");
+
             var winVersion = Environment.OSVersion.Version;
             bool isCompatibleOSVersion = (winVersion.Major >= 6 && winVersion.Minor >= 2);
 
@@ -17,6 +23,7 @@ namespace MediaToolkit
             {
                 //throw new Exception("Windows versions earlier than 8 are not supported.");
             }
+
 
             //NativeAPIs.Kernel32.SetDllDirectory(".\\libFFmpeg");
 
@@ -45,6 +52,7 @@ namespace MediaToolkit
 
         public static void Shutdown()
         {
+            logger.Debug("MediaToolkitManager::Shutdown()");
 
             NativeAPIs.WinMM.timeEndPeriod(1);
 

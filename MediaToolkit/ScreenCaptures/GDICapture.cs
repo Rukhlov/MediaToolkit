@@ -14,6 +14,7 @@ using MediaToolkit.Logging;
 using System.Runtime.InteropServices;
 using MediaToolkit.SharedTypes;
 using System.ComponentModel;
+using SharpDX.Direct3D;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -31,6 +32,8 @@ namespace MediaToolkit.ScreenCaptures
         public Texture2D SharedTexture { get; private set; }
         public long AdapterId { get; private set; }
         public bool UseHwContext { get; set; } = false;
+
+		public bool CaptureAllLayers { get; set; } = false;
 
         public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
@@ -86,10 +89,12 @@ namespace MediaToolkit.ScreenCaptures
 
                 var deviceCreationFlags =
                     //DeviceCreationFlags.Debug |
-                    DeviceCreationFlags.VideoSupport |
+                   // DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
 
-                device = new Device(adapter, deviceCreationFlags);
+				//var feature = FeatureLevel.Level_11_0;
+
+				device = new Device(adapter, deviceCreationFlags);
                 using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                 {
                     multiThread.SetMultithreadProtected(true);
@@ -203,7 +208,13 @@ namespace MediaToolkit.ScreenCaptures
                     {
                         hdcSrc = User32.GetDC(IntPtr.Zero);
 
-                        var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
+						var dwRop = TernaryRasterOperations.SRCCOPY;
+						if (CaptureAllLayers)
+						{
+							dwRop |= TernaryRasterOperations.CAPTUREBLT;
+						}
+
+                        //var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                         //var dwRop = TernaryRasterOperations.SRCCOPY;
 
                         bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);

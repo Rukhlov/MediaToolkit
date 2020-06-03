@@ -122,7 +122,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
 
         public bool IsMicrophoneEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsMicrophoneEnabled;
-        public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
+        //public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
 
         public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
 
@@ -146,7 +146,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                 Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
                 Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
                 Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
-                Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
+               // Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
             BorderViewModel = new StreamBorderViewModel(this);
@@ -230,21 +230,29 @@ namespace ScreenStreamer.Wpf.Common.Models
             RaisePropertyChanged(nameof(IsStarted));
 
             RaisePropertyChanged(nameof(IsEditable));
-            if (isStarted)
+
+            //if (isStarted)
+            //{
+            //    _dialogService.Hide(DesignViewModel);
+            //    if (IsBorderVisible)
+            //    {
+            //        _dialogService.Show(BorderViewModel);
+            //    }
+
+            //}
+            //else if (!isStarted)
+            //{
+            //    _dialogService.Hide(BorderViewModel);
+            //    if (IsBorderVisible)
+            //    {
+            //        _dialogService.Show(DesignViewModel);
+            //    }
+            //}
+
+            var selectAreaForm = VideoViewModel.selectAreaForm;
+            if (selectAreaForm != null)
             {
-                _dialogService.Hide(DesignViewModel);
-                if (IsBorderVisible)
-                {
-                    _dialogService.Show(BorderViewModel);
-                }
-            }
-            else if (!isStarted)
-            {
-                _dialogService.Hide(BorderViewModel);
-                if (IsBorderVisible)
-                {
-                    _dialogService.Show(DesignViewModel);
-                }
+                selectAreaForm.Capturing = isStarted;
             }
         }
 
@@ -257,6 +265,15 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
                
             _dialogService.Hide(BorderViewModel);
+        }
+
+        public void Close()
+        {
+            if (VideoViewModel != null)
+            {
+                VideoViewModel.Close();
+            }
+
         }
     }
 }

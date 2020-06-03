@@ -951,15 +951,38 @@ namespace MediaToolkit.MediaFoundation
 			return adapter1;
 		}
 
-		public static string LogDxAdapters(Adapter1[] adapters)
+        public static string LogDxInfo()
+        {
+            StringBuilder log = new StringBuilder();
+
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+            {
+                var adapters = dxgiFactory.Adapters1;
+
+                var adapterInfo = LogDxAdapters(adapters);
+
+                log.AppendLine(adapterInfo);
+
+            }
+
+            return log.ToString();
+        }
+
+
+        public static string LogDxAdapters(Adapter1[] adapters)
         {
             StringBuilder log = new StringBuilder();
             log.AppendLine("");
             foreach (var _adapter in adapters)
             {
+                var featureLevel = SharpDX.Direct3D11.Device.GetSupportedFeatureLevel(_adapter);
+                var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
+
+                bool success = GetSupportedFeatureLevel(_adapter, out var feature);
+
                 var adaptDescr = _adapter.Description1;
                 log.AppendLine("-------------------------------------");
-                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId));
+                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
 
                 foreach (var _output in _adapter.Outputs)
                 {
@@ -983,6 +1006,59 @@ namespace MediaToolkit.MediaFoundation
 
             return log.ToString();
         }
+
+        public static bool GetSupportedFeatureLevel(Adapter adapter, out SharpDX.Direct3D.FeatureLevel outputLevel )
+        {
+            bool Result = false;
+            outputLevel = SharpDX.Direct3D.FeatureLevel.Level_9_1;
+                 
+            SharpDX.Direct3D.FeatureLevel[] features = 
+            {
+                //SharpDX.Direct3D.FeatureLevel.Level_12_1,
+                //SharpDX.Direct3D.FeatureLevel.Level_12_0,
+                //SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                SharpDX.Direct3D.FeatureLevel.Level_10_0,
+
+                SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                SharpDX.Direct3D.FeatureLevel.Level_9_1,
+            };
+
+            SharpDX.Direct3D11.Device device = null;
+            try
+            {
+                device = new SharpDX.Direct3D11.Device(adapter, DeviceCreationFlags.BgraSupport, features);
+                outputLevel = device.FeatureLevel;
+
+                Result = true;
+
+            }
+            catch (Exception) { }
+            finally
+            {
+                if (device != null)
+                {
+                    device.Dispose();
+                    device = null;
+                }
+            }
+
+            return Result;
+        }
+
+        //public static FeatureLevel GetSupportedFeatureLevel()
+        //{
+        //    SharpDX.Direct3D.FeatureLevel outputLevel;
+        //    var device = new SharpDX.Direct3D11.Device(IntPtr.Zero);
+        //    DeviceContext context;
+        //    D3D11.CreateDevice(null, SharpDX.Direct3D.DriverType.Hardware, IntPtr.Zero, DeviceCreationFlags.None, null, 0, D3D11.SdkVersion, device, out outputLevel,
+        //                       out context).CheckError();
+        //    context.Dispose();
+        //    device.Dispose();
+        //    return outputLevel;
+        //}
 
         public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
         {
