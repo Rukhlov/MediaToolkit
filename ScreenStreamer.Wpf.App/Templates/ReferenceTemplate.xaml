@@ -48,7 +48,7 @@
 
                 <materialDesign:PackIcon Grid.Column="1"
                                          Kind="MicrophoneOff" 
-                                         Visibility="{Binding IsMicrophoneEnabled, Converter={converters:InvertedBooleanToVisibilityConverter}}"
+                                         Visibility="{Binding IsAudioEnabled, Converter={converters:InvertedBooleanToVisibilityConverter}}"
                                          VerticalAlignment="Bottom"
                                          HorizontalAlignment="Right"/>
             </Grid>

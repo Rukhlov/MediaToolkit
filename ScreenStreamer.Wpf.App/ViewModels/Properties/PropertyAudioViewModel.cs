@@ -10,41 +10,52 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         private readonly PropertyAudioModel _model;
         public override string Name => "Audio";
 
-        #region IsMicrophoneEnabled
-        [Track]
 
-        public bool IsMicrophoneEnabled { get => _model.IsMicrophoneEnabled; set { SetProperty(_model, () => _model.IsMicrophoneEnabled, value); Parent?.OnMicrophoneEnabledChanged(); } }
-
-        #endregion IsMicrophoneEnabled
-
-        #region IsComputerSoundEnabled
-        [Track]
-        public bool IsComputerSoundEnabled { get => _model.IsComputerSoundEnabled; set { SetProperty(_model, () => _model.IsComputerSoundEnabled, value); } }
-
-        #endregion IsComputerSoundEnabled
-
-        #region SelectedMicrophone
-
-        private MultiMediaDeviceViewModel _selectedMicrophone;
-
-        public MultiMediaDeviceViewModel SelectedMicrophone
+        //[Track]
+        public bool IsAudioEnabled
         {
-            get => _selectedMicrophone;
+            get => _model.IsEnabled;
             set
             {
-                _selectedMicrophone = value;
-                RaisePropertyChanged(() => SelectedMicrophone);
-                _model.DeviceId = value.Device?.ID;
+                SetProperty(_model, () => _model.IsEnabled, value);
+                Parent?.OnAudioEnabledChanged();
             }
         }
 
-        #endregion SelectedMicrophone
+
+        [Track]
+        public bool IsComputerSoundEnabled
+        {
+            get => _model.IsComputerSoundEnabled;
+            set
+            {
+                SetProperty(_model, () => _model.IsComputerSoundEnabled, value);
+            }
+        }
+
+
+
+
+        private AudioDeviceViewModel _selectedSource;
+
+        public AudioDeviceViewModel SelectedSource
+        {
+            get => _selectedSource;
+            set
+            {
+                _selectedSource = value;
+                RaisePropertyChanged(() => SelectedSource);
+                _model.DeviceId = value.DeviceId;
+            }
+        }
+
 
         public PropertyAudioViewModel(StreamViewModel parent, PropertyAudioModel model) : base(parent)
         {
             _model = model;
+
             var devices = AudioHelper.GetMultiMediaDeviceViewModels();
-            _selectedMicrophone = devices.FirstOrDefault(device => device.Device?.ID == model.DeviceId) ?? devices.FirstOrDefault();
+            _selectedSource = devices.FirstOrDefault(device => device.DeviceId == model.DeviceId) ?? devices.FirstOrDefault();
         }
 
         //public override object Clone()

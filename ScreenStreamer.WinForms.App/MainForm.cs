@@ -134,9 +134,9 @@ namespace ScreenStreamer.WinForms.App
 
             try
             {
-                currentSession.Setup();
+                currentSession.Validate();
 
-                if(currentSession.VideoSettings.Enabled || currentSession.AudioSettings.Enabled)
+                if(currentSession.VideoEnabled || currentSession.AudioEnabled)
                 {
                     bool starting = mediaStreamer.Start(currentSession);
                     if (!starting)
@@ -218,6 +218,13 @@ namespace ScreenStreamer.WinForms.App
             {
                 syncContext.Send(_ =>
                 {
+                    var errorCode = mediaStreamer.ErrorCode;
+                    if (errorCode != 0)
+                    {
+                        MessageBox.Show("Stream has stopped!\r\nUnexpected error: " + errorCode, "Error" );
+
+                    }
+
                     OnStreamStopping();
 
                 }, null);

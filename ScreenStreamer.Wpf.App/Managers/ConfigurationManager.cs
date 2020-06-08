@@ -65,6 +65,11 @@ namespace ScreenStreamer.Wpf.Common.Managers
 
             try
             {
+                if (!Directory.Exists(ConfigPath))
+                {
+                    Directory.CreateDirectory(ConfigPath);
+                }
+
                 var model = DependencyInjectionHelper.Container.Resolve<StreamMainModel>();
 
                 JsonSerializer serializer = new JsonSerializer

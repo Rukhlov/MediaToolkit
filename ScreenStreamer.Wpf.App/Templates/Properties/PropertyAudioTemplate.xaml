@@ -12,7 +12,7 @@
             </DataTemplate.Resources>
         <StackPanel Orientation="Horizontal">
             <materialDesign:PackIcon Kind="VolumeMedium" Visibility="{Binding IsComputerSoundEnabled, Converter={converters:BooleanToVisibilityConverter}}"/>
-            <materialDesign:PackIcon Kind="MicrophoneOutline" Visibility="{Binding IsMicrophoneEnabled, Converter={converters:BooleanToVisibilityConverter}}"/>
+            <materialDesign:PackIcon Kind="MicrophoneOutline" Visibility="{Binding IsAudioEnabled, Converter={converters:BooleanToVisibilityConverter}}"/>
             <TextBlock Text="{Binding Info}" />
         </StackPanel>
     </DataTemplate>

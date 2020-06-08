@@ -121,7 +121,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public ICommand EditModeCommand { get; set; }
 
 
-        public bool IsMicrophoneEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsMicrophoneEnabled;
+        public bool IsAudioEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsAudioEnabled;
         //public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
 
         public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
@@ -142,10 +142,12 @@ namespace ScreenStreamer.Wpf.Common.Models
             if (addInitialProperties)
             {
                 Properties.Add(VideoViewModel = new PropertyVideoViewModel(this, Model.PropertyVideo));
-                Properties.Add(PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork));
-                Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
-                Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
-                Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
+				Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
+
+				Properties.Add(PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork));
+               // Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
+              //  Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
+                
                // Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
@@ -170,9 +172,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             //TODO CopyUrl
         }
 
-        public void OnMicrophoneEnabledChanged()
+        public void OnAudioEnabledChanged()
         {
-            RaisePropertyChanged(nameof(IsMicrophoneEnabled));
+            RaisePropertyChanged(nameof(IsAudioEnabled));
         }
 
         private void InverseIsStarted()

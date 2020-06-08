@@ -29,11 +29,14 @@ namespace MediaToolkit.ScreenCaptures
         private Device device = null;
         private Texture2D gdiTexture = null;
 
+        private Texture2D renderTexture = null;
+        SharpDX.Direct2D1.RenderTarget renderTarget = null;
+
         public Texture2D SharedTexture { get; private set; }
         public long AdapterId { get; private set; }
         public bool UseHwContext { get; set; } = false;
 
-		public bool CaptureAllLayers { get; set; } = false;
+        public bool CaptureAllLayers { get; set; } = false;
 
         public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
@@ -89,12 +92,12 @@ namespace MediaToolkit.ScreenCaptures
 
                 var deviceCreationFlags =
                     //DeviceCreationFlags.Debug |
-                   // DeviceCreationFlags.VideoSupport |
+                    // DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
 
-				//var feature = FeatureLevel.Level_11_0;
+                //var feature = FeatureLevel.Level_11_0;
 
-				device = new Device(adapter, deviceCreationFlags);
+                device = new Device(adapter, deviceCreationFlags);
                 using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                 {
                     multiThread.SetMultithreadProtected(true);
@@ -123,8 +126,8 @@ namespace MediaToolkit.ScreenCaptures
                      CpuAccessFlags = CpuAccessFlags.None,
                      BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                      Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                     Width = DestSize.Width,
-                     Height = DestSize.Height,
+                     Width = SrcRect.Width, //DestSize.Width,
+                     Height = SrcRect.Height, //DestSize.Height,
 
                      MipLevels = 1,
                      ArraySize = 1,
@@ -133,6 +136,45 @@ namespace MediaToolkit.ScreenCaptures
                      OptionFlags = ResourceOptionFlags.GdiCompatible,
 
                  });
+
+
+                renderTexture = new Texture2D(device,
+                    new Texture2DDescription
+                    {
+
+                        CpuAccessFlags = CpuAccessFlags.None,
+                        BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                        Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+
+                        Width = DestSize.Width,
+                        Height = DestSize.Height,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1, Quality = 0 },
+                        Usage = ResourceUsage.Default,
+                        //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
+                        OptionFlags = ResourceOptionFlags.Shared,
+
+                    });
+
+                if (DestSize.Width != SrcRect.Width || DestSize.Height != SrcRect.Height)
+                {
+                    using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
+                    {
+                        using (var surf = renderTexture.QueryInterface<SharpDX.DXGI.Surface>())
+                        {
+                            //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
+
+                            var pixelFormat = new SharpDX.Direct2D1.PixelFormat(SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied);
+                            var renderTargetProps = new SharpDX.Direct2D1.RenderTargetProperties(pixelFormat);
+
+                            renderTarget = new SharpDX.Direct2D1.RenderTarget(factory2D1, surf, renderTargetProps);
+
+                            //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+                        }
+
+                    }
+                }
 
             }
             finally
@@ -164,7 +206,7 @@ namespace MediaToolkit.ScreenCaptures
             ErrorCode result = ErrorCode.Ok;
             if (UseHwContext)
             {
-                result = CopyScreenToSurface();
+                result = CopyGdiScreenToDxSurf();
             }
             else
             {
@@ -178,88 +220,160 @@ namespace MediaToolkit.ScreenCaptures
 
 
 
-        private ErrorCode CopyScreenToSurface()
+        private ErrorCode CopyGdiScreenToDxSurf()
         {
 
             ErrorCode errorCode = ErrorCode.Unexpected;
 
-            using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
+            try
             {
-
-                int nXSrc = SrcRect.Left;
-                int nYSrc = SrcRect.Top;
-
-                int nWidthSrc = SrcRect.Width;
-                int nHeightSrc = SrcRect.Height;
-
-                var descr = surf.Description;
-
-                int nXDest = 0;
-                int nYDest = 0;
-                int nWidth = descr.Width;
-                int nHeight = descr.Height;
-
-
-                try
+                using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
                 {
-                    var hdcDest = surf.GetDC(true);
-                    IntPtr hdcSrc = IntPtr.Zero;
+                    int nXSrc = SrcRect.Left;
+                    int nYSrc = SrcRect.Top;
+                    int nWidthSrc = SrcRect.Width;
+                    int nHeightSrc = SrcRect.Height;
+
+                    var descr = surf.Description;
+
+                    int nXDest = 0;
+                    int nYDest = 0;
+                    int nWidth = descr.Width;
+                    int nHeight = descr.Height;
+
                     try
                     {
-                        hdcSrc = User32.GetDC(IntPtr.Zero);
-
-						var dwRop = TernaryRasterOperations.SRCCOPY;
-						if (CaptureAllLayers)
-						{
-							dwRop |= TernaryRasterOperations.CAPTUREBLT;
-						}
-
-                        //var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
-                        //var dwRop = TernaryRasterOperations.SRCCOPY;
-
-                        bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-                        if (!success)
+                        var hdcDest = surf.GetDC(true);
+                        IntPtr hdcSrc = IntPtr.Zero;
+                        try
                         {
-                            throw new Win32Exception(Marshal.GetLastWin32Error());
+                            hdcSrc = User32.GetDC(IntPtr.Zero);
+
+                            var dwRop = TernaryRasterOperations.SRCCOPY;
+                            if (CaptureAllLayers)
+                            {
+                                dwRop |= TernaryRasterOperations.CAPTUREBLT;
+                            }
+
+                            //var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
+                            //var dwRop = TernaryRasterOperations.SRCCOPY;
+
+                            bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+                            if (!success)
+                            {
+                                throw new Win32Exception(Marshal.GetLastWin32Error());
+                            }
+                            if (CaptureMouse)
+                            {
+                                User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
+                            }
+
+                            errorCode = ErrorCode.Ok;
+
                         }
-                        if (CaptureMouse)
+                        finally
                         {
-                            User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
+                            Gdi32.DeleteDC(hdcSrc);
                         }
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        logger.Warn(ex);
 
-                        errorCode = ErrorCode.Ok;
-
+                        if (ex.NativeErrorCode == Win32ErrorCodes.ERROR_ACCESS_DENIED ||
+                            ex.NativeErrorCode == Win32ErrorCodes.ERROR_INVALID_HANDLE)
+                        {
+                            errorCode = ErrorCode.AccessDenied;
+                        }
                     }
                     finally
                     {
-                        Gdi32.DeleteDC(hdcSrc);
+                        surf.ReleaseDC();
                     }
                 }
-                catch (Win32Exception ex)
-                {
-                    logger.Warn(ex);
 
-                    if (ex.NativeErrorCode == Win32ErrorCodes.ERROR_ACCESS_DENIED)
-                    {
-                        errorCode = ErrorCode.AccessDenied;
+                if (errorCode == ErrorCode.Ok)
+                {
+                    Texture2D finalTexture = gdiTexture;
+                    if (renderTarget != null)
+                    {// масштабируем текстуру если нужно
+                        renderTarget.BeginDraw();
+                        renderTarget.Clear(SharpDX.Color.Black);//(Color.Red);
+
+                        DrawTexture(renderTarget, gdiTexture);
+
+                        renderTarget.EndDraw();
+                        finalTexture = renderTexture;
                     }
+
+                    device.ImmediateContext.CopyResource(finalTexture, SharedTexture);
+                    device.ImmediateContext.Flush();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+            return errorCode;
+        }
+
+
+
+        private void DrawTexture(SharpDX.Direct2D1.RenderTarget renderTarget, Texture2D texture)
+        {
+            using (var surf = texture.QueryInterface<SharpDX.DXGI.Surface1>())
+            {
+                var prop = new SharpDX.Direct2D1.BitmapProperties(new SharpDX.Direct2D1.PixelFormat(SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied));
+                SharpDX.Direct2D1.Bitmap screenBits = new SharpDX.Direct2D1.Bitmap(renderTarget, surf, prop);
+                try
+                {
+                    var srcDecr = surf.Description;
+                    float srcWidth = srcDecr.Width;
+                    float srcHeight = srcDecr.Height;
+
+                    float destX = 0;
+                    float destY = 0;
+                    float destWidth = DestSize.Width;
+                    float destHeight = DestSize.Height;
+
+                    float scaleX = destWidth / srcWidth;
+                    float scaleY = destHeight / srcHeight;
+
+                    if (AspectRatio)
+                    {
+                        if (scaleY < scaleX)
+                        {
+                            scaleX = scaleY;
+                            destX = ((destWidth - srcWidth * scaleX) / 2);
+                        }
+                        else
+                        {
+                            scaleY = scaleX;
+                            destY = ((destHeight - srcHeight * scaleY) / 2);
+                        }
+                    }
+
+                    destWidth = srcWidth * scaleX;
+                    destHeight = srcHeight * scaleY;
+
+                    var destRect = new SharpDX.Mathematics.Interop.RawRectangleF
+                    {
+                        Left = destX,
+                        Right = destX + destWidth,
+                        Top = destY,
+                        Bottom = destY + destHeight,
+                    };
+
+                    renderTarget.DrawBitmap(screenBits, destRect, 1.0f, SharpDX.Direct2D1.BitmapInterpolationMode.Linear);
 
                 }
                 finally
                 {
-                    surf.ReleaseDC();
+                    screenBits?.Dispose();
                 }
-
-				if(errorCode == ErrorCode.Ok)
-				{
-					device.ImmediateContext.CopyResource(gdiTexture, SharedTexture);
-					device.ImmediateContext.Flush();
-				}
-
-
-			}
-
-            return errorCode;
+            }
         }
 
         public override void Close()
@@ -272,6 +386,20 @@ namespace MediaToolkit.ScreenCaptures
         private void CloseDx()
         {
             logger.Debug("GDICapture::CloseDx()");
+
+            if (renderTarget != null)
+            {
+                renderTarget.Dispose();
+                renderTarget = null;
+
+            }
+
+            if (renderTexture != null)
+            {
+                renderTexture.Dispose();
+                renderTexture = null;
+
+            }
 
             if (SharedTexture != null)
             {

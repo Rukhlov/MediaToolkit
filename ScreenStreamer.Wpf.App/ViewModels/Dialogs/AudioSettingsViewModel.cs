@@ -8,11 +8,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     {
         public override string Caption => "Audio";
 
-        public ObservableCollection<MultiMediaDeviceViewModel> Microphones { get; set; } = new ObservableCollection<MultiMediaDeviceViewModel>();
+        public ObservableCollection<AudioDeviceViewModel> AudioSources { get; set; } = new ObservableCollection<AudioDeviceViewModel>();
 
         public AudioSettingsViewModel(PropertyAudioViewModel property, StreamerViewModelBase parent) : base(property,parent)
         {
-            Microphones.AddRange(AudioHelper.GetMultiMediaDeviceViewModels());
+            AudioSources.AddRange(AudioHelper.GetMultiMediaDeviceViewModels());
         }
     }
 }

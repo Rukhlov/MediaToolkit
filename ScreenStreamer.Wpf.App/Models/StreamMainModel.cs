@@ -130,7 +130,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                 currentSession = CreateSession();
 
 
-                currentSession.Setup();
+                currentSession.Validate();
 
                 mediaStreamer.Start(currentSession);
             }
@@ -266,6 +266,23 @@ namespace ScreenStreamer.Wpf.Common.Models
                 };
             }
 
+            if (PropertyAudio.IsEnabled)
+            {
+                var deviceId = PropertyAudio.DeviceId;
+
+                var audioDevice = MediaToolkit.AudioTool.GetAudioCaptureDevices().FirstOrDefault(d => d.DeviceId == deviceId);
+                if (audioDevice != null)
+                {
+                    session.AudioSettings.Enabled = true;
+                    audioDevice.Properties = new WasapiCaptureProperties();
+
+                    session.AudioSettings.CaptureDevice = audioDevice;
+                }
+            }
+            else
+            {
+                session.AudioSettings.Enabled = false;
+            }
 
             logger.Info("CaptureDevice: " + captureRegion);
 
@@ -377,7 +394,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
     public class PropertyAudioModel
     {
-        public bool IsMicrophoneEnabled { get; set; }
+        public bool IsEnabled { get; set; }
         public bool IsComputerSoundEnabled { get; set; } = true;
         public string DeviceId { get; set; }
     }

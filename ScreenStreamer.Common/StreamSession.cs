@@ -62,13 +62,14 @@ namespace ScreenStreamer.Common
 		public int MutlicastPort2 { get; set; } = 5555;
 
 		public VideoStreamSettings VideoSettings { get; set; } = new VideoStreamSettings();
-
 		public AudioStreamSettings AudioSettings { get; set; } = new AudioStreamSettings();
 
+        public bool VideoEnabled => VideoSettings?.Enabled ?? false;
+        public bool AudioEnabled => AudioSettings?.Enabled ?? false;
 
-		public void Setup()
+        public void Validate()
 		{
-			logger.Debug("StreamSession::Setup()");
+			logger.Debug("StreamSession::Validate()");
 
 			if (IsMulticast)
 			{
@@ -141,7 +142,9 @@ namespace ScreenStreamer.Common
 
 				if (captureResolution.IsEmpty)
 				{
-					//...
+                    //...
+
+                    throw new InvalidOperationException("Empty capture resolution");
 				}
 
 				int width = captureResolution.Width;
@@ -157,25 +160,6 @@ namespace ScreenStreamer.Common
 				}
 
 				captureDevice.Resolution = new Size(width, height);
-
-
-                /*
-				var encodingSettings = VideoSettings.EncoderSettings;
-				if (VideoSettings.UseEncoderResoulutionFromSource)
-				{
-					encodingSettings.Width = captureDevice.Resolution.Width;
-					encodingSettings.Height = captureDevice.Resolution.Height;
-				}
-
-				if (!VideoSettings.UseEncoderResoulutionFromSource)
-				{
-					captureDevice.Resolution = VideoSettings.EncoderSettings.Resolution;
-				}
-				else
-				{
-					//captureDevice.Resolution = Size.Empty;
-				}
-                */
 
                 logger.Info("VideoSettings: " + videoLog);
 			}

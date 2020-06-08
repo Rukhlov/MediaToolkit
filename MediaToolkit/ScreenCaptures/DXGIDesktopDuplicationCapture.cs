@@ -253,7 +253,7 @@ namespace MediaToolkit.ScreenCaptures
 
                 });
 
-            if (DestSize.Width != SrcRect.Width && DestSize.Height != SrcRect.Height)
+            if (DestSize.Width != SrcRect.Width || DestSize.Height != SrcRect.Height)
             {
                 using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
                 {

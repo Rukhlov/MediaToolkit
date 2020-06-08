@@ -39,8 +39,10 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("kernel32.dll")]
         public static extern bool FreeConsole();
 
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetConsoleWindow();
 
-		[DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool CloseHandle(IntPtr hSnapshot);
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]

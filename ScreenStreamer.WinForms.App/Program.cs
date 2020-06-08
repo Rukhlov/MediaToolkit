@@ -20,8 +20,8 @@ namespace ScreenStreamer.WinForms.App
         [STAThread]
         static void Main(string[] args)
         {
-            //Kernel32.AllocConsole();
-            logger = LogManager.GetCurrentClassLogger();
+
+            InitLogger();
 
             logger.Info("========== START ============");
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -64,7 +64,6 @@ namespace ScreenStreamer.WinForms.App
                 MediaToolkitManager.Startup();
 
 
-
                 //DwmApi.DisableAero(true);
                 Shcore.SetProcessPerMonitorDpiAwareness();
 
@@ -96,7 +95,65 @@ namespace ScreenStreamer.WinForms.App
             }
 
         }
-        
+
+        private static void InitLogger()
+        {
+
+            logger = LogManager.GetCurrentClassLogger();
+
+            var logFactory = logger.Factory;
+            if(logFactory == null)
+            {
+                return;
+            }
+
+            var logConfig = logFactory.Configuration;
+            if(logConfig == null)
+            {
+                return;
+            }
+
+            var logRules = logConfig.LoggingRules;
+            if(logRules == null)
+            {
+                return;
+            }
+
+            bool needConsole = false;
+            foreach(var rule in logRules)
+            {
+                var targets = rule.Targets;
+                if(targets == null)
+                {
+                    continue;
+                }
+
+                foreach(var target in targets)
+                {
+                    var targetName = target.Name;
+                    if(targetName == "console")
+                    {
+                        needConsole = true;
+                        break;
+                    }
+                }
+
+                if (needConsole)
+                {
+                    break;
+                }
+            }
+
+            if (needConsole)
+            {
+                var hWnd = Kernel32.GetConsoleWindow();
+                if(hWnd == IntPtr.Zero)
+                {
+                    Kernel32.AllocConsole();
+                }
+                
+            }
+        }
 
         private static int RestartAsSystem()
 		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)

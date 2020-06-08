@@ -96,8 +96,9 @@ namespace ScreenStreamer.Common
                     state = MediaStreamerState.Streamming;
                     StateChanged?.Invoke();
                 }
-                var videoEnabled = Session.VideoSettings.Enabled;
-                var audioEnabled = Session.AudioSettings.Enabled;
+
+                var videoEnabled = Session.VideoEnabled;
+                var audioEnabled = Session.AudioEnabled;
 
                 while (state == MediaStreamerState.Streamming)
                 {
@@ -276,14 +277,14 @@ namespace ScreenStreamer.Common
                 if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
                 {
                     videoSource = new VideoCaptureSource();
-                    videoSource.Setup(captureDevice);
                 }
                 else if (captureDevice.CaptureMode == CaptureMode.Screen)
                 {
                     videoSource = new ScreenSource();
-                    videoSource.Setup(captureDevice);
+                    
                 }
 
+                videoSource.Setup(captureDevice);
                 videoSource.CaptureStarted += VideoSource_CaptureStarted;
                 videoSource.CaptureStopped += VideoSource_CaptureStopped;
 

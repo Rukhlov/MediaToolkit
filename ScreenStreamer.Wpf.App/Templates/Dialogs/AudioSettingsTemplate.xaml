@@ -6,35 +6,35 @@
         </DataTemplate.Resources>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
+                <ColumnDefinition />
                 <ColumnDefinition Width="160"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="32"/>
-                <RowDefinition Height="32"/>
+                <!--<RowDefinition Height="32"/>-->
             </Grid.RowDefinitions>
-            <TextBlock Text="Microphone enabled" Grid.Row="0" Grid.Column="0"/>
-            <TextBlock Text="Microphone" Grid.Row="1" Grid.Column="0"/>
-            <TextBlock Text="Computer sound" Grid.Row="2" Grid.Column="0"/>
+            <TextBlock Text="Enabled" Grid.Row="0" Grid.Column="0"/>
+            <TextBlock Text="Audio Sources" Grid.Row="1" Grid.Column="0"/>
+            <!--<TextBlock Text="Computer sound" Grid.Row="2" Grid.Column="0" Visibility="Collapsed"/>-->
             <ToggleButton Grid.Row="0" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}" 
-                          IsChecked="{Binding Property.IsMicrophoneEnabled}" 
+                          IsChecked="{Binding Property.IsAudioEnabled}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
             
             <ComboBox Grid.Row="1" Grid.Column="1" 
-                      ItemsSource="{Binding Microphones}" 
+                      ItemsSource="{Binding AudioSources}" 
                       DisplayMemberPath="DisplayName"
-                      SelectedItem="{Binding Property.SelectedMicrophone}"
+                      SelectedItem="{Binding Property.SelectedSource}"
                       Cursor="Hand"
-                      IsEnabled="{Binding Property.IsMicrophoneEnabled, Mode=OneWay}"/>
+                      IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>
             
-            <ToggleButton Grid.Row="2" Grid.Column="1"
+            <!--<ToggleButton Grid.Row="2" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding Property.IsComputerSoundEnabled}" 
                           HorizontalAlignment="Right"
-                          Cursor="Hand"/>
+                          Cursor="Hand" Visibility="Collapsed"/>-->
         </Grid>
     </DataTemplate>
 </ResourceDictionary>
