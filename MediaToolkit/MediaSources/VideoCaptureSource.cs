@@ -365,6 +365,7 @@ namespace MediaToolkit
         }
 
         private CaptureStats captureStats = new CaptureStats();
+        public Utils.StatCounter Stats => captureStats;
 
         private long firstTimestamp = 0;
         private long prevTimestamp = 0;
@@ -376,8 +377,9 @@ namespace MediaToolkit
             try
             {
                 state = CaptureState.Capturing;
+                captureStats.Reset();
 
-                MediaToolkit.Utils.Statistic.RegisterCounter(captureStats);
+                // MediaToolkit.Utils.Statistic.RegisterCounter(captureStats);
 
                 //int sampleCount = 0;
 
@@ -443,7 +445,8 @@ namespace MediaToolkit
                 }
 
                 state = CaptureState.Stopped;
-                MediaToolkit.Utils.Statistic.UnregisterCounter(captureStats);
+
+                //MediaToolkit.Utils.Statistic.UnregisterCounter(captureStats);
             }
         }
 

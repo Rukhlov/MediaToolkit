@@ -64,8 +64,8 @@ namespace MediaToolkit.MediaStreamers
             }
         }
 
-        private StreamStats streamStats = null;
-        public StatCounter Statistics => streamStats;
+        private StreamStats streamStats = new StreamStats();
+        public StatCounter Stats => streamStats;
         
 
         //private FFmpegVideoEncoder encoder = null;
@@ -187,9 +187,9 @@ namespace MediaToolkit.MediaStreamers
             try
             {
 
-                streamStats = new StreamStats();
+                streamStats.Reset(); 
 
-                Statistic.RegisterCounter(streamStats);
+               // Statistic.RegisterCounter(streamStats);
 
                 //var hwContext = screenSource.hwContext;
                 //mfEncoder.Start();
@@ -235,7 +235,7 @@ namespace MediaToolkit.MediaStreamers
 
                 CleanUp();
 
-                Statistic.UnregisterCounter(streamStats);
+                //Statistic.UnregisterCounter(streamStats);
 
                 running = false;
 

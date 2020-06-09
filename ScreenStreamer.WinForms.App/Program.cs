@@ -4,6 +4,7 @@ using NLog;
 using ScreenStreamer.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,21 @@ namespace ScreenStreamer.WinForms.App
 
             StartupParams = StartupParameters.Create(args);
 
+            //if (StartupParams.RunAsSystem)
+            //{
+            //    if (StartupParams.IsElevated)
+            //    {
+            //        if (RestartAsSystem() > 0)
+            //        {
+            //            return;
+            //        }
+            //        logger.Warn("Restart failed...");
+            //    }
+            //    else
+            //    {
+            //        RunAsSystem();
+            //    }
+            //}
 
             if (StartupParams.IsElevated)
             {
@@ -155,6 +171,35 @@ namespace ScreenStreamer.WinForms.App
             }
         }
 
+        internal static void RunAsSystem()
+        {
+            try
+            {
+                var fileName = Process.GetCurrentProcess().MainModule.FileName;
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    Arguments = "-system",
+                    FileName = fileName,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Process process = new Process
+                {
+                    StartInfo = startInfo,
+                };
+
+                process.Start();
+
+                Application.Exit();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
         private static int RestartAsSystem()
 		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
 		 // перезапускам процесс с системными правами
@@ -205,6 +250,7 @@ namespace ScreenStreamer.WinForms.App
             public bool IsSystem { get; private set; } = false;
             public bool IsElevated { get; private set; } = false;
             public bool NoRestart { get; private set; } = false;
+            public bool RunAsSystem { get; private set; } = false;
 
             public static StartupParameters Create(string[] args)
             {
@@ -214,9 +260,15 @@ namespace ScreenStreamer.WinForms.App
 
                 foreach (var arg in args)
                 {
-                    if (arg?.ToLower() == "-norestart")
+                    var _arg = arg?.ToLower();
+
+                    if (_arg == "-norestart")
                     {
                         startupParams.NoRestart = true;
+                    }
+                    else if (_arg == "-system")
+                    {
+                        startupParams.RunAsSystem = true;
                     }
                     else
                     {

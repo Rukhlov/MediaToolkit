@@ -32,17 +32,39 @@ namespace MediaToolkit.UI
 
         //private System.Timers.Timer timer = new System.Timers.Timer();
 
+ 
+
         private Timer timer = new Timer();
         private void Timer_Tick(object sender, EventArgs e)
         {
 
             this.labelCpuUsage.Text = Statistic.PerfCounter.GetReport();
-            this.labelStats.Text = Statistic.GetReport();
+            this.labelStats.Text = GetReport();//Statistic.GetReport();
 
         }
 
-        public void Start()
+        private List<StatCounter> statCounters = new List<StatCounter>();
+
+        public string GetReport()
         {
+            StringBuilder sb = new StringBuilder();
+            foreach (var stat in statCounters)
+            {
+                if (stat != null)
+                {
+                    sb.AppendLine(stat.GetReport());
+                }
+                
+            }
+
+            return sb.ToString();
+        }
+
+        public void Start(IEnumerable<StatCounter> stats)
+        {
+
+            statCounters.Clear();
+            statCounters.AddRange(stats);
 
             timer.Enabled = true;
 

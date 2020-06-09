@@ -34,7 +34,6 @@ namespace MediaToolkit.UI
             if (videoSource != null)
             {
                 d3dProvider = new D3D11RendererProvider();
-              
 
                 renderer = new D3DImageRenderer();
 

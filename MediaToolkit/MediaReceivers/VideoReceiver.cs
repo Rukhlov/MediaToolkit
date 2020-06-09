@@ -148,16 +148,15 @@ namespace MediaToolkit
             rtpReceiver.Open(networkPars);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
-            
-            receiverStats = new ReceiverStats();
-
         }
 
         public void Play()
         {
             logger.Debug("ScreenReceiver::Play()");
 
-            Statistic.RegisterCounter(receiverStats);
+            receiverStats.Reset();
+
+            //Statistic.RegisterCounter(receiverStats);
 
             //ImageProvider.Start(sharedTexture);
 
@@ -343,11 +342,12 @@ namespace MediaToolkit
                 device = null;
             }
 
-            Statistic.UnregisterCounter(receiverStats);
+           // Statistic.UnregisterCounter(receiverStats);
         }
 
 
         private ReceiverStats receiverStats = new ReceiverStats();
+        public StatCounter Stats => receiverStats;
 
         class ReceiverStats : StatCounter
         {

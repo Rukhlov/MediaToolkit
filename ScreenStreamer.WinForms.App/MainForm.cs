@@ -320,7 +320,10 @@ namespace ScreenStreamer.WinForms.App
                             statisticForm = new StatisticForm();
                         }
                         statisticForm.Location = screenDescr.CaptureRegion.Location;
-                        statisticForm.Start();
+
+                        var stats = mediaStreamer.Stats;
+
+                        statisticForm.Start(stats);
                     }
 
                     //if (selectAreaForm != null)

@@ -44,7 +44,8 @@ namespace MediaToolkit
         private volatile int errorCode = 0;
         public int ErrorCode => errorCode;
 
-        //private DXGIDesktopDuplicationCapture hwContext = null;
+        private CaptureStats captureStats = new CaptureStats();
+        public StatCounter Stats => captureStats;
 
         private ITexture2DSource hwContext = null;
 
@@ -134,16 +135,6 @@ namespace MediaToolkit
 					this.AdapterId = d3d11Capture.AdapterId;
 				}
 
-				//DXGIDesktopDuplicationCapture capture = screenCapture as DXGIDesktopDuplicationCapture;
-    //            if (capture != null)
-    //            {
-    //                capture.UseHwContext = captureProp.UseHardware;
-
-    //                this.hwContext = capture;
-    //                this.AdapterId = capture.AdapterId;
-    //            }
-
-
 				screenCapture.Init(srcRect, destSize);
 				//screenCapture.Init(srcRect);
 
@@ -209,14 +200,15 @@ namespace MediaToolkit
         {
             state = CaptureState.Capturing;
 
-            CaptureStats captureStats = new CaptureStats();
+            captureStats.Reset();
+
             try
             {                
 
-                Statistic.RegisterCounter(captureStats);
+               // Statistic.RegisterCounter(captureStats);
 
-                var frameRate = CaptureParams.Properties.Fps;
-                var frameInterval = (1000.0 / frameRate);
+                var fps = CaptureParams.Properties.Fps;
+                var frameInterval = (1000.0 / fps);
                 captureStats.frameInterval = frameInterval;
 
                 double lastTime = 0;
@@ -300,7 +292,7 @@ namespace MediaToolkit
             {
                 //screenCapture?.Close();
 
-                Statistic.UnregisterCounter(captureStats);
+                //Statistic.UnregisterCounter(captureStats);
 
                 state = CaptureState.Stopped;
 

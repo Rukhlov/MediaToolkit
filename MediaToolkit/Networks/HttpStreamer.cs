@@ -26,7 +26,8 @@ namespace MediaToolkit.Networks
 
         private List<MJpegClientHandler> clients = new List<MJpegClientHandler>();
 
-        public readonly HttpStats statCounter = new HttpStats();
+        private HttpStats statCounter = new HttpStats();
+        public StatCounter Stats => statCounter;
 
         private TcpListener listener = null;
 
@@ -56,7 +57,9 @@ namespace MediaToolkit.Networks
   
                 try
                 {
-                    Statistic.RegisterCounter(statCounter);
+                    statCounter.Reset();
+
+                    //Statistic.RegisterCounter(statCounter);
 
                     listener = new TcpListener(addr, port);
                     //listener.AllowNatTraversal(true);
@@ -141,7 +144,7 @@ namespace MediaToolkit.Networks
                     //    c.Dispose();
                     //}
 
-                    Statistic.UnregisterCounter(statCounter);
+                    //Statistic.UnregisterCounter(statCounter);
                 }
             });
 

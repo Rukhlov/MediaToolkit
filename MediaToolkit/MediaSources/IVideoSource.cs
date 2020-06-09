@@ -36,5 +36,7 @@ namespace MediaToolkit
         void Start();
         void Stop();
         void Close(bool force = false);
+
+        Utils.StatCounter Stats { get; }
     }
 }

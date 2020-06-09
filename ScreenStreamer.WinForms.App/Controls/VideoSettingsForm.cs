@@ -375,12 +375,6 @@ namespace ScreenStreamer.WinForms.App
                     }
                     else if (captureDevice.CaptureMode == CaptureMode.Screen)
                     {
-                        //var screenCapture = (ScreenCaptureDevice)captureDevice;
-                        //var screenCaptureProps = screenCapture.Properties;
-                        //screenCaptureProps.CaptureType = VideoCaptureType.GDI;
-                        //screenCaptureProps.UseHardware = true;
-                        //screenCaptureProps.Fps = 30;
-
                         videoSource = new ScreenSource();
                         videoSource.Setup(captureDevice);
                     }
@@ -550,6 +544,7 @@ namespace ScreenStreamer.WinForms.App
             bool fitVideoToWindow = previewSettings.FitVideoToWindow;
 
             previewForm.UpdateWindow(fitVideoToWindow, captureDevice.Resolution);
+            captureSettingsButton.Enabled = false;
             previewForm.Visible = true;
 
 
@@ -562,8 +557,11 @@ namespace ScreenStreamer.WinForms.App
 
             if (previewForm != null && !previewForm.IsDisposed)
             {
-                previewForm.Visible = false;
+                previewForm.Close();
+                previewForm = null;
             }
+
+            captureSettingsButton.Enabled = true;
 
             videoSource.Close(true);
             videoSource.CaptureStarted -= VideoSource_CaptureStarted;

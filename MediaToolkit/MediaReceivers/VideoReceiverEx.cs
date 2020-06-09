@@ -47,10 +47,6 @@ namespace MediaToolkit
             rtpReceiver.Open(networkPars);
             rtpReceiver.RtpPacketReceived += RtpReceiver_RtpPacketReceived;
 
-
-            receiverStats = new ReceiverStats();
-
-
         }
 
 
@@ -58,8 +54,9 @@ namespace MediaToolkit
         {
             logger.Debug("ScreenReceiver::Play()");
 
-            Statistic.RegisterCounter(receiverStats);
+            //Statistic.RegisterCounter(receiverStats);
 
+            receiverStats.Reset();
 
 
             rtpReceiver.Start();
@@ -122,11 +119,12 @@ namespace MediaToolkit
 
 
 
-            Statistic.UnregisterCounter(receiverStats);
+            //Statistic.UnregisterCounter(receiverStats);
         }
 
 
         private ReceiverStats receiverStats = new ReceiverStats();
+        public StatCounter Stats => receiverStats;
 
         class ReceiverStats : StatCounter
         {

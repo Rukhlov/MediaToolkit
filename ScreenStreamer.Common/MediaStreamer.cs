@@ -1,6 +1,7 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
 using MediaToolkit.MediaStreamers;
+using MediaToolkit.Utils;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,10 @@ namespace ScreenStreamer.Common
 
         private Thread streamerThread = null;
 
+
+        public List<StatCounter> Stats { get; } = new List<StatCounter>();
+
+
         public bool Start(StreamSession session)
         {
             logger.Debug("ScreenStreamer::Start(...)");
@@ -90,6 +95,8 @@ namespace ScreenStreamer.Common
 
                 StartStreaming();
 
+                Stats.Clear();
+                Stats.AddRange(new[] { videoSource.Stats, videoStreamer.Stats });
 
                 if (state == MediaStreamerState.Starting)
                 {
