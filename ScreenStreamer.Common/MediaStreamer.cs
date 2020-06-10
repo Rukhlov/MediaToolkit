@@ -96,7 +96,8 @@ namespace ScreenStreamer.Common
                 StartStreaming();
 
                 Stats.Clear();
-                Stats.AddRange(new[] { videoSource.Stats, videoStreamer.Stats });
+
+                Stats.AddRange(new[] { videoSource?.Stats, videoStreamer?.Stats });
 
                 if (state == MediaStreamerState.Starting)
                 {

@@ -35,7 +35,6 @@
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.captureComboBox = new System.Windows.Forms.ComboBox();
             this.labelDevice = new System.Windows.Forms.Label();
             this.captFormatTextBox = new System.Windows.Forms.TextBox();
             this.textBoxDevice = new System.Windows.Forms.TextBox();
@@ -48,6 +47,10 @@
             this.encoderComboBox = new System.Windows.Forms.ComboBox();
             this.sampleRateNumeric = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
+            this.captureTextBox = new System.Windows.Forms.TextBox();
+            this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.captureSettingsButton = new System.Windows.Forms.Button();
+            this.previewButton = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -56,6 +59,7 @@
             this.tableLayoutPanel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.channelsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).BeginInit();
+            this.tableLayoutPanel4.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
@@ -64,7 +68,7 @@
             this.panel1.Controls.Add(this.cancelButton);
             this.panel1.Controls.Add(this.applyButton);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel1.Location = new System.Drawing.Point(215, 270);
+            this.panel1.Location = new System.Drawing.Point(176, 302);
             this.panel1.Margin = new System.Windows.Forms.Padding(2, 4, 2, 2);
             this.panel1.Name = "panel1";
             this.panel1.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -103,7 +107,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox2.Size = new System.Drawing.Size(454, 129);
+            this.groupBox2.Size = new System.Drawing.Size(415, 161);
             this.groupBox2.TabIndex = 82;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Capture Settings";
@@ -115,22 +119,24 @@
             this.tableLayoutPanel2.ColumnCount = 2;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Controls.Add(this.captureTextBox, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.label3, 0, 2);
             this.tableLayoutPanel2.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanel2.Controls.Add(this.captureComboBox, 1, 2);
             this.tableLayoutPanel2.Controls.Add(this.labelDevice, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.captFormatTextBox, 1, 1);
             this.tableLayoutPanel2.Controls.Add(this.textBoxDevice, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.tableLayoutPanel4, 1, 3);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(6, 31);
             this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(4);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 4;
+            this.tableLayoutPanel2.RowCount = 5;
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(442, 83);
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(403, 115);
             this.tableLayoutPanel2.TabIndex = 84;
             // 
             // label3
@@ -157,19 +163,6 @@
             this.label2.Text = "Format:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // captureComboBox
-            // 
-            this.captureComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.captureComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.captureComboBox.Enabled = false;
-            this.captureComboBox.FormattingEnabled = true;
-            this.captureComboBox.Location = new System.Drawing.Point(68, 56);
-            this.captureComboBox.Margin = new System.Windows.Forms.Padding(2);
-            this.captureComboBox.Name = "captureComboBox";
-            this.captureComboBox.Size = new System.Drawing.Size(372, 25);
-            this.captureComboBox.TabIndex = 88;
-            // 
             // labelDevice
             // 
             this.labelDevice.AutoSize = true;
@@ -184,24 +177,22 @@
             // 
             // captFormatTextBox
             // 
-            this.captFormatTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.captFormatTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.captFormatTextBox.Location = new System.Drawing.Point(68, 29);
             this.captFormatTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.captFormatTextBox.Name = "captFormatTextBox";
             this.captFormatTextBox.ReadOnly = true;
-            this.captFormatTextBox.Size = new System.Drawing.Size(372, 23);
+            this.captFormatTextBox.Size = new System.Drawing.Size(333, 23);
             this.captFormatTextBox.TabIndex = 86;
             // 
             // textBoxDevice
             // 
-            this.textBoxDevice.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxDevice.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBoxDevice.Location = new System.Drawing.Point(68, 2);
             this.textBoxDevice.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxDevice.Name = "textBoxDevice";
             this.textBoxDevice.ReadOnly = true;
-            this.textBoxDevice.Size = new System.Drawing.Size(372, 23);
+            this.textBoxDevice.Size = new System.Drawing.Size(333, 23);
             this.textBoxDevice.TabIndex = 84;
             // 
             // tableLayoutPanel1
@@ -211,16 +202,17 @@
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.Controls.Add(this.groupBox2, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.panel1, 0, 3);
             this.tableLayoutPanel1.Controls.Add(this.groupBox1, 0, 1);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(11, 12);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2, 2, 10, 11);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowCount = 4;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(458, 305);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(419, 337);
             this.tableLayoutPanel1.TabIndex = 83;
             // 
             // groupBox1
@@ -229,11 +221,11 @@
             this.groupBox1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.groupBox1.Controls.Add(this.tableLayoutPanel3);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox1.Location = new System.Drawing.Point(2, 135);
+            this.groupBox1.Location = new System.Drawing.Point(2, 167);
             this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 15, 6, 15);
-            this.groupBox1.Size = new System.Drawing.Size(454, 129);
+            this.groupBox1.Size = new System.Drawing.Size(415, 129);
             this.groupBox1.TabIndex = 74;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Encoder Settings";
@@ -260,7 +252,7 @@
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel3.Size = new System.Drawing.Size(442, 83);
+            this.tableLayoutPanel3.Size = new System.Drawing.Size(403, 83);
             this.tableLayoutPanel3.TabIndex = 84;
             // 
             // label10
@@ -361,13 +353,67 @@
             this.label6.Text = "Encoder:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // captureTextBox
+            // 
+            this.captureTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.captureTextBox.Location = new System.Drawing.Point(69, 57);
+            this.captureTextBox.Name = "captureTextBox";
+            this.captureTextBox.ReadOnly = true;
+            this.captureTextBox.Size = new System.Drawing.Size(331, 23);
+            this.captureTextBox.TabIndex = 87;
+            // 
+            // tableLayoutPanel4
+            // 
+            this.tableLayoutPanel4.AutoSize = true;
+            this.tableLayoutPanel4.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanel4.ColumnCount = 4;
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel4.Controls.Add(this.captureSettingsButton, 3, 0);
+            this.tableLayoutPanel4.Controls.Add(this.previewButton, 2, 0);
+            this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Right;
+            this.tableLayoutPanel4.Location = new System.Drawing.Point(211, 83);
+            this.tableLayoutPanel4.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+            this.tableLayoutPanel4.RowCount = 2;
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel4.Size = new System.Drawing.Size(192, 32);
+            this.tableLayoutPanel4.TabIndex = 89;
+            // 
+            // captureSettingsButton
+            // 
+            this.captureSettingsButton.AutoSize = true;
+            this.captureSettingsButton.Location = new System.Drawing.Point(100, 2);
+            this.captureSettingsButton.Margin = new System.Windows.Forms.Padding(2);
+            this.captureSettingsButton.Name = "captureSettingsButton";
+            this.captureSettingsButton.Size = new System.Drawing.Size(90, 28);
+            this.captureSettingsButton.TabIndex = 114;
+            this.captureSettingsButton.Text = "Settings";
+            this.captureSettingsButton.UseVisualStyleBackColor = true;
+            this.captureSettingsButton.Click += new System.EventHandler(this.captureSettingsButton_Click);
+            // 
+            // previewButton
+            // 
+            this.previewButton.AutoSize = true;
+            this.previewButton.Location = new System.Drawing.Point(2, 2);
+            this.previewButton.Margin = new System.Windows.Forms.Padding(2);
+            this.previewButton.Name = "previewButton";
+            this.previewButton.Size = new System.Drawing.Size(94, 28);
+            this.previewButton.TabIndex = 86;
+            this.previewButton.Text = "Preview";
+            this.previewButton.UseVisualStyleBackColor = true;
+            this.previewButton.Click += new System.EventHandler(this.previewButton_Click);
+            // 
             // AudioSettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(511, 382);
+            this.ClientSize = new System.Drawing.Size(479, 404);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -390,6 +436,8 @@
             this.tableLayoutPanel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.channelsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleRateNumeric)).EndInit();
+            this.tableLayoutPanel4.ResumeLayout(false);
+            this.tableLayoutPanel4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -401,7 +449,6 @@
         private System.Windows.Forms.Button applyButton;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox captureComboBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox captFormatTextBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
@@ -416,5 +463,9 @@
         private System.Windows.Forms.TextBox textBoxDevice;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
+        private System.Windows.Forms.TextBox captureTextBox;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+        private System.Windows.Forms.Button captureSettingsButton;
+        private System.Windows.Forms.Button previewButton;
     }
 }

@@ -40,6 +40,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.7.0\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -80,6 +81,12 @@
     <Compile Include="Controls\StreamInfoForm.Designer.cs">
       <DependentUpon>StreamInfoForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\AudioCaptSettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\AudioCaptSettingsForm.Designer.cs">
+      <DependentUpon>AudioCaptSettingsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\VideoCaptSettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -114,6 +121,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\StreamInfoForm.resx">
       <DependentUpon>StreamInfoForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\AudioCaptSettingsForm.resx">
+      <DependentUpon>AudioCaptSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\VideoCaptSettingsForm.resx">
       <DependentUpon>VideoCaptSettingsForm.cs</DependentUpon>

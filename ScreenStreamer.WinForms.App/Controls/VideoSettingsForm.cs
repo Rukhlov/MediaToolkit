@@ -566,7 +566,7 @@ namespace ScreenStreamer.WinForms.App
             videoSource.Close(true);
             videoSource.CaptureStarted -= VideoSource_CaptureStarted;
             videoSource.CaptureStopped -= VideoSource_CaptureStopped;
-
+            videoSource.BufferUpdated -= VideoSource_BufferUpdated;
             videoSource = null;
 
         }
