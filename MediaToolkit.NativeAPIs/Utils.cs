@@ -475,8 +475,165 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 	}
 
+	public class WindowDescription
+	{
+		public int processId = -1;
+		public string processName = "";
+
+		public IntPtr hWnd = IntPtr.Zero;
+		public string windowTitle = "";
+		public string windowClass = "";
+		public System.Drawing.Rectangle clientRect = System.Drawing.Rectangle.Empty;
+
+		public override string ToString()
+		{
+			return string.Join(" | ", windowTitle, windowClass, hWnd, processId, processName);
+		}
+	}
+
 	public class DesktopManager
 	{
+
+		public static List<WindowDescription> GetWindows()
+		{
+
+			List<WindowDescription> windows = new List<WindowDescription>();
+
+			User32.EnumDelegate filterCb = new User32.EnumDelegate((hWnd, pParam) =>
+			{
+				string windowTitle = "";
+				int windowTextLength = User32.GetWindowTextLength(hWnd);
+				if (windowTextLength > 0)
+				{
+					windowTextLength++;
+					StringBuilder buf = new StringBuilder(windowTextLength);
+					windowTextLength = User32.GetWindowText(hWnd, buf, buf.Capacity);
+					windowTitle = buf.ToString();
+				}
+
+				if (string.IsNullOrEmpty(windowTitle))
+				{//continue enumerating windows...
+					return true;
+				}
+
+				string className = "";
+				{
+					StringBuilder buf = new StringBuilder(256);
+					var len = User32.GetClassName(hWnd, buf, buf.Capacity);
+					if (len > 0)
+					{
+						className = buf.ToString();
+					}
+
+				}
+
+				if (!ValidateWindow(hWnd))
+				{
+					return true;
+				}
+			
+				//var error = DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CLOAKED, out int cloaked, sizeof(int));
+				var clientRect = User32.GetClientRect(hWnd);
+
+				if(clientRect.Width == 0 || clientRect.Height == 0)
+				{
+					return true;
+				}
+
+				var threadId = User32.GetWindowThreadProcessId(new HandleRef(null, hWnd), out var procId);
+				if (threadId > 0 && procId > 0)
+				{
+					try
+					{
+						using (Process p = Process.GetProcessById(procId))
+						{
+									
+							var windowDescription = new WindowDescription
+							{
+								processId = p.Id,
+								processName = p.ProcessName,
+								hWnd = hWnd,
+								windowTitle = windowTitle,
+								windowClass = className,
+								clientRect = clientRect,
+
+							};
+
+							windows.Add(windowDescription);
+						}
+					}
+					catch (Exception ex)
+					{
+						Console.WriteLine(ex.Message);
+					}
+
+				}
+
+				
+
+				// Return true to indicate that we
+				// should continue enumerating windows.
+				return true;
+
+			});
+
+			var success = User32.EnumDesktopWindows(IntPtr.Zero, filterCb, IntPtr.Zero);
+			if (!success)
+			{
+				var error = Marshal.GetLastWin32Error();
+				throw new Win32Exception(error);
+			}
+
+			return windows;
+
+		}
+
+		private static bool ValidateWindow(IntPtr hWnd)
+		{
+			var isVisible = User32.IsWindowVisible(hWnd);
+
+			if (!isVisible)
+			{
+				return false;
+			}
+
+			var isIconic = User32.IsIconic(hWnd);
+
+			if (isIconic)
+			{
+				return false;
+			}
+
+			//var result = User32.GetClientRect(hWnd, out var rect);
+			//if (!result)
+			//{
+			//	//var error = Marshal.GetLastWin32Error();
+			//	//throw new Win32Exception(error);
+			//	return false;
+			//}
+
+			//if (rect.Bottom == 0 || rect.Right == 0)
+			//{
+			//	return false;
+			//}
+
+			var styles = (long)User32.GetWindowLong(hWnd, GWL.STYLE);
+			if ((styles & WS.Child) != 0)
+			{
+				return false;
+			}
+
+			var ex_styles = (long)User32.GetWindowLong(hWnd, GWL.EXSTYLE);
+			if ((ex_styles & WS_EX.ToolWindow) != 0)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+
+
 		public enum SessionType
 		{
 			Console,

@@ -721,11 +721,23 @@ namespace MediaToolkit.NativeAPIs
         CAPTUREBLT = 0x40000000 //only if WinVer >= 5.0.0 (see wingdi.h)
     }
 
-    public static class WS 
+	public static class GWL
+	{
+		public const int EXSTYLE = (-20);
+		public const int STYLE = (-16);
+		//...
+	}
+
+
+
+
+	public static class WS 
     {
         public const int Overlapped = 0x00000000;
         public const int MaximizeBox = 0x00010000;
-    }
+
+		public const int Child = 0x40000000;
+	}
 
     public static class WS_EX 
     {

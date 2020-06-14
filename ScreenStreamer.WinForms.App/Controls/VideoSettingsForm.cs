@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
+using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.UI;
 using NLog;
 using ScreenStreamer.Common;
@@ -52,8 +53,24 @@ namespace ScreenStreamer.WinForms.App
 
             }
 
+			if(captureDevice.CaptureMode == CaptureMode.AppWindow)
+			{
+				UpdateWindows();
 
-            LoadEncoderItems();
+				windowsComboBox.DataSource = windowsItems;
+				windowsComboBox.DisplayMember = "Name";
+				windowsComboBox.ValueMember = "Tag";
+
+				windowsCaptureTLPanel.Visible = true;
+			}
+			else
+			{
+				windowsCaptureTLPanel.Visible = false;
+			}
+			
+
+
+			LoadEncoderItems();
 
 
             UpdateCaptureInfo();
@@ -198,7 +215,32 @@ namespace ScreenStreamer.WinForms.App
             {
 
             }
-            else
+			else if (captureDevice.CaptureMode == CaptureMode.AppWindow)
+			{
+				var item = windowsComboBox.SelectedItem;
+				if (item != null)
+				{
+					var tag = ((ComboBoxItem)item).Tag;
+					if (tag != null)
+					{
+						WindowDescription window = tag as WindowDescription;
+						if (window != null)
+						{
+							var windowCapture = (WindowCaptureDevice)captureDevice;
+							windowCapture.ClientRect = window.clientRect;
+							windowCapture.Resolution = window.clientRect.Size;
+
+							windowCapture.hWnd = window.hWnd;
+							windowCapture.ProcName = window.processName;
+							windowCapture.WindowClass = window.windowClass;
+							windowCapture.WindowTitle = window.windowTitle;
+
+						}
+					}
+				}
+
+			}
+			else
             {
 
             }
@@ -378,8 +420,13 @@ namespace ScreenStreamer.WinForms.App
                         videoSource = new ScreenSource();
                         videoSource.Setup(captureDevice);
                     }
+					else if (captureDevice.CaptureMode == CaptureMode.AppWindow)
+					{
+						videoSource = new ScreenSource();
+						videoSource.Setup(captureDevice);
+					}
 
-                    videoSource.CaptureStarted += VideoSource_CaptureStarted;
+					videoSource.CaptureStarted += VideoSource_CaptureStarted;
                     videoSource.CaptureStopped += VideoSource_CaptureStopped;
 
                     videoSource.BufferUpdated += VideoSource_BufferUpdated;
@@ -802,5 +849,43 @@ namespace ScreenStreamer.WinForms.App
             }
 
         }
-    }
+
+
+		private BindingList<ComboBoxItem> windowsItems = new BindingList<ComboBoxItem>();
+		private void windowsUpdateButton_Click(object sender, EventArgs e)
+		{
+			UpdateWindows();
+		}
+
+		private void UpdateWindows()
+		{
+			windowsItems.Clear();
+
+			var windows = DesktopManager.GetWindows();
+			var currentPid = -1;
+			using (Process p = Process.GetCurrentProcess())
+			{
+				currentPid = p.Id;
+			}
+
+			foreach (var window in windows)
+			{
+				if(window.processId == currentPid)
+				{
+					continue;
+				}
+
+				var item = new ComboBoxItem
+				{
+					Name = window.windowTitle + " [" + window.processName + "]",
+					Tag = window,
+				};
+
+				windowsItems.Add(item);
+			}
+
+
+
+		}
+	}
 }

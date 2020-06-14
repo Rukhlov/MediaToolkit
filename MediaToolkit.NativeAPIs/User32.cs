@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -114,7 +115,11 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("user32.dll")]
         public static extern bool DrawIcon(IntPtr hDC, int X, int Y, IntPtr hIcon);
 
-        public const uint MONITOR_DEFAULTTONULL = 0x00000000;
+		[DllImport("User32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+
+		public const uint MONITOR_DEFAULTTONULL = 0x00000000;
         public const uint MONITOR_DEFAULTTOPRIMARY = 0x00000001;
         public const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
@@ -147,31 +152,74 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
-        [DllImport("user32.dll")]
-        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsIconic(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        static extern IntPtr GetWindowDC(IntPtr hWnd);
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsWindow(IntPtr hWnd);
+
+		[DllImport("user32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool IsWindowVisible(IntPtr hWnd);
+
+		[DllImport("user32.dll", EntryPoint = "GetWindowText", ExactSpelling = false, CharSet = CharSet.Auto, SetLastError = true)]
+		public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpWindowText, int nMaxCount);
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetWindowTextLength(IntPtr hWnd);
+
+		[DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+		public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+		[DllImport("user32.dll", EntryPoint = "EnumDesktopWindows",
+		ExactSpelling = false, CharSet = CharSet.Auto, SetLastError = true)]
+		public static extern bool EnumDesktopWindows(IntPtr hDesktop, EnumDelegate lpEnumCallbackFunction, IntPtr lParam);
+
+		// Define the callback delegate's type.
+		public delegate bool EnumDelegate(IntPtr hWnd, int lParam);
+
+		[DllImport("user32.dll")]
+        public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
 
         public static Rectangle GetClientRect(IntPtr hwnd)
         {
-            RECT rect = new RECT();
-            GetClientRect(hwnd, out rect);
-            return rect.AsRectangle;
+
+            var success = GetClientRect(hwnd, out var rect);
+
+			if (!success)
+			{
+				var error = Marshal.GetLastWin32Error();
+				throw new Win32Exception(error);
+			}
+
+			return rect.AsRectangle;
         }
 
-        public static Rectangle GetWindowRect(IntPtr hwnd)
+		public static Rectangle GetWindowRect(IntPtr hwnd)
         {
-            RECT rect = new RECT();
-            GetWindowRect(hwnd, out rect);
-            return rect.AsRectangle;
+			var success = GetWindowRect(hwnd, out var rect);
+
+			if (!success)
+			{
+				var error = Marshal.GetLastWin32Error();
+				throw new Win32Exception(error);
+			}
+
+			return rect.AsRectangle;
         }
 
         public static Rectangle GetAbsoluteClientRect(IntPtr hWnd)
@@ -309,6 +357,26 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
 		[ResourceExposure(ResourceScope.Process)]
 		public static extern int GetWindowThreadProcessId(HandleRef hWnd, out int lpdwProcessId);
+
+		[DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+		private static extern IntPtr GetWindowLongPtr32(IntPtr hWnd, int nIndex);
+
+		[DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
+		private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+		// This static method is required because Win32 does not support
+		// GetWindowLongPtr directly
+		public static IntPtr GetWindowLong(IntPtr hWnd, int nIndex)
+		{
+			if (IntPtr.Size == 8)
+			{
+				return GetWindowLongPtr64(hWnd, nIndex);
+			}
+			else
+			{
+				return GetWindowLongPtr32(hWnd, nIndex);
+			}
+		}
 
 	}
 

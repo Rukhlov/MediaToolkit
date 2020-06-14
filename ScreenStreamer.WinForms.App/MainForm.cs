@@ -754,8 +754,41 @@ namespace ScreenStreamer.WinForms.App
                 items.AddRange(captItems);
             }
 
+			WindowCaptureDevice windowCapture = new WindowCaptureDevice
+			{
+				ProcName = "NotFound",
+				hWnd = IntPtr.Zero,
+				ClientRect = Rectangle.Empty,
+				Resolution = Size.Empty,
+				Properties = captureProperties,
+				Name = "_Application Window",
+				DeviceId = "AppWindow",
+			};
 
-            videoSourceItems = new BindingList<ComboBoxItem>(items);
+			Process p = Process.GetProcessesByName("calc").FirstOrDefault();
+			if (p != null)
+			{
+				var hwnd = p.MainWindowHandle;
+				var procName = p.ProcessName;
+				var clientRect = User32.GetClientRect(hwnd);
+
+				windowCapture.ProcName = procName;
+				windowCapture.hWnd = hwnd;
+				windowCapture.ClientRect = clientRect;
+				windowCapture.Resolution = clientRect.Size;
+				windowCapture.Name = "_Application Window (" + procName + ")";
+
+			}
+
+
+			items.Add(new ComboBoxItem
+			{
+				Name = windowCapture.Name,
+				Tag = windowCapture,
+			});
+
+
+			videoSourceItems = new BindingList<ComboBoxItem>(items);
             videoSourceComboBox.DisplayMember = "Name";
             videoSourceComboBox.DataSource = videoSourceItems;
         }
@@ -833,8 +866,13 @@ namespace ScreenStreamer.WinForms.App
                         {
                             captureParams = (UvcDevice)tag;
                             //videoSettings.EncodingParams.Resolution = captDevice.Resolution;
-                        }  
-                    }
+                        }
+						else if (tag is WindowCaptureDevice)
+						{
+							captureParams = (WindowCaptureDevice)tag;
+							//videoSettings.EncodingParams.Resolution = captDevice.Resolution;
+						}
+					}
                     else
                     {
                     }

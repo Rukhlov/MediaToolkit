@@ -54,7 +54,7 @@ namespace MediaToolkit.ScreenCaptures
 
             if (type == VideoCaptureType.GDI || type == VideoCaptureType.GDILayered)
             {
-				var gdiCapt = new GDICapture();
+				var gdiCapt = new GDICapture(args);
 				gdiCapt.CaptureAllLayers = (type == VideoCaptureType.GDILayered);
 
 				capture = gdiCapt;

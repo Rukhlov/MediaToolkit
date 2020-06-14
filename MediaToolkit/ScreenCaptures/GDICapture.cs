@@ -38,7 +38,18 @@ namespace MediaToolkit.ScreenCaptures
 
         public bool CaptureAllLayers { get; set; } = false;
 
-        public override void Init(Rectangle srcRect, Size destSize = default(Size))
+		public GDICapture(object[] args = null) : base()
+		{
+			if (args != null && args.Length > 0)
+			{
+				this.hWnd = (IntPtr)args[0];
+			}
+
+		}
+
+		public IntPtr hWnd { get; set; } = IntPtr.Zero; 
+
+		public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
             base.Init(srcRect, destSize);
 
@@ -227,10 +238,69 @@ namespace MediaToolkit.ScreenCaptures
 
             try
             {
-                using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
+				if(hWnd!= IntPtr.Zero)
+				{
+					var isIconic = User32.IsIconic(hWnd);
+					if (!isIconic)
+					{
+						var clientRect = User32.GetClientRect(hWnd);
+
+						if (this.SrcRect != clientRect)
+						{
+							logger.Info(SrcRect.ToString());
+
+							this.SrcRect = clientRect;
+
+							if (gdiTexture != null)
+							{
+								gdiTexture.Dispose();
+								gdiTexture = null;
+
+							}
+						}
+					}
+					else
+					{
+						logger.Debug("IsIconic: " + hWnd);
+						return ErrorCode.Ok;
+					}
+
+					var srcWidth = SrcRect.Width;
+					var srcHeight = SrcRect.Height;
+
+					if(srcWidth == 0 || srcHeight == 0)
+					{
+						logger.Error("Invalid rect: " + SrcRect.ToString());
+						return ErrorCode.Unexpected;
+					}
+
+					if (gdiTexture == null)
+					{
+						gdiTexture = new Texture2D(device,
+						 new Texture2DDescription
+						 {
+							 CpuAccessFlags = CpuAccessFlags.None,
+							 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+							 Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+							 Width = SrcRect.Width,
+							 Height = SrcRect.Height,
+							 MipLevels = 1,
+							 ArraySize = 1,
+							 SampleDescription = { Count = 1, Quality = 0 },
+							 Usage = ResourceUsage.Default,
+							 OptionFlags = ResourceOptionFlags.GdiCompatible,
+
+						 });
+					}
+
+				}
+
+
+
+				using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
                 {
-                    int nXSrc = SrcRect.Left;
-                    int nYSrc = SrcRect.Top;
+					int nXSrc = SrcRect.Left;
+					int nYSrc = SrcRect.Top;
                     int nWidthSrc = SrcRect.Width;
                     int nHeightSrc = SrcRect.Height;
 
@@ -247,25 +317,47 @@ namespace MediaToolkit.ScreenCaptures
                         IntPtr hdcSrc = IntPtr.Zero;
                         try
                         {
-                            hdcSrc = User32.GetDC(IntPtr.Zero);
+							hdcSrc = User32.GetDC(hWnd);
+							//hdcSrc = User32.GetDC(IntPtr.Zero);
+							//hdcSrc = User32.GetWindowDC(hWnd);
 
-                            var dwRop = TernaryRasterOperations.SRCCOPY;
+							var dwRop = TernaryRasterOperations.SRCCOPY;
                             if (CaptureAllLayers)
                             {
                                 dwRop |= TernaryRasterOperations.CAPTUREBLT;
                             }
 
-                            //var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
-                            //var dwRop = TernaryRasterOperations.SRCCOPY;
+							//var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
+							//var dwRop = TernaryRasterOperations.SRCCOPY;
 
-                            bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-                            if (!success)
+							//bool success = User32.PrintWindow(hWnd, hdcDest, 0);
+
+							bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
+							if (!success)
                             {
                                 throw new Win32Exception(Marshal.GetLastWin32Error());
                             }
+
                             if (CaptureMouse)
                             {
-                                User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
+								var x = nXSrc;
+								var y = nYSrc;
+
+								if (hWnd != IntPtr.Zero)
+								{
+									POINT lpPoint = new POINT
+									{
+										x = 0,
+										y = 0,
+									};
+
+									User32.ClientToScreen(hWnd, ref lpPoint);
+
+									x = lpPoint.x;
+									y = lpPoint.y;
+								}
+
+                                User32.DrawCursorEx(hdcDest, x, y);
                             }
 
                             errorCode = ErrorCode.Ok;
@@ -306,8 +398,10 @@ namespace MediaToolkit.ScreenCaptures
                         finalTexture = renderTexture;
                     }
 
-                    device.ImmediateContext.CopyResource(finalTexture, SharedTexture);
-                    device.ImmediateContext.Flush();
+					//device.ImmediateContext.CopySubresourceRegion(finalTexture, SharedTexture);
+
+					device.ImmediateContext.CopyResource(finalTexture, SharedTexture);
+					device.ImmediateContext.Flush();
                 }
 
             }

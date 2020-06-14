@@ -270,7 +270,8 @@ namespace MediaToolkit.Core
     [Serializable]
     [XmlInclude(typeof(UvcDevice))]
     [XmlInclude(typeof(ScreenCaptureDevice))]
-    public abstract class VideoCaptureDevice
+	[XmlInclude(typeof(WindowCaptureDevice))]
+	public abstract class VideoCaptureDevice
     {
         public string Name { get; set; } = "";
         public string DeviceId { get; set; } = "";
@@ -293,7 +294,8 @@ namespace MediaToolkit.Core
     {
         Screen,
         UvcDevice,
-    }
+		AppWindow
+	}
 
     [Serializable]
     public class UvcDevice: VideoCaptureDevice
@@ -355,11 +357,38 @@ namespace MediaToolkit.Core
 
         [XmlIgnore]
         public ScreenCaptureProperties Properties { get; set; } = new ScreenCaptureProperties();
-
-    
+  
     }
 
-    [Serializable]
+	[Serializable]
+	public class WindowCaptureDevice : VideoCaptureDevice
+	{
+		public override CaptureMode CaptureMode => CaptureMode.AppWindow;
+
+		[XmlIgnore]
+		public IntPtr hWnd = IntPtr.Zero;
+
+		[XmlElement]
+		public string WindowTitle = "";
+
+		[XmlElement]
+		public string WindowClass = "";
+
+		[XmlElement]
+		public string ProcName = "";
+
+		[XmlElement]
+		public int ProcId = -1;
+
+		[XmlIgnore]
+		public Rectangle ClientRect = Rectangle.Empty;
+
+		[XmlIgnore]
+		public ScreenCaptureProperties Properties { get; set; } = new ScreenCaptureProperties();
+
+	}
+
+	[Serializable]
     public class ScreenCaptureProperties
     {
         [XmlAttribute]

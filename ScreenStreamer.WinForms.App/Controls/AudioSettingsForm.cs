@@ -76,7 +76,16 @@ namespace ScreenStreamer.WinForms.App
             this.Close();
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (previewForm != null)
+            {
+                previewForm.Close();
+                previewForm = null;
+            }
 
+            base.OnClosing(e);
+        }
 
         //private void LoadTransportItems()
         //{
@@ -206,10 +215,11 @@ namespace ScreenStreamer.WinForms.App
                     {
                         previewForm = new AudioPreviewForm
                         {
-                            Size = new Size(640, 480),
+                            Size = new Size(640, 240),
 
                             StartPosition = FormStartPosition.CenterScreen,
                             Icon = ScreenStreamer.WinForms.App.Properties.Resources.logo,
+                            FormBorderStyle = FormBorderStyle.FixedSingle,
 
                             //ShowIcon = false,
                         };
@@ -217,6 +227,11 @@ namespace ScreenStreamer.WinForms.App
                         previewForm.FormClosed += PreviewForm_FormClosed;
 
                         previewForm.Setup(audioSource.WaveFormat);
+                        var device = AudioSettings.CaptureDevice;
+
+                        var text = device.Name + " " + device.Description;
+
+                        previewForm.Text = text;
                         previewForm.Visible = true;
                     }
 

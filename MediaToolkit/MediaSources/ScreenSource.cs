@@ -62,9 +62,10 @@ namespace MediaToolkit
 
         private ScreenCapture screenCapture = null;
 
-        public ScreenCaptureDevice CaptureParams { get; private set; }
+       // public ScreenCaptureDevice CaptureParams { get; private set; }
+		public ScreenCaptureProperties CaptureProps{ get; private set; }
 
-        private bool deviceReady = false;
+		private bool deviceReady = false;
         public void Setup(object pars)//ScreenCaptureParams captureParams)
         {
 
@@ -76,61 +77,82 @@ namespace MediaToolkit
             }
 
             syncEvent = new AutoResetEvent(false);
-            ScreenCaptureDevice captureParams = pars as ScreenCaptureDevice;
 
-            if(captureParams == null)
-            {
-                throw new ArgumentException();
-            }
+			VideoCaptureDevice captureParams = pars as VideoCaptureDevice;
 
-            this.CaptureParams = captureParams;
+			if (captureParams == null)
+			{
+				throw new ArgumentException();
+			}
+			var srcRect = Rectangle.Empty;
+			var destSize = Size.Empty;
+			var hwnd = IntPtr.Zero;
 
-            var srcRect = captureParams.CaptureRegion;
+			if (captureParams.CaptureMode == CaptureMode.Screen)
+			{
+				var screenCaptParams = (ScreenCaptureDevice)pars;
+				this.CaptureProps = screenCaptParams.Properties;
 
-            var srcLocation = srcRect.Location;
-            var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
-            srcRect = new Rectangle(srcLocation, srcSize);
+				srcRect = screenCaptParams.CaptureRegion;
 
-            //int x = srcRect.X;
-            //int y = srcRect.Y;
-            //int width = srcRect.Width;
-            //if (width % 2!= 0)
-            //{
-            //    width--;
-            //}
+				var srcLocation = srcRect.Location;
+				var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
+				srcRect = new Rectangle(srcLocation, srcSize);
 
-            //int height = srcRect.Height;
-            //if (height % 2 != 0)
-            //{
-            //    height--;
-            //}
+				//srcRect = new Rectangle(x, y, width, height);
+				if (screenCaptParams.CaptureRegion != srcRect)
+				{
+					screenCaptParams.CaptureRegion = srcRect;
+				}
 
-            //srcRect = new Rectangle(x, y, width, height);
-            if (captureParams.CaptureRegion != srcRect)
-            {
-                captureParams.CaptureRegion = srcRect;
-            }
-            
+				destSize = captureParams.Resolution;
 
-            var destSize = captureParams.Resolution;
+				if (destSize.IsEmpty)
+				{
+					destSize = new Size(srcRect.Width, srcRect.Height);
+				}
 
-            if (destSize.IsEmpty)
-            {
-                destSize = new Size(srcRect.Width, srcRect.Height);
-            }
+			}
+			else if(captureParams.CaptureMode == CaptureMode.AppWindow)
+			{
+				var windowCaptParams = (WindowCaptureDevice)pars;
+				this.CaptureProps = windowCaptParams.Properties;
 
-            try
+				srcRect = windowCaptParams.ClientRect;
+
+				var srcLocation = srcRect.Location;
+				var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
+				srcRect = new Rectangle(srcLocation, srcSize);
+
+				destSize = captureParams.Resolution;
+
+				if (destSize.IsEmpty)
+				{
+					destSize = new Size(srcRect.Width, srcRect.Height);
+				}
+
+				hwnd = windowCaptParams.hWnd;
+			}
+
+
+
+			try
             {
                 //var captureDescr = captureParams.CaptureDescription;
-                var captureProp = captureParams.Properties;
-                screenCapture = ScreenCapture.Create(captureProp.CaptureType);
-                screenCapture.CaptureMouse = captureProp.CaptureMouse;
-                screenCapture.AspectRatio = captureProp.AspectRatio;
+                
+				var captArgs = new object[]
+				{
+					hwnd,
+				};
+
+				screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
+                screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
+                screenCapture.AspectRatio = CaptureProps.AspectRatio;
 
 				var d3d11Capture = screenCapture as ITexture2DSource;
 				if (d3d11Capture != null)
 				{
-					d3d11Capture.UseHwContext = captureProp.UseHardware;
+					d3d11Capture.UseHwContext = CaptureProps.UseHardware;
 					this.hwContext = d3d11Capture;
 					this.AdapterId = d3d11Capture.AdapterId;
 				}
@@ -207,7 +229,7 @@ namespace MediaToolkit
 
                // Statistic.RegisterCounter(captureStats);
 
-                var fps = CaptureParams.Properties.Fps;
+                var fps = CaptureProps.Fps;
                 var frameInterval = (1000.0 / fps);
                 captureStats.frameInterval = frameInterval;
 
