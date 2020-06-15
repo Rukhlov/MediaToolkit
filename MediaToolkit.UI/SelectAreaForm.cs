@@ -21,13 +21,14 @@ namespace MediaToolkit.UI
         private static readonly Color color2 = Color.WhiteSmoke;
 
         private static readonly Color captureStripeColor = Color.FromArgb(231, 68, 68);
-        public SelectAreaForm(bool debugMode = false)
+        public SelectAreaForm(bool noActivate = false, bool debugMode = false)
         {
             InitializeComponent();
 
             this.DoubleBuffered = true;
             this.SetStyle(ControlStyles.ResizeRedraw, true);
             this.DebugMode = debugMode;
+			this.NotActivatable = noActivate;
 
             this.BackColor = Color.Black;
             this.TransparencyKey = this.BackColor;
@@ -62,16 +63,17 @@ namespace MediaToolkit.UI
 
         }
 
+		public bool NotActivatable { get; set; } = false;
 
-        //private Pen framePen1 = new Pen(Color.Red);
+		//private Pen framePen1 = new Pen(Color.Red);
 
-        // private Pen framePen1 = new Pen(Color.WhiteSmoke);
-        //// private Pen framePen2 = new Pen(Color.FromArgb(46, 131, 241));
+		// private Pen framePen1 = new Pen(Color.WhiteSmoke);
+		//// private Pen framePen2 = new Pen(Color.FromArgb(46, 131, 241));
 
-        // //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
-        // private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
+		// //private Pen framePen1 = new Pen(Color.FromArgb(46, 131, 241));
+		// private Pen framePen2 = new Pen(Color.FromArgb(255, 127, 86));
 
-        private TextureBrush textureBrush = null;
+		private TextureBrush textureBrush = null;
         private TextureBrush captureTextureBrush = null;
 
         private Pen framePen1 = new Pen(color1);
@@ -336,10 +338,16 @@ namespace MediaToolkit.UI
                 cp.ExStyle |= WS_EX.TopMost;
                 cp.ExStyle |= WS_EX.ToolWindow;
 
-                // cp.ExStyle |= WS_EX.Layered;
-                //cp.ExStyle |= 0x80; //WS_EX_NOACTIVATE
-                //cp.ExStyle |= 0x00000020; //WS_EX_TRANSPARENT
-                return cp;
+				if (NotActivatable)
+				{
+					cp.ExStyle |= WS_EX.NoActivate;
+					cp.ExStyle |= WS_EX.Transparent;
+				}
+
+				// cp.ExStyle |= WS_EX.Layered;
+				//cp.ExStyle |= 0x80; //WS_EX_NOACTIVATE
+				//cp.ExStyle |= 0x00000020; //WS_EX_TRANSPARENT
+				return cp;
             }
         }
 

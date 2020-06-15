@@ -358,6 +358,9 @@ namespace MediaToolkit.NativeAPIs
 		[ResourceExposure(ResourceScope.Process)]
 		public static extern int GetWindowThreadProcessId(HandleRef hWnd, out int lpdwProcessId);
 
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
 		[DllImport("user32.dll", EntryPoint = "GetWindowLong")]
 		private static extern IntPtr GetWindowLongPtr32(IntPtr hWnd, int nIndex);
 
@@ -377,6 +380,15 @@ namespace MediaToolkit.NativeAPIs
 				return GetWindowLongPtr32(hWnd, nIndex);
 			}
 		}
+
+
+		public delegate void WinEventDelegate(IntPtr hWinEventHook, SWEH_Events eventType, IntPtr hwnd, SWEH_ObjectId idObject, long idChild, uint dwEventThread, uint dwmsEventTime);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern IntPtr SetWinEventHook(SWEH_Events eventMin, SWEH_Events eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, SWEH_dwFlags dwFlags);
+
+		[DllImport("user32.dll", SetLastError = true)]
+		public static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
 	}
 

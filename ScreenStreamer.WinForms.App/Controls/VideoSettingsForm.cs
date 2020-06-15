@@ -61,6 +61,7 @@ namespace ScreenStreamer.WinForms.App
 				windowsComboBox.DisplayMember = "Name";
 				windowsComboBox.ValueMember = "Tag";
 
+				windowsComboBox.SelectedItem = windowsItems.FirstOrDefault();
 				windowsCaptureTLPanel.Visible = true;
 			}
 			else
@@ -642,7 +643,10 @@ namespace ScreenStreamer.WinForms.App
                 previewForm = null;
             }
 
-            base.OnClosed(e);
+			CloseWindowHook();
+
+
+			base.OnClosed(e);
         }
 
         private Rectangle captureRegion = Rectangle.Empty;
@@ -854,7 +858,11 @@ namespace ScreenStreamer.WinForms.App
 		private BindingList<ComboBoxItem> windowsItems = new BindingList<ComboBoxItem>();
 		private void windowsUpdateButton_Click(object sender, EventArgs e)
 		{
+			//windowsComboBox.SelectedItem = null;
 			UpdateWindows();
+			SetWindow();
+
+
 		}
 
 		private void UpdateWindows()
@@ -884,8 +892,124 @@ namespace ScreenStreamer.WinForms.App
 				windowsItems.Add(item);
 			}
 
-
+			//windowsComboBox.DataSource = windowsItems;
 
 		}
+
+		SelectAreaForm windowForm = null;
+		private WindowHook windowHook = null;
+		private void windowsComboBox_SelectedValueChanged(object sender, EventArgs e)
+		{
+			SetWindow();
+		}
+
+		private void SetWindow()
+		{
+			var captureDevice = VideoSettings.CaptureDevice;
+
+			var item = windowsComboBox.SelectedItem;
+			if (item != null)
+			{
+				var tag = ((ComboBoxItem)item).Tag;
+				if (tag != null)
+				{
+					WindowDescription window = tag as WindowDescription;
+					if (window != null)
+					{
+						var windowCapture = (WindowCaptureDevice)captureDevice;
+						windowCapture.ClientRect = window.clientRect;
+						windowCapture.Resolution = window.clientRect.Size;
+
+						windowCapture.hWnd = window.hWnd;
+						windowCapture.ProcName = window.processName;
+						windowCapture.WindowClass = window.windowClass;
+						windowCapture.WindowTitle = window.windowTitle;
+
+						if (windowForm == null)
+						{
+							windowForm = new SelectAreaForm(true, false)
+							{
+								StartPosition = FormStartPosition.Manual,
+								Locked = true,
+							};
+						}
+
+						windowForm.Visible = false;
+
+						if (windowHook != null)
+						{
+							windowHook.Close();
+						}
+
+						windowHook = new WindowHook();
+
+
+						windowHook.LocationChanged += WindowHook_LocationChanged;
+						windowHook.WindowClosed += WindowHook_WindowClosed;
+						windowHook.VisibleChanged += WindowHook_VisibleChanged;
+
+						windowHook.Setup(windowCapture.hWnd);
+
+						var rect = windowHook.GetCurrentWindowRect();
+                     
+						SetWindowsPosition(rect);
+
+						windowForm.Visible = true;
+					}
+				}
+			}
+		}
+
+		private void WindowHook_VisibleChanged(bool visible)
+		{
+			if (windowForm != null)
+			{
+				windowForm.Visible = visible;
+			}
+
+		}
+
+		private void WindowHook_LocationChanged(Rectangle rect)
+		{
+			SetWindowsPosition(rect);
+		}
+
+		private void WindowHook_WindowClosed()
+		{
+			CloseWindowHook();
+		}
+
+		private void CloseWindowHook()
+		{
+			if (windowHook != null)
+			{
+
+				windowHook.LocationChanged -= WindowHook_LocationChanged;
+				windowHook.VisibleChanged -= WindowHook_VisibleChanged;
+				windowHook.WindowClosed -= WindowHook_WindowClosed;
+
+				windowHook.Close();
+				windowHook = null;
+			}
+
+			if (windowForm != null)
+			{
+				windowForm.Visible = false;
+				windowForm.Location = Point.Empty;
+				windowForm.Size = Size.Empty;
+			}
+		}
+
+		private void SetWindowsPosition(Rectangle rectangle)
+		{
+			//Debug.WriteLine(rectangle.ToString());
+
+			if (windowForm != null)
+			{
+				windowForm.Location = rectangle.Location;
+				windowForm.Size = rectangle.Size;
+			}
+		}
+
 	}
 }

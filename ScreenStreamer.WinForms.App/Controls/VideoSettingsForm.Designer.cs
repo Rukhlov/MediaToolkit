@@ -399,6 +399,7 @@
 			this.windowsComboBox.Name = "windowsComboBox";
 			this.windowsComboBox.Size = new System.Drawing.Size(345, 25);
 			this.windowsComboBox.TabIndex = 16;
+			this.windowsComboBox.SelectedValueChanged += new System.EventHandler(this.windowsComboBox_SelectedValueChanged);
 			// 
 			// applyButton
 			// 
@@ -518,14 +519,14 @@
 			this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.panelEncoderResoulution.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.panelEncoderResoulution.Size = new System.Drawing.Size(243, 59);
+			this.panelEncoderResoulution.Size = new System.Drawing.Size(251, 59);
 			this.panelEncoderResoulution.TabIndex = 80;
 			// 
 			// label1
 			// 
 			this.label1.AutoSize = true;
 			this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.label1.Location = new System.Drawing.Point(154, 0);
+			this.label1.Location = new System.Drawing.Point(158, 0);
 			this.label1.Margin = new System.Windows.Forms.Padding(0, 0, 2, 0);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(14, 27);
@@ -537,7 +538,7 @@
 			// 
 			this.encHeightNumeric.AutoSize = true;
 			this.encHeightNumeric.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.encHeightNumeric.Location = new System.Drawing.Point(172, 2);
+			this.encHeightNumeric.Location = new System.Drawing.Point(176, 2);
 			this.encHeightNumeric.Margin = new System.Windows.Forms.Padding(2);
 			this.encHeightNumeric.Maximum = new decimal(new int[] {
             4096,
@@ -550,7 +551,7 @@
             0,
             0});
 			this.encHeightNumeric.Name = "encHeightNumeric";
-			this.encHeightNumeric.Size = new System.Drawing.Size(69, 23);
+			this.encHeightNumeric.Size = new System.Drawing.Size(73, 23);
 			this.encHeightNumeric.TabIndex = 94;
 			this.encHeightNumeric.Value = new decimal(new int[] {
             1080,
@@ -587,7 +588,7 @@
             0,
             0});
 			this.encWidthNumeric.Name = "encWidthNumeric";
-			this.encWidthNumeric.Size = new System.Drawing.Size(69, 23);
+			this.encWidthNumeric.Size = new System.Drawing.Size(73, 23);
 			this.encWidthNumeric.TabIndex = 92;
 			this.encWidthNumeric.Value = new decimal(new int[] {
             1920,
@@ -599,7 +600,7 @@
 			// 
 			this.panelEncoderResoulution.SetColumnSpan(this.adjustAspectRatioButton, 5);
 			this.adjustAspectRatioButton.Dock = System.Windows.Forms.DockStyle.Right;
-			this.adjustAspectRatioButton.Location = new System.Drawing.Point(7, 29);
+			this.adjustAspectRatioButton.Location = new System.Drawing.Point(15, 29);
 			this.adjustAspectRatioButton.Margin = new System.Windows.Forms.Padding(2);
 			this.adjustAspectRatioButton.Name = "adjustAspectRatioButton";
 			this.adjustAspectRatioButton.Size = new System.Drawing.Size(234, 28);
