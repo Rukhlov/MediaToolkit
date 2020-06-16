@@ -415,7 +415,7 @@ namespace MediaToolkit.Core
     }
 
 
-    public enum VideoCaptureType
+    public enum VideoCaptureType:int
     {
         GDI,
 		GDILayered,

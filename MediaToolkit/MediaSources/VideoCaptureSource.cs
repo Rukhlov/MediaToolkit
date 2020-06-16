@@ -56,7 +56,7 @@ namespace MediaToolkit
 
         private volatile int errorCode = 0;
         public int ErrorCode => errorCode;
-
+        public object LastError { get; private set; }
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
 
@@ -186,7 +186,8 @@ namespace MediaToolkit
             catch (Exception ex)
             {
                 logger.Error(ex);
-
+                LastError = ex;
+                errorCode = (int)SharedTypes.ErrorCode.NotInitialized;
                 CleanUp();
 
                 throw;
@@ -352,7 +353,8 @@ namespace MediaToolkit
                 {
                     logger.Error(ex);
 
-                    this.errorCode = 100500;
+                    LastError = ex;
+                    this.errorCode = (int)SharedTypes.ErrorCode.Unexpected;
                 }
                 finally
                 {

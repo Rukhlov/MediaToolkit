@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using GalaSoft.MvvmLight.Command;
 using Unity;
 using NLog;
+using MediaToolkit.UI;
 
 namespace ScreenStreamer.Wpf.Common.Models
 {
@@ -45,7 +46,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public PropertyNetworkViewModel PropertyNetwork { get; set; }
 
 
-        [Track]
+       // [Track]
         public string Name
         {
             get => Model.Name;
@@ -63,7 +64,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             get => !Model.IsStarted && !Model.IsBusy;
         }
 
-        [Track]
+       // [Track]
         public bool IsStarted
         {
             get => Model.IsStarted;
@@ -158,12 +159,14 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             dispatcher.BeginInvoke(
                 DispatcherPriority.Loaded,
-                new Action(() => OnIsStartedChanged(IsStarted))
+                new Action(() => OnStreamStateChanged(IsStarted))
         
                 );
 
             Model.OnStreamStateChanged += Model_OnStreamStateChanged;
+            Model.ErrorOccurred += Model_ErrorOccurred;
         }
+
 
         private Dispatcher dispatcher = null;
 
@@ -217,14 +220,35 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             dispatcher.Invoke(() =>
             {
-                OnIsStartedChanged(IsStarted);
+                OnStreamStateChanged(IsStarted);
+
             });
             
         }
 
-        private void OnIsStartedChanged(bool isStarted)
+        private void Model_ErrorOccurred(object obj)
         {
-            logger.Debug("OnIsStartedChanged(...) " + isStarted);
+            logger.Debug("Model_ErrorOccurred(...)");
+            var errorMessage = "Unknown error!\r\n\r\nSee log file for details...........";
+
+            if (obj != null)
+            {
+                var ex = obj as Exception;
+                if (ex != null)
+                {
+                    errorMessage = ex.Message + "\r\n\r\nSee log file for details..............";
+
+                }
+            }
+
+            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+        }
+
+
+        private RegionForm borderForm = null;
+        private void OnStreamStateChanged(bool isStarted)
+        {
+            logger.Debug("OnStreamStateChanged(...) " + isStarted);
 
             RaisePropertyChanged(nameof(StartCommandText));
             RaisePropertyChanged(nameof(StartContextMenuText));
@@ -256,6 +280,26 @@ namespace ScreenStreamer.Wpf.Common.Models
             {
                 selectAreaForm.Capturing = isStarted;
             }
+
+            if (isStarted)
+            {
+                if (VideoViewModel.ShowCaptureBorder && VideoViewModel.IsScreenSource)
+                {
+                    var captureRect = VideoViewModel.CaptureRect;
+                    borderForm = new RegionForm(captureRect);
+                    borderForm.Visible = true;
+                }
+            }
+            else
+            {
+                if (borderForm != null)
+                {
+                    borderForm.Close();
+                    borderForm = null;
+                }
+
+            }
+
         }
 
         private void HideBorder()

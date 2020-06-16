@@ -170,10 +170,11 @@ namespace MediaToolkit
 
             }
             catch (Exception ex)
-            {
-  
+            { 
                 logger.Error(ex);
-                errorCode = 100504;
+                LastError = ex;
+
+                errorCode = (int)SharedTypes.ErrorCode.NotInitialized;
 
                 CleanUp();
 
@@ -181,6 +182,9 @@ namespace MediaToolkit
                 throw;
             }
         }
+
+        public object LastError { get; private set; }
+
         private Task captureTask = null;
         public void Start()
         {
@@ -205,8 +209,8 @@ namespace MediaToolkit
                 catch (Exception ex)
                 {
                     logger.Error(ex);
-
-                    errorCode = 100500;
+                    LastError = ex;
+                    errorCode = (int)SharedTypes.ErrorCode.Unexpected;
                 }
                 finally
                 {

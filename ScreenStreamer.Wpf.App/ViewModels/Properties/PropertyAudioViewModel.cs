@@ -45,7 +45,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             {
                 _selectedSource = value;
                 RaisePropertyChanged(() => SelectedSource);
-                _model.DeviceId = value.DeviceId;
+                _model.DeviceId = value?.DeviceId;
             }
         }
 

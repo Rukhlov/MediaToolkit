@@ -26,17 +26,17 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="300"/>
                 <ColumnDefinition Width="109"/>
-                <ColumnDefinition Width="32"/>
+                <!--<ColumnDefinition Width="32"/>--> 
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" Grid.Column="0">
-                <TextBox IsReadOnly="{Binding MainViewModel.IsEdit, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
+                <!--<TextBox IsReadOnly="{Binding MainViewModel.IsEdit, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"-->
+                <TextBox IsReadOnly="{Binding IsEditable, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
                          Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                          Margin="16,0,8,0"
                          Style="{StaticResource captionTextBoxStyle}"
                          MinWidth="50"
-                         Focusable="{Binding MainViewModel.IsEdit, Mode=OneWay}"
-                         >
+                         Focusable="{Binding MainViewModel.IsEdit, Mode=OneWay}" >
                     <i:Interaction.Behaviors>
                         <behaviors:StreamEditNameBehavior/>
                     </i:Interaction.Behaviors>
@@ -83,7 +83,7 @@
                     Width="16"
                     Style="{StaticResource clickableBorder}"
                     IsEnabled="{Binding IsEditable}"
-                    ToolTip="Copy url">
+                    ToolTip="Copy url" Visibility="Collapsed">
                 <materialDesign:PackIcon Kind="ContentCopy" />
                 <i:Interaction.Behaviors>
                     <behaviors:HandleMouseDownBorderBehavior/>

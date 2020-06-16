@@ -23,7 +23,9 @@ namespace MediaToolkit
         SharpDX.Direct3D11.Texture2D SharedTexture { get; }
         long AdapterId { get; }
 
+        object LastError { get; }
         int ErrorCode { get; }
+
         CaptureState State { get; }
         event Action BufferUpdated;
 

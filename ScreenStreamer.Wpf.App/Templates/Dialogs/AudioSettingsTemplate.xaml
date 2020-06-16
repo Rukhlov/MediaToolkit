@@ -2,7 +2,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <DataTemplate x:Key="audioSettingsTemplate">
         <DataTemplate.Resources>
-            <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\TextBoxStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\RadioButtonStyle.xaml"/>
+                    <ResourceDictionary Source="..\..\Styles\ButtonStyle.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
         </DataTemplate.Resources>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -12,7 +19,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="32"/>
-                <!--<RowDefinition Height="32"/>-->
+                <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
             <TextBlock Text="Enabled" Grid.Row="0" Grid.Column="0"/>
             <TextBlock Text="Audio Sources" Grid.Row="1" Grid.Column="0"/>
@@ -29,6 +36,14 @@
                       SelectedItem="{Binding Property.SelectedSource}"
                       Cursor="Hand"
                       IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>
+
+            <Button Grid.Row="2" Grid.Column="1"
+                    Style="{StaticResource actionButtonStyle}"
+                    Command="{Binding UpdateAudioSourcesCommand}"
+                    Content="Update" Padding="10,0"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Right" 
+                    IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>
             
             <!--<ToggleButton Grid.Row="2" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"

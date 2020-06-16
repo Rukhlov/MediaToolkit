@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace MediaToolkit.UI
 {
+
     public class SnippingTool
     {
 
@@ -168,7 +169,7 @@ namespace MediaToolkit.UI
                 this.SourceRectangle = new Rectangle(x, y, w, h);
                 this.ScreenRectangle = new Rectangle(this.Location, this.Size);
 
-               // base.OnMouseUp(e);
+                // base.OnMouseUp(e);
 
                 this.Close();
             }
@@ -217,5 +218,113 @@ namespace MediaToolkit.UI
         }
     }
 
+    public class RegionForm : Form
+    {
+        public RegionForm(Rectangle region)
+        {
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = region.Location;
+            this.Size = new Size(region.Width, region.Height);
+
+            this.TransparencyKey = Color.White;
+            this.BackColor = Color.White;
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.TopMost = true;
+            this.ShowInTaskbar = false;
+
+            RegionPanel panel = new RegionPanel();
+            panel.Dock = DockStyle.Fill;
+
+            this.Controls.Add(panel);
+        }
+
+        //const int WS_EX_LAYERED = 0x00080000;
+        //protected override CreateParams CreateParams
+        //{
+        //    get
+        //    {
+        //        CreateParams createParams = base.CreateParams;
+        //        createParams.ExStyle |= WS_EX_LAYERED;
+        //        return createParams;
+        //    }
+        //}
+
+        class RegionPanel : Panel
+        {
+            internal RegionPanel()
+            {
+                timer.Tick += Timer_Tick;
+                timer.Interval = 1000;
+                timer.Enabled = true;
+
+            }
+
+            private byte tick = 0;
+            private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
+            private void Timer_Tick(object sender, EventArgs e)
+            {
+                DrawBorder();
+
+                tick++;
+
+
+            }
+
+
+            private void DrawBorder()
+            {
+                var color = Color.Red;
+                var color2 = Color.Green;
+
+                if (tick % 2 == 0)
+                {
+                    color = Color.Green;
+                    color2 = Color.Red;
+                }
+
+                var r = this.ClientRectangle;
+                var rect = new Rectangle(r.X, r.Y, r.Width - 1, r.Height - 1);
+                var g = Graphics.FromHwnd(this.Handle);
+
+                using (var b = new SolidBrush(color))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
+                        g.DrawRectangle(pen, rect);
+                    }
+                }
+
+                using (var b = new SolidBrush(color2))
+                {
+                    using (var pen = new Pen(b, 3))
+                    {
+                        pen.DashPattern = new float[] { 5, 5 };
+
+                        g.DrawRectangle(pen, rect);
+                    }
+                }
+            }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                DrawBorder();
+
+                base.OnPaint(e);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                if (timer != null)
+                {
+                    timer.Tick -= Timer_Tick;
+                    timer.Dispose();
+                    timer = null;
+                }
+
+                base.Dispose(disposing);
+            }
+
+        }
+    }
 
 }

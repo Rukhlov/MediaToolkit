@@ -138,13 +138,13 @@
     <Compile Include="SelectAreaForm.Designer.cs">
       <DependentUpon>SelectAreaForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SnippingTool.cs" />
     <Compile Include="StatisticForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="StatisticForm.Designer.cs">
       <DependentUpon>StatisticForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utils.cs" />
     <EmbeddedResource Include="AudioPreviewForm.resx">
       <DependentUpon>AudioPreviewForm.cs</DependentUpon>
     </EmbeddedResource>

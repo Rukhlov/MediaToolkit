@@ -22,6 +22,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         public ICommand ShowBorderCommand { get; }
 
 
+
         [Track]
         public bool IsRegion
         {
@@ -77,10 +78,37 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                 
                 UpdateRegion();
                 RaisePropertyChanged(nameof(Info));
+                RaisePropertyChanged(nameof(IsScreenSource));
+            }
+        }
+
+        public ScreenCaptureType CaptureType
+        {
+            get => _model.CaptureType;
+            set
+            {
+
+                SetProperty(_model, () => _model.CaptureType, value);
+
             }
         }
 
 
+        public bool IsScreenSource
+        {
+            get
+            {
+                bool isScreenSource = true;
+                var sourceItem = _model.Display;
+                if (sourceItem != null)
+                {
+                    isScreenSource = !sourceItem.IsUvcDevice;
+                }
+
+                return isScreenSource;
+            }
+
+        }
 
         //[Track]
         public int ResolutionHeight
@@ -134,15 +162,34 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-
-
-        [Track]
-        public bool AspectRatio
+        public Rectangle CaptureRect
         {
-            get => _model.AspectRatio;
+            get
+            { 
+                var p = new Point(Left, Top);
+                var s = new Size(ResolutionWidth, ResolutionHeight);
+
+                return new Rectangle(p, s);
+            }
+        }
+
+
+        //[Track]
+        public bool CaptureMouse
+        {
+            get => _model.CaptureMouse;
             set
             {
-                SetProperty(_model, () => _model.AspectRatio, value);
+                SetProperty(_model, () => _model.CaptureMouse, value);
+            }
+        }
+
+        public bool ShowCaptureBorder
+        {
+            get => _model.ShowCaptureBorder;
+            set
+            {
+                SetProperty(_model, () => _model.ShowCaptureBorder, value);
             }
         }
 
@@ -157,10 +204,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             ShowBorderCommand = new DelegateCommand(ShowBorder);
             AdjustCommand = new DelegateCommand(Adjust);
 
+      
             UpdateRegion();
         }
 
-
+        
         public SelectAreaForm selectAreaForm = null;
         private void UpdateRegion()
         {
@@ -177,6 +225,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
             var sourceItem = _model.Display;
+            if(sourceItem == null)
+            {
+                return;
+            }
+
             bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
             if (!isRegionItem)
             {
@@ -222,6 +275,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
 
         }
+
+
 
         private void ShowBorder()
         {

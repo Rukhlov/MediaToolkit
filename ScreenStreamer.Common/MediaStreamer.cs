@@ -211,6 +211,45 @@ namespace ScreenStreamer.Common
         }
 
 
+        public Exception GetInternalError()
+        {
+           // string message = "";
+            if (videoSource != null)
+            {
+                var obj = videoSource.LastError;
+                if (obj != null)
+                {
+                    //var ex = obj as Exception;
+                    //message = ex.Message;
+
+                    return obj as Exception; 
+                }
+            }
+
+
+            ////....
+
+            return null;
+        }
+
+        public int CheckError()
+        {
+            int code = 0;
+            if (videoSource != null)
+            {
+                code = videoSource.ErrorCode;
+            }
+
+            //if (videoStreamer != null)
+            //{
+            //    code |= videoStreamer.ErrorCode;
+            //}
+
+            ////....
+
+            return code;
+        }
+
         public void Shutdown()
         {
             logger.Trace("ScreenStreamer::Shutdown()");

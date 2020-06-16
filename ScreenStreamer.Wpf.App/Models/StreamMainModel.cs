@@ -91,7 +91,9 @@ namespace ScreenStreamer.Wpf.Common.Models
 
 
         public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
+
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
+
         public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
         public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
         public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
@@ -127,6 +129,9 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (mediaStreamer.State == MediaStreamerState.Shutdown)
             {
+                this.ErrorObj = null;
+                this.ErrorCode = 0;
+
                 currentSession = CreateSession();
 
 
@@ -134,6 +139,8 @@ namespace ScreenStreamer.Wpf.Common.Models
 
                 mediaStreamer.Start(currentSession);
             }
+
+
 
         }
 
@@ -168,16 +175,41 @@ namespace ScreenStreamer.Wpf.Common.Models
             else if (state == MediaStreamerState.Stopped)
             {
 
+                var errorObj = mediaStreamer.ExceptionObj;
+                var errorCode = mediaStreamer.ErrorCode;
+                var internalCode = mediaStreamer.CheckError();
+                var internalError = mediaStreamer.GetInternalError();
 
-				mediaStreamer.Shutdown();
+                if (errorObj != null || errorCode != 0 || internalCode != 0 || internalError != null)
+                {
+                    logger.Warn("Process error...");
+                    //...
+                    //Process error
+
+ 
+                    this.ErrorCode = internalCode;
+                    this.ErrorObj = internalError;
+
+                    ErrorOccurred?.Invoke(ErrorObj);
+
+                }
+
+                mediaStreamer.Shutdown();
+
             }
+            else if( state == MediaStreamerState.Shutdown)
+            {
+
+            }
+
 
 
             OnStreamStateChanged?.Invoke();
 
         }
-
-
+        public event Action<object> ErrorOccurred;
+        public int ErrorCode { get; private set; }
+        public Exception ErrorObj { get; private set; }
 
         private StreamSession CreateSession()
         {
@@ -219,6 +251,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
 
+            
             videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
             videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
             videoEncoderSettings.LowLatency = AdvancedSettingsModel.LowLatency;
@@ -230,14 +263,17 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             var captureRegion = new Rectangle(x, y, w, h);
 
+            var captureType = PropertyVideo.CaptureType.CaptType;
+
             var screenCaptureProperties = new ScreenCaptureProperties
             {
-                CaptureMouse = PropertyCursor.IsCursorVisible,
-                AspectRatio = PropertyVideo.AspectRatio,
-                CaptureType = VideoCaptureType.DXGIDeskDupl,
+                CaptureMouse = PropertyVideo.CaptureMouse,
+
+                CaptureType = captureType, // VideoCaptureType.DXGIDeskDupl,
                 UseHardware = true,
                 Fps = 30,
                 ShowDebugInfo = false,
+                ShowDebugBorder = PropertyVideo.ShowCaptureBorder,
             };
 
             VideoCaptureDevice captureDevice = null;
@@ -355,6 +391,51 @@ namespace ScreenStreamer.Wpf.Common.Models
         public bool AspectRatio { get; set; } = true;
     }
 
+    public class ScreenCaptureType
+    {
+        public VideoCaptureType CaptType { get; set; }
+        public string Name { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is ScreenCaptureType)) return false;
+            return (CaptType == ((ScreenCaptureType)obj).CaptType);
+
+            //var sct = obj as ScreenCaptureType;
+            //if (sct != null)
+            //{
+            //    return (this.CaptType == sct.CaptType);
+            //}
+            //return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        //public static List<ScreenCaptureType> SupportedCaptureTypes()
+        //{
+        //    List<ScreenCaptureType> types = new List<ScreenCaptureType>
+        //    {
+        //        new ScreenCaptureType{CaptureType = VideoCaptureType.DXGIDeskDupl, Name = "Desktop Duplication API" },
+        //        new ScreenCaptureType{CaptureType = VideoCaptureType.GDI, Name = "GDI" },
+        //        new ScreenCaptureType{CaptureType = VideoCaptureType.GDILayered, Name = "GDI Layered" },
+        //    };
+
+        //    return types;
+        //}
+
+       public static readonly List<ScreenCaptureType> SupportedCaptures = new List<ScreenCaptureType>
+        {
+            new ScreenCaptureType{CaptType = VideoCaptureType.DXGIDeskDupl, Name = "Desktop Duplication API" },
+            new ScreenCaptureType{CaptType = VideoCaptureType.GDI, Name = "GDI" },
+            new ScreenCaptureType{CaptType = VideoCaptureType.GDILayered, Name = "GDI Layered" },
+        };
+
+        // public ScreenCaptureDevice Device { get; set; }
+    }
+
     public class PropertyVideoModel
     {
         //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
@@ -369,15 +450,24 @@ namespace ScreenStreamer.Wpf.Common.Models
         public int ResolutionWidth { get; set; } = 1920;
 
         public int ResolutionHeight { get; set; } = 1080;
-        
 
-        public bool AspectRatio { get; set; } = true;
+        public ScreenCaptureType CaptureType { get; set; } //= new ScreenItem();
+
+        public bool CaptureMouse { get; set; } = true;
+
+        public bool ShowCaptureBorder { get; set; } = false;
 
         public void Init()
         {
             if(Display == null)
             {
                 Display = ScreenHelper.GetDisplayItems().FirstOrDefault();
+            }
+
+            if(this.CaptureType == null)
+            {
+               // this.CaptureType = new ScreenCaptureType { CaptType = VideoCaptureType.DXGIDeskDupl, Name = "DeskDupl" };
+                CaptureType = ScreenCaptureType.SupportedCaptures.FirstOrDefault();
             }
         }
     }

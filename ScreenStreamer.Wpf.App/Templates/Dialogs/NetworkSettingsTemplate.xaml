@@ -61,11 +61,11 @@
                              IsChecked="{Binding Property.IsUnicast, Mode=TwoWay}"
                              Content="Unicast" 
                              Style="{StaticResource defaultRadioButtonStyle}"/>
-
+                <!--"{Binding Property.IsUnicast, Mode=OneWay}"-->
                 <ComboBox Grid.Column="1" 
                           ItemsSource="{Binding UnicastProtocols}" 
                           SelectedItem="{Binding Property.UnicastProtocol}"
-                          IsEnabled= "{Binding Property.IsUnicast, Mode=OneWay}"
+                          IsEnabled= "False"
                           Cursor="Hand"/>
             </Grid>
 

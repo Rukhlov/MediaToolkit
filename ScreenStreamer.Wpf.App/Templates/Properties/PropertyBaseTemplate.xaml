@@ -39,13 +39,19 @@
                         Margin="6,0,0,0"
                         Style="{StaticResource clickableBorder}"
                         ToolTip="Details">
+                    
+                    
                     <materialDesign:PackIcon Kind="ChevronRight"/>
+                    
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
                             <i:InvokeCommandAction Command="{Binding Path=ShowSettingsCommand}" 
                                                    CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"/>
+
                         </i:EventTrigger>
+
                     </i:Interaction.Triggers>
+                    
                 </Border>
             </StackPanel>
         </DockPanel>
