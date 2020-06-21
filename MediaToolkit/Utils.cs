@@ -702,9 +702,16 @@ namespace MediaToolkit.Utils
         public object AfterReceiveRequest(ref System.ServiceModel.Channels.Message request, IClientChannel channel, InstanceContext instanceContext)
         {
             object messageProperty;
-            if (!OperationContext.Current.IncomingMessageProperties.TryGetValue(RemoteEndpointMessageProperty.Name, out messageProperty)) return null;
+			if (!OperationContext.Current.IncomingMessageProperties.TryGetValue(RemoteEndpointMessageProperty.Name, out messageProperty))
+			{
+				return null;
+			}
+
             var remoteEndpointProperty = messageProperty as RemoteEndpointMessageProperty;
-            if (remoteEndpointProperty == null) return null;
+			if (remoteEndpointProperty == null)
+			{
+				return null;
+			}
 
             // Extract message body
             string messageBody;

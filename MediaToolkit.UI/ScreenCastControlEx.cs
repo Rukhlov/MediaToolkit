@@ -567,7 +567,6 @@ namespace MediaToolkit.UI
                 var criteria = new FindCriteria(typeof(IScreenCastService));
                 criteria.Duration = TimeSpan.FromSeconds(5);
 
-
                 finding = true;
                 findServiceButton.Text = "_Cancel";
                 labelStatus.Text = "_Finding...";

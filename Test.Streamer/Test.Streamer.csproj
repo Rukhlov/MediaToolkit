@@ -8,10 +8,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Test.Streamer</RootNamespace>
     <AssemblyName>Test.Streamer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -165,14 +166,6 @@
     <ProjectReference Include="..\MediaToolkit.UI\MediaToolkit.UI.csproj">
       <Project>{6ec45781-0060-4f0a-ad0e-1452704f0740}</Project>
       <Name>MediaToolkit.UI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ScreenStreamer.Common\ScreenStreamer.Common.csproj">
-      <Project>{C19F7863-F6F5-48B1-8802-5BFF5AEBA4B4}</Project>
-      <Name>ScreenStreamer.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ScreenStreamer.WinForms.App\ScreenStreamer.WinForms.App.csproj">
-      <Project>{9830873b-f8fe-482d-b15b-b8b800a9ed9a}</Project>
-      <Name>ScreenStreamer.WinForms.App</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

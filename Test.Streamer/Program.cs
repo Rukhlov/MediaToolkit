@@ -12,8 +12,8 @@ using MediaToolkit;
 
 using MediaToolkit.NativeAPIs;
 using System.Threading;
-using ScreenStreamer.Common;
-using ScreenStreamer.WinForms.App;
+//using ScreenStreamer.Common;
+//using ScreenStreamer.WinForms.App;
 using MediaToolkit.Core;
 
 namespace TestStreamer
@@ -37,12 +37,12 @@ namespace TestStreamer
             Mutex mutex = null;
             try
             {
-                mutex = new Mutex(true, AppConsts.ApplicationId, out createdNew);
-                if (!createdNew)
-                {
-                    logger.Info("Another instance is already running...");
-                    //...
-                }
+                //mutex = new Mutex(true, AppConsts.ApplicationId, out createdNew);
+                //if (!createdNew)
+                //{
+                //    logger.Info("Another instance is already running...");
+                //    //...
+                //}
 
                 if (args != null && args.Length>0)
                 {//...
@@ -51,7 +51,7 @@ namespace TestStreamer
                 }
 
                 bool tempMode = !createdNew;
-                ScreenStreamer.WinForms.App.Config.Initialize(tempMode);
+                //ScreenStreamer.WinForms.App.Config.Initialize(tempMode);
 
                 MediaToolkitManager.Startup();
 
@@ -63,63 +63,64 @@ namespace TestStreamer
 
 
 
-				//var screen0 =  Screen.AllScreens[0];
-				////var bound0 = SystemInformation.VirtualScreen;//screen0.Bounds;//new System.Drawing.Rectangle(10, 10, 100, 100); //
-				////var bound0 = screen0.Bounds;//new System.Drawing.Rectangle(10, 10, 100, 100); //
+                //var screen0 =  Screen.AllScreens[0];
+                ////var bound0 = SystemInformation.VirtualScreen;//screen0.Bounds;//new System.Drawing.Rectangle(10, 10, 100, 100); //
+                ////var bound0 = screen0.Bounds;//new System.Drawing.Rectangle(10, 10, 100, 100); //
 
-				//var bound0 = new System.Drawing.Rectangle(10, 10, 100, 100); //
-				//var src0 = new ScreenSource();
-				//var capture0 = new ScreenCaptureDevice
-				//{
-				//    CaptureRegion = bound0,
-				//    Resolution = bound0.Size,
-				//    Name = screen0.DeviceName,
-				//    DisplayRegion = bound0,
-				//    Properties = new ScreenCaptureProperties
-				//    {
-				//        UseHardware = true,
-				//        CaptureType = VideoCaptureType.DXGIDeskDupl,
-				//        AspectRatio = true,
-				//        Fps = 30,
+                //var bound0 = new System.Drawing.Rectangle(10, 10, 100, 100); //
+                //var src0 = new ScreenSource();
+                //var capture0 = new ScreenCaptureDevice
+                //{
+                //    CaptureRegion = bound0,
+                //    Resolution = bound0.Size,
+                //    Name = screen0.DeviceName,
+                //    DisplayRegion = bound0,
+                //    Properties = new ScreenCaptureProperties
+                //    {
+                //        UseHardware = true,
+                //        CaptureType = VideoCaptureType.DXGIDeskDupl,
+                //        AspectRatio = true,
+                //        Fps = 30,
 
-				//    }
-				//};
+                //    }
+                //};
 
-				//src0.Setup(capture0);
-				//src0.Start();
-
-
-				//var screen1 = Screen.AllScreens[1];
-
-				////var bound1 = screen1.Bounds;//new System.Drawing.Rectangle(-1920, 10, 10, 10); //
-
-				//var bound1 = new System.Drawing.Rectangle(-1920, 10, 10, 10); //
-				//var capture1 = new ScreenCaptureDevice
-				//{
-				//    CaptureRegion = bound1,
-				//    Resolution = bound1.Size,
-				//    Name = screen1.DeviceName,
-				//    DisplayRegion = bound1,
-				//    Properties = new ScreenCaptureProperties
-				//    {
-				//        UseHardware = true,
-				//        CaptureType = VideoCaptureType.DXGIDeskDupl,
-				//        AspectRatio = true,
-				//        Fps = 30,
-
-				//    }
-				//};
-
-				//var src1 = new ScreenSource();
-				//src1.Setup(capture1);
-				//src1.Start();
+                //src0.Setup(capture0);
+                //src0.Start();
 
 
+                //var screen1 = Screen.AllScreens[1];
+
+                ////var bound1 = screen1.Bounds;//new System.Drawing.Rectangle(-1920, 10, 10, 10); //
+
+                //var bound1 = new System.Drawing.Rectangle(-1920, 10, 10, 10); //
+                //var capture1 = new ScreenCaptureDevice
+                //{
+                //    CaptureRegion = bound1,
+                //    Resolution = bound1.Size,
+                //    Name = screen1.DeviceName,
+                //    DisplayRegion = bound1,
+                //    Properties = new ScreenCaptureProperties
+                //    {
+                //        UseHardware = true,
+                //        CaptureType = VideoCaptureType.DXGIDeskDupl,
+                //        AspectRatio = true,
+                //        Fps = 30,
+
+                //    }
+                //};
+
+                //var src1 = new ScreenSource();
+                //src1.Setup(capture1);
+                //src1.Start();
 
 
 
-				ScreenStreamer.WinForms.App.MainForm form = new ScreenStreamer.WinForms.App.MainForm();
 
+
+                //ScreenStreamer.WinForms.App.MainForm form = new ScreenStreamer.WinForms.App.MainForm();
+
+                MainForm form = new MainForm();
 
 
 
@@ -128,7 +129,7 @@ namespace TestStreamer
             }
             finally
             {
-                ScreenStreamer.WinForms.App.Config.Shutdown();
+               // ScreenStreamer.WinForms.App.Config.Shutdown();
 
                 MediaToolkitManager.Shutdown();
 

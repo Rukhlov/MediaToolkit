@@ -599,6 +599,8 @@ namespace MediaToolkit.ScreenCaptures
                         }
                     }
 
+                    errorCode = ErrorCode.Ok;
+
                 }
 
             }

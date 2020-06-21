@@ -11,7 +11,7 @@ using MediaToolkit;
 using MediaToolkit.Core;
 using NLog;
 using NAudio.CoreAudioApi;
-using ScreenStreamer.Common;
+//using ScreenStreamer.Common;
 using MediaToolkit.MediaStreamers;
 
 namespace TestStreamer.Controls
@@ -43,46 +43,46 @@ namespace TestStreamer.Controls
 
         private void audioStartButton_Click(object sender, EventArgs e)
         {
-            logger.Debug("audioStartButton_Click(...)");
+            //logger.Debug("audioStartButton_Click(...)");
 
-            if(string.IsNullOrEmpty(currentMMDeviceId ))
-            {
-                logger.Warn("Empty MMDeviceId...");
-                return;
-            }
-
-            //audioStreamer = new AudioStreamer();
-
-
-            var audioParams = new AudioEncoderSettings
-            {
-                SampleRate = 8000,
-                Channels = 1,
-                Encoding = "PCMU",
-                DeviceId = currentMMDeviceId,
-
-            };
-
-            NetworkSettings networkParams = audioSettings.NetworkSettings;
-
-            //NetworkStreamingParams networkParams = new NetworkStreamingParams
+            //if(string.IsNullOrEmpty(currentMMDeviceId ))
             //{
-            //    LocalPort = audioSettings.Port,
-            //    LocalAddr = "",
-            //    RemoteAddr = audioSettings.Address,
-            //    RemotePort = audioSettings.Port,
-            //    TransportMode = audioSettings.TransportMode,
+            //    logger.Warn("Empty MMDeviceId...");
+            //    return;
+            //}
+
+            ////audioStreamer = new AudioStreamer();
+
+
+            //var audioParams = new AudioEncoderSettings
+            //{
+            //    SampleRate = 8000,
+            //    Channels = 1,
+            //    Encoding = "PCMU",
+            //    DeviceId = currentMMDeviceId,
+
             //};
 
-            if (audioStreamer != null)
-            {
-                audioStreamer.StateChanged -= AudioStreamer_StateChanged;
-            }
+            //NetworkSettings networkParams = audioSettings.NetworkSettings;
 
-            //dioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
+            ////NetworkStreamingParams networkParams = new NetworkStreamingParams
+            ////{
+            ////    LocalPort = audioSettings.Port,
+            ////    LocalAddr = "",
+            ////    RemoteAddr = audioSettings.Address,
+            ////    RemotePort = audioSettings.Port,
+            ////    TransportMode = audioSettings.TransportMode,
+            ////};
 
-            audioStreamer.StateChanged += AudioStreamer_StateChanged;
-            audioStreamer.Setup(audioParams, networkParams);
+            //if (audioStreamer != null)
+            //{
+            //    audioStreamer.StateChanged -= AudioStreamer_StateChanged;
+            //}
+
+            ////dioStreamer.SetWaveformPainter(new[] { this.waveformPainter1, this.waveformPainter2 });
+
+            //audioStreamer.StateChanged += AudioStreamer_StateChanged;
+            //audioStreamer.Setup(audioParams, networkParams);
         }
 
         private void audioStopButton_Click(object sender, EventArgs e)
@@ -218,19 +218,19 @@ namespace TestStreamer.Controls
             settingPanel.Enabled = !isStreaming;
         }
 
-        private AudioStreamSettings audioSettings = new AudioStreamSettings();
+        //private AudioStreamSettings audioSettings = new AudioStreamSettings();
         private void settingButton_Click(object sender, EventArgs e)
         {
             //videoSettings.CaptureRegion = currentScreenRect;
 
-            var f = new AudioSettingsForm
-            {
-                StartPosition = FormStartPosition.CenterParent,
+            //var f = new AudioSettingsForm
+            //{
+            //    StartPosition = FormStartPosition.CenterParent,
 
-            };
-            f.Setup(audioSettings);
+            //};
+            //f.Setup(audioSettings);
 
-            f.ShowDialog();
+            //f.ShowDialog();
 
             //currentScreenRect = videoSettings.CaptureRegion;
         }

@@ -108,7 +108,7 @@ namespace TestStreamer.Controls
                 Width = destSize.Width, // options.Width,
                 Height = destSize.Height, // options.Height,
                 //Resolution = destSize,
-                FrameRate = (int)fps,
+                FrameRate = new MediaRatio((int)fps, 1),
                 EncoderId = "mjpeg",
             };
 
@@ -120,7 +120,7 @@ namespace TestStreamer.Controls
 
 
             statisticForm.Location = srcRect.Location;
-            statisticForm.Start();
+           // statisticForm.Start();
         }
 
         private void httpStopButton_Click(object sender, EventArgs e)
