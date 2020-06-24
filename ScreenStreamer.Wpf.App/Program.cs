@@ -44,6 +44,10 @@ namespace ScreenStreamer.Wpf.UI
                 if (!createdNew)
                 {
                     logger.Info("Another instance is already running...");
+
+                    Wpf.App.Services.WndProcService.ShowAnotherInstance();
+                    return 0;
+
                     //return -1;
                     //...
                 }
@@ -86,7 +90,7 @@ namespace ScreenStreamer.Wpf.UI
                 MediaToolkitManager.Shutdown();
 
                 //...
-               ConfigurationManager.Save();
+               ConfigManager.Save();
 
                 logger.Info("========== THE END ============");
             }

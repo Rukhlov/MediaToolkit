@@ -68,12 +68,33 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public bool IsClosableOnLostFocus => this is PropertyWindowViewModel && !IsChanged;
 
+       // public bool DontCloseOnLostFocus = false;
+
+        //public bool IsClosableOnLostFocus
+        //{
+        //    get
+        //    {
+        //        bool isClosableOnLostFocus = false;
+        //        if(this is PropertyWindowViewModel)
+        //        {
+        //            isClosableOnLostFocus = !IsChanged;
+        //        }
+
+        //        if (DontCloseOnLostFocus)
+        //        {
+        //            isClosableOnLostFocus = false;
+        //        }
+
+        //        return isClosableOnLostFocus;
+        //    }
+        //}
+
         public void AcceptChanges()
         {
             parent.TrackNestedProperties(true);
             TrackNestedProperties(true);
             RaisePropertyChanged(() => IsChanged);
-            ConfigurationManager.Save();
+            ConfigManager.Save();
         }
 
 

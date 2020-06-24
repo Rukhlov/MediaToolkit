@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <RootNamespace>ScreenStreamer.Wpf.App</RootNamespace>
     <AssemblyName>ScreenStreamer.Wpf.App</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
@@ -36,6 +36,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CommonServiceLocator, Version=2.0.4.0, Culture=neutral, PublicKeyToken=489b6accfaf20ef0, processorArchitecture=MSIL">
@@ -140,7 +143,7 @@
     <Compile Include="Enums\ProtocolKind.cs" />
     <Compile Include="Enums\QualityPreset.cs" />
     <Compile Include="Helpers\AudioHelper.cs" />
-    <Compile Include="Helpers\DependencyInjectionHelper.cs" />
+    <Compile Include="Services\ServiceLocator.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Helpers\PropertySupport.cs" />
     <Compile Include="Helpers\QualityPresetsHelper.cs" />
@@ -152,6 +155,8 @@
     <Compile Include="Managers\ConfigurationManager.cs" />
     <Compile Include="Models\StreamMainModel.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Services\WndProcService.cs" />
+    <Compile Include="Utils\NativeMethods.cs" />
     <Compile Include="ViewModels\CustomBindableBase.cs" />
     <Compile Include="ViewModels\Dialogs\AdvancedSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\AudioSettingsViewModel.cs" />
@@ -200,8 +205,8 @@
     <Compile Include="Views\DesignBorderWindow.xaml.cs">
       <DependentUpon>DesignBorderWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\StreamBaseWindow.xaml.cs">
-      <DependentUpon>StreamBaseWindow.xaml</DependentUpon>
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\StreamBorderWindow.xaml.cs">
       <DependentUpon>StreamBorderWindow.xaml</DependentUpon>
@@ -357,7 +362,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\StreamBaseWindow.xaml">
+    <Page Include="Views\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

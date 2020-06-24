@@ -38,11 +38,12 @@
                 <TextBlock Text="Port" />
 
                 <TextBox Grid.Column="1"
-                         Text="{Binding Property.Port, Converter={converters:IntegerToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding Property.Port, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
                          Style="{StaticResource defaultTextBoxStyle}">
                     <i:Interaction.Behaviors>
                         <behaviors:RestrictedInputTextBoxBehavior/>
                     </i:Interaction.Behaviors>
+                   
                 </TextBox>
             </Grid>
 

@@ -52,5 +52,17 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             return base.CheckChanges() || parent.IsChanged;
         }
 
+
+
+        //public new bool IsClosableOnLostFocus
+        //{
+        //    get
+        //    {
+        //        return !IsChanged;
+        //    }
+
+        //}
+
+        //=> this is PropertyWindowViewModel && !IsChanged;
     }
 }

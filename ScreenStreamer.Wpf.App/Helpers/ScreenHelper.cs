@@ -80,8 +80,18 @@ namespace ScreenStreamer.Wpf.Common.Helpers
 
         public override bool Equals(object obj)
         {
-            if (!(obj is VideoSourceItem)) return false;
-            return (DeviceId == ((VideoSourceItem)obj).DeviceId);
+            //if (!(obj is VideoSourceItem)) return false;
+            //return (DeviceId == ((VideoSourceItem)obj).DeviceId);
+
+            bool Result = false;
+            var item = obj as VideoSourceItem;
+            if (item != null)
+            {
+                Result = this.DeviceId == item.DeviceId;
+            }
+
+            return Result;
+
         }
 
         public override int GetHashCode()

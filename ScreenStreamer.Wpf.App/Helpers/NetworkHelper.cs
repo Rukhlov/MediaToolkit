@@ -56,6 +56,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                 new IPAddressInfoViewModel
                 {
                     DisplayName = "All",
+                    InterfaceName = "All",
                     IPAddressInfo = null
                 }
             };
@@ -64,7 +65,9 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             interfaces.ForEach(i => result.Add(new IPAddressInfoViewModel
             {
                 DisplayName = i.IpAddressInfo.ToDisplayName(i.Network),
+                InterfaceName = i.Network.Name,
                 IPAddressInfo = i.IpAddressInfo
+
             }));
             return result;
         }

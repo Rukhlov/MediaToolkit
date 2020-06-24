@@ -7,6 +7,7 @@ namespace ScreenStreamer.Wpf.Common.Models
     public class IPAddressInfoViewModel
     { 
         public string DisplayName { get; set; }
+        public string InterfaceName { get; set; }
 
         public IPAddressInformation IPAddressInfo { get; set; }
 

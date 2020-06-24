@@ -1,4 +1,4 @@
-﻿<Window x:Class="ScreenStreamer.Wpf.Common.Views.StreamBaseWindow"
+﻿<Window x:Class="ScreenStreamer.Wpf.Common.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,7 +18,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         Icon="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/logo_24.png"
-        Visibility="{Binding IsVisible, Converter={converters:BooleanToVisibilityConverter}, Mode=OneWay}">
+        Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
 
     <Window.Resources>
         <ResourceDictionary>

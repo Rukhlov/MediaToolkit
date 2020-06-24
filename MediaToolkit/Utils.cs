@@ -31,7 +31,7 @@ namespace MediaToolkit.Utils
 	{
 
 		private readonly IWndMessageProcessor processor = null;
-		internal NotifyWindow(IWndMessageProcessor p)
+		public NotifyWindow(IWndMessageProcessor p)
 		{
 			this.processor = p;
 		}
@@ -45,8 +45,9 @@ namespace MediaToolkit.Utils
 					Style = 0,
 					ExStyle = 0,
 					ClassStyle = 0,
+                    //Caption = "NotifyWindow",
 
-					Parent = Defines.HWndMessage,
+                    Parent = Defines.HWndMessage,
 				});
 			}
 			return Handle != IntPtr.Zero;

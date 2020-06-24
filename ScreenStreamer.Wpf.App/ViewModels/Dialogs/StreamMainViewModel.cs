@@ -98,11 +98,18 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             this.StopAllCommand = new DelegateCommand(StopAll);
             this.ShowStreamSettingsCommand = new DelegateCommand<StreamViewModel>(ShowStreamSettings);
 
+            wndProcService = new App.Services.WndProcService();
+
+            wndProcService.ShowMainWindow += ShowMainWindow;
+            wndProcService.Init();
         }
+
+
+        private App.Services.WndProcService wndProcService = null;
 
         private void Delete()
         {
-            var dialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
+            var dialogService = ServiceLocator.GetInstance<IDialogService>();
             var streamToDelete = this.SelectedStream;
             var deleteViewModel = new DeleteViewModel(streamToDelete);
             if (dialogService.ShowDialog(this, deleteViewModel) == true)
@@ -167,12 +174,12 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private void Activate()
         {
-            DependencyInjectionHelper.Container.Resolve<IDialogService>().Activate();
+            ServiceLocator.GetInstance<IDialogService>().Activate();
         }
 
         private void Exit()
         {
-            DependencyInjectionHelper.Container.Resolve<IDialogService>().CloseAll();
+            ServiceLocator.GetInstance<IDialogService>().CloseAll();
         }
 
         private void StartAll()

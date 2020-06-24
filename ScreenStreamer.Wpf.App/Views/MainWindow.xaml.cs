@@ -17,26 +17,39 @@ namespace ScreenStreamer.Wpf.Common.Views
     /// <summary>
     /// Interaction logic for FormBaseView.xaml
     /// </summary>
-    public partial class StreamBaseWindow : Window
+    public partial class MainWindow : Window
     {
         public ICommand CloseCommand { get; set; }
 
+        //public MainWindow()
+        //{
+        //    CloseCommand = new DelegateCommand(HandleClose);
+        //    //InitializeComponent();
+        //}
+
         //For debug\
-        public StreamBaseWindow()
+        public MainWindow()
         {
-            var model = DependencyInjectionHelper.Container.Resolve<StreamMainModel>();
+            var model = ServiceLocator.GetInstance<StreamMainModel>();
             var vm = new StreamMainViewModel(model);
             this.DataContext = vm;
+
             CloseCommand = new DelegateCommand(HandleClose);
+
             InitializeComponent();
 
-            DependencyInjectionHelper.Container.Resolve<IDialogService>().Register(vm, this);
-            var messenger = DependencyInjectionHelper.Container.Resolve<IMessenger>();
+            dialogService = ServiceLocator.GetInstance<IDialogService>();
+            dialogService.Register(vm, this);
+
+
+            var messenger = ServiceLocator.GetInstance<IMessenger>();
             messenger.Unregister<AcceptChangesMessage>(this);
             messenger.Register<AcceptChangesMessage>(this, VmOnPropertyChanged);
 
             ApplyInitialState();
         }
+
+        private IDialogService dialogService = null;
 
         private void VmOnPropertyChanged(AcceptChangesMessage obj)
         {
@@ -48,7 +61,7 @@ namespace ScreenStreamer.Wpf.Common.Views
             //TODO apply initial state
         }
 
-        public StreamBaseWindow(IDialogViewModel viewModel)
+        public MainWindow(IDialogViewModel viewModel)
         {
             this.DataContext = viewModel;
             CloseCommand = new DelegateCommand(HandleClose);
@@ -60,8 +73,10 @@ namespace ScreenStreamer.Wpf.Common.Views
         {
             if (this.DataContext is IDialogViewModel dialogViewModel)
             {
-                DependencyInjectionHelper.Container.Resolve<IDialogService>().Hide(dialogViewModel);
+                ServiceLocator.GetInstance<IDialogService>().Hide(dialogViewModel);
             }
+
+            //this.Hide();
         }
 
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)

@@ -684,6 +684,8 @@ namespace ScreenStreamer.Common
                     // endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
                     endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
+                    endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("StreamId", ServerId));
+
                     //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
                     //foreach (var addr in addrInfos)
                     //{

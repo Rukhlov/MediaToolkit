@@ -34,6 +34,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
+        public int CommunicationPort => _model.CommunicationPort;
 
         [Track]
         public int Port
@@ -42,6 +43,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             set
             {
                 SetProperty(_model, () => _model.Port, value);
+
+                RaisePropertyChanged(nameof(Info));
             }
         }
 
@@ -106,23 +109,48 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             return new NetworkSettingsViewModel(this, Parent);
         }
 
+        private bool isStarted = false;
+        public void UpdatePropInfo(bool isStarted)
+        {
+            this.isStarted = isStarted;
+            RaisePropertyChanged(nameof(Info));
+        }
+
         public override string Info
         {
             get
             {
-                var builder = new StringBuilder();
-                builder.Append(this.IsUnicast ? this.UnicastProtocol.ToString() : this.MulticastIp);
-                if (IsUnicast)
+                var address = "0.0.0.0";
+                var _port = isStarted? this.CommunicationPort : this.Port;
+
+
+                string port = (_port > 0 ? _port.ToString() : "Auto");
+
+                var ipAddrInfo= SelectedNetwork.IPAddressInfo;
+                if(ipAddrInfo != null)
                 {
-                    builder.Append(": ");
-                    builder.Append(this.SelectedNetwork.IPAddressInfo?.Address);
+                    address = ipAddrInfo.Address.ToString();
                 }
 
-                if (builder.Length > MaxInfoLength)
-                {
-                    return builder.ToString(0, MaxInfoLength - 3) + "...";
-                }
-                return builder.ToString();
+                return SelectedNetwork.InterfaceName + " (" + address + ":"+ port + ")";
+
+
+                //var builder = new StringBuilder();
+
+                //builder.Append(this.IsUnicast ? this.UnicastProtocol.ToString() : this.MulticastIp);
+                //if (IsUnicast)
+                //{
+                //    builder.Append(": ");
+                //    builder.Append(this.SelectedNetwork.IPAddressInfo?.Address);
+                //}
+
+                //if (builder.Length > MaxInfoLength)
+                //{
+                //    return builder.ToString(0, MaxInfoLength - 3) + "...";
+                //}
+                //return builder.ToString();
+
+
             }
         }
     }

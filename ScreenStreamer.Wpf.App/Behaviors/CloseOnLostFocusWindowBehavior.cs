@@ -1,5 +1,6 @@
 ﻿using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interactivity;
 using Unity;
@@ -22,12 +23,27 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
 
         private void AssociatedObject_Deactivated(object sender, System.EventArgs e)
         {
-            if (AssociatedObject.DataContext is IWindowViewModel windowViewModel &&
-                    windowViewModel.IsClosableOnLostFocus)
+            Debug.WriteLine("AssociatedObject_Deactivated(...)");
+
+            var windowViewModel = AssociatedObject.DataContext as IWindowViewModel;
+            if (windowViewModel != null)
             {
 
-                DependencyInjectionHelper.Container.Resolve<IDialogService>().Hide(windowViewModel);
+                Debug.WriteLine(" windowViewModel.IsClosableOnLostFocus " + windowViewModel.IsClosableOnLostFocus);
+
+                if (windowViewModel.IsClosableOnLostFocus)
+                {
+                    ServiceLocator.GetInstance<IDialogService>().Hide(windowViewModel);
+                }
+              
             }
+
+            //if (AssociatedObject.DataContext is IWindowViewModel windowViewModel &&
+            //        windowViewModel.IsClosableOnLostFocus)
+            //{
+
+            //    DependencyInjectionHelper.Container.Resolve<IDialogService>().Hide(windowViewModel);
+            //}
         }
     }
 }

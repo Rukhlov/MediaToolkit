@@ -284,6 +284,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             if (model != null)
             {
                 model.IsBorderVisible = true;
+                
             }
 
             //Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault()

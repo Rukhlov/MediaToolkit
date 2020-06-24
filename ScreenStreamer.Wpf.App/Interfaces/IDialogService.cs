@@ -11,7 +11,7 @@ namespace ScreenStreamer.Wpf.Common.Interfaces
 
         bool? ShowDialog(IWindowViewModel parent, IDialogViewModel model);
 
-        void Register(IDialogViewModel viewModel, StreamBaseWindow streamBaseWindow);
+        void Register(IDialogViewModel viewModel, MainWindow mainWindow);
 
         void CloseAll();
 

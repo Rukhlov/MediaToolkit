@@ -162,8 +162,8 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (state == MediaStreamerState.Starting)
             {
-
-			}
+                PropertyNetwork.CommunicationPort = currentSession.CommunicationPort;
+            }
             else if (state == MediaStreamerState.Streamming)
             {
 
@@ -174,6 +174,8 @@ namespace ScreenStreamer.Wpf.Common.Models
 			}
             else if (state == MediaStreamerState.Stopped)
             {
+
+                PropertyNetwork.CommunicationPort = PropertyNetwork.Port;
 
                 var errorObj = mediaStreamer.ExceptionObj;
                 var errorCode = mediaStreamer.ErrorCode;
@@ -226,19 +228,20 @@ namespace ScreenStreamer.Wpf.Common.Models
             session.StreamName = Name;
             session.NetworkIpAddress = PropertyNetwork.Network ?? "0.0.0.0";
 
-            int port = PropertyNetwork.Port;
-            if(port <= 0)
+            int communicationPort = PropertyNetwork.Port;
+            if (communicationPort <= 0)
             {// если порт не задан - ищем свободный начиная с 808
                 
                 var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
                 if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
                 {
-                    port = freeTcpPorts.FirstOrDefault();
+                    communicationPort = freeTcpPorts.FirstOrDefault();
                 }
             }
 
+            //PropertyNetwork.CommunicationPort = communicationPort;
 
-            session.CommunicationPort = port;
+            session.CommunicationPort = communicationPort;
             session.TransportMode = transport;
 
             session.IsMulticast = !PropertyNetwork.IsUnicast;
@@ -352,14 +355,22 @@ namespace ScreenStreamer.Wpf.Common.Models
     public class PropertyNetworkModel
     {
 
-        public int Port { get; set; } = -1;
+        public string Network { get; set; } = "0.0.0.0";
+        public int Port { get; set; } = 0;
+
+        [JsonIgnore]
+        public int CommunicationPort { get; set; } = 0;
+
         public bool IsUnicast { get; set; } = true;
         public ProtocolKind UnicastProtocol { get; set; } = ProtocolKind.TCP;
+
         public string MulticastIp { get; set; } = "239.0.0.1";
-        public string Network { get; set; } = "0.0.0.0";
+
 
         public void Init()
         {
+            CommunicationPort = Port;
+
             //var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange((System.Net.Sockets.ProtocolType)UnicastProtocol, 1, Port);
             //if (freeTcpPorts != null)
             //{// может в любой момент изменится и свободный порт будет занят !!!
@@ -371,6 +382,12 @@ namespace ScreenStreamer.Wpf.Common.Models
             //{
             //    //No avaliable tcp ports..;
             //}
+        }
+
+        public string GetDescription()
+        {
+
+            return "";
         }
     }
 

@@ -23,6 +23,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             };
         }
 
+
+
         protected override bool CheckChanges()
         {
             return base.CheckChanges() || this.Property.IsChanged;

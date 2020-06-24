@@ -131,7 +131,9 @@ namespace ScreenStreamer.Wpf.Common.Models
         {
             Model = model;
             AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
-            _dialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
+
+            _dialogService = ServiceLocator.GetInstance<IDialogService>();
+
             MainViewModel = mainViewModel;
             StartCommand = new DelegateCommand(SwitchStreamingState);
             EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
@@ -256,6 +258,8 @@ namespace ScreenStreamer.Wpf.Common.Models
             RaisePropertyChanged(nameof(IsStarted));
 
             RaisePropertyChanged(nameof(IsEditable));
+
+            PropertyNetwork.UpdatePropInfo(IsStarted);
 
             //if (isStarted)
             //{

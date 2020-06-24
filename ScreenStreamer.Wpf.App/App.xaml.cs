@@ -20,7 +20,34 @@ namespace ScreenStreamer.Wpf.UI
         protected override void OnStartup(StartupEventArgs e)
         {
             //...
+            var args = e.Args;
+
+            var config = ConfigManager.LoadConfigurations();
+            //TODO: validate...
+
+            ServiceLocator.RegisterSingleton(config);
+
+            ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
+
+            var dialogService = new Common.Services.StreamDialogService();
+            ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);
+
+
+            //var mainView = new Common.Models.Dialogs.StreamMainViewModel(config);
+            //Common.Views.MainWindow mainWindow = new Common.Views.MainWindow
+            //{
+            //    DataContext = mainView,
+            //};
+
+            //mainWindow.InitializeComponent();
+
+            //dialogService.Register(mainView, mainWindow);
+
+            //dialogService.Show(mainView);
+
+
             base.OnStartup(e);
+
         }
 
         protected override void OnExit(ExitEventArgs e)

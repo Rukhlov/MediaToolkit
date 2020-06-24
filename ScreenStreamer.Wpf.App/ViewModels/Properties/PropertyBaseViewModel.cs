@@ -26,7 +26,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         public PropertyBaseViewModel(StreamViewModel parent) : base(parent)
         {
             Parent = parent;
-            DialogService = DependencyInjectionHelper.Container.Resolve<IDialogService>();
+            DialogService = ServiceLocator.GetInstance<IDialogService>();
             DialogViewModel = BuildDialogViewModel();
             ShowSettingsCommand = new DelegateCommand<BaseWindowViewModel>(ShowSettings);
         }

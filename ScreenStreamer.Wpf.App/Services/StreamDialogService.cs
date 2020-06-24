@@ -14,8 +14,8 @@ namespace ScreenStreamer.Wpf.Common.Services
         private IDictionary<StreamBorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<StreamBorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
 
-        private IDictionary<IDialogViewModel, StreamBaseWindow> _windows = new Dictionary<IDialogViewModel, StreamBaseWindow>();
-        private IDictionary<IDialogViewModel, StreamBaseWindow> _dialogs = new Dictionary<IDialogViewModel, StreamBaseWindow>();
+        private IDictionary<IDialogViewModel, MainWindow> _windows = new Dictionary<IDialogViewModel, MainWindow>();
+        private IDictionary<IDialogViewModel, MainWindow> _dialogs = new Dictionary<IDialogViewModel, MainWindow>();
 
         public void Handle(bool isVisible, IDialogViewModel viewModel)
         {
@@ -45,9 +45,9 @@ namespace ScreenStreamer.Wpf.Common.Services
             }
         }
 
-        public void Register(IDialogViewModel viewModel, StreamBaseWindow streamBaseWindow)
+        public void Register(IDialogViewModel viewModel, MainWindow mainWindow)
         {
-            _windows[viewModel] = streamBaseWindow;
+            _windows[viewModel] = mainWindow;
         }
 
         public void Show(IDialogViewModel viewModel)
@@ -81,7 +81,7 @@ namespace ScreenStreamer.Wpf.Common.Services
 
                 if (!_windows.ContainsKey(viewModel))
                 {
-                    _windows[viewModel] = new StreamBaseWindow(viewModel);
+                    _windows[viewModel] = new MainWindow(viewModel);
                     setInitialPosition = true;
                 }
                 if (viewModel is PropertyWindowViewModel propertyWindowViewModel &&
@@ -120,7 +120,7 @@ namespace ScreenStreamer.Wpf.Common.Services
                 parent.IsModalOpened = true;
             }
 
-            _dialogs[model] = new StreamBaseWindow(model);
+            _dialogs[model] = new MainWindow(model);
             var result = _dialogs[model].ShowDialog();
             _dialogs.Remove(model);
 

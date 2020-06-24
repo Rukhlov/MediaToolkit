@@ -8,7 +8,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
 {
     public class RestrictedInputTextBoxBehavior : Behavior<TextBox>
     {
-         protected Regex DisallowedRegex = new Regex("[^0-9]+"); //regex that matches disallowed text
+        protected Regex DisallowedRegex = new Regex("[^0-9]+"); //regex that matches disallowed text
 
         protected override void OnAttached()
         {
@@ -29,7 +29,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
             e.Handled = !IsTextAllowed(e.Text);
         }
 
-        private bool IsTextAllowed(string text)
+        protected virtual bool IsTextAllowed(string text)
         {
             return !DisallowedRegex.IsMatch(text);
         }
@@ -50,6 +50,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
             }
         }
     }
+
 
     public class IpRestrictedInputTextBoxBehavior : RestrictedInputTextBoxBehavior
     {

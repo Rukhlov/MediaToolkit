@@ -5,11 +5,11 @@ using NLog;
 using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Models;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
-using Unity;
+
 
 namespace ScreenStreamer.Wpf.Common.Managers
 {
-    public class ConfigurationManager
+    public class ConfigManager
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -70,7 +70,7 @@ namespace ScreenStreamer.Wpf.Common.Managers
                     Directory.CreateDirectory(ConfigPath);
                 }
 
-                var model = DependencyInjectionHelper.Container.Resolve<StreamMainModel>();
+                var model = ServiceLocator.GetInstance<StreamMainModel>();
 
                 JsonSerializer serializer = new JsonSerializer
                 {

@@ -327,6 +327,11 @@ namespace MediaToolkit.UI
             }
         }
 
+        //protected override bool ShowWithoutActivation
+        //{
+        //    get { return true; }
+        //}
+
         protected override CreateParams CreateParams
         {
             get
@@ -338,7 +343,9 @@ namespace MediaToolkit.UI
                 cp.ExStyle |= WS_EX.TopMost;
                 cp.ExStyle |= WS_EX.ToolWindow;
 
-				if (NotActivatable)
+                //cp.ExStyle |= WS_EX.NoActivate;
+
+                if (NotActivatable)
 				{
 					cp.ExStyle |= WS_EX.NoActivate;
 					cp.ExStyle |= WS_EX.Transparent;
