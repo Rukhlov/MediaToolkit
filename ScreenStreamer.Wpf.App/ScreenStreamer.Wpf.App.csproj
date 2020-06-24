@@ -140,9 +140,11 @@
     <Compile Include="Converters\RectangleToStringConverter.cs" />
     <Compile Include="Converters\SizeToStringConverter.cs" />
     <Compile Include="Converters\DoubleShiftConverter.cs" />
-    <Compile Include="Enums\ProtocolKind.cs" />
-    <Compile Include="Enums\QualityPreset.cs" />
     <Compile Include="Helpers\AudioHelper.cs" />
+    <Compile Include="Managers\SelectAreaManager.cs" />
+    <Compile Include="Models\MediaProperties.cs" />
+    <Compile Include="Models\MediaStreamModel.cs" />
+    <Compile Include="Essentials\MediaTypes.cs" />
     <Compile Include="Services\ServiceLocator.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Helpers\PropertySupport.cs" />
@@ -153,28 +155,25 @@
     <Compile Include="Interfaces\IDialogViewModel.cs" />
     <Compile Include="Interfaces\IStreamPropertyBaseViewModel.cs" />
     <Compile Include="Managers\ConfigurationManager.cs" />
-    <Compile Include="Models\StreamMainModel.cs" />
+    <Compile Include="Models\MainModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\WndProcService.cs" />
     <Compile Include="Utils\NativeMethods.cs" />
-    <Compile Include="ViewModels\CustomBindableBase.cs" />
+    <Compile Include="ViewModels\Common\CustomBindableBase.cs" />
     <Compile Include="ViewModels\Dialogs\AdvancedSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\AudioSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\BorderSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\CursorSettingsViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\DeleteViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\NetworkSettingsViewModel.cs" />
-    <Compile Include="ViewModels\Dialogs\StreamerViewModelBase.cs" />
-    <Compile Include="ViewModels\IPAddressInfoViewModel.cs" />
+    <Compile Include="ViewModels\Common\TrackableViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyBorderViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\PropertyWindowViewModel.cs" />
-    <Compile Include="ViewModels\Dialogs\BaseWindowViewModel.cs" />
-    <Compile Include="ViewModels\MultiMediaDeviceViewModel.cs" />
+    <Compile Include="ViewModels\Common\BaseWindowViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyNetworkViewModel.cs" />
-    <Compile Include="ViewModels\QualityPresetViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\QualitySettingsViewModel.cs" />
-    <Compile Include="ViewModels\StreamBorderViewModel.cs" />
-    <Compile Include="ViewModels\Dialogs\StreamMainViewModel.cs" />
+    <Compile Include="ViewModels\BorderViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyAudioViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyCursorViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyQualityViewModel.cs" />
@@ -198,7 +197,7 @@
     <Compile Include="Services\StreamDialogService.cs" />
     <Compile Include="ValidationRules\IpAddressRule.cs" />
     <Compile Include="ValidationRules\ResolutionRule.cs" />
-    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\Common\ViewModelBase.cs" />
     <Compile Include="Views\DebugContextMenu.xaml.cs">
       <DependentUpon>DebugContextMenu.xaml</DependentUpon>
     </Compile>

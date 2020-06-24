@@ -1,6 +1,7 @@
 ﻿using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
+using ScreenStreamer.Wpf;
 using System.Linq;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
@@ -34,11 +35,9 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         }
 
 
+        private AudioSourceItem _selectedSource;
 
-
-        private AudioDeviceViewModel _selectedSource;
-
-        public AudioDeviceViewModel SelectedSource
+        public AudioSourceItem SelectedSource
         {
             get => _selectedSource;
             set
@@ -54,7 +53,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
             _model = model;
 
-            var devices = AudioHelper.GetMultiMediaDeviceViewModels();
+            var devices = AudioSourceItem.GetMultiMediaDeviceViewModels();
             _selectedSource = devices.FirstOrDefault(device => device.DeviceId == model.DeviceId) ?? devices.FirstOrDefault();
         }
 

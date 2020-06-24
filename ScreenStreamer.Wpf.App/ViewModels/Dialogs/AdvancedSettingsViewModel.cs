@@ -1,6 +1,7 @@
 ﻿using MediaToolkit.Core;
 using Prism.Commands;
 using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -102,7 +103,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             H264Profile.High
         };
 
-        public AdvancedSettingsViewModel(AdvancedSettingsModel model, StreamerViewModelBase parent) :base(parent)
+        public AdvancedSettingsViewModel(AdvancedSettingsModel model, TrackableViewModel parent) :base(parent)
         {
             _model = model;
 

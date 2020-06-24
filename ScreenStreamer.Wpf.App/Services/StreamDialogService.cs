@@ -11,7 +11,7 @@ namespace ScreenStreamer.Wpf.Common.Services
 {
     internal class StreamDialogService : IDialogService
     {
-        private IDictionary<StreamBorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<StreamBorderViewModel, StreamBorderWindow>();
+        private IDictionary<BorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<BorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
 
         private IDictionary<IDialogViewModel, MainWindow> _windows = new Dictionary<IDialogViewModel, MainWindow>();
@@ -25,7 +25,7 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Hide(IDialogViewModel viewModel)
         {
-            if (viewModel is StreamMainViewModel mainViewModel)
+            if (viewModel is MainViewModel mainViewModel)
             {
                 mainViewModel.IsVisible = false;
             }
@@ -34,7 +34,7 @@ namespace ScreenStreamer.Wpf.Common.Services
                 if (_windows.ContainsKey(viewModel))
                     _windows[viewModel].Hide();
 
-                else if (viewModel is StreamBorderViewModel streamBorderViewModel && _streamBorders.ContainsKey(streamBorderViewModel))
+                else if (viewModel is BorderViewModel streamBorderViewModel && _streamBorders.ContainsKey(streamBorderViewModel))
                     _streamBorders[streamBorderViewModel].Hide();
 
                 else if (viewModel is DesignBorderViewModel designBorderViewModel && _designBorders.ContainsKey(designBorderViewModel))
@@ -53,7 +53,7 @@ namespace ScreenStreamer.Wpf.Common.Services
         public void Show(IDialogViewModel viewModel)
         {
 
-            if (viewModel is StreamBorderViewModel streamBorderViewModel)
+            if (viewModel is BorderViewModel streamBorderViewModel)
             {
                 if (!_streamBorders.ContainsKey(streamBorderViewModel))
                 {
@@ -93,13 +93,13 @@ namespace ScreenStreamer.Wpf.Common.Services
                         throw new InvalidOperationException("Property cannot be found");
                     }
 
-                    var mainWindow = _windows.Single(w => w.Key is StreamMainViewModel).Value;
+                    var mainWindow = _windows.Single(w => w.Key is MainViewModel).Value;
 
                     _windows[viewModel].Top = mainWindow.Top + 116 + 30 * propertyIndex;
                     _windows[viewModel].Left = mainWindow.Width + mainWindow.Left;
                     _windows[viewModel].WindowStartupLocation = System.Windows.WindowStartupLocation.Manual;
 
-                    foreach (var key in _windows.Keys.Where(model => model != viewModel && !(model is StreamMainViewModel)))
+                    foreach (var key in _windows.Keys.Where(model => model != viewModel && !(model is MainViewModel)))
                     {
                         Hide(key);
                     }
@@ -143,10 +143,10 @@ namespace ScreenStreamer.Wpf.Common.Services
             foreach (var b in _streamBorders) b.Value.Close();
 
             //3. Close windows except main
-            foreach (var w in _windows) if (!(w.Key is StreamMainViewModel)) w.Value.Close();
+            foreach (var w in _windows) if (!(w.Key is MainViewModel)) w.Value.Close();
 
             //4. Close main window
-            foreach (var w in _windows) if (w.Key is StreamMainViewModel) w.Value.Close();
+            foreach (var w in _windows) if (w.Key is MainViewModel) w.Value.Close();
         }
 
         public void Close(IDialogViewModel viewModel)
@@ -163,7 +163,7 @@ namespace ScreenStreamer.Wpf.Common.Services
             }
         }
 
-        public void Close(StreamBorderViewModel viewModel)
+        public void Close(BorderViewModel viewModel)
         {
             if (_streamBorders.ContainsKey(viewModel))
             {
@@ -183,8 +183,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Activate()
         {
-            var mainViewModel = _windows.Single(w => w.Key is StreamMainViewModel);
-            if ((mainViewModel.Key as StreamMainViewModel).IsVisible)
+            var mainViewModel = _windows.Single(w => w.Key is MainViewModel);
+            if ((mainViewModel.Key as MainViewModel).IsVisible)
             {
                 //0. Get visible Dialog
                 var visibleDialog = _dialogs.FirstOrDefault(d => d.Value.IsVisible);

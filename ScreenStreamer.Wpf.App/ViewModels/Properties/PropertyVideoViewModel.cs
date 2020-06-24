@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using ScreenStreamer.Wpf.Common.Enums;
+
 using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
@@ -11,11 +11,12 @@ using System.Windows.Input;
 //using Polywall.Share.Exceptions;
 using Prism.Commands;
 using MediaToolkit.UI;
+using ScreenStreamer.Wpf;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
-    public class PropertyVideoViewModel : PropertyBaseViewModel
-    {
+    public class PropertyVideoViewModel : PropertyBaseViewModel, App.Managers.IViewRect
+	{
         private readonly PropertyVideoModel _model;
         public override string Name => "Video";
 
@@ -82,7 +83,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        public ScreenCaptureType CaptureType
+        public ScreenCaptureItem CaptureType
         {
             get => _model.CaptureType;
             set
@@ -197,20 +198,28 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         public ICommand AdjustCommand { get; }
 
+		private App.Managers.SelectAreaManager selectAreaManager = null;
 
-        public PropertyVideoViewModel(StreamViewModel parent, PropertyVideoModel model) : base(parent)
+		public PropertyVideoViewModel(StreamViewModel parent, PropertyVideoModel model) : base(parent)
         {
             _model = model;
             ShowBorderCommand = new DelegateCommand(ShowBorder);
-            AdjustCommand = new DelegateCommand(Adjust);
+            //AdjustCommand = new DelegateCommand(Adjust);
+			selectAreaManager = new App.Managers.SelectAreaManager(this);
 
-      
-            UpdateRegion();
+			UpdateRegion();
         }
 
-        
-        public SelectAreaForm selectAreaForm = null;
-        private void UpdateRegion()
+		public void OnStreamStateChanged(bool isStarted)
+		{
+			//...
+
+			selectAreaManager.SetBorder(isStarted);
+
+		}
+
+		//public SelectAreaForm selectAreaForm = null;
+		private void UpdateRegion()
         {
             //if(!IsRegion)
             //{
@@ -233,49 +242,31 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
             if (!isRegionItem)
             {
-                var region = Display?.CaptureRegion ?? Rectangle.Empty;
+                var captureRegion = Display?.CaptureRegion ?? Rectangle.Empty;
 
-                this.Top = region.Top;
-                this.Left = region.Left;
-                this.ResolutionHeight = region.Height;
-                this.ResolutionWidth = region.Width;
-            }
+                this.Top = captureRegion.Top;
+                this.Left = captureRegion.Left;
+                this.ResolutionHeight = captureRegion.Height;
+                this.ResolutionWidth = captureRegion.Width;
+
+				selectAreaManager?.HideBorder();
+
+			}
             else
             {
-                if (selectAreaForm == null)
-                {
-                    selectAreaForm = new SelectAreaForm
-                    {
-                        StartPosition = System.Windows.Forms.FormStartPosition.Manual,
+				selectAreaManager?.ShowBorder(CaptureRect);
 
-                        Left = this.Left,
-                        Top = this.Top,
-                        Size = new Size(ResolutionWidth, ResolutionHeight),
-
-                    };
-                    selectAreaForm.AreaChanged += SelectAreaForm_AreaChanged;
-                }
             }
 
-            if (selectAreaForm != null)
-            {
-                selectAreaForm.Visible = isRegionItem;
-            }
         }
 
-        private void SelectAreaForm_AreaChanged(Rectangle region)
-        {
-            this.Top = region.Top;
-            this.Left = region.Left;
-            this.ResolutionHeight = region.Height;
-            this.ResolutionWidth = region.Width;
-        }
-
-        private void Adjust()
-        {
-
-        }
-
+		private void SelectedAreaChanged(Rectangle region)
+		{
+			this.Top = region.Top;
+			this.Left = region.Left;
+			this.ResolutionHeight = region.Height;
+			this.ResolutionWidth = region.Width;
+		}
 
 
         private void ShowBorder()
@@ -321,14 +312,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        public void Close()
-        {
-            if (selectAreaForm != null)
-            {
-                selectAreaForm.AreaChanged -= SelectAreaForm_AreaChanged;
-                selectAreaForm.Close();
-                selectAreaForm = null;
-            }
-        }
     }
+
+
+
 }

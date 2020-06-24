@@ -12,7 +12,7 @@ namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if (item == null) return null;
-            if (item is StreamMainViewModel)
+            if (item is MainViewModel)
             {
                 return StreamMainTemplate;
             }

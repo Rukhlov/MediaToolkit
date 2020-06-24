@@ -1,6 +1,8 @@
 ﻿using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Models.Properties;
 using System.Collections.ObjectModel;
+using ScreenStreamer.Wpf;
+
 using System.Linq;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
@@ -11,7 +13,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ObservableCollection<VideoSourceItem> Displays { get; set; } = new ObservableCollection<VideoSourceItem>();
 
 
-        public ObservableCollection<ScreenCaptureType> ScreenCaptures { get; set; } = new ObservableCollection<ScreenCaptureType>();
+        public ObservableCollection<ScreenCaptureItem> ScreenCaptures { get; set; } = new ObservableCollection<ScreenCaptureItem>();
 
         //public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
 
@@ -19,7 +21,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
 
 
-        public VideoSettingsViewModel(PropertyVideoViewModel property, StreamerViewModelBase parent) : base(property, parent)
+        public VideoSettingsViewModel(PropertyVideoViewModel property, TrackableViewModel parent) : base(property, parent)
         {
             this.parent.PropertyChanged += (sender, args) =>
             {
@@ -33,7 +35,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             Displays.AddRange(ScreenHelper.GetDisplayItems());
 
-            ScreenCaptures.AddRange(ScreenCaptureType.SupportedCaptures);
+            ScreenCaptures.AddRange(ScreenCaptureItem.SupportedCaptures);
 
             //Displays.AddRange(ScreenHelper.GetScreens());
         }

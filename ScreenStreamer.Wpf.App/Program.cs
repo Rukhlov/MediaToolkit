@@ -45,7 +45,7 @@ namespace ScreenStreamer.Wpf.UI
                 {
                     logger.Info("Another instance is already running...");
 
-                    Wpf.App.Services.WndProcService.ShowAnotherInstance();
+                    var res = Wpf.App.Services.WndProcService.ShowAnotherInstance();
                     return 0;
 
                     //return -1;

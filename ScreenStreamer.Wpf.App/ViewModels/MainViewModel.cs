@@ -13,9 +13,9 @@ using System;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
-    public class StreamMainViewModel : BaseWindowViewModel
+    public class MainViewModel : BaseWindowViewModel
     {
-        private readonly StreamMainModel _model;
+        private readonly MainModel _model;
 
 
         private bool _isEdit = false;
@@ -63,7 +63,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-
+        public bool HasMaxStreamsLimit => (StreamList.Count >= _model.MaxStreamCount);
         public bool HasNoStreams => StreamList.Count == 0;
 
 
@@ -78,18 +78,26 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ICommand StartAllCommand { get; set; }
         public ICommand ShowStreamSettingsCommand { get; set; }
 
+       
 
         public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
 
         public bool IsAllStarted => StreamList.All(s => s.IsStarted);
 
-        public StreamMainViewModel(StreamMainModel model) : base(null)
+        public MainViewModel(MainModel model) : base(null)
         {
             _model = model;
             StreamList = new ObservableCollection<StreamViewModel>(_model.StreamList.Select(m => new StreamViewModel(this, true, m)));
             this.IsBottomVisible = false;
-            this.DeleteCommand = new DelegateCommand(Delete, () => StreamList.Count > 1);
-            this.AddCommand = new DelegateCommand(Add);
+            this.DeleteCommand = new DelegateCommand(OnDeleteStream, () => StreamList.Count > 1);
+            this.AddCommand = new DelegateCommand(OnAddStream,
+                () => 
+                    {
+                        return true;
+                       //return StreamList.Count < _model.MaxStreamCount;
+                    }
+                );
+
             this.ShowMainWindowCommand = new DelegateCommand(ShowMainWindow);
             this.HideMainWindowCommand = new DelegateCommand(HideMainWindow);
             this.ActivateMainWindowCommand = new DelegateCommand(Activate);
@@ -107,7 +115,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private App.Services.WndProcService wndProcService = null;
 
-        private void Delete()
+        private void OnDeleteStream()
         {
             var dialogService = ServiceLocator.GetInstance<IDialogService>();
             var streamToDelete = this.SelectedStream;
@@ -130,15 +138,17 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 IsEdit = false;
                 SelectedStream = null;
 
+                RaisePropertyChanged(nameof(HasMaxStreamsLimit));
+
                 RaisePropertyChanged(nameof(HasNoStreams));
                 RaisePropertyChanged(nameof(IsAllStarted));
                 (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
             }
         }
 
-        private void Add()
+        private void OnAddStream()
         {
-            var model = new StreamModel
+            var model = new MediaStreamModel
             {
                 Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})"
             };
@@ -150,6 +160,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             this._model.StreamList.Add(model);
             SelectedStream = streamViewModel;
 
+            RaisePropertyChanged(nameof(HasMaxStreamsLimit));
             RaisePropertyChanged(nameof(HasNoStreams));
             RaisePropertyChanged(nameof(IsAllStarted));
             (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
@@ -205,15 +216,18 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private void ShowStreamSettings(StreamViewModel streamViewModel)
         {
-            //var mainWindow = Application.Current.MainWindow;
-            //var dialogWindows = Application.Current
-            //                            .Windows.Cast<Window>()
-            //                            .Where(w => w is StreamBaseWindow && w != mainWindow);
+			//var mainWindow = Application.Current.MainWindow;
+			//var dialogWindows = Application.Current
+			//                            .Windows.Cast<Window>()
+			//                            .Where(w => w is StreamBaseWindow && w != mainWindow);
 
-            ////Close child dialogs
-            //foreach (var w in dialogWindows) w.Close();
+			////Close child dialogs
+			//foreach (var w in dialogWindows) w.Close();
 
-            if (!IsVisible) ShowMainWindow();
+			if (!IsVisible)
+			{
+				ShowMainWindow();
+			}
 
             Activate();
 

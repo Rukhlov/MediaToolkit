@@ -1,5 +1,6 @@
-﻿using ScreenStreamer.Wpf.Common.Enums;
-using ScreenStreamer.Wpf.Common.Models;
+﻿
+
+using ScreenStreamer.Wpf;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -49,11 +50,11 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             return $"{networkInterface.Name} ({ipAddressInfo.Address})";
         }
 
-        internal static List<IPAddressInfoViewModel> GetIpAddressInfoViewModels()
+        internal static List<IPAddressInfoItem> GetIpAddressInfoViewModels()
         {
-            var result = new List<IPAddressInfoViewModel>()
+            var result = new List<IPAddressInfoItem>()
             {
-                new IPAddressInfoViewModel
+                new IPAddressInfoItem
                 {
                     DisplayName = "All",
                     InterfaceName = "All",
@@ -62,7 +63,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             };
 
             var interfaces = GetNetworkInterfaces();
-            interfaces.ForEach(i => result.Add(new IPAddressInfoViewModel
+            interfaces.ForEach(i => result.Add(new IPAddressInfoItem
             {
                 DisplayName = i.IpAddressInfo.ToDisplayName(i.Network),
                 InterfaceName = i.Network.Name,

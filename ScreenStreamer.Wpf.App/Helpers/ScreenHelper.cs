@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using ScreenStreamer.Wpf;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -7,24 +8,6 @@ using System.Windows.Forms;
 
 namespace ScreenStreamer.Wpf.Common.Helpers
 {
-    public class EncoderItem
-    {
-        public string Name { get; set; }
-        public string Id { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is EncoderItem)) return false;
-            return (Id == ((EncoderItem)obj).Id);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-    }
-
 
     public class EncoderHelper
     {
@@ -69,38 +52,6 @@ namespace ScreenStreamer.Wpf.Common.Helpers
         }
     }
 
-   
-    public class VideoSourceItem
-    {
-        public string Name { get; set; }
-        public string DeviceId { get; set; }
-        public Rectangle CaptureRegion { get; set; }
-
-        public bool IsUvcDevice { get; set; } = false;
-
-        public override bool Equals(object obj)
-        {
-            //if (!(obj is VideoSourceItem)) return false;
-            //return (DeviceId == ((VideoSourceItem)obj).DeviceId);
-
-            bool Result = false;
-            var item = obj as VideoSourceItem;
-            if (item != null)
-            {
-                Result = this.DeviceId == item.DeviceId;
-            }
-
-            return Result;
-
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        // public ScreenCaptureDevice Device { get; set; }
-    }
 
     public class ScreenHelper
     {

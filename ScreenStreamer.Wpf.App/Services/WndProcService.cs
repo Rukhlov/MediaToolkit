@@ -13,19 +13,22 @@ namespace ScreenStreamer.Wpf.App.Services
     {
         private const string SHOW_POLYWALL_STREAMER_MAIN_WINDOW = "SHOW_POLYWALL_STREAMER_MAIN_WINDOW";
 
-        public static void ShowAnotherInstance()
+        public static bool ShowAnotherInstance()
         {
+			bool Result = false;
             int message = NativeMethods.RegisterWindowMessage(SHOW_POLYWALL_STREAMER_MAIN_WINDOW);
 
             if (message > 0)
             {
-                bool success = NativeMethods.SendNotifyMessage((IntPtr)NativeMethods.HWND_BROADCAST, message, 0, 0);
-                if (!success)
+				Result = NativeMethods.SendNotifyMessage((IntPtr)NativeMethods.HWND_BROADCAST, message, 0, 0);
+                if (!Result)
                 {
                     var error = Marshal.GetLastWin32Error();
                     Debug.WriteLine("SendNotifyMessage(...) " + error);
                 }
             }
+
+			return Result;
         }
 
         private NotifyWindow nativeWindow = null;

@@ -44,7 +44,10 @@
                                 Margin="0,4"
                                 HorizontalAlignment="Center"
                                 Command="{Binding AddCommand}"
-                                ToolTip="Create new stream">
+                                ToolTip="Create new stream" 
+                                IsEnabled="{Binding HasMaxStreamsLimit, Mode=OneWay,  Converter={converters:InverseBooleanConverter}}">
+                            
+                            <!--Visibility="{Binding HasMaxStreamsLimit, Mode=OneWay,  Converter={converters:InvertedBooleanToVisibilityConverter}}">-->
                             <Button.Visibility>
                                 <MultiBinding Converter="{converters:MultiBooleanToVisibilityConverter}"
                                               ConverterParameter="Any,Collapsed">
@@ -56,6 +59,7 @@
                                             Mode="OneWay"/>
                                 </MultiBinding>
                             </Button.Visibility>
+                            
                             <materialDesign:PackIcon Kind="Add" Margin="0"/>
                         </Button>
                         

@@ -20,7 +20,7 @@ namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
         {
             if (item == null) return null;
             if (item is AudioSettingsViewModel) return AudioSettingsTemplate;
-            if (item is StreamMainViewModel) return StreamMainTemplate;
+            if (item is MainViewModel) return StreamMainTemplate;
             if (item is DeleteViewModel) return DeleteTemplate;
             if (item is VideoSettingsViewModel) return VideoSettingsTemplate;
             if (item is NetworkSettingsViewModel) return NetworkSettingsTemplate;

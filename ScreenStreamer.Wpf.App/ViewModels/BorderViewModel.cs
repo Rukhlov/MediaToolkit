@@ -13,10 +13,10 @@ namespace ScreenStreamer.Wpf.Common.Models
         }
     }
 
-    public class StreamBorderViewModel : BaseBorderViewModel
+    public class BorderViewModel : BaseBorderViewModel
     {
 
-        public StreamBorderViewModel(StreamViewModel stream) : base(stream)
+        public BorderViewModel(StreamViewModel stream) : base(stream)
         {
         }
     }

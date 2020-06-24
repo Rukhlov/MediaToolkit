@@ -30,8 +30,8 @@ namespace ScreenStreamer.Wpf.Common.Views
         //For debug\
         public MainWindow()
         {
-            var model = ServiceLocator.GetInstance<StreamMainModel>();
-            var vm = new StreamMainViewModel(model);
+            var model = ServiceLocator.GetInstance<MainModel>();
+            var vm = new MainViewModel(model);
             this.DataContext = vm;
 
             CloseCommand = new DelegateCommand(HandleClose);
@@ -134,7 +134,7 @@ namespace ScreenStreamer.Wpf.Common.Views
 
     public class AcceptChangesMessage
     {
-        public StreamerViewModelBase Model { get; set; }
+        public TrackableViewModel Model { get; set; }
         public string ChangedProperty { get; set; }
     }
 }

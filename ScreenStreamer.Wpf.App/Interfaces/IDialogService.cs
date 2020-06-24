@@ -19,7 +19,7 @@ namespace ScreenStreamer.Wpf.Common.Interfaces
 
 		void Close(IDialogViewModel viewModel);
 
-		void Close(StreamBorderViewModel viewModel);
+		void Close(BorderViewModel viewModel);
 
 		void Close(DesignBorderViewModel viewModel);
 	}

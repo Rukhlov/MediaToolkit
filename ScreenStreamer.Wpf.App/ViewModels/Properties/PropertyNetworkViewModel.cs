@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using ScreenStreamer.Wpf.Common.Enums;
+
 using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows.Input;
 //using Polywall.Share.Exceptions;
 using Prism.Commands;
+using ScreenStreamer.Wpf;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
@@ -20,9 +21,9 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
   
-        private IPAddressInfoViewModel _selectedNetwork;
+        private IPAddressInfoItem _selectedNetwork;
         [Track]
-        public IPAddressInfoViewModel SelectedNetwork
+        public IPAddressInfoItem SelectedNetwork
         {
             get => _selectedNetwork;
             set
@@ -132,8 +133,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                     address = ipAddrInfo.Address.ToString();
                 }
 
-                return SelectedNetwork.InterfaceName + " (" + address + ":"+ port + ")";
+                var info = SelectedNetwork.InterfaceName + " (" + address + ":"+ port + ")";
+                if (info.Length > MaxInfoLength)
+                {
+                    info = info.Substring(0, MaxInfoLength - 3) + "...";
+                }
 
+                return info;
 
                 //var builder = new StringBuilder();
 

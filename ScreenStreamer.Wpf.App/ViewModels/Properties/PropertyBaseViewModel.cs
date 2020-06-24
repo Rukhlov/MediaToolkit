@@ -9,7 +9,7 @@ using Unity;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
-    public abstract class PropertyBaseViewModel : StreamerViewModelBase
+    public abstract class PropertyBaseViewModel : TrackableViewModel
     {
         protected readonly int MaxInfoLength = 60;
 

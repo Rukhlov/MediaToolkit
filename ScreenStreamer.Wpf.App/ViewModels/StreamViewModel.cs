@@ -16,22 +16,24 @@ using MediaToolkit.UI;
 
 namespace ScreenStreamer.Wpf.Common.Models
 {
-    public class StreamViewModel : StreamerViewModelBase
+    public class StreamViewModel : TrackableViewModel
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
 
 
-        public StreamModel Model { get; }
+        public MediaStreamModel Model { get; }
+
         private IDialogService _dialogService;
 
-        public StreamMainViewModel MainViewModel { get; }
+        public MainViewModel MainViewModel { get; }
+
         [Track]
         public AdvancedSettingsViewModel AdvancedSettingsViewModel { get; set; }
         [Track]
         public PropertyVideoViewModel VideoViewModel { get; set; }
         [Track]
-        public StreamBorderViewModel BorderViewModel { get; set; }
+        public BorderViewModel BorderViewModel { get; set; }
         [Track]
         public DesignBorderViewModel DesignViewModel { get; set; }
         [Track]
@@ -127,7 +129,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
 
-        public StreamViewModel(StreamMainViewModel mainViewModel, bool addInitialProperties, StreamModel model)
+        public StreamViewModel(MainViewModel mainViewModel, bool addInitialProperties, MediaStreamModel model)
         {
             Model = model;
             AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
@@ -154,7 +156,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                // Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
-            BorderViewModel = new StreamBorderViewModel(this);
+            BorderViewModel = new BorderViewModel(this);
             DesignViewModel = new DesignBorderViewModel(this);
 
             dispatcher = Dispatcher.CurrentDispatcher;
@@ -261,29 +263,26 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             PropertyNetwork.UpdatePropInfo(IsStarted);
 
-            //if (isStarted)
-            //{
-            //    _dialogService.Hide(DesignViewModel);
-            //    if (IsBorderVisible)
-            //    {
-            //        _dialogService.Show(BorderViewModel);
-            //    }
+			//if (isStarted)
+			//{
+			//    _dialogService.Hide(DesignViewModel);
+			//    if (IsBorderVisible)
+			//    {
+			//        _dialogService.Show(BorderViewModel);
+			//    }
 
-            //}
-            //else if (!isStarted)
-            //{
-            //    _dialogService.Hide(BorderViewModel);
-            //    if (IsBorderVisible)
-            //    {
-            //        _dialogService.Show(DesignViewModel);
-            //    }
-            //}
+			//}
+			//else if (!isStarted)
+			//{
+			//    _dialogService.Hide(BorderViewModel);
+			//    if (IsBorderVisible)
+			//    {
+			//        _dialogService.Show(DesignViewModel);
+			//    }
+			//}
 
-            var selectAreaForm = VideoViewModel.selectAreaForm;
-            if (selectAreaForm != null)
-            {
-                selectAreaForm.Capturing = isStarted;
-            }
+			VideoViewModel.OnStreamStateChanged(isStarted);
+
 
             if (isStarted)
             {
@@ -319,10 +318,10 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public void Close()
         {
-            if (VideoViewModel != null)
-            {
-                VideoViewModel.Close();
-            }
+            //if (VideoViewModel != null)
+            //{
+            //    VideoViewModel.Close();
+            //}
 
         }
     }

@@ -7,11 +7,11 @@ using ScreenStreamer.Wpf.Common.Managers;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
-    public class BaseWindowViewModel : StreamerViewModelBase, IWindowViewModel
+    public class BaseWindowViewModel : TrackableViewModel, IWindowViewModel
     {
-        private readonly StreamerViewModelBase parent;
+        private readonly TrackableViewModel parent;
 
-        public BaseWindowViewModel(StreamerViewModelBase parent) :base(parent)
+        public BaseWindowViewModel(TrackableViewModel parent) :base(parent)
         {
             this.parent = parent;
             DiscardChangesCommand = new RelayCommand(this.ResetChanges);

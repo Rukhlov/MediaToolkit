@@ -1,51 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Drawing;
-using MediaToolkit.Core;
-using Newtonsoft.Json;
+﻿using MediaToolkit.Core;
 using NLog;
 using ScreenStreamer.Common;
-using ScreenStreamer.Wpf.Common.Enums;
-using ScreenStreamer.Wpf.Common.Helpers;
+
+using ScreenStreamer.Wpf.Common.Models;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ScreenStreamer.Wpf.Common.Models
+namespace ScreenStreamer.Wpf
 {
-    public class StreamMainModel
-    {
-        public static StreamMainModel Default => CreateDefault();
-
-        private static StreamMainModel CreateDefault()
-        {
-            var defaultStream = new StreamModel()
-            {
-                Name = $"{Environment.MachineName} (Stream 1)"
-            };
-
-           // defaultStream.Init();
-
-
-            var @default = new StreamMainModel();
-            @default.StreamList.Add(defaultStream);
-            return @default;
-        }
-
-        public List<StreamModel> StreamList { get; set; } = new List<StreamModel>();
-    }
-
-
-    public class StreamModel
+    public class MediaStreamModel
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public StreamModel()
+        public MediaStreamModel()
         {
             mediaStreamer = new MediaStreamer();
             mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
             Init();
         }
+
+
 
         private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
@@ -154,7 +133,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
         }
 
-		private void MediaStreamer_StateChanged()
+        private void MediaStreamer_StateChanged()
         {
             var state = mediaStreamer.State;
 
@@ -167,11 +146,11 @@ namespace ScreenStreamer.Wpf.Common.Models
             else if (state == MediaStreamerState.Streamming)
             {
 
-			}
+            }
             else if (state == MediaStreamerState.Stopping)
             {
 
-			}
+            }
             else if (state == MediaStreamerState.Stopped)
             {
 
@@ -188,7 +167,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                     //...
                     //Process error
 
- 
+
                     this.ErrorCode = internalCode;
                     this.ErrorObj = internalError;
 
@@ -199,7 +178,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                 mediaStreamer.Shutdown();
 
             }
-            else if( state == MediaStreamerState.Shutdown)
+            else if (state == MediaStreamerState.Shutdown)
             {
 
             }
@@ -231,7 +210,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             int communicationPort = PropertyNetwork.Port;
             if (communicationPort <= 0)
             {// если порт не задан - ищем свободный начиная с 808
-                
+
                 var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
                 if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
                 {
@@ -254,7 +233,7 @@ namespace ScreenStreamer.Wpf.Common.Models
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
 
-            
+
             videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
             videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
             videoEncoderSettings.LowLatency = AdvancedSettingsModel.LowLatency;
@@ -336,7 +315,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (mediaStreamer != null)
             {
-                if(mediaStreamer!=null && mediaStreamer.State != MediaStreamerState.Shutdown)
+                if (mediaStreamer != null && mediaStreamer.State != MediaStreamerState.Shutdown)
                 {
                     //Stop and shutdown...
                     logger.Warn("mediaStreamer!=null && mediaStreamer.State != MediaStreamerState.Shutdown");
@@ -350,182 +329,5 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         }
 
-    }
-
-    public class PropertyNetworkModel
-    {
-
-        public string Network { get; set; } = "0.0.0.0";
-        public int Port { get; set; } = 0;
-
-        [JsonIgnore]
-        public int CommunicationPort { get; set; } = 0;
-
-        public bool IsUnicast { get; set; } = true;
-        public ProtocolKind UnicastProtocol { get; set; } = ProtocolKind.TCP;
-
-        public string MulticastIp { get; set; } = "239.0.0.1";
-
-
-        public void Init()
-        {
-            CommunicationPort = Port;
-
-            //var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange((System.Net.Sockets.ProtocolType)UnicastProtocol, 1, Port);
-            //if (freeTcpPorts != null)
-            //{// может в любой момент изменится и свободный порт будет занят !!!
-            //    var newPort = freeTcpPorts.FirstOrDefault();
-
-            //    Port = newPort;
-            //}
-            //else
-            //{
-            //    //No avaliable tcp ports..;
-            //}
-        }
-
-        public string GetDescription()
-        {
-
-            return "";
-        }
-    }
-
-    public class PropertyBorderModel
-    {
-        public bool IsBorderVisible { get; set; }
-    }
-
-    public class _PropertyVideoModel
-    {
-        public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
-        public bool IsRegion { get; set; }
-
-        public double Top { get; set; } = 0;
-        public double Left { get; set; } = 0;
-        public double ResolutionHeight { get; set; } = 1920;
-        public double ResolutionWidth { get; set; } = 1080;
-        public bool AspectRatio { get; set; } = true;
-    }
-
-    public class ScreenCaptureType
-    {
-        public VideoCaptureType CaptType { get; set; }
-        public string Name { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            if (!(obj is ScreenCaptureType)) return false;
-            return (CaptType == ((ScreenCaptureType)obj).CaptType);
-
-            //var sct = obj as ScreenCaptureType;
-            //if (sct != null)
-            //{
-            //    return (this.CaptType == sct.CaptType);
-            //}
-            //return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        //public static List<ScreenCaptureType> SupportedCaptureTypes()
-        //{
-        //    List<ScreenCaptureType> types = new List<ScreenCaptureType>
-        //    {
-        //        new ScreenCaptureType{CaptureType = VideoCaptureType.DXGIDeskDupl, Name = "Desktop Duplication API" },
-        //        new ScreenCaptureType{CaptureType = VideoCaptureType.GDI, Name = "GDI" },
-        //        new ScreenCaptureType{CaptureType = VideoCaptureType.GDILayered, Name = "GDI Layered" },
-        //    };
-
-        //    return types;
-        //}
-
-       public static readonly List<ScreenCaptureType> SupportedCaptures = new List<ScreenCaptureType>
-        {
-            new ScreenCaptureType{CaptType = VideoCaptureType.DXGIDeskDupl, Name = "Desktop Duplication API" },
-            new ScreenCaptureType{CaptType = VideoCaptureType.GDI, Name = "GDI" },
-            new ScreenCaptureType{CaptType = VideoCaptureType.GDILayered, Name = "GDI Layered" },
-        };
-
-        // public ScreenCaptureDevice Device { get; set; }
-    }
-
-    public class PropertyVideoModel
-    {
-        //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
-
-        public VideoSourceItem Display { get; set; }//= new ScreenItem();
-
-        public bool IsRegion { get; set; }
-
-        public int Top { get; set; } = 0;
-        public int Left { get; set; } = 0;
-
-        public int ResolutionWidth { get; set; } = 1920;
-
-        public int ResolutionHeight { get; set; } = 1080;
-
-        public ScreenCaptureType CaptureType { get; set; } //= new ScreenItem();
-
-        public bool CaptureMouse { get; set; } = true;
-
-        public bool ShowCaptureBorder { get; set; } = false;
-
-        public void Init()
-        {
-            if(Display == null)
-            {
-                Display = ScreenHelper.GetDisplayItems().FirstOrDefault();
-            }
-
-            if(this.CaptureType == null)
-            {
-               // this.CaptureType = new ScreenCaptureType { CaptType = VideoCaptureType.DXGIDeskDupl, Name = "DeskDupl" };
-                CaptureType = ScreenCaptureType.SupportedCaptures.FirstOrDefault();
-            }
-        }
-    }
-
-    public class PropertyQualityModel
-    {
-        public QualityPreset Preset { get; set; } = QualityPreset.Standard;
-    }
-
-    public class PropertyCursorModel
-    {
-        public bool IsCursorVisible { get; set; } = true;
-    }
-
-    public class PropertyAudioModel
-    {
-        public bool IsEnabled { get; set; }
-        public bool IsComputerSoundEnabled { get; set; } = true;
-        public string DeviceId { get; set; }
-    }
-
-
-    public class AdvancedSettingsModel
-    {
-        public int Bitrate { get; set; } = 2500;
-        public int Fps { get; set; } = 30;
-        public bool LowLatency { get; set; } = true;
-        public int MaxBitrate { get; set; } = 5000;
-        public H264Profile H264Profile { get; set; } = H264Profile.Main;
-
-        public EncoderItem VideoEncoder { get; set; }
-
-        public void Init()
-        {
-            if(VideoEncoder == null)
-            {
-                VideoEncoder = EncoderHelper.GetVideoEncoderItems().FirstOrDefault();
-
-            }
-        }
-        
-        //public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
     }
 }

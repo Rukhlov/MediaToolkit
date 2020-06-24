@@ -24,7 +24,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
 
         private void AssociatedObject_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            var list = (sender as ItemsControl)?.DataContext as StreamMainViewModel;
+            var list = (sender as ItemsControl)?.DataContext as MainViewModel;
             var target = (e.OriginalSource as FrameworkElement)?.DataContext as StreamViewModel;
             if (target != null &&
                 list != null &&

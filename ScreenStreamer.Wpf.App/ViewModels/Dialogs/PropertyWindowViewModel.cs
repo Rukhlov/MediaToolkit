@@ -6,11 +6,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
     public abstract class PropertyWindowViewModel : BaseWindowViewModel
     {
-        protected StreamerViewModelBase parent;
+        protected TrackableViewModel parent;
         [Track]
         public PropertyBaseViewModel Property { get; }
 
-        public PropertyWindowViewModel(PropertyBaseViewModel property, StreamerViewModelBase parent) : base(parent)
+        public PropertyWindowViewModel(PropertyBaseViewModel property, TrackableViewModel parent) : base(parent)
         {
             this.parent = parent;
             this.Property = property ?? throw new ArgumentNullException(nameof(property));
