@@ -28,6 +28,11 @@
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="40"/>
+                
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Encoder" Grid.Row="0" Grid.Column="0"/>
@@ -81,6 +86,36 @@
                           IsChecked="{Binding LowLatency}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
+
+            <Rectangle Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
+            
+            <TextBlock Text="Video Resolution From Capture Source" Grid.Row="9" Grid.Column="0"/>
+            <ToggleButton Grid.Row="9" Grid.Column="1"
+                          Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+
+                          HorizontalAlignment="Right"
+                          Cursor="Hand"/>
+
+
+            <TextBlock Text="Width" Grid.Row="10" Grid.Column="0"/>
+            <TextBox Grid.Row="10" Grid.Column="1"
+                     Style="{StaticResource defaultTextBoxStyle}">
+                <i:Interaction.Behaviors>
+                    <behaviors:RestrictedInputTextBoxBehavior/>
+                </i:Interaction.Behaviors>
+            </TextBox>
+
+            <TextBlock Text="Height" Grid.Row="11" Grid.Column="0"/>
+            <TextBox Grid.Row="11" Grid.Column="1"
+                     Style="{StaticResource defaultTextBoxStyle}">
+                <i:Interaction.Behaviors>
+                    <behaviors:RestrictedInputTextBoxBehavior/>
+                </i:Interaction.Behaviors>
+            </TextBox>
+
         </Grid>
+        
+        
+        
     </DataTemplate>
 </ResourceDictionary>

@@ -26,7 +26,8 @@ namespace ScreenStreamer.Wpf
         public ProtocolKind UnicastProtocol { get; set; } = ProtocolKind.TCP;
 
         public string MulticastIp { get; set; } = "239.0.0.1";
-
+        public int MulticasVideoPort { get; set; } = 0;
+        public int MulticasAudioPort { get; set; } = 0;
 
         public void Init()
         {

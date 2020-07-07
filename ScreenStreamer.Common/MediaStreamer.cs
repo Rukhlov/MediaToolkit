@@ -376,8 +376,17 @@ namespace ScreenStreamer.Common
                 hostName += " (" + videoDeviceName + ")";
             }
 
+            var audioDeviceName = audioSettings.CaptureDevice?.Name ?? "";
+
+            Dictionary<string, string> extensions = new Dictionary<string, string>
+            {
+                { "StreamName",  Session.StreamName },
+                { "AudioInfo", audioDeviceName },
+                { "VideoInfo", videoDeviceName },
+            };
+
             communicationService = new CommunicationService(this);
-            communicationService.Open(communicationAddress, hostName);
+            communicationService.Open(communicationAddress, hostName, extensions);
 
 
             if (videoSettings.Enabled)
@@ -633,7 +642,7 @@ namespace ScreenStreamer.Common
 
             public Uri ListenUri { get; private set; }
 
-            public void Open(string address, string hostName)
+            public void Open(string address, string hostName, Dictionary<string,string> extensions = null)
             {
                 logger.Debug("ScreenCastService::Open(...) " + address);
 
@@ -685,6 +694,16 @@ namespace ScreenStreamer.Common
                     endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
                     endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("StreamId", ServerId));
+
+                    if (extensions != null)
+                    {
+                        foreach(var key in extensions.Keys)
+                        {
+                            var element = new System.Xml.Linq.XElement(key, extensions[key]);
+
+                            endpointDiscoveryBehavior.Extensions.Add(element);
+                        }
+                    }
 
                     //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
                     //foreach (var addr in addrInfos)

@@ -90,15 +90,31 @@ namespace ScreenStreamer.Common
 
 			if (IsMulticast)
 			{
-				var multicastAudioPort = MutlicastPort1 + 1;
+               
+                if (MutlicastPort1 <= 0 || MutlicastPort2<=0)
+                {
+                    // TODO: get available  ports... 
+                    if (MutlicastPort1 <= 0)
+                    {
+                        MutlicastPort1 = 1234;
+                    }
+
+                    if (MutlicastPort2 <= 0)
+                    {
+                        MutlicastPort2 = 1236;
+                    }
+                }
+
+				//var multicastAudioPort = MutlicastPort1 + 1;
 
 				videoNetworkSettings.RemoteAddr = MutlicastAddress;
 				videoNetworkSettings.RemotePort = MutlicastPort1;
 
 				audioNetworkSettings.RemoteAddr = MutlicastAddress;
-				audioNetworkSettings.RemotePort = multicastAudioPort;
+                audioNetworkSettings.RemotePort = MutlicastPort2;//multicastAudioPort;
 
-			}
+
+            }
 			else
 			{
 				if (TransportMode == TransportMode.Tcp)

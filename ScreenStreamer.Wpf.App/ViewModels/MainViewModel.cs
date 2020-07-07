@@ -10,6 +10,8 @@ using System.Windows.Input;
 using ScreenStreamer.Wpf.Common.Managers;
 using Unity;
 using System;
+using System.Windows.Media.Imaging;
+using System.Collections.Generic;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
@@ -78,15 +80,36 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ICommand StartAllCommand { get; set; }
         public ICommand ShowStreamSettingsCommand { get; set; }
 
-       
+        private Dictionary<string, BitmapImage> iconDict = new Dictionary<string, BitmapImage>();
+
+        public BitmapImage ActiveIcon
+        {
+            get
+            {
+                return IsAnyStarted ? iconDict["StreamOn"] : iconDict["TrayLogo"];
+
+            }
+        }
+
 
         public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
 
         public bool IsAllStarted => StreamList.All(s => s.IsStarted);
 
+        public bool IsAnyStarted => StreamList.Any(s => s.IsStarted);
+
         public MainViewModel(MainModel model) : base(null)
         {
             _model = model;
+
+            iconDict = new Dictionary<string, BitmapImage>
+            {
+                { "TrayLogo", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico")) },
+
+                { "StreamOff", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamoff.ico")) },
+                { "StreamOn", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamon.ico")) },
+            };
+
             StreamList = new ObservableCollection<StreamViewModel>(_model.StreamList.Select(m => new StreamViewModel(this, true, m)));
             this.IsBottomVisible = false;
             this.DeleteCommand = new DelegateCommand(OnDeleteStream, () => StreamList.Count > 1);
@@ -170,17 +193,29 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         private void ShowMainWindow()
         {
             IsVisible = true;
+            this.RaisePropertyChanged(nameof(ActiveIcon));
         }
 
         private void HideMainWindow()
         {
             IsVisible = false;
+
+            this.RaisePropertyChanged(nameof(ActiveIcon));
         }
 
 
         public void RaiseIsAllStartedChanged()
         {
             this.RaisePropertyChanged(nameof(IsAllStarted));
+
+
+        }
+
+        public void OnStreamStateChanged()
+        {
+            RaisePropertyChanged(nameof(IsAnyStarted));
+
+            RaisePropertyChanged(nameof(ActiveIcon));
         }
 
         private void Activate()

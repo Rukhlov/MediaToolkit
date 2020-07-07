@@ -119,8 +119,6 @@ namespace ScreenStreamer.Wpf
                 mediaStreamer.Start(currentSession);
             }
 
-
-
         }
 
         public void StopStreaming()
@@ -222,9 +220,18 @@ namespace ScreenStreamer.Wpf
 
             session.CommunicationPort = communicationPort;
             session.TransportMode = transport;
+            
+            bool isMulticast = !PropertyNetwork.IsUnicast;
+            session.IsMulticast = isMulticast;
 
-            session.IsMulticast = !PropertyNetwork.IsUnicast;
+            if (isMulticast)
+            {
+                //VAlidate....
+                session.MutlicastAddress = PropertyNetwork.MulticastIp;
 
+                session.MutlicastPort1 = PropertyNetwork.MulticasVideoPort;
+                session.MutlicastPort2 = PropertyNetwork.MulticasAudioPort;
+            }
 
             var videoSettings = session.VideoSettings;
             var videoEncoderSettings = videoSettings.EncoderSettings;

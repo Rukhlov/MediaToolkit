@@ -127,6 +127,7 @@
     <Compile Include="Networks\RtpSession.cs" />
     <Compile Include="Networks\RtpUdpSender.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScreenCaptures\DesktopDuplicationManager.cs" />
     <Compile Include="ScreenCaptures\Direct3D9Capture.cs" />
     <Compile Include="ScreenCaptures\DatapathDesktopCapture.cs" />
     <Compile Include="ScreenCaptures\DXGIDesktopDuplicationCapture.cs" />

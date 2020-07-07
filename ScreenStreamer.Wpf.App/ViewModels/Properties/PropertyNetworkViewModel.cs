@@ -92,6 +92,28 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
+        [Track]
+        public int MulticastVideoPort
+        {
+            get => _model.MulticasVideoPort;
+            set
+            {
+                SetProperty(_model, () => _model.MulticasVideoPort, value);
+
+            }
+        }
+
+        [Track]
+        public int MulticastAudioPort
+        {
+            get => _model.MulticasAudioPort;
+            set
+            {
+                SetProperty(_model, () => _model.MulticasAudioPort, value);
+
+            }
+        }
+
 
 
         public PropertyNetworkViewModel(StreamViewModel parent, PropertyNetworkModel model) : base(parent)

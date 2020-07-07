@@ -283,6 +283,7 @@ namespace ScreenStreamer.Wpf.Common.Models
 
 			VideoViewModel.OnStreamStateChanged(isStarted);
 
+            MainViewModel.OnStreamStateChanged();
 
             if (isStarted)
             {

@@ -70,11 +70,19 @@
                           Cursor="Hand"/>
             </Grid>
 
-            <Grid Height="40">
+            <Grid Height="90">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+
+                </Grid.RowDefinitions>
+                
                 <RadioButton GroupName="protocol"
                              IsChecked="{Binding Property.IsUnicast, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
                              Content="Multicast"
@@ -94,7 +102,35 @@
                         <behaviors:IpRestrictedInputTextBoxBehavior/>
                     </i:Interaction.Behaviors>
                 </TextBox>
+
+                <TextBlock Grid.Column="0" Grid.Row="1"  Margin="20,0,0,0" Text="Video Port" />
+
+                <TextBox Grid.Column="1" Grid.Row="1" 
+                         IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
+                         Text="{Binding Property.MulticastVideoPort, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:RestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+
+                </TextBox>
+
+                <TextBlock Grid.Column="0" Grid.Row="2" Margin="20,0,0,0" Text="Audio Port" />
+
+                <TextBox Grid.Column="1" Grid.Row="2" 
+                          IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
+                         Text="{Binding Property.MulticastAudioPort, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
+                         Style="{StaticResource defaultTextBoxStyle}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:RestrictedInputTextBoxBehavior/>
+                    </i:Interaction.Behaviors>
+
+                </TextBox>
+                
             </Grid>
+
+
+
 
 
         </StackPanel>

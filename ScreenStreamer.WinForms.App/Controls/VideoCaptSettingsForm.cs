@@ -19,60 +19,113 @@ namespace ScreenStreamer.WinForms
         {
             InitializeComponent();
 
-			LoadCaptureTypes();
+			
 
 		}
 
-        private ScreenCaptureDevice CaptDeviceSettings = null;
+        private ScreenCaptureDevice ScreenCaptSettings = null;
+
+
+        private WindowCaptureDevice WindowsCaptSettings = null;
 
         public void Setup(VideoCaptureDevice captDeviceSettings)
         {
-            CaptDeviceSettings = (ScreenCaptureDevice)captDeviceSettings;
 
-            var captureProps = CaptDeviceSettings.Properties;
+            if(captDeviceSettings.CaptureMode == CaptureMode.Screen)
+            {
+                
 
-            captureMouseCheckBox.Checked = captureProps.CaptureMouse;
+                ScreenCaptSettings = (ScreenCaptureDevice)captDeviceSettings;
+                LoadCaptureTypes();
 
-			var fps = captureProps.Fps;
-			if (fps > fpsNumeric.Maximum)
-			{
-				fps = (int)fpsNumeric.Maximum;
-			}
-			else if(fps < fpsNumeric.Minimum)
-			{
-				fps = (int)fpsNumeric.Minimum;
-			}
 
-            var captureType = captureProps.CaptureType;
+                var captureProps = ScreenCaptSettings.Properties;
 
-            var captureItem = captureTypes.FirstOrDefault(i => (VideoCaptureType)i.Tag == captureType) 
-                ?? captureTypes.FirstOrDefault();
 
-            captureTypesComboBox.SelectedItem = captureItem;
+                captureMouseCheckBox.Checked = captureProps.CaptureMouse;
 
-            fpsNumeric.Value = fps;
+                var fps = captureProps.Fps;
+                if (fps > fpsNumeric.Maximum)
+                {
+                    fps = (int)fpsNumeric.Maximum;
+                }
+                else if (fps < fpsNumeric.Minimum)
+                {
+                    fps = (int)fpsNumeric.Minimum;
+                }
 
-			showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
-            showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
+                var captureType = captureProps.CaptureType;
 
-            screenCaptureDetailsPanel.Visible = true;
+                var captureItem = captureTypes.FirstOrDefault(i => (VideoCaptureType)i.Tag == captureType)
+                    ?? captureTypes.FirstOrDefault();
+
+                captureTypesComboBox.SelectedItem = captureItem;
+
+                fpsNumeric.Value = fps;
+
+                showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
+
+                screenCaptureDetailsPanel.Visible = true;
+            }
+            else if (captDeviceSettings.CaptureMode == CaptureMode.AppWindow)
+            {
+               
+
+                WindowsCaptSettings = (WindowCaptureDevice)captDeviceSettings;
+
+                LoadCaptureTypes();
+
+                var captureProps = WindowsCaptSettings.Properties;
+
+                captureMouseCheckBox.Checked = captureProps.CaptureMouse;
+
+                var fps = captureProps.Fps;
+                if (fps > fpsNumeric.Maximum)
+                {
+                    fps = (int)fpsNumeric.Maximum;
+                }
+                else if (fps < fpsNumeric.Minimum)
+                {
+                    fps = (int)fpsNumeric.Minimum;
+                }
+
+                var captureType = captureProps.CaptureType;
+
+                var captureItem = captureTypes.FirstOrDefault(i => (VideoCaptureType)i.Tag == captureType)
+                    ?? captureTypes.FirstOrDefault();
+
+                captureTypesComboBox.SelectedItem = captureItem;
+
+                fpsNumeric.Value = fps;
+
+                showDebugInfoCheckBox.Checked = captureProps.ShowDebugInfo;
+                showCaptureBorderCheckBox.Checked = captureProps.ShowDebugBorder;
+
+                screenCaptureDetailsPanel.Visible = true;
+            }
+
         }
 
 
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            CaptDeviceSettings.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
+            if (ScreenCaptSettings != null)
+            {
+                ScreenCaptSettings.Properties.CaptureMouse = this.captureMouseCheckBox.Checked;
 
-            CaptDeviceSettings.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
-            CaptDeviceSettings.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
+                ScreenCaptSettings.Properties.ShowDebugInfo = showDebugInfoCheckBox.Checked;
+                ScreenCaptSettings.Properties.ShowDebugBorder = showCaptureBorderCheckBox.Checked;
 
-			CaptDeviceSettings.Properties.Fps = (int)fpsNumeric.Value;
+                ScreenCaptSettings.Properties.Fps = (int)fpsNumeric.Value;
 
-            var captureItem = (ComboBoxItem)captureTypesComboBox.SelectedItem;
-            var captureType = (VideoCaptureType)captureItem.Tag;
+                var captureItem = (ComboBoxItem)captureTypesComboBox.SelectedItem;
+                var captureType = (VideoCaptureType)captureItem.Tag;
 
-            CaptDeviceSettings.Properties.CaptureType = captureType;
+                ScreenCaptSettings.Properties.CaptureType = captureType;
+
+            }
 
             this.Close();
         }
@@ -91,11 +144,15 @@ namespace ScreenStreamer.WinForms
 
             captureTypes.Clear();
 
-            captureTypes.Add(new ComboBoxItem
-			{
-				Name = "Desktop Duplication API",
-				Tag = VideoCaptureType.DXGIDeskDupl,
-			});
+            if (ScreenCaptSettings != null)
+            {
+                captureTypes.Add(new ComboBoxItem
+                {
+                    Name = "Desktop Duplication API",
+                    Tag = VideoCaptureType.DXGIDeskDupl,
+                });
+            }
+
 
 			captureTypes.Add(new ComboBoxItem
 			{

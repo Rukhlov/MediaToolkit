@@ -53,23 +53,6 @@ namespace ScreenStreamer.WinForms.App
 
             }
 
-			if(captureDevice.CaptureMode == CaptureMode.AppWindow)
-			{
-				UpdateWindows();
-
-				windowsComboBox.DataSource = windowsItems;
-				windowsComboBox.DisplayMember = "Name";
-				windowsComboBox.ValueMember = "Tag";
-
-				windowsComboBox.SelectedItem = windowsItems.FirstOrDefault();
-				windowsCaptureTLPanel.Visible = true;
-			}
-			else
-			{
-				windowsCaptureTLPanel.Visible = false;
-			}
-			
-
 
 			LoadEncoderItems();
 
@@ -121,6 +104,9 @@ namespace ScreenStreamer.WinForms.App
                 screenCaptureTableLayoutPanel.Visible = true;
                 captureSettingsButton.Enabled = true;
 
+                windowsCaptureTLPanel.Visible = false;
+
+
                 //screenCaptureDetailsPanel.Visible = true;
             }
             else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
@@ -156,9 +142,26 @@ namespace ScreenStreamer.WinForms.App
                 //screenCaptureDetailsPanel.Visible = false;
 
                 //captureSettingsButton.Enabled = false;
+
+                windowsCaptureTLPanel.Visible = false;
             }
-            else
+            else if (captureDevice.CaptureMode == CaptureMode.AppWindow)
             {
+
+
+                cameraTableLayoutPanel.Visible = false;
+                screenCaptureTableLayoutPanel.Visible = false;
+
+
+                UpdateWindows();
+
+                windowsComboBox.DataSource = windowsItems;
+                windowsComboBox.DisplayMember = "Name";
+                windowsComboBox.ValueMember = "Tag";
+
+                windowsComboBox.SelectedItem = windowsItems.FirstOrDefault();
+                windowsCaptureTLPanel.Visible = true;
+
 
             }
 
@@ -707,8 +710,9 @@ namespace ScreenStreamer.WinForms.App
 			var resolution = caputreDevice.Resolution;
             var propsStr = resolution.Width + "x" + resolution.Height + ", " + captureProps.Fps + "fps" + ", " + (captureProps.UseHardware ? "GPU" : "CPU");
 
-			captInfoTextBox.Text = captType + " (" + propsStr + ")"; ;
+			captInfoTextBox.Text = captType + " (" + propsStr + ")"; 
 
+            captWindowInfoTextBox.Text = captType + " (" + propsStr + ")";
 
 
             //List<VideoCaptureType> captureTypes = new List<VideoCaptureType>();
@@ -831,7 +835,7 @@ namespace ScreenStreamer.WinForms.App
 
             var captDevice = VideoSettings.CaptureDevice;
 
-            if (captDevice.CaptureMode == CaptureMode.Screen)
+            if (captDevice.CaptureMode == CaptureMode.Screen || captDevice.CaptureMode == CaptureMode.AppWindow)
             {
                 VideoCaptSettingsForm f = new VideoCaptSettingsForm
                 {
@@ -845,7 +849,7 @@ namespace ScreenStreamer.WinForms.App
 				UpdateCaptureInfo();
 
 			}
-            else
+            else if (captDevice.CaptureMode == CaptureMode.UvcDevice)
             {
                 var deviceName = captDevice.Name;
 
@@ -1009,7 +1013,10 @@ namespace ScreenStreamer.WinForms.App
 				windowForm.Location = rectangle.Location;
 				windowForm.Size = rectangle.Size;
 			}
-		}
+
+            windowRegionTextBox.Text = rectangle.ToString();
+
+        }
 
 	}
 }
