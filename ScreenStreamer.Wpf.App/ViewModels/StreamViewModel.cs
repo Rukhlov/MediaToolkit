@@ -132,7 +132,6 @@ namespace ScreenStreamer.Wpf.Common.Models
         public StreamViewModel(MainViewModel mainViewModel, bool addInitialProperties, MediaStreamModel model)
         {
             Model = model;
-            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
 
             _dialogService = ServiceLocator.GetInstance<IDialogService>();
 
@@ -155,6 +154,9 @@ namespace ScreenStreamer.Wpf.Common.Models
                 
                // Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
+
+            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
+
 
             BorderViewModel = new BorderViewModel(this);
             DesignViewModel = new DesignBorderViewModel(this);

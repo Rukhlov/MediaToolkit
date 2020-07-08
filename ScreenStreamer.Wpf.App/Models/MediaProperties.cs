@@ -122,6 +122,11 @@ namespace ScreenStreamer.Wpf
 
     public class AdvancedSettingsModel
     {
+        public int Width { get; set; } = 1920;
+        public int Height { get; set; } = 1080;
+        public bool UseResolutionFromCaptureSource { get; set; } = true;
+        public bool KeepAspectRatio { get; set; } = true;
+
         public int Bitrate { get; set; } = 2500;
         public int Fps { get; set; } = 30;
         public bool LowLatency { get; set; } = true;

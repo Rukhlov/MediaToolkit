@@ -240,6 +240,7 @@ namespace ScreenStreamer.Wpf
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
 
+            
 
             videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
             videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
