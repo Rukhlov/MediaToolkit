@@ -106,6 +106,21 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
+        public bool TestDevice()
+        {
+            bool result = false;
+
+            if (device != null)
+            {
+               var hr = device.TestCooperativeLevel();
+               result = hr.Success;
+            }
+
+          
+            return result;
+        }
+
+
         public event Action NewDataAvailable;
         public void OnNewDataAvailable()
         {
@@ -114,6 +129,11 @@ namespace MediaToolkit.MediaFoundation
 
         public IntPtr GetSurfacePointer()
         {
+            if (!TestDevice())
+            {
+                return IntPtr.Zero;
+            }
+
             return surface?.NativePointer ?? IntPtr.Zero; 
         }
 

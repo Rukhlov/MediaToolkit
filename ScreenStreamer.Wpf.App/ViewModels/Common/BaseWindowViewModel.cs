@@ -4,6 +4,7 @@ using System.Reflection;
 using GalaSoft.MvvmLight.Command;
 using Polywall.Share.UI;
 using ScreenStreamer.Wpf.Common.Managers;
+using System.Windows.Media.Imaging;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
@@ -20,7 +21,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public RelayCommand DiscardChangesCommand { get; private set; }
         public RelayCommand AcceptChangesCommand { get; private set; }
+
         public virtual string Caption { get; set; } = "Polywall Streamer " + Assembly.GetExecutingAssembly().GetName().Version;
+
+        protected BitmapImage captionImage = null;
+        public virtual BitmapImage CaptionImage => captionImage;
 
         public virtual double MinWidth => 370d;
 

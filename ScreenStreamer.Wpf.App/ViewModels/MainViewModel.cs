@@ -140,24 +140,42 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private void OnDeleteStream()
         {
+            //var dialogService = ServiceLocator.GetInstance<IDialogService>();
+
+            //var view = new MessageBoxViewModel("___ERROR______ERROR______ERROR______ERROR______ERROR___", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error, SelectedStream);
+
+            ////var deleteViewModel = new DeleteViewModel(SelectedStream);
+            ////if (dialogService.ShowDialog(this, deleteViewModel) == true)
+
+            //if (dialogService.ShowDialog(this, view) == true)
+            //{
+
+            //}
+
             var dialogService = ServiceLocator.GetInstance<IDialogService>();
-            var streamToDelete = this.SelectedStream;
-            var deleteViewModel = new DeleteViewModel(streamToDelete);
-            if (dialogService.ShowDialog(this, deleteViewModel) == true)
+
+            var message = $"Are you sure want to delete '{SelectedStream.Name}'?";
+            var caption = "Delete";
+            var messageBoxView = new MessageBoxViewModel(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Warning, SelectedStream);
+
+            //var deleteViewModel = new DeleteViewModel(SelectedStream);
+            //if (dialogService.ShowDialog(this, deleteViewModel) == true)
+           
+            if (dialogService.ShowDialog(this, messageBoxView) == true)
             {
-                if (streamToDelete.IsStarted)
+                if (SelectedStream.IsStarted)
                 {
-                    streamToDelete.StartCommand.Execute(null);
+                    SelectedStream.StartCommand.Execute(null);
                 }
 
-                dialogService.Close(streamToDelete.BorderViewModel);
-                dialogService.Close(streamToDelete.DesignViewModel);
-                dialogService.Close(streamToDelete.AdvancedSettingsViewModel);
+                dialogService.Close(SelectedStream.BorderViewModel);
+                dialogService.Close(SelectedStream.DesignViewModel);
+                dialogService.Close(SelectedStream.AdvancedSettingsViewModel);
 
-                streamToDelete.Close();
+                SelectedStream.Close();
 
-                StreamList.Remove(streamToDelete);
-                this._model.StreamList.Remove(streamToDelete.Model);
+                StreamList.Remove(SelectedStream);
+                this._model.StreamList.Remove(SelectedStream.Model);
                 IsEdit = false;
                 SelectedStream = null;
 
@@ -165,6 +183,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
                 RaisePropertyChanged(nameof(HasNoStreams));
                 RaisePropertyChanged(nameof(IsAllStarted));
+
+
                 (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
             }
         }

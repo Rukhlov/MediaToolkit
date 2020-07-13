@@ -1,13 +1,17 @@
 ﻿using Prism.Commands;
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
+
     public class DeleteViewModel : BaseWindowViewModel
     {
         public override string Caption => "Delete";
+
 
         private string _dialogTextFormat = "Are you sure want to delete '{0}'?";
         public string DialogText { get; set; }
@@ -20,11 +24,14 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         private StreamViewModel _stream;
 
-        public DeleteViewModel(StreamViewModel stream):base(stream)
+
+        public DeleteViewModel(StreamViewModel stream) : base(stream)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+
             DeleteCommand = new DelegateCommand<Window>(SetDialogResult);
             DialogText = string.Format(_dialogTextFormat, _stream.Name);
+
         }
 
         private void SetDialogResult(Window selfWindow)
@@ -33,4 +40,5 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             selfWindow.Close();
         }
     }
+
 }

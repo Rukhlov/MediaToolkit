@@ -65,8 +65,17 @@ namespace MediaToolkit.UI
 
                 if (d3dProvider != null)
                 {
-                    d3dProvider.OnNewDataAvailable();
-                    success = true;
+                    var deviceReady = d3dProvider.TestDevice();
+                    if (deviceReady)
+                    {
+                        d3dProvider.OnNewDataAvailable();
+                        success = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("TestDevice() == false");
+                    }
+
                 }
 
                 //if (renderer != null)

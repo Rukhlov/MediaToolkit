@@ -16,6 +16,8 @@ namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
         public DataTemplate QualitySettingsTemplate { get; set; }
         public DataTemplate BorderSettingsTemplate { get; set; }
 
+        public DataTemplate MessageBoxTemplate { get; set; }
+
         public override DataTemplate SelectTemplate(object item, DependencyObject container)
         {
             if (item == null) return null;
@@ -28,6 +30,9 @@ namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
             if (item is CursorSettingsViewModel) return CursorSettingsTemplate;
             if (item is QualitySettingsViewModel) return QualitySettingsTemplate;
             if (item is BorderSettingsViewModel) return BorderSettingsTemplate;
+
+            if (item is MessageBoxViewModel) return MessageBoxTemplate;
+
             return base.SelectTemplate(item, container);
         }
     }

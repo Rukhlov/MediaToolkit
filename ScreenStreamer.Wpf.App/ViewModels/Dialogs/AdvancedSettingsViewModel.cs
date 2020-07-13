@@ -92,12 +92,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public ObservableCollection<EncoderItem> VideoEncoders { get; } = new ObservableCollection<EncoderItem>();
 
-        //public ObservableCollection<VideoCodingFormat> VideoEncoderModes { get; } = new ObservableCollection<VideoCodingFormat>()
-        //{
-        //    VideoCodingFormat.H264,
-        //    VideoCodingFormat.JPEG
-        //};
-
         public ObservableCollection<H264Profile> H264Profiles { get; } = new ObservableCollection<H264Profile>()
         {
             H264Profile.Base,
@@ -219,7 +213,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
 
             if (destWidth % 2 != 0)
-            {
+            {// размеры должны быть четными
                 destWidth--;
             }
 
@@ -284,47 +278,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             this.Width = destWidth;
             this.Height = destHeight;
-
-            //int destHeight = (int)(destWidth / ratio);
-            //if (destHeight > maxHeight)
-            //{
-            //    destHeight = maxHeight;
-            //    destWidth = (int)(destHeight * ratio);
-            //}
-
-            //if (destHeight < minHeight)
-            //{
-            //    destHeight = minHeight;
-            //    destWidth = (int)(destHeight * ratio);
-            //}
-
-
-            //if (ratio < 1)
-            //{
-            //    destHeight = destSize.Height;
-            //    destWidth = (int)(destHeight * ratio);
-
-
-            //    if (destWidth > maxWidth)
-            //    {
-            //        destWidth = maxWidth;
-            //        destHeight = (int)(destWidth / ratio);
-            //    }
-
-            //    if (destWidth < minWidth)
-            //    {
-            //        destWidth = minWidth;
-            //        destHeight = (int)(destWidth / ratio);
-            //    }
-            //}
-            //else
-            //{
-
-            //}
-
-
-            //this.Width = destWidth;
-            //this.Height = destHeight;
 
         }
 

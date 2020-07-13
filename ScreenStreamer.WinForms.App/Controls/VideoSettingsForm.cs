@@ -324,64 +324,145 @@ namespace ScreenStreamer.WinForms.App
             }
 
             var srcSize = new Size(this.captureRegion.Width, this.captureRegion.Height);
-
-            var captureDevice = VideoSettings.CaptureDevice;
-            if (captureDevice.CaptureMode == CaptureMode.Screen)
-            {
-                srcSize = ((ScreenCaptureDevice)captureDevice).CaptureRegion.Size;
-            }
-            else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
-            {
-                var profile = ((UvcDevice)captureDevice).CurrentProfile;
-                srcSize = profile.FrameSize;
-            }
-
-
             var destSize = new Size((int)this.encWidthNumeric.Value, (int)this.encHeightNumeric.Value);
 
-            var ratio = srcSize.Width / (double)srcSize.Height;
+            var newSize = AdjustVideoResolution(srcSize, destSize);
+
+            this.encWidthNumeric.Value = newSize.Width;
+            this.encHeightNumeric.Value = newSize.Height;
+
+            //var captureDevice = VideoSettings.CaptureDevice;
+            //if (captureDevice.CaptureMode == CaptureMode.Screen)
+            //{
+            //    srcSize = ((ScreenCaptureDevice)captureDevice).CaptureRegion.Size;
+            //}
+            //else if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
+            //{
+            //    var profile = ((UvcDevice)captureDevice).CurrentProfile;
+            //    srcSize = profile.FrameSize;
+            //}
+
+
+            //var destSize = new Size((int)this.encWidthNumeric.Value, (int)this.encHeightNumeric.Value);
+
+            //var ratio = srcSize.Width / (double)srcSize.Height;
+            //int destWidth = destSize.Width;
+
+
+            //int destHeight = (int)(destWidth / ratio);
+            //if (destHeight > maxHeight)
+            //{
+            //    destHeight = maxHeight;
+            //    destWidth = (int)(destHeight * ratio);
+            //}
+
+            //if (destHeight < minHeight)
+            //{
+            //    destHeight = minHeight;
+            //    destWidth = (int)(destHeight * ratio);
+            //}
+
+
+            //if (ratio < 1)
+            //{
+            //    destHeight = destSize.Height;
+            //    destWidth = (int)(destHeight * ratio);
+
+
+            //    if (destWidth > maxWidth)
+            //    {
+            //        destWidth = maxWidth;
+            //        destHeight = (int)(destWidth / ratio);
+            //    }
+
+            //    if (destWidth < minWidth)
+            //    {
+            //        destWidth = minWidth;
+            //        destHeight = (int)(destWidth / ratio);
+            //    }
+            //}
+
+
+            //this.encWidthNumeric.Value = destWidth;
+            //this.encHeightNumeric.Value = destHeight;
+
+        }
+
+
+        private Size AdjustVideoResolution(Size srcSize, Size destSize)
+        {
+            var srcRatio = srcSize.Width / (double)srcSize.Height;
+
             int destWidth = destSize.Width;
+            int destHeight = destSize.Height;
 
-
-            int destHeight = (int)(destWidth / ratio);
-            if (destHeight > maxHeight)
-            {
-                destHeight = maxHeight;
-                destWidth = (int)(destHeight * ratio);
+            if (destWidth % 2 != 0)
+            {// размеры должны быть четными
+                destWidth--;
             }
 
-            if (destHeight < minHeight)
+            if (destHeight % 2 != 0)
             {
-                destHeight = minHeight;
-                destWidth = (int)(destHeight * ratio);
+                destHeight--;
             }
 
+            if (srcRatio > 1)
+            {// ширина больше высоты самое распространенное
+             // меняем ширину 
 
-            if (ratio < 1)
-            {
-                destHeight = destSize.Height;
-                destWidth = (int)(destHeight * ratio);
+                if (destHeight < minHeight)
+                {
+                    destHeight = minHeight;
+                }
 
+                destWidth = (int)(destHeight * srcRatio);
+                if (destWidth % 2 != 0)
+                {
+                    destWidth--;
+                }
 
                 if (destWidth > maxWidth)
                 {
                     destWidth = maxWidth;
-                    destHeight = (int)(destWidth / ratio);
+                    destHeight = (int)(destWidth / srcRatio);
+
+                    if (destHeight % 2 != 0)
+                    {
+                        destHeight--;
+                    }
                 }
+
+            }
+            else
+            { // меняем высоту
 
                 if (destWidth < minWidth)
                 {
                     destWidth = minWidth;
-                    destHeight = (int)(destWidth / ratio);
                 }
+
+                destHeight = (int)(destWidth / srcRatio);
+                if (destHeight % 2 != 0)
+                {
+                    destHeight--;
+                }
+
+                if (destHeight > maxHeight)
+                {
+                    destHeight = maxHeight;
+                    destWidth = (int)(destHeight * srcRatio);
+
+                    if (destWidth % 2 != 0)
+                    {
+                        destWidth--;
+                    }
+                }
+
             }
 
-
-            this.encWidthNumeric.Value = destWidth;
-            this.encHeightNumeric.Value = destHeight;
+            return new Size(destWidth, destHeight);
 
         }
-
 
         private void checkBoxResoulutionFromSource_CheckedChanged(object sender, EventArgs e)
         {
@@ -585,6 +666,10 @@ namespace ScreenStreamer.WinForms.App
 
                 description = resolution.Width + "x" + resolution.Height + " " + uvcDevice.CurrentProfile.FrameRate + " fps";
             }
+            else if(captureDevice is WindowCaptureDevice)
+            {
+
+            }
 
             if (!string.IsNullOrEmpty(description))
             {
@@ -634,6 +719,8 @@ namespace ScreenStreamer.WinForms.App
         }
 
 
+
+
         protected override void OnClosed(EventArgs e)
         {
             logger.Debug("VideoSettingsForm::OnClosed()");
@@ -651,6 +738,10 @@ namespace ScreenStreamer.WinForms.App
 
 			base.OnClosed(e);
         }
+
+
+
+
 
         private Rectangle captureRegion = Rectangle.Empty;
 

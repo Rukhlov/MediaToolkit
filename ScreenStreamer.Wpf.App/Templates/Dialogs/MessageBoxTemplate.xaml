@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <DataTemplate x:Key="deleteTemplate">
+    <DataTemplate x:Key="messageBoxTemplate">
         <DataTemplate.Resources>
             <ResourceDictionary>
                 <ResourceDictionary.MergedDictionaries>
@@ -13,25 +14,35 @@
 
             
             <TextBlock MaxWidth="270"
+                       Margin="0,8,0,8"
                        TextWrapping="Wrap"
                        Text="{Binding DialogText}"/>
             
             <StackPanel Orientation="Horizontal"
                         Margin="0,8,0,8"
                         FlowDirection="RightToLeft">
+                
                 <Button IsCancel="True"
+                        Content="{Binding CancelButtonText}"
                         Style="{StaticResource defaultButtonStyle}"
                         MinWidth="60"
                         Foreground="#FF131223"
-                        Background="#FF42CF4C">Nope</Button>
+                        Background="#FF42CF4C"
+                        Visibility="{Binding IsCancelVisible, Converter={converters:BooleanToVisibilityConverter}}"
+                        Command="{Binding CancelCommand}">
+                </Button>
+
                 <Button IsDefault="True"
                         Style="{StaticResource defaultButtonStyle}"
                         MinWidth="60"
-                        Command="{Binding DeleteCommand}"
+                        Content="{Binding OkButtonText}"
+                        Command="{Binding OkCommand}"
                         CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
                         Foreground="#FFE74444"
                         Background="#FF131223"
-                        Margin="10,0,0,0">Delete</Button>
+                        Margin="10,0,0,0">
+                </Button>
+                
             </StackPanel>
         </StackPanel>
     </DataTemplate>

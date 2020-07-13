@@ -234,13 +234,28 @@ namespace ScreenStreamer.Wpf
             }
 
             var videoSettings = session.VideoSettings;
+
+            var encoderResolution = new Size(PropertyVideo.ResolutionWidth, PropertyVideo.ResolutionHeight);
+
+            videoSettings.StreamFlags &= ~VideoStreamFlags.UseEncoderResoulutionFromSource;
+            if (AdvancedSettingsModel.UseResolutionFromCaptureSource)
+            {
+                videoSettings.StreamFlags |= VideoStreamFlags.UseEncoderResoulutionFromSource;
+            }
+            else
+            {
+                encoderResolution = new Size(AdvancedSettingsModel.Width, AdvancedSettingsModel.Height);
+            }
+
+
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
             videoEncoderSettings.EncoderId = AdvancedSettingsModel.VideoEncoder.Id;
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
+            videoEncoderSettings.Width = encoderResolution.Width;
+            videoEncoderSettings.Height = encoderResolution.Height;
 
-            
 
             videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
             videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
@@ -264,6 +279,7 @@ namespace ScreenStreamer.Wpf
                 Fps = 30,
                 ShowDebugInfo = false,
                 ShowDebugBorder = PropertyVideo.ShowCaptureBorder,
+                AspectRatio = AdvancedSettingsModel.KeepAspectRatio,
             };
 
             VideoCaptureDevice captureDevice = null;

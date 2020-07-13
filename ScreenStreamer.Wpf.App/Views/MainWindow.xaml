@@ -37,6 +37,7 @@
                 <ResourceDictionary Source="..\Templates\ContextMenuTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\DefaultCaptionTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\StreamMainCaptionTemplate.xaml"/>
+                <ResourceDictionary Source="..\Templates\Dialogs\MessageBoxTemplate.xaml"/>
                 <ResourceDictionary Source="..\Styles\ButtonStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
@@ -49,7 +50,8 @@
                                         AdvancedSettingsTemplate="{StaticResource advancedSettingsTemplate}"
                                         CursorSettingsTemplate="{StaticResource cursorSettingsTemplate}"
                                         QualitySettingsTemplate="{StaticResource qualitySettingsTemplate}"
-                                        BorderSettingsTemplate="{StaticResource borderSettingsTemplate}"/>
+                                        BorderSettingsTemplate="{StaticResource borderSettingsTemplate}"
+                                        MessageBoxTemplate="{StaticResource messageBoxTemplate}" />
 
             <contenttemplateselectors:FormCaptionTemplateSelector x:Key="formCaptionTemplateSelector"
                                         DefaultTemplate="{StaticResource defaultCaptionTemplate}"

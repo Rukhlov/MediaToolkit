@@ -247,7 +247,17 @@ namespace ScreenStreamer.Wpf.Common.Models
                 }
             }
 
-            System.Windows.Forms.MessageBox.Show(errorMessage, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+            dispatcher.Invoke(() =>
+            {
+                var dialogService = ServiceLocator.GetInstance<IDialogService>();
+
+                var caption = "Error";
+                var view = new MessageBoxViewModel(errorMessage, caption, System.Windows.MessageBoxImage.Error, this);
+                dialogService.ShowDialog(MainViewModel, view);
+            });
+
+
+            //System.Windows.Forms.MessageBox.Show(errorMessage, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
         }
 
 
