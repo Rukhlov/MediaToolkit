@@ -14,12 +14,12 @@
         WindowStyle="None"
         Background="Transparent"
         AllowsTransparency="True"
-        Left="{Binding Stream.VideoViewModel.Left, Mode=TwoWay}"
-        Top="{Binding Stream.VideoViewModel.Top, Mode=TwoWay}"
+        Left="{Binding WpfLeft, Mode=TwoWay}"
+        Top="{Binding WpfTop, Mode=TwoWay}"
         Topmost="True"
         ShowInTaskbar="False"
-        Height="{Binding Stream.VideoViewModel.ResolutionHeight, Mode=TwoWay}"
-        Width="{Binding Stream.VideoViewModel.ResolutionWidth, Mode=TwoWay}"
+        Height="{Binding WpfHeight, Mode=TwoWay}"
+        Width="{Binding WpfWidth, Mode=TwoWay}"
         MinHeight="50"
         MinWidth="50">
     <Window.Resources>
@@ -77,8 +77,7 @@
                             <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="MouseDown">
-                                    <i:InvokeCommandAction Command="{Binding Stream.MainViewModel.ShowStreamSettingsCommand}"
-                                                   CommandParameter="{Binding Stream}"/>
+                                    <i:InvokeCommandAction Command="{Binding Stream.ShowSettingsCommand}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </Border>
@@ -91,12 +90,14 @@
                             Margin="10,0" 
                             Cursor="Hand"
                             Style="{StaticResource packIconDefault}"
-                           >
+                            Visibility="Collapsed">
+                            
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="MouseDown">
                                     <i:InvokeCommandAction Command="{Binding Stream.HideBorderCommand}" />
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
+                            
                         </materialDesign:PackIcon>
 
 

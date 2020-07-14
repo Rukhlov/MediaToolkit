@@ -3,6 +3,7 @@ using ScreenStreamer.Wpf;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Windows;
 using System.Windows.Forms;
 //using Polywall.Share.Exceptions;
 
@@ -55,6 +56,35 @@ namespace ScreenStreamer.Wpf.Common.Helpers
 
     public class ScreenHelper
     {
+        public enum LengthDirection
+        {
+            Vertical,
+            Horizontal
+        }
+
+        public static double PointsToPixels(double wpfPoints, LengthDirection direction)
+        {
+            if (direction == LengthDirection.Horizontal)
+            {
+                return wpfPoints * Screen.PrimaryScreen.WorkingArea.Width / SystemParameters.WorkArea.Width;
+            }
+            else
+            {
+                return wpfPoints * Screen.PrimaryScreen.WorkingArea.Height / SystemParameters.WorkArea.Height;
+            }
+        }
+
+        public static double PixelsToPoints(int pixels, LengthDirection direction)
+        {
+            if (direction == LengthDirection.Horizontal)
+            {
+                return pixels * SystemParameters.WorkArea.Width / Screen.PrimaryScreen.WorkingArea.Width;
+            }
+            else
+            {
+                return pixels * SystemParameters.WorkArea.Height / Screen.PrimaryScreen.WorkingArea.Height;
+            }
+        }
 
         public static List<VideoSourceItem> GetDisplayItems()
         {
@@ -158,7 +188,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
                 {
                     Name = d.Name,
                     DeviceId = d.DeviceId,
-                    CaptureRegion = new Rectangle(new Point(0, 0), d.Resolution),
+                    CaptureRegion = new Rectangle(new System.Drawing.Point(0, 0), d.Resolution),
                     IsUvcDevice = true,
                 });
 

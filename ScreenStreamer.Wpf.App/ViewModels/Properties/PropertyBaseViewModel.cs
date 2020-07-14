@@ -40,6 +40,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         protected abstract IDialogViewModel BuildDialogViewModel();
 
+
+
         //public abstract object Clone();
     }
 }

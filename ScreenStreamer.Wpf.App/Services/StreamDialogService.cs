@@ -73,6 +73,7 @@ namespace ScreenStreamer.Wpf.Common.Services
                         DataContext = designBorderViewModel
                     };
                 }
+
                 _designBorders[designBorderViewModel].Show();
             }
             else

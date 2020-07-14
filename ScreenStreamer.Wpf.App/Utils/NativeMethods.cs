@@ -30,8 +30,34 @@ namespace ScreenStreamer.Wpf.App.Utils
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern IntPtr PostMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+
+
+
+        private const int WM_SYSCOMMAND = 0x112;
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+
+        public static void ResizeWindow(IntPtr hWnd, ResizeDirection direction)
+        {
+            SendMessage(hWnd, WM_SYSCOMMAND, (IntPtr)direction, IntPtr.Zero);
+        }
+
+
     }
 
+    public enum ResizeDirection
+    {
+        Left = 61441,
+        Right = 61442,
+        Top = 61443,
+        TopLeft = 61444,
+        TopRight = 61445,
+        Bottom = 61446,
+        BottomLeft = 61447,
+        BottomRight = 61448,
+    }
 
 
 }

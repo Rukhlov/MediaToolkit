@@ -20,8 +20,6 @@ namespace ScreenStreamer.Wpf.Common.Models
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-
-
         public MediaStreamModel Model { get; }
 
         private IDialogService _dialogService;
@@ -122,10 +120,11 @@ namespace ScreenStreamer.Wpf.Common.Models
         public ICommand PreferencesCommand { get; set; }
         public ICommand HideBorderCommand { get; set; }
         public ICommand EditModeCommand { get; set; }
-
+        public ICommand ShowSettingsCommand { get; } 
 
         public bool IsAudioEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsAudioEnabled;
         //public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
+        public bool IsBorderVisible { get; set; }
 
         public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
 
@@ -142,24 +141,41 @@ namespace ScreenStreamer.Wpf.Common.Models
             CopyUrlCommand = new DelegateCommand(CopyUrl);
             PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
             HideBorderCommand = new DelegateCommand(HideBorder);
+            ShowSettingsCommand = new DelegateCommand(ShowSettings);
+
 
             if (addInitialProperties)
             {
                 Properties.Add(VideoViewModel = new PropertyVideoViewModel(this, Model.PropertyVideo));
-				Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
 
-				Properties.Add(PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork));
-               // Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
-              //  Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
-                
-               // Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
+
+                Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
+
+                Properties.Add(PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork));
+                // Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
+                //  Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
+
+                //Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
             AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
 
-
             BorderViewModel = new BorderViewModel(this);
+
             DesignViewModel = new DesignBorderViewModel(this);
+
+            var rect = new System.Drawing.Rectangle
+            {
+                X = VideoViewModel.Left,
+                Y = VideoViewModel.Top,
+                Width = VideoViewModel.ResolutionWidth,
+                Height = VideoViewModel.ResolutionHeight,
+            };
+
+            DesignViewModel.SetRegion(rect);
+
+
+            VideoViewModel.UpdateRegion();
 
             dispatcher = Dispatcher.CurrentDispatcher;
 
@@ -275,25 +291,39 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             PropertyNetwork.UpdatePropInfo(IsStarted);
 
-			//if (isStarted)
-			//{
-			//    _dialogService.Hide(DesignViewModel);
-			//    if (IsBorderVisible)
-			//    {
-			//        _dialogService.Show(BorderViewModel);
-			//    }
 
-			//}
-			//else if (!isStarted)
-			//{
-			//    _dialogService.Hide(BorderViewModel);
-			//    if (IsBorderVisible)
-			//    {
-			//        _dialogService.Show(DesignViewModel);
-			//    }
-			//}
+            if (isStarted)
+            {
+                _dialogService.Hide(DesignViewModel);
 
-			VideoViewModel.OnStreamStateChanged(isStarted);
+            }
+            else 
+            {
+                if (IsBorderVisible)
+                {
+                    _dialogService.Show(DesignViewModel);
+                }
+            }
+
+            //if (isStarted)
+            //{
+            //    _dialogService.Hide(DesignViewModel);
+            //    if (IsBorderVisible)
+            //    {
+            //        _dialogService.Show(BorderViewModel);
+            //    }
+
+            //}
+            //else if (!isStarted)
+            //{
+            //    _dialogService.Hide(BorderViewModel);
+            //    if (IsBorderVisible)
+            //    {
+            //        _dialogService.Show(DesignViewModel);
+            //    }
+            //}
+
+            VideoViewModel.OnStreamStateChanged(isStarted);
 
             MainViewModel.OnStreamStateChanged();
 
@@ -316,6 +346,11 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             }
 
+        }
+
+        private void ShowSettings()
+        {
+            MainViewModel?.ShowStreamSettingsCommand?.Execute(this);
         }
 
         private void HideBorder()

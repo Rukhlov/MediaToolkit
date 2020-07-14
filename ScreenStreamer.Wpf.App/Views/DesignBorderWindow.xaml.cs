@@ -1,4 +1,5 @@
-﻿using ScreenStreamer.Wpf.Common.Models;
+﻿using ScreenStreamer.Wpf.App.Utils;
+using ScreenStreamer.Wpf.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,38 +41,21 @@ namespace ScreenStreamer.Wpf.Common.Views
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
+            {
                 this.DragMove();
+            }
+               
         }
-
-        private const int WM_SYSCOMMAND = 0x112;
-        private HwndSource hwndSource;
-
-        private enum ResizeDirection
-        {
-            Left = 61441,
-            Right = 61442,
-            Top = 61443,
-            TopLeft = 61444,
-            TopRight = 61445,
-            Bottom = 61446,
-            BottomLeft = 61447,
-            BottomRight = 61448,
-        }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         
+        private HwndSource hwndSource;
 
         private void Window1_SourceInitialized(object sender, EventArgs e)
         {
             hwndSource = PresentationSource.FromVisual((Visual)sender) as HwndSource;
+            //var dataContext = this.DataContext;
         }
 
-        private void ResizeWindow(ResizeDirection direction)
-        {
-            SendMessage(hwndSource.Handle, WM_SYSCOMMAND, (IntPtr)direction, IntPtr.Zero);
-        }
 
         protected void ResetCursor(object sender, MouseEventArgs e)
         {
@@ -89,35 +73,35 @@ namespace ScreenStreamer.Wpf.Common.Views
             {
                 case "ResizeN":
                     this.Cursor = Cursors.SizeNS;
-                    ResizeWindow(ResizeDirection.Top);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.Top);
                     break;
                 case "ResizeE":
                     this.Cursor = Cursors.SizeWE;
-                    ResizeWindow(ResizeDirection.Right);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.Right);
                     break;
                 case "ResizeS":
                     this.Cursor = Cursors.SizeNS;
-                    ResizeWindow(ResizeDirection.Bottom);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.Bottom);
                     break;
                 case "ResizeW":
                     this.Cursor = Cursors.SizeWE;
-                    ResizeWindow(ResizeDirection.Left);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.Left);
                     break;
                 case "ResizeNW":
                     this.Cursor = Cursors.SizeNWSE;
-                    ResizeWindow(ResizeDirection.TopLeft);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.TopLeft);
                     break;
                 case "ResizeNE":
                     this.Cursor = Cursors.SizeNESW;
-                    ResizeWindow(ResizeDirection.TopRight);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.TopRight);
                     break;
                 case "ResizeSE":
                     this.Cursor = Cursors.SizeNWSE;
-                    ResizeWindow(ResizeDirection.BottomRight);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.BottomRight);
                     break;
                 case "ResizeSW":
                     this.Cursor = Cursors.SizeNESW;
-                    ResizeWindow(ResizeDirection.BottomLeft);
+                    NativeMethods.ResizeWindow(hwndSource.Handle, ResizeDirection.BottomLeft);
                     break;
                 default:
                     break;

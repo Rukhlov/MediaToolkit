@@ -12,6 +12,10 @@ using System.Windows.Input;
 using Prism.Commands;
 using MediaToolkit.UI;
 using ScreenStreamer.Wpf;
+using System.Windows;
+using System.Windows.Forms;
+using ScreenStreamer.Wpf.App.Utils;
+using static ScreenStreamer.Wpf.Common.Helpers.ScreenHelper;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {
@@ -112,18 +116,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         }
 
         //[Track]
-        public int ResolutionHeight
-        {
-            get => _model.ResolutionHeight;
-            set
-            {
-                SetProperty(_model, () => _model.ResolutionHeight, value);
-            }
-        }
-
-
-
-        //[Track]
         public int ResolutionWidth
         {
             get => _model.ResolutionWidth;
@@ -133,6 +125,16 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
+
+        //[Track]
+        public int ResolutionHeight
+        {
+            get => _model.ResolutionHeight;
+            set
+            {
+                SetProperty(_model, () => _model.ResolutionHeight, value);
+            }
+        }
 
         //[Track]
         public string Resolution
@@ -167,8 +169,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
             get
             { 
-                var p = new Point(Left, Top);
-                var s = new Size(ResolutionWidth, ResolutionHeight);
+                var p = new System.Drawing.Point(Left, Top);
+                var s = new System.Drawing.Size(ResolutionWidth, ResolutionHeight);
 
                 return new Rectangle(p, s);
             }
@@ -204,10 +206,10 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
             _model = model;
             ShowBorderCommand = new DelegateCommand(ShowBorder);
-            //AdjustCommand = new DelegateCommand(Adjust);
+
 			selectAreaManager = new App.Managers.SelectAreaManager(this);
 
-			UpdateRegion();
+			//UpdateRegion();
         }
 
 		public void OnStreamStateChanged(bool isStarted)
@@ -219,7 +221,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 		}
 
 		//public SelectAreaForm selectAreaForm = null;
-		private void UpdateRegion()
+		public void UpdateRegion()
         {
             //if(!IsRegion)
             //{
@@ -249,12 +251,29 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                 this.ResolutionHeight = captureRegion.Height;
                 this.ResolutionWidth = captureRegion.Width;
 
-				selectAreaManager?.HideBorder();
+				//selectAreaManager?.HideBorder();
+                SetBorderVisible(false);
 
-			}
+            }
             else
             {
-				selectAreaManager?.ShowBorder(CaptureRect);
+                //selectAreaManager?.ShowBorder(CaptureRect);
+
+                var designViewModel = Parent.DesignViewModel;
+                if (designViewModel != null)
+                {
+                    SetBorderVisible(true);
+
+                   
+
+                    var region = designViewModel.GetScreenRegion();
+
+                    this.Left = region.Left;
+                    this.Top = region.Top;
+                    this.ResolutionWidth = region.Width;
+                    this.ResolutionHeight = region.Height;
+                }
+
 
             }
 
@@ -267,6 +286,22 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 			this.ResolutionHeight = region.Height;
 			this.ResolutionWidth = region.Width;
 		}
+
+        private void SetBorderVisible(bool isVisible)
+        {
+            Parent.IsBorderVisible = isVisible;
+            DialogService.Handle(isVisible, Parent.DesignViewModel);
+
+            //var model = Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault();
+            //if (model != null)
+            //{
+            //    model.IsBorderVisible = isVisible;
+
+            //}
+
+            //Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault()
+            //    .Do(model => model.IsBorderVisible = true);
+        }
 
 
         private void ShowBorder()
@@ -281,6 +316,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             //Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault()
             //    .Do(model => model.IsBorderVisible = true);
         }
+
+        
 
         protected override IDialogViewModel BuildDialogViewModel()
         {
@@ -311,6 +348,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                 return builder.ToString();
             }
         }
+
 
     }
 
