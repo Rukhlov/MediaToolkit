@@ -206,7 +206,7 @@ namespace ScreenStreamer.WinForms.App
                 } , null);
 
         }
-            else if (state == MediaStreamerState.Streamming)
+            else if (state == MediaStreamerState.Streaming)
             {
                 syncContext.Send(_ =>
                 {

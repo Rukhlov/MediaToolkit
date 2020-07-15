@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace ScreenStreamer.Wpf.Common.Services
 {
-    internal class StreamDialogService : IDialogService
+    internal class DialogService : IDialogService
     {
         private IDictionary<BorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<BorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
@@ -19,8 +19,14 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Handle(bool isVisible, IDialogViewModel viewModel)
         {
-            if (isVisible) Show(viewModel);
-            else Hide(viewModel);
+            if (isVisible)
+            {
+                Show(viewModel);
+            }
+            else
+            {
+                Hide(viewModel);
+            }
         }
 
         public void Hide(IDialogViewModel viewModel)
@@ -32,16 +38,21 @@ namespace ScreenStreamer.Wpf.Common.Services
             else
             {
                 if (_windows.ContainsKey(viewModel))
+                {
                     _windows[viewModel].Hide();
-
+                }
                 else if (viewModel is BorderViewModel streamBorderViewModel && _streamBorders.ContainsKey(streamBorderViewModel))
+                {
                     _streamBorders[streamBorderViewModel].Hide();
-
+                }
                 else if (viewModel is DesignBorderViewModel designBorderViewModel && _designBorders.ContainsKey(designBorderViewModel))
+                {
                     _designBorders[designBorderViewModel].Hide();
-
+                }
                 else if (_dialogs.ContainsKey(viewModel))
+                {
                     _dialogs[viewModel].Close();
+                }
             }
         }
 
@@ -116,12 +127,27 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public bool? ShowDialog(IWindowViewModel parent, IDialogViewModel model)
         {
+            System.Windows.Window parentWindow = null;
+
             if (parent != null)
             {
                 parent.IsModalOpened = true;
-            }
+                if (_windows.ContainsKey(parent))
+                {
+                    parentWindow = _windows[parent];
+                }
 
-            _dialogs[model] = new MainWindow(model);
+            }
+            var dialogWindow = new MainWindow(model);
+            // _dialogs[model] = new MainWindow(model);
+
+            if (parentWindow != null)
+            {
+                dialogWindow.Owner = parentWindow;
+                dialogWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+            }
+            _dialogs[model] = dialogWindow;
+
             var result = _dialogs[model].ShowDialog();
             _dialogs.Remove(model);
 

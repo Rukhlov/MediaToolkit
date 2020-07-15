@@ -21,10 +21,11 @@ namespace ScreenStreamer.Wpf
             mediaStreamer = new MediaStreamer();
             mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
-            Init();
+            AdvancedSettingsModel.Init();
+
+            PropertyVideo.Init();
+            PropertyNetwork.Init();
         }
-
-
 
         private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
@@ -32,27 +33,46 @@ namespace ScreenStreamer.Wpf
         public AudioStreamSettings AudioSettings => currentSession?.AudioSettings;
         public VideoStreamSettings VideoSettings => currentSession?.VideoSettings;
 
+        public event Action StateChanged;
+        public event Action<object> ErrorOccurred;
 
-        public event Action OnStreamStateChanged;
+        [Newtonsoft.Json.JsonIgnore]
+        public int ErrorCode { get; private set; }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public Exception ErrorObj { get; private set; }
+
+        public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
+
+        public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
+
+        public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
+        public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
+        public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
+        public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
+        public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
+
 
         public string Name { get; set; } = "";
 
-        public bool IsStarted
+        [Newtonsoft.Json.JsonIgnore]
+        public bool IsStreaming
         {
             get
             {
-                bool isStarted = false;
+                bool isStreaming = false;
 
                 if (currentSession != null && mediaStreamer != null)
                 {
-                    isStarted = (mediaStreamer.State == MediaStreamerState.Streamming);
+                    isStreaming = (mediaStreamer.State == MediaStreamerState.Streaming);
                 }
 
-                return isStarted;
+                return isStreaming;
             }
             //set;
         }
 
+        [Newtonsoft.Json.JsonIgnore]
         public bool IsBusy
         {
             get
@@ -67,32 +87,11 @@ namespace ScreenStreamer.Wpf
             }
         }
 
-
-
-        public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
-
-        public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
-
-        public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
-        public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
-        public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
-        public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
-        public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
-
-        public void Init()
-        {
-            AdvancedSettingsModel.Init();
-            PropertyVideo.Init();
-
-            PropertyNetwork.Init();
-            //...
-        }
-
         public void SwitchStreamingState()
         {
             logger.Debug("SwitchStreamingState()");
 
-            if (!IsStarted)
+            if (!IsStreaming)
             {
                 StartStreaming();
             }
@@ -141,7 +140,7 @@ namespace ScreenStreamer.Wpf
             {
                 PropertyNetwork.CommunicationPort = currentSession.CommunicationPort;
             }
-            else if (state == MediaStreamerState.Streamming)
+            else if (state == MediaStreamerState.Streaming)
             {
 
             }
@@ -183,12 +182,9 @@ namespace ScreenStreamer.Wpf
 
 
 
-            OnStreamStateChanged?.Invoke();
+            StateChanged?.Invoke();
 
         }
-        public event Action<object> ErrorOccurred;
-        public int ErrorCode { get; private set; }
-        public Exception ErrorObj { get; private set; }
 
         private StreamSession CreateSession()
         {

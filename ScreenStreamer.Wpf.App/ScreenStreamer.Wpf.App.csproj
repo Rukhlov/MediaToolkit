@@ -145,7 +145,7 @@
     <Compile Include="Managers\SelectAreaManager.cs" />
     <Compile Include="Models\MediaProperties.cs" />
     <Compile Include="Models\MediaStreamModel.cs" />
-    <Compile Include="Essentials\MediaTypes.cs" />
+    <Compile Include="Models\MediaTypes.cs" />
     <Compile Include="Services\ServiceLocator.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Helpers\PropertySupport.cs" />
@@ -196,7 +196,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Services\StreamDialogService.cs" />
+    <Compile Include="Services\DialogService.cs" />
     <Compile Include="ValidationRules\IpAddressRule.cs" />
     <Compile Include="ValidationRules\ResolutionRule.cs" />
     <Compile Include="ViewModels\Common\ViewModelBase.cs" />

@@ -17,57 +17,94 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
     public class MainViewModel : BaseWindowViewModel
     {
-        private readonly MainModel _model;
+        private readonly MainModel mainModel;
 
+        public MainViewModel(MainModel model) : base(null)
+        {
+            mainModel = model;
 
-        private bool _isEdit = false;
+            StreamList = new ObservableCollection<StreamViewModel>(mainModel.StreamList.Select(streamModel => new StreamViewModel(this, true, streamModel)));
+            this.IsBottomVisible = false;
+
+            this.AddCommand = new DelegateCommand(OnAddStream);
+            this.DeleteCommand = new DelegateCommand(OnDeleteStream, () => StreamList.Count > 1);
+            
+            this.ShowMainWindowCommand = new DelegateCommand(OnShowMainWindow);
+            this.HideMainWindowCommand = new DelegateCommand(OnHideMainWindow);
+            this.ActivateMainWindowCommand = new DelegateCommand(OnActivateMainWindow);
+            this.ExitCommand = new DelegateCommand(OnExit);
+            this.StartAllCommand = new DelegateCommand(OnStartAll);
+            this.StopAllCommand = new DelegateCommand(OnStopAll);
+            this.ShowStreamSettingsCommand = new DelegateCommand<StreamViewModel>(OnShowStreamSettings);
+
+            wndProcService = new App.Services.WndProcService();
+
+            wndProcService.ShowMainWindow += OnShowMainWindow;
+            wndProcService.Init();
+        }
+
+        private App.Services.WndProcService wndProcService = null;
+
+        private bool isEdit = false;
         public bool IsEdit
         {
-            get => _isEdit;
+            get => isEdit;
             set
             {
-                _isEdit = value;
+                isEdit = value;
                 RaisePropertyChanged(() => IsEdit);
-                _selectedStream.IsEditName = false;
+                selectedStream.IsEditName = false;
             }
         }
 
-        private StreamViewModel _selectedStream = null;
+        private StreamViewModel selectedStream = null;
         public StreamViewModel SelectedStream
         {
             get
             {
-                if (_selectedStream == null)
+                if (selectedStream == null)
                 {
-                    _selectedStream = StreamList.FirstOrDefault();
-                    if (_selectedStream != null)
+                    selectedStream = StreamList.FirstOrDefault();
+                    if (selectedStream != null)
                     {
-                        _selectedStream.IsSelected = true;
+                        selectedStream.IsSelected = true;
                     }
                 }
-                return _selectedStream;
+                return selectedStream;
             }
             set
             {
-                if (_selectedStream != value &&
-                    _selectedStream != null)
+                if (selectedStream != value &&
+                    selectedStream != null)
                 {
-                    _selectedStream.IsSelected = false;
-                    _selectedStream.IsEditName = false;
+                    selectedStream.IsSelected = false;
+                    selectedStream.IsEditName = false;
                 }
-                _selectedStream = value;
+                selectedStream = value;
                 RaisePropertyChanged(() => SelectedStream);
 
-                if (_selectedStream != null)
+                if (selectedStream != null)
                 {
-                    _selectedStream.IsSelected = true;
+                    selectedStream.IsSelected = true;
                 }
             }
         }
 
-        public bool HasMaxStreamsLimit => (StreamList.Count >= _model.MaxStreamCount);
+        public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
+
+        public bool HasMaxStreamsLimit => (StreamList.Count >= mainModel.MaxStreamCount);
         public bool HasNoStreams => StreamList.Count == 0;
 
+        public bool IsAllStarted => StreamList.All(s => s.IsStarted);
+        public bool IsAnyStarted => StreamList.Any(s => s.IsStarted);
+
+        public BitmapImage ActiveIcon
+        {
+            get
+            {
+                return IsAnyStarted ? iconDict["StreamOn"] : iconDict["TrayLogo"];
+            }
+        }
 
 
         public ICommand DeleteCommand { get; set; }
@@ -80,83 +117,35 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ICommand StartAllCommand { get; set; }
         public ICommand ShowStreamSettingsCommand { get; set; }
 
-        private Dictionary<string, BitmapImage> iconDict = new Dictionary<string, BitmapImage>();
 
-        public BitmapImage ActiveIcon
+
+        private void OnAddStream()
         {
-            get
+            var model = new MediaStreamModel
             {
-                return IsAnyStarted ? iconDict["StreamOn"] : iconDict["TrayLogo"];
-
-            }
-        }
-
-
-        public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
-
-        public bool IsAllStarted => StreamList.All(s => s.IsStarted);
-
-        public bool IsAnyStarted => StreamList.Any(s => s.IsStarted);
-
-        public MainViewModel(MainModel model) : base(null)
-        {
-            _model = model;
-
-            iconDict = new Dictionary<string, BitmapImage>
-            {
-                { "TrayLogo", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico")) },
-
-                { "StreamOff", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamoff.ico")) },
-                { "StreamOn", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamon.ico")) },
+                Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})"
             };
 
-            StreamList = new ObservableCollection<StreamViewModel>(_model.StreamList.Select(m => new StreamViewModel(this, true, m)));
-            this.IsBottomVisible = false;
-            this.DeleteCommand = new DelegateCommand(OnDeleteStream, () => StreamList.Count > 1);
-            this.AddCommand = new DelegateCommand(OnAddStream,
-                () => 
-                    {
-                        return true;
-                       //return StreamList.Count < _model.MaxStreamCount;
-                    }
-                );
+            var streamViewModel = new StreamViewModel(this, true, model);
 
-            this.ShowMainWindowCommand = new DelegateCommand(ShowMainWindow);
-            this.HideMainWindowCommand = new DelegateCommand(HideMainWindow);
-            this.ActivateMainWindowCommand = new DelegateCommand(Activate);
-            this.ExitCommand = new DelegateCommand(Exit);
-            this.StartAllCommand = new DelegateCommand(StartAll);
-            this.StopAllCommand = new DelegateCommand(StopAll);
-            this.ShowStreamSettingsCommand = new DelegateCommand<StreamViewModel>(ShowStreamSettings);
 
-            wndProcService = new App.Services.WndProcService();
+            this.StreamList.Add(streamViewModel);
+            this.mainModel.StreamList.Add(model);
+            SelectedStream = streamViewModel;
 
-            wndProcService.ShowMainWindow += ShowMainWindow;
-            wndProcService.Init();
+            RaisePropertyChanged(nameof(HasMaxStreamsLimit));
+            RaisePropertyChanged(nameof(HasNoStreams));
+            RaisePropertyChanged(nameof(IsAllStarted));
+            (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
         }
-
-
-        private App.Services.WndProcService wndProcService = null;
 
         private void OnDeleteStream()
         {
-            //var dialogService = ServiceLocator.GetInstance<IDialogService>();
-
-            //var view = new MessageBoxViewModel("___ERROR______ERROR______ERROR______ERROR______ERROR___", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error, SelectedStream);
-
-            ////var deleteViewModel = new DeleteViewModel(SelectedStream);
-            ////if (dialogService.ShowDialog(this, deleteViewModel) == true)
-
-            //if (dialogService.ShowDialog(this, view) == true)
-            //{
-
-            //}
-
             var dialogService = ServiceLocator.GetInstance<IDialogService>();
 
             var message = $"Are you sure want to delete '{SelectedStream.Name}'?";
             var caption = "Delete";
-            var messageBoxView = new MessageBoxViewModel(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Warning, SelectedStream);
+            var messageBoxView = new MessageBoxViewModel(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             //var deleteViewModel = new DeleteViewModel(SelectedStream);
             //if (dialogService.ShowDialog(this, deleteViewModel) == true)
@@ -175,7 +164,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 SelectedStream.Close();
 
                 StreamList.Remove(SelectedStream);
-                this._model.StreamList.Remove(SelectedStream.Model);
+                this.mainModel.StreamList.Remove(SelectedStream.Model);
+
                 IsEdit = false;
                 SelectedStream = null;
 
@@ -189,34 +179,14 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
         }
 
-        private void OnAddStream()
-        {
-            var model = new MediaStreamModel
-            {
-                Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})"
-            };
 
-            var streamViewModel = new StreamViewModel(this, true, model);
-
-
-            this.StreamList.Add(streamViewModel);
-            this._model.StreamList.Add(model);
-            SelectedStream = streamViewModel;
-
-            RaisePropertyChanged(nameof(HasMaxStreamsLimit));
-            RaisePropertyChanged(nameof(HasNoStreams));
-            RaisePropertyChanged(nameof(IsAllStarted));
-            (DeleteCommand as DelegateCommand)?.RaiseCanExecuteChanged();
-        }
-
-
-        private void ShowMainWindow()
+        private void OnShowMainWindow()
         {
             IsVisible = true;
             this.RaisePropertyChanged(nameof(ActiveIcon));
         }
 
-        private void HideMainWindow()
+        private void OnHideMainWindow()
         {
             IsVisible = false;
 
@@ -238,17 +208,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             RaisePropertyChanged(nameof(ActiveIcon));
         }
 
-        private void Activate()
+        private void OnActivateMainWindow()
         {
             ServiceLocator.GetInstance<IDialogService>().Activate();
         }
 
-        private void Exit()
-        {
-            ServiceLocator.GetInstance<IDialogService>().CloseAll();
-        }
 
-        private void StartAll()
+        private void OnStartAll()
         {
             foreach (var s in StreamList)
             {
@@ -258,7 +224,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             RaisePropertyChanged(nameof(IsAllStarted));
         }
 
-        private void StopAll()
+        private void OnStopAll()
         {
             foreach (var s in StreamList)
             {
@@ -269,7 +235,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             RaisePropertyChanged(nameof(IsAllStarted));
         }
 
-        private void ShowStreamSettings(StreamViewModel streamViewModel)
+        private void OnShowStreamSettings(StreamViewModel streamViewModel)
         {
 			//var mainWindow = Application.Current.MainWindow;
 			//var dialogWindows = Application.Current
@@ -281,15 +247,29 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
 			if (!IsVisible)
 			{
-				ShowMainWindow();
+				OnShowMainWindow();
 			}
 
-            Activate();
+            OnActivateMainWindow();
 
             SelectedStream = streamViewModel;
 
             IsEdit = true;
         }
+
+        private void OnExit()
+        {
+            ServiceLocator.GetInstance<IDialogService>().CloseAll();
+        }
+
+
+        private static Dictionary<string, BitmapImage> iconDict = new Dictionary<string, BitmapImage>
+        {
+            { "TrayLogo", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico")) },
+            { "StreamOff", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamoff.ico")) },
+            { "StreamOn", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamon.ico")) },
+
+        };
     }
 
 }

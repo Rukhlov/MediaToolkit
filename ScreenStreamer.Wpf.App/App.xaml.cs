@@ -29,7 +29,7 @@ namespace ScreenStreamer.Wpf.UI
 
             ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
-            var dialogService = new Common.Services.StreamDialogService();
+            var dialogService = new Common.Services.DialogService();
             ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);
 
 

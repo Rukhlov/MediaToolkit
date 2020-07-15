@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
+using Newtonsoft.Json;
 using ScreenStreamer.Wpf.Common.Helpers;
 using System;
 using System.Collections.Generic;
@@ -77,15 +78,14 @@ namespace ScreenStreamer.Wpf
     {
         public string Name { get; set; }
         public string DeviceId { get; set; }
+
+        [JsonIgnore]
         public Rectangle CaptureRegion { get; set; }
 
         public bool IsUvcDevice { get; set; } = false;
 
         public override bool Equals(object obj)
         {
-            //if (!(obj is VideoSourceItem)) return false;
-            //return (DeviceId == ((VideoSourceItem)obj).DeviceId);
-
             bool Result = false;
             var item = obj as VideoSourceItem;
             if (item != null)
@@ -108,11 +108,7 @@ namespace ScreenStreamer.Wpf
 
     public class AudioSourceItem
     {
-
-        //public string DisplayName => Device.FriendlyName;
-        //public MMDevice Device { get; set; }
-        //public MMDevice Device { get; set; }
-
+        [JsonIgnore]
         public readonly AudioCaptureDevice Device = null;
 
         public string DeviceId => Device.DeviceId;
@@ -126,15 +122,12 @@ namespace ScreenStreamer.Wpf
 
         public override bool Equals(object obj)
         {
-            var mmDeviceViewModel = obj as AudioSourceItem;
-            if (mmDeviceViewModel == null)
+            var item = obj as AudioSourceItem;
+            if (item == null)
             {
                 return false;
             }
-
-            return this.DeviceId == mmDeviceViewModel.DeviceId;
-
-            //return this.Device.ID == mmDeviceViewModel.Device.ID;
+            return this.DeviceId == item.DeviceId;
         }
 
         public override int GetHashCode()

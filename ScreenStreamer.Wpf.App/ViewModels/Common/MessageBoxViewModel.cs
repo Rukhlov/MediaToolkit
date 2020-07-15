@@ -30,10 +30,25 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public ICommand CancelCommand { get; private set; }
 
 
-        private TrackableViewModel parentViewModel = null;
+        private TrackableViewModel parentViewModel = null; // по идее не нужно...
         private MessageBoxButton messageBoxButton = MessageBoxButton.OK;
 
-        public MessageBoxViewModel(string message, string title, MessageBoxButton button, MessageBoxImage image, TrackableViewModel parent) : base(parent)
+        public MessageBoxViewModel(TrackableViewModel parent = null) : this("", "", MessageBoxButton.OK, MessageBoxImage.None, parent)
+        { }
+
+        public MessageBoxViewModel(string message, TrackableViewModel parent = null) : this(message, "", MessageBoxButton.OK, MessageBoxImage.None, parent)
+        { }
+
+        public MessageBoxViewModel(string message, string title, MessageBoxButton button, TrackableViewModel parent = null) : this(message, title, button, MessageBoxImage.None, parent)
+        { }
+
+        public MessageBoxViewModel(string message, string title, MessageBoxImage image, TrackableViewModel parent = null) : this(message, title, MessageBoxButton.OK, image, parent)
+        { }
+
+        public MessageBoxViewModel(string message, string title, TrackableViewModel parent = null) : this(message, title, MessageBoxButton.OK, MessageBoxImage.None, parent)
+        { }
+
+        public MessageBoxViewModel(string message, string title, MessageBoxButton button, MessageBoxImage image, TrackableViewModel parent = null) : base(parent)
         {
             this.parentViewModel = parent;
             this.messageBoxButton = button;
@@ -61,30 +76,19 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 OkButtonText = "Yes";
                 CancelButtonText = "No";
             }
+            else
+            {
+                // not supported...
+            }
 
-            this.OkCommand = new DelegateCommand<Window>(SetDialogResult);
+            this.OkCommand = new DelegateCommand<Window>(OnExecuteOkCommand);
 
             this.DialogText = message;
             this.Title = title;
 
         }
 
-        public MessageBoxViewModel(TrackableViewModel parent) : this("", "", MessageBoxButton.OK, MessageBoxImage.None, parent)
-        { }
-
-        public MessageBoxViewModel(string message, TrackableViewModel parent) : this(message, "", MessageBoxButton.OK, MessageBoxImage.None, parent)
-        { }
-
-        public MessageBoxViewModel(string message, string title, MessageBoxButton button, TrackableViewModel parent) : this(message, title, button, MessageBoxImage.None, parent)
-        { }
-
-        public MessageBoxViewModel(string message, string title, MessageBoxImage image, TrackableViewModel parent) : this(message, title, MessageBoxButton.OK, image, parent)
-        { }
-
-        public MessageBoxViewModel(string message, string title, TrackableViewModel parent) : this(message, title, MessageBoxButton.OK, MessageBoxImage.None, parent)
-        { }
-
-        private void SetDialogResult(Window selfWindow)
+        private void OnExecuteOkCommand(Window selfWindow)
         {
 
             selfWindow.DialogResult = true;

@@ -10,16 +10,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     public class VideoSettingsViewModel : PropertyWindowViewModel
     {
         public override string Caption => "Video Stream";
+
         public ObservableCollection<VideoSourceItem> Displays { get; set; } = new ObservableCollection<VideoSourceItem>();
-
-
         public ObservableCollection<ScreenCaptureItem> ScreenCaptures { get; set; } = new ObservableCollection<ScreenCaptureItem>();
 
-        //public ObservableCollection<string> Displays { get; set; } = new ObservableCollection<string>();
-
         public System.Windows.Input.ICommand UpdateVideoSourcesCommand { get; }
-
-
 
         public VideoSettingsViewModel(PropertyVideoViewModel property, TrackableViewModel parent) : base(property, parent)
         {
@@ -38,6 +33,8 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             ScreenCaptures.AddRange(ScreenCaptureItem.SupportedCaptures);
 
             //Displays.AddRange(ScreenHelper.GetScreens());
+            ///
+            //UpdateSources();
         }
 
         public void UpdateSources()
@@ -45,6 +42,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             Displays.Clear();
 
             Displays.AddRange(ScreenHelper.GetDisplayItems());
+
+            //var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
+
+            //var deviceId = streamModel.PropertyVideo.DeviceId;
+
+  
+            //((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
 
             ((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault();
         }

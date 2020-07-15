@@ -20,7 +20,7 @@ namespace ScreenStreamer.Common
     public enum MediaStreamerState
     {
         Starting,
-        Streamming,
+        Streaming,
         Stopping,
         Stopped,
         Shutdown,
@@ -101,14 +101,14 @@ namespace ScreenStreamer.Common
 
                 if (state == MediaStreamerState.Starting)
                 {
-                    state = MediaStreamerState.Streamming;
+                    state = MediaStreamerState.Streaming;
                     StateChanged?.Invoke();
                 }
 
                 var videoEnabled = Session.VideoEnabled;
                 var audioEnabled = Session.AudioEnabled;
 
-                while (state == MediaStreamerState.Streamming)
+                while (state == MediaStreamerState.Streaming)
                 {
                     if (videoEnabled)
                     {
@@ -195,7 +195,7 @@ namespace ScreenStreamer.Common
         {
             logger.Debug("ScreenStreamer::Stop()");
 
-            if (state != MediaStreamerState.Streamming)
+            if (state != MediaStreamerState.Streaming)
             {
                 logger.Warn("ScreenStreamer::Stop() return invalid state: " + state);
                 return false;

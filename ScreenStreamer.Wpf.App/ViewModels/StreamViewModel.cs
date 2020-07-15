@@ -20,28 +20,103 @@ namespace ScreenStreamer.Wpf.Common.Models
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public MediaStreamModel Model { get; }
+        public StreamViewModel(MainViewModel mainViewModel, bool addInitialProperties, MediaStreamModel model)
+        {
+            Model = model;
 
-        private IDialogService _dialogService;
+            dialogService = ServiceLocator.GetInstance<IDialogService>();
+
+            MainViewModel = mainViewModel;
+            StartCommand = new DelegateCommand(SwitchStreamingState);
+            EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
+            EditNameCommand = new DelegateCommand(EditName);
+            CopyUrlCommand = new DelegateCommand(CopyUrl);
+            PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
+            HideBorderCommand = new DelegateCommand(HideBorder);
+            ShowSettingsCommand = new DelegateCommand(ShowSettings);
+
+
+            if (addInitialProperties)
+            {
+                VideoViewModel = new PropertyVideoViewModel(this, Model.PropertyVideo);
+                PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio);
+                PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork);
+
+                Properties.Add(VideoViewModel);
+                Properties.Add(PropertyAudio);
+                Properties.Add(PropertyNetwork);
+
+                // Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
+                //  Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
+
+                //Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
+            }
+
+            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
+
+            BorderViewModel = new BorderViewModel(this, Model.PropertyBorder);
+
+            DesignViewModel = new DesignBorderViewModel(this, Model.PropertyBorder);
+
+            var rect = new System.Drawing.Rectangle
+            {
+                X = VideoViewModel.Left,
+                Y = VideoViewModel.Top,
+                Width = VideoViewModel.ResolutionWidth,
+                Height = VideoViewModel.ResolutionHeight,
+            };
+
+            //DesignViewModel.SetBorderRegion(rect);
+
+
+            VideoViewModel.UpdateRegion();
+
+            dispatcher = Dispatcher.CurrentDispatcher;
+
+            dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(() => OnStreamStateChanged(IsStarted))
+
+                );
+
+            Model.StateChanged += Model_StateChanged;
+            Model.ErrorOccurred += Model_ErrorOccurred;
+        }
+
+        private IDialogService dialogService;
+        private Dispatcher dispatcher = null;
+
+        public MediaStreamModel Model { get; }
 
         public MainViewModel MainViewModel { get; }
 
+        public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
+
+
         [Track]
         public AdvancedSettingsViewModel AdvancedSettingsViewModel { get; set; }
+
         [Track]
         public PropertyVideoViewModel VideoViewModel { get; set; }
+
         [Track]
         public BorderViewModel BorderViewModel { get; set; }
+
         [Track]
         public DesignBorderViewModel DesignViewModel { get; set; }
+
         [Track]
         public PropertyBorderViewModel PropertyBorder { get; set; }
+
         [Track]
         public PropertyAudioViewModel PropertyAudio { get; set; }
+
         [Track]
         public PropertyCursorViewModel PropertyCursor { get; set; }
+
         [Track]
         public PropertyQualityViewModel PropertyQuality { get; set; }
+
         [Track]
         public PropertyNetworkViewModel PropertyNetwork { get; set; }
 
@@ -61,13 +136,13 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         public bool IsEditable
         {
-            get => !Model.IsStarted && !Model.IsBusy;
+            get => !Model.IsStreaming && !Model.IsBusy;
         }
 
        // [Track]
         public bool IsStarted
         {
-            get => Model.IsStarted;
+            get => Model.IsStreaming;
             //set
             //{
             //    SetProperty(Model, () => Model.IsStarted, value);
@@ -107,6 +182,9 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
         }
 
+        public bool IsAudioEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsAudioEnabled;
+        //public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
+        public bool IsBorderVisible { get; set; }
 
 
         public string StartCommandText => IsStarted ? "Stop Stream" : "Start Stream";
@@ -122,75 +200,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public ICommand EditModeCommand { get; set; }
         public ICommand ShowSettingsCommand { get; } 
 
-        public bool IsAudioEnabled => (Properties.Single(p => p is PropertyAudioViewModel) as PropertyAudioViewModel).IsAudioEnabled;
-        //public bool IsBorderVisible => (Properties.Single(p => p is PropertyBorderViewModel) as PropertyBorderViewModel).IsBorderVisible;
-        public bool IsBorderVisible { get; set; }
 
-        public ObservableCollection<PropertyBaseViewModel> Properties { get; set; } = new ObservableCollection<PropertyBaseViewModel>();
-
-        public StreamViewModel(MainViewModel mainViewModel, bool addInitialProperties, MediaStreamModel model)
-        {
-            Model = model;
-
-            _dialogService = ServiceLocator.GetInstance<IDialogService>();
-
-            MainViewModel = mainViewModel;
-            StartCommand = new DelegateCommand(SwitchStreamingState);
-            EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
-            EditNameCommand = new DelegateCommand(EditName);
-            CopyUrlCommand = new DelegateCommand(CopyUrl);
-            PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
-            HideBorderCommand = new DelegateCommand(HideBorder);
-            ShowSettingsCommand = new DelegateCommand(ShowSettings);
-
-
-            if (addInitialProperties)
-            {
-                Properties.Add(VideoViewModel = new PropertyVideoViewModel(this, Model.PropertyVideo));
-
-
-                Properties.Add(PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio));
-
-                Properties.Add(PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork));
-                // Properties.Add(PropertyQuality = new PropertyQualityViewModel(this, Model.PropertyQuality));
-                //  Properties.Add(PropertyCursor = new PropertyCursorViewModel(this, Model.PropertyCursor));
-
-                //Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
-            }
-
-            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
-
-            BorderViewModel = new BorderViewModel(this);
-
-            DesignViewModel = new DesignBorderViewModel(this);
-
-            var rect = new System.Drawing.Rectangle
-            {
-                X = VideoViewModel.Left,
-                Y = VideoViewModel.Top,
-                Width = VideoViewModel.ResolutionWidth,
-                Height = VideoViewModel.ResolutionHeight,
-            };
-
-            DesignViewModel.SetRegion(rect);
-
-
-            VideoViewModel.UpdateRegion();
-
-            dispatcher = Dispatcher.CurrentDispatcher;
-
-            dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(() => OnStreamStateChanged(IsStarted))
-        
-                );
-
-            Model.OnStreamStateChanged += Model_OnStreamStateChanged;
-            Model.ErrorOccurred += Model_ErrorOccurred;
-        }
-
-
-        private Dispatcher dispatcher = null;
 
         private void CopyUrl()
         {
@@ -233,11 +243,11 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         private void Preferences(BaseWindowViewModel parentWindow)
         {
-            _dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
+            dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
         }
 
 
-        private void Model_OnStreamStateChanged()
+        private void Model_StateChanged()
         {
 
             dispatcher.Invoke(() =>
@@ -251,30 +261,20 @@ namespace ScreenStreamer.Wpf.Common.Models
         private void Model_ErrorOccurred(object obj)
         {
             logger.Debug("Model_ErrorOccurred(...)");
-            var errorMessage = "Unknown error!\r\n\r\nSee log file for details...........";
-
-            if (obj != null)
-            {
-                var ex = obj as Exception;
-                if (ex != null)
-                {
-                    errorMessage = ex.Message + "\r\n\r\nSee log file for details..............";
-
-                }
-            }
+            // TODO: process error...
 
             dispatcher.Invoke(() =>
             {
-                var dialogService = ServiceLocator.GetInstance<IDialogService>();
-
-                var caption = "Error";
-                var view = new MessageBoxViewModel(errorMessage, caption, System.Windows.MessageBoxImage.Error, this);
-                dialogService.ShowDialog(MainViewModel, view);
+                if (obj != null)
+                {
+                    var ex = obj as Exception;
+                    OnStreamErrorOccurred(ex);
+                }
             });
-
 
             //System.Windows.Forms.MessageBox.Show(errorMessage, "Error", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
         }
+
 
 
         private RegionForm borderForm = null;
@@ -294,14 +294,14 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (isStarted)
             {
-                _dialogService.Hide(DesignViewModel);
+                dialogService.Hide(DesignViewModel);
 
             }
             else 
             {
                 if (IsBorderVisible)
                 {
-                    _dialogService.Show(DesignViewModel);
+                    dialogService.Show(DesignViewModel);
                 }
             }
 
@@ -348,6 +348,23 @@ namespace ScreenStreamer.Wpf.Common.Models
 
         }
 
+        private void OnStreamErrorOccurred(Exception ex = null)
+        {
+
+            var errorMessage = "Unknown error!\r\n\r\nSee log file for details...........";
+            if (ex != null)
+            {
+                errorMessage = ex.Message + "\r\n\r\nSee log file for details..............";
+            }
+
+            var dialogService = ServiceLocator.GetInstance<IDialogService>();
+
+            var caption = "Error";
+            var view = new MessageBoxViewModel(errorMessage, caption, System.Windows.MessageBoxImage.Error);
+            dialogService.ShowDialog(MainViewModel, view);
+        }
+
+
         private void ShowSettings()
         {
             MainViewModel?.ShowStreamSettingsCommand?.Execute(this);
@@ -361,7 +378,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                 borderViewModel.IsBorderVisible = false;
             }
                
-            _dialogService.Hide(BorderViewModel);
+            dialogService.Hide(BorderViewModel);
         }
 
         public void Close()

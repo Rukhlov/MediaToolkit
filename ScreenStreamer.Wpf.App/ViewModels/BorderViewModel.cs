@@ -11,10 +11,15 @@ namespace ScreenStreamer.Wpf.Common.Models
         public StreamViewModel Stream { get; }
         private PropertyVideoViewModel videoViewModel = null;
 
-        public BaseBorderViewModel(StreamViewModel stream)
+        private PropertyBorderModel borderModel = null;
+        public BaseBorderViewModel(StreamViewModel stream, PropertyBorderModel border)
         {
             this.Stream = stream;
+            this.borderModel = border;
+
             videoViewModel = Stream.VideoViewModel;
+
+            SetBorderRegion(borderModel.BorderRect);
         }
 
 
@@ -29,9 +34,12 @@ namespace ScreenStreamer.Wpf.Common.Models
             set
             {
                 wpfLeft = value;
+
+                borderModel.Left = (int)PointsToPixels(wpfLeft, LengthDirection.Horizontal);
+
                 if (videoViewModel != null)
                 {
-                    videoViewModel.Left = (int)PointsToPixels(wpfLeft, LengthDirection.Horizontal);
+                    videoViewModel.Left = borderModel.Left;
                 }
 
             }
@@ -48,13 +56,13 @@ namespace ScreenStreamer.Wpf.Common.Models
             }
             set
             {
-                wpfTop = value;
-                if (videoViewModel != null)
-                {
-                    videoViewModel.Top = (int)PointsToPixels(wpfTop, LengthDirection.Vertical);
-                }
-                
 
+                wpfTop = value;
+
+                borderModel.Top = (int)PointsToPixels(wpfTop, LengthDirection.Vertical);
+
+                videoViewModel.Top = borderModel.Top;
+                
             }
         }
 
@@ -69,10 +77,8 @@ namespace ScreenStreamer.Wpf.Common.Models
             set
             {
                 wpfWidth = value;
-                if (videoViewModel != null)
-                {
-                    videoViewModel.ResolutionWidth = (int)PointsToPixels(wpfWidth, LengthDirection.Horizontal);
-                }
+                borderModel.Width = (int)PointsToPixels(wpfWidth, LengthDirection.Horizontal);
+                videoViewModel.ResolutionWidth = borderModel.Width;
             }
         }
 
@@ -88,14 +94,13 @@ namespace ScreenStreamer.Wpf.Common.Models
             {
 
                 wpfHeight = value;
-                if (videoViewModel != null)
-                {
-                    videoViewModel.ResolutionHeight = (int)PointsToPixels(wpfHeight, LengthDirection.Vertical);
-                } 
+
+                borderModel.Height = (int)PointsToPixels(wpfHeight, LengthDirection.Vertical);
+                videoViewModel.ResolutionHeight = borderModel.Height;
             }
         }
 
-        public void SetRegion(Rectangle rect)
+        public void SetBorderRegion(Rectangle rect)
         {
            wpfLeft = PixelsToPoints(rect.X, LengthDirection.Horizontal);
            wpfTop= PixelsToPoints(rect.Y, LengthDirection.Vertical);
@@ -118,14 +123,14 @@ namespace ScreenStreamer.Wpf.Common.Models
     public class BorderViewModel : BaseBorderViewModel
     {
 
-        public BorderViewModel(StreamViewModel stream) : base(stream)
+        public BorderViewModel(StreamViewModel stream, PropertyBorderModel border) : base(stream, border)
         {
         }
     }
 
     public class DesignBorderViewModel : BaseBorderViewModel
     {
-        public DesignBorderViewModel(StreamViewModel stream) : base(stream)
+        public DesignBorderViewModel(StreamViewModel stream, PropertyBorderModel border) : base(stream, border)
         {
         }
     }

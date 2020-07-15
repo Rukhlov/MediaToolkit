@@ -7,6 +7,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
     public abstract class PropertyWindowViewModel : BaseWindowViewModel
     {
         protected TrackableViewModel parent;
+
         [Track]
         public PropertyBaseViewModel Property { get; }
 

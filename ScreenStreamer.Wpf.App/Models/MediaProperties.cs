@@ -49,20 +49,16 @@ namespace ScreenStreamer.Wpf
     public class PropertyBorderModel
     {
         public bool IsBorderVisible { get; set; }
+
+        // размеры в пикселях
+        public int Top { get; set; } = 10;
+        public int Left { get; set; } = 10;
+        public int Width { get; set; } = 640;
+        public int Height { get; set; } = 480;
+       
+        [JsonIgnore]
+        public System.Drawing.Rectangle BorderRect => new System.Drawing.Rectangle(Left, Top, Width, Height);
     }
-
-    public class _PropertyVideoModel
-    {
-        public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
-        public bool IsRegion { get; set; }
-
-        public double Top { get; set; } = 0;
-        public double Left { get; set; } = 0;
-        public double ResolutionHeight { get; set; } = 1920;
-        public double ResolutionWidth { get; set; } = 1080;
-        public bool AspectRatio { get; set; } = true;
-    }
-
 
     public class PropertyVideoModel
     {
@@ -70,13 +66,16 @@ namespace ScreenStreamer.Wpf
 
         public VideoSourceItem Display { get; set; }//= new ScreenItem();
 
+        //public string DeviceId { get; set; }
+        //public string DeviceName { get; set; }
+        //public bool IsUvcDevice { get; set; }
+
         public bool IsRegion { get; set; }
 
         public int Top { get; set; } = 0;
         public int Left { get; set; } = 0;
 
         public int ResolutionWidth { get; set; } = 1920;
-
         public int ResolutionHeight { get; set; } = 1080;
 
        // public VideoCaptureType CaptType { get; set; }

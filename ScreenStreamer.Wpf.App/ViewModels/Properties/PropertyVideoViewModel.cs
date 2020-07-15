@@ -22,11 +22,23 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
     public class PropertyVideoViewModel : PropertyBaseViewModel, App.Managers.IViewRect
 	{
         private readonly PropertyVideoModel _model;
+
+        public PropertyVideoViewModel(StreamViewModel parent, PropertyVideoModel model) : base(parent)
+        {
+            _model = model;
+            ShowBorderCommand = new DelegateCommand(ShowBorder);
+
+            selectAreaManager = new App.Managers.SelectAreaManager(this);
+
+            //UpdateRegion();
+        }
+
+        private App.Managers.SelectAreaManager selectAreaManager = null;
+
         public override string Name => "Video";
 
         public ICommand ShowBorderCommand { get; }
-
-
+        public ICommand AdjustCommand { get; }
 
         [Track]
         public bool IsRegion
@@ -41,35 +53,32 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             }
         }
 
-        //private (double Top, double Left, double Width, double Height) GetRegion()
+        private VideoSourceItem display = null;
+
+        ////[Track]
+        //public VideoSourceItem Display
         //{
-
-        //    if (IsRegion)
-        //    {
-        //        return (this.Top, this.Left, this.ResolutionWidth, this.ResolutionHeight);
-        //    }
-        //    else
-        //    {
-        //        var rect = ScreenHelper.GetScreenBounds(Display) ?? new Rectangle();
-        //        return (rect.Top, rect.Left, rect.Width, rect.Height);
-        //    }
-        //}
-
-
-        //[Track]
-        //public string Display
-        //{
-        //    get => _model.Display?.Name ?? "";
+        //    get => display;
         //    set
         //    {
-        //        SetProperty(_model, () => _model.Display, value);
+
+        //        //SetProperty(_model, () => _model.Display, value);
+        //        display = value;
+        //        if (_model != null)
+        //        {
+        //            _model.DeviceId = display.DeviceId;
+        //            _model.DeviceName = display.Name;
+        //            _model.IsUvcDevice = display.IsUvcDevice;
+
+        //        }
 
         //        UpdateRegion();
+
+        //        RaisePropertyChanged(nameof(Display));
         //        RaisePropertyChanged(nameof(Info));
+        //        RaisePropertyChanged(nameof(IsScreenSource));
         //    }
         //}
-
-
 
         //[Track]
         public VideoSourceItem Display
@@ -80,8 +89,9 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
                 SetProperty(_model, () => _model.Display, value);
 
-                
+
                 UpdateRegion();
+
                 RaisePropertyChanged(nameof(Info));
                 RaisePropertyChanged(nameof(IsScreenSource));
             }
@@ -143,8 +153,6 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
         }
 
-
-
        // [Track]
         public int Top
         {
@@ -198,24 +206,9 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-        public ICommand AdjustCommand { get; }
-
-		private App.Managers.SelectAreaManager selectAreaManager = null;
-
-		public PropertyVideoViewModel(StreamViewModel parent, PropertyVideoModel model) : base(parent)
-        {
-            _model = model;
-            ShowBorderCommand = new DelegateCommand(ShowBorder);
-
-			selectAreaManager = new App.Managers.SelectAreaManager(this);
-
-			//UpdateRegion();
-        }
-
 		public void OnStreamStateChanged(bool isStarted)
 		{
 			//...
-
 			selectAreaManager.SetBorder(isStarted);
 
 		}
@@ -235,15 +228,16 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             //}
 
 
+            //var sourceItem = Display;
             var sourceItem = _model.Display;
-            if(sourceItem == null)
+            if (sourceItem == null)
             {
                 return;
             }
 
             bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
             if (!isRegionItem)
-            {
+            {// full screen
                 var captureRegion = Display?.CaptureRegion ?? Rectangle.Empty;
 
                 this.Top = captureRegion.Top;
@@ -256,15 +250,14 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
             }
             else
-            {
+            { // custom region mode...
+
                 //selectAreaManager?.ShowBorder(CaptureRect);
 
                 var designViewModel = Parent.DesignViewModel;
                 if (designViewModel != null)
                 {
                     SetBorderVisible(true);
-
-                   
 
                     var region = designViewModel.GetScreenRegion();
 
@@ -291,6 +284,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
             Parent.IsBorderVisible = isVisible;
             DialogService.Handle(isVisible, Parent.DesignViewModel);
+
 
             //var model = Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault();
             //if (model != null)
@@ -351,6 +345,35 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
     }
+
+    //private (double Top, double Left, double Width, double Height) GetRegion()
+    //{
+
+    //    if (IsRegion)
+    //    {
+    //        return (this.Top, this.Left, this.ResolutionWidth, this.ResolutionHeight);
+    //    }
+    //    else
+    //    {
+    //        var rect = ScreenHelper.GetScreenBounds(Display) ?? new Rectangle();
+    //        return (rect.Top, rect.Left, rect.Width, rect.Height);
+    //    }
+    //}
+
+
+    //[Track]
+    //public string Display
+    //{
+    //    get => _model.Display?.Name ?? "";
+    //    set
+    //    {
+    //        SetProperty(_model, () => _model.Display, value);
+
+    //        UpdateRegion();
+    //        RaisePropertyChanged(nameof(Info));
+    //    }
+    //}
+
 
 
 
