@@ -158,7 +158,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 }
 
                 dialogService.Close(SelectedStream.BorderViewModel);
-                dialogService.Close(SelectedStream.DesignViewModel);
+                dialogService.Close(SelectedStream.DesignBorderViewModel);
                 dialogService.Close(SelectedStream.AdvancedSettingsViewModel);
 
                 SelectedStream.Close();

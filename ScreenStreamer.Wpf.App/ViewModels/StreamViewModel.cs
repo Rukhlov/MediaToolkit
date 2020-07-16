@@ -56,20 +56,20 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             BorderViewModel = new BorderViewModel(this, Model.PropertyBorder);
 
-            DesignViewModel = new DesignBorderViewModel(this, Model.PropertyBorder);
+            DesignBorderViewModel = new DesignBorderViewModel(this, Model.PropertyBorder);
 
-            var rect = new System.Drawing.Rectangle
-            {
-                X = VideoViewModel.Left,
-                Y = VideoViewModel.Top,
-                Width = VideoViewModel.ResolutionWidth,
-                Height = VideoViewModel.ResolutionHeight,
-            };
+            //var rect = new System.Drawing.Rectangle
+            //{
+            //    X = VideoViewModel.Left,
+            //    Y = VideoViewModel.Top,
+            //    Width = VideoViewModel.ResolutionWidth,
+            //    Height = VideoViewModel.ResolutionHeight,
+            //};
 
             //DesignViewModel.SetBorderRegion(rect);
 
 
-            VideoViewModel.UpdateRegion();
+            VideoViewModel.SetupDisplayRegion();
 
             dispatcher = Dispatcher.CurrentDispatcher;
 
@@ -103,7 +103,7 @@ namespace ScreenStreamer.Wpf.Common.Models
         public BorderViewModel BorderViewModel { get; set; }
 
         [Track]
-        public DesignBorderViewModel DesignViewModel { get; set; }
+        public DesignBorderViewModel DesignBorderViewModel { get; set; }
 
         [Track]
         public PropertyBorderViewModel PropertyBorder { get; set; }
@@ -294,14 +294,14 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             if (isStarted)
             {
-                dialogService.Hide(DesignViewModel);
+                dialogService.Hide(DesignBorderViewModel);
 
             }
             else 
             {
                 if (IsBorderVisible)
                 {
-                    dialogService.Show(DesignViewModel);
+                    dialogService.Show(DesignBorderViewModel);
                 }
             }
 

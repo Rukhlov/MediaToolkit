@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace ScreenStreamer.Wpf
 {
@@ -64,13 +65,16 @@ namespace ScreenStreamer.Wpf
     {
         //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
 
-        public VideoSourceItem Display { get; set; }//= new ScreenItem();
+        //public VideoSourceItem Display { get; set; }//= new ScreenItem();
 
-        //public string DeviceId { get; set; }
-        //public string DeviceName { get; set; }
-        //public bool IsUvcDevice { get; set; }
+        public string DeviceId { get; set; } = "";
+        public string DeviceName { get; set; } = "";
+        public bool IsUvcDevice { get; set; } = false;
 
-        public bool IsRegion { get; set; }
+        [JsonIgnore]
+        public bool IsRegion => (DeviceId == "ScreenRegion");
+
+        //public bool IsRegion { get; set; }
 
         public int Top { get; set; } = 0;
         public int Left { get; set; } = 0;
@@ -78,9 +82,11 @@ namespace ScreenStreamer.Wpf
         public int ResolutionWidth { get; set; } = 1920;
         public int ResolutionHeight { get; set; } = 1080;
 
-       // public VideoCaptureType CaptType { get; set; }
+        // public VideoCaptureType CaptType { get; set; }
 
-        public ScreenCaptureItem CaptureType { get; set; } //= new ScreenItem();
+        public VideoCaptureType CaptType { get; set; } = VideoCaptureType.GDI;
+
+        //public ScreenCaptureItem CaptureType { get; set; } //= new ScreenItem();
 
         public bool CaptureMouse { get; set; } = true;
 
@@ -88,16 +94,31 @@ namespace ScreenStreamer.Wpf
 
         public void Init()
         {
-            if (Display == null)
+            if (string.IsNullOrEmpty(DeviceId))
             {
-                Display = ScreenHelper.GetDisplayItems().FirstOrDefault();
+                var device = ScreenHelper.GetDisplayItems().FirstOrDefault();
+
+                this.DeviceId = device.DeviceId;
+                this.DeviceName = device.Name;
+                this.IsUvcDevice = device.IsUvcDevice;
             }
 
-            if (this.CaptureType == null)
-            {
-                // this.CaptureType = new ScreenCaptureType { CaptType = VideoCaptureType.DXGIDeskDupl, Name = "DeskDupl" };
-                CaptureType = ScreenCaptureItem.SupportedCaptures.FirstOrDefault();
+            // Validate device id...
+            if (!ScreenHelper.GetDisplayItems().Any(i=>i.DeviceId == DeviceId))
+            {// TODO: если девайс больше не доступен, то что то делаем...
+                Debug.WriteLine("Device " + DeviceId + " not found");
             }
+
+            if(ScreenCaptureItem.SupportedCaptures.Any(c=>c.CaptType == this.CaptType))
+            {
+                Debug.WriteLine("CaptType " + CaptType + " not supported");
+            }
+
+            //if (this.CaptureType == null)
+            //{
+            //    // this.CaptureType = new ScreenCaptureType { CaptType = VideoCaptureType.DXGIDeskDupl, Name = "DeskDupl" };
+            //    CaptureType = ScreenCaptureItem.SupportedCaptures.FirstOrDefault();
+            //}
         }
     }
 
@@ -132,15 +153,25 @@ namespace ScreenStreamer.Wpf
         public int MaxBitrate { get; set; } = 5000;
         public H264Profile H264Profile { get; set; } = H264Profile.Main;
 
-        public EncoderItem VideoEncoder { get; set; }
+        public string EncoderId { get; set; } = "";
+        //public EncoderItem VideoEncoder { get; set; }
 
         public void Init()
         {
-            if (VideoEncoder == null)
-            {
-                VideoEncoder = EncoderHelper.GetVideoEncoderItems().FirstOrDefault();
+            var encoders = EncoderHelper.GetVideoEncoderItems();
 
+            var encoder = encoders.FirstOrDefault(e => e.Id == EncoderId) ?? encoders.FirstOrDefault();
+            if(encoder == null)
+            {
+                // Что то пошло не так...
+                // throw new Exception...
             }
+
+            if(encoder.Id != EncoderId)
+            {
+                this.EncoderId = encoder.Id;
+            }
+
         }
 
         //public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;

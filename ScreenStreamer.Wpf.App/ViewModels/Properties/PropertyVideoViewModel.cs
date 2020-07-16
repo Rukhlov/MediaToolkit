@@ -28,102 +28,95 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             _model = model;
             ShowBorderCommand = new DelegateCommand(ShowBorder);
 
-            selectAreaManager = new App.Managers.SelectAreaManager(this);
+            //selectAreaManager = new App.Managers.SelectAreaManager(this);
 
-            //UpdateRegion();
         }
 
-        private App.Managers.SelectAreaManager selectAreaManager = null;
+        //private App.Managers.SelectAreaManager selectAreaManager = null;
 
         public override string Name => "Video";
 
         public ICommand ShowBorderCommand { get; }
         public ICommand AdjustCommand { get; }
 
-        [Track]
-        public bool IsRegion
-        {
-            get => _model.IsRegion;
-            set
-            {
-                SetProperty(_model, () => _model.IsRegion, value);
+        public bool IsRegion => _model.IsRegion;
+        public bool IsScreenSource => !_model.IsUvcDevice;
 
-                UpdateRegion();
-                RaisePropertyChanged(nameof(Info));
-            }
-        }
-
-        private VideoSourceItem display = null;
-
-        ////[Track]
-        //public VideoSourceItem Display
-        //{
-        //    get => display;
-        //    set
-        //    {
-
-        //        //SetProperty(_model, () => _model.Display, value);
-        //        display = value;
-        //        if (_model != null)
-        //        {
-        //            _model.DeviceId = display.DeviceId;
-        //            _model.DeviceName = display.Name;
-        //            _model.IsUvcDevice = display.IsUvcDevice;
-
-        //        }
-
-        //        UpdateRegion();
-
-        //        RaisePropertyChanged(nameof(Display));
-        //        RaisePropertyChanged(nameof(Info));
-        //        RaisePropertyChanged(nameof(IsScreenSource));
-        //    }
-        //}
+        private VideoSourceItem videoSource = null;
 
         //[Track]
         public VideoSourceItem Display
         {
-            get => _model.Display;
+            get => videoSource;
             set
             {
 
-                SetProperty(_model, () => _model.Display, value);
-
-
-                UpdateRegion();
-
-                RaisePropertyChanged(nameof(Info));
-                RaisePropertyChanged(nameof(IsScreenSource));
-            }
-        }
-
-        public ScreenCaptureItem CaptureType
-        {
-            get => _model.CaptureType;
-            set
-            {
-
-                SetProperty(_model, () => _model.CaptureType, value);
-
-            }
-        }
-
-
-        public bool IsScreenSource
-        {
-            get
-            {
-                bool isScreenSource = true;
-                var sourceItem = _model.Display;
-                if (sourceItem != null)
+                //SetProperty(_model, () => _model.Display, value);
+                videoSource = value;
+                if (_model != null && videoSource !=null)
                 {
-                    isScreenSource = !sourceItem.IsUvcDevice;
+                    _model.DeviceId = videoSource.DeviceId;
+                    _model.DeviceName = videoSource.Name;
+                    _model.IsUvcDevice = videoSource.IsUvcDevice;
+
+                    SetupDisplayRegion();
+
+                    RaisePropertyChanged(nameof(Display));
+                    RaisePropertyChanged(nameof(Info));
+                    RaisePropertyChanged(nameof(IsScreenSource));
+
                 }
 
-                return isScreenSource;
-            }
+                //SetupDisplayRegion();
 
+                //RaisePropertyChanged(nameof(Display));
+                //RaisePropertyChanged(nameof(Info));
+                //RaisePropertyChanged(nameof(IsScreenSource));
+            }
         }
+
+
+        private ScreenCaptureItem captureType = null;
+        public ScreenCaptureItem CaptureType
+        {
+            get => captureType;
+            set
+            {
+                captureType = value;
+                if (_model != null)
+                {
+                    _model.CaptType = captureType.CaptType;
+
+                    RaisePropertyChanged(nameof(CaptureType));
+                }
+            }
+        }
+
+
+
+        //[Track]
+        public int Left
+        {
+            get => _model.Left;
+            set
+            {
+                SetProperty(_model, () => _model.Left, value);
+                RaisePropertyChanged(nameof(Info));
+            }
+        }
+
+        // [Track]
+        public int Top
+        {
+            get => _model.Top;
+            set
+            {
+                SetProperty(_model, () => _model.Top, value);
+                RaisePropertyChanged(nameof(Info));
+            }
+        }
+
+
 
         //[Track]
         public int ResolutionWidth
@@ -132,6 +125,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             set
             {
                 SetProperty(_model, () => _model.ResolutionWidth, value);
+                RaisePropertyChanged(nameof(Info));
             }
         }
 
@@ -143,34 +137,16 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             set
             {
                 SetProperty(_model, () => _model.ResolutionHeight, value);
+                RaisePropertyChanged(nameof(Info));
             }
         }
+
+
 
         //[Track]
         public string Resolution
         {
             get => (_model.ResolutionWidth + "x" + _model.ResolutionHeight);
-
-        }
-
-       // [Track]
-        public int Top
-        {
-            get => _model.Top;
-            set
-            {
-                SetProperty(_model, () => _model.Top, value);
-            }
-        }
-
-        //[Track]
-        public int Left
-        {
-            get => _model.Left;
-            set
-            {
-                SetProperty(_model, () => _model.Left, value);
-            }
         }
 
         public Rectangle CaptureRect
@@ -206,95 +182,53 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
 
 
 
-		public void OnStreamStateChanged(bool isStarted)
-		{
-			//...
-			selectAreaManager.SetBorder(isStarted);
-
-		}
-
-		//public SelectAreaForm selectAreaForm = null;
-		public void UpdateRegion()
+        public void SetupDisplayRegion()
         {
-            //if(!IsRegion)
-            //{
-            //    var region =  Display?.CaptureRegion ?? Rectangle.Empty;
-
-            //    this.Top = region.Top;
-            //    this.Left = region.Left;
-            //    this.ResolutionHeight = region.Height;
-            //    this.ResolutionWidth = region.Width;
-
-            //}
-
-
-            //var sourceItem = Display;
-            var sourceItem = _model.Display;
-            if (sourceItem == null)
+            if (Display == null)
             {
                 return;
             }
+            var captureRegion = Display.CaptureRegion;
+            if (IsRegion)
+            {// если выбран регион, то получаем границы из DesignBorderViewModel
 
-            bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
-            if (!isRegionItem)
-            {// full screen
-                var captureRegion = Display?.CaptureRegion ?? Rectangle.Empty;
-
-                this.Top = captureRegion.Top;
-                this.Left = captureRegion.Left;
-                this.ResolutionHeight = captureRegion.Height;
-                this.ResolutionWidth = captureRegion.Width;
-
-				//selectAreaManager?.HideBorder();
-                SetBorderVisible(false);
-
-            }
-            else
-            { // custom region mode...
-
-                //selectAreaManager?.ShowBorder(CaptureRect);
-
-                var designViewModel = Parent.DesignViewModel;
-                if (designViewModel != null)
+                var designViewModel = Parent.DesignBorderViewModel;
+                //if (designViewModel != null)
                 {
-                    SetBorderVisible(true);
-
-                    var region = designViewModel.GetScreenRegion();
-
-                    this.Left = region.Left;
-                    this.Top = region.Top;
-                    this.ResolutionWidth = region.Width;
-                    this.ResolutionHeight = region.Height;
+                    captureRegion = designViewModel.GetScreenRegion();
                 }
 
-
             }
+
+            this.Top = captureRegion.Top;
+            this.Left = captureRegion.Left;
+            this.ResolutionHeight = captureRegion.Height;
+            this.ResolutionWidth = captureRegion.Width;
+
+            //selectAreaManager?.HideBorder();
+            SetBorderVisible(IsRegion);
+
 
         }
 
-		private void SelectedAreaChanged(Rectangle region)
-		{
-			this.Top = region.Top;
-			this.Left = region.Left;
-			this.ResolutionHeight = region.Height;
-			this.ResolutionWidth = region.Width;
-		}
+
 
         private void SetBorderVisible(bool isVisible)
         {
             Parent.IsBorderVisible = isVisible;
-            DialogService.Handle(isVisible, Parent.DesignViewModel);
 
+            //if (Parent.DesignBorderViewModel != null)
+            {
+                DialogService.Handle(isVisible, Parent.DesignBorderViewModel);
+
+
+            }
 
             //var model = Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault();
             //if (model != null)
             //{
             //    model.IsBorderVisible = isVisible;
-
             //}
-
-            //Parent.Properties.OfType<PropertyBorderViewModel>().FirstOrDefault()
-            //    .Do(model => model.IsBorderVisible = true);
         }
 
 
@@ -344,7 +278,140 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         }
 
 
+        public void OnStreamStateChanged(bool isStarted)
+        {
+            //...
+            //selectAreaManager.SetBorder(isStarted);
+
+        }
+
+        //public SelectAreaForm selectAreaForm = null;
+
     }
+
+    //private void SelectedAreaChanged(Rectangle region)
+    //{
+    //	this.Top = region.Top;
+    //	this.Left = region.Left;
+    //	this.ResolutionHeight = region.Height;
+    //	this.ResolutionWidth = region.Width;
+    //}
+    //public ScreenCaptureItem CaptureType
+    //{
+    //    get => _model.CaptureType;
+    //    set
+    //    {
+
+    //        SetProperty(_model, () => _model.CaptureType, value);
+
+    //    }
+    //}
+
+    ////[Track]
+    //public VideoSourceItem Display
+    //{
+    //    get => _model.Display;
+    //    set
+    //    {
+
+    //        SetProperty(_model, () => _model.Display, value);
+
+
+    //        UpdateRegion();
+
+    //        RaisePropertyChanged(nameof(Info));
+    //        RaisePropertyChanged(nameof(IsScreenSource));
+    //    }
+    //}
+
+    //[Track]
+    //public bool IsRegion
+    //{
+    //    get => _model.IsRegion;
+    //    set
+    //    {
+    //        SetProperty(_model, () => _model.IsRegion, value);
+
+    //        SetupDisplayRegion();
+    //        RaisePropertyChanged(nameof(Info));
+    //    }
+    //}
+
+    //public bool IsScreenSource
+    //{
+    //    get
+    //    {
+    //        bool isScreenSource = true;
+    //        var sourceItem = _model.Display;
+    //        if (sourceItem != null)
+    //        {
+    //            isScreenSource = !sourceItem.IsUvcDevice;
+    //        }
+
+    //        return isScreenSource;
+    //    }
+
+    //}
+
+    /*
+    public void UpdateRegion()
+    {
+        //if(!IsRegion)
+        //{
+        //    var region =  Display?.CaptureRegion ?? Rectangle.Empty;
+
+        //    this.Top = region.Top;
+        //    this.Left = region.Left;
+        //    this.ResolutionHeight = region.Height;
+        //    this.ResolutionWidth = region.Width;
+
+        //}
+
+
+        //var sourceItem = Display;
+        var sourceItem = _model.Display;
+        if (sourceItem == null)
+        {
+            return;
+        }
+
+        bool isRegionItem = sourceItem.DeviceId == "ScreenRegion";
+        if (!isRegionItem)
+        {// full screen
+            var captureRegion = Display?.CaptureRegion ?? Rectangle.Empty;
+
+            this.Top = captureRegion.Top;
+            this.Left = captureRegion.Left;
+            this.ResolutionHeight = captureRegion.Height;
+            this.ResolutionWidth = captureRegion.Width;
+
+            //selectAreaManager?.HideBorder();
+            SetBorderVisible(false);
+
+        }
+        else
+        { // custom region mode...
+
+            //selectAreaManager?.ShowBorder(CaptureRect);
+
+            var designViewModel = Parent.DesignViewModel;
+            if (designViewModel != null)
+            {
+                SetBorderVisible(true);
+
+                var region = designViewModel.GetScreenRegion();
+
+                this.Left = region.Left;
+                this.Top = region.Top;
+                this.ResolutionWidth = region.Width;
+                this.ResolutionHeight = region.Height;
+            }
+
+
+        }
+
+    }
+    */
 
     //private (double Top, double Left, double Width, double Height) GetRegion()
     //{

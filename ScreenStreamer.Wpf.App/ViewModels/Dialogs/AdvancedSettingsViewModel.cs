@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Drawing;
+using System.Linq;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
@@ -21,18 +22,32 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             _model = model;
             videoVeiwModel = ((StreamViewModel)parent).VideoViewModel;
 
-            VideoEncoders.AddRange(EncoderHelper.GetVideoEncoderItems());
+            var encoders = EncoderHelper.GetVideoEncoderItems();
+
+            VideoEncoders.AddRange(encoders);
+
+            var encoder = encoders.FirstOrDefault(e => e.Id == _model.EncoderId) ?? encoders.FirstOrDefault();
+            this.VideoEncoder = encoder;
+
             AdjustResolutionCommand = new DelegateCommand(AdjustVideoResolution);
 
         }
 
+        private EncoderItem videoEncoder = null;
         //[Track]
         public EncoderItem VideoEncoder
         {
-            get => _model.VideoEncoder;
+            get => videoEncoder;
             set
             {
-                SetProperty(_model, () => _model.VideoEncoder, value);
+                //SetProperty(_model, () => _model.VideoEncoder, value);
+                videoEncoder = value;
+
+                if (_model != null)
+                {
+                    _model.EncoderId = videoEncoder.Id;
+                    RaisePropertyChanged(nameof(VideoEncoder));
+                }
             }
         }
 

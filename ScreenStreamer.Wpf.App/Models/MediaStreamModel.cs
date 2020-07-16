@@ -246,7 +246,7 @@ namespace ScreenStreamer.Wpf
 
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
-            videoEncoderSettings.EncoderId = AdvancedSettingsModel.VideoEncoder.Id;
+            videoEncoderSettings.EncoderId = AdvancedSettingsModel.EncoderId;
             videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
             videoEncoderSettings.Width = encoderResolution.Width;
@@ -264,7 +264,7 @@ namespace ScreenStreamer.Wpf
 
             var captureRegion = new Rectangle(x, y, w, h);
 
-            var captureType = PropertyVideo.CaptureType.CaptType;
+            var captureType = PropertyVideo.CaptType;
 
             var screenCaptureProperties = new ScreenCaptureProperties
             {
@@ -279,15 +279,15 @@ namespace ScreenStreamer.Wpf
             };
 
             VideoCaptureDevice captureDevice = null;
-            var videoSourceItem = PropertyVideo.Display;
-            if (videoSourceItem.IsUvcDevice)
+            //var videoSourceItem = PropertyVideo.Display;
+            if (PropertyVideo.IsUvcDevice)
             {
                 captureDevice = new UvcDevice
                 {
 
-                    Name = videoSourceItem.Name,
+                    Name = PropertyVideo.DeviceName,
                     Resolution = captureRegion.Size,
-                    DeviceId = videoSourceItem.DeviceId,
+                    DeviceId = PropertyVideo.DeviceId,
                 };
             }
             else
@@ -296,13 +296,39 @@ namespace ScreenStreamer.Wpf
                 {
                     CaptureRegion = captureRegion,
                     DisplayRegion = captureRegion,
-                    Name = PropertyVideo.Display.Name,
+                    Name = PropertyVideo.DeviceName,
 
                     Resolution = captureRegion.Size,
                     Properties = screenCaptureProperties,
-                    DeviceId = PropertyVideo.Display.DeviceId,
+                    DeviceId = PropertyVideo.DeviceId,
                 };
             }
+
+            //VideoCaptureDevice captureDevice = null;
+            //var videoSourceItem = PropertyVideo.Display;
+            //if (videoSourceItem.IsUvcDevice)
+            //{
+            //    captureDevice = new UvcDevice
+            //    {
+
+            //        Name = videoSourceItem.Name,
+            //        Resolution = captureRegion.Size,
+            //        DeviceId = videoSourceItem.DeviceId,
+            //    };
+            //}
+            //else
+            //{
+            //    captureDevice = new ScreenCaptureDevice
+            //    {
+            //        CaptureRegion = captureRegion,
+            //        DisplayRegion = captureRegion,
+            //        Name = PropertyVideo.Display.Name,
+
+            //        Resolution = captureRegion.Size,
+            //        Properties = screenCaptureProperties,
+            //        DeviceId = PropertyVideo.Display.DeviceId,
+            //    };
+            //}
 
             if (PropertyAudio.IsEnabled)
             {

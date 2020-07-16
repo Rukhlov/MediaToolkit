@@ -17,7 +17,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
             {
                 SetProperty(_model, () => _model.IsBorderVisible, value);
 
-                var borderViewModel = Parent.IsStarted ? Parent.BorderViewModel : (IDialogViewModel)Parent.DesignViewModel;
+                var borderViewModel = Parent.IsStarted ? Parent.BorderViewModel : (IDialogViewModel)Parent.DesignBorderViewModel;
 
                 DialogService.Handle(_model.IsBorderVisible, borderViewModel);
             }

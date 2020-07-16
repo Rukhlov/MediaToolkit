@@ -28,13 +28,22 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             UpdateVideoSourcesCommand = new Prism.Commands.DelegateCommand(UpdateSources);
 
-            Displays.AddRange(ScreenHelper.GetDisplayItems());
+            //Displays.AddRange(ScreenHelper.GetDisplayItems());
+
 
             ScreenCaptures.AddRange(ScreenCaptureItem.SupportedCaptures);
 
-            //Displays.AddRange(ScreenHelper.GetScreens());
+            var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
+
+            var captType = streamModel.PropertyVideo.CaptType;
+
+            ((PropertyVideoViewModel)this.Property).CaptureType = ScreenCaptures.FirstOrDefault(c => c.CaptType == captType) ?? ScreenCaptures.FirstOrDefault();
+
+
+            ////Displays.AddRange(ScreenHelper.GetScreens());
+            /////
             ///
-            //UpdateSources();
+            UpdateSources();
         }
 
         public void UpdateSources()
@@ -43,14 +52,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             Displays.AddRange(ScreenHelper.GetDisplayItems());
 
-            //var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
+            var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
 
-            //var deviceId = streamModel.PropertyVideo.DeviceId;
+            var deviceId = streamModel.PropertyVideo.DeviceId;
 
-  
-            //((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
+            ((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
 
-            ((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault();
+            //((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault();
         }
 
         protected override bool CheckChanges()

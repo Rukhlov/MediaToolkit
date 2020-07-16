@@ -159,6 +159,7 @@
     <Compile Include="Models\MainModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\WndProcService.cs" />
+    <Compile Include="ViewModels\Common\CommonTypes.cs" />
     <Compile Include="ViewModels\Common\MessageBoxViewModel.cs" />
     <Compile Include="Utils\NativeMethods.cs" />
     <Compile Include="ViewModels\Common\CustomBindableBase.cs" />

@@ -34,7 +34,6 @@
                           ItemsSource="{Binding Displays}" 
                           DisplayMemberPath="Name"
 
-                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
                           SelectedItem="{Binding Property.Display}"
                           Cursor="Hand"/>
             </Grid>
@@ -90,11 +89,11 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <RadioButton  GroupName="display"
+                <!--<RadioButton  GroupName="display"
                               IsChecked="{Binding Property.IsRegion, Mode=TwoWay}"
                               Content="Use Display Region" 
                               Style="{StaticResource defaultRadioButtonStyle}"
-                              Visibility="Collapsed"/>
+                              Visibility="Collapsed"/>-->
 
 
                 <!--<TextBlock Grid.Column="1" 
