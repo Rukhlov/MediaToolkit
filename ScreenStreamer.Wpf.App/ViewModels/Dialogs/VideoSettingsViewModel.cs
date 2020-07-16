@@ -31,19 +31,35 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             //Displays.AddRange(ScreenHelper.GetDisplayItems());
 
 
-            ScreenCaptures.AddRange(ScreenCaptureItem.SupportedCaptures);
+            ScreenCaptures.AddRange(ScreenHelper.SupportedCaptures);
 
-            var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
+            var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
+            
+            var streamModel = propVideoViewModel.Parent.Model;
 
-            var captType = streamModel.PropertyVideo.CaptType;
+            var videoModel = streamModel.PropertyVideo;
 
-            ((PropertyVideoViewModel)this.Property).CaptureType = ScreenCaptures.FirstOrDefault(c => c.CaptType == captType) ?? ScreenCaptures.FirstOrDefault();
+            var captType = videoModel.CaptType;
+
+            propVideoViewModel.CaptureType = ScreenCaptures.FirstOrDefault(c => c.CaptType == captType) ?? ScreenCaptures.FirstOrDefault();
 
 
-            ////Displays.AddRange(ScreenHelper.GetScreens());
-            /////
-            ///
-            UpdateSources();
+            Displays.AddRange(ScreenHelper.GetDisplayItems());
+
+            var deviceId = videoModel.DeviceId;      
+
+            if (string.IsNullOrEmpty(deviceId))
+            {// если девайс не задан то берем первый попавшийся
+                propVideoViewModel.Display = Displays.FirstOrDefault();
+            }
+            else
+            {// если девайс есть в конфиге, то используем его даже если его нет в списке 
+                // чтобы пользователь поменял его вручную
+                propVideoViewModel.Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId);
+            }
+
+           // ((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
+
         }
 
         public void UpdateSources()
@@ -52,13 +68,24 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             Displays.AddRange(ScreenHelper.GetDisplayItems());
 
-            var streamModel = ((PropertyVideoViewModel)this.Property).Parent.Model;
+            var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
+
+            var streamModel = propVideoViewModel.Parent.Model;
 
             var deviceId = streamModel.PropertyVideo.DeviceId;
 
-            ((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
+            propVideoViewModel.Display = Displays.FirstOrDefault(d => d.DeviceId == deviceId) ?? Displays.FirstOrDefault();
 
-            //((PropertyVideoViewModel)this.Property).Display = Displays.FirstOrDefault();
+        }
+
+        public override bool IsClosableOnLostFocus
+        {
+            get
+            {
+                //return false;
+
+                return base.IsClosableOnLostFocus;
+            }
         }
 
         protected override bool CheckChanges()

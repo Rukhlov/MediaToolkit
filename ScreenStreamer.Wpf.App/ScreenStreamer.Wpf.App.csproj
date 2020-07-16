@@ -156,7 +156,7 @@
     <Compile Include="Interfaces\IDialogViewModel.cs" />
     <Compile Include="Interfaces\IStreamPropertyBaseViewModel.cs" />
     <Compile Include="Managers\ConfigurationManager.cs" />
-    <Compile Include="Models\MainModel.cs" />
+    <Compile Include="Models\AppModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\WndProcService.cs" />
     <Compile Include="ViewModels\Common\CommonTypes.cs" />

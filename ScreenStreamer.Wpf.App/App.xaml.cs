@@ -22,12 +22,28 @@ namespace ScreenStreamer.Wpf.UI
             //...
             var args = e.Args;
 
+            var winVersion = Environment.OSVersion.Version;
+            Version minOsVersion = new Version(AppModel.MinOSVersion);
+
+            if (winVersion < minOsVersion)
+            {
+                //...
+            }
+
             var config = ConfigManager.LoadConfigurations();
             //TODO: validate...
 
+            if (!config.Validate())
+            {
+                //...
+                // Reset config...
+
+            }
+
+
             ServiceLocator.RegisterSingleton(config);
 
-            ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
+           // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
             var dialogService = new Common.Services.DialogService();
             ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);

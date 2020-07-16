@@ -21,39 +21,50 @@ namespace ScreenStreamer.Wpf
             mediaStreamer = new MediaStreamer();
             mediaStreamer.StateChanged += MediaStreamer_StateChanged;
 
-            AdvancedSettingsModel.Init();
-
-            PropertyVideo.Init();
-            PropertyNetwork.Init();
         }
+
+        public string Name { get; set; } = "";
+
+        public AdvancedSettingsModel AdvancedSettings { get; set; } = new AdvancedSettingsModel();
+
+        public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
+
+       // public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
+        //public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
+
+        public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
+        public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
+        public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
+
+
+        public bool Validate()
+        {
+            AdvancedSettings.Validate();
+
+            PropertyVideo.Validate();
+            PropertyNetwork.Validate();
+
+            return true;
+        }
+
 
         private MediaStreamer mediaStreamer = null;
         private StreamSession currentSession = null;
 
-        public AudioStreamSettings AudioSettings => currentSession?.AudioSettings;
-        public VideoStreamSettings VideoSettings => currentSession?.VideoSettings;
+        [Newtonsoft.Json.JsonIgnore]
+        internal AudioStreamSettings AudioSettings => currentSession?.AudioSettings;
+
+        [Newtonsoft.Json.JsonIgnore]
+        internal VideoStreamSettings VideoSettings => currentSession?.VideoSettings;
 
         public event Action StateChanged;
         public event Action<object> ErrorOccurred;
 
         [Newtonsoft.Json.JsonIgnore]
         public int ErrorCode { get; private set; }
-
         [Newtonsoft.Json.JsonIgnore]
         public Exception ErrorObj { get; private set; }
 
-        public AdvancedSettingsModel AdvancedSettingsModel { get; set; } = new AdvancedSettingsModel();
-
-        public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
-
-        public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
-        public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
-        public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
-        public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
-        public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
-
-
-        public string Name { get; set; } = "";
 
         [Newtonsoft.Json.JsonIgnore]
         public bool IsStreaming
@@ -234,28 +245,28 @@ namespace ScreenStreamer.Wpf
             var encoderResolution = new Size(PropertyVideo.ResolutionWidth, PropertyVideo.ResolutionHeight);
 
             videoSettings.StreamFlags &= ~VideoStreamFlags.UseEncoderResoulutionFromSource;
-            if (AdvancedSettingsModel.UseResolutionFromCaptureSource)
+            if (AdvancedSettings.UseResolutionFromCaptureSource)
             {
                 videoSettings.StreamFlags |= VideoStreamFlags.UseEncoderResoulutionFromSource;
             }
             else
             {
-                encoderResolution = new Size(AdvancedSettingsModel.Width, AdvancedSettingsModel.Height);
+                encoderResolution = new Size(AdvancedSettings.Width, AdvancedSettings.Height);
             }
 
 
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
-            videoEncoderSettings.EncoderId = AdvancedSettingsModel.EncoderId;
-            videoEncoderSettings.Bitrate = AdvancedSettingsModel.Bitrate;
-            videoEncoderSettings.MaxBitrate = AdvancedSettingsModel.MaxBitrate;
+            videoEncoderSettings.EncoderId = AdvancedSettings.EncoderId;
+            videoEncoderSettings.Bitrate = AdvancedSettings.Bitrate;
+            videoEncoderSettings.MaxBitrate = AdvancedSettings.MaxBitrate;
             videoEncoderSettings.Width = encoderResolution.Width;
             videoEncoderSettings.Height = encoderResolution.Height;
 
 
-            videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettingsModel.Fps, 1);
-            videoEncoderSettings.Profile = AdvancedSettingsModel.H264Profile;
-            videoEncoderSettings.LowLatency = AdvancedSettingsModel.LowLatency;
+            videoEncoderSettings.FrameRate = new MediaRatio(AdvancedSettings.Fps, 1);
+            videoEncoderSettings.Profile = AdvancedSettings.H264Profile;
+            videoEncoderSettings.LowLatency = AdvancedSettings.LowLatency;
 
             int x = (int)PropertyVideo.Left;
             int y = (int)PropertyVideo.Top;
@@ -275,7 +286,7 @@ namespace ScreenStreamer.Wpf
                 Fps = 30,
                 ShowDebugInfo = false,
                 ShowDebugBorder = PropertyVideo.ShowCaptureBorder,
-                AspectRatio = AdvancedSettingsModel.KeepAspectRatio,
+                AspectRatio = AdvancedSettings.KeepAspectRatio,
             };
 
             VideoCaptureDevice captureDevice = null;

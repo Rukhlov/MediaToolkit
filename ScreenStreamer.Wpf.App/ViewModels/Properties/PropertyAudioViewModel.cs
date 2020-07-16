@@ -53,7 +53,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         {
             _model = model;
 
-            var devices = AudioSourceItem.GetMultiMediaDeviceViewModels();
+            var devices = AudioHelper.GetAudioSourceItems();
             _selectedSource = devices.FirstOrDefault(device => device.DeviceId == model.DeviceId) ?? devices.FirstOrDefault();
         }
 

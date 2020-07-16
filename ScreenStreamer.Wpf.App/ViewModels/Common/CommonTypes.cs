@@ -120,20 +120,8 @@ namespace ScreenStreamer.Wpf
         {
             return this.DeviceId.GetHashCode();
         }
-
-
-        public static List<AudioSourceItem> GetMultiMediaDeviceViewModels()
-        {
-
-            var audioDevices = AudioTool.GetAudioCaptureDevices();
-
-            return audioDevices.Select(d => new AudioSourceItem(d)).ToList();
-
-            //return GetMultiMediaDevices()
-            //    .Select(mmd => new AudioDeviceViewModel { DeviceId = mmd.ID, DisplayName = mmd.FriendlyName })
-            //    .ToList();
-        }
     }
+
 
     public class ScreenCaptureItem
     {
@@ -151,14 +139,6 @@ namespace ScreenStreamer.Wpf
         {
             return base.GetHashCode();
         }
-
-        public static readonly List<ScreenCaptureItem> SupportedCaptures = new List<ScreenCaptureItem>
-        {
-            new ScreenCaptureItem{CaptType = VideoCaptureType.DXGIDeskDupl, Name = "Desktop Duplication API" },
-            new ScreenCaptureItem{CaptType = VideoCaptureType.GDI, Name = "GDI" },
-            new ScreenCaptureItem{CaptType = VideoCaptureType.GDILayered, Name = "GDI Layered" },
-        };
-
         // public ScreenCaptureDevice Device { get; set; }
     }
 }

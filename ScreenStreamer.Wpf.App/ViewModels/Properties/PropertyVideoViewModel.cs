@@ -261,11 +261,12 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
                 {
                     builder.Append($"{nameof(this.Top)}: {this.Top}, {nameof(this.Left)}: {this.Left}, Width: {this.ResolutionWidth}, Height: {this.ResolutionHeight}");
                 }
-
                 else
                 {
+                    var displayName = Display?.Name ?? "Device is not found!";
+                    builder.Append(displayName);
 
-                    builder.Append(this.Display?.Name);
+                    //builder.Append(this.Display?.Name);
                 }
  
 

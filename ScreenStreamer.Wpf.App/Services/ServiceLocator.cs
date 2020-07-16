@@ -1,10 +1,4 @@
 ﻿
-using GalaSoft.MvvmLight.Messaging;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Managers;
-using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
-using ScreenStreamer.Wpf.Common.Services;
 using Unity;
 using Unity.Lifetime;
 

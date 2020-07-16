@@ -25,11 +25,11 @@ namespace ScreenStreamer.Wpf.Common.Managers
         private static string configFileFullName = System.IO.Path.Combine(ConfigPath, configName);
 
   
-        public static MainModel LoadConfigurations()
+        public static AppModel LoadConfigurations()
         {
             logger.Debug("ConfigurationManager::LoadConfigurations()");
 
-            MainModel item = null;
+            AppModel item = null;
             try
             {
                 if (File.Exists(configFileFullName))
@@ -43,7 +43,7 @@ namespace ScreenStreamer.Wpf.Common.Managers
                     {
                         using (JsonReader jsonReader = new JsonTextReader(streamReader))
                         {
-                            item = serializer.Deserialize<MainModel>(jsonReader);
+                            item = serializer.Deserialize<AppModel>(jsonReader);
                         }
 
                     }
@@ -56,7 +56,7 @@ namespace ScreenStreamer.Wpf.Common.Managers
                 logger.Error(ex);
             }
 
-            return item ?? MainModel.Default;
+            return item ?? AppModel.Default;
         }
 
         public static void Save()
@@ -70,7 +70,7 @@ namespace ScreenStreamer.Wpf.Common.Managers
                     Directory.CreateDirectory(ConfigPath);
                 }
 
-                var model = ServiceLocator.GetInstance<MainModel>();
+                var model = ServiceLocator.GetInstance<AppModel>();
 
                 JsonSerializer serializer = new JsonSerializer
                 {

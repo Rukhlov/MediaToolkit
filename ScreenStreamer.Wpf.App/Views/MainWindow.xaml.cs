@@ -9,8 +9,9 @@ using ScreenStreamer.Wpf.Common.Models.Dialogs;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using GalaSoft.MvvmLight.Messaging;
-using Unity;
+//using GalaSoft.MvvmLight.Messaging;
+
+using System.Diagnostics;
 
 namespace ScreenStreamer.Wpf.Common.Views
 {
@@ -30,7 +31,7 @@ namespace ScreenStreamer.Wpf.Common.Views
         //For debug\
         public MainWindow()
         {
-            var model = ServiceLocator.GetInstance<MainModel>();
+            var model = ServiceLocator.GetInstance<AppModel>();
             var vm = new MainViewModel(model);
             this.DataContext = vm;
 
@@ -42,23 +43,26 @@ namespace ScreenStreamer.Wpf.Common.Views
             dialogService.Register(vm, this);
 
 
-            var messenger = ServiceLocator.GetInstance<IMessenger>();
-            messenger.Unregister<AcceptChangesMessage>(this);
-            messenger.Register<AcceptChangesMessage>(this, VmOnPropertyChanged);
+            //var messenger = ServiceLocator.GetInstance<IMessenger>();
+            //messenger.Unregister<AcceptChangesMessage>(this);
+            //messenger.Register<AcceptChangesMessage>(this, VmOnPropertyChanged);
 
             ApplyInitialState();
         }
 
         private IDialogService dialogService = null;
 
-        private void VmOnPropertyChanged(AcceptChangesMessage obj)
-        {
-            //TODO Process changes
-        }
+        //private void VmOnPropertyChanged(AcceptChangesMessage obj)
+        //{
+        //    //TODO Process changes
+        //    Debug.WriteLine("VmOnPropertyChanged(...)");
+        //}
 
         private void ApplyInitialState()
         {
             //TODO apply initial state
+
+            Debug.WriteLine("ApplyInitialState()");
         }
 
         public MainWindow(IDialogViewModel viewModel)
@@ -132,9 +136,9 @@ namespace ScreenStreamer.Wpf.Common.Views
         }
     }
 
-    public class AcceptChangesMessage
-    {
-        public TrackableViewModel Model { get; set; }
-        public string ChangedProperty { get; set; }
-    }
+    //public class AcceptChangesMessage
+    //{
+    //    public TrackableViewModel Model { get; set; }
+    //    public string ChangedProperty { get; set; }
+    //}
 }

@@ -56,6 +56,28 @@ namespace ScreenStreamer.Wpf.Common.Helpers
 
     public class ScreenHelper
     {
+        public static readonly List<ScreenCaptureItem> SupportedCaptures = new List<ScreenCaptureItem>
+        {
+            new ScreenCaptureItem
+            {
+                CaptType = VideoCaptureType.DXGIDeskDupl,
+                Name = "Desktop Duplication API"
+            },
+
+            new ScreenCaptureItem
+            {
+                CaptType = VideoCaptureType.GDI,
+                Name = "GDI"
+            },
+
+            new ScreenCaptureItem
+            {
+                CaptType = VideoCaptureType.GDILayered,
+                Name = "GDI Layered"
+            },
+        };
+
+
         public enum LengthDirection
         {
             Vertical,

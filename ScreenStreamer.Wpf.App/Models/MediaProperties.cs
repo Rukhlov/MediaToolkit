@@ -30,7 +30,7 @@ namespace ScreenStreamer.Wpf
         public int MulticasVideoPort { get; set; } = 0;
         public int MulticasAudioPort { get; set; } = 0;
 
-        public void Init()
+        public void Validate()
         {
             //var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange((System.Net.Sockets.ProtocolType)UnicastProtocol, 1, Port);
             //if (freeTcpPorts != null)
@@ -49,6 +49,7 @@ namespace ScreenStreamer.Wpf
 
     public class PropertyBorderModel
     {
+        [JsonIgnore]
         public bool IsBorderVisible { get; set; }
 
         // размеры в пикселях
@@ -59,13 +60,44 @@ namespace ScreenStreamer.Wpf
        
         [JsonIgnore]
         public System.Drawing.Rectangle BorderRect => new System.Drawing.Rectangle(Left, Top, Width, Height);
+
+        public void Validate()
+        {
+
+            if(Width <= 0)
+            {
+                Width = 10;
+            }
+            
+            if (Height <= 0)
+            {
+                Height = 10;
+            }
+
+            var decktopRect = System.Windows.Forms.SystemInformation.VirtualScreen;
+            var rect = System.Drawing.Rectangle.Intersect(decktopRect, BorderRect);
+
+            if (rect.Width > 0 && rect.Height > 0)
+            { // внутри экрана все ок...
+
+            }
+            else
+            {// за границей экрана, сбрасываем по дефолту
+
+                Debug.WriteLine("Invalid region: " + BorderRect);
+
+                Left = 10;
+                Top = 10;            
+                Width  = 640;
+                Height = 480;
+            }
+               
+        }
     }
 
     public class PropertyVideoModel
     {
         //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
-
-        //public VideoSourceItem Display { get; set; }//= new ScreenItem();
 
         public string DeviceId { get; set; } = "";
         public string DeviceName { get; set; } = "";
@@ -82,34 +114,43 @@ namespace ScreenStreamer.Wpf
         public int ResolutionWidth { get; set; } = 1920;
         public int ResolutionHeight { get; set; } = 1080;
 
-        // public VideoCaptureType CaptType { get; set; }
-
         public VideoCaptureType CaptType { get; set; } = VideoCaptureType.GDI;
-
-        //public ScreenCaptureItem CaptureType { get; set; } //= new ScreenItem();
 
         public bool CaptureMouse { get; set; } = true;
 
         public bool ShowCaptureBorder { get; set; } = false;
 
-        public void Init()
+        public void Validate()
         {
+            // Validate device id...
+            var displays = ScreenHelper.GetDisplayItems();
+
+            if (!displays.Any(i=>i.DeviceId == DeviceId))
+            {// TODO: если девайс больше не доступен, то что то делаем...
+                Debug.WriteLine("Device " + DeviceId + " not found");
+
+
+                // оставляем как есть что бы пользователь сам выбрал нужный
+                //DeviceId = "";
+            }
+
             if (string.IsNullOrEmpty(DeviceId))
             {
-                var device = ScreenHelper.GetDisplayItems().FirstOrDefault();
+                var device = displays.FirstOrDefault();
 
                 this.DeviceId = device.DeviceId;
                 this.DeviceName = device.Name;
                 this.IsUvcDevice = device.IsUvcDevice;
+
+                var rect = device.CaptureRegion;
+                this.Left = rect.Left;
+                this.Top = rect.Top;
+
+                this.ResolutionWidth = rect.Width;
+                this.ResolutionHeight = rect.Height;
             }
 
-            // Validate device id...
-            if (!ScreenHelper.GetDisplayItems().Any(i=>i.DeviceId == DeviceId))
-            {// TODO: если девайс больше не доступен, то что то делаем...
-                Debug.WriteLine("Device " + DeviceId + " not found");
-            }
-
-            if(ScreenCaptureItem.SupportedCaptures.Any(c=>c.CaptType == this.CaptType))
+            if (!ScreenHelper.SupportedCaptures.Any(c=>c.CaptType == this.CaptType))
             {
                 Debug.WriteLine("CaptType " + CaptType + " not supported");
             }
@@ -122,21 +163,31 @@ namespace ScreenStreamer.Wpf
         }
     }
 
-    public class PropertyQualityModel
-    {
-        public QualityPreset Preset { get; set; } = QualityPreset.Standard;
-    }
-
-    public class PropertyCursorModel
-    {
-        public bool IsCursorVisible { get; set; } = true;
-    }
 
     public class PropertyAudioModel
     {
         public bool IsEnabled { get; set; }
         public bool IsComputerSoundEnabled { get; set; } = true;
         public string DeviceId { get; set; }
+
+        public void Validate()
+        {
+            var devices = AudioHelper.GetAudioSourceItems();
+
+            //if(!devices.Any(d=>d.DeviceId == DeviceId))
+            //{// девайс больше не доступен сбрасываем на дефолтный
+
+            //    // TODO: может быть лучше оставлять как есть чтобы пользователь сам выбрал правильный !!!
+
+            //    DeviceId = "";
+            //}
+
+            if (string.IsNullOrEmpty(DeviceId))
+            {
+                var device = devices.FirstOrDefault();
+                DeviceId = device?.DeviceId;
+            }
+        }
     }
 
 
@@ -156,7 +207,7 @@ namespace ScreenStreamer.Wpf
         public string EncoderId { get; set; } = "";
         //public EncoderItem VideoEncoder { get; set; }
 
-        public void Init()
+        public void Validate()
         {
             var encoders = EncoderHelper.GetVideoEncoderItems();
 
@@ -174,6 +225,18 @@ namespace ScreenStreamer.Wpf
 
         }
 
-        //public VideoCodingFormat VideoEncoder { get; set; } = VideoCodingFormat.H264;
+    }
+
+
+    // не нужно
+    public class PropertyQualityModel
+    {
+        public QualityPreset Preset { get; set; } = QualityPreset.Standard;
+    }
+
+    // не нужно
+    public class PropertyCursorModel
+    {
+        public bool IsCursorVisible { get; set; } = true;
     }
 }

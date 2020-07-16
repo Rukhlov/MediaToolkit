@@ -17,13 +17,13 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
     public class MainViewModel : BaseWindowViewModel
     {
-        private readonly MainModel mainModel;
+        private readonly AppModel appModel;
 
-        public MainViewModel(MainModel model) : base(null)
+        public MainViewModel(AppModel model) : base(null)
         {
-            mainModel = model;
+            appModel = model;
 
-            StreamList = new ObservableCollection<StreamViewModel>(mainModel.StreamList.Select(streamModel => new StreamViewModel(this, true, streamModel)));
+            StreamList = new ObservableCollection<StreamViewModel>(appModel.StreamList.Select(streamModel => new StreamViewModel(this, true, streamModel)));
             this.IsBottomVisible = false;
 
             this.AddCommand = new DelegateCommand(OnAddStream);
@@ -41,6 +41,11 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
             wndProcService.ShowMainWindow += OnShowMainWindow;
             wndProcService.Init();
+        }
+
+        public override string Caption
+        {
+            get => "Polywall Streamer " + AppModel.AppVersion;
         }
 
         private App.Services.WndProcService wndProcService = null;
@@ -92,7 +97,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public ObservableCollection<StreamViewModel> StreamList { get; set; } = new ObservableCollection<StreamViewModel>();
 
-        public bool HasMaxStreamsLimit => (StreamList.Count >= mainModel.MaxStreamCount);
+        public bool HasMaxStreamsLimit => (StreamList.Count >= appModel.MaxStreamCount);
         public bool HasNoStreams => StreamList.Count == 0;
 
         public bool IsAllStarted => StreamList.All(s => s.IsStarted);
@@ -130,7 +135,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
 
             this.StreamList.Add(streamViewModel);
-            this.mainModel.StreamList.Add(model);
+            this.appModel.StreamList.Add(model);
             SelectedStream = streamViewModel;
 
             RaisePropertyChanged(nameof(HasMaxStreamsLimit));
@@ -164,7 +169,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
                 SelectedStream.Close();
 
                 StreamList.Remove(SelectedStream);
-                this.mainModel.StreamList.Remove(SelectedStream.Model);
+                this.appModel.StreamList.Remove(SelectedStream.Model);
 
                 IsEdit = false;
                 SelectedStream = null;

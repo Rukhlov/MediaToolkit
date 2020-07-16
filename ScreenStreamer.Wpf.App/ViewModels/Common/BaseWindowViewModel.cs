@@ -22,7 +22,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public RelayCommand DiscardChangesCommand { get; private set; }
         public RelayCommand AcceptChangesCommand { get; private set; }
 
-        public virtual string Caption { get; set; } = "Polywall Streamer " + Assembly.GetExecutingAssembly().GetName().Version;
+        public virtual string Caption { get; set; } = ""; //"Polywall Streamer " + Assembly.GetExecutingAssembly().GetName().Version;
 
         protected BitmapImage captionImage = null;
         public virtual BitmapImage CaptionImage => captionImage;
@@ -71,28 +71,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
 
 
-        public bool IsClosableOnLostFocus => this is PropertyWindowViewModel && !IsChanged;
-
-       // public bool DontCloseOnLostFocus = false;
-
-        //public bool IsClosableOnLostFocus
-        //{
-        //    get
-        //    {
-        //        bool isClosableOnLostFocus = false;
-        //        if(this is PropertyWindowViewModel)
-        //        {
-        //            isClosableOnLostFocus = !IsChanged;
-        //        }
-
-        //        if (DontCloseOnLostFocus)
-        //        {
-        //            isClosableOnLostFocus = false;
-        //        }
-
-        //        return isClosableOnLostFocus;
-        //    }
-        //}
+        public virtual bool IsClosableOnLostFocus => this is PropertyWindowViewModel && !IsChanged;
 
         public void AcceptChanges()
         {

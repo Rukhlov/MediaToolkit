@@ -4,13 +4,13 @@ using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
 using ScreenStreamer.Wpf.Common.Models.Properties;
-using ScreenStreamer.Wpf.Common.Views;
+
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Threading;
-using GalaSoft.MvvmLight.Command;
-using Unity;
+//using GalaSoft.MvvmLight.Command;
+//using Unity;
 using NLog;
 using MediaToolkit.UI;
 
@@ -28,7 +28,10 @@ namespace ScreenStreamer.Wpf.Common.Models
 
             MainViewModel = mainViewModel;
             StartCommand = new DelegateCommand(SwitchStreamingState);
-            EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
+
+            //EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
+            EditModeCommand = new DelegateCommand(() => MainViewModel.IsEdit = true);
+
             EditNameCommand = new DelegateCommand(EditName);
             CopyUrlCommand = new DelegateCommand(CopyUrl);
             PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
@@ -52,7 +55,7 @@ namespace ScreenStreamer.Wpf.Common.Models
                 //Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
-            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettingsModel, this);
+            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettings, this);
 
             BorderViewModel = new BorderViewModel(this, Model.PropertyBorder);
 
