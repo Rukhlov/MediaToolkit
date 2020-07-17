@@ -11,7 +11,7 @@ using System.Windows.Threading;
 using NLog;
 using ScreenStreamer.Wpf.Common.Helpers;
 
-namespace Polywall.Share.UI
+namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
     public interface IStorableBladeModel : INotifyPropertyChanged
     {

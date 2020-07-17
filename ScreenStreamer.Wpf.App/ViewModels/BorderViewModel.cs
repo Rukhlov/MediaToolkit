@@ -1,4 +1,4 @@
-﻿using Prism.Mvvm;
+﻿
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Properties;
 using System.Drawing;

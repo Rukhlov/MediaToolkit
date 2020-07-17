@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Input;
-//using Polywall.Share.Exceptions;
+
 using Prism.Commands;
 using MediaToolkit.UI;
 using ScreenStreamer.Wpf;

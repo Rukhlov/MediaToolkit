@@ -1,11 +1,10 @@
 ﻿using Prism.Commands;
-using Prism.Mvvm;
+
 using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
 using System;
 using System.Windows.Input;
-using Unity;
 
 namespace ScreenStreamer.Wpf.Common.Models.Properties
 {

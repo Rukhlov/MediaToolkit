@@ -1,9 +1,9 @@
-﻿using ScreenStreamer.Wpf.Common.Helpers;
+﻿
+using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Interfaces;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interactivity;
-using Unity;
 
 namespace ScreenStreamer.Wpf.Common.Behaviors
 {

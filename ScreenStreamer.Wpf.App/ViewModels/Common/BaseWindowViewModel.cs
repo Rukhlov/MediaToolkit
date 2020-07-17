@@ -1,10 +1,11 @@
-﻿using Prism.Mvvm;
+﻿
 using ScreenStreamer.Wpf.Common.Interfaces;
 using System.Reflection;
-using GalaSoft.MvvmLight.Command;
-using Polywall.Share.UI;
+
 using ScreenStreamer.Wpf.Common.Managers;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;
+using Prism.Commands;
 
 namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 {
@@ -15,12 +16,12 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public BaseWindowViewModel(TrackableViewModel parent) :base(parent)
         {
             this.parent = parent;
-            DiscardChangesCommand = new RelayCommand(this.ResetChanges);
-            AcceptChangesCommand = new RelayCommand(this.AcceptChanges);
+            DiscardChangesCommand = new DelegateCommand(this.ResetChanges);
+            AcceptChangesCommand = new DelegateCommand(this.AcceptChanges);
         }
 
-        public RelayCommand DiscardChangesCommand { get; private set; }
-        public RelayCommand AcceptChangesCommand { get; private set; }
+        public ICommand DiscardChangesCommand { get; private set; }
+        public ICommand AcceptChangesCommand { get; private set; }
 
         public virtual string Caption { get; set; } = ""; //"Polywall Streamer " + Assembly.GetExecutingAssembly().GetName().Version;
 

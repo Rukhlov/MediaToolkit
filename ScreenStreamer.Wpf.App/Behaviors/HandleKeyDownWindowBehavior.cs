@@ -10,7 +10,7 @@ using System.Windows.Interactivity;
 namespace ScreenStreamer.Wpf.Common.Behaviors
 {
 	public class HandleKeyDownWindowBehavior : Behavior<Window>
-	{
+    {
 		protected override void OnAttached()
 		{
 			base.OnAttached();

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using ScreenStreamer.Wpf.Common.Managers;
-using Unity;
+
 using System;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
