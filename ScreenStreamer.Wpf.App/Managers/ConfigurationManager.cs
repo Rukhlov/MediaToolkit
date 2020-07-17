@@ -2,12 +2,10 @@
 using System.IO;
 using Newtonsoft.Json;
 using NLog;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Models;
 
-
-namespace ScreenStreamer.Wpf.Common.Managers
+namespace ScreenStreamer.Wpf.Managers
 {
     public class ConfigManager
     {

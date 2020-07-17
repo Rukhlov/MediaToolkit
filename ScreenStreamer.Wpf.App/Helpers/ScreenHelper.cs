@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Forms;
 //using Polywall.Share.Exceptions;
 
-namespace ScreenStreamer.Wpf.Common.Helpers
+namespace ScreenStreamer.Wpf.Helpers
 {
     public class ScreenHelper
     {

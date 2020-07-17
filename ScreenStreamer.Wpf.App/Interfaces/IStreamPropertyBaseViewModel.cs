@@ -1,12 +1,11 @@
-﻿using ScreenStreamer.Wpf.Common.Models;
-using System;
+﻿using System;
 using System.Windows.Input;
 
-namespace ScreenStreamer.Wpf.Common.Interfaces
+namespace ScreenStreamer.Wpf.Interfaces
 {
     public interface IStreamPropertyBaseViewModel : ICloneable
     {
-        StreamViewModel Parent { get; set; }
+        ViewModels.StreamViewModel Parent { get; set; }
 
         string Name { get; set; }
 

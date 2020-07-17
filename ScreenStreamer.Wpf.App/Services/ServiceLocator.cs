@@ -2,7 +2,7 @@
 using Unity;
 using Unity.Lifetime;
 
-namespace ScreenStreamer.Wpf.Common.Helpers
+namespace ScreenStreamer.Wpf.Helpers
 {
     public static class ServiceLocator
     {

@@ -1,11 +1,11 @@
-﻿using ScreenStreamer.Wpf.Common.Models;
+﻿
 using System;
 using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interactivity;
 
-namespace ScreenStreamer.Wpf.Common.Behaviors
+namespace ScreenStreamer.Wpf.Behaviors
 {
     public class StreamEditNameBehavior : Behavior<TextBox>
     {
@@ -47,7 +47,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
             {
                 if (textBox.Tag == null)
                 {
-                    var streamViewModel = textBox.DataContext as StreamViewModel;
+                    var streamViewModel = textBox.DataContext as ViewModels.StreamViewModel;
                     streamViewModel.IsEditName = false;
                 }
                 textBox.Tag = null;

@@ -6,11 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using NLog;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Managers;
-using ScreenStreamer.Wpf.Common.Models;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Managers;
 
-namespace ScreenStreamer.Wpf.UI
+
+namespace ScreenStreamer.Wpf
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -40,13 +40,13 @@ namespace ScreenStreamer.Wpf.UI
 
            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
-            var dialogService = new Common.Services.DialogService();
-			ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);
+            var dialogService = new Services.DialogService();
+			ServiceLocator.RegisterSingleton<Interfaces.IDialogService>(dialogService);
 
 
-            var mainViewModel = new Common.Models.Dialogs.MainViewModel(config);
+            var mainViewModel = new ViewModels.Dialogs.MainViewModel(config);
 
-            Common.Views.MainWindow mainWindow = new Common.Views.MainWindow(mainViewModel);
+            Views.MainWindow mainWindow = new Views.MainWindow(mainViewModel);
 
             dialogService.Register(mainViewModel, mainWindow);
 

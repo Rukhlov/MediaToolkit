@@ -1,14 +1,15 @@
 ﻿using NLog;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
-using ScreenStreamer.Wpf.Common.Views;
+using ScreenStreamer.Wpf.Interfaces;
+
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
+using ScreenStreamer.Wpf.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ScreenStreamer.Wpf.ViewModels;
 
-namespace ScreenStreamer.Wpf.Common.Services
+namespace ScreenStreamer.Wpf.Services
 {
     internal class DialogService : IDialogService
     {

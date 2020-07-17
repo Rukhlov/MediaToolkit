@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreenStreamer.Wpf.App.Managers
+namespace ScreenStreamer.Wpf.Managers
 {
 	public interface IViewRect
 	{

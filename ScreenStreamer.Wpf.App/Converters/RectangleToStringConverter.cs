@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace ScreenStreamer.Wpf.Common.Converters
+namespace ScreenStreamer.Wpf.Converters
 {
     public class RectangleToStringConverter : MarkupExtension, IValueConverter
     {

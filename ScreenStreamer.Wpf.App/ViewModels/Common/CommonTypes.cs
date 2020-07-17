@@ -1,13 +1,12 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
 
-using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Net.NetworkInformation;
-
 
 
 namespace ScreenStreamer.Wpf

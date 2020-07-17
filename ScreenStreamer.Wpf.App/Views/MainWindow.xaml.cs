@@ -2,10 +2,10 @@
 
 using System.ComponentModel;
 using Prism.Commands;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
+
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -14,7 +14,7 @@ using System.Windows.Input;
 using System.Diagnostics;
 using NLog;
 
-namespace ScreenStreamer.Wpf.Common.Views
+namespace ScreenStreamer.Wpf.Views
 {
     /// <summary>
     /// Interaction logic for FormBaseView.xaml
@@ -35,7 +35,7 @@ namespace ScreenStreamer.Wpf.Common.Views
         //For debug\
         public MainWindow()
         {
-            var model = ServiceLocator.GetInstance<AppModel>();
+            var model = ServiceLocator.GetInstance<Wpf.Models.AppModel>();
             var vm = new MainViewModel(model);
             this.DataContext = vm;
 

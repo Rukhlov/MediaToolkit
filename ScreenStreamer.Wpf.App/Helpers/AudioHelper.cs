@@ -1,10 +1,10 @@
 ﻿using MediaToolkit;
 //using NAudio.CoreAudioApi;
-using ScreenStreamer.Wpf.Common.Models;
+
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ScreenStreamer.Wpf.Common.Helpers
+namespace ScreenStreamer.Wpf.Helpers
 {
     public static class AudioHelper
     {

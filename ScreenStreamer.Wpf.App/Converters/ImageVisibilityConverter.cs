@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace ScreenStreamer.Wpf.Common.Converters
+namespace ScreenStreamer.Wpf.Converters
 {
     public class ImageVisibilityConverter : System.Windows.Markup.MarkupExtension, IValueConverter
     {

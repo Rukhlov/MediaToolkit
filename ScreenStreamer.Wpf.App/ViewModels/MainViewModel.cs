@@ -1,19 +1,21 @@
 ﻿using Prism.Commands;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Views;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.Views;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using ScreenStreamer.Wpf.Common.Managers;
+using ScreenStreamer.Wpf.Managers;
 
 using System;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
+using ScreenStreamer.Wpf.Models;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class MainViewModel : BaseWindowViewModel
     {
@@ -37,7 +39,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             this.StopAllCommand = new DelegateCommand(OnStopAll);
             this.ShowStreamSettingsCommand = new DelegateCommand<StreamViewModel>(OnShowStreamSettings);
 
-            wndProcService = new App.Services.WndProcService();
+            wndProcService = new Services.WndProcService();
 
             wndProcService.ShowMainWindow += OnShowMainWindow;
             wndProcService.Init();
@@ -48,7 +50,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             get => "Polywall Streamer " + AppModel.AppVersion;
         }
 
-        private App.Services.WndProcService wndProcService = null;
+        private Services.WndProcService wndProcService = null;
 
         private bool isEdit = false;
         public bool IsEdit

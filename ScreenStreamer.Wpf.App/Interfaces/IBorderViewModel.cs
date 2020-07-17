@@ -1,4 +1,4 @@
-﻿namespace ScreenStreamer.Wpf.Common.Interfaces
+﻿namespace ScreenStreamer.Wpf.Interfaces
 {
     public interface IBorderViewModel : IDialogViewModel
     {

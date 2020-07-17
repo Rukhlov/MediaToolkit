@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace ScreenStreamer.Wpf.Common.Views
+namespace ScreenStreamer.Wpf.Views
 {
     /// <summary>
     /// Interaction logic for StreamBorderWindow.xaml

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace ScreenStreamer.Wpf.Common.Converters
+namespace ScreenStreamer.Wpf.Converters
 {
     public class DoubleShiftConverter : MarkupExtension, IValueConverter
     {

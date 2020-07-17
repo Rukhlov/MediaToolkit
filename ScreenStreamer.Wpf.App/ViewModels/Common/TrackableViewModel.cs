@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Common
 {
     public class TrackableViewModel : ViewModelBase
     {

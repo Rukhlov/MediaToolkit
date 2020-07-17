@@ -1,6 +1,7 @@
-﻿using ScreenStreamer.Wpf.Common.Models.Properties;
+﻿using ScreenStreamer.Wpf.ViewModels.Common;
+using ScreenStreamer.Wpf.ViewModels.Properties;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class CursorSettingsViewModel : PropertyWindowViewModel
     {

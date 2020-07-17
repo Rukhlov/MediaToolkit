@@ -1,11 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Net.NetworkInformation;
 
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Models.Properties;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.ViewModels.Properties;
 using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
+using ScreenStreamer.Wpf.ViewModels.Common;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class NetworkSettingsViewModel : PropertyWindowViewModel
     {

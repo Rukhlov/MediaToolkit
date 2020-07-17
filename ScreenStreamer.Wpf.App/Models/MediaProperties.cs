@@ -1,7 +1,7 @@
 ﻿using MediaToolkit.Core;
 using Newtonsoft.Json;
 
-using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf.Helpers;
 using ScreenStreamer.Wpf;
 using System;
 using System.Collections.Generic;
@@ -10,9 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace ScreenStreamer.Wpf
+namespace ScreenStreamer.Wpf.Models
 {
-
 
     public class PropertyNetworkModel
     {

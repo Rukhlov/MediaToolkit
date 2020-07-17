@@ -1,8 +1,8 @@
-﻿using ScreenStreamer.Wpf.Common.Models.Dialogs;
+﻿using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
+namespace ScreenStreamer.Wpf.ContentTemplateSelectors
 {
     public class FormContentTemplateSelector : DataTemplateSelector
     {

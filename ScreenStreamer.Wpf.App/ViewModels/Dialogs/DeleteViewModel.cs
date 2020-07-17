@@ -1,11 +1,12 @@
 ﻿using Prism.Commands;
+
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
 
     public class DeleteViewModel : BaseWindowViewModel

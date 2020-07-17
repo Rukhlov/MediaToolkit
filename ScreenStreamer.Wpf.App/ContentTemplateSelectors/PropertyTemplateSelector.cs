@@ -1,8 +1,8 @@
-﻿using ScreenStreamer.Wpf.Common.Models.Properties;
+﻿using ScreenStreamer.Wpf.ViewModels.Properties;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ScreenStreamer.Wpf.Common.ContentTemplateSelectors
+namespace ScreenStreamer.Wpf.ContentTemplateSelectors
 {
     public class PropertyTemplateSelector : DataTemplateSelector
     {

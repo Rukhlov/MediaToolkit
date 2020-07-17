@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows;
 
-namespace ScreenStreamer.Wpf.Common.Converters
+namespace ScreenStreamer.Wpf.Converters
 {
     public class InvertedBooleanToVisibilityConverter : BooleanToVisibilityConverter
     {

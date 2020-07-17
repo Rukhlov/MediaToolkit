@@ -1,9 +1,9 @@
 ﻿using System;
 using Prism.Commands;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
-using ScreenStreamer.Wpf.Common.Models.Properties;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
+using ScreenStreamer.Wpf.ViewModels.Properties;
 
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,8 +12,10 @@ using System.Windows.Threading;
 
 using NLog;
 using MediaToolkit.UI;
+using ScreenStreamer.Wpf.Models;
+using ScreenStreamer.Wpf.ViewModels.Common;
 
-namespace ScreenStreamer.Wpf.Common.Models
+namespace ScreenStreamer.Wpf.ViewModels
 {
     public class StreamViewModel : TrackableViewModel
     {

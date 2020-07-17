@@ -1,7 +1,7 @@
 ﻿using MediaToolkit;
 using MediaToolkit.Core;
 using Newtonsoft.Json;
-using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,7 +10,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreenStreamer.Wpf
+namespace ScreenStreamer.Wpf.Models
 {
 
     public enum QualityPreset

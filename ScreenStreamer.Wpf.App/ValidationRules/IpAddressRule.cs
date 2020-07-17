@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace ScreenStreamer.Wpf.Common.ValidationRules
+namespace ScreenStreamer.Wpf.ValidationRules
 {
     public class IpAddressRule : ValidationRule
     {

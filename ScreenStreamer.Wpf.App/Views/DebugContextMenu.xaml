@@ -1,4 +1,4 @@
-﻿<Window x:Class="ScreenStreamer.Wpf.Common.Views.DebugContextMenu"
+﻿<Window x:Class="ScreenStreamer.Wpf.Views.DebugContextMenu"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

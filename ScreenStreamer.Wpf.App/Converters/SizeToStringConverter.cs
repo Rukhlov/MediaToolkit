@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace ScreenStreamer.Wpf.Common.Converters
+namespace ScreenStreamer.Wpf.Converters
 {
     public class SizeToStringConverter : MarkupExtension, IValueConverter
     {

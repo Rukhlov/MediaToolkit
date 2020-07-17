@@ -1,7 +1,9 @@
-﻿using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+﻿using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
+using ScreenStreamer.Wpf.Models;
 
-namespace ScreenStreamer.Wpf.Common.Models.Properties
+
+namespace ScreenStreamer.Wpf.ViewModels.Properties
 {
     public class PropertyBorderViewModel : PropertyBaseViewModel
     {

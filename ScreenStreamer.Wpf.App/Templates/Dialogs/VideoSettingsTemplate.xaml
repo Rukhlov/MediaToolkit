@@ -1,9 +1,9 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Common.Behaviors"
-                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Common.Converters"
-                    xmlns:validationrules="clr-namespace:ScreenStreamer.Wpf.Common.ValidationRules">
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Behaviors"
+                    xmlns:converters="clr-namespace:ScreenStreamer.Wpf.Converters"
+                    xmlns:validationrules="clr-namespace:ScreenStreamer.Wpf.ValidationRules">
     <DataTemplate x:Key="videoSettingsTemplate">
         <DataTemplate.Resources>
             <ResourceDictionary>

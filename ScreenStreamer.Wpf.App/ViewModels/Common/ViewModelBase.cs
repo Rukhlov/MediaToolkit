@@ -9,9 +9,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using NLog;
-using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf.Helpers;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Common
 {
     public interface IStorableBladeModel : INotifyPropertyChanged
     {

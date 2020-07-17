@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
-namespace ScreenStreamer.Wpf.Common.Behaviors
+namespace ScreenStreamer.Wpf.Behaviors
 {
 	public class HandleKeyDownWindowBehavior : Behavior<Window>
     {

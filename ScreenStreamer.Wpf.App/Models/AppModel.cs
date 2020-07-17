@@ -7,11 +7,11 @@ using Newtonsoft.Json;
 using NLog;
 using ScreenStreamer.Common;
 
-using ScreenStreamer.Wpf.Common.Helpers;
+using ScreenStreamer.Wpf.Helpers;
 using System.Linq;
 
 
-namespace ScreenStreamer.Wpf
+namespace ScreenStreamer.Wpf.Models
 {
     public class AppModel
     {

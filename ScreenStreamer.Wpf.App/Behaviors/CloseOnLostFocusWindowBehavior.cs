@@ -1,11 +1,11 @@
 ﻿
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Interactivity;
 
-namespace ScreenStreamer.Wpf.Common.Behaviors
+namespace ScreenStreamer.Wpf.Behaviors
 {
     public class CloseOnLostFocusWindowBehavior : Behavior<Window>
     {

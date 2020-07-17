@@ -152,11 +152,11 @@
     <Compile Include="Models\AppModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\WndProcService.cs" />
-    <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Utils\Interactivity.cs" />
-    <Compile Include="ViewModels\Common\BindableBase.cs" />
+    <Compile Include="Prism\Extensions.cs" />
+    <Compile Include="Prism\Interactivity.cs" />
+    <Compile Include="Prism\Mvvm.cs" />
     <Compile Include="ViewModels\Common\CommonTypes.cs" />
-    <Compile Include="ViewModels\Common\DelegateCommand.cs" />
+    <Compile Include="Prism\Commands.cs" />
     <Compile Include="ViewModels\Common\MessageBoxViewModel.cs" />
     <Compile Include="Utils\NativeMethods.cs" />
     <Compile Include="ViewModels\Dialogs\AdvancedSettingsViewModel.cs" />

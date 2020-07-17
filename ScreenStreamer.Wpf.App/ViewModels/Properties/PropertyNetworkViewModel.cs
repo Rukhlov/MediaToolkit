@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
 
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -11,8 +11,10 @@ using System.Windows.Input;
 //using Polywall.Share.Exceptions;
 using Prism.Commands;
 using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
+using ScreenStreamer.Wpf.ViewModels.Common;
 
-namespace ScreenStreamer.Wpf.Common.Models.Properties
+namespace ScreenStreamer.Wpf.ViewModels.Properties
 {
     public class PropertyNetworkViewModel : PropertyBaseViewModel
     {

@@ -1,7 +1,7 @@
 ﻿using MediaToolkit;
 using MediaToolkit.NativeAPIs;
 using NLog;
-using ScreenStreamer.Wpf.Common.Managers;
+using ScreenStreamer.Wpf.Managers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ScreenStreamer.Wpf.UI
+namespace ScreenStreamer.Wpf
 {
     public static class AppConsts
     {
@@ -44,9 +44,9 @@ namespace ScreenStreamer.Wpf.UI
                 if (!createdNew)
                 {
                     logger.Info("Another instance is already running...");
-					if (!AppModel.AllowMutipleInstance)
+					if (!Models.AppModel.AllowMutipleInstance)
 					{
-						var res = Wpf.App.Services.WndProcService.ShowAnotherInstance();
+						var res = Services.WndProcService.ShowAnotherInstance();
 						return 0;
 
 						//return -1;
@@ -116,9 +116,9 @@ namespace ScreenStreamer.Wpf.UI
 
 			try
 			{
-				var dialogService = new Common.Services.DialogService();
+				var dialogService = new Services.DialogService();
 
-                Common.Models.Dialogs.MessageBoxViewModel vm = new Common.Models.Dialogs.MessageBoxViewModel(message, "Error", MessageBoxButton.OK);
+                ViewModels.Dialogs.MessageBoxViewModel vm = new ViewModels.Dialogs.MessageBoxViewModel(message, "Error", MessageBoxButton.OK);
 				var result = dialogService.ShowDialog(vm);
 
 			}

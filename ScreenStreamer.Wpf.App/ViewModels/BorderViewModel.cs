@@ -1,12 +1,13 @@
 ﻿
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Properties;
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Properties;
 using System.Drawing;
-using static ScreenStreamer.Wpf.Common.Helpers.ScreenHelper;
+using static ScreenStreamer.Wpf.Helpers.ScreenHelper;
+using ScreenStreamer.Wpf.Models;
 
-namespace ScreenStreamer.Wpf.Common.Models
+namespace ScreenStreamer.Wpf.ViewModels
 {
-    public abstract class BaseBorderViewModel : BindableBase, IBorderViewModel
+    public abstract class BaseBorderViewModel : Prism.Mvvm.BindableBase, IBorderViewModel
     {
         public StreamViewModel Stream { get; }
         private PropertyVideoViewModel videoViewModel = null;

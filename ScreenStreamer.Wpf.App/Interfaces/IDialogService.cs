@@ -1,7 +1,8 @@
-﻿using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Views;
+﻿
+using ScreenStreamer.Wpf.Views;
+using ScreenStreamer.Wpf.ViewModels;
 
-namespace ScreenStreamer.Wpf.Common.Interfaces
+namespace ScreenStreamer.Wpf.Interfaces
 {
     public interface IDialogService
     {

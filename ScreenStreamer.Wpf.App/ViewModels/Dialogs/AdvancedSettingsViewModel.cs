@@ -1,21 +1,24 @@
 ﻿using MediaToolkit.Core;
 using Prism.Commands;
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Helpers;
+
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Drawing;
 using System.Linq;
+using ScreenStreamer.Wpf.Models;
+using ScreenStreamer.Wpf.ViewModels.Properties;
+using ScreenStreamer.Wpf.ViewModels.Common;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class AdvancedSettingsViewModel : BaseWindowViewModel
     {
         private readonly AdvancedSettingsModel _model;
         public override string Caption => "Advanced Settings";
 
-        private Properties.PropertyVideoViewModel videoVeiwModel = null;
+        private PropertyVideoViewModel videoVeiwModel = null;
 
         public AdvancedSettingsViewModel(AdvancedSettingsModel model, TrackableViewModel parent) : base(parent)
         {

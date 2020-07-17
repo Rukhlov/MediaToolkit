@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Interactivity;
 
-namespace ScreenStreamer.Wpf.Common.Behaviors
+namespace ScreenStreamer.Wpf.Behaviors
 {
     public class HandleMouseDownBorderBehavior : Behavior<Border>
     {

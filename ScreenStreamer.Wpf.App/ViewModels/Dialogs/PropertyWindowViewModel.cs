@@ -1,8 +1,9 @@
-﻿using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Properties;
+﻿using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Common;
+using ScreenStreamer.Wpf.ViewModels.Properties;
 using System;
 
-namespace ScreenStreamer.Wpf.Common.Models.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public abstract class PropertyWindowViewModel : BaseWindowViewModel
     {

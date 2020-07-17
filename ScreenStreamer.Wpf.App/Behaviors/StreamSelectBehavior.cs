@@ -1,10 +1,10 @@
-﻿using ScreenStreamer.Wpf.Common.Models;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+﻿
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interactivity;
 
-namespace ScreenStreamer.Wpf.Common.Behaviors
+namespace ScreenStreamer.Wpf.Behaviors
 {
     public class StreamSelectBehavior : Behavior<ItemsControl>
     {
@@ -25,7 +25,7 @@ namespace ScreenStreamer.Wpf.Common.Behaviors
         private void AssociatedObject_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var list = (sender as ItemsControl)?.DataContext as MainViewModel;
-            var target = (e.OriginalSource as FrameworkElement)?.DataContext as StreamViewModel;
+            var target = (e.OriginalSource as FrameworkElement)?.DataContext as ViewModels.StreamViewModel;
             if (target != null &&
                 list != null &&
                 list.StreamList.Contains(target))

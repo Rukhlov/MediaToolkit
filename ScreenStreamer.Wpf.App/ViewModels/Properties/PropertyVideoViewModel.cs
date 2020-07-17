@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Drawing;
 
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows.Input;
 
 using Prism.Commands;
-using MediaToolkit.UI;
-using ScreenStreamer.Wpf;
-using System.Windows;
-using System.Windows.Forms;
-using ScreenStreamer.Wpf.App.Utils;
-using static ScreenStreamer.Wpf.Common.Helpers.ScreenHelper;
 
-namespace ScreenStreamer.Wpf.Common.Models.Properties
+using ScreenStreamer.Wpf.Models;
+
+namespace ScreenStreamer.Wpf.ViewModels.Properties
 {
-    public class PropertyVideoViewModel : PropertyBaseViewModel, App.Managers.IViewRect
+    public class PropertyVideoViewModel : PropertyBaseViewModel//, Managers.IViewRect
 	{
         private readonly PropertyVideoModel _model;
 

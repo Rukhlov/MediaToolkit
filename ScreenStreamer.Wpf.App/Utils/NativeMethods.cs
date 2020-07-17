@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreenStreamer.Wpf.App.Utils
+namespace ScreenStreamer.Wpf.Utils
 {
     public static class NativeMethods
     {

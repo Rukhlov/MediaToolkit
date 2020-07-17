@@ -1,6 +1,7 @@
 ﻿
 
 using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -9,7 +10,7 @@ using System.Net.Sockets;
 //How to compare ip addresses:
 //https://www.codeguru.com/csharp/csharp/cs_network/ip/article.php/c10651/IP-Address-Comparison-and-Conversion-in-C.htm
 
-namespace ScreenStreamer.Wpf.Common.Helpers
+namespace ScreenStreamer.Wpf.Helpers
 {
     internal static class NetworkHelper
     {

@@ -1,12 +1,13 @@
 ﻿using Prism.Commands;
 
-using ScreenStreamer.Wpf.Common.Helpers;
-using ScreenStreamer.Wpf.Common.Interfaces;
-using ScreenStreamer.Wpf.Common.Models.Dialogs;
+using ScreenStreamer.Wpf.Helpers;
+using ScreenStreamer.Wpf.Interfaces;
+using ScreenStreamer.Wpf.ViewModels.Common;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 using System;
 using System.Windows.Input;
 
-namespace ScreenStreamer.Wpf.Common.Models.Properties
+namespace ScreenStreamer.Wpf.ViewModels.Properties
 {
     public abstract class PropertyBaseViewModel : TrackableViewModel
     {
