@@ -23,7 +23,10 @@ namespace ScreenStreamer.Wpf
         [JsonProperty]
         public readonly static string MinOSVersion = "6.2";
 
-        public int MaxStreamCount { get; set; } = 3;
+		//[JsonProperty]
+		public readonly static bool AllowMutipleInstance = false;
+
+		public int MaxStreamCount { get; set; } = 3;
 
         public static AppModel Default => CreateDefault();
 
@@ -34,41 +37,82 @@ namespace ScreenStreamer.Wpf
                 Name = $"{Environment.MachineName} (Stream 1)"
             };
 
-           // defaultStream.Init();
-
-
             var @default = new AppModel();
             @default.StreamList.Add(defaultStream);
             return @default;
         }
 
-  
         public List<MediaStreamModel> StreamList { get; set; } = new List<MediaStreamModel>();
-
 
         public bool Validate()
         {
             logger.Debug("Validate()");
 
-            if (AppVersion != ConfigVersion)
+			var winVersion = Environment.OSVersion.Version;
+			Version minOsVersion = new Version(MinOSVersion);
+
+			if (winVersion < minOsVersion)
+			{
+				//...
+				logger.Warn($"OS version {winVersion} currently not supported!");
+				//throw new NotSupportedException($"This version of the operating system currently is not supported.");
+			}
+
+
+			if (AppVersion != ConfigVersion)
             {
                 logger.Warn("AppVersion is not the same as ConfigVersion: " + AppVersion + " != " + ConfigVersion);
-                //...
+                //Проверяем совместимость версий...
             }
 
             if(StreamList.Count == 0)
             {
-                //...
-            }
+				logger.Warn("StreamList.Count == 0");
+
+				StreamList.Add(new MediaStreamModel()
+				{
+					Name = $"{Environment.MachineName} (Stream 1)"
+				});
+			}
+
+			if (MaxStreamCount < 1)
+			{
+				MaxStreamCount = 3;
+			}
 
             if(StreamList.Count > MaxStreamCount)
             {
-               //...
-            } 
+				logger.Warn("MaxStreamCountLimit: " + StreamList.Count +  " > "  + MaxStreamCount );
 
-            foreach(var stream in StreamList)
+				StreamList.RemoveAt(MaxStreamCount-1);
+			}
+
+            var videoEncoders = EncoderHelper.GetVideoEncoders();
+
+            if(videoEncoders.Count == 0)
             {
-                stream.Validate();
+                logger.Warn("videoEncoders.Count == 0");
+                //...
+            }
+
+            var audioSources = AudioHelper.GetAudioSources();
+
+            if (audioSources.Count == 0)
+            {
+                logger.Warn("audioSources.Count == 0");
+                //...
+            }
+
+            var videoSources = ScreenHelper.GetVideoSources();
+            if (videoSources.Count == 0)
+            {
+                logger.Warn("videoSources.Count == 0");
+                //...
+            }
+
+            foreach (var stream in StreamList)
+            {
+                stream.Validate(videoEncoders, videoSources, audioSources);
             }
 
             return true;

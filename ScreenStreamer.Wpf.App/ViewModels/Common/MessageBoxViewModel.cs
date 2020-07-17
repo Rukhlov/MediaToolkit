@@ -59,7 +59,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             }
             else
             {
-                base.captionImage = iconDict[0];
+                base.captionImage = iconDict[MessageBoxImage.Error];
             }
 
             if (messageBoxButton == MessageBoxButton.OK)

@@ -22,7 +22,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             _model = model;
             videoVeiwModel = ((StreamViewModel)parent).VideoViewModel;
 
-            var encoders = EncoderHelper.GetVideoEncoderItems();
+            var encoders = EncoderHelper.GetVideoEncoders();
 
             VideoEncoders.AddRange(encoders);
 

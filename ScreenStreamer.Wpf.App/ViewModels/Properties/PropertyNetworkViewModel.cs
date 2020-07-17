@@ -119,7 +119,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Properties
         public PropertyNetworkViewModel(StreamViewModel parent, PropertyNetworkModel model) : base(parent)
         {
             _model = model;
-            var ips = NetworkHelper.GetIpAddressInfoViewModels();
+            var ips = NetworkHelper.GetNetworkInfos();
             _selectedNetwork = ips.FirstOrDefault(ip =>
             {
                 return $"{ip.IPAddressInfo?.Address}" == model.Network

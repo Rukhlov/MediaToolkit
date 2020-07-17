@@ -37,11 +37,15 @@ namespace ScreenStreamer.Wpf
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
 
 
-        public bool Validate()
+        public bool Validate(IEnumerable<EncoderItem> videoEncoders = null, 
+            IEnumerable<VideoSourceItem> videoSources = null, 
+            IEnumerable<AudioSourceItem> audioSources = null)
         {
-            AdvancedSettings.Validate();
+            AdvancedSettings.Validate(videoEncoders);
+            
+            PropertyVideo.Validate(videoSources);
 
-            PropertyVideo.Validate();
+            PropertyAudio.Validate(audioSources);
             PropertyNetwork.Validate();
 
             return true;

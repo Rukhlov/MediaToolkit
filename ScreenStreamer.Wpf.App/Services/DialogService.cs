@@ -1,4 +1,5 @@
-﻿using ScreenStreamer.Wpf.Common.Interfaces;
+﻿using NLog;
+using ScreenStreamer.Wpf.Common.Interfaces;
 using ScreenStreamer.Wpf.Common.Models;
 using ScreenStreamer.Wpf.Common.Models.Dialogs;
 using ScreenStreamer.Wpf.Common.Views;
@@ -11,6 +12,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 {
     internal class DialogService : IDialogService
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         private IDictionary<BorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<BorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
 
@@ -19,6 +22,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Handle(bool isVisible, IDialogViewModel viewModel)
         {
+            logger.Debug("Handle(...) " + isVisible);
+
             if (isVisible)
             {
                 Show(viewModel);
@@ -31,6 +36,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Hide(IDialogViewModel viewModel)
         {
+            logger.Debug("Hide(...)");
+
             if (viewModel is MainViewModel mainViewModel)
             {
                 mainViewModel.IsVisible = false;
@@ -58,11 +65,18 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Register(IDialogViewModel viewModel, MainWindow mainWindow)
         {
+            logger.Debug("Register(...)");
+            if (_windows.ContainsKey(viewModel))
+            {
+                //...
+            }
+
             _windows[viewModel] = mainWindow;
         }
 
         public void Show(IDialogViewModel viewModel)
         {
+            logger.Debug("Show(...)");
 
             if (viewModel is BorderViewModel streamBorderViewModel)
             {
@@ -85,7 +99,14 @@ namespace ScreenStreamer.Wpf.Common.Services
                     };
                 }
 
-                _designBorders[designBorderViewModel].Show();
+                var window = _designBorders[designBorderViewModel];
+
+                // оставляем фокус на форме с настройками
+                // иначе при показе рамки, закрывается попап с настройками 
+                window.ShowActivated = false;
+                window.Show();
+
+                //_designBorders[designBorderViewModel].Show();
             }
             else
             {
@@ -120,13 +141,16 @@ namespace ScreenStreamer.Wpf.Common.Services
             }
         }
 
-        public void ShowDialog(IDialogViewModel viewModel)
-        {
-            throw new NotImplementedException();
-        }
+		public bool? ShowDialog(IDialogViewModel viewModel)
+		{
 
-        public bool? ShowDialog(IWindowViewModel parent, IDialogViewModel model)
+            return ShowDialog(null, viewModel);
+		}
+
+		public bool? ShowDialog(IWindowViewModel parent, IDialogViewModel model)
         {
+            logger.Debug("ShowDialog(...)");
+
             System.Windows.Window parentWindow = null;
 
             if (parent != null)
@@ -160,6 +184,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void CloseAll()
         {
+            logger.Debug("CloseAll()");
+
             //0. Close dialog windows
             foreach (var w in _dialogs) w.Value.Close();
 
@@ -178,6 +204,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Close(IDialogViewModel viewModel)
         {
+            logger.Debug("Close() IDialogViewModel");
+
             if (_windows.ContainsKey(viewModel))
             {
                 _windows[viewModel].Close();
@@ -192,6 +220,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Close(BorderViewModel viewModel)
         {
+            logger.Debug("Close() BorderViewModel");
+
             if (_streamBorders.ContainsKey(viewModel))
             {
                 _streamBorders[viewModel].Close();
@@ -201,6 +231,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Close(DesignBorderViewModel viewModel)
         {
+            logger.Debug("Close() DesignBorderViewModel");
+
             if (_designBorders.ContainsKey(viewModel))
             {
                 _designBorders[viewModel].Close();
@@ -210,6 +242,8 @@ namespace ScreenStreamer.Wpf.Common.Services
 
         public void Activate()
         {
+            logger.Debug("Activate()");
+
             var mainViewModel = _windows.Single(w => w.Key is MainViewModel);
             if ((mainViewModel.Key as MainViewModel).IsVisible)
             {

@@ -12,6 +12,7 @@ using System.Windows.Input;
 //using GalaSoft.MvvmLight.Messaging;
 
 using System.Diagnostics;
+using NLog;
 
 namespace ScreenStreamer.Wpf.Common.Views
 {
@@ -20,13 +21,16 @@ namespace ScreenStreamer.Wpf.Common.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ICommand CloseCommand { get; set; }
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        //public MainWindow()
-        //{
-        //    CloseCommand = new DelegateCommand(HandleClose);
-        //    //InitializeComponent();
-        //}
+        public MainWindow(IDialogViewModel viewModel)
+        {
+            InitializeComponent();
+
+            this.DataContext = viewModel;
+            CloseCommand = new DelegateCommand(HandleClose);
+        }
+
 
         //For debug\
         public MainWindow()
@@ -47,40 +51,37 @@ namespace ScreenStreamer.Wpf.Common.Views
             //messenger.Unregister<AcceptChangesMessage>(this);
             //messenger.Register<AcceptChangesMessage>(this, VmOnPropertyChanged);
 
-            ApplyInitialState();
+            //ApplyInitialState();
         }
 
         private IDialogService dialogService = null;
+        public ICommand CloseCommand { get; set; }
 
-        //private void VmOnPropertyChanged(AcceptChangesMessage obj)
-        //{
-        //    //TODO Process changes
-        //    Debug.WriteLine("VmOnPropertyChanged(...)");
-        //}
-
-        private void ApplyInitialState()
-        {
-            //TODO apply initial state
-
-            Debug.WriteLine("ApplyInitialState()");
-        }
-
-        public MainWindow(IDialogViewModel viewModel)
-        {
-            this.DataContext = viewModel;
-            CloseCommand = new DelegateCommand(HandleClose);
-
-            InitializeComponent();
-        }
 
         private void HandleClose()
         {
-            if (this.DataContext is IDialogViewModel dialogViewModel)
+            logger.Debug("HandleClose()");
+
+            var dialogService = ServiceLocator.GetInstance<IDialogService>();
+            if (dialogService != null)
             {
-                ServiceLocator.GetInstance<IDialogService>().Hide(dialogViewModel);
+                if (DataContext != null)
+                {
+                    var viewModel = DataContext as IDialogViewModel;
+                    if (viewModel != null)
+                    {
+                        dialogService.Hide(viewModel);
+                    }
+                }
+
             }
 
-            //this.Hide();
+            //if (this.DataContext is IDialogViewModel dialogViewModel)
+            //{
+            //    ServiceLocator.GetInstance<IDialogService>().Hide(dialogViewModel);
+            //}
+
+            ////this.Hide();
         }
 
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
@@ -132,8 +133,25 @@ namespace ScreenStreamer.Wpf.Common.Views
 
         protected override void OnClosing(CancelEventArgs e)
         {
+            logger.Debug("OnClosing(...)");
+
             base.OnClosing(e);
         }
+
+
+        //private void VmOnPropertyChanged(AcceptChangesMessage obj)
+        //{
+        //    //TODO Process changes
+        //    Debug.WriteLine("VmOnPropertyChanged(...)");
+        //}
+
+        //private void ApplyInitialState()
+        //{
+        //    //TODO apply initial state
+
+        //    Debug.WriteLine("ApplyInitialState()");
+        //}
+
     }
 
     //public class AcceptChangesMessage

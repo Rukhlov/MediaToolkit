@@ -5,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using NLog;
 using ScreenStreamer.Wpf.Common.Helpers;
 using ScreenStreamer.Wpf.Common.Managers;
 using ScreenStreamer.Wpf.Common.Models;
@@ -16,19 +17,13 @@ namespace ScreenStreamer.Wpf.UI
     /// </summary>
     public partial class App : Application
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            //...
+            logger.Debug("OnStartup(...) " + string.Join(" ", e.Args));
+
             var args = e.Args;
-
-            var winVersion = Environment.OSVersion.Version;
-            Version minOsVersion = new Version(AppModel.MinOSVersion);
-
-            if (winVersion < minOsVersion)
-            {
-                //...
-            }
 
             var config = ConfigManager.LoadConfigurations();
             //TODO: validate...
@@ -46,20 +41,16 @@ namespace ScreenStreamer.Wpf.UI
            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
             var dialogService = new Common.Services.DialogService();
-            ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);
+			ServiceLocator.RegisterSingleton<Common.Interfaces.IDialogService>(dialogService);
 
 
-            //var mainView = new Common.Models.Dialogs.StreamMainViewModel(config);
-            //Common.Views.MainWindow mainWindow = new Common.Views.MainWindow
-            //{
-            //    DataContext = mainView,
-            //};
+            var mainViewModel = new Common.Models.Dialogs.MainViewModel(config);
 
-            //mainWindow.InitializeComponent();
+            Common.Views.MainWindow mainWindow = new Common.Views.MainWindow(mainViewModel);
 
-            //dialogService.Register(mainView, mainWindow);
+            dialogService.Register(mainViewModel, mainWindow);
 
-            //dialogService.Show(mainView);
+            dialogService.Show(mainViewModel);
 
 
             base.OnStartup(e);
@@ -68,8 +59,13 @@ namespace ScreenStreamer.Wpf.UI
 
         protected override void OnExit(ExitEventArgs e)
         {
-            //ConfigurationManager.Save();
-            base.OnExit(e);
+
+            logger.Debug("OnExit(...) " + e.ApplicationExitCode);
+
+			ConfigManager.Save();
+
+			//ConfigurationManager.Save();
+			base.OnExit(e);
         }
     }
 }

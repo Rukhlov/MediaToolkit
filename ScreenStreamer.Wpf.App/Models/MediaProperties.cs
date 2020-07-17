@@ -120,12 +120,15 @@ namespace ScreenStreamer.Wpf
 
         public bool ShowCaptureBorder { get; set; } = false;
 
-        public void Validate()
+        public void Validate(IEnumerable<VideoSourceItem> videoSources = null)
         {
             // Validate device id...
-            var displays = ScreenHelper.GetDisplayItems();
+            if(videoSources == null)
+            {
+                videoSources = ScreenHelper.GetVideoSources();
+            }
 
-            if (!displays.Any(i=>i.DeviceId == DeviceId))
+            if (!videoSources.Any(i=>i.DeviceId == DeviceId))
             {// TODO: если девайс больше не доступен, то что то делаем...
                 Debug.WriteLine("Device " + DeviceId + " not found");
 
@@ -136,7 +139,7 @@ namespace ScreenStreamer.Wpf
 
             if (string.IsNullOrEmpty(DeviceId))
             {
-                var device = displays.FirstOrDefault();
+                var device = videoSources.FirstOrDefault();
 
                 this.DeviceId = device.DeviceId;
                 this.DeviceName = device.Name;
@@ -170,9 +173,13 @@ namespace ScreenStreamer.Wpf
         public bool IsComputerSoundEnabled { get; set; } = true;
         public string DeviceId { get; set; }
 
-        public void Validate()
+        public void Validate(IEnumerable<AudioSourceItem> audioSources = null)
         {
-            var devices = AudioHelper.GetAudioSourceItems();
+            if(audioSources == null)
+            {
+                audioSources = AudioHelper.GetAudioSources();
+
+            }
 
             //if(!devices.Any(d=>d.DeviceId == DeviceId))
             //{// девайс больше не доступен сбрасываем на дефолтный
@@ -184,7 +191,7 @@ namespace ScreenStreamer.Wpf
 
             if (string.IsNullOrEmpty(DeviceId))
             {
-                var device = devices.FirstOrDefault();
+                var device = audioSources.FirstOrDefault();
                 DeviceId = device?.DeviceId;
             }
         }
@@ -207,10 +214,13 @@ namespace ScreenStreamer.Wpf
         public string EncoderId { get; set; } = "";
         //public EncoderItem VideoEncoder { get; set; }
 
-        public void Validate()
+        public void Validate(IEnumerable<EncoderItem> encoders = null)
         {
-            var encoders = EncoderHelper.GetVideoEncoderItems();
-
+            if(encoders == null)
+            {
+                encoders = EncoderHelper.GetVideoEncoders();
+            }
+           
             var encoder = encoders.FirstOrDefault(e => e.Id == EncoderId) ?? encoders.FirstOrDefault();
             if(encoder == null)
             {

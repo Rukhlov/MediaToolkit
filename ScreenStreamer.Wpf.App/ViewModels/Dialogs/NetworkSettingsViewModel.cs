@@ -17,7 +17,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         public NetworkSettingsViewModel(PropertyNetworkViewModel property, TrackableViewModel parent) : base(property, parent)
         {
             UnicastProtocols.AddRange(NetworkHelper.GetUnicastProtocolTypes());
-            Networks.AddRange(NetworkHelper.GetIpAddressInfoViewModels());
+            Networks.AddRange(NetworkHelper.GetNetworkInfos());
         }
     }
 

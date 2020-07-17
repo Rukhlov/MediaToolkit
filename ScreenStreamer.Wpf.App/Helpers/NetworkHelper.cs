@@ -50,7 +50,7 @@ namespace ScreenStreamer.Wpf.Common.Helpers
             return $"{networkInterface.Name} ({ipAddressInfo.Address})";
         }
 
-        internal static List<IPAddressInfoItem> GetIpAddressInfoViewModels()
+        internal static List<IPAddressInfoItem> GetNetworkInfos()
         {
             var result = new List<IPAddressInfoItem>()
             {

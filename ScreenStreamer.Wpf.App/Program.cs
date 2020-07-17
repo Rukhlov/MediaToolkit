@@ -44,13 +44,16 @@ namespace ScreenStreamer.Wpf.UI
                 if (!createdNew)
                 {
                     logger.Info("Another instance is already running...");
+					if (!AppModel.AllowMutipleInstance)
+					{
+						var res = Wpf.App.Services.WndProcService.ShowAnotherInstance();
+						return 0;
 
-                    var res = Wpf.App.Services.WndProcService.ShowAnotherInstance();
-                    return 0;
+						//return -1;
+						//...
+					}
 
-                    //return -1;
-                    //...
-                }
+				}
 
                 if (args != null && args.Length > 0)
                 {//...
@@ -61,9 +64,7 @@ namespace ScreenStreamer.Wpf.UI
                 MediaToolkitManager.Startup();
 
                 Shcore.SetProcessPerMonitorDpiAwareness();
-
-                
-
+               
                 var application = new App();
                 application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
                 application.InitializeComponent();
@@ -90,7 +91,7 @@ namespace ScreenStreamer.Wpf.UI
                 MediaToolkitManager.Shutdown();
 
                 //...
-               ConfigManager.Save();
+               //ConfigManager.Save();
 
                 logger.Info("========== THE END ============");
             }
@@ -104,17 +105,35 @@ namespace ScreenStreamer.Wpf.UI
             e.Handled = true;
 
             Exception ex = e.Exception;
+			var message = "An unexpected error has occurred. Application will be closed";
 
             if (ex != null)
             {
-                logger.Fatal(ex);
-            }
-            else
-            {
-                logger.Fatal("FATAL ERROR!!!");
-            }
+				message = ex.Message;
+			}
 
-            MessageBox.Show(ex.Message);
+			logger.Fatal(message);
+
+			try
+			{
+				var dialogService = new Common.Services.DialogService();
+
+                Common.Models.Dialogs.MessageBoxViewModel vm = new Common.Models.Dialogs.MessageBoxViewModel(message, "Error", MessageBoxButton.OK);
+				var result = dialogService.ShowDialog(vm);
+
+			}
+			catch(Exception ex1)
+			{
+				MessageBox.Show("An unexpected error has occurred. Application will be closed", "Error", MessageBoxButton.OK);
+			}
+
+
+
+			//var dialogResult = MessageBox.Show(ex.Message, "Unexpected Error..", MessageBoxButton.YesNo);
+			//if(dialogResult == MessageBoxResult.Yes)
+			//{
+			//	Environment.Exit(100500);
+			//}
         }
 
     }

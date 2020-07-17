@@ -19,7 +19,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
 
         public AudioSettingsViewModel(PropertyAudioViewModel property, TrackableViewModel parent) : base(property,parent)
         {
-            AudioSources.AddRange(AudioHelper.GetAudioSourceItems());
+            AudioSources.AddRange(AudioHelper.GetAudioSources());
 
 
             UpdateAudioSourcesCommand = new Prism.Commands.DelegateCommand(UpdateSources);
@@ -30,7 +30,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         {
             AudioSources.Clear();
 
-            AudioSources.AddRange(AudioHelper.GetAudioSourceItems());
+            AudioSources.AddRange(AudioHelper.GetAudioSources());
 
             ((PropertyAudioViewModel)this.Property).SelectedSource = AudioSources.FirstOrDefault();
         }

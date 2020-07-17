@@ -44,7 +44,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
             propVideoViewModel.CaptureType = ScreenCaptures.FirstOrDefault(c => c.CaptType == captType) ?? ScreenCaptures.FirstOrDefault();
 
 
-            Displays.AddRange(ScreenHelper.GetDisplayItems());
+            Displays.AddRange(ScreenHelper.GetVideoSources());
 
             var deviceId = videoModel.DeviceId;      
 
@@ -66,7 +66,7 @@ namespace ScreenStreamer.Wpf.Common.Models.Dialogs
         {
             Displays.Clear();
 
-            Displays.AddRange(ScreenHelper.GetDisplayItems());
+            Displays.AddRange(ScreenHelper.GetVideoSources());
 
             var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
 
