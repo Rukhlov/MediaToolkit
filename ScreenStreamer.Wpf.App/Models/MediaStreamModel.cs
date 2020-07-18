@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 
 namespace ScreenStreamer.Wpf.Models
 {
+
     public class MediaStreamModel
-    {
+	{
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public MediaStreamModel()
@@ -24,20 +25,17 @@ namespace ScreenStreamer.Wpf.Models
         }
 
         public string Name { get; set; } = "";
-
         public AdvancedSettingsModel AdvancedSettings { get; set; } = new AdvancedSettingsModel();
-
         public PropertyVideoModel PropertyVideo { get; set; } = new PropertyVideoModel();
-
-       // public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
-        //public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
-
         public PropertyAudioModel PropertyAudio { get; set; } = new PropertyAudioModel();
         public PropertyBorderModel PropertyBorder { get; set; } = new PropertyBorderModel();
         public PropertyNetworkModel PropertyNetwork { get; set; } = new PropertyNetworkModel();
 
+		// public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
+		//public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
 
-        public bool Validate(IEnumerable<EncoderItem> videoEncoders = null, 
+
+		public bool Validate(IEnumerable<EncoderItem> videoEncoders = null, 
             IEnumerable<VideoSourceItem> videoSources = null, 
             IEnumerable<AudioSourceItem> audioSources = null)
         {
@@ -53,19 +51,20 @@ namespace ScreenStreamer.Wpf.Models
 
 
         private MediaStreamer mediaStreamer = null;
-        private StreamSession currentSession = null;
+        private StreamSession streamSession = null;
 
         [Newtonsoft.Json.JsonIgnore]
-        internal AudioStreamSettings AudioSettings => currentSession?.AudioSettings;
+        internal AudioStreamSettings AudioSettings => streamSession?.AudioSettings;
 
         [Newtonsoft.Json.JsonIgnore]
-        internal VideoStreamSettings VideoSettings => currentSession?.VideoSettings;
+        internal VideoStreamSettings VideoSettings => streamSession?.VideoSettings;
 
         public event Action StateChanged;
         public event Action<object> ErrorOccurred;
 
         [Newtonsoft.Json.JsonIgnore]
         public int ErrorCode { get; private set; }
+
         [Newtonsoft.Json.JsonIgnore]
         public Exception ErrorObj { get; private set; }
 
@@ -77,7 +76,7 @@ namespace ScreenStreamer.Wpf.Models
             {
                 bool isStreaming = false;
 
-                if (currentSession != null && mediaStreamer != null)
+                if (streamSession != null && mediaStreamer != null)
                 {
                     isStreaming = (mediaStreamer.State == MediaStreamerState.Streaming);
                 }
@@ -93,7 +92,7 @@ namespace ScreenStreamer.Wpf.Models
             get
             {
                 bool isBusy = false;
-                if (currentSession != null && mediaStreamer != null)
+                if (streamSession != null && mediaStreamer != null)
                 {
                     isBusy = (mediaStreamer.State == MediaStreamerState.Starting ||
                         mediaStreamer.State == MediaStreamerState.Stopping);
@@ -125,12 +124,12 @@ namespace ScreenStreamer.Wpf.Models
                 this.ErrorObj = null;
                 this.ErrorCode = 0;
 
-                currentSession = CreateSession();
+                streamSession = CreateSession();
 
 
-                currentSession.Validate();
+                streamSession.Validate();
 
-                mediaStreamer.Start(currentSession);
+                mediaStreamer.Start(streamSession);
             }
 
         }
@@ -153,7 +152,7 @@ namespace ScreenStreamer.Wpf.Models
 
             if (state == MediaStreamerState.Starting)
             {
-                PropertyNetwork.CommunicationPort = currentSession.CommunicationPort;
+                PropertyNetwork.CommunicationPort = streamSession.CommunicationPort;
             }
             else if (state == MediaStreamerState.Streaming)
             {
@@ -272,22 +271,18 @@ namespace ScreenStreamer.Wpf.Models
             videoEncoderSettings.Profile = AdvancedSettings.H264Profile;
             videoEncoderSettings.LowLatency = AdvancedSettings.LowLatency;
 
-            int x = (int)PropertyVideo.Left;
-            int y = (int)PropertyVideo.Top;
-            int w = (int)PropertyVideo.ResolutionWidth;
-            int h = (int)PropertyVideo.ResolutionHeight;
-
-            var captureRegion = new Rectangle(x, y, w, h);
-
+            var captureRegion = PropertyVideo.VideoRect;
             var captureType = PropertyVideo.CaptType;
+            var captureFps = PropertyVideo.CaptFps;
+            var useHardware = PropertyVideo.CaptUseHardware;
 
             var screenCaptureProperties = new ScreenCaptureProperties
             {
                 CaptureMouse = PropertyVideo.CaptureMouse,
 
                 CaptureType = captureType, // VideoCaptureType.DXGIDeskDupl,
-                UseHardware = true,
-                Fps = 30,
+                UseHardware = useHardware,
+                Fps = captureFps,
                 ShowDebugInfo = false,
                 ShowDebugBorder = PropertyVideo.ShowCaptureBorder,
                 AspectRatio = AdvancedSettings.KeepAspectRatio,
@@ -318,32 +313,6 @@ namespace ScreenStreamer.Wpf.Models
                     DeviceId = PropertyVideo.DeviceId,
                 };
             }
-
-            //VideoCaptureDevice captureDevice = null;
-            //var videoSourceItem = PropertyVideo.Display;
-            //if (videoSourceItem.IsUvcDevice)
-            //{
-            //    captureDevice = new UvcDevice
-            //    {
-
-            //        Name = videoSourceItem.Name,
-            //        Resolution = captureRegion.Size,
-            //        DeviceId = videoSourceItem.DeviceId,
-            //    };
-            //}
-            //else
-            //{
-            //    captureDevice = new ScreenCaptureDevice
-            //    {
-            //        CaptureRegion = captureRegion,
-            //        DisplayRegion = captureRegion,
-            //        Name = PropertyVideo.Display.Name,
-
-            //        Resolution = captureRegion.Size,
-            //        Properties = screenCaptureProperties,
-            //        DeviceId = PropertyVideo.Display.DeviceId,
-            //    };
-            //}
 
             if (PropertyAudio.IsEnabled)
             {

@@ -5,7 +5,11 @@
                     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
     <DataTemplate x:Key="contextMenuStreamTemplate">
         <DataTemplate.Resources>
-            <ResourceDictionary Source="..\Styles\CommonStyles.xaml"/>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="..\..\Styles\CommonStyles.xaml"/>
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
         </DataTemplate.Resources>
         <Border Margin="2,6,2,0"
                 Style="{StaticResource clickableBorder}">

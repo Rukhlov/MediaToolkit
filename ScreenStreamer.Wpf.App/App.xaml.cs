@@ -36,12 +36,12 @@ namespace ScreenStreamer.Wpf
             }
 
 
-            ServiceLocator.RegisterSingleton(config);
+            ServiceLocator.RegisterInstance(config);
 
            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
             var dialogService = new Services.DialogService();
-			ServiceLocator.RegisterSingleton<Interfaces.IDialogService>(dialogService);
+			ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(config);

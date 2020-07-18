@@ -86,9 +86,6 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UIAutomationProvider" />
-    <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
-      <HintPath>..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
@@ -106,7 +103,6 @@
     <Compile Include="MediaReceivers\VideoReceiverEx.cs" />
     <Compile Include="MediaSinks\D3D9RendererSink.cs" />
     <Compile Include="MediaStreamers\AudioStreamer.cs" />
-    <Compile Include="Managers\DesktopManager.cs" />
     <Compile Include="Managers\UsbDeviceManager.cs" />
     <Compile Include="MediaSources\IVideoSource.cs" />
     <Compile Include="MediaStreamers\HttpScreenStreamer.cs" />

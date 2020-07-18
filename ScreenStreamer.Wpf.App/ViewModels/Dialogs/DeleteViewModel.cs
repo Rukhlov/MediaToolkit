@@ -1,10 +1,10 @@
 ﻿using Prism.Commands;
-
+using ScreenStreamer.Wpf.ViewModels.Common;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
+
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {

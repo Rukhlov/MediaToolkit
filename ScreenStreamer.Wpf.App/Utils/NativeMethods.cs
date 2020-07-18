@@ -45,6 +45,10 @@ namespace ScreenStreamer.Wpf.Utils
         }
 
 
+        [DllImport("gdi32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteObject(IntPtr hObject);
+
     }
 
     public enum ResizeDirection

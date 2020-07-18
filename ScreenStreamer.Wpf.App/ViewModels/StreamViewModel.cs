@@ -23,7 +23,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         public StreamViewModel(MainViewModel mainViewModel, bool addInitialProperties, MediaStreamModel model)
         {
-            Model = model;
+            MediaStreamer = model;
 
             dialogService = ServiceLocator.GetInstance<IDialogService>();
 
@@ -42,9 +42,9 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             if (addInitialProperties)
             {
-                VideoViewModel = new PropertyVideoViewModel(this, Model.PropertyVideo);
-                PropertyAudio = new PropertyAudioViewModel(this, Model.PropertyAudio);
-                PropertyNetwork = new PropertyNetworkViewModel(this, Model.PropertyNetwork);
+                VideoViewModel = new PropertyVideoViewModel(this, MediaStreamer.PropertyVideo);
+                PropertyAudio = new PropertyAudioViewModel(this, MediaStreamer.PropertyAudio);
+                PropertyNetwork = new PropertyNetworkViewModel(this, MediaStreamer.PropertyNetwork);
 
                 Properties.Add(VideoViewModel);
                 Properties.Add(PropertyAudio);
@@ -56,22 +56,11 @@ namespace ScreenStreamer.Wpf.ViewModels
                 //Properties.Add(PropertyBorder = new PropertyBorderViewModel(this, Model.PropertyBorder));
             }
 
-            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(Model.AdvancedSettings, this);
+            AdvancedSettingsViewModel = new AdvancedSettingsViewModel(MediaStreamer.AdvancedSettings, this);
 
-            BorderViewModel = new BorderViewModel(this, Model.PropertyBorder);
+            BorderViewModel = new BorderViewModel(this, MediaStreamer.PropertyBorder);
 
-            DesignBorderViewModel = new DesignBorderViewModel(this, Model.PropertyBorder);
-
-            //var rect = new System.Drawing.Rectangle
-            //{
-            //    X = VideoViewModel.Left,
-            //    Y = VideoViewModel.Top,
-            //    Width = VideoViewModel.ResolutionWidth,
-            //    Height = VideoViewModel.ResolutionHeight,
-            //};
-
-            //DesignViewModel.SetBorderRegion(rect);
-
+            DesignBorderViewModel = new DesignBorderViewModel(this, MediaStreamer.PropertyBorder);
 
             VideoViewModel.SetupDisplayRegion();
 
@@ -83,14 +72,14 @@ namespace ScreenStreamer.Wpf.ViewModels
 
                 );
 
-            Model.StateChanged += Model_StateChanged;
-            Model.ErrorOccurred += Model_ErrorOccurred;
+            MediaStreamer.StateChanged += MediaStreamer_StateChanged;
+            MediaStreamer.ErrorOccurred += MediaStreamer_ErrorOccurred;
         }
 
         private IDialogService dialogService;
         private Dispatcher dispatcher = null;
 
-        public MediaStreamModel Model { get; }
+        public MediaStreamModel MediaStreamer { get; }
 
         public MainViewModel MainViewModel { get; }
 
@@ -128,10 +117,17 @@ namespace ScreenStreamer.Wpf.ViewModels
        // [Track]
         public string Name
         {
-            get => Model.Name;
+            get => MediaStreamer.Name;
             set
             {
-                SetProperty(Model, () => Model.Name, value);
+				const int maxNameLength = 64;
+				var name = value;
+				if (name.Length > maxNameLength)
+				{
+					name = name.Substring(0, maxNameLength);
+				}
+
+                SetProperty(MediaStreamer, () => MediaStreamer.Name, name);
                 RaisePropertyChanged(nameof(StartContextMenuText));
             }
         }
@@ -140,13 +136,13 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         public bool IsEditable
         {
-            get => !Model.IsStreaming && !Model.IsBusy;
+            get => !MediaStreamer.IsStreaming && !MediaStreamer.IsBusy;
         }
 
        // [Track]
         public bool IsStarted
         {
-            get => Model.IsStreaming;
+            get => MediaStreamer.IsStreaming;
             //set
             //{
             //    SetProperty(Model, () => Model.IsStarted, value);
@@ -156,7 +152,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         public bool IsEnabled
         {
-            get => !Model.IsBusy;
+            get => !MediaStreamer.IsBusy;
         }
 
 
@@ -228,7 +224,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             //IsStarted = !IsStarted;
 
-            Model.SwitchStreamingState();
+            MediaStreamer.SwitchStreamingState();
 
             //OnIsStartedChanged(IsStarted);
 
@@ -251,7 +247,7 @@ namespace ScreenStreamer.Wpf.ViewModels
         }
 
 
-        private void Model_StateChanged()
+        private void MediaStreamer_StateChanged()
         {
 
             dispatcher.Invoke(() =>
@@ -262,7 +258,7 @@ namespace ScreenStreamer.Wpf.ViewModels
             
         }
 
-        private void Model_ErrorOccurred(object obj)
+        private void MediaStreamer_ErrorOccurred(object obj)
         {
             logger.Debug("Model_ErrorOccurred(...)");
             // TODO: process error...

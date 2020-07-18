@@ -13,7 +13,7 @@ using System;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
 using ScreenStreamer.Wpf.Models;
-
+using ScreenStreamer.Wpf.ViewModels.Common;
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
@@ -171,7 +171,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
                 SelectedStream.Close();
 
                 StreamList.Remove(SelectedStream);
-                this.appModel.StreamList.Remove(SelectedStream.Model);
+                this.appModel.StreamList.Remove(SelectedStream.MediaStreamer);
 
                 IsEdit = false;
                 SelectedStream = null;

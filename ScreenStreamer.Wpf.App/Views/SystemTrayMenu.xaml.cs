@@ -15,11 +15,11 @@ using System.Windows.Shapes;
 namespace ScreenStreamer.Wpf.Views
 {
     /// <summary>
-    /// Interaction logic for DebugContextMenu.xaml
+    /// Interaction logic for SystemTrayMenu.xaml
     /// </summary>
-    public partial class DebugContextMenu : Window
+    public partial class SystemTrayMenu : Window
     {
-        public DebugContextMenu()
+        public SystemTrayMenu()
         {
             InitializeComponent();
         }

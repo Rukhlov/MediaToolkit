@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using ScreenStreamer.Wpf.Models;
+
 namespace ScreenStreamer.Wpf.Helpers
 {
     public static class AudioHelper

@@ -96,7 +96,7 @@ namespace ScreenStreamer.Wpf.Views
             if (e.ChangedButton == MouseButton.Right &&
                 Keyboard.IsKeyDown(Key.C))
             {
-                var contextMenu = new DebugContextMenu();
+                var contextMenu = new SystemTrayMenu();
                 contextMenu.DataContext = this.DataContext;
                 contextMenu.Show();
             }

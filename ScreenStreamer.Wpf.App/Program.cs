@@ -12,15 +12,6 @@ using System.Windows;
 
 namespace ScreenStreamer.Wpf
 {
-    public static class AppConsts
-    {
-
-        public const string ApplicationId = ApplicationName + "_" + "E7B28EAF-A330-4467-98F8-F3BCA7613268";
-
-        public const string ApplicationName = "ScreenStreamerWPF";
-
-    }
-
     public class Program
     {
 
@@ -32,7 +23,7 @@ namespace ScreenStreamer.Wpf
         {
             int exitCode = 0;
 
-            logger = LogManager.GetCurrentClassLogger();
+			InitLogger();
 
             logger.Info("========== START ============");
 
@@ -58,25 +49,30 @@ namespace ScreenStreamer.Wpf
                 if (args != null && args.Length > 0)
                 {//...
 
-
                 }
 
-                MediaToolkitManager.Startup();
+				try
+				{
+					MediaToolkitManager.Startup();
 
-                Shcore.SetProcessPerMonitorDpiAwareness();
-               
-                var application = new App();
-                application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
-                application.InitializeComponent();
+					Shcore.SetProcessPerMonitorDpiAwareness();
 
-                logger.Info("============ RUN ===============");
-                application.Run();
+					var application = new App();
+					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
+					application.InitializeComponent();
 
+					logger.Info("============ RUN ===============");
+					application.Run();
+				}
+				finally
+				{
+					MediaToolkitManager.Shutdown();
+				}
             }
             catch(Exception ex)
             {
-                logger.Error(ex);
-            }
+				ProcessError(ex);
+			}
             finally
             {
                 if (mutex != null)
@@ -88,10 +84,6 @@ namespace ScreenStreamer.Wpf
                     mutex.Dispose();
                 }
 
-                MediaToolkitManager.Shutdown();
-
-                //...
-               //ConfigManager.Save();
 
                 logger.Info("========== THE END ============");
             }
@@ -101,40 +93,100 @@ namespace ScreenStreamer.Wpf
         }
 
         private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
+		{
+			logger.Debug("Application_DispatcherUnhandledException(...)");
 
-            Exception ex = e.Exception;
+			e.Handled = true;
+
+			ProcessError(e.Exception);
+
+		}
+
+		private static void ProcessError(Exception ex)
+		{
+			//TODO: process error...
+			//...
+
+
 			var message = "An unexpected error has occurred. Application will be closed";
-
-            if (ex != null)
-            {
-				message = ex.Message;
-			}
-
-			logger.Fatal(message);
 
 			try
 			{
+				var exceptionMessage = ex?.Message??message;
+
+				logger.Fatal(exceptionMessage);
+
 				var dialogService = new Services.DialogService();
 
-                ViewModels.Dialogs.MessageBoxViewModel vm = new ViewModels.Dialogs.MessageBoxViewModel(message, "Error", MessageBoxButton.OK);
+				ViewModels.Dialogs.MessageBoxViewModel vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
 				var result = dialogService.ShowDialog(vm);
 
 			}
-			catch(Exception ex1)
+			catch (Exception ex1)
 			{
-				MessageBox.Show("An unexpected error has occurred. Application will be closed", "Error", MessageBoxButton.OK);
+				logger.Error(ex1);
+				MessageBox.Show(message, "Error", MessageBoxButton.OK);
+			}
+		}
+
+
+		private static void InitLogger()
+		{
+
+			logger = LogManager.GetCurrentClassLogger();
+
+			var logFactory = logger.Factory;
+			if (logFactory == null)
+			{
+				return;
 			}
 
+			var logConfig = logFactory.Configuration;
+			if (logConfig == null)
+			{
+				return;
+			}
 
+			var logRules = logConfig.LoggingRules;
+			if (logRules == null)
+			{
+				return;
+			}
 
-			//var dialogResult = MessageBox.Show(ex.Message, "Unexpected Error..", MessageBoxButton.YesNo);
-			//if(dialogResult == MessageBoxResult.Yes)
-			//{
-			//	Environment.Exit(100500);
-			//}
-        }
+			bool needConsole = false;
+			foreach (var rule in logRules)
+			{
+				var targets = rule.Targets;
+				if (targets == null)
+				{
+					continue;
+				}
 
-    }
+				foreach (var target in targets)
+				{
+					var targetName = target.Name;
+					if (targetName == "console")
+					{
+						needConsole = true;
+						break;
+					}
+				}
+
+				if (needConsole)
+				{
+					break;
+				}
+			}
+
+			if (needConsole)
+			{
+				var hWnd = Kernel32.GetConsoleWindow();
+				if (hWnd == IntPtr.Zero)
+				{
+					Kernel32.AllocConsole();
+				}
+
+			}
+		}
+	}
 }

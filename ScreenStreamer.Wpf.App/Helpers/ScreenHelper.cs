@@ -1,5 +1,5 @@
 ﻿using MediaToolkit.Core;
-using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;

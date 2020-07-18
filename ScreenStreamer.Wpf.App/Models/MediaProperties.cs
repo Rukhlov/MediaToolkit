@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 
 using ScreenStreamer.Wpf.Helpers;
-using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +113,14 @@ namespace ScreenStreamer.Wpf.Models
         public int ResolutionWidth { get; set; } = 1920;
         public int ResolutionHeight { get; set; } = 1080;
 
+        [JsonIgnore]
+        public System.Drawing.Rectangle VideoRect => new System.Drawing.Rectangle(Left, Top, ResolutionWidth, ResolutionHeight);
+
+
         public VideoCaptureType CaptType { get; set; } = VideoCaptureType.GDI;
+        public int CaptFps { get; set; } = 30;
+        public bool CaptUseHardware { get; set; } = true;
+
 
         public bool CaptureMouse { get; set; } = true;
 

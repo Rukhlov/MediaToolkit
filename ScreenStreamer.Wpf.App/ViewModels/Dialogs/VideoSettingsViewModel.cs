@@ -1,7 +1,7 @@
 ﻿using ScreenStreamer.Wpf.Helpers;
 using ScreenStreamer.Wpf.ViewModels.Properties;
 using System.Collections.ObjectModel;
-using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
 
 using System.Linq;
 using ScreenStreamer.Wpf.ViewModels.Common;
@@ -36,7 +36,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
             
-            var streamModel = propVideoViewModel.Parent.Model;
+            var streamModel = propVideoViewModel.Parent.MediaStreamer;
 
             var videoModel = streamModel.PropertyVideo;
 
@@ -71,7 +71,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
 
-            var streamModel = propVideoViewModel.Parent.Model;
+            var streamModel = propVideoViewModel.Parent.MediaStreamer;
 
             var deviceId = streamModel.PropertyVideo.DeviceId;
 

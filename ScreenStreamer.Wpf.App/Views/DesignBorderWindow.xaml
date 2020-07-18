@@ -54,6 +54,9 @@
             BorderThickness="4" 
             BorderBrush="{StaticResource borderBrush}" 
             Background="Transparent">
+
+            <!--BorderBrush="{Binding StripesBrush}"-->
+            
             <Grid>
                 <Border Grid.Row="0" 
                         Background="#FF17162A"

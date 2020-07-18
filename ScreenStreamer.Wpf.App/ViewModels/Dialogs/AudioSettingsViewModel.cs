@@ -2,7 +2,7 @@
 using MediaToolkit.Core;
 using ScreenStreamer.Wpf.Helpers;
 using ScreenStreamer.Wpf.ViewModels.Properties;
-using ScreenStreamer.Wpf;
+using ScreenStreamer.Wpf.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;

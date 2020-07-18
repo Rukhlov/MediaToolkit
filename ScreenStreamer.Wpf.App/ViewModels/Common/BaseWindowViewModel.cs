@@ -6,9 +6,9 @@ using ScreenStreamer.Wpf.Managers;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using Prism.Commands;
-using ScreenStreamer.Wpf.ViewModels.Common;
+using ScreenStreamer.Wpf.ViewModels.Dialogs;
 
-namespace ScreenStreamer.Wpf.ViewModels.Dialogs
+namespace ScreenStreamer.Wpf.ViewModels.Common
 {
     public class BaseWindowViewModel : TrackableViewModel, IWindowViewModel
     {

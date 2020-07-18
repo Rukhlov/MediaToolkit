@@ -17,7 +17,7 @@ namespace ScreenStreamer.Wpf.Models
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public readonly static string AppVersion = "1.0.0.0";
+		public readonly static string AppVersion = AppConsts.AssemblyVersion;//AppConsts.AppVersion;
         public string ConfigVersion { get; set; } = "1.0.0.0";
 
         [JsonProperty]
@@ -54,16 +54,24 @@ namespace ScreenStreamer.Wpf.Models
 			if (winVersion < minOsVersion)
 			{
 				//...
+
 				logger.Warn($"OS version {winVersion} currently not supported!");
 				//throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}
 
+			var appVersion = new Version(AppVersion);
+			var configVersion = new Version(ConfigVersion);
 
-			if (AppVersion != ConfigVersion)
+			if (appVersion != configVersion)
             {
-                logger.Warn("AppVersion is not the same as ConfigVersion: " + AppVersion + " != " + ConfigVersion);
-                //Проверяем совместимость версий...
-            }
+				if(appVersion.Major != configVersion.Major)
+				{
+					logger.Warn("AppVersion is not the same as ConfigVersion: " + AppVersion + " != " + ConfigVersion);
+					//Проверяем совместимость версий...
+				}
+
+				//...
+			}
 
             if(StreamList.Count == 0)
             {

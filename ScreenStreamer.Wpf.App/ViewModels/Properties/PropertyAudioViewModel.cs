@@ -26,7 +26,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
         }
 
 
-        [Track]
+        //[Track]
         public bool IsComputerSoundEnabled
         {
             get => _model.IsComputerSoundEnabled;

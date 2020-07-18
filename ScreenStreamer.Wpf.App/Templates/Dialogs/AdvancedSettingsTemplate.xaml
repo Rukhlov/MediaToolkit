@@ -91,7 +91,7 @@
 
             <Rectangle Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
             
-            <TextBlock Text="Video Resolution From Capture Source" Grid.Row="9" Grid.Column="0"/>
+            <TextBlock Text="Native Resolution of the Source" Grid.Row="9" Grid.Column="0"/>
             <ToggleButton Grid.Row="9" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding UseResolutionFromCaptureSource}" 
@@ -138,7 +138,7 @@
                         Content="Adjust Resolution To Capture Size" 
                         Padding="10,0"
 
-                        VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        VerticalAlignment="Center" HorizontalAlignment="Center" />
 
 
             <TextBlock Text="Keep Aspect Ratio" Grid.Row="13" Grid.Column="0"/>
