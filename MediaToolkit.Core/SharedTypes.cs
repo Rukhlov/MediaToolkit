@@ -61,6 +61,8 @@ namespace MediaToolkit.SharedTypes
         event Action Connected;
         event Action<object> Disconnected;
 
+        event Action OnSettingsButtonClick;
+
         //...
     }
 

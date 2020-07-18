@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
-    public class MessageBoxViewModel : BaseWindowViewModel
+    public class MessageBoxViewModel : WindowViewModel
     {
 
         public string Title { get; set; }

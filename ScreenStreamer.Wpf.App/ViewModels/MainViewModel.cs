@@ -17,7 +17,7 @@ using ScreenStreamer.Wpf.ViewModels.Common;
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
-    public class MainViewModel : BaseWindowViewModel
+    public class MainViewModel : WindowViewModel
     {
         private readonly AppModel appModel;
 

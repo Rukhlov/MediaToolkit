@@ -10,21 +10,21 @@ using ScreenStreamer.Wpf.ViewModels.Dialogs;
 
 namespace ScreenStreamer.Wpf.ViewModels.Common
 {
-    public class BaseWindowViewModel : TrackableViewModel, IWindowViewModel
+    public class WindowViewModel : TrackableViewModel, IWindowViewModel
     {
         private readonly TrackableViewModel parent;
 
-        public BaseWindowViewModel(TrackableViewModel parent) :base(parent)
+        public WindowViewModel(TrackableViewModel parent) :base(parent)
         {
             this.parent = parent;
             DiscardChangesCommand = new DelegateCommand(this.ResetChanges);
             AcceptChangesCommand = new DelegateCommand(this.AcceptChanges);
         }
 
-        public ICommand DiscardChangesCommand { get; private set; }
-        public ICommand AcceptChangesCommand { get; private set; }
 
         public virtual string Caption { get; set; } = ""; //"Polywall Streamer " + Assembly.GetExecutingAssembly().GetName().Version;
+        public ICommand DiscardChangesCommand { get; private set; }
+        public ICommand AcceptChangesCommand { get; private set; }
 
         protected BitmapImage captionImage = null;
         public virtual BitmapImage CaptionImage => captionImage;

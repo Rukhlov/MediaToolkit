@@ -14,10 +14,10 @@
         WindowStyle="None"
         Background="Transparent"
         AllowsTransparency="True"
-        Left="{Binding WpfLeft, Mode=TwoWay}"
-        Top="{Binding WpfTop, Mode=TwoWay}"
         Topmost="True"
         ShowInTaskbar="False"
+        Left="{Binding WpfLeft, Mode=TwoWay}"
+        Top="{Binding WpfTop, Mode=TwoWay}"
         Height="{Binding WpfHeight, Mode=TwoWay}"
         Width="{Binding WpfWidth, Mode=TwoWay}"
         MinHeight="50"
@@ -65,7 +65,7 @@
                         Margin="10"
                         CornerRadius="4">
                     <StackPanel Orientation="Horizontal"  >
-                        <Image Source="pack://application:,,/ScreenStreamer.Wpf.Resources;Component/Icons/gripper.png"
+                        <Image Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/gripper.png"
                                MouseDown="Border_MouseDown"
                        Margin="2,0,2,0"
                        Height="22"

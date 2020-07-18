@@ -226,13 +226,13 @@ namespace MediaToolkit.UI
             this.Location = region.Location;
             this.Size = new Size(region.Width, region.Height);
 
-            this.TransparencyKey = Color.White;
-            this.BackColor = Color.White;
+            this.TransparencyKey = Color.Black;
+            this.BackColor = Color.Black;
             this.FormBorderStyle = FormBorderStyle.None;
             this.TopMost = true;
             this.ShowInTaskbar = false;
 
-            RegionPanel panel = new RegionPanel();
+            RegionPanel panel = new RegionPanel(this);
             panel.Dock = DockStyle.Fill;
 
             this.Controls.Add(panel);
@@ -249,16 +249,21 @@ namespace MediaToolkit.UI
         //    }
         //}
 
+        public Color Color1 { get; set; } = Color.Red;
+        public Color Color2 { get; set; } = Color.Green;
+
+
         class RegionPanel : Panel
         {
-            internal RegionPanel()
+            internal RegionPanel(RegionForm o)
             {
+                this.owner = o;
                 timer.Tick += Timer_Tick;
                 timer.Interval = 1000;
                 timer.Enabled = true;
 
             }
-
+            private readonly RegionForm owner = null;
             private byte tick = 0;
             private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
             private void Timer_Tick(object sender, EventArgs e)
@@ -273,13 +278,13 @@ namespace MediaToolkit.UI
 
             private void DrawBorder()
             {
-                var color = Color.Red;
-                var color2 = Color.Green;
+                var color = owner.Color1;
+                var color2 = owner.Color2;
 
                 if (tick % 2 == 0)
                 {
-                    color = Color.Green;
-                    color2 = Color.Red;
+                    color = owner.Color2;
+                    color2 = owner.Color1;
                 }
 
                 var r = this.ClientRectangle;

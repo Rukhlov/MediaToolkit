@@ -102,7 +102,7 @@ namespace ScreenStreamer.Wpf.Services
 
                 var window = _designBorders[designBorderViewModel];
 
-                // оставляем фокус на форме с настройками
+                // оставляем фокус на родительской форме
                 // иначе при показе рамки, закрывается попап с настройками 
                 window.ShowActivated = false;
                 window.Show();

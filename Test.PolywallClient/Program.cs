@@ -66,10 +66,10 @@ namespace Test.PolywallClient
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var control = MediaToolkitFactory.CreateInstance<IScreenCasterControl>();
-            control.ShowDebugPanel = true;
-
-            var form = new Form1((Control)control);
+            var screenCasterControl = MediaToolkitFactory.CreateInstance<IScreenCasterControl>();
+            screenCasterControl.ShowDebugPanel = true;
+            screenCasterControl.OnSettingsButtonClick += ScreenCasterControl_OnSettingsButtonClick;
+            var form = new Form1((Control)screenCasterControl);
 
             Application.Run(form);
 
@@ -78,5 +78,9 @@ namespace Test.PolywallClient
             logger.Info("========== THE END ============");
         }
 
+        private static void ScreenCasterControl_OnSettingsButtonClick()
+        {
+            MessageBox.Show("ScreenCasterControl_OnSettingsButtonClick()");
+        }
     }
 }

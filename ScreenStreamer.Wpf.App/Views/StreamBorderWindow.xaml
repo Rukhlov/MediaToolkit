@@ -14,8 +14,12 @@
         WindowStyle="None"
         Background="Transparent"
         AllowsTransparency="True"
-        Left="{Binding Stream.VideoViewModel.Left, Mode=TwoWay}"
-        Top="{Binding Stream.VideoViewModel.Top, Mode=TwoWay}"
+        
+        Left="{Binding WpfLeft, Mode=TwoWay}"
+        Top="{Binding WpfTop, Mode=TwoWay}"
+        Height="{Binding WpfHeight, Mode=TwoWay}"
+        Width="{Binding WpfWidth, Mode=TwoWay}"
+        
         Topmost="True"
         ShowInTaskbar="False">
     <Window.Resources>
@@ -63,16 +67,16 @@
                 <TextBlock Margin="50,20"> 
                     
                     <Run Text="Top: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" /> 
+                    <Run Text="{Binding WpfTop}" /> 
 
                     <Run Text=" Left: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
+                    <Run Text="{Binding WpfLeft}" />
 
                     <Run Text=" Height: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
+                    <Run Text="{Binding WpfHeight}" />
 
                     <Run Text=" Width: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+                    <Run Text="{Binding WpfWidth}" />
                 </TextBlock>
             </StackPanel>
        
@@ -80,7 +84,7 @@
                 BorderThickness="2" 
                 BorderBrush="{StaticResource borderBrush}" 
                 Background="Transparent"
-                Height="{Binding Stream.VideoViewModel.ResolutionHeight, Mode=OneWay}"
-                Width="{Binding Stream.VideoViewModel.ResolutionWidth, Mode=OneWay}"/>
+                Height="{Binding WpfHeight, Mode=OneWay}"
+                Width="{Binding WpfWidth, Mode=OneWay}"/>
     </Grid>
 </Window>

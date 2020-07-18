@@ -44,6 +44,8 @@ namespace MediaToolkit.UI
 
 
             _UpdateControls();
+
+
         }
 
 
@@ -74,6 +76,9 @@ namespace MediaToolkit.UI
         private ChannelFactory<IScreenCastService> factory = null;
 
         private IntPtr VideoHandle = IntPtr.Zero;
+
+        public uint MaxTryConnectCount { get; set; } = uint.MaxValue; //5
+
 
         public bool ShowDebugPanel
         {
@@ -166,6 +171,7 @@ namespace MediaToolkit.UI
             base.OnPaintBackground(e);
         }
 
+
         private Task mainTask = null;
         public void Connect(string addr, int port)
         {
@@ -195,10 +201,11 @@ namespace MediaToolkit.UI
             var clientRect = this.ClientRectangle;
             mainTask = Task.Run(() =>
             {
-                int maxTryCount = 10;
-                int tryCount = 0;
+                uint tryCount = 0;
 
-                while (tryCount <= maxTryCount && !cancelled)
+                bool forceReconnect = (MaxTryConnectCount == uint.MaxValue);
+
+                while ((forceReconnect || tryCount <= MaxTryConnectCount) && !cancelled)
                 {
                     logger.Verb("ScreenCastControl::Connecting count: " + tryCount);
 
@@ -281,7 +288,7 @@ namespace MediaToolkit.UI
                             }
 
                             channel.PostMessage(new ServerRequest { Command = "Ping" });
-                            tryCount = 0;
+                            tryCount = 0;                           
    
                             state = ClientState.Running;
                             UpdateControls();
@@ -352,11 +359,16 @@ namespace MediaToolkit.UI
 
                             tryCount++;
 
-                            var statusStr = "Attempting to connect: " + tryCount + " of " + maxTryCount;
+                            //var statusStr = "Attempting to connect: " + tryCount + " of " + maxTryCount;
+                            var statusStr = "Attempting to connect: " + tryCount;
 
                             SetStatus(statusStr);
                         }
 
+                    }
+                    else
+                    {
+                        errorCode = ErrorCode.Cancelled;
                     }
                 }
 
@@ -376,7 +388,7 @@ namespace MediaToolkit.UI
         {
             state = ClientState.Disconnecting;
             cancelled = true;
-
+            //factory.Abort();
             UpdateControls();
 
         }
@@ -736,7 +748,8 @@ namespace MediaToolkit.UI
 
                 //wpfRemoteControl.DataContext = null;
 
-                string _statusStr = "";
+                string _statusStr = "";//"Waiting for connection";
+                string labelStatusStr = "_Not Connected";
 
                 if (errorCode!= ErrorCode.Ok)
                 {
@@ -756,6 +769,13 @@ namespace MediaToolkit.UI
                         _statusStr = "Server not configured";
                     }
 
+                    labelStatusStr = _statusStr;
+
+                    if (errorCode == ErrorCode.Cancelled)
+                    {
+                        labelStatusStr = "_Not Connected";
+                        _statusStr = "";
+                    }
 
                     //Server Disconnected
                     //_Connection Error
@@ -764,7 +784,7 @@ namespace MediaToolkit.UI
                 statusLabel.Text = _statusStr;
                 //imageProvider.Status = "_statusStr";
 
-                labelStatus.Text = _statusStr;
+                labelStatus.Text = labelStatusStr;
             }
             else
             {
@@ -836,6 +856,8 @@ namespace MediaToolkit.UI
         private void showDetailsButton_Click(object sender, EventArgs e)
         {
             controlPanel.Visible = !controlPanel.Visible;
+            settingsPanel.Visible = !settingsPanel.Visible;
+            settingsButton.Visible = !settingsButton.Visible;
 
             showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
         }
@@ -867,6 +889,12 @@ namespace MediaToolkit.UI
         {
             public string Name { get; set; }
             public object Tag { get; set; }
+        }
+
+        public event Action OnSettingsButtonClick;
+        private void settingsButton_Click(object sender, EventArgs e)
+        {
+            OnSettingsButtonClick?.Invoke();
         }
     }
 

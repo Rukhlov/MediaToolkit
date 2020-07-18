@@ -35,7 +35,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             EditNameCommand = new DelegateCommand(EditName);
             CopyUrlCommand = new DelegateCommand(CopyUrl);
-            PreferencesCommand = new DelegateCommand<BaseWindowViewModel>(Preferences);
+            PreferencesCommand = new DelegateCommand<WindowViewModel>(Preferences);
             HideBorderCommand = new DelegateCommand(HideBorder);
             ShowSettingsCommand = new DelegateCommand(ShowSettings);
 
@@ -241,7 +241,7 @@ namespace ScreenStreamer.Wpf.ViewModels
             IsEditName = !_isEditName;
         }
 
-        private void Preferences(BaseWindowViewModel parentWindow)
+        private void Preferences(WindowViewModel parentWindow)
         {
             dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
         }
@@ -249,7 +249,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         private void MediaStreamer_StateChanged()
         {
-
+            logger.Debug("MediaStreamer_StateChanged(...)");
             dispatcher.Invoke(() =>
             {
                 OnStreamStateChanged(IsStarted);
@@ -260,7 +260,8 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         private void MediaStreamer_ErrorOccurred(object obj)
         {
-            logger.Debug("Model_ErrorOccurred(...)");
+            logger.Debug("MediaStreamer_ErrorOccurred(...)");
+
             // TODO: process error...
 
             dispatcher.Invoke(() =>
@@ -297,7 +298,7 @@ namespace ScreenStreamer.Wpf.ViewModels
                 dialogService.Hide(DesignBorderViewModel);
 
             }
-            else 
+            else
             {
                 if (IsBorderVisible)
                 {
@@ -307,19 +308,23 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             //if (isStarted)
             //{
-            //    _dialogService.Hide(DesignViewModel);
+            //    dialogService.Hide(DesignBorderViewModel);
             //    if (IsBorderVisible)
             //    {
-            //        _dialogService.Show(BorderViewModel);
+            //        BorderViewModel.WpfLeft = DesignBorderViewModel.WpfLeft;
+            //        BorderViewModel.WpfTop = DesignBorderViewModel.WpfTop;
+            //        BorderViewModel.WpfWidth = DesignBorderViewModel.WpfWidth;
+            //        BorderViewModel.WpfHeight = DesignBorderViewModel.WpfHeight;
+
+            //        dialogService.Show(BorderViewModel);
             //    }
 
             //}
-            //else if (!isStarted)
-            //{
-            //    _dialogService.Hide(BorderViewModel);
+            //else             {
+            //    dialogService.Hide(BorderViewModel);
             //    if (IsBorderVisible)
             //    {
-            //        _dialogService.Show(DesignViewModel);
+            //        dialogService.Show(DesignBorderViewModel);
             //    }
             //}
 
@@ -333,6 +338,8 @@ namespace ScreenStreamer.Wpf.ViewModels
                 {
                     var captureRect = VideoViewModel.CaptureRect;
                     borderForm = new RegionForm(captureRect);
+                    borderForm.Color1 = System.Drawing.Color.FromArgb(0xff, 0xe7, 0x44, 0x44);
+                    borderForm.Color2 = System.Drawing.Color.White;
                     borderForm.Visible = true;
                 }
             }

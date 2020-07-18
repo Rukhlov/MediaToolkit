@@ -166,7 +166,7 @@
     <Compile Include="ViewModels\Common\TrackableViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyBorderViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\PropertyWindowViewModel.cs" />
-    <Compile Include="ViewModels\Common\BaseWindowViewModel.cs" />
+    <Compile Include="ViewModels\Common\WindowViewModel.cs" />
     <Compile Include="ViewModels\Properties\PropertyNetworkViewModel.cs" />
     <Compile Include="ViewModels\Dialogs\QualitySettingsViewModel.cs" />
     <Compile Include="ViewModels\BorderViewModel.cs" />

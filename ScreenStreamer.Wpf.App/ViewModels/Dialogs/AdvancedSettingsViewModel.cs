@@ -13,7 +13,7 @@ using ScreenStreamer.Wpf.ViewModels.Common;
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
-    public class AdvancedSettingsViewModel : BaseWindowViewModel
+    public class AdvancedSettingsViewModel : WindowViewModel
     {
         private readonly AdvancedSettingsModel _model;
         public override string Caption => "Advanced Settings";

@@ -6,12 +6,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Common
     {
         private static readonly Type AttrType = typeof(TrackAttribute);
         public TrackableViewModel(ViewModelBase parent = null) : base(parent, AttrType)
-        {
-
-        }
+        { }
     }
 
-    public class TrackAttribute : Attribute
-    {
-    }
+    public class TrackAttribute : Attribute { }
 }

@@ -881,6 +881,12 @@ namespace MediaToolkit.UI
                 //logger.Error(ex);
             }
         }
+
+        public event Action OnSettingsButtonClick;
+        private void settingsButton_Click(object sender, EventArgs e)
+        {
+            OnSettingsButtonClick?.Invoke();
+        }
     }
 
     class ComboBoxItem

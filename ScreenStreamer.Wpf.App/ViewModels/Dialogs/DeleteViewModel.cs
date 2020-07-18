@@ -9,7 +9,7 @@ using System.Windows.Input;
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
 
-    public class DeleteViewModel : BaseWindowViewModel
+    public class DeleteViewModel : WindowViewModel
     {
         public override string Caption => "Delete";
 

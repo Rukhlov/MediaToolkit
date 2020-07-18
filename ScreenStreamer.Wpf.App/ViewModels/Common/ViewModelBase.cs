@@ -13,14 +13,6 @@ using ScreenStreamer.Wpf.Helpers;
 
 namespace ScreenStreamer.Wpf.ViewModels.Common
 {
-    public interface IStorableBladeModel : INotifyPropertyChanged
-    {
-        bool IsChanged { get; }
-        bool HasErrors { get; }
-        void ResetChanges();
-    }
-
-
     public class ViewModelBase : GalaSoft.MvvmLight.ViewModelBase, IDataErrorInfo, IStorableBladeModel
     {
         protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
@@ -294,4 +286,12 @@ namespace ScreenStreamer.Wpf.ViewModels.Common
             }
         }
     }
+
+    public interface IStorableBladeModel : INotifyPropertyChanged
+    {
+        bool IsChanged { get; }
+        bool HasErrors { get; }
+        void ResetChanges();
+    }
+
 }

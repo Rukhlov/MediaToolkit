@@ -13,7 +13,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
     {
         protected readonly int MaxInfoLength = 60;
 
-        public StreamViewModel Parent { get; set; }
+        public StreamViewModel Parent { get; }
 
         public virtual string Name { get; } = "N/A";
 
@@ -28,10 +28,10 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             Parent = parent;
             DialogService = ServiceLocator.GetInstance<IDialogService>();
             DialogViewModel = BuildDialogViewModel();
-            ShowSettingsCommand = new DelegateCommand<BaseWindowViewModel>(ShowSettings);
+            ShowSettingsCommand = new DelegateCommand<WindowViewModel>(ShowSettings);
         }
 
-        protected void ShowSettings(BaseWindowViewModel parent)
+        protected void ShowSettings(WindowViewModel parent)
         {
             DialogService.Show(DialogViewModel);
         }

@@ -5,7 +5,7 @@ using System;
 
 namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
-    public abstract class PropertyWindowViewModel : BaseWindowViewModel
+    public abstract class PropertyWindowViewModel : WindowViewModel
     {
         protected TrackableViewModel parent;
 
