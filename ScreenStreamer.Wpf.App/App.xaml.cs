@@ -25,10 +25,10 @@ namespace ScreenStreamer.Wpf
 
             var args = e.Args;
 
-            var config = ConfigManager.LoadConfigurations();
+            var appModel = ConfigManager.LoadConfigurations();
             //TODO: validate...
 
-            if (!config.Validate())
+            if (!appModel.Validate())
             {
                 //...
                 // Reset config...
@@ -36,7 +36,7 @@ namespace ScreenStreamer.Wpf
             }
 
 
-            ServiceLocator.RegisterInstance(config);
+            ServiceLocator.RegisterInstance(appModel);
 
            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
@@ -44,7 +44,7 @@ namespace ScreenStreamer.Wpf
 			ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
 
-            var mainViewModel = new ViewModels.Dialogs.MainViewModel(config);
+            var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
 
             Views.MainWindow mainWindow = new Views.MainWindow(mainViewModel);
 
@@ -64,7 +64,6 @@ namespace ScreenStreamer.Wpf
 
 			ConfigManager.Save();
 
-			//ConfigurationManager.Save();
 			base.OnExit(e);
         }
     }

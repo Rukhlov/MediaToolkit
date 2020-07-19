@@ -68,7 +68,13 @@ namespace Test.PolywallClient
 
             var screenCasterControl = MediaToolkitFactory.CreateInstance<IScreenCasterControl>();
             screenCasterControl.ShowDebugPanel = true;
-            screenCasterControl.OnSettingsButtonClick += ScreenCasterControl_OnSettingsButtonClick;
+            screenCasterControl.OnSettingsButtonClick += () =>
+            {
+                MessageBox.Show("OnSettingsButtonClick()");
+
+                screenCasterControl.AspectRatio = !screenCasterControl.AspectRatio;
+            };
+
             var form = new Form1((Control)screenCasterControl);
 
             Application.Run(form);
@@ -76,11 +82,6 @@ namespace Test.PolywallClient
             MediaToolkitFactory.Shutdown();
 
             logger.Info("========== THE END ============");
-        }
-
-        private static void ScreenCasterControl_OnSettingsButtonClick()
-        {
-            MessageBox.Show("ScreenCasterControl_OnSettingsButtonClick()");
         }
     }
 }

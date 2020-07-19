@@ -45,10 +45,39 @@ namespace MediaToolkit.UI
             get { return videoSource; }
             private set
             {
+                
                 if (videoSource != value)
                 {
                     videoSource = value;
                     OnPropertyChanged(nameof(VideoSource));
+                }
+            }
+        }
+
+        private Brush background = new SolidColorBrush(Colors.Black);
+        public Brush Background
+        {
+            get { return background; }
+            set
+            {
+                if (background != value)
+                {
+                    background = value;
+                    OnPropertyChanged(nameof(Background));
+                }
+            }
+        }
+
+        private Stretch stretchMode = Stretch.Uniform;
+        public Stretch StretchMode
+        {
+            get { return stretchMode; }
+            set
+            {
+                if (stretchMode != value)
+                {
+                    stretchMode = value;
+                    OnPropertyChanged(nameof(StretchMode));
                 }
             }
         }

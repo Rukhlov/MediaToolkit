@@ -162,6 +162,7 @@ namespace MediaToolkit.MediaFoundation
                 //OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.Rgb24);
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(outputArgs.Width, outputArgs.Height));
+               // OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                 //OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(outputArgs.Width, outputArgs.Height));
 

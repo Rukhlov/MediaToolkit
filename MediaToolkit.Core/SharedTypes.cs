@@ -63,6 +63,8 @@ namespace MediaToolkit.SharedTypes
 
         event Action OnSettingsButtonClick;
 
+        bool AspectRatio { get; set; }
+
         //...
     }
 

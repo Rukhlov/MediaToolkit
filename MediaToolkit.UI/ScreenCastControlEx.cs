@@ -79,6 +79,19 @@ namespace MediaToolkit.UI
 
         public uint MaxTryConnectCount { get; set; } = uint.MaxValue; //5
 
+        private bool aspectRatio = true;
+        public bool AspectRatio
+        {
+            get
+            { 
+                return aspectRatio;
+            }
+            set
+            {
+                aspectRatio = value;
+            }
+        }
+
 
         public bool ShowDebugPanel
         {
@@ -496,6 +509,7 @@ namespace MediaToolkit.UI
             videoRendererSink = new D3D9RendererSink();
             encoderSettings.LowLatency = true;
             encoderSettings.UseHardware = true;
+           
 
             videoRendererSink.Setup(encoderSettings, VideoHandle);
 

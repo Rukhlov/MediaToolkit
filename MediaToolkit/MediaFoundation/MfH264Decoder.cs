@@ -267,10 +267,11 @@ namespace MediaToolkit.MediaFoundation
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
-                OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
+                //OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
+
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 

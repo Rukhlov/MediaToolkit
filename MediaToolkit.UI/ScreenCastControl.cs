@@ -47,7 +47,6 @@ namespace MediaToolkit.UI
 
             d3dRenderer = new D3DImageRenderer();
 
-
             //d3dRenderer.RenderStarted += videoRenderer_RenderStarted;
             //d3dRenderer.RenderStopped += videoRenderer_RenderStopped;
 
@@ -58,6 +57,26 @@ namespace MediaToolkit.UI
             _UpdateControls();
         }
 
+
+        public bool AspectRatio
+        {
+            get
+            {
+                var aspectRatio = false;
+
+                if (d3dRenderer != null)
+                {
+                    aspectRatio = (d3dRenderer.StretchMode == System.Windows.Media.Stretch.Uniform);
+                }
+
+                return aspectRatio;
+            }
+            set
+            {
+                var aspectRatio = value;
+                d3dRenderer.StretchMode = aspectRatio ? System.Windows.Media.Stretch.Uniform : System.Windows.Media.Stretch.Fill;
+            }
+        }
 
         //private D3DImageRenderer videoRenderer = null;
         private D3DImageRenderer d3dRenderer = null;
@@ -88,6 +107,10 @@ namespace MediaToolkit.UI
         public int ServerPort { get; private set; }
 
         private ChannelFactory<IScreenCastService> factory = null;
+
+
+        public uint MaxTryConnectCount { get; set; } = uint.MaxValue; //5
+
 
         public bool ShowDebugPanel
         {
@@ -203,10 +226,12 @@ namespace MediaToolkit.UI
 
             mainTask = Task.Run(() =>
             {
-                int maxTryCount = 10;
-                int tryCount = 0;
+                //int maxTryCount = 10;
+                uint tryCount = 0;
 
-                while (tryCount <= maxTryCount && !cancelled)
+                bool forceReconnect = (MaxTryConnectCount == uint.MaxValue);
+
+                while ((forceReconnect || tryCount <= MaxTryConnectCount) && !cancelled)
                 {
                     tracer.Verb("ScreenCastControl::Connecting count: " + tryCount);
 
@@ -357,11 +382,15 @@ namespace MediaToolkit.UI
 
                             tryCount++;
 
-                            var statusStr = "Attempting to connect: " + tryCount + " of " + maxTryCount;
+                            var statusStr = "Attempting to connect: " + tryCount; // + " of " + maxTryCount;
 
                             SetStatus(statusStr);
                         }
 
+                    }
+                    else
+                    {
+                        errorCode = ErrorCode.Cancelled;
                     }
                 }
 
@@ -475,8 +504,9 @@ namespace MediaToolkit.UI
                 //Resolution = videoInfo.Resolution,
                 Width = videoInfo.Resolution.Width,
                 Height = videoInfo.Resolution.Height,
+                //AspectRatio = new MediaRatio(1, 1),
                 //Resolution = new System.Drawing.Size(1920, 1080);
-
+                
                 FrameRate = new MediaRatio(videoInfo.Fps, 1),
             };
 
@@ -753,11 +783,10 @@ namespace MediaToolkit.UI
             {
                 connectButton.Text = "_Connect";
 
-                //wpfRemoteControl.DataContext = null;
+                string _statusStr = "";//"Waiting for connection";
+                string labelStatusStr = "_Not Connected";
 
-                string _statusStr = "";
-
-                if (errorCode!= ErrorCode.Ok)
+                if (errorCode != ErrorCode.Ok)
                 {
                     //_statusStr = errorCode.ToString();
 
@@ -775,6 +804,13 @@ namespace MediaToolkit.UI
                         _statusStr = "Server not configured";
                     }
 
+                    labelStatusStr = _statusStr;
+
+                    if (errorCode == ErrorCode.Cancelled)
+                    {
+                        labelStatusStr = "_Not Connected";
+                        _statusStr = "";
+                    }
 
                     //Server Disconnected
                     //_Connection Error
@@ -783,7 +819,7 @@ namespace MediaToolkit.UI
                 statusLabel.Text = _statusStr;
                 //imageProvider.Status = "_statusStr";
 
-                labelStatus.Text = _statusStr;
+                labelStatus.Text = labelStatusStr;
             }
             else
             {
@@ -855,6 +891,8 @@ namespace MediaToolkit.UI
         private void showDetailsButton_Click(object sender, EventArgs e)
         {
             controlPanel.Visible = !controlPanel.Visible;
+            settingsPanel.Visible = !settingsPanel.Visible;
+            settingsButton.Visible = !settingsButton.Visible;
 
             showDetailsButton.Text = controlPanel.Visible ? "<<" : ">>";
         }
