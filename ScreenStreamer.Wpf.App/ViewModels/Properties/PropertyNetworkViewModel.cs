@@ -32,7 +32,17 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             {
                 _selectedNetwork = value;
                 RaisePropertyChanged(() => SelectedNetwork);
-                _model.Network = value?.IPAddressInfo?.Address?.ToString() ?? value.DisplayName;
+
+                var ipAddrInfo = _selectedNetwork.IPAddressInfo;
+
+                IPAddress addr = IPAddress.Any;
+                if (ipAddrInfo != null)
+                {
+                    addr = ipAddrInfo.Address;
+                }
+                _model.Network = addr.ToString();
+
+              //  _model.Network = value?.IPAddressInfo?.Address?.ToString() ?? "0.0.0.0";
                 RaisePropertyChanged(nameof(Info));
             }
         }

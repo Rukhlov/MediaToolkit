@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             this.statusLabel = new System.Windows.Forms.Label();
-            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
-            this.d3dImageControl = new MediaToolkit.UI.D3DImageControl();
             this.debugPanel = new System.Windows.Forms.Panel();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.controlPanel = new System.Windows.Forms.TableLayoutPanel();
@@ -43,6 +41,8 @@
             this.panel2 = new System.Windows.Forms.Panel();
             this.settingsButton = new System.Windows.Forms.Button();
             this.showDetailsButton = new System.Windows.Forms.Button();
+            this.elementHost1 = new System.Windows.Forms.Integration.ElementHost();
+            this.d3dImageControl = new MediaToolkit.UI.D3DImageControl();
             this.debugPanel.SuspendLayout();
             this.flowLayoutPanel1.SuspendLayout();
             this.controlPanel.SuspendLayout();
@@ -52,26 +52,14 @@
             // statusLabel
             // 
             this.statusLabel.AutoSize = true;
-            this.statusLabel.BackColor = System.Drawing.Color.Transparent;
-            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 7.8F);
+            this.statusLabel.BackColor = System.Drawing.Color.White;
+            this.statusLabel.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.statusLabel.ForeColor = System.Drawing.Color.Black;
             this.statusLabel.Location = new System.Drawing.Point(0, 0);
             this.statusLabel.Name = "statusLabel";
             this.statusLabel.Size = new System.Drawing.Size(18, 19);
             this.statusLabel.TabIndex = 2;
             this.statusLabel.Text = "...";
-            // 
-            // elementHost1
-            // 
-            this.elementHost1.BackColor = System.Drawing.Color.Cyan;
-            this.elementHost1.Cursor = System.Windows.Forms.Cursors.Cross;
-            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.elementHost1.Location = new System.Drawing.Point(0, 0);
-            this.elementHost1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.elementHost1.Name = "elementHost1";
-            this.elementHost1.Size = new System.Drawing.Size(749, 539);
-            this.elementHost1.TabIndex = 0;
-            this.elementHost1.Text = "elementHost1";
-            this.elementHost1.Child = this.d3dImageControl;
             // 
             // debugPanel
             // 
@@ -231,12 +219,25 @@
             this.showDetailsButton.UseVisualStyleBackColor = true;
             this.showDetailsButton.Click += new System.EventHandler(this.showDetailsButton_Click);
             // 
+            // elementHost1
+            // 
+            this.elementHost1.BackColor = System.Drawing.Color.Cyan;
+            this.elementHost1.Cursor = System.Windows.Forms.Cursors.Cross;
+            this.elementHost1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.elementHost1.Location = new System.Drawing.Point(0, 0);
+            this.elementHost1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.elementHost1.Name = "elementHost1";
+            this.elementHost1.Size = new System.Drawing.Size(749, 539);
+            this.elementHost1.TabIndex = 0;
+            this.elementHost1.Text = "elementHost1";
+            this.elementHost1.Child = this.d3dImageControl;
+            // 
             // ScreenCastControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.debugPanel);
             this.Controls.Add(this.statusLabel);
+            this.Controls.Add(this.debugPanel);
             this.Controls.Add(this.elementHost1);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "ScreenCastControl";

@@ -55,6 +55,9 @@ namespace MediaToolkit.UI
             //imageProvider.Status = "_TEST";
 
             _UpdateControls();
+
+
+            statusLabel.BringToFront();
         }
 
 
@@ -382,7 +385,7 @@ namespace MediaToolkit.UI
 
                             tryCount++;
 
-                            var statusStr = "Attempting to connect: " + tryCount; // + " of " + maxTryCount;
+                            var statusStr = "Attempting to connect..."; // + tryCount; // + " of " + maxTryCount;
 
                             SetStatus(statusStr);
                         }
@@ -765,7 +768,7 @@ namespace MediaToolkit.UI
             syncContext.Send(_ =>
             {
                 labelStatus.Text = text;
-                statusLabel.Text = "Connecting...";
+                statusLabel.Text = text;//"Connecting...";
                 //imageProvider.Status = "Connecting...";
                 //statusLabel.Text = text;
 
