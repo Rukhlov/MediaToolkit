@@ -201,16 +201,10 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         }
 
 
-        public void RaiseIsAllStartedChanged()
-        {
-            this.RaisePropertyChanged(nameof(IsAllStarted));
-
-
-        }
-
-        public void OnStreamStateChanged()
+        public void OnAnyStreamStateChanged()
         {
             RaisePropertyChanged(nameof(IsAnyStarted));
+            RaisePropertyChanged(nameof(IsAllStarted));
 
             RaisePropertyChanged(nameof(ActiveIcon));
         }
@@ -223,23 +217,40 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private void OnStartAll()
         {
+
+            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808).ToList();
+
+            int index = 0;
             foreach (var s in StreamList)
             {
-                //s.IsStarted = true;
-                s.StartCommand.Execute(null);
+                if (!s.IsStarted)
+                {
+                    var networkProps = s.MediaStreamer.PropertyNetwork;
+                    var communicationPort = networkProps.CommunicationPort;
+                    var port = networkProps.Port;
+                    if (port == 0)
+                    {// если порт не задан то назначаем
+                        networkProps.CommunicationPort = freeTcpPorts[index];
+                        index++;
+                    }
+
+                    s.StartCommand.Execute(null);
+            
+                }
+
             }
-            RaisePropertyChanged(nameof(IsAllStarted));
+
+           // RaisePropertyChanged(nameof(IsAllStarted));
         }
 
         private void OnStopAll()
         {
             foreach (var s in StreamList)
             {
-                // s.IsStarted = false;
                 s.StartCommand.Execute(null);
             }
 
-            RaisePropertyChanged(nameof(IsAllStarted));
+           // RaisePropertyChanged(nameof(IsAllStarted));
         }
 
         private void OnShowStreamSettings(StreamViewModel streamViewModel)

@@ -15,6 +15,7 @@ using MediaToolkit.UI;
 using ScreenStreamer.Wpf.Models;
 using ScreenStreamer.Wpf.ViewModels.Common;
 
+
 namespace ScreenStreamer.Wpf.ViewModels
 {
     public class StreamViewModel : TrackableViewModel
@@ -30,12 +31,13 @@ namespace ScreenStreamer.Wpf.ViewModels
             MainViewModel = mainViewModel;
             StartCommand = new DelegateCommand(SwitchStreamingState);
 
-            //EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
-            EditModeCommand = new DelegateCommand(() => MainViewModel.IsEdit = true);
+			//EditModeCommand = new RelayCommand(() => MainViewModel.IsEdit = true);
+			//EditModeCommand = new DelegateCommand(() => MainViewModel.IsEdit = true);
+			EditModeCommand = new DelegateCommand(SetEditMode);
 
-            EditNameCommand = new DelegateCommand(EditName);
+			EditNameCommand = new DelegateCommand(SwitchEditNameState);
             CopyUrlCommand = new DelegateCommand(CopyUrl);
-            PreferencesCommand = new DelegateCommand<WindowViewModel>(Preferences);
+            PreferencesCommand = new DelegateCommand<WindowViewModel>(ShowPreferencesDialog);
             HideBorderCommand = new DelegateCommand(HideBorder);
             ShowSettingsCommand = new DelegateCommand(ShowSettings);
 
@@ -201,7 +203,6 @@ namespace ScreenStreamer.Wpf.ViewModels
         public ICommand ShowSettingsCommand { get; } 
 
 
-
         private void CopyUrl()
         {
             //TODO CopyUrl
@@ -212,25 +213,23 @@ namespace ScreenStreamer.Wpf.ViewModels
             RaisePropertyChanged(nameof(IsAudioEnabled));
         }
 
-        private void InverseIsStarted()
-        {
-            //IsStarted = !IsStarted;
-            //MainViewModel.RaiseIsAllStartedChanged();
-        }
-
         private void SwitchStreamingState()
         {
             logger.Debug("SwitchStreamingState()");
 
-            //IsStarted = !IsStarted;
 
             MediaStreamer.SwitchStreamingState();
 
-            //OnIsStartedChanged(IsStarted);
-
-            MainViewModel.RaiseIsAllStartedChanged();
+            //MainViewModel.RaiseIsAllStartedChanged();
         }
-        private void EditName()
+
+		private void SetEditMode ()
+		{
+			MainViewModel.SelectedStream = this;
+			MainViewModel.IsEdit = true;
+		}
+
+        private void SwitchEditNameState()
         {
             //if (!_isEditName && !MainViewModel.IsEdit)
             //{
@@ -241,7 +240,7 @@ namespace ScreenStreamer.Wpf.ViewModels
             IsEditName = !_isEditName;
         }
 
-        private void Preferences(WindowViewModel parentWindow)
+        private void ShowPreferencesDialog(WindowViewModel parentWindow)
         {
             dialogService.ShowDialog(parentWindow, AdvancedSettingsViewModel);
         }
@@ -330,7 +329,7 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             VideoViewModel.OnStreamStateChanged(isStarted);
 
-            MainViewModel.OnStreamStateChanged();
+            MainViewModel.OnAnyStreamStateChanged();
 
             if (isStarted)
             {

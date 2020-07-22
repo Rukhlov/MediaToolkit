@@ -15,10 +15,21 @@ namespace ScreenStreamer.Wpf.Models
 
     public class PropertyNetworkModel
     {
-
+        /// <summary>
+        /// Адрес сетевого интерфейса где будет работать стример
+        /// </summary>
         public string Network { get; set; } = "0.0.0.0";
+
+        /// <summary>
+        /// Порт заданный пользователем
+        /// 0 - если авто
+        /// </summary>
         public int Port { get; set; } = 0;
 
+
+        /// <summary>
+        /// Реальный порт на котором работает сервис
+        /// </summary>
         [JsonIgnore]
         public int CommunicationPort { get; set; } = 0;
 

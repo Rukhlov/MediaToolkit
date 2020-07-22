@@ -152,11 +152,11 @@ namespace ScreenStreamer.Wpf.Models
 
             if (state == MediaStreamerState.Starting)
             {
-                PropertyNetwork.CommunicationPort = streamSession.CommunicationPort;
+                //PropertyNetwork.CommunicationPort = streamSession.CommunicationPort;
             }
             else if (state == MediaStreamerState.Streaming)
             {
-
+                PropertyNetwork.CommunicationPort = streamSession.CommunicationPort;
             }
             else if (state == MediaStreamerState.Stopping)
             {
@@ -215,20 +215,34 @@ namespace ScreenStreamer.Wpf.Models
             session.StreamName = Name;
             session.NetworkIpAddress = PropertyNetwork.Network ?? "0.0.0.0";
 
-            int communicationPort = PropertyNetwork.Port;
-            if (communicationPort <= 0)
-            {// если порт не задан - ищем свободный начиная с 808
-
-                var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
-                if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
-                {
-                    communicationPort = freeTcpPorts.FirstOrDefault();
-                }
+            if(PropertyNetwork.CommunicationPort <=0)
+            {
+                session.CommunicationPort = PropertyNetwork.Port;
             }
+            else
+            {
+                session.CommunicationPort = PropertyNetwork.CommunicationPort;
+            }
+        
 
-            //PropertyNetwork.CommunicationPort = communicationPort;
+            //int communicationPort = PropertyNetwork.Port;
+            //if (communicationPort <= 0)
+            //{// если порт не задан - ищем свободный начиная с 808
 
-            session.CommunicationPort = communicationPort;
+            //    //communicationPort = GetRandomTcpPort();
+
+            //    var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+            //    if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+            //    {
+            //        communicationPort = freeTcpPorts.FirstOrDefault();
+            //    }
+            //}
+
+            ////PropertyNetwork.CommunicationPort = communicationPort;
+
+            //session.CommunicationPort = communicationPort;
+
+
             session.TransportMode = transport;
             
             bool isMulticast = !PropertyNetwork.IsUnicast;
@@ -337,6 +351,22 @@ namespace ScreenStreamer.Wpf.Models
             session.VideoSettings.CaptureDevice = captureDevice;
 
             return session;
+        }
+
+        private static int GetRandomTcpPort()
+        {
+            var port = 0;
+            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1).ToList();
+            if (freeTcpPorts != null && freeTcpPorts.Count > 0)
+            {
+                Random rnd = new Random();
+                var index = rnd.Next(0, freeTcpPorts.Count);
+
+                port = freeTcpPorts[index]; //freeTcpPorts.FirstOrDefault();
+
+            }
+
+            return port;
         }
 
         public void Dispose()

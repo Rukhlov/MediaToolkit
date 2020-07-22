@@ -16,7 +16,7 @@ namespace ScreenStreamer.Wpf.Helpers
 
             foreach (var enc in encoders)
             {
-                if (enc.Activatable && enc.Format == VideoCodingFormat.H264)
+                if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
                 {
                     var item = new EncoderItem
                     {

@@ -1,5 +1,8 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:behaviors="clr-namespace:ScreenStreamer.Wpf.Behaviors"
+                    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
     <DataTemplate x:Key="audioSettingsTemplate">
         <DataTemplate.Resources>
             <ResourceDictionary>
@@ -19,7 +22,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="32"/>
-                <RowDefinition Height="32"/>
+             
             </Grid.RowDefinitions>
             <TextBlock Text="Enabled" Grid.Row="0" Grid.Column="0"/>
             <TextBlock Text="Audio Sources" Grid.Row="1" Grid.Column="0"/>
@@ -29,21 +32,39 @@
                           IsChecked="{Binding Property.IsAudioEnabled}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
-            
-            <ComboBox Grid.Row="1" Grid.Column="1" 
+
+            <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" >
+                <ComboBox Width="140"
                       ItemsSource="{Binding AudioSources}" 
                       DisplayMemberPath="DisplayName"
                       SelectedItem="{Binding Property.SelectedSource}"
                       Cursor="Hand"
                       IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>
 
-            <Button Grid.Row="2" Grid.Column="1"
+                <Border Margin="4,0,0,0" 
+                        Style="{StaticResource clickableBorder}"
+                        ToolTip="Refresh" 
+                        IsEnabled="{Binding Property.IsAudioEnabled}">
+                    <materialDesign:PackIcon Kind="Refresh" />
+                    <i:Interaction.Behaviors>
+                        <behaviors:HandleMouseDownBorderBehavior/>
+                    </i:Interaction.Behaviors>
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="PreviewMouseDown">
+                            <i:InvokeCommandAction Command="{Binding Path=UpdateAudioSourcesCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Border>
+            </StackPanel>
+            
+       
+            <!--<Button Grid.Row="2" Grid.Column="1"
                     Style="{StaticResource actionButtonStyle}"
                     Command="{Binding UpdateAudioSourcesCommand}"
                     Content="Update" Padding="10,0"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Right" 
-                    IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>
+                    IsEnabled="{Binding Property.IsAudioEnabled, Mode=OneWay}"/>-->
             
             <!--<ToggleButton Grid.Row="2" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"

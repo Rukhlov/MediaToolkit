@@ -260,11 +260,17 @@ namespace MediaToolkit.UI
                             Security = security,
                         };
 
-                        factory = new ChannelFactory<IScreenCastService>(binding, new EndpointAddress(uri));
+                        //var _uri = new Uri("net.tcp://" + ServerAddr + ":" + 0 + "/ScreenCaster");
+                        //factory = new ChannelFactory<IScreenCastService>(binding, new EndpointAddress(_uri));
+
+                        //var viaUri = new Uri("net.tcp://" + ServerAddr + ":" + ServerPort + "/ScreenCaster");
+                        //factory.Endpoint.EndpointBehaviors.Add(new System.ServiceModel.Description.ClientViaBehavior(viaUri));
+
+                        factory = new ChannelFactory<IScreenCastService>(binding, new EndpointAddress(uri));                     
                         factory.Closed += Factory_Closed;
 
                         var channel = factory.CreateChannel();
-
+                        
                         try
                         {
                             var channelInfos = channel.GetChannelInfos();
@@ -388,14 +394,20 @@ namespace MediaToolkit.UI
                             var statusStr = "Attempting to connect..."; // + tryCount; // + " of " + maxTryCount;
 
                             SetStatus(statusStr);
+
                         }
 
+                        Thread.Sleep(1000);
+                        continue;
                     }
                     else
                     {
                         errorCode = ErrorCode.Cancelled;
+                        break;
                     }
-                }
+
+
+                }//while end
 
                 cancelled = false;
 

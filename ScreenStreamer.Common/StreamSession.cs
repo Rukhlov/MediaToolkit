@@ -35,14 +35,16 @@ namespace ScreenStreamer.Common
 		{
 			get
 			{
-				var address = "net.tcp://" + NetworkIpAddress + "/ScreenCaster/";
-				if (CommunicationPort > 0)
-				{
-					address = "net.tcp://" + NetworkIpAddress + ":" + CommunicationPort + "/ScreenCaster";
-				}
+                //var address = "net.tcp://" + NetworkIpAddress + "/ScreenCaster/";
+                //if (CommunicationPort > 0)
+                //{
+                //    address = "net.tcp://" + NetworkIpAddress + ":" + CommunicationPort + "/ScreenCaster";
+                //}
 
-				return address;
-			}
+                //return address;
+
+                return "net.tcp://" + NetworkIpAddress + ":" + CommunicationPort + "/ScreenCaster";
+            }
 
 		}
 
@@ -93,7 +95,7 @@ namespace ScreenStreamer.Common
                
                 if (MutlicastPort1 <= 0 || MutlicastPort2<=0)
                 {
-                    // TODO: get available  ports... 
+                    // TODO: ...
                     if (MutlicastPort1 <= 0)
                     {
                         MutlicastPort1 = 1234;
@@ -197,20 +199,20 @@ namespace ScreenStreamer.Common
 
 		public static StreamSession Default()
 		{
-			int port = -1;
+			//int port = -1;
 
-			var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
-			if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
-			{
-				port = freeTcpPorts.FirstOrDefault();
-			}
+			//var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+			//if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+			//{
+			//	port = freeTcpPorts.FirstOrDefault();
+			//}
 
 			var session = new StreamSession
 			{
 				StreamName = Environment.MachineName,
 				NetworkIpAddress = "0.0.0.0",
 				MutlicastAddress = "239.0.0.1",
-				CommunicationPort = port,
+				CommunicationPort = 0,
 				IsMulticast = false,
 				TransportMode = TransportMode.Tcp,
 

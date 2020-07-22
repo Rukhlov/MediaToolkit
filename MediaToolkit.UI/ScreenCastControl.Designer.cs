@@ -147,6 +147,7 @@
             this.hostsComboBox.Name = "hostsComboBox";
             this.hostsComboBox.Size = new System.Drawing.Size(249, 24);
             this.hostsComboBox.TabIndex = 31;
+            this.hostsComboBox.SelectedIndexChanged += new System.EventHandler(this.hostsComboBox_SelectedIndexChanged);
             // 
             // connectButton
             // 

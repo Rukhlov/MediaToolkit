@@ -368,26 +368,28 @@ namespace ScreenStreamer.Common
                 }
             }
 
-            var communicationAddress = Session.CommunicationAddress;
-            var videoDeviceName = videoSettings.CaptureDevice?.Name ?? "";
-            var hostName = Session.StreamName;
-            if (!string.IsNullOrEmpty(videoDeviceName))
-            {
-                hostName += " (" + videoDeviceName + ")";
-            }
+            //var communicationAddress = Session.CommunicationAddress;
+            //var videoDeviceName = videoSettings.CaptureDevice?.Name ?? "";
+            //var hostName = Session.StreamName;
+            //if (!string.IsNullOrEmpty(videoDeviceName))
+            //{
+            //    hostName += " (" + videoDeviceName + ")";
+            //}
 
-            var audioDeviceName = audioSettings.CaptureDevice?.Name ?? "";
+            //var audioDeviceName = audioSettings.CaptureDevice?.Name ?? "";
 
-            Dictionary<string, string> extensions = new Dictionary<string, string>
-            {
-                { "StreamName",  Session.StreamName },
-                { "AudioInfo", audioDeviceName },
-                { "VideoInfo", videoDeviceName },
-            };
+            //Dictionary<string, string> extensions = new Dictionary<string, string>
+            //{
+            //    { "StreamName",  Session.StreamName },
+            //    { "AudioInfo", audioDeviceName },
+            //    { "VideoInfo", videoDeviceName },
+            //};
+            //communicationService = new CommunicationService(this);
+            //communicationService.Open(communicationAddress, hostName, extensions);
+
 
             communicationService = new CommunicationService(this);
-            communicationService.Open(communicationAddress, hostName, extensions);
-
+            communicationService.Open();
 
             if (videoSettings.Enabled)
             {
@@ -595,39 +597,13 @@ namespace ScreenStreamer.Common
         {
             private static Logger logger = LogManager.GetCurrentClassLogger();
 
-            private readonly MediaStreamer screenStreamer = null;
+            private readonly MediaStreamer mediaStreamer = null;
             public CommunicationService(MediaStreamer streamer)
             {
-                this.screenStreamer= streamer;
+                this.mediaStreamer= streamer;
             }
 
             private ServiceHost host = null;
-            //public int Port
-            //{
-            //    get
-            //    {
-            //        int port = -1;
-
-            //        try
-            //        {
-            //            if (host != null)
-            //            {
-            //                var channelDispatcher = host.ChannelDispatchers?.FirstOrDefault();
-            //                if (channelDispatcher != null)
-            //                {
-            //                    port = channelDispatcher.Listener.Uri.Port;
-            //                }
-            //            }
-
-            //        }
-            //        catch(Exception ex)
-            //        {
-            //            logger.Error(ex);
-            //        }
-
-            //        return port;
-            //    }
-            //}
 
             public bool IsOpened
             {
@@ -642,17 +618,71 @@ namespace ScreenStreamer.Common
 
             public Uri ListenUri { get; private set; }
 
-            public void Open(string address, string hostName, Dictionary<string,string> extensions = null)
+
+            public void Open()
             {
-                logger.Debug("ScreenCastService::Open(...) " + address);
+                logger.Debug("ScreenCastService::Open(...)");
 
                 try
                 {
+                    var session = mediaStreamer.Session;
+
+                    var videoSettings = session.VideoSettings;
+                    var videoDeviceName = videoSettings.CaptureDevice?.Name ?? "";
+                    var hostName = session.StreamName;
+                    if (!string.IsNullOrEmpty(videoDeviceName))
+                    {
+                        hostName += " (" + videoDeviceName + ")";
+                    }
+
+                    var audioSettings = session.AudioSettings;
+                    var audioDeviceName = audioSettings.CaptureDevice?.Name ?? "";
+
+
+                    var communicationPort = session.CommunicationPort;
+                    if(communicationPort < 0)
+                    {
+                        communicationPort = 0;
+                    }
+
+                    if (communicationPort == 0)
+                    {// FIXME: переделать 
+                     // если порт не задан - ищем свободный начиная с 808
+
+                        //communicationPort = GetRandomTcpPort();
+
+                        var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808);
+                        if (freeTcpPorts != null && freeTcpPorts.Count() > 0)
+                        {
+                            communicationPort = freeTcpPorts.FirstOrDefault();
+                        }
+                    }
+
+                    session.CommunicationPort = communicationPort;
+                    var communicationIp = session.NetworkIpAddress;
+
+                    var address = session.CommunicationAddress;
 
                     this.ListenUri = new Uri(address);
 
                     this.HostName = hostName;
                     this.ServerId = MediaToolkit.Utils.RngProvider.GetRandomNumber().ToString();
+
+                    Dictionary<string, string> endpointExtensions = new Dictionary<string, string>
+                    {// инфа которая будет доступна как расширение в WSDiscovery
+                        { "HostName",  HostName },
+                        { "StreamId",  ServerId },
+                        { "StreamName",  session.StreamName },
+                        { "AudioInfo", audioDeviceName },
+                        { "VideoInfo", videoDeviceName },
+                    };
+
+
+                    //NetHttpBinding binding = new NetHttpBinding
+                    //{
+                    //    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
+                    //    SendTimeout = TimeSpan.FromSeconds(10),
+                    //};
 
                     //NetTcpSecurity security = new NetTcpSecurity
                     //{
@@ -664,11 +694,6 @@ namespace ScreenStreamer.Common
                     //    },
                     //};
 
-                    //NetHttpBinding binding = new NetHttpBinding
-                    //{
-                    //    ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
-                    //    SendTimeout = TimeSpan.FromSeconds(10),
-                    //};
 
                     NetTcpSecurity security = new NetTcpSecurity
                     {
@@ -680,29 +705,29 @@ namespace ScreenStreamer.Common
                         ReceiveTimeout = TimeSpan.MaxValue,//TimeSpan.FromSeconds(10),
                         SendTimeout = TimeSpan.FromSeconds(10),
                         Security = security,
+                        
                         // PortSharingEnabled = true,
                     };
 
                     host = new ServiceHost(this, ListenUri);
+                    //host = new ServiceHost(this);
+                    //var endpoint = host.AddServiceEndpoint(typeof(IScreenCastService), binding, "");
 
                     var endpoint = host.AddServiceEndpoint(typeof(IScreenCastService), binding, ListenUri);
-
-                    //endpoint.ListenUriMode = System.ServiceModel.Description.ListenUriMode.Unique;
+                    
+                    if (communicationPort == 0)
+                    {// сейчас не работает на клиенте !!
+                        // нужно доделать клиент
+                        endpoint.ListenUriMode = System.ServiceModel.Description.ListenUriMode.Unique;
+                    }
 
                     var endpointDiscoveryBehavior = new EndpointDiscoveryBehavior();
-                    // endpointDiscoveryBehavior.Scopes.Add(new Uri(uri, @"HostName/" + HostName));
-                    endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("HostName", HostName));
 
-                    endpointDiscoveryBehavior.Extensions.Add(new System.Xml.Linq.XElement("StreamId", ServerId));
-
-                    if (extensions != null)
+                    foreach(var key in endpointExtensions.Keys)
                     {
-                        foreach(var key in extensions.Keys)
-                        {
-                            var element = new System.Xml.Linq.XElement(key, extensions[key]);
+                        var element = new System.Xml.Linq.XElement(key, endpointExtensions[key]);
 
-                            endpointDiscoveryBehavior.Extensions.Add(element);
-                        }
+                        endpointDiscoveryBehavior.Extensions.Add(element);
                     }
 
                     //var addrInfos = MediaToolkit.Utils.NetworkHelper.GetActiveUnicastIpAddressInfos();
@@ -717,19 +742,34 @@ namespace ScreenStreamer.Common
                     ServiceDiscoveryBehavior serviceDiscoveryBehavior = new ServiceDiscoveryBehavior();
                     serviceDiscoveryBehavior.AnnouncementEndpoints.Add(new UdpAnnouncementEndpoint());
                     host.Description.Behaviors.Add(serviceDiscoveryBehavior);
+                    //host.AddServiceEndpoint(new UdpDiscoveryEndpoint());
                     host.Description.Endpoints.Add(new UdpDiscoveryEndpoint());
 
 
                     host.Opened += Host_Opened;
                     host.Faulted += Host_Faulted;
                     host.Closed += Host_Closed;
-
                     host.Open();
 
-                    //foreach (var _channel in host.ChannelDispatchers)
-                    //{
-                    //    logger.Debug(_channel.Listener.Uri);
-                    //}
+                    foreach (var dispatcher in host.ChannelDispatchers)
+                    {
+                        var listener = dispatcher.Listener;
+                        if (listener != null)
+                        {
+                            var uri = listener.Uri;
+                            if (uri != null)
+                            {
+                                var _host = uri.Host;
+                                if(_host == session.NetworkIpAddress)
+                                { //получаем порт на котором работает служба
+                                    // если порт задан динамически
+                                    session.CommunicationPort = uri.Port;
+                                }
+
+                                logger.Info(uri);
+                            }
+                        }
+                    }
 
                     logger.Debug("Service opened: " + ListenUri.ToString());
 
@@ -743,6 +783,7 @@ namespace ScreenStreamer.Common
                 }
 
             }
+
 
             private void Host_Opened(object sender, EventArgs e)
             {
@@ -783,7 +824,7 @@ namespace ScreenStreamer.Common
             {
                 logger.Debug("ScreenCastService::GetChannels()");
 
-                var infos = screenStreamer?.GetScreencastInfo();
+                var infos = mediaStreamer?.GetScreencastInfo();
 
                 return infos;
 
