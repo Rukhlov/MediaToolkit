@@ -108,6 +108,8 @@
                                                  HorizontalAlignment="Center"/>
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDown">
+                                <!--<i:InvokeCommandAction Command="{Binding Path=HideMainWindowCommand}"/>-->
+
                                 <i:InvokeCommandAction Command="{Binding Path=CloseCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"/>
                             </i:EventTrigger>
                         </i:Interaction.Triggers>

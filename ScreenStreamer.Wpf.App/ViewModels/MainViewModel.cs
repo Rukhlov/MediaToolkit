@@ -190,12 +190,29 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         private void OnShowMainWindow()
         {
             IsVisible = true;
+
+            var dialogService = ServiceLocator.GetInstance<IDialogService>();
+            foreach(var s in StreamList)
+            {
+                if (!s.IsStarted)
+                {
+                    dialogService.Handle(s.IsBorderVisible, s.DesignBorderViewModel);
+                }
+                         
+            }
+
             this.RaisePropertyChanged(nameof(ActiveIcon));
         }
 
         private void OnHideMainWindow()
         {
             IsVisible = false;
+
+            var dialogService = ServiceLocator.GetInstance<IDialogService>();
+            foreach (var s in StreamList)
+            {
+                dialogService.Handle(false, s.DesignBorderViewModel);
+            }
 
             this.RaisePropertyChanged(nameof(ActiveIcon));
         }
@@ -275,8 +292,18 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             IsEdit = true;
         }
 
+        private bool exitSequenceInitiated = false;
+
+        public bool HandleClose()
+        {
+            HideMainWindowCommand.Execute(null);
+
+            return !exitSequenceInitiated;
+        }
+
         private void OnExit()
         {
+            exitSequenceInitiated = true;
             ServiceLocator.GetInstance<IDialogService>().CloseAll();
         }
 

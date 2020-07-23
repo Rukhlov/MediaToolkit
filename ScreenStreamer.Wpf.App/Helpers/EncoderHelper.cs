@@ -32,7 +32,7 @@ namespace ScreenStreamer.Wpf.Helpers
             VideoEncoderDescription libx264Description = new VideoEncoderDescription
             {
                 Id = "libx264",
-                Name = "libx264",
+                Name = "libx264 (CPU)",
                 Format = VideoCodingFormat.H264,
                 IsHardware = false,
                 Activatable = true,

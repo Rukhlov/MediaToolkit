@@ -337,7 +337,7 @@ Name: "{group}\uninstall.exe"; Filename: "{uninstallexe}"
 
 ;Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
 Name: "{commondesktop}\Polywall Streamer"; Filename: "{app}\Wpf\ScreenStreamer.Wpf.App.exe"; Tasks: desktopicon
-Name: "{commondesktop}\Test.PolywallClient.exe"; Filename: "{app}\Test.PolywallClient.exe"; Tasks: desktopicon
+;Name: "{commondesktop}\Test.PolywallClient.exe"; Filename: "{app}\Test.PolywallClient.exe"; Tasks: desktopicon
 
 ;Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
 ;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: quicklaunchicon
@@ -503,8 +503,8 @@ begin
   begin
 
    // удаляем предыдущюу программу
-  //  if UpdateMode And UpdateButton.Checked then 
-  //     UnInstallOldVersion(UninstallExecFile);
+    if UpdateMode And UpdateButton.Checked then 
+       UnInstallOldVersion(UninstallExecFile);
     
   end
   else if (CurPageID = wpReady) then

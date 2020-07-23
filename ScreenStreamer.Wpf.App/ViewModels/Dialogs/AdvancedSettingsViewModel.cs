@@ -93,7 +93,18 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             get => _model.Fps;
             set
             {
-                SetProperty(_model,() => _model.Fps, value);
+                var fps = value;
+
+                if(fps > 60)
+                {
+                    fps = 60;
+                }
+                if (fps < 1)
+                {
+                    fps = 1;
+                }
+
+                SetProperty(_model,() => _model.Fps, fps);
             }
         }
 

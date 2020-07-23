@@ -118,7 +118,7 @@ namespace ScreenStreamer.Wpf
 
 				var dialogService = new Services.DialogService();
 
-				ViewModels.Dialogs.MessageBoxViewModel vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
+				var vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
 				var result = dialogService.ShowDialog(vm);
 
 			}

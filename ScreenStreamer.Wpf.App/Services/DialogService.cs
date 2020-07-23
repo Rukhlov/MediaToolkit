@@ -183,24 +183,49 @@ namespace ScreenStreamer.Wpf.Services
             return result;
         }
 
+
         public void CloseAll()
         {
             logger.Debug("CloseAll()");
 
             //0. Close dialog windows
-            foreach (var w in _dialogs) w.Value.Close();
+            foreach (var w in _dialogs)
+            {
+                w.Value.Close();
+            }
+              
 
             //1.Close design borders
-            foreach (var b in _designBorders) b.Value.Close();
+            foreach (var b in _designBorders)
+            {
+                b.Value.Close();
+            }
+               
 
             //2.Close stream borders
-            foreach (var b in _streamBorders) b.Value.Close();
+            foreach (var b in _streamBorders)
+            {
+                b.Value.Close();
+            }    
+            
 
             //3. Close windows except main
-            foreach (var w in _windows) if (!(w.Key is MainViewModel)) w.Value.Close();
+            foreach (var w in _windows)
+            {
+                if (!(w.Key is MainViewModel))
+                {
+                    w.Value.Close();
+                }
+            }
 
             //4. Close main window
-            foreach (var w in _windows) if (w.Key is MainViewModel) w.Value.Close();
+            foreach (var w in _windows) 
+            {
+                if (w.Key is MainViewModel)
+                {
+                    w.Value.Close();
+                }
+            }
         }
 
         public void Close(IDialogViewModel viewModel)

@@ -299,10 +299,14 @@ namespace ScreenStreamer.Wpf.ViewModels
             }
             else
             {
-                if (IsBorderVisible)
+                if (MainViewModel.IsVisible)
                 {
-                    dialogService.Show(DesignBorderViewModel);
+                    if (IsBorderVisible)
+                    {
+                        dialogService.Show(DesignBorderViewModel);
+                    }
                 }
+
             }
 
             //if (isStarted)

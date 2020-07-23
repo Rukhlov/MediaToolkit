@@ -15,18 +15,24 @@ namespace ScreenStreamer.Wpf.Models
 {
     public class AppModel
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public readonly static string AppVersion = AppConsts.AssemblyVersion;//AppConsts.AppVersion;
         public string ConfigVersion { get; set; } = "1.0.0.0";
 
+        public string Culture { get; set; } = "en";
+
         [JsonProperty]
         public readonly static string MinOSVersion = "6.2";
 
-		//[JsonProperty]
-		public readonly static bool AllowMutipleInstance = false;
+        //[JsonProperty]
+        public readonly static bool AllowMutipleInstance = false;
 
-		public int MaxStreamCount { get; set; } = 3;
+       // [JsonProperty]
+       // public readonly static GlobalVideoConfig VideoConfig = new GlobalVideoConfig();
+
+
+        public int MaxStreamCount { get; set; } = 3;
 
         public static AppModel Default => CreateDefault();
 
@@ -127,6 +133,17 @@ namespace ScreenStreamer.Wpf.Models
         }
     }
 
+    public class GlobalVideoConfig
+    {
+        public int MaxEncoderWidth = 4096;
+        public int MaxEncoderHeight = 4096;
+
+        public int MinEncoderWidth = 64;
+        public int MinEncoderHeight = 64;
+
+        public int MaxFps  = 60;
+        public int MinFps  = 1;
+    }
 
 
 }

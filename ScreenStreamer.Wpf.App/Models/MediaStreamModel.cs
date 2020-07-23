@@ -182,6 +182,16 @@ namespace ScreenStreamer.Wpf.Models
                     this.ErrorCode = internalCode;
                     this.ErrorObj = internalError;
 
+					if(ErrorObj == null)
+					{
+						ErrorObj = errorObj;
+					}
+
+					if (ErrorCode != 0)
+					{
+						ErrorCode = errorCode;
+					}
+
                     ErrorOccurred?.Invoke(ErrorObj);
 
                 }
@@ -287,7 +297,8 @@ namespace ScreenStreamer.Wpf.Models
 
             var captureRegion = PropertyVideo.VideoRect;
             var captureType = PropertyVideo.CaptType;
-            var captureFps = PropertyVideo.CaptFps;
+            //var captureFps = PropertyVideo.CaptFps;
+            var captureFps = AdvancedSettings.Fps;
             var useHardware = PropertyVideo.CaptUseHardware;
 
             var screenCaptureProperties = new ScreenCaptureProperties

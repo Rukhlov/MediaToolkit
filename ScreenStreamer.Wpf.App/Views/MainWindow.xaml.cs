@@ -62,19 +62,25 @@ namespace ScreenStreamer.Wpf.Views
         {
             logger.Debug("HandleClose()");
 
-            var dialogService = ServiceLocator.GetInstance<IDialogService>();
-            if (dialogService != null)
+            var mainViewModel = DataContext as MainViewModel;
+            if (mainViewModel != null)
             {
-                if (DataContext != null)
+                mainViewModel.HandleClose();
+            }
+            else
+            {
+                var viewModel = DataContext as IDialogViewModel;
+                if (viewModel != null)
                 {
-                    var viewModel = DataContext as IDialogViewModel;
-                    if (viewModel != null)
+                    var dialogService = ServiceLocator.GetInstance<IDialogService>();
+                    if (dialogService != null)
                     {
                         dialogService.Hide(viewModel);
                     }
-                }
-
+                }             
             }
+
+
 
             //if (this.DataContext is IDialogViewModel dialogViewModel)
             //{
@@ -134,6 +140,13 @@ namespace ScreenStreamer.Wpf.Views
         protected override void OnClosing(CancelEventArgs e)
         {
             logger.Debug("OnClosing(...)");
+            
+            var mainViewModel = DataContext as MainViewModel;
+            if (mainViewModel != null)
+            {
+                e.Cancel = mainViewModel.HandleClose();
+
+            }
 
             base.OnClosing(e);
         }
