@@ -83,6 +83,11 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 
 
 [Files]
+// Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127
+// https://support.microsoft.com/ru-ru/help/2977003/the-latest-supported-visual-c-downloads
+Source: "{#CurrentSourcePath}\vs_redist\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
+
+
 Source: "{#CurrentSourcePath}\avcodec-58.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\avdevice-58.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\avfilter-7.dll"; DestDir: "{app}"; Flags: replacesameversion
@@ -343,6 +348,7 @@ Name: "{commondesktop}\Polywall Streamer"; Filename: "{app}\Wpf\ScreenStreamer.W
 ;Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: quicklaunchicon
 
 [Run]
+ Filename: "{tmp}\vc_redist.x86.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing MSVC Redistributable 32 bit...";
 
 [Code]
 

@@ -3,10 +3,10 @@
 public static partial class AppConsts
 {
 	public const string AppVersion = "1.0";
-	public const string AssemblyVersion = "1.0.0.204";
-	public const string GitVersion = "1.0.0-master+3d75f90";
+	public const string AssemblyVersion = "1.0.0.205";
+	public const string GitVersion = "1.0.0-master+19c78d4";
 
-	public const int Day = 23;  
+	public const int Day = 24;  
 	public const int Month = 7; 
 	public const int Year = 2020;
 

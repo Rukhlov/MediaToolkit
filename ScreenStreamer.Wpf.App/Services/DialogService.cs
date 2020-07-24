@@ -18,8 +18,8 @@ namespace ScreenStreamer.Wpf.Services
         private IDictionary<BorderViewModel, StreamBorderWindow> _streamBorders = new Dictionary<BorderViewModel, StreamBorderWindow>();
         private IDictionary<DesignBorderViewModel, DesignBorderWindow> _designBorders = new Dictionary<DesignBorderViewModel, DesignBorderWindow>();
 
-        private IDictionary<IDialogViewModel, MainWindow> _windows = new Dictionary<IDialogViewModel, MainWindow>();
-        private IDictionary<IDialogViewModel, MainWindow> _dialogs = new Dictionary<IDialogViewModel, MainWindow>();
+        private IDictionary<IDialogViewModel, AppWindow> _windows = new Dictionary<IDialogViewModel, AppWindow>();
+        private IDictionary<IDialogViewModel, AppWindow> _dialogs = new Dictionary<IDialogViewModel, AppWindow>();
 
         public void Handle(bool isVisible, IDialogViewModel viewModel)
         {
@@ -64,7 +64,7 @@ namespace ScreenStreamer.Wpf.Services
             }
         }
 
-        public void Register(IDialogViewModel viewModel, MainWindow mainWindow)
+        public void Register(IDialogViewModel viewModel, AppWindow window)
         {
             logger.Debug("Register(...)");
             if (_windows.ContainsKey(viewModel))
@@ -72,7 +72,7 @@ namespace ScreenStreamer.Wpf.Services
                 //...
             }
 
-            _windows[viewModel] = mainWindow;
+            _windows[viewModel] = window;
         }
 
         public void Show(IDialogViewModel viewModel)
@@ -115,7 +115,12 @@ namespace ScreenStreamer.Wpf.Services
 
                 if (!_windows.ContainsKey(viewModel))
                 {
-                    _windows[viewModel] = new MainWindow(viewModel);
+                    _windows[viewModel] = new AppWindow(viewModel)
+                    {
+                        ShowInTaskbar = false,
+                        
+                    };
+
                     setInitialPosition = true;
                 }
                 if (viewModel is PropertyWindowViewModel propertyWindowViewModel &&
@@ -163,13 +168,18 @@ namespace ScreenStreamer.Wpf.Services
                 }
 
             }
-            var dialogWindow = new MainWindow(model);
+            var dialogWindow = new AppWindow(model)
+            {
+                ShowInTaskbar = false,
+            };
+
             // _dialogs[model] = new MainWindow(model);
 
             if (parentWindow != null)
             {
                 dialogWindow.Owner = parentWindow;
                 dialogWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+
             }
             _dialogs[model] = dialogWindow;
 

@@ -283,7 +283,9 @@
     <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\ReadMe.txt" />
     <Content Include="vs_redist\ReadMe.txt" />
-    <Content Include="vs_redist\VC_redist.x86.exe" />
+    <Content Include="vs_redist\VC_redist.x86.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />

@@ -1,7 +1,6 @@
 ﻿<Application x:Class="ScreenStreamer.Wpf.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:ScreenStreamer.Wpf"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     <!--StartupUri="pack://application:,,,/ScreenStreamer.Wpf.App;component/Views/MainWindow.xaml">-->
     <Application.Resources>

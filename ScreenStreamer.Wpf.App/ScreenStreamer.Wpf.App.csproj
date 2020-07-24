@@ -196,8 +196,8 @@
     <Compile Include="Views\DesignBorderWindow.xaml.cs">
       <DependentUpon>DesignBorderWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Views\AppWindow.xaml.cs">
+      <DependentUpon>AppWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\StreamBorderWindow.xaml.cs">
       <DependentUpon>StreamBorderWindow.xaml</DependentUpon>
@@ -350,7 +350,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MainWindow.xaml">
+    <Page Include="Views\AppWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

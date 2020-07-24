@@ -19,11 +19,11 @@ namespace ScreenStreamer.Wpf.Views
     /// <summary>
     /// Interaction logic for FormBaseView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class AppWindow : Window
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public MainWindow(IDialogViewModel viewModel)
+        public AppWindow(IDialogViewModel viewModel)
         {
             InitializeComponent();
 
@@ -33,7 +33,7 @@ namespace ScreenStreamer.Wpf.Views
 
 
         //For debug\
-        public MainWindow()
+        public AppWindow()
         {
             var model = ServiceLocator.GetInstance<Wpf.Models.AppModel>();
             var vm = new MainViewModel(model);

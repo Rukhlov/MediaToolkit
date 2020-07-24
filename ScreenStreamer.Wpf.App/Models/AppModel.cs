@@ -28,8 +28,8 @@ namespace ScreenStreamer.Wpf.Models
         //[JsonProperty]
         public readonly static bool AllowMutipleInstance = false;
 
-       // [JsonProperty]
-       // public readonly static GlobalVideoConfig VideoConfig = new GlobalVideoConfig();
+        // [JsonProperty]
+        // public readonly static GlobalVideoConfig VideoConfig = new GlobalVideoConfig();
 
 
         public int MaxStreamCount { get; set; } = 3;

@@ -46,7 +46,10 @@ namespace ScreenStreamer.Wpf
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
 
-            Views.MainWindow mainWindow = new Views.MainWindow(mainViewModel);
+            Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
+            {
+                Title = "Polywall Streamer",
+            };
 
             dialogService.Register(mainViewModel, mainWindow);
 
