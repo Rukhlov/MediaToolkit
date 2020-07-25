@@ -141,7 +141,6 @@
     <Compile Include="Services\ServiceLocator.cs" />
     <Compile Include="Helpers\NetworkHelper.cs" />
     <Compile Include="Helpers\PropertySupport.cs" />
-    <Compile Include="Helpers\QualityPresetsHelper.cs" />
     <Compile Include="Helpers\ScreenHelper.cs" />
     <Compile Include="Interfaces\IBorderViewModel.cs" />
     <Compile Include="Interfaces\IDialogService.cs" />

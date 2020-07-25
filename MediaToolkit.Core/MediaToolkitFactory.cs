@@ -63,6 +63,15 @@ namespace MediaToolkit.SharedTypes
             return IsStarted;
         }
 
+        public static void Shutdown()
+        {
+            if (mediaToolkit != null)
+            {
+                mediaToolkit.Shutdown();
+            }
+        }
+
+
         public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
         {
             if (!IsStarted)
@@ -78,13 +87,6 @@ namespace MediaToolkit.SharedTypes
             return InstanceFactory.CreateInstance<T>(args, throwExceptions);
         }
 
-        public static void Shutdown()
-        {
-            if (mediaToolkit != null)
-            {
-                mediaToolkit.Shutdown();
-            }
-        }
 
 
         public const string MediaToolkitPathKey = "MediaToolkitPath";
