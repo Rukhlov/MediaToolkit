@@ -35,16 +35,18 @@ namespace ScreenStreamer.Wpf.Models
 		//public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
 
 
-		public bool Validate(IEnumerable<EncoderItem> videoEncoders = null, 
+		public bool Init(IEnumerable<EncoderItem> videoEncoders = null, 
             IEnumerable<VideoSourceItem> videoSources = null, 
-            IEnumerable<AudioSourceItem> audioSources = null)
+            IEnumerable<AudioSourceItem> audioSources = null,
+            IEnumerable<int> appPorts = null)
         {
-            AdvancedSettings.Validate(videoEncoders);
+            AdvancedSettings.Init(videoEncoders);
             
-            PropertyVideo.Validate(videoSources);
+            PropertyVideo.Init(videoSources);
 
-            PropertyAudio.Validate(audioSources);
-            PropertyNetwork.Validate();
+
+            PropertyAudio.Init(audioSources);
+            PropertyNetwork.Init(appPorts);
 
             return true;
         }
@@ -364,21 +366,7 @@ namespace ScreenStreamer.Wpf.Models
             return session;
         }
 
-        private static int GetRandomTcpPort()
-        {
-            var port = 0;
-            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1).ToList();
-            if (freeTcpPorts != null && freeTcpPorts.Count > 0)
-            {
-                Random rnd = new Random();
-                var index = rnd.Next(0, freeTcpPorts.Count);
 
-                port = freeTcpPorts[index]; //freeTcpPorts.FirstOrDefault();
-
-            }
-
-            return port;
-        }
 
         public void Dispose()
         {

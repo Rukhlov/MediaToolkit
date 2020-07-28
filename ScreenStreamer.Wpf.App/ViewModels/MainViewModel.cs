@@ -128,10 +128,13 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private void OnAddStream()
         {
+
             var model = new MediaStreamModel
             {
-                Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})"
+                Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})",
             };
+
+            model.PropertyNetwork.Port = NetworkHelper.FindAvailableTcpPort(); 
 
             var streamViewModel = new StreamViewModel(this, true, model);
 

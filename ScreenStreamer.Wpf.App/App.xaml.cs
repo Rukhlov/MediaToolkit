@@ -28,7 +28,8 @@ namespace ScreenStreamer.Wpf
             var appModel = ConfigManager.LoadConfigurations();
             //TODO: validate...
 
-            if (!appModel.Validate())
+
+            if (!appModel.Init())
             {
                 //...
                 // Reset config...

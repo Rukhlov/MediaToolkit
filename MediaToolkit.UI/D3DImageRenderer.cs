@@ -45,7 +45,7 @@ namespace MediaToolkit.UI
             get { return videoSource; }
             private set
             {
-                
+
                 if (videoSource != value)
                 {
                     videoSource = value;
@@ -133,7 +133,7 @@ namespace MediaToolkit.UI
                 logger.Error(ex);
                 Shutdown();
 
-               // throw;
+                // throw;
             }
 
         }
@@ -149,6 +149,7 @@ namespace MediaToolkit.UI
         {
             if (!initialized)
             {
+                logger.Warn("CompositionTarget_Rendering(...) " + initialized);
                 return;
             }
 
@@ -178,9 +179,17 @@ namespace MediaToolkit.UI
                         needRedraw = false;
 
                     }
+                    else
+                    {
+                       // logger.Debug("needRedraw == false");
+                    }
 
                     lastRender = args.RenderingTime;
 
+                }
+                else
+                {
+                    logger.Debug("VideoSource.IsFrontBufferAvailable && lastRender != args.RenderingTime");
                 }
             }
             catch (Exception ex)
@@ -213,7 +222,7 @@ namespace MediaToolkit.UI
             System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
             VideoSource = null;
-;
+            ;
         }
 
 

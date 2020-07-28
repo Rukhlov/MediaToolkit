@@ -38,21 +38,23 @@ namespace ScreenStreamer.Wpf.Models
 
         private static AppModel CreateDefault()
         {
+            var @default = new AppModel();
+
             var defaultStream = new MediaStreamModel()
             {
                 Name = $"{Environment.MachineName} (Stream 1)"
             };
 
-            var @default = new AppModel();
+
             @default.StreamList.Add(defaultStream);
             return @default;
         }
 
         public List<MediaStreamModel> StreamList { get; set; } = new List<MediaStreamModel>();
 
-        public bool Validate()
+        public bool Init()
         {
-            logger.Debug("Validate()");
+            logger.Debug("Init()");
 
 			var winVersion = Environment.OSVersion.Version;
 			Version minOsVersion = new Version(MinOSVersion);
@@ -62,7 +64,7 @@ namespace ScreenStreamer.Wpf.Models
 				//...
 
 				logger.Warn($"OS version {winVersion} currently not supported!");
-				//throw new NotSupportedException($"This version of the operating system currently is not supported.");
+				throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}
 
 			var appVersion = new Version(AppVersion);
@@ -124,9 +126,10 @@ namespace ScreenStreamer.Wpf.Models
                 //...
             }
 
+
             foreach (var stream in StreamList)
             {
-                stream.Validate(videoEncoders, videoSources, audioSources);
+                stream.Init(videoEncoders, videoSources, audioSources);
             }
 
             return true;

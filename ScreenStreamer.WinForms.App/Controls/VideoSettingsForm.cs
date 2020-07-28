@@ -474,7 +474,7 @@ namespace ScreenStreamer.WinForms.App
 
         }
 
-        private PreviewForm previewForm = null;
+        private VideoPreviewForm previewForm = null;
         private IVideoSource videoSource = null;
 
         private SynchronizationContext syncContext = null;
@@ -625,7 +625,7 @@ namespace ScreenStreamer.WinForms.App
             if (previewForm == null || previewForm.IsDisposed)
             {
 
-                previewForm = new PreviewForm
+                previewForm = new VideoPreviewForm
                 {
                     //ClientSize = VideoSettings.CaptureDevice.Resolution,
                     Size = new Size(640, 480),//previewSettings.PreviewSize,

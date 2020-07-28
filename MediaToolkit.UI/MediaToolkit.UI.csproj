@@ -85,22 +85,10 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AudioPreviewForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AudioPreviewForm.Designer.cs">
-      <DependentUpon>AudioPreviewForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="D3DImageControl.xaml.cs">
       <DependentUpon>D3DImageControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="D3DImageRenderer.cs" />
-    <Compile Include="PreviewForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PreviewForm.Designer.cs">
-      <DependentUpon>PreviewForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -145,12 +133,6 @@
       <DependentUpon>StatisticForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils.cs" />
-    <EmbeddedResource Include="AudioPreviewForm.resx">
-      <DependentUpon>AudioPreviewForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PreviewForm.resx">
-      <DependentUpon>PreviewForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

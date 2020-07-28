@@ -12,8 +12,17 @@ namespace ScreenStreamer.Wpf.Helpers
             GalaSoft.MvvmLight.Ioc.SimpleIoc.Default.Register<T>(() => t);
         }
 
-        public static T GetInstance<T>()
+        public static T GetInstance<T>(bool containsCreated = false) where T : class
         {
+
+            if (containsCreated)
+            {
+                if (!GalaSoft.MvvmLight.Ioc.SimpleIoc.Default.ContainsCreated<T>())
+                {
+                    return null;
+                }
+            }
+
             return GalaSoft.MvvmLight.Ioc.SimpleIoc.Default.GetInstance<T>();
         }
     }

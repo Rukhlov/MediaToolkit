@@ -743,6 +743,7 @@ namespace MediaToolkit.ScreenCaptures
                     SharpDX.DXGI.Resource desktopResource = null;
                     try
                     {
+
                         var acquireResult = deskDupl.TryAcquireNextFrame(timeout, out OutputDuplicateFrameInformation frameInfo, out desktopResource);
 
                         if (acquireResult.Failure)
@@ -758,51 +759,57 @@ namespace MediaToolkit.ScreenCaptures
                             }
                         }
 
-                        if (duplTexture != null)
+                        //if (duplTexture != null)
+                        //{
+                        //    duplTexture.Dispose();
+                        //    duplTexture = null;
+                        //}
+
+                        //duplTexture = desktopResource.QueryInterface<Texture2D>();
+
+
+                        using (var duplTexture = desktopResource.QueryInterface<Texture2D>())
                         {
-                            duplTexture.Dispose();
-                            duplTexture = null;
+                            #region Update regions info
+
+                            //var frameParams = GetFrameParams(frameInfo);
+                            /*
+                                var moveRects = frameParams.MoveRects;
+                                foreach (OutputDuplicateMoveRectangle moveRect in moveRects)
+                                {
+                                    //...
+                                    var srcPoint = moveRect.SourcePoint;
+                                    GDI.Point point = new GDI.Point(srcPoint.X, srcPoint.Y);
+
+                                    var destRect = moveRect.DestinationRect;
+                                    int x = destRect.Left;
+                                    int y = destRect.Top;
+                                    int width = destRect.Right - destRect.Left;
+                                    int height = destRect.Bottom - destRect.Top;
+                                    GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
+
+                                    logger.Debug("srcPoint " + point.ToString() + " destRect " + rect.ToString());
+                                }
+                                var dirtyRects = frameParams.DirtyRects;
+                                foreach (RawRectangle dirtyRect in dirtyRects)
+                                {
+                                    int x = dirtyRect.Left;
+                                    int y = dirtyRect.Top;
+                                    int width = dirtyRect.Right - dirtyRect.Left;
+                                    int height = dirtyRect.Bottom - dirtyRect.Top;
+                                    GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
+                                }
+                            */
+
+                            #endregion
+
+                            UpdateMouseInfo(frameInfo);
+
+                            device.ImmediateContext.CopyResource(duplTexture, screenTexture);
+                            device.ImmediateContext.Flush();
                         }
 
-                        duplTexture = desktopResource.QueryInterface<Texture2D>();
-
-                        #region Update regions info
-
-                        //var frameParams = GetFrameParams(frameInfo);
-                        /*
-                            var moveRects = frameParams.MoveRects;
-                            foreach (OutputDuplicateMoveRectangle moveRect in moveRects)
-                            {
-                                //...
-                                var srcPoint = moveRect.SourcePoint;
-                                GDI.Point point = new GDI.Point(srcPoint.X, srcPoint.Y);
-
-                                var destRect = moveRect.DestinationRect;
-                                int x = destRect.Left;
-                                int y = destRect.Top;
-                                int width = destRect.Right - destRect.Left;
-                                int height = destRect.Bottom - destRect.Top;
-                                GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-
-                                logger.Debug("srcPoint " + point.ToString() + " destRect " + rect.ToString());
-                            }
-                            var dirtyRects = frameParams.DirtyRects;
-                            foreach (RawRectangle dirtyRect in dirtyRects)
-                            {
-                                int x = dirtyRect.Left;
-                                int y = dirtyRect.Top;
-                                int width = dirtyRect.Right - dirtyRect.Left;
-                                int height = dirtyRect.Bottom - dirtyRect.Top;
-                                GDI.Rectangle rect = new GDI.Rectangle(x, y, width, height);
-                            }
-                        */
-
-                        #endregion
-
-                        UpdateMouseInfo(frameInfo);
-
-                        device.ImmediateContext.CopyResource(duplTexture, screenTexture);
-                        device.ImmediateContext.Flush();
+  
 
                         if (cursorInfo != null && cursorInfo.Visible && CaptureMouse)
                         {
@@ -841,8 +848,6 @@ namespace MediaToolkit.ScreenCaptures
                     {
                         if (ex.ResultCode == SharpDX.DXGI.ResultCode.AccessLost ||
                             ex.ResultCode == SharpDX.DXGI.ResultCode.AccessDenied ||
-                            ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceReset ||
-                            ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceRemoved ||
                             ex.HResult == (int)NativeAPIs.HResult.E_ACCESSDENIED)
                         {
 
@@ -850,18 +855,23 @@ namespace MediaToolkit.ScreenCaptures
 
                             Result = ErrorCode.AccessDenied;
 
-
                         }
+                        else if (ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceReset ||
+                            ex.ResultCode == SharpDX.DXGI.ResultCode.DeviceRemoved )
+                        {
+                             logger.Warn(ex.Descriptor.ToString());
+                             Result = ErrorCode.NotInitialized;
+                        }
+                   
                         else
                         {
                             logger.Error(ex);
                             Result = ErrorCode.Unexpected;
                         }
 
-
-
-                        
                     }
+
+                    var hResult = device.DeviceRemovedReason;
 
                 }
 

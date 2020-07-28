@@ -27,6 +27,7 @@ namespace MediaToolkit.MediaFoundation
         private volatile RendererState state = RendererState.Closed;
         public RendererState State => state;
 
+        private SharpDX.Direct3D11.Texture2D texture2D11 = null;
         public void Init(SharpDX.Direct3D11.Texture2D sharedTexture)
         {
             logger.Debug("D3DRenderer::Setup()");
@@ -92,6 +93,7 @@ namespace MediaToolkit.MediaFoundation
                     };
                 }
 
+                this.texture2D11 = sharedTexture;
                 var pSurface = surface.NativePointer;
 
                 state = RendererState.Initialized;
@@ -109,17 +111,41 @@ namespace MediaToolkit.MediaFoundation
         public bool TestDevice()
         {
             bool result = false;
-
+            SharpDX.Result hr = SharpDX.Result.Fail;
             if (device != null)
             {
-               var hr = device.TestCooperativeLevel();
-               result = hr.Success;
+               hr = device.TestCooperativeLevel();
+
             }
 
-          
+            result = (texture2D11 != null && !texture2D11.IsDisposed) && hr.Success && (surface?.NativePointer != IntPtr.Zero);
+
             return result;
         }
 
+        public bool ReInit(SharpDX.Direct3D11.Texture2D sharedTexture)
+        {
+            bool result = false;
+            try
+            {
+                Close();
+
+                if (sharedTexture != null && !sharedTexture.IsDisposed)
+                {
+                    Init(sharedTexture);
+
+                    result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+
+            return result;
+
+        }
 
         public event Action NewDataAvailable;
         public void OnNewDataAvailable()
@@ -159,6 +185,8 @@ namespace MediaToolkit.MediaFoundation
                 device.Dispose();
                 device = null;
             }
+
+            state = RendererState.Closed;
         }
 
     }

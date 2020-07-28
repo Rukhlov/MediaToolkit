@@ -24,7 +24,7 @@ namespace ScreenStreamer.Wpf.Models
         /// Порт заданный пользователем
         /// 0 - если авто
         /// </summary>
-        public int Port { get; set; } = 0;
+        public int Port { get; set; } = 808;
 
 
         /// <summary>
@@ -40,8 +40,14 @@ namespace ScreenStreamer.Wpf.Models
         public int MulticasVideoPort { get; set; } = 0;
         public int MulticasAudioPort { get; set; } = 0;
 
-        public void Validate()
+        public void Init(IEnumerable<int> appPorts = null)
         {
+
+            //if (Port <= 0)
+            //{
+            //    Port = NetworkHelper.FindAvailableTcpPort();
+            //}
+
             //var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange((System.Net.Sockets.ProtocolType)UnicastProtocol, 1, Port);
             //if (freeTcpPorts != null)
             //{// может в любой момент изменится и свободный порт будет занят !!!
@@ -71,7 +77,7 @@ namespace ScreenStreamer.Wpf.Models
         [JsonIgnore]
         public System.Drawing.Rectangle BorderRect => new System.Drawing.Rectangle(Left, Top, Width, Height);
 
-        public void Validate()
+        public void Setup()
         {
 
             if(Width <= 0)
@@ -137,7 +143,7 @@ namespace ScreenStreamer.Wpf.Models
 
         public bool ShowCaptureBorder { get; set; } = false;
 
-        public void Validate(IEnumerable<VideoSourceItem> videoSources = null)
+        public void Init(IEnumerable<VideoSourceItem> videoSources = null)
         {
             // Validate device id...
             if(videoSources == null)
@@ -190,7 +196,7 @@ namespace ScreenStreamer.Wpf.Models
         public bool IsComputerSoundEnabled { get; set; } = true;
         public string DeviceId { get; set; }
 
-        public void Validate(IEnumerable<AudioSourceItem> audioSources = null)
+        public void Init(IEnumerable<AudioSourceItem> audioSources = null)
         {
             if(audioSources == null)
             {
@@ -231,7 +237,7 @@ namespace ScreenStreamer.Wpf.Models
         public string EncoderId { get; set; } = "";
         //public EncoderItem VideoEncoder { get; set; }
 
-        public void Validate(IEnumerable<EncoderItem> encoders = null)
+        public void Init(IEnumerable<EncoderItem> encoders = null)
         {
             if(encoders == null)
             {

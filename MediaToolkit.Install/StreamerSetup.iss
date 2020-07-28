@@ -96,10 +96,6 @@ Source: "{#CurrentSourcePath}\postproc-55.dll"; DestDir: "{app}"; Flags: replace
 Source: "{#CurrentSourcePath}\swresample-3.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\swscale-5.dll"; DestDir: "{app}"; Flags: replacesameversion
 
-Source: "{#CurrentSourcePath}\Test.PolywallClient.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion
-
-
 Source: "{#WpfSourcePath}\CommonServiceLocator.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.dll"; DestDir: "{app}"; Flags: replacesameversion
@@ -216,6 +212,12 @@ Source: "{#WpfSourcePath}\System.Windows.Interactivity.dll"; DestDir: "{app}"; F
 ;Source: "{#WpfSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replacesameversion
 
 
+Source: "{#CurrentSourcePath}\Test.PolywallClient.exe"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentSourcePath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+
+
+
+
 // Microsoft Visual C++ 2015-2019 Redistributable (x86) - 14.24.28127
 // https://support.microsoft.com/ru-ru/help/2977003/the-latest-supported-visual-c-downloads
 //HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\X86
@@ -262,7 +264,7 @@ Filename: "{tmp}\vc_redist.x86.exe"; Parameters: "/install /quiet /norestart"; C
 
 function VCinstalled(const regKey: String): Boolean;
  { Function for Inno Setup Compiler }
- { Returns True if same or later Microsoft Visual C++ 2015 Redistributable is installed, otherwise False. }
+ { Returns True if same or later  MSVC 14.24.28127 is installed, otherwise False. }
  var
   major: Cardinal;
   minor: Cardinal;
