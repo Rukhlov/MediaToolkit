@@ -188,6 +188,7 @@ namespace MediaToolkit
                 logger.Error(ex);
                 LastError = ex;
                 errorCode = (int)SharedTypes.ErrorCode.NotInitialized;
+
                 CleanUp();
 
                 throw;
@@ -223,9 +224,10 @@ namespace MediaToolkit
         private SourceReader CreateSourceReader(Activate activate)
         {
             SourceReader reader = null;
-
+            
             using (var source = activate.ActivateObject<MediaSource>())
             {
+            
                 using (var mediaAttributes = new MediaAttributes())
                 { 
                     if (asyncMode)
@@ -233,6 +235,8 @@ namespace MediaToolkit
                         sourceReaderCallback = new SourceReaderCallback();
                         sourceReaderCallback.OnReadSample += SourceReaderCallback_OnReadSample;
                         sourceReaderCallback.OnFlush += SourceReaderCallback_OnFlush;
+
+                        //sourceReaderCallback.OnEvent += SourceReaderCallback_OnEvent;
 
                         var pUnk = Marshal.GetIUnknownForObject(sourceReaderCallback);
                         try
@@ -459,6 +463,9 @@ namespace MediaToolkit
             {
                 //...
                 logger.Error("SourceReaderCallback_OnReadSample(...) " + result);
+
+
+                //state = CaptureState.Stopping;
             }
 
             if (State != CaptureState.Capturing)
@@ -479,6 +486,14 @@ namespace MediaToolkit
 
             return 0;
         }
+
+        private int SourceReaderCallback_OnEvent(int arg1, IntPtr arg2)
+        {
+            logger.Debug("SourceReaderCallback_OnEvent(...) " + arg1);
+
+            return 0;
+        }
+
 
         private int SourceReaderCallback_OnFlush(int arg)
         {

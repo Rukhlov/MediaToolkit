@@ -336,12 +336,6 @@ namespace MediaToolkit.ScreenCaptures
                    Usage = ResourceUsage.Default,
                });
 
-            //var bmp = GDI.Bitmap.FromFile(@"d:\4.bmp");
-            //var texture = GetTexture((GDI.Bitmap)bmp, Device3d11);
-            //bmp.Dispose();
-            //Device3d11.ImmediateContext.CopyResource(texture, SharedTexture);
-            //Device3d11.ImmediateContext.Flush();
-
             renderTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
@@ -641,13 +635,62 @@ namespace MediaToolkit.ScreenCaptures
 
                     using (var output1 = output.QueryInterface<Output1>())
                     {
-                        // Duplicate the output
-                        deskDupl = output1.DuplicateOutput(device);
+                        try
+                        {// Duplicate the output
+                            //https://docs.microsoft.com/en-us/windows/win32/api/dxgi1_2/nf-dxgi1_2-idxgioutput1-duplicateoutput
+                            deskDupl = output1.DuplicateOutput(device);
+                        }
+                        catch(SharpDXException ex)
+                        {
+                            if (ex.HResult == (int)NativeAPIs.HResult.E_INVALIDARG)
+                            {
+                                
+                                /*
+                                    * E_INVALIDARG for one of the following reasons:
+                                    * 
+                                    --The specified device (pDevice) is invalid, was not created on the correct adapter, 
+                                    or was not created from IDXGIFactory1 (or a later version of a DXGI factory interface that inherits from IDXGIFactory1).
+
+                                    --The calling application is already duplicating this desktop output.
+                                    */
+                            }
+                            else if (ex.HResult == (int)NativeAPIs.HResult.E_ACCESSDENIED)
+                            {
+                                //E_ACCESSDENIED if the application does not have access privilege to the current desktop image.
+                                //For example, only an application that runs at LOCAL_SYSTEM can access the secure desktop.
+                            }
+                            else if (ex.ResultCode == SharpDX.DXGI.ResultCode.Unsupported)
+                            {
+                                /*
+                                    * DXGI_ERROR_UNSUPPORTED if the created IDXGIOutputDuplication interface does not support the current desktop mode or scenario.
+                                    * For example, 8bpp and non-DWM desktop modes are not supported.
+                                    * If DuplicateOutput fails with DXGI_ERROR_UNSUPPORTED,
+                                    * the application can wait for system notification of desktop switches and mode changes and then call DuplicateOutput again after such a notification occurs.
+                                    * For more information, refer to EVENT_SYSTEM_DESKTOPSWITCH and mode change notification (WM_DISPLAYCHANGE). 
+                                    */
+
+                            }
+                            else if (ex.ResultCode == SharpDX.DXGI.ResultCode.NotCurrentlyAvailable)
+                            {
+                                /*
+                                    * if DXGI reached the limit on the maximum number of concurrent duplication applications (default of four).
+                                    * Therefore, the calling application cannot create any desktop duplication interfaces until the other applications close.
+                                    */
+                            }
+                            else if (ex.ResultCode == SharpDX.DXGI.ResultCode.SessionDisconnected)
+                            {
+                                //if DuplicateOutput failed because the session is currently disconnected.
+                            }
+
+                            throw;
+                        }
+
                     }
                 }
                 catch (Exception ex)
                 {
                     logger.Error(ex);
+
                     Close();
 
                     throw;
@@ -801,7 +844,7 @@ namespace MediaToolkit.ScreenCaptures
                                 }
                             */
 
-                            #endregion
+#endregion
 
                             UpdateMouseInfo(frameInfo);
 

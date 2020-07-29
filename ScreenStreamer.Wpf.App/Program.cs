@@ -133,7 +133,21 @@ namespace ScreenStreamer.Wpf
 		private static void InitLogger()
 		{
 
-			logger = LogManager.GetCurrentClassLogger();
+            var config = LogManager.Configuration;
+            if (config != null)
+            {
+                var vars = config.Variables;
+                if (vars != null)
+                {
+                    if (!vars.ContainsKey("AppConfigPath"))
+                    {
+                        vars.Add("AppConfigPath", ConfigManager.ConfigPath);
+                    }
+
+                }
+            }
+
+            logger = LogManager.GetCurrentClassLogger();
 
 			var logFactory = logger.Factory;
 			if (logFactory == null)

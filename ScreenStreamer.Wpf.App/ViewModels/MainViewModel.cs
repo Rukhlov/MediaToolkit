@@ -237,8 +237,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private void OnStartAll()
         {
+            var applicationPorts = StreamList.Select(s => s.PropertyNetwork.Port);
 
-            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808).ToList();
+            var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(System.Net.Sockets.ProtocolType.Tcp, 1, 808, exceptPorts: applicationPorts).ToList();
 
             int index = 0;
             foreach (var s in StreamList)

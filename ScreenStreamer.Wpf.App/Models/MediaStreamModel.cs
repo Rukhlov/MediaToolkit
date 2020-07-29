@@ -227,15 +227,31 @@ namespace ScreenStreamer.Wpf.Models
             session.StreamName = Name;
             session.NetworkIpAddress = PropertyNetwork.Network ?? "0.0.0.0";
 
-            if(PropertyNetwork.CommunicationPort <=0)
+            session.CommunicationPort = PropertyNetwork.Port;
+
+            if(PropertyNetwork.Port > 0)
             {
                 session.CommunicationPort = PropertyNetwork.Port;
             }
-            else
+            else if(PropertyNetwork.CommunicationPort > 0)
             {
                 session.CommunicationPort = PropertyNetwork.CommunicationPort;
             }
-        
+            else
+            {
+                //...
+
+            }
+
+            //if(PropertyNetwork.CommunicationPort <=0)
+            //{
+            //    session.CommunicationPort = PropertyNetwork.Port;
+            //}
+            //else
+            //{
+            //    session.CommunicationPort = PropertyNetwork.CommunicationPort;
+            //}
+
 
             //int communicationPort = PropertyNetwork.Port;
             //if (communicationPort <= 0)

@@ -27,7 +27,7 @@ namespace ScreenStreamer.Wpf.Managers
         {
             logger.Debug("ConfigurationManager::LoadConfigurations()");
 
-            AppModel item = null;
+            AppModel config = null;
             try
             {
                 if (File.Exists(configFileFullName))
@@ -41,11 +41,9 @@ namespace ScreenStreamer.Wpf.Managers
                     {
                         using (JsonReader jsonReader = new JsonTextReader(streamReader))
                         {
-                            item = serializer.Deserialize<AppModel>(jsonReader);
+                            config = serializer.Deserialize<AppModel>(jsonReader);
                         }
-
                     }
-
                 }
 
             }
@@ -54,7 +52,13 @@ namespace ScreenStreamer.Wpf.Managers
                 logger.Error(ex);
             }
 
-            return item ?? AppModel.Default;
+            if(config == null)
+            {
+                logger.Info("Create default configuration...");
+                config = AppModel.Default;
+            }
+
+            return config;
         }
 
         public static void Save()
@@ -68,7 +72,7 @@ namespace ScreenStreamer.Wpf.Managers
                     Directory.CreateDirectory(ConfigPath);
                 }
 
-                var model = ServiceLocator.GetInstance<AppModel>();
+                var config = ServiceLocator.GetInstance<AppModel>();
 
                 JsonSerializer serializer = new JsonSerializer
                 {
@@ -79,7 +83,7 @@ namespace ScreenStreamer.Wpf.Managers
                 {
                     using (JsonWriter jsonWriter = new JsonTextWriter( streamWriter))
                     {
-                        serializer.Serialize(jsonWriter, model);
+                        serializer.Serialize(jsonWriter, config);
                     }
                        
                 }
