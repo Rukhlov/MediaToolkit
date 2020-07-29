@@ -239,7 +239,7 @@ namespace ScreenStreamer.Wpf.Models
             }
             else
             {
-                //...
+                session.CommunicationPort = Helpers.NetworkHelper.FindAvailableTcpPort();
 
             }
 

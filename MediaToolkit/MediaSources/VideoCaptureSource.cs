@@ -404,46 +404,94 @@ namespace MediaToolkit
 
                 while (State == CaptureState.Capturing)
                 {
-                    if (asyncMode)
+                    try
                     {
-                        bool res = syncEvent.WaitOne(3000);
-                        if (!res)
+                        if (asyncMode)
                         {
-                            logger.Warn("syncEvent.WaitOne(3000) == false");
-                            continue;
-                        }
-
-                        if (State == CaptureState.Capturing)
-                        {
-                            sourceReader.ReadSampleAsync((int)SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None);
-                        }
-                    }
-                    else
-                    {
-                        var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None,
-                            out int actualIndex, out SourceReaderFlags flags, out long timestamp);
-                        try
-                        {
-                            //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
-                            if (flags != SourceReaderFlags.None)
+                            bool res = syncEvent.WaitOne(3000);
+                            if (!res)
                             {
-                                logger.Debug("sourceReader.ReadSample(...) " + flags);
+                                logger.Warn("syncEvent.WaitOne(3000) == false");
+                                continue;
                             }
 
-                            PrepareSample(flags, timestamp, sample);
+                            if (State == CaptureState.Capturing)
+                            {
+                                sourceReader.ReadSampleAsync((int)SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None);
+                            }
                         }
-                        finally
+                        else
                         {
-                            sample?.Dispose();
+                            var sample = sourceReader.ReadSample(SourceReaderIndex.FirstVideoStream, SourceReaderControlFlags.None,
+                                out int actualIndex, out SourceReaderFlags flags, out long timestamp);
+                            try
+                            {
+                                //Console.WriteLine("#" + sampleCount + " Timestamp " + timestamp + " Flags " + flags);
+                                if (flags != SourceReaderFlags.None)
+                                {
+                                    logger.Debug("sourceReader.ReadSample(...) " + flags);
+                                }
+
+                                PrepareSample(flags, timestamp, sample);
+                            }
+                            finally
+                            {
+                                sample?.Dispose();
+                            }
                         }
+
+                        //sampleCount++;
+                    }
+                    catch (SharpDX.SharpDXException ex)
+                    {
+                        // TODO:...
+                        // Eсли уже запущена камера в этом процессе
+                        //MF_E_VIDEO_RECORDING_DEVICE_PREEMPTED 0xC00D3EA3 
+
+
+                        if (ex.ResultCode == SharpDX.MediaFoundation.ResultCode.HwMftFailedStartStreaming)
+                        {
+
+
+                            /*
+                             * A hardware device was unable to start streaming. 
+                             * This error code can be returned by a media source that represents a hardware device,
+                             * such as a camera. For example, if the camera is already being used by another application, 
+                             * the method might return this error code. 
+                             */
+
+                            // MF_E_HW_MFT_FAILED_START_STREAMING 0xC00D3704
+
+
+                            //...
+                        }
+                        else
+                        {
+
+                        }
+
+                        throw;
                     }
 
-                    //sampleCount++;
 
                 }
             }
             finally
             {
+                //if (asyncMode)
+                //{
+                //    try
+                //    {
+                //        if (sourceReader != null)
+                //        {
+                //            sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
+                //        }
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        logger.Error(ex);
+                //    }
+                //}
 
                 if (processor != null)
                 {

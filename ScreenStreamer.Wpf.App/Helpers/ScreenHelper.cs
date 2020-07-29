@@ -63,116 +63,126 @@ namespace ScreenStreamer.Wpf.Helpers
             }
         }
 
-        public static List<VideoSourceItem> GetVideoSources()
+
+        private static List<VideoSourceItem> videoSourceItems = null;
+
+        public static List<VideoSourceItem> GetVideoSources(bool ForceUpdate = false)
         {
 
-            List<VideoSourceItem> items = new List<VideoSourceItem>();
+           // List<VideoSourceItem> items = new List<VideoSourceItem>();
 
             //var captureProperties = Config.Data.ScreenCaptureProperties;
 
-            int monitorIndex = 1;
-            foreach (var screen in Screen.AllScreens)
+            if(videoSourceItems == null || ForceUpdate)
             {
-                var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+                videoSourceItems = new List<VideoSourceItem>();
 
-                var bounds = screen.Bounds;
-
-                ScreenCaptureDevice device = new ScreenCaptureDevice
+                int monitorIndex = 1;
+                foreach (var screen in Screen.AllScreens)
                 {
-                    CaptureRegion = bounds,
-                    DisplayRegion = bounds,
-                    Name = screen.DeviceName,
+                    var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
 
-                    Resolution = bounds.Size,
-                    //Properties = captureProperties,
-                    DeviceId = screen.DeviceName,
+                    var bounds = screen.Bounds;
 
-                };
+                    ScreenCaptureDevice device = new ScreenCaptureDevice
+                    {
+                        CaptureRegion = bounds,
+                        DisplayRegion = bounds,
+                        Name = screen.DeviceName,
 
-                var monitorDescr = bounds.Width + "x" + bounds.Height;
-                if (!string.IsNullOrEmpty(friendlyName))
-                {
-                    monitorDescr = friendlyName + " " + monitorDescr;
+                        Resolution = bounds.Size,
+                        //Properties = captureProperties,
+                        DeviceId = screen.DeviceName,
+
+                    };
+
+                    var monitorDescr = bounds.Width + "x" + bounds.Height;
+                    if (!string.IsNullOrEmpty(friendlyName))
+                    {
+                        monitorDescr = friendlyName + " " + monitorDescr;
+                    }
+
+                    var monitorName = "Display " + monitorIndex + " (" + monitorDescr + ")";
+
+                    //var name = screen.DeviceName;
+                    //if (!string.IsNullOrEmpty(friendlyName))
+                    //{
+                    //    name += " (" + friendlyName + " " + bounds.Width  + "x" + bounds.Height + ") ";
+                    //}
+                    device.Name = monitorName;
+
+                    videoSourceItems.Add(new VideoSourceItem
+                    {
+                        Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),
+                        DeviceId = device.DeviceId,
+                        CaptureRegion = device.CaptureRegion,
+                    });
+
+                    monitorIndex++;
                 }
 
-                var monitorName = "Display " + monitorIndex + " (" + monitorDescr + ")";
-
-                //var name = screen.DeviceName;
-                //if (!string.IsNullOrEmpty(friendlyName))
-                //{
-                //    name += " (" + friendlyName + " " + bounds.Width  + "x" + bounds.Height + ") ";
-                //}
-                device.Name = monitorName;
-
-                items.Add(new VideoSourceItem
+                var customRegion = new Rectangle(10, 10, 640, 480);
+                ScreenCaptureDevice customRegionDescr = new ScreenCaptureDevice
                 {
-                    Name = monitorName,//screen.DeviceName,//+ "" + s.Bounds.ToString(),
-                    DeviceId = device.DeviceId,
-                    CaptureRegion = device.CaptureRegion,
-                });
+                    CaptureRegion = customRegion,
+                    DisplayRegion = Rectangle.Empty,
 
-                monitorIndex++;
-            }
+                    Resolution = customRegion.Size,
 
-            var customRegion = new Rectangle(10, 10, 640, 480);
-            ScreenCaptureDevice customRegionDescr = new ScreenCaptureDevice
-            {
-                CaptureRegion = customRegion,
-                DisplayRegion = Rectangle.Empty,
+                    Name = "Screen Region",
+                    DeviceId = "ScreenRegion",
 
-                Resolution = customRegion.Size,
-
-                Name = "Screen Region",
-                DeviceId = "ScreenRegion",
-
-            };
-
-            items.Add(new VideoSourceItem
-            {
-                Name = customRegionDescr.Name,//+ "" + s.Bounds.ToString(),
-                DeviceId = customRegionDescr.DeviceId,
-                CaptureRegion = customRegionDescr.CaptureRegion,
-            });
-
-
-            if (items.Count > 1)
-            {
-                var allScreenRect = SystemInformation.VirtualScreen;
-
-                ScreenCaptureDevice device = new ScreenCaptureDevice
-                {
-                    DisplayRegion = allScreenRect,
-                    CaptureRegion = allScreenRect,
-                    Resolution = allScreenRect.Size,
-                    //Properties = captureProperties,
-                    Name = "All Displays (" + allScreenRect.Width + "x" + allScreenRect.Height + ")",
-                    DeviceId = "AllScreens",
                 };
 
-                items.Add(new VideoSourceItem
+                videoSourceItems.Add(new VideoSourceItem
                 {
-                    Name = device.Name,//+ "" + s.Bounds.ToString(),
-                    DeviceId = device.DeviceId,
-                    CaptureRegion = device.CaptureRegion,
+                    Name = customRegionDescr.Name,//+ "" + s.Bounds.ToString(),
+                    DeviceId = customRegionDescr.DeviceId,
+                    CaptureRegion = customRegionDescr.CaptureRegion,
                 });
+
+
+                if (videoSourceItems.Count > 1)
+                {
+                    var allScreenRect = SystemInformation.VirtualScreen;
+
+                    ScreenCaptureDevice device = new ScreenCaptureDevice
+                    {
+                        DisplayRegion = allScreenRect,
+                        CaptureRegion = allScreenRect,
+                        Resolution = allScreenRect.Size,
+                        //Properties = captureProperties,
+                        Name = "All Displays (" + allScreenRect.Width + "x" + allScreenRect.Height + ")",
+                        DeviceId = "AllScreens",
+                    };
+
+                    videoSourceItems.Add(new VideoSourceItem
+                    {
+                        Name = device.Name,//+ "" + s.Bounds.ToString(),
+                        DeviceId = device.DeviceId,
+                        CaptureRegion = device.CaptureRegion,
+                    });
+
+                }
+
+                var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
+                if (captDevices.Count > 0)
+                {
+                    var captItems = captDevices.Select(d => new VideoSourceItem
+                    {
+                        Name = d.Name,
+                        DeviceId = d.DeviceId,
+                        CaptureRegion = new Rectangle(new System.Drawing.Point(0, 0), d.Resolution),
+                        IsUvcDevice = true,
+                    });
+
+                    videoSourceItems.AddRange(captItems);
+                }
 
             }
 
-            var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
-            if (captDevices.Count > 0)
-            {
-                var captItems = captDevices.Select(d => new VideoSourceItem
-                {
-                    Name = d.Name,
-                    DeviceId = d.DeviceId,
-                    CaptureRegion = new Rectangle(new System.Drawing.Point(0, 0), d.Resolution),
-                    IsUvcDevice = true,
-                });
 
-                items.AddRange(captItems);
-            }
-
-            return items;
+            return new List<VideoSourceItem>(videoSourceItems);
         }
 
         public const string ALL_DISPLAYS = "All";

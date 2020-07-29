@@ -67,7 +67,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         {
             Displays.Clear();
 
-            Displays.AddRange(ScreenHelper.GetVideoSources());
+            Displays.AddRange(ScreenHelper.GetVideoSources(true));
 
             var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
 

@@ -19,7 +19,7 @@ namespace MediaToolkit.MediaFoundation
 
     public class MfTool
     {
-        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation.MfTool");
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         public static readonly Dictionary<Guid, string> AttrsDict = new Dictionary<Guid, string>();
         public static readonly Dictionary<Guid, string> TypesDict = new Dictionary<Guid, string>();
@@ -56,6 +56,8 @@ namespace MediaToolkit.MediaFoundation
 
             FillAttrDict(typeof(MFAttributeKeys));
 			FillAttrDict(typeof(SampleAttributeKeys));
+
+            FillAttrDict(typeof(CaptureDeviceAttributeKeys));
 		}
 
         public static string GetMediaTypeName(Guid guid, bool GetFullName = false)

@@ -31,7 +31,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         {
             AudioSources.Clear();
 
-            AudioSources.AddRange(AudioHelper.GetAudioSources());
+            AudioSources.AddRange(AudioHelper.GetAudioSources(true));
 
             ((PropertyAudioViewModel)this.Property).SelectedSource = AudioSources.FirstOrDefault();
         }
