@@ -16,6 +16,8 @@ namespace MediaToolkit.NativeAPIs
 
         }
 
+
+
         public static bool GetCloaked(IntPtr hWnd)
         {
             bool cloaked = false;
@@ -36,6 +38,21 @@ namespace MediaToolkit.NativeAPIs
 
             return frameBounds;
         }
+
+        public static bool IsCompositionEnabled()
+        {
+            bool enabled = true;
+
+            if (Environment.OSVersion.Version.Major >= 6)
+            {
+                var hResult = DwmIsCompositionEnabled(out enabled);
+            }
+
+            return enabled;
+        }
+
+        [DllImport("dwmapi.dll")]
+        internal static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll", PreserveSig = false)]
         internal static extern void DwmEnableComposition(CompositionAction uCompositionAction);

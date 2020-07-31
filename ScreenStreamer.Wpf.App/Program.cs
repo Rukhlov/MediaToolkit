@@ -1,5 +1,6 @@
 ﻿using MediaToolkit;
 using MediaToolkit.NativeAPIs;
+using Microsoft.Win32;
 using NLog;
 using ScreenStreamer.Wpf.Managers;
 using System;
@@ -17,6 +18,7 @@ namespace ScreenStreamer.Wpf
 
         private static Logger logger = null;
 
+        public static StartupParameters StartupParams { get; private set; }
 
         [STAThread]
         public static int Main(string[] args)
@@ -46,12 +48,11 @@ namespace ScreenStreamer.Wpf
 
 				}
 
-                if (args != null && args.Length > 0)
-                {//...
+                StartupParams = StartupParameters.Create(args);
 
-                }
+				logger.Info(StartupParams.GetSysInfo());
 
-				try
+                try
 				{
 					MediaToolkitManager.Startup();
 
@@ -202,5 +203,99 @@ namespace ScreenStreamer.Wpf
 
 			}
 		}
-	}
+
+        public class StartupParameters
+        {
+            public string UserName { get; private set; } = "";
+
+            public bool IsSystem { get; private set; } = false;
+            public bool IsElevated { get; private set; } = false;
+            public bool NoRestart { get; private set; } = false;
+            public bool RunAsSystem { get; private set; } = false;
+
+            public bool IsRemoteSession { get; private set; } = false;
+            public bool IsRemotelyControlled { get; private set; } = false;
+            public bool IsCompositionEnabled { get; private set; } = false;
+
+            public static StartupParameters Create(string[] args)
+            {
+                logger.Debug("CommandLine: " + string.Join(" ", args));
+
+                StartupParameters startupParams = new StartupParameters();
+
+                foreach (var arg in args)
+                {
+                    var _arg = arg?.ToLower();
+
+                    if (_arg == "-norestart")
+                    {
+                        startupParams.NoRestart = true;
+                    }
+                    else if (_arg == "-system")
+                    {
+                        startupParams.RunAsSystem = true;
+                    }
+                    else
+                    {
+                        //...
+                    }
+                }
+
+                using (var wi = System.Security.Principal.WindowsIdentity.GetCurrent())
+                {
+
+                    startupParams.UserName = wi.Name;
+                    startupParams.IsElevated = (wi.Owner != wi.User);
+                    startupParams.IsSystem = wi.IsSystem;
+
+                }
+
+                startupParams.IsRemoteSession = SystemParameters.IsRemoteSession;
+                startupParams.IsRemotelyControlled = SystemParameters.IsRemotelyControlled;
+                startupParams.IsCompositionEnabled = DwmApi.IsCompositionEnabled();
+
+
+
+                return startupParams;
+            }
+
+			public string GetSysInfo()
+			{
+                var sysInfo = Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
+
+               // System.Runtime.InteropServices.RuntimeInformation.OSDescription
+
+
+                if (StartupParams.IsSystem)
+				{// run as system...
+					sysInfo += "IsSystem\r\n";
+				}
+				else if (StartupParams.IsElevated)
+				{// запущен с повышеными правами
+					sysInfo += "IsElevated\r\n";
+				}
+				else if (StartupParams.IsRemotelyControlled || StartupParams.IsRemoteSession)
+				{// rdp 
+					sysInfo += "IsRDP: " + StartupParams.IsRemotelyControlled + ";" + StartupParams.IsRemoteSession + "\r\n";
+				}
+				else if (!StartupParams.IsCompositionEnabled)
+				{// выключена композитная отрисовка
+					sysInfo += "DWM Disabled\r\n";
+				}
+
+
+				//...
+				return sysInfo;
+			}
+
+            public override string ToString()
+            {
+                return string.Join(";", UserName, IsElevated, IsSystem, NoRestart, IsRemoteSession, IsRemotelyControlled, IsCompositionEnabled);
+            }
+
+
+
+        }
+    }
+ 
 }

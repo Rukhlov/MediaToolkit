@@ -34,6 +34,7 @@ namespace MediaToolkit.UI
 
         private ID3DImageProvider d3dProvider = null;
 
+        // Включить в режиме RDP!
         public bool EnableSoftwareFallback { get; set; } = false;
 
         private volatile ErrorCode errorCode = ErrorCode.Ok;
@@ -123,6 +124,7 @@ namespace MediaToolkit.UI
                     VideoSource.Unlock();
                 }
 
+                VideoSource.IsFrontBufferAvailableChanged += VideoSource_IsFrontBufferAvailableChanged;
                 System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
                 initialized = true;
@@ -136,6 +138,11 @@ namespace MediaToolkit.UI
                 // throw;
             }
 
+        }
+
+        private void VideoSource_IsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            logger.Warn("VideoSource_IsFrontBufferAvailableChanged(...) " + e.NewValue);
         }
 
         private volatile bool needRedraw = false;
@@ -157,8 +164,9 @@ namespace MediaToolkit.UI
             {
                 RenderingEventArgs args = (RenderingEventArgs)e;
 
-                if (VideoSource.IsFrontBufferAvailable && lastRender != args.RenderingTime)
-                {
+                //if (VideoSource.IsFrontBufferAvailable && lastRender != args.RenderingTime)// 
+                if (lastRender != args.RenderingTime)
+                { //VideoSource.IsFrontBufferAvailable - не работает через RDP
                     if (needRedraw)
                     {
                         var pSurface = d3dProvider.GetSurfacePointer();
@@ -189,7 +197,7 @@ namespace MediaToolkit.UI
                 }
                 else
                 {
-                    logger.Debug("VideoSource.IsFrontBufferAvailable && lastRender != args.RenderingTime");
+                    logger.Debug("lastRender != args.RenderingTime");
                 }
             }
             catch (Exception ex)
@@ -218,11 +226,17 @@ namespace MediaToolkit.UI
                 d3dProvider.NewDataAvailable -= D3dProvider_NewDataAvailable;
                 d3dProvider = null;
             }
-
+            
             System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
 
-            VideoSource = null;
-            ;
+            if (VideoSource != null)
+            {
+                VideoSource.IsFrontBufferAvailableChanged -= VideoSource_IsFrontBufferAvailableChanged;
+                VideoSource = null;
+            }
+
+
+
         }
 
 

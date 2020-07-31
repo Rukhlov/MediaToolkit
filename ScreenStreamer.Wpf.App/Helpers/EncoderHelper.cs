@@ -8,44 +8,51 @@ namespace ScreenStreamer.Wpf.Helpers
 {
     public class EncoderHelper
     {
-        public static List<EncoderItem> GetVideoEncoders()
+		private static List<EncoderItem> encoderItems = null;
+		public static List<EncoderItem> GetVideoEncoders(bool ForceUpdate = false)
         {
-            List<EncoderItem> items = new List<EncoderItem>();
+           // List<EncoderItem> items = new List<EncoderItem>();
 
-            var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
+			if(encoderItems == null || ForceUpdate)
+			{
+				encoderItems = new List<EncoderItem>();
 
-            foreach (var enc in encoders)
-            {
-                if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
-                {
-                    var item = new EncoderItem
-                    {
-                        Name = enc.Name,
-                        Id = enc.Id,
-                    };
+				var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
 
-                    items.Add(item);
-                }
+				foreach (var enc in encoders)
+				{
+					if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
+					{
+						var item = new EncoderItem
+						{
+							Name = enc.Name,
+							Id = enc.Id,
+						};
 
-            }
+						encoderItems.Add(item);
+					}
 
-            VideoEncoderDescription libx264Description = new VideoEncoderDescription
-            {
-                Id = "libx264",
-                Name = "libx264 (CPU)",
-                Format = VideoCodingFormat.H264,
-                IsHardware = false,
-                Activatable = true,
+				}
 
-            };
+				VideoEncoderDescription libx264Description = new VideoEncoderDescription
+				{
+					Id = "libx264",
+					Name = "libx264 (CPU)",
+					Format = VideoCodingFormat.H264,
+					IsHardware = false,
+					Activatable = true,
 
-            items.Add(new EncoderItem
-            {
-                Name = libx264Description.Name,
-                Id = libx264Description.Id,
-            });
+				};
 
-            return items;
+				encoderItems.Add(new EncoderItem
+				{
+					Name = libx264Description.Name,
+					Id = libx264Description.Id,
+				});
+
+			}
+
+            return new List<EncoderItem>(encoderItems);
         }
     }
 }

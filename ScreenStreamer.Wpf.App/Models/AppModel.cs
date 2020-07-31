@@ -64,7 +64,7 @@ namespace ScreenStreamer.Wpf.Models
 				//...
 
 				logger.Warn($"OS version {winVersion} currently not supported!");
-				throw new NotSupportedException($"This version of the operating system currently is not supported.");
+				//throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}
 
 			var appVersion = new Version(AppVersion);

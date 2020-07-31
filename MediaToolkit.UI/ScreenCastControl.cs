@@ -46,6 +46,7 @@ namespace MediaToolkit.UI
             //videoRenderer = new D3DImageRenderer();
 
             d3dRenderer = new D3DImageRenderer();
+            d3dRenderer.EnableSoftwareFallback = true;
 
             //d3dRenderer.RenderStarted += videoRenderer_RenderStarted;
             //d3dRenderer.RenderStopped += videoRenderer_RenderStopped;
