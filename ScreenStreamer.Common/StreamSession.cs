@@ -356,4 +356,24 @@ namespace ScreenStreamer.Common
 		UseEncoderResoulutionFromSource = 1,
 		//...
 	}
+
+    public class StreamerException: Exception
+    {
+        public int Code { get; } = -1;
+        public string Caption { get; } = "Streaming Error";
+
+        public StreamerException(string message) : base(message)
+        { }
+
+        public StreamerException(string message, string caption = "Streaming Error") : this(message)
+        {
+            this.Caption = caption;     
+        }
+
+        public StreamerException(int code, string message, string caption = "Streaming Error") : this(message, caption)
+        {
+            this.Code = code;
+            this.Caption = caption;
+        }
+    }
 }

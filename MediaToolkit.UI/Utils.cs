@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaToolkit.NativeAPIs;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -220,12 +221,8 @@ namespace MediaToolkit.UI
 
     public class RegionForm : Form
     {
-        public RegionForm(Rectangle region)
+        public RegionForm()
         {
-            this.StartPosition = FormStartPosition.Manual;
-            this.Location = region.Location;
-            this.Size = new Size(region.Width, region.Height);
-
             this.TransparencyKey = Color.Black;
             this.BackColor = Color.Black;
             this.FormBorderStyle = FormBorderStyle.None;
@@ -238,16 +235,43 @@ namespace MediaToolkit.UI
             this.Controls.Add(panel);
         }
 
-        //const int WS_EX_LAYERED = 0x00080000;
-        //protected override CreateParams CreateParams
-        //{
-        //    get
-        //    {
-        //        CreateParams createParams = base.CreateParams;
-        //        createParams.ExStyle |= WS_EX_LAYERED;
-        //        return createParams;
-        //    }
-        //}
+        public RegionForm(Rectangle region) : this()
+        {
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = region.Location;
+            this.Size = new Size(region.Width, region.Height);
+        }
+
+        public void ShowBorder(Rectangle rect)
+        {
+            this.StartPosition = FormStartPosition.Manual;
+            this.Location = rect.Location;
+            this.Size = rect.Size;
+
+            this.Color1 = Color.FromArgb(0xff, 0xe7, 0x44, 0x44);
+            this.Color2 = Color.White;
+
+            this.Visible = true;
+        }
+
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.Style &= ~(WS.MaximizeBox | WS.Overlapped);
+
+                cp.ExStyle |= WS_EX.Composited;
+                cp.ExStyle |= WS_EX.TopMost;
+                cp.ExStyle |= WS_EX.ToolWindow;
+
+                cp.ExStyle |= WS_EX.NoActivate;
+                cp.ExStyle |= WS_EX.Transparent;
+                
+                return cp;
+            }
+        }
 
         public Color Color1 { get; set; } = Color.Red;
         public Color Color2 { get; set; } = Color.Green;

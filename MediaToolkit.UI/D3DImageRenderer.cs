@@ -124,7 +124,7 @@ namespace MediaToolkit.UI
                     VideoSource.Unlock();
                 }
 
-                VideoSource.IsFrontBufferAvailableChanged += VideoSource_IsFrontBufferAvailableChanged;
+               // VideoSource.IsFrontBufferAvailableChanged += VideoSource_IsFrontBufferAvailableChanged;
                 System.Windows.Media.CompositionTarget.Rendering += CompositionTarget_Rendering;
 
                 initialized = true;
@@ -228,12 +228,13 @@ namespace MediaToolkit.UI
             }
             
             System.Windows.Media.CompositionTarget.Rendering -= CompositionTarget_Rendering;
+            VideoSource = null;
 
-            if (VideoSource != null)
-            {
-                VideoSource.IsFrontBufferAvailableChanged -= VideoSource_IsFrontBufferAvailableChanged;
-                VideoSource = null;
-            }
+            //if (VideoSource != null)
+            //{
+            //    VideoSource.IsFrontBufferAvailableChanged -= VideoSource_IsFrontBufferAvailableChanged;
+            //    VideoSource = null;
+            //}
 
 
 

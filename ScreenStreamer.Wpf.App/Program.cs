@@ -200,9 +200,10 @@ namespace ScreenStreamer.Wpf
 				{
 					Kernel32.AllocConsole();
 				}
-
 			}
 		}
+
+
 
         public class StartupParameters
         {

@@ -64,6 +64,8 @@ namespace ScreenStreamer.Wpf.Models
         public event Action StateChanged;
         public event Action<object> ErrorOccurred;
 
+        //public event Action<string, string> ErrorOccurred;
+
         [Newtonsoft.Json.JsonIgnore]
         public int ErrorCode { get; private set; }
 

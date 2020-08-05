@@ -87,7 +87,6 @@ namespace ScreenStreamer.Common
 
             try
             {
-
                 Session = session as StreamSession;
                 syncEvent = new AutoResetEvent(false);
 
@@ -343,6 +342,10 @@ namespace ScreenStreamer.Common
 
                     //videoStreamer.Setup(videoSettings.EncoderSettings, videoSettings.NetworkSettings);
                 }
+                else
+                {
+                    // currently not supported...
+                }
 
             }
 
@@ -366,27 +369,11 @@ namespace ScreenStreamer.Common
                     audioStreamer.StateChanged += AudioStreamer_StateChanged;
 
                 }
+                else
+                {
+                    // currently not supported...
+                }
             }
-
-            //var communicationAddress = Session.CommunicationAddress;
-            //var videoDeviceName = videoSettings.CaptureDevice?.Name ?? "";
-            //var hostName = Session.StreamName;
-            //if (!string.IsNullOrEmpty(videoDeviceName))
-            //{
-            //    hostName += " (" + videoDeviceName + ")";
-            //}
-
-            //var audioDeviceName = audioSettings.CaptureDevice?.Name ?? "";
-
-            //Dictionary<string, string> extensions = new Dictionary<string, string>
-            //{
-            //    { "StreamName",  Session.StreamName },
-            //    { "AudioInfo", audioDeviceName },
-            //    { "VideoInfo", videoDeviceName },
-            //};
-            //communicationService = new CommunicationService(this);
-            //communicationService.Open(communicationAddress, hostName, extensions);
-
 
             communicationService = new CommunicationService(this);
             communicationService.Open();
@@ -779,7 +766,10 @@ namespace ScreenStreamer.Common
                     logger.Error(ex);
                     Close();
 
-                    throw;
+                    var caption = "Network Error";
+                    var message = "Network host opening error. Check network port and other settings.";
+
+                    throw new StreamerException(message, caption);
                 }
 
             }
@@ -798,6 +788,7 @@ namespace ScreenStreamer.Common
             private void Host_Faulted(object sender, EventArgs e)
             {
                 logger.Debug("ScreenCastService::Host_Faulted()");
+                //...
             }
 
 
@@ -813,8 +804,26 @@ namespace ScreenStreamer.Common
                     host.Faulted -= Host_Faulted;
                     host.Closed -= Host_Closed;
 
-                    host.Close();
-                    host = null;
+                    try
+                    {
+                        if (host.State != CommunicationState.Faulted)
+                        {
+                            host.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex.Message);
+                    }
+                    finally
+                    {
+                        if(host.State!= CommunicationState.Closed)
+                        {
+                            host.Abort();
+                        }
+                        host = null;
+                    }
+
                 }
 
             }

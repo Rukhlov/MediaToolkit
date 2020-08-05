@@ -13,7 +13,7 @@
         <StackPanel Orientation="Vertical">
 
             
-            <TextBlock MaxWidth="270"
+            <TextBlock MaxWidth="500"
                        Margin="0,8,0,8"
                        TextWrapping="Wrap"
                        Text="{Binding DialogText}"/>
