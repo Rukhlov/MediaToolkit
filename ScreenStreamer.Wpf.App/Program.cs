@@ -27,7 +27,7 @@ namespace ScreenStreamer.Wpf
 
 			InitLogger();
 
-            logger.Info("========== START ============");
+            logger.Info("============================ START ============================");
 
             bool createdNew = false;
             Mutex mutex = null;
@@ -62,7 +62,7 @@ namespace ScreenStreamer.Wpf
 					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 					application.InitializeComponent();
 
-					logger.Info("============ RUN ===============");
+					logger.Info("============================ RUN ============================");
 					application.Run();
 				}
 				finally
@@ -85,8 +85,7 @@ namespace ScreenStreamer.Wpf
                     mutex.Dispose();
                 }
 
-
-                logger.Info("========== THE END ============");
+                logger.Info("============================ THE END ============================");
             }
 
            

@@ -19,6 +19,8 @@ namespace ScreenStreamer.Wpf
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
+        public static SystemManager SystemMan { get; } = new SystemManager();
+
         protected override void OnStartup(StartupEventArgs e)
         {
             logger.Debug("OnStartup(...) " + string.Join(" ", e.Args));
@@ -36,6 +38,7 @@ namespace ScreenStreamer.Wpf
 
             }
 
+           // SystemMan.Initialize();
 
             ServiceLocator.RegisterInstance(appModel);
 
@@ -43,7 +46,6 @@ namespace ScreenStreamer.Wpf
 
             var dialogService = new Services.DialogService();
 			ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
-
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
 
@@ -63,12 +65,14 @@ namespace ScreenStreamer.Wpf
 
         protected override void OnExit(ExitEventArgs e)
         {
-
             logger.Debug("OnExit(...) " + e.ApplicationExitCode);
 
-			ConfigManager.Save();
+           
+            ConfigManager.Save();
 
-			base.OnExit(e);
+            //SystemMan.Shutdown();
+
+            base.OnExit(e);
         }
     }
 }

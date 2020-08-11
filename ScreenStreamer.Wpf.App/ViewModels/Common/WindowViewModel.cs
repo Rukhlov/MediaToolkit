@@ -80,6 +80,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Common
             parent.TrackNestedProperties(true);
             TrackNestedProperties(true);
             RaisePropertyChanged(() => IsChanged);
+
+
             ConfigManager.Save();
         }
 

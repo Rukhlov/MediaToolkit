@@ -14,12 +14,30 @@ using System.Windows.Forms;
 
 namespace MediaToolkit.Managers
 {
+    public class UsbCategory
+    {
+	
+        public static readonly Guid VideoCamera = KS.CATEGORY_VIDEO_CAMERA; //<--win10
+		public static readonly Guid Video = KS.CATEGORY_VIDEO; // win7
 
-	//https://docs.microsoft.com/en-us/windows/win32/medfound/handling-video-device-loss
-	public class UsbDeviceManager : IWndMessageProcessor
+		public static readonly Guid Audio = KS.CATEGORY_AUDIO;
+
+        public static readonly Guid Capture = KS.CATEGORY_CAPTURE;
+        public static readonly Guid AudioDevice = KS.CATEGORY_AUDIO_DEVICE;
+    }
+
+    public class UsbDeviceInfo
+    {
+        public string Name { get; set; }
+        public Guid ClassGuid { get; set; }
+        public string FriendlyName { get; set; }
+    }
+
+    //https://docs.microsoft.com/en-us/windows/win32/medfound/handling-video-device-loss
+    public class UsbDeviceManager : IWndMessageProcessor
 	{
 
-		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Managers");
 
 		private NotifyWindow nativeWindow = null;
 
@@ -27,7 +45,7 @@ namespace MediaToolkit.Managers
 		public event Action<string> UsbDeviceMoveComplete;
 
 
-		public bool Init()
+		public bool Init(Guid classGuid)
 		{
 			logger.Debug("UsbDeviceManager::Init()");
 
@@ -39,12 +57,7 @@ namespace MediaToolkit.Managers
 
 			var hWnd = nativeWindow.Handle;
 
-			//
-			// KS.KSCATEGORY_VIDEO_CAMERA <--win10
-			// KS.CATEGORY_CAPTURE <--win7
-			var classGuid = KS.CATEGORY_VIDEO_CAMERA;//GUID_DEVINTERFACE_USB_DEVICE);//KS.KSCATEGORY_VIDEO_CAMERA);
-
-			var handle = RegisterNotification(hWnd, classGuid);
+            var handle = RegisterNotification(hWnd, classGuid);
 
 			return (handle != IntPtr.Zero);
 		}
@@ -167,7 +180,39 @@ namespace MediaToolkit.Managers
 
 		}
 
-		public static bool TryPtrToDeviceName(IntPtr lparam, out string deviceName)
+        public static bool TryPtrToDeviceInfo(IntPtr handle, out UsbDeviceInfo deviceInfo)
+        {
+            bool Result = false;
+            deviceInfo = null;
+            try
+            {
+                DEV_BROADCAST_HDR header = (DEV_BROADCAST_HDR)Marshal.PtrToStructure(handle, typeof(DEV_BROADCAST_HDR));
+
+                if (header.DeviceType == DBT.DEVTYP_DEVICEINTERFACE)
+                {
+                    DEV_BROADCAST_DEVICEINTERFACE devInterface = (DEV_BROADCAST_DEVICEINTERFACE)Marshal.PtrToStructure(handle, typeof(DEV_BROADCAST_DEVICEINTERFACE));
+					var broadcastName = devInterface.Name;
+					var friendlyName = GetDeviceFriendlyName(broadcastName);
+
+					deviceInfo = new UsbDeviceInfo
+                    {
+                        Name = broadcastName,
+                        ClassGuid = devInterface.ClassGuid,
+						FriendlyName = friendlyName,
+                    };
+
+                    Result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
+
+            return Result;
+        }
+
+        public static bool TryPtrToDeviceName(IntPtr lparam, out string deviceName)
 		{
 			bool Result = false;
 			deviceName = "";
@@ -229,8 +274,9 @@ namespace MediaToolkit.Managers
 			return Result;
 		}
 
-		private string GetDeviceName(string dbcc_name)
+		public static string GetDeviceFriendlyName(string dbcc_name)
 		{
+			var friendlyName = "";
 			string[] Parts = dbcc_name.Split('#');
 			if (Parts.Length >= 3)
 			{
@@ -240,16 +286,37 @@ namespace MediaToolkit.Managers
 				string RegPath = @"SYSTEM\CurrentControlSet\Enum\" + DevType + "\\" + DeviceInstanceId + "\\" + DeviceUniqueID;
 				Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(RegPath);
 				if (key != null)
-				{
+				{	
+					//
 					object result = key.GetValue("FriendlyName");
 					if (result != null)
-						return result.ToString();
-					result = key.GetValue("DeviceDesc");
-					if (result != null)
-						return result.ToString();
+					{   // может быть в разных форматах:
+						// @oem80.inf,%iPhone.DeviceDesc%;Apple Mobile Device USB Driver
+						// Apple iPad
+						friendlyName = result.ToString();
+					}
+					else
+					{   // Lumia 720
+						// @oem4.inf,%pid_08d7_dd%;Logitech QuickCam Communicate STX
+						result = key.GetValue("DeviceDesc");
+						if (result != null)
+						{
+							friendlyName = result.ToString();
+
+						}
+					}
+
+					var _parts = friendlyName.Split(';');
+
+					if (_parts.Length > 1)
+					{
+						friendlyName = _parts[1];
+					}
+
 				}
 			}
-			return String.Empty;
+
+			return friendlyName;
 		}
 
 

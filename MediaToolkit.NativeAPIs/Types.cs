@@ -1322,6 +1322,8 @@ namespace MediaToolkit.NativeAPIs
 		public static readonly Guid CATEGORY_AUDIO = new Guid("6994AD04-93EF-11D0-A3CC-00A0C9223196");
 
 		public static readonly Guid CATEGORY_VIDEO_CAMERA = new Guid("E5323777-F976-4f5b-9B55-B94699C46E44");
+
+        public static readonly Guid CATEGORY_AUDIO_DEVICE = new Guid("FBF6F530-07B9-11D2-A71E-0000F8004788");
     }
 
 	public static class GUID

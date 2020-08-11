@@ -609,7 +609,6 @@ namespace MediaToolkit.DeckLink
                 if (buffer != IntPtr.Zero)
                 {
                     bufferQueue.Enqueue(buffer);
-
                 }
             }
 

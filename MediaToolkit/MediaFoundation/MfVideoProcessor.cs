@@ -133,7 +133,7 @@ namespace MediaToolkit.MediaFoundation
 
                         var subType = mediaType.Get(MediaTypeAttributeKeys.Subtype);
 						
-                        logger.Info(MfTool.GetMediaTypeName(subType, true));
+                        logger.Debug(MfTool.GetMediaTypeName(subType, true));
                         if (subType == outputArgs.Format) //VideoFormatGuids.Argb32)//Argb32)//YUY2)//NV12)
                         {
 

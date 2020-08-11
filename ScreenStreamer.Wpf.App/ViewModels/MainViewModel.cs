@@ -47,7 +47,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         public override string Caption
         {
-            get => "Polywall Streamer " + AppModel.AppVersion;
+            get => "Polywall Streamer";
+            //get => "Polywall Streamer " + AppModel.AppVersion;
         }
 
         private Services.WndProcService wndProcService = null;

@@ -70,7 +70,10 @@ namespace ScreenStreamer.Wpf.Models
 			var appVersion = new Version(AppVersion);
 			var configVersion = new Version(ConfigVersion);
 
-			if (appVersion != configVersion)
+            logger.Info("Application Version: " + appVersion);
+            logger.Info("Configuration Version: " + configVersion);
+
+            if (appVersion != configVersion)
             {
 				if(appVersion.Major != configVersion.Major)
 				{

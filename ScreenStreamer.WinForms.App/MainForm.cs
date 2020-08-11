@@ -46,7 +46,8 @@ namespace ScreenStreamer.WinForms.App
 
 			usbManager = new UsbDeviceManager();
 
-			usbManager.Init();
+			usbManager.Init(UsbCategory.VideoCamera);
+
 			usbManager.UsbDeviceArrival += UsbManager_UsbDeviceArrival;
 			usbManager.UsbDeviceMoveComplete += UsbManager_UsbDeviceMoveComplete;
 
