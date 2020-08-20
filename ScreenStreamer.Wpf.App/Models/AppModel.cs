@@ -32,7 +32,7 @@ namespace ScreenStreamer.Wpf.Models
         // public readonly static GlobalVideoConfig VideoConfig = new GlobalVideoConfig();
 
 
-        public int MaxStreamCount { get; set; } = 3;
+        public int MaxStreamCount { get; set; } = 4;
 
         public static AppModel Default => CreateDefault();
 
@@ -96,7 +96,7 @@ namespace ScreenStreamer.Wpf.Models
 
 			if (MaxStreamCount < 1)
 			{
-				MaxStreamCount = 3;
+				MaxStreamCount = 4;
 			}
 
             if(StreamList.Count > MaxStreamCount)

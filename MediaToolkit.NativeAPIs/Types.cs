@@ -879,6 +879,23 @@ namespace MediaToolkit.NativeAPIs
         }
     }
 
+    [Flags()]
+    public enum DeviceContextValues : uint
+    {
+        Window = 0x00000001,
+        Cache = 0x00000002,
+        NoResetAttrs = 0x00000004,
+        ClipChildren = 0x00000008,
+        ClipSiblings = 0x00000010,
+        ParentClip = 0x00000020,
+        ExcludeRgn = 0x00000040,
+        IntersectRgn = 0x00000080,
+        ExcludeUpdate = 0x00000100,
+        IntersectUpdate = 0x00000200,
+        LockWindowUpdate = 0x00000400,
+        Validate = 0x00200000,
+    }
+
     public enum TernaryRasterOperations : uint
     {
         SRCCOPY = 0x00CC0020,

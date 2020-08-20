@@ -41,7 +41,7 @@
                             ToolTip="Open advanced settings">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>
-                            <TextBlock Margin="4,0,10,0">Preferences</TextBlock>
+                            <TextBlock Margin="4,0,10,0">Advanced Settings</TextBlock>
                         </StackPanel>
                     </Button>
                 </DockPanel>

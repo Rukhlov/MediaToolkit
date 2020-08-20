@@ -150,6 +150,9 @@ namespace MediaToolkit.NativeAPIs
         public static extern IntPtr GetDC(IntPtr ptr);
 
         [DllImport("user32.dll")]
+        static extern IntPtr GetDCEx(IntPtr hWnd, IntPtr hrgnClip, DeviceContextValues flags);
+
+        [DllImport("user32.dll")]
         public static extern bool ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
 		[DllImport("user32.dll", SetLastError = true)]
@@ -194,7 +197,6 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("user32.dll")]
         public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
-
         public static Rectangle GetClientRect(IntPtr hwnd)
         {
 
@@ -238,7 +240,6 @@ namespace MediaToolkit.NativeAPIs
 
         [DllImport("user32.dll")]
         public static extern bool UnregisterDeviceNotification(IntPtr handle);
-
 
 
         [DllImport("user32.dll")]
