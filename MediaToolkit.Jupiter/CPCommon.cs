@@ -179,7 +179,6 @@ namespace MediaToolkit.Jupiter
 
         public TWindowStateList(TreeNode argsTree)
         {
-
             var valueList = argsTree.ValueList;
             if (valueList.Count == 1)
             {

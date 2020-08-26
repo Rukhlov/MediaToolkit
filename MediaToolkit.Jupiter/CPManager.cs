@@ -1,5 +1,7 @@
-﻿using System;
+﻿using MediaToolkit.Logging;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -9,7 +11,7 @@ namespace MediaToolkit.Jupiter
 {
     public class CPManager
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Jupiter");
 
 
         private CPClient cpClient = new CPClient();
