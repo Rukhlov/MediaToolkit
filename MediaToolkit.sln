@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DeskMan", "Test.DeskMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DiscoveryClient", "Test.DiscoveryClient\Test.DiscoveryClient.csproj", "{78DC0D21-8724-47E8-AED2-49B13EDF8D62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Jupiter", "MediaToolkit.Jupiter\MediaToolkit.Jupiter.csproj", "{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -183,6 +185,14 @@ Global
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|x86.ActiveCfg = Release|Any CPU
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|x86.Build.0 = Release|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Debug|x86.Build.0 = Debug|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|x86.ActiveCfg = Release|Any CPU
+		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

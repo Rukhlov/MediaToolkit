@@ -4,7 +4,7 @@ public static partial class AppConsts
 {
 	public const string AppVersion = "1.0";
 	public const string AssemblyVersion = "1.0.0.232";
-	public const string GitVersion = "1.0.0-master+b58b95b";
+	public const string GitVersion = "1.0.0-master+32f55fe";
 
 	public const int Day = 20;  
 	public const int Month = 8; 

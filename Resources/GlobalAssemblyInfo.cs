@@ -17,7 +17,7 @@ using System.Reflection;
 
 [assembly: AssemblyVersion("1.0.0.232")]
 [assembly: AssemblyFileVersion("1.0.0.232")]
-[assembly: AssemblyInformationalVersion("1.0.0-master+b58b95b")]
+[assembly: AssemblyInformationalVersion("1.0.0-master+32f55fe")]
 
 
 
