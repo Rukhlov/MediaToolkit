@@ -162,50 +162,149 @@ namespace MediaToolkit.Jupiter
 
                 StateChanged?.Invoke();
 
-                MemoryStream recBuffer = new MemoryStream();
+                byte[] tempBuffer = null;
+
+
                 bool socketClosed = false;
                 while (state == ClientState.Connected || socketClosed)
                 {
                     int available = socket.Available;
                     if (available > 0)
                     {
+                        List<byte[]> responseBuffer = new List<byte[]>();
 
                         CPResponseBase cpResponse = null;
                         Exception exception = null;
                         try
                         {
+
                             byte[] receiveBuffer = new byte[1024];
-                            bool endOfCommand = false;
+                            bool bufferProcessed = false;
 
                             do
                             {
                                 int bytesRec = socket.Receive(receiveBuffer);
+
+                                //logger.Trace("==================  socket.Receive ====================== " + bytesRec);
+
                                 if (bytesRec > 0)
                                 {
+                                    int startIndex = 0;
+                                    int endIndex = 0;
+
                                     for (int i = 0; i < bytesRec; i++)
                                     {
+
                                         var ch = (char)receiveBuffer[i];
 
-                                        if (ch == '=')
-                                        {// ControlPoint response
-
-                                        }
-                                        else if (ch == ':')
-                                        {// ControlPoint notification
+                                        if (ch == '=' || (ch == ':'))
+                                        {// ControlPoint response or notification
+                                            //var log = (ch == '=') ? "CPRESPONSE" : "CPNOTIFY";
+                                            //logger.Trace(log + " " + i);
+                                            startIndex = i;
+                                            endIndex = i;
 
                                         }
                                         else if (ch == '\r')
                                         {
+                                            //logger.Trace("------------ CARRIAGE RETURN " + i);
                                             continue;
                                         }
                                         else if (ch == '\n')
                                         {
-                                            endOfCommand = true;
-                                            break;
+                                            //logger.Trace("------------ LINE FEED " + i);
+
+                                            endIndex = i;
+
+                                            var dataSize = (endIndex - startIndex) + 1;
+
+                                            //logger.Trace("buf = new byte[len] " + dataSize);
+
+                                            int offset = 0;
+                                            byte[] dataBuffer = null;
+
+                                            if (tempBuffer != null)
+                                            {
+                                                //logger.Trace("tempBuffer != null");
+
+                                                var totalSize = dataSize + tempBuffer.Length;
+
+                                                //logger.Trace("buf = new byte[len] " + totalSize);
+                                                dataBuffer = new byte[totalSize];
+
+                                                Array.Copy(tempBuffer, 0, dataBuffer, offset, tempBuffer.Length);
+                                                offset += tempBuffer.Length;
+
+                                                tempBuffer = null;
+                                            }
+                                            else
+                                            {
+                                                dataBuffer = new byte[dataSize];
+                                            }
+
+
+                                            //logger.Trace("Array.Copy( ) " + startIndex + " " + offset + " " + dataSize);
+                                            Array.Copy(receiveBuffer, startIndex, dataBuffer, offset, dataSize);
+
+
+                                            //logger.Trace("recBuffer.Add(buf) " + dataBuffer.Length);
+                                            responseBuffer.Add(dataBuffer);
+
+                                            if ((endIndex + 1) == bytesRec)
+                                            {// весь буфер прочитан
+
+                                                //logger.Trace("bufferProcessed break ");
+
+                                                bufferProcessed = true;
+                                                break;
+                                            }
+                                            else
+                                            {// остались данные нужно дочитать...
+                                             // logger.Trace("(endIndex + 1) != bytesRec" + (endIndex + 1) + " " + bytesRec);
+                                            }
                                         }
+
+
                                     }
 
-                                    recBuffer.Write(receiveBuffer, 0, bytesRec);
+                                    //logger.Trace("==========================================================");
+
+                                    if (!bufferProcessed)
+                                    {// если остались не обработаные данные сохраняем их в буффер
+
+                                        //logger.Trace("bufferProcessed == false " + bytesRec + " " + endIndex);
+
+                                        var dataRemaining = (bytesRec - endIndex);
+
+                                        int offset = 0;
+                                        if (tempBuffer != null)
+                                        {
+                                            //logger.Trace("tempBuffer != null)" + tempBuffer.Length + " " + dataRemaining);
+
+                                            var tempSize = tempBuffer.Length + dataRemaining;
+                                            var newTempBuffer = new byte[tempSize];
+
+                                            // logger.Trace("TEMP TO NEWTEMP >> Array.Copy( ) " + 0 + " " + offset + " " + tempBuffer.Length);
+
+                                            Array.Copy(tempBuffer, 0, newTempBuffer, offset, tempBuffer.Length);
+                                            offset += tempBuffer.Length;
+
+                                            tempBuffer = newTempBuffer;
+                                        }
+                                        else
+                                        {
+                                            //logger.Trace("new byte[len] " + dataRemaining);
+                                            tempBuffer = new byte[dataRemaining];
+                                        }
+
+
+                                        //logger.Trace("REC TO TEMP>> Array.Copy( ) " + endIndex + " " + offset + " " + dataRemaining);
+
+                                        Array.Copy(receiveBuffer, endIndex, tempBuffer, offset, dataRemaining);
+
+
+                                    }
+
                                 }
                                 else
                                 {// socket closed...
@@ -215,12 +314,7 @@ namespace MediaToolkit.Jupiter
                                 }
 
                             }
-                            while (!endOfCommand);
-
-                            var bytes = recBuffer.ToArray();
-                            recBuffer = new MemoryStream();
-
-                            cpResponse = CPResponseBase.Create(bytes);
+                            while (!bufferProcessed);
 
                         }
                         catch (Exception ex)
@@ -229,20 +323,26 @@ namespace MediaToolkit.Jupiter
                             exception = ex;
                         }
 
-                        var responseType = cpResponse?.ResponseType ?? CPResponseType.Unknown;
+                        foreach (var bytes in responseBuffer)
+                        {
+                            cpResponse = CPResponseBase.Create(bytes);
+                            var responseType = cpResponse?.ResponseType ?? CPResponseType.Unknown;
 
-                        if (responseType == CPResponseType.Response || cpResponse.ResponseType == CPResponseType.Galileo)
-                        {
-                            ProcessResponse(cpResponse, exception);
+                            if (responseType == CPResponseType.Response || cpResponse.ResponseType == CPResponseType.Galileo)
+                            {
+                                ProcessResponse(cpResponse, exception);
+                            }
+                            else if (cpResponse.ResponseType == CPResponseType.Notify)
+                            {
+                                ProcessNotification(cpResponse);
+                            }
+                            else
+                            {
+                                ProcessResponse(null, exception);
+                            }
                         }
-                        else if (cpResponse.ResponseType == CPResponseType.Notify)
-                        {
-                            ProcessNotification(cpResponse);
-                        }
-                        else
-                        {
-                            ProcessResponse(null, exception);
-                        }
+
+                        responseBuffer.Clear();
 
                     }
 
@@ -310,6 +410,7 @@ namespace MediaToolkit.Jupiter
 
             logger.Verb("CommunicationLoop END");
         }
+
 
 
         private void ProcessResponse(CPResponseBase cpResponse, Exception exception)
