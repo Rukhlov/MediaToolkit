@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Jupiter
 {
     public enum StateFlag
-    {
-        // ControlPoint Protocol Manual p. 122
+    {// ControlPoint Protocol Manual p. 122
         //Get -Set Flags
 
         wsVisible = 0x0001,
@@ -122,16 +121,17 @@ namespace MediaToolkit.Jupiter
     {
         // { { 101 } 2 9 7183 154 292 320 240 { 10003 } }
 
-        public WinId Id { get; private set; } = new WinId(-1);
-        public SubSystemKind Kind { get; private set; } = SubSystemKind.None;
-        public uint State { get; private set; } = 0;
-        public uint StateChange { get; private set; } = 0;
-        public int x { get; private set; } = 0;
-        public int y { get; private set; } = 0;
-        public int w { get; private set; } = 0;
-        public int h { get; private set; } = 0;
-        public WinId ZAfter { get; private set; } = new WinId(-1);
+        public WinId Id { get; set; } = new WinId(-1);
+        public SubSystemKind Kind { get; set; } = SubSystemKind.None;
+        public uint State { get; set; } = 0;
+        public uint StateChange { get; set; } = 0;
+        public int x { get; set; } = 0;
+        public int y { get; set; } = 0;
+        public int w { get; set; } = 0;
+        public int h { get; set; } = 0;
+        public WinId ZAfter { get; set; } = new WinId(-1);
 
+        public TWindowState() { }
         public TWindowState(string data) : this(TreeNode.Parse(data))
         { }
 
@@ -179,6 +179,7 @@ namespace MediaToolkit.Jupiter
 
         public TWindowStateList(TreeNode argsTree)
         {
+
             var valueList = argsTree.ValueList;
             if (valueList.Count == 1)
             {
@@ -204,6 +205,182 @@ namespace MediaToolkit.Jupiter
         public override string ToString()
         {
             return "{ " + this.Count + " " + string.Join(" ", this) + " }";
+        }
+    }
+
+    public abstract class CPObjBase
+    {
+        public CPObjBase(CPClient c)
+        {
+            this.client = c;
+        }
+
+        protected readonly CPClient client = null;
+        public abstract string ObjectName { get; }
+
+        protected void ThrowIfNotReady()
+        {
+            if (!client.IsConnected)
+            {
+                throw new Exception("Client not connected");
+
+            }
+
+            //...
+        }
+    }
+
+
+    public class Notify
+    {//ControlPoint Protocol Manual p.84
+        /*
+         * WindowState ( [in] TWindowState_array_t )
+           ScreenConfigChanged ( [in] CPScreenConfig )
+         */
+
+
+    }
+
+
+
+    public class WinServer : CPObjBase
+    { //ControlPoint Protocol Manual p.116
+
+        /*
+         *  DeleteWindow ( [in] WinId_t )
+            QueryAllWindows ( [out] TWindowState_array_t )
+            QueryWindows ( [in] WinId_t_array_t,
+            [out] TwindowState_array_t )
+            FindWindow ( [in,string] window_descriptor,
+            [out] WinId_t )
+            InvokeAppWindow ( [in,string] appWinName,
+            [out] WinId_t )
+            GetAppWinInfo ( [in] WinId_t winid,
+            [out,string] window_descriptor,
+            [out,string] cmdline,
+            [out_string] workDir )
+            RegisterNotifyTarget ( )
+            UnregisterNotifyTarget ( )
+            GetServerInfo ( [out] CPServerInfo )
+            GetScreenConfig ( [out] CPScreenConfig )
+            Quit ( )
+            QueryAllLayoutsCS ( [out, string] )
+            QueryLastSetLayout ( [out, string] )
+            SetLayout ( [in, string] )
+            SaveLayout ( [in, string],
+            [in] WinId_t_array_t )
+            DeleteLayout ( [in, string] )
+         */
+
+        public WinServer(CPClient c) : base(c) { }
+
+        public override string ObjectName => "WinServer";
+
+
+        public async Task DeleteWindow(WinId winId)
+        {
+            ThrowIfNotReady();
+
+            var request = new CPRequest(ObjectName, "DeleteWindow", winId);
+            var response = await client.SendAsync(request) as CPResponse;
+
+            if (!response.Success)
+            {
+                throw new Exception("ErrorCode: " + response.ResultCode);
+            }
+
+        }
+
+        public async Task<TWindowStateList> QueryAllWindows()
+        {
+
+            ThrowIfNotReady();
+
+            var request = new CPRequest(ObjectName, "QueryAllWindows");
+            var response = await client.SendAsync(request) as CPResponse;
+
+            if (!response.Success)
+            {
+                throw new Exception("ErrorCode: " + response.ResultCode);
+            }
+
+            return new TWindowStateList(response.ValueList);
+        }
+
+    }
+
+    public class Window : CPObjBase
+    {//ControlPoint Protocol Manual p.108
+
+        /*
+         *  GetState ( [in] WinId_t, [out] TWindowState )
+            SetState ( [in, out] TWindowState )
+            GetTitle ( [in] WinId_t, [out, string] title )
+            SetTitle ( [in] WinId_t, [in, string] title )
+            GetFrameInfo ([in] WinId_t wid, [out] struct CPWndFrameInfo * fi)
+            SetFrameInfo ([in] WinId_t wid, [in] struct CPWndFrameInfo * fi)
+            GetTitleInfo ( [in] WinId_t, [out] struct CPWndTitleInfo * ti)
+            SetTitleInfo ( [in] WinId_t, [in] struct CPWndTitleInfo * ti)
+            GetTitleFontInfo ([in] WinId_t wid, [out] struct CPWndTitleFontInfo * tfi)
+            SetTitleFontInfo ([in] WinId_t wid, [in] struct CPWndTitleFontInfo * tfi)
+            GrabImage ([in] WinId_t, [out,string] wchar_t ** )
+         */
+
+        public Window(CPClient c) : base(c) { }
+        public override string ObjectName => "Window";
+
+        public async Task<TWindowState> GetState(TWindowState state)
+        {
+
+            ThrowIfNotReady();
+
+            var request = new CPRequest(ObjectName, "GetState", state);
+            var response = await client.SendAsync(request) as CPResponse;
+
+            if (!response.Success)
+            {
+                throw new Exception("ErrorCode: " + response.ResultCode);
+            }
+
+            return new TWindowState(response.ValueList);
+
+
+        }
+
+        public async Task<TWindowState> SetState(TWindowState state)
+        {
+
+            ThrowIfNotReady();
+
+            var request = new CPRequest(ObjectName, "SetState", state);
+
+            var response = await client.SendAsync(request) as CPResponse;
+
+            if (!response.Success)
+            {
+                throw new Exception("ErrorCode: " + response.ResultCode);
+            }
+
+            return new TWindowState(response.ValueList);
+        }
+
+
+        public async Task<string> GrabImage(WinId winId)
+        {
+
+            ThrowIfNotReady();
+
+            var request = new CPRequest(ObjectName, "GrabImage", winId);
+
+            var response = await client.SendAsync(request) as CPResponse;
+
+            if (!response.Success)
+            {
+                throw new Exception("ErrorCode: " + response.ResultCode);
+            }
+
+            return response.ValueList.Replace("\"", "");
+
         }
     }
 
@@ -350,6 +527,35 @@ namespace MediaToolkit.Jupiter
             return val;
         }
 
+    }
+
+
+    public enum ResultCodes : uint
+    { //ControlPoint Protocol Manual p.176
+        S_OK = 0,
+        S_FALSE = 0x00000001,
+
+        // Server errors
+        E_INVALID_WINID = 0x80040301,
+        E_NOTFOUND = 0x80040302,
+        E_WINTYPEMISMATCH = 0x80040303,
+        E_INVALID_ARGS = 0x80040304,
+        E_INVALID_VERSION = 0x80040305,
+        E_ARCHIVE_NOTFOUND = 0x80040306,
+        E_WINID_ALLREADYUSED = 0x80040307,
+        E_INVALID_FORMAT = 0x80040308,
+
+        E_FILE_NOTEXIST = 0x80070002,
+        E_WIN_CANNOT_SHOW_OR_REMOVE = 0x800705A9,
+
+        //Protocol errors enough 
+        E_PARS_NOT_ENOUGH = 0x80040501,
+        E_TOMANY_PARS_SUPPLIED = 0x80040502,
+        E_INVALID_METHODNAME = 0x80040503,
+        E_INVALID_OBJECTNAME = 0x80040504,
+        E_BAD_FORMAT = 0x80040505,
+
+        //..
     }
 
 }

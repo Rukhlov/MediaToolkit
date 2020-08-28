@@ -55,6 +55,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DiscoveryClient", "Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Jupiter", "MediaToolkit.Jupiter\MediaToolkit.Jupiter.csproj", "{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Jupiter", "Test.Jupiter\Test.Jupiter.csproj", "{AD7C6D48-1749-4F4E-9372-2D05566B503B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -193,6 +195,14 @@ Global
 		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|x86.ActiveCfg = Release|Any CPU
 		{73618614-E2C0-4D1F-9E6A-FF1D6F9D0C61}.Release|x86.Build.0 = Release|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -210,6 +220,7 @@ Global
 		{9830873B-F8FE-482D-B15B-B8B800A9ED9A} = {7306EEA8-EDEC-4D5C-A40F-B00FEF44A8A2}
 		{6464BE50-5ABC-4AE7-8A61-B50D90AF1398} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
+		{AD7C6D48-1749-4F4E-9372-2D05566B503B} = {762A0890-DAD6-4F12-806F-33DF38E80B7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {691ACD75-ACCB-4862-BC19-0302DCE83B4A}

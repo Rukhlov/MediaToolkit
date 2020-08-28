@@ -13,9 +13,25 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Jupiter
 {
 
+    public enum ClientState
+    {
+        Connecting,
+        Connected,
+        Disconnecting,
+        Disconnected,
+        Closed,
+    }
+
+
     public class CPClient
     {
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Jupiter");
+
+        public CPClient()
+        {
+            Window = new Window(this);
+            WinServer = new WinServer(this);
+        }
 
         public string Host { get; set; } = "127.0.0.1";
         public int Port { get; set; } = 25456;
@@ -32,6 +48,9 @@ namespace MediaToolkit.Jupiter
         //private volatile bool running = false;
 
         public bool IsConnected => socket?.Connected ?? false;
+
+        public Window Window { get; } = null;
+        public WinServer WinServer { get; } = null;
 
         private Queue<InvokeCommand> commandQueue = new Queue<InvokeCommand>();
 
@@ -178,9 +197,9 @@ namespace MediaToolkit.Jupiter
                         try
                         {
 
-                            byte[] receiveBuffer = new byte[1024];
+                            byte[] receiveBuffer = new byte[8196];
                             bool bufferProcessed = false;
-
+                            bool carriageReturn = false;
                             do
                             {
                                 int bytesRec = socket.Receive(receiveBuffer);
@@ -189,47 +208,37 @@ namespace MediaToolkit.Jupiter
 
                                 if (bytesRec > 0)
                                 {
+                                    int dataRemaining = bytesRec;
+
                                     int startIndex = 0;
-                                    int endIndex = 0;
 
                                     for (int i = 0; i < bytesRec; i++)
                                     {
-
                                         var ch = (char)receiveBuffer[i];
-
-                                        if (ch == '=' || (ch == ':'))
-                                        {// ControlPoint response or notification
-                                            //var log = (ch == '=') ? "CPRESPONSE" : "CPNOTIFY";
-                                            //logger.Trace(log + " " + i);
-                                            startIndex = i;
-                                            endIndex = i;
-
-                                        }
-                                        else if (ch == '\r')
+                                        if (ch == '\r')
                                         {
                                             //logger.Trace("------------ CARRIAGE RETURN " + i);
+                                            carriageReturn = true;
                                             continue;
                                         }
-                                        else if (ch == '\n')
+                                        else if (ch == '\n' && carriageReturn)
                                         {
                                             //logger.Trace("------------ LINE FEED " + i);
 
-                                            endIndex = i;
+                                            var endIndex = i;
 
                                             var dataSize = (endIndex - startIndex) + 1;
-
-                                            //logger.Trace("buf = new byte[len] " + dataSize);
 
                                             int offset = 0;
                                             byte[] dataBuffer = null;
 
-                                            if (tempBuffer != null)
+                                            if (tempBuffer == null)
                                             {
-                                                //logger.Trace("tempBuffer != null");
-
+                                                dataBuffer = new byte[dataSize];
+                                            }
+                                            else
+                                            {
                                                 var totalSize = dataSize + tempBuffer.Length;
-
-                                                //logger.Trace("buf = new byte[len] " + totalSize);
                                                 dataBuffer = new byte[totalSize];
 
                                                 Array.Copy(tempBuffer, 0, dataBuffer, offset, tempBuffer.Length);
@@ -237,54 +246,63 @@ namespace MediaToolkit.Jupiter
 
                                                 tempBuffer = null;
                                             }
-                                            else
-                                            {
-                                                dataBuffer = new byte[dataSize];
-                                            }
 
-
-                                            //logger.Trace("Array.Copy( ) " + startIndex + " " + offset + " " + dataSize);
                                             Array.Copy(receiveBuffer, startIndex, dataBuffer, offset, dataSize);
 
+                                            startIndex = endIndex + 1;// next char...
 
-                                            //logger.Trace("recBuffer.Add(buf) " + dataBuffer.Length);
+                                            //оставшиеся в буфере данные
+                                            dataRemaining = (bytesRec - startIndex);
+
                                             responseBuffer.Add(dataBuffer);
 
-                                            if ((endIndex + 1) == bytesRec)
+                                            if (dataRemaining == 0)
                                             {// весь буфер прочитан
 
-                                                //logger.Trace("bufferProcessed break ");
-
                                                 bufferProcessed = true;
+
                                                 break;
                                             }
                                             else
                                             {// остались данные нужно дочитать...
-                                             // logger.Trace("(endIndex + 1) != bytesRec" + (endIndex + 1) + " " + bytesRec);
-                                            }
-                                        }
 
+                                            }
+
+                                            carriageReturn = false;
+
+                                        }
+                                        else
+                                        {
+                                            if (carriageReturn)
+                                            {
+                                                carriageReturn = false;
+                                            }
+
+                                            //if (ch == '=' || (ch == ':'))
+                                            //{// ControlPoint response or notification
+
+                                            //    //var log = (ch == '=') ? "CPRESPONSE" : "CPNOTIFY";
+                                            //    //logger.Trace(log + " " + i);
+                                            //}
+
+                                        }
 
                                     }
 
                                     //logger.Trace("==========================================================");
 
-                                    if (!bufferProcessed)
-                                    {// если остались не обработаные данные сохраняем их в буффер
+                                    Debug.Assert(dataRemaining >= 0, "dataRemaining >= 0");
 
-                                        //logger.Trace("bufferProcessed == false " + bytesRec + " " + endIndex);
+                                    if (dataRemaining > 0)
+                                    {// остались не обработаные данные сохраняем их в буффер
 
-                                        var dataRemaining = (bytesRec - endIndex);
+                                        // logger.Trace("dataRemaining == " + dataRemaining);
 
                                         int offset = 0;
                                         if (tempBuffer != null)
                                         {
-                                            //logger.Trace("tempBuffer != null)" + tempBuffer.Length + " " + dataRemaining);
-
                                             var tempSize = tempBuffer.Length + dataRemaining;
                                             var newTempBuffer = new byte[tempSize];
-
-                                            // logger.Trace("TEMP TO NEWTEMP >> Array.Copy( ) " + 0 + " " + offset + " " + tempBuffer.Length);
 
                                             Array.Copy(tempBuffer, 0, newTempBuffer, offset, tempBuffer.Length);
                                             offset += tempBuffer.Length;
@@ -293,18 +311,11 @@ namespace MediaToolkit.Jupiter
                                         }
                                         else
                                         {
-                                            //logger.Trace("new byte[len] " + dataRemaining);
                                             tempBuffer = new byte[dataRemaining];
                                         }
 
-
-                                        //logger.Trace("REC TO TEMP>> Array.Copy( ) " + endIndex + " " + offset + " " + dataRemaining);
-
-                                        Array.Copy(receiveBuffer, endIndex, tempBuffer, offset, dataRemaining);
-
-
+                                        Array.Copy(receiveBuffer, startIndex, tempBuffer, offset, dataRemaining);
                                     }
-
                                 }
                                 else
                                 {// socket closed...
@@ -431,8 +442,6 @@ namespace MediaToolkit.Jupiter
         {
             NotificationReceived?.Invoke((CPNotification)cpResponse);
         }
-
-
 
 
         public CPResponseBase Send(CPRequest request, int timeout = -1)
@@ -635,14 +644,6 @@ namespace MediaToolkit.Jupiter
 
     }
 
-    public enum ClientState
-    {
-        Connecting,
-        Connected,
-        Disconnecting,
-        Disconnected,
-        Closed,
-    }
 
 
     public class CPRequest
@@ -651,6 +652,16 @@ namespace MediaToolkit.Jupiter
         {
             this.RequestString = req;
         }
+
+        public CPRequest(string objName, string method, params object[] values)
+        {
+            this.ObjectName = objName;
+            this.Method = method;
+            this.ValueList = string.Join(" ", values); ;// "{ " + string.Join(" ", values) + " }";
+
+            this.RequestString = $"+{ObjectName} {Method} {ValueList}\r\n";
+        }
+
 
         public CPRequest(string objName, string method, string valueList = "")
         {
@@ -767,9 +778,11 @@ namespace MediaToolkit.Jupiter
                 }
             }
 
+
             return response;
 
         }
+
 
         public override string ToString()
         {
@@ -798,7 +811,7 @@ namespace MediaToolkit.Jupiter
             var codeStr = resp.Substring(offset, ResultCodeLength);
             offset += ResultCodeLength;
 
-            ResultCode = int.Parse(codeStr);
+            ResultCode = int.Parse(codeStr, System.Globalization.NumberStyles.HexNumber);
 
             var valueList = "";
             if (resp.Length > offset)
