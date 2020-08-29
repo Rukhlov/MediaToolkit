@@ -1048,12 +1048,9 @@ namespace MediaToolkit.Jupiter
 		}
 
 		private static TreeNode Parse(char[] data, int index = 0)
-		{// TODO: переделать без рекурсии...
-
-			TreeNode node = new TreeNode();
-
+		{
+  		    TreeNode node = new TreeNode();
 			index++;
-
 			for (int i = index; i < data.Length; i++)
 			{
 				node.offset++;
@@ -1163,7 +1160,7 @@ namespace MediaToolkit.Jupiter
 			}
 			else if (ResultCode == ResultCodes.E_UNSUPPORTED_DISPLAY_FORMAT)
 			{
-				descr = "Unsupported Display Format";
+				descr = "Unsupported display format";
 			}
 			else if (ResultCode == ResultCodes.E_NO_TIMING_SELECTED)
 			{

@@ -54,7 +54,6 @@ namespace MediaToolkit.Jupiter
         public ClientState State => state;
 
         private Socket socket = null;
-        //private volatile bool running = false;
 
         public bool IsConnected => socket?.Connected ?? false;
 
@@ -164,278 +163,6 @@ namespace MediaToolkit.Jupiter
 
         }
 
-
-        private void _CommunicationLoop()
-        {
-            logger.Verb("CommunicationLoop BEGIN");
-
-            try
-            {
-                socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.ReceiveTimeout = 5000;
-                socket.SendTimeout = 5000;
-
-                logger.Verb($"socket.ConnectAsync(...) {Host} {Port}");
-
-                var connectionTask = socket.ConnectAsync(Host, Port);
-
-                Task.WaitAny(new[] { connectionTask }, 5000);
-
-                if (!socket.Connected)
-                {
-                    throw new TimeoutException("Connection error");
-                }
-
-                if (state == ClientState.Connecting)
-                {
-                    state = ClientState.Connected;
-                }
-
-                StateChanged?.Invoke();
-
-                byte[] tempBuffer = null;
-
-
-                bool socketClosed = false;
-                while (state == ClientState.Connected || socketClosed)
-                {
-                    int available = socket.Available;
-                    if (available > 0)
-                    {
-                        List<byte[]> responseBuffer = new List<byte[]>();
-
-                        CPResponseBase cpResponse = null;
-                        Exception exception = null;
-                        try
-                        {
-
-                            byte[] receiveBuffer = new byte[8196];
-                            bool bufferProcessed = false;
-                            bool carriageReturn = false;
-                            do
-                            {
-                                int bytesRec = socket.Receive(receiveBuffer);
-
-                                //logger.Trace("==================  socket.Receive ====================== " + bytesRec);
-
-                                if (bytesRec > 0)
-                                {
-                                    int dataRemaining = bytesRec;
-
-                                    int startIndex = 0;
-
-                                    for (int i = 0; i < bytesRec; i++)
-                                    {
-                                        var ch = (char)receiveBuffer[i];
-                                        if (ch == '\r')
-                                        {
-                                            //logger.Trace("------------ CARRIAGE RETURN " + i);
-                                            carriageReturn = true;
-                                            continue;
-                                        }
-                                        else if (ch == '\n' && carriageReturn)
-                                        {
-                                            //logger.Trace("------------ LINE FEED " + i);
-
-                                            var endIndex = i;
-
-                                            var dataSize = (endIndex - startIndex) + 1;
-
-                                            int offset = 0;
-                                            byte[] dataBuffer = null;
-
-                                            if (tempBuffer == null)
-                                            {
-                                                dataBuffer = new byte[dataSize];
-                                            }
-                                            else
-                                            {
-                                                var totalSize = dataSize + tempBuffer.Length;
-                                                dataBuffer = new byte[totalSize];
-
-                                                Array.Copy(tempBuffer, 0, dataBuffer, offset, tempBuffer.Length);
-                                                offset += tempBuffer.Length;
-
-                                                tempBuffer = null;
-                                            }
-
-                                            Array.Copy(receiveBuffer, startIndex, dataBuffer, offset, dataSize);
-
-                                            startIndex = endIndex + 1;// next char...
-
-                                            //оставшиеся в буфере данные
-                                            dataRemaining = (bytesRec - startIndex);
-
-                                            responseBuffer.Add(dataBuffer);
-
-                                            if (dataRemaining == 0)
-                                            {// весь буфер прочитан
-
-                                                bufferProcessed = true;
-
-                                                break;
-                                            }
-                                            else
-                                            {// остались данные нужно дочитать...
-
-                                            }
-
-                                            carriageReturn = false;
-
-                                        }
-                                        else
-                                        {
-                                            if (carriageReturn)
-                                            {
-                                                carriageReturn = false;
-                                            }
-
-                                            //if (ch == '=' || (ch == ':'))
-                                            //{// ControlPoint response or notification
-
-                                            //    //var log = (ch == '=') ? "CPRESPONSE" : "CPNOTIFY";
-                                            //    //logger.Trace(log + " " + i);
-                                            //}
-
-                                        }
-
-                                    }
-
-                                    //logger.Trace("==========================================================");
-
-                                    Debug.Assert(dataRemaining >= 0, "dataRemaining >= 0");
-
-                                    if (dataRemaining > 0)
-                                    {// остались не обработаные данные сохраняем их в буффер
-
-                                        // logger.Trace("dataRemaining == " + dataRemaining);
-
-                                        int offset = 0;
-                                        if (tempBuffer != null)
-                                        {
-                                            var tempSize = tempBuffer.Length + dataRemaining;
-                                            var newTempBuffer = new byte[tempSize];
-
-                                            Array.Copy(tempBuffer, 0, newTempBuffer, offset, tempBuffer.Length);
-                                            offset += tempBuffer.Length;
-
-                                            tempBuffer = newTempBuffer;
-                                        }
-                                        else
-                                        {
-                                            tempBuffer = new byte[dataRemaining];
-                                        }
-
-                                        Array.Copy(receiveBuffer, startIndex, tempBuffer, offset, dataRemaining);
-                                    }
-                                }
-                                else
-                                {// socket closed...
-
-                                    socketClosed = true;
-                                    break;
-                                }
-
-                            }
-                            while (!bufferProcessed);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex);
-                            exception = ex;
-                        }
-
-                        foreach (var bytes in responseBuffer)
-                        {
-                            cpResponse = CPResponseBase.Create(bytes);
-                            var responseType = cpResponse?.ResponseType ?? CPResponseType.Unknown;
-
-                            if (responseType == CPResponseType.Response || cpResponse.ResponseType == CPResponseType.Galileo)
-                            {
-                                ProcessResponse(cpResponse, exception);
-                            }
-                            else if (cpResponse.ResponseType == CPResponseType.Notify)
-                            {
-                                ProcessNotification(cpResponse);
-                            }
-                            else
-                            {
-                                ProcessResponse(null, exception);
-                            }
-                        }
-
-                        responseBuffer.Clear();
-
-                    }
-
-                    if (state != ClientState.Connected || socketClosed)
-                    {
-                        break;
-                    }
-
-                    if (sendCommand == null)
-                    {
-                        if (!socket.Poll(1, SelectMode.SelectRead))
-                        {
-                            if (TryGetCommand(out var command))
-                            {
-                                try
-                                {
-                                    var seq = command.seq;
-                                    var request = (CPRequest)command.request;
-
-                                    byte[] sendBuffer = request.GetBytes();
-                                    int bytesSent = socket.Send(sendBuffer);
-
-                                    sendCommand = command;
-
-                                    logger.Debug(">> " + sendCommand.ToString() + "bytesSent: " + bytesSent);
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.Error(ex);
-
-                                    ProcessResponse(null, ex);
-                                }
-                            }
-                            //continue;
-                        }
-                    }
-
-                    syncEvent.WaitOne(10);
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-            }
-            finally
-            {
-                if (socket != null)
-                {
-                    if (socket.Connected)
-                    {
-                        socket.Shutdown(SocketShutdown.Both);
-                    }
-
-                    socket.Close();
-                    socket = null;
-                }
-
-                DrainCommands();
-
-                state = ClientState.Disconnected;
-                StateChanged?.Invoke();
-            }
-
-            logger.Verb("CommunicationLoop END");
-        }
-
-
-
         private void CommunicationLoop()
         {
             logger.Verb("CommunicationLoop BEGIN");
@@ -465,38 +192,44 @@ namespace MediaToolkit.Jupiter
                 StateChanged?.Invoke();
 
 
-                bool socketClosed = false;
-                while (state == ClientState.Connected || socketClosed)
+                while (true)
                 {
+                    bool socketConnected = IsSocketConnected();
+                    if (!(socketConnected && state == ClientState.Connected))
+                    {
+                        logger.Debug("Connection break " + socketConnected + " " + state);
+                        break;
+                    }
+
                     int available = socket.Available;
                     if (available > 0)
                     {
+                        IEnumerable<byte[]> dataLines = null;
 
-                        IEnumerable<byte[]> responseBuffer = null;
+                        CPSocketHandler socketHanlder = new CPSocketHandler();
 
-                        CRLFHanlder socketHanlder = new CRLFHanlder();
-
-                        CPResponseBase cpResponse = null;
                         Exception exception = null;
                         try
                         {                           
                             bool bufferProcessed = false;
                             do
                             {
-                                byte[] recBuffer = new byte[64];
+                                byte[] recBuffer = new byte[1024];
 
                                 int bytesRec = socket.Receive(recBuffer);
 
                                 if (bytesRec > 0)
-                                {
-                                    responseBuffer = socketHanlder.GetData(recBuffer, bytesRec);
+                                { //The ControlPoint protocol is text-based. Each command line terminates
+                                    //with CR/LF.Tokens are space separated. All identifiers are case-sensitive.
 
-                                    bufferProcessed = (responseBuffer != null);
+                                    dataLines = socketHanlder.ReadLines(recBuffer, bytesRec);
+
+                                    bufferProcessed = (dataLines != null);
                                 }
                                 else
                                 {// socket closed...
 
-                                    socketClosed = true;
+                                    socketConnected = false;
                                     break;
                                 }
 
@@ -510,35 +243,41 @@ namespace MediaToolkit.Jupiter
                             exception = ex;
                         }
 
-                        foreach (var bytes in responseBuffer)
+                        if (dataLines != null)
                         {
-                            cpResponse = CPResponseBase.Create(bytes);
-                            var responseType = cpResponse?.ResponseType ?? CPResponseType.Unknown;
+                            foreach (var bytes in dataLines)
+                            {
+                                var cpResponse = CPResponseBase.Create(bytes);
+                                var responseType = cpResponse?.ResponseType ?? CPResponseType.Unknown;
 
-                            if (responseType == CPResponseType.Response || cpResponse.ResponseType == CPResponseType.Galileo)
-                            {
-                                ProcessResponse(cpResponse, exception);
+                                if (responseType == CPResponseType.Response || cpResponse.ResponseType == CPResponseType.Galileo)
+                                {
+                                    ProcessResponse(cpResponse, exception);
+                                }
+                                else if (cpResponse.ResponseType == CPResponseType.Notify)
+                                {
+                                    ProcessNotification(cpResponse);
+                                }
+                                else
+                                {
+                                    ProcessResponse(null, exception);
+                                }
                             }
-                            else if (cpResponse.ResponseType == CPResponseType.Notify)
-                            {
-                                ProcessNotification(cpResponse);
-                            }
-                            else
-                            {
-                                ProcessResponse(null, exception);
-                            }
+
+                            dataLines = null;
                         }
 
                     }
 
-                    if (state != ClientState.Connected || socketClosed)
+                    socketConnected = IsSocketConnected();
+                    if (!(socketConnected && state == ClientState.Connected))
                     {
+                        logger.Debug("Connection break " + socketConnected + " " + state);
                         break;
                     }
 
-                    if (sendCommand == null)
-                    {
-                        if (!socket.Poll(1, SelectMode.SelectRead))
+                    { // Response must be received before the next Request is sent!
+                        if (sendCommand == null)// обнуляется при получении ответа
                         {
                             if (TryGetCommand(out var command))
                             {
@@ -561,7 +300,6 @@ namespace MediaToolkit.Jupiter
                                     ProcessResponse(null, ex);
                                 }
                             }
-                            //continue;
                         }
                     }
 
@@ -576,6 +314,7 @@ namespace MediaToolkit.Jupiter
             }
             finally
             {
+                
                 if (socket != null)
                 {
                     if (socket.Connected)
@@ -589,6 +328,7 @@ namespace MediaToolkit.Jupiter
 
                 DrainCommands();
 
+                isAuthenticated = false;
                 state = ClientState.Disconnected;
                 StateChanged?.Invoke();
             }
@@ -596,6 +336,10 @@ namespace MediaToolkit.Jupiter
             logger.Verb("CommunicationLoop END");
         }
 
+        private bool IsSocketConnected()
+        {
+            return (!(socket.Poll(1, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
+        }
 
         private void ProcessResponse(CPResponseBase cpResponse, Exception exception)
         {
@@ -616,17 +360,51 @@ namespace MediaToolkit.Jupiter
             NotificationReceived?.Invoke((CPNotification)cpResponse);
         }
 
+        public async Task<bool> Authenticate(string user, string password, int timeout = 5000)
+        {
+            if (isAuthenticated)
+            {
+                return false;
+            }
+
+            Credential = new NetworkCredential(user, password);
+
+            var authRequest = new CPRequest($"{Credential.UserName}\r\n{Credential.Password}\r\n");
+
+            var resp = await SendAsync(authRequest, timeout);
+            resp.ThrowIfError();
+
+            isAuthenticated = resp?.Success ?? false;
+            return isAuthenticated;
+        }
+
+        public Task<CPResponseBase> SendAsync(CPRequest request, CancellationToken token, int timeout = 10000)
+        {
+            return Task.Run(() => SendInternal(request, token, timeout));
+        }
+
+        public Task<CPResponseBase> SendAsync(CPRequest request, int timeout = 10000)
+        {
+            return SendAsync(request, CancellationToken.None, timeout);
+        }
 
         public CPResponseBase Send(CPRequest request, int timeout = -1)
         {
+            return SendInternal(request, CancellationToken.None, timeout);
+        }
+
+        private CPResponseBase SendInternal(CPRequest request, CancellationToken token, int timeout)
+        {
             logger.Debug(request.ToString());
+
+            if (!IsConnected)
+            {
+                throw new Exception("Not connected");
+            }
 
             if (state != ClientState.Connected)
             {
-                throw new Exception("CPClient is not connected!");
-
-                //logger.Warn("Invalid state: " + state);
-                //return null;
+                throw new Exception("Invalid state: " + state);
             }
 
             CPResponseBase response = null;
@@ -638,7 +416,14 @@ namespace MediaToolkit.Jupiter
 
                 StartCommand(command);
 
-                Func<bool> cancelled = () => (state != ClientState.Connected);
+                bool tokenCancel = false;
+
+                token.Register(() =>
+                {
+                    tokenCancel = true;
+                });
+                
+                Func<bool> cancelled = () => (state != ClientState.Connected || tokenCancel);
 
                 response = command.WaitResult(timeout, cancelled) as CPResponseBase;
             }
@@ -656,23 +441,7 @@ namespace MediaToolkit.Jupiter
         }
 
 
-        public async Task<bool> Authenticate(string user, string password, int timeout = 5000)
-        {
-            Credential = new NetworkCredential(user, password);
 
-            var authRequest = new CPRequest($"{Credential.UserName}\r\n{Credential.Password}\r\n");
-
-            var resp = await SendAsync(authRequest, timeout);
-            resp.ThrowIfError();
-
-            isAuthenticated = resp?.Success ?? false;
-            return isAuthenticated;
-        }
-
-        public Task<CPResponseBase> SendAsync(CPRequest request, int timeout = -1)
-        {
-            return Task.Run(() => Send(request, timeout));
-        }
 
 
         public void Disconnect()
@@ -709,40 +478,35 @@ namespace MediaToolkit.Jupiter
 
             state = ClientState.Closed;
 
+            isAuthenticated = false;
+
             StateChanged?.Invoke();
         }
 
 
-        class CRLFHanlder
+        class CPSocketHandler
         {
-
             private byte[] tempBuffer = null;
             private bool carriageReturn = false;
 
-            private List<byte[]> dataList = new List<byte[]>();
+            private List<byte[]> dataLines = new List<byte[]>();
 
-            public List<byte[]> GetData(byte[] buffer, int size)
+            public IEnumerable<byte[]> ReadLines(byte[] buffer, int size)
             {
-                List<byte[]> resultBuffer = null;
+                List<byte[]> resultBuffer = null;  
                 int dataRemaining = size;
-
                 int startIndex = 0;
-
                 for (int i = 0; i < size; i++)
                 {
                     var ch = (char)buffer[i];
                     if (ch == '\r')
                     {
-                        //logger.Trace("------------ CARRIAGE RETURN " + i);
                         carriageReturn = true;
                         continue;
                     }
                     else if (ch == '\n' && carriageReturn)
                     {
-                        //logger.Trace("------------ LINE FEED " + i);
-
                         var endIndex = i;
-
                         var dataSize = (endIndex - startIndex) + 1;
 
                         int offset = 0;
@@ -770,14 +534,13 @@ namespace MediaToolkit.Jupiter
                         //оставшиеся в буфере данные
                         dataRemaining = (size - startIndex);
 
-                        dataList.Add(dataBuffer);
+                        dataLines.Add(dataBuffer);
 
                         if (dataRemaining == 0)
                         {// весь буфер прочитан
 
-                            resultBuffer = new List<byte[]>(dataList);
-
-                            dataList.Clear();
+                            //resultBuffer = new List<byte[]>(dataList);
+                            //dataList.Clear();
 
                             break;
                         }
@@ -799,7 +562,7 @@ namespace MediaToolkit.Jupiter
                 Debug.Assert(dataRemaining >= 0, "dataRemaining >= 0");
 
                 if (dataRemaining > 0)
-                {// остались не обработаные данные сохраняем их в буффер
+                {// остались не обработаные данные сохраняем их в буффер...
 
                     // logger.Trace("dataRemaining == " + dataRemaining);
 
@@ -820,6 +583,13 @@ namespace MediaToolkit.Jupiter
                     }
 
                     Array.Copy(buffer, startIndex, tempBuffer, offset, dataRemaining);
+                }
+
+                if(dataLines.Count> 0)
+                {
+                    resultBuffer = new List<byte[]>(dataLines);
+                    dataLines.Clear();
+
                 }
 
                 return resultBuffer;
@@ -862,6 +632,7 @@ namespace MediaToolkit.Jupiter
                     result = waitEvent.WaitOne(300);
                     if (result)
                     {
+                        logger.Verb("Request completed");
                         break;
                     }
 
@@ -869,23 +640,23 @@ namespace MediaToolkit.Jupiter
                     {
                         ex = new OperationCanceledException();
 
-                        logger.Debug("canceled");
+                        logger.Verb("Request canceled");
                         break;
                     }
 
-                    logger.Debug("!waitevent.WaitOne(300) && running");
-
                     if (timeout > 0)
                     {
-                        msec += sw.ElapsedMilliseconds;
+                        msec = sw.ElapsedMilliseconds;
                         if (msec > timeout)
                         {
                             ex = new TimeoutException();
 
-                            logger.Debug("msec > timeout");
+                            logger.Verb("Request timed out: " + msec + " " + timeout );
                             break;
                         }
                     }
+
+                    logger.Verb("Waiting for result...");
 
                 } while (!result);
 
@@ -901,7 +672,13 @@ namespace MediaToolkit.Jupiter
 
                 if (response == null)
                 {
-                    throw new InvalidOperationException();
+                    var message = "Request dropped";
+                    if (request != null)
+                    {
+                        message = "Request dropped: " + "\"" + request.ToString() + "\"";
+                    }
+
+                    throw new Exception(message);
                 }
 
                 return response;
@@ -919,7 +696,7 @@ namespace MediaToolkit.Jupiter
                 this.exception = ex;
 
 
-                logger.Debug($"<< #{seq} {resp}");
+                logger.Verb($"<< #{seq} {resp}");
 
                 waitEvent?.Set();
             }
@@ -1011,7 +788,7 @@ namespace MediaToolkit.Jupiter
         }
 
         public readonly string ResponseString = "";
-        public virtual bool Success { get; } = false;
+        public virtual bool Success { get; } = true;
 
         public abstract CPResponseType ResponseType { get; }
 
@@ -1111,7 +888,6 @@ namespace MediaToolkit.Jupiter
             {
                 throw new FormatException("Invalid response format: " + resp);
             }
-
 
             //"="
             int offset = 1;

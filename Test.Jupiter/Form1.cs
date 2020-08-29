@@ -48,9 +48,9 @@ namespace Test.Jupiter
 
         //private JupiterConnection jupiterConnection = null;
 
-       // private JupiterApi jupiter = null;
+        // private JupiterApi jupiter = null;
 
-        private CPClient cpClient = new CPClient();
+        private CPClient cpClient = null;
 
         private void buttonInit_Click(object sender, EventArgs e)
         {
@@ -90,11 +90,20 @@ namespace Test.Jupiter
 		private void Notify_WindowStateEvent(TWindowStateList obj)
 		{
 			Console.WriteLine("Notify_WindowStateEvent: " + obj);
+
+
 		}
 
-		private void CpClient_StateChanged()
+        private void CpClient_StateChanged()
         {
-            Console.WriteLine("CPClient_Connected(): " + cpClient.State);
+            Console.WriteLine("CpClient_StateChanged(): " + cpClient.State);
+
+            var state = cpClient.State;
+            if (state == ClientState.Connected || state == ClientState.Disconnected)
+            {
+                MessageBox.Show("CpClient_StateChanged(): " + cpClient.State);
+            }
+           
         }
 
         private void CPClient_NotificationReceived(CPNotification notification)
@@ -630,6 +639,34 @@ namespace Test.Jupiter
             }
 
             MessageBox.Show(message);
+        }
+
+
+        CancellationTokenSource ts = new CancellationTokenSource();
+        private async void button20_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                ts = new CancellationTokenSource();
+                var resp = await cpClient.SendAsync(new CPRequest("1234"), ts.Token, 20000);
+                message = resp.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+        
+        private void button21_Click(object sender, EventArgs e)
+        {
+
+            ts.Cancel();
+
         }
     }
 }
