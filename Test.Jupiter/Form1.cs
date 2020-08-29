@@ -66,7 +66,9 @@ namespace Test.Jupiter
 
                 cpClient = new CPClient();
 
-                cpClient.NotificationReceived += CPClient_NotificationReceived;
+				cpClient.Notify.WindowStateEvent += Notify_WindowStateEvent;
+
+				cpClient.NotificationReceived += CPClient_NotificationReceived;
                 cpClient.StateChanged += CpClient_StateChanged;
 
                 cpClient.Connect(host, port);
@@ -78,7 +80,12 @@ namespace Test.Jupiter
             }
         }
 
-        private void CpClient_StateChanged()
+		private void Notify_WindowStateEvent(TWindowStateList obj)
+		{
+			Console.WriteLine("Notify_WindowStateEvent: " + obj);
+		}
+
+		private void CpClient_StateChanged()
         {
             Console.WriteLine("CPClient_Connected(): " + cpClient.State);
         }
@@ -87,17 +94,17 @@ namespace Test.Jupiter
         {
             Console.WriteLine("CPClient_NotificationReceived(...) " + notification.ToString());
 
-            if(notification.ObjectName == "Notify") 
-            {
-                if(notification.Method == "WindowsState")
-                {// +Notify WindowsState { nCount TWindowState pData[ ] } (Id Kind nState nStateChange x y w h ZAfter)
+            //if(notification.ObjectName == "Notify") 
+            //{
+            //    if(notification.Method == "WindowsState")
+            //    {// +Notify WindowsState { nCount TWindowState pData[ ] } (Id Kind nState nStateChange x y w h ZAfter)
 
-                    var valueList = notification.ValueList;
-                    var windows = new TWindowStateList(valueList);
+            //        var valueList = notification.ValueList;
+            //        var windows = new TWindowStateList(valueList);
 
-                    Console.WriteLine(windows.ToString());
-                }
-            }
+            //        Console.WriteLine(windows.ToString());
+            //    }
+            //}
         }
 
         private async void button6_Click(object sender, EventArgs e)
@@ -109,11 +116,9 @@ namespace Test.Jupiter
                 var user = textBoxUserName.Text;
                 var pass = textBoxPassword.Text;
 
+				bool success = await cpClient.Authenticate(user, pass);
 
-                var authRequest = new CPRequest($"{user}\r\n{pass}\r\n");
-                var resp = await cpClient.SendAsync(authRequest);
-
-                message = resp.ToString();
+                message = "Authenticate " + success;
             }
             catch (Exception ex)
             {
@@ -219,12 +224,8 @@ namespace Test.Jupiter
             var message = "";
             try
             {
-
-                var request = new CPRequest("WinServer", "GetServerInfo");
-
-                var response = await cpClient.SendAsync(request, 5000);
-
-                message = response.ToString();
+				var serverInfo = await cpClient.ConfigSys.GetServerInfo();
+				message = serverInfo.ToString();
 
             }
             catch (Exception ex)
@@ -269,10 +270,9 @@ namespace Test.Jupiter
             var message = "";
             try
             {
-                var request = new CPRequest("WinServer", "RegisterNotifyTarget");
-                var response = await cpClient.SendAsync(request);
-                message = response?.ToString();
-            }
+    			var success = await cpClient.WinServer.RegisterNotifyTarget();
+				message = "RegisterNotifyTarget() " + success;
+			}
             catch (Exception ex)
             {
                 message = ex.Message;
@@ -285,11 +285,10 @@ namespace Test.Jupiter
             var message = "";
             try
             {
-                var request = new CPRequest("WinServer", "UnregisterNotifyTarget");
-                var response = await cpClient.SendAsync(request);
-                message = response.ToString();
+				var success = await cpClient.WinServer.UnregisterNotifyTarget();
+				message = "RegisterNotifyTarget() " + success;
 
-            }
+			}
             catch (Exception ex)
             {
                 message = ex.Message;
@@ -342,21 +341,9 @@ namespace Test.Jupiter
             try
             {
 
-                var request = new CPRequest("RGBSys", "GetChannelRange");
-                var response = await cpClient.SendAsync(request) as CPResponse;
+				var channelRange = await cpClient.RGBSys.GetChannelRange();
 
-                if (response.Success)
-                {
-                    var valueList = response.ValueList;
-                    var parts = valueList.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-
-                    var firstCh = int.Parse(parts[0]);
-                    var lastCh = int.Parse(parts[1]);
-
-                    message = "FirstChannel = " + firstCh + "\r\n" + "LastChannel = " + lastCh;
-
-                }
-
+				message = "FirstChannel = " + channelRange.Item1 + "\r\n" + "LastChannel = " + channelRange.Item2;
 
                 //message = response.ToString();
 
@@ -378,17 +365,20 @@ namespace Test.Jupiter
             {
                 var id = int.Parse(textBox1.Text);
 
-                var request = new CPRequest("RGBSys", "NewWindowWithId", new WinId(id));
+				var winId = new WinId(id);
 
-                var response = await cpClient.SendAsync(request) as CPResponse;
+				var success = await cpClient.RGBSys.NewWindowWithId(winId);
+				message = "NewWindowWithId() " + success;
 
-                if (response.Success)
-                {
+                //var request = new CPRequest("RGBSys", "NewWindowWithId", new WinId(id));
 
-                }
+                //var response = await cpClient.SendAsync(request) as CPResponse;
 
+                //if (response.Success)
+                //{
 
-                message = response.ToString();
+                //}
+                //message = response.ToString();
 
             }
             catch (Exception ex)
@@ -410,17 +400,9 @@ namespace Test.Jupiter
                 var winId = new WinId(id);
 
                 await cpClient.WinServer.DeleteWindow(winId);
+				message = "OK";
 
-                //var request = new CPRequest("WinServer", "DeleteWindow", new WinId(id));
-
-                //var response = await cpClient.SendAsync(request) as CPResponse;
-
-                //if (response.Success)
-                //{
-                //}
-                //message = response.ToString();
-
-            }
+			}
             catch (Exception ex)
             {
                 message = ex.Message;
@@ -437,17 +419,12 @@ namespace Test.Jupiter
             {
                 var channel = 1;
                 var id = int.Parse(textBox1.Text);
-                //+RGBSys SetChannel
-                var request = new CPRequest("RGBSys", "SetChannel", new WinId(id), channel);
 
-                var response = await cpClient.SendAsync(request) as CPResponse;
+				var winId = new WinId(id);
 
-                if (response.Success)
-                {
+				var success = await cpClient.RGBSys.SetChannel(winId, channel);
 
-                }
-
-                message = response.ToString();
+				message = success ? "OK" : "FALSE";
 
             }
             catch (Exception ex)
@@ -466,16 +443,11 @@ namespace Test.Jupiter
             {
                 var id = int.Parse(textBox1.Text);
 
-                var request = new CPRequest("RGBSys", "Start", new WinId(id));
+				var winId = new WinId(id);
 
-                var response = await cpClient.SendAsync(request) as CPResponse;
+				var success = await cpClient.RGBSys.Start(winId);
 
-                if (response.Success)
-                {
-
-                }
-
-                message = response.ToString();
+				message = success ? "OK" : "FALSE";
 
             }
             catch (Exception ex)
@@ -492,20 +464,15 @@ namespace Test.Jupiter
 
             try
             {
-                var id = int.Parse(textBox1.Text);
+				var id = int.Parse(textBox1.Text);
 
-                var request = new CPRequest("RGBSys", "Stop", new WinId(id));
+				var winId = new WinId(id);
 
-                var response = await cpClient.SendAsync(request) as CPResponse;
+				var success = await cpClient.RGBSys.Stop(winId);
 
-                if (response.Success)
-                {
+				message = success ? "OK" : "FALSE";
 
-                }
-
-                message = response.ToString();
-
-            }
+			}
             catch (Exception ex)
             {
                 message = ex.Message;
@@ -540,17 +507,6 @@ namespace Test.Jupiter
 
                 var newState = await cpClient.Window.SetState(state);
                 message = newState.ToString();
-
-                //var request = new CPRequest("Window", "SetState", state);
-
-                //var response = await cpClient.SendAsync(request) as CPResponse;
-
-                //if (response.Success)
-                //{
-
-                //}
-
-               //message = response.ToString();
 
             }
             catch (Exception ex)

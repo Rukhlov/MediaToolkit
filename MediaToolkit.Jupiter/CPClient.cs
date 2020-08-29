@@ -31,14 +31,23 @@ namespace MediaToolkit.Jupiter
         {
             Window = new Window(this);
             WinServer = new WinServer(this);
-        }
+			Notify = new Notify(this);
+			RGBSys = new RGBSys(this);
+			ConfigSys = new ConfigSys(this);
+		}
 
-        public string Host { get; set; } = "127.0.0.1";
-        public int Port { get; set; } = 25456;
+        public string Host { get; private set; } = "127.0.0.1";
+        public int Port { get; private set; } = 25456;
 
-        public NetworkCredential Credential { get; private set; } = new NetworkCredential("admin", "");
+		public NetworkCredential Credential { get; private set; } = new NetworkCredential("admin", "");
 
-        public event Action<CPNotification> NotificationReceived;
+		public ConfigSys ConfigSys { get; } = null;
+		public Window Window { get; } = null;
+		public WinServer WinServer { get; } = null;
+		public Notify Notify { get; } = null;
+		public RGBSys RGBSys { get; } = null;
+
+		public event Action<CPNotification> NotificationReceived;
         public event Action StateChanged;
 
         private volatile ClientState state = ClientState.Disconnected;
@@ -49,10 +58,11 @@ namespace MediaToolkit.Jupiter
 
         public bool IsConnected => socket?.Connected ?? false;
 
-        public Window Window { get; } = null;
-        public WinServer WinServer { get; } = null;
+		private volatile bool isAuthenticated = false;
+		public bool IsAuthenticated => isAuthenticated;
 
-        private Queue<InvokeCommand> commandQueue = new Queue<InvokeCommand>();
+
+		private Queue<InvokeCommand> commandQueue = new Queue<InvokeCommand>();
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
 
@@ -62,7 +72,8 @@ namespace MediaToolkit.Jupiter
 
         private volatile InvokeCommand sendCommand = null;
 
-        private void StartCommand(InvokeCommand command)
+
+		private void StartCommand(InvokeCommand command)
         {
             if (state != ClientState.Connected)
             {
@@ -483,8 +494,20 @@ namespace MediaToolkit.Jupiter
         }
 
 
+		public async Task<bool> Authenticate(string user, string password, int timeout = 5000)
+		{
+			Credential = new NetworkCredential(user, password);
 
-        public Task<CPResponseBase> SendAsync(CPRequest request, int timeout = -1)
+			var authRequest = new CPRequest($"{Credential.UserName}\r\n{Credential.Password}\r\n");
+
+			var resp = await SendAsync(authRequest, timeout);
+			resp.ThrowIfError();
+
+			isAuthenticated = resp?.Success ?? false;
+			return isAuthenticated;
+		}
+
+		public Task<CPResponseBase> SendAsync(CPRequest request, int timeout = -1)
         {
             return Task.Run(() => Send(request, timeout));
         }
@@ -720,6 +743,13 @@ namespace MediaToolkit.Jupiter
             return Parse(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
         }
 
+		public virtual void ThrowIfError()
+		{
+			if (!Success)
+			{
+				throw new Exception();
+			}
+		}
 
         public static bool TryParse(string _resp, out CPResponseBase response)
         {
@@ -783,7 +813,7 @@ namespace MediaToolkit.Jupiter
 
         }
 
-
+	
         public override string ToString()
         {
             return ResponseString;
@@ -811,7 +841,7 @@ namespace MediaToolkit.Jupiter
             var codeStr = resp.Substring(offset, ResultCodeLength);
             offset += ResultCodeLength;
 
-            ResultCode = int.Parse(codeStr, System.Globalization.NumberStyles.HexNumber);
+            ResultCode = uint.Parse(codeStr, System.Globalization.NumberStyles.HexNumber);
 
             var valueList = "";
             if (resp.Length > offset)
@@ -828,15 +858,24 @@ namespace MediaToolkit.Jupiter
 
         public override CPResponseType ResponseType => CPResponseType.Response;
 
-        public int ResultCode { get; private set; } = -1;
+        public uint ResultCode { get; private set; } = 0;
 
         public string ValueList { get; private set; } = "";
 
-        public override bool Success => (ResultCode == 0);
-    }
+		public override bool Success => (ResultCode == (uint)ResultCodes.S_OK); // || ResultCode == (uint)ResultCodes.S_FALSE);//(ResultCode == 0);
+
+		public override void ThrowIfError()
+		{
+			if(ResultCode != (uint)ResultCodes.S_OK && ResultCode != (uint)ResultCodes.S_FALSE)
+			{
+				throw new CPException((ResultCodes)ResultCode);
+			} 
+		}
+
+	}
 
 
-    public class CPNotification : CPResponseBase
+	public class CPNotification : CPResponseBase
     {
         //":Notify WindowsState { 1 { { 10002 } 2 1 5120 254 244 684 507 { -1 } } }\r\n"
         public CPNotification(string resp) : base(resp)
@@ -891,8 +930,9 @@ namespace MediaToolkit.Jupiter
             }
             else if (resp.StartsWith("ER"))
             {// error...
+				success = false;
 
-            }
+			}
             else
             {
                 //invalid...

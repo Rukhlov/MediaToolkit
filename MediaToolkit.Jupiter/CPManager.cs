@@ -16,14 +16,12 @@ namespace MediaToolkit.Jupiter
 
         private CPClient cpClient = new CPClient();
 
-        public NetworkCredential Credential { get; private set; } = new NetworkCredential("admin", "");
-
-        public bool IsAuthenticated { get; private set; } = false;
 
         public void Open(string host, int port)
         {
             cpClient = new CPClient();
             cpClient.StateChanged += CpClient_StateChanged;
+			
             cpClient.NotificationReceived += CpClient_NotificationReceived;
 
             cpClient.Connect(host, port);
@@ -52,20 +50,6 @@ namespace MediaToolkit.Jupiter
         }
 
 
-        public async Task<bool> AuthAsync(string user, string password)
-        {
-
-            Credential = new NetworkCredential(user, password);
-
-            var authRequest = new CPRequest($"{Credential.UserName}\r\n{Credential.Password}\r\n");
-
-            var resp = await cpClient.SendAsync(authRequest, 5000);
-
-            IsAuthenticated = resp?.Success ?? false;
-
-            return IsAuthenticated;
-
-        }
 
     }
 }
