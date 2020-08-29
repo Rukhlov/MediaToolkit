@@ -442,7 +442,75 @@ namespace MediaToolkit.Jupiter
 
 	}
 
-	public abstract class CPObjBase
+    public class CPRGBTiming 
+    {// ControlPoint Protocol Manual p. 54
+     /*
+      * bValid is valid – Boolean 0 or 1
+         nWidth width of RGB image
+         nHTotal horizontal total of RGB Image
+         nHOffset horizontal offset
+         nHeight height of RGB image
+         nVTotal total vertical pixels
+         nVOffset vertical offset
+         nPhase RGB Pixel Phase
+         nVFreq scan frequency
+         nSyncType sync type
+         bHsynNeg horizontal negative sync – Boolean – 0 or 1
+         bVsyncNeg vertical negative sync – Boolean – 0 or 1
+      */
+
+        // { 1 640 480 144 480 525 35 3 60 0 0 0 }
+
+        // { 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 } 
+        public CPRGBTiming(string data) : this(TreeNode.Parse(data))
+        { }
+
+        public CPRGBTiming(TreeNode argsTree)
+        {
+            var valueList = argsTree.ValueList;
+            var nodes = argsTree.Nodes;
+            if (nodes.Count == 0 && valueList.Count == 11)
+            {
+                this.bValid = int.Parse(valueList[0]);
+                this.nWidth = int.Parse(valueList[1]);
+                this.nHTotal = int.Parse(valueList[2]);
+                this.nHOffset = int.Parse(valueList[3]);
+                this.nVTotal = int.Parse(valueList[4]);
+                this.nVOffset = int.Parse(valueList[5]);
+                this.nPhase = int.Parse(valueList[6]);
+                this.nVFreq = int.Parse(valueList[7]);
+                this.nSyncType = int.Parse(valueList[8]);
+                this.bHsynNeg = int.Parse(valueList[9]);
+                this.bVsyncNeg = int.Parse(valueList[10]);
+            }
+            else
+            {
+                throw new ArgumentException("argsTree");
+            }
+
+        }
+
+        public int bValid { get; private set; } //Boolean 0 or 1
+        public int nWidth { get; private set; }
+        public int nHTotal { get; private set; }
+        public int nHOffset { get; private set; }
+        public int nVTotal { get; private set; }
+        public int nVOffset { get; private set; }
+        public int nPhase { get; private set; }
+        public int nVFreq { get; private set; }
+        public int nSyncType { get; private set; }
+        public int bHsynNeg { get; private set; }//Boolean 0 or 1
+        public int bVsyncNeg { get; private set; }//Boolean 0 or 1
+
+        public override string ToString()
+        {
+            return "{ " + string.Join(" ", bValid, nWidth, nHTotal, nHOffset, nVTotal, nVOffset, nPhase, nVFreq, nSyncType, bHsynNeg, bVsyncNeg) + " }";
+        }
+
+    }
+
+
+    public abstract class CPObjBase
 	{
 		public CPObjBase(CPClient c)
 		{
@@ -639,7 +707,17 @@ namespace MediaToolkit.Jupiter
 
 		public override string ObjectName => "RGBSys";
 
-		public async Task<int> GetChannel(WinId winId)
+
+        public async Task<bool> SetAutoDetectTiming(WinId winId, bool enable)
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "SetAutoDetectTiming", winId, enable ? 1 : 0);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+            return response.Success;
+        }
+
+        public async Task<int> GetChannel(WinId winId)
 		{
 			ThrowIfClientNotReady();
 			var request = new CPRequest(ObjectName, "GetChannel", winId);
@@ -677,7 +755,21 @@ namespace MediaToolkit.Jupiter
 			return new Tuple<int, int>(firstCh, lastCh);
 		}
 
-	}
+        public async Task<CPRGBTiming> DetectTiming(WinId winId)
+        {   // неработает
+            // { 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 } <- сервер возвращает такую хрень...
+            // вместо 12 аргументов - 15
+            ThrowIfClientNotReady();
+
+            var request = new CPRequest(ObjectName, "DetectTiming", winId);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            var data = response.ValueList;
+            return new CPRGBTiming(data);
+        }
+
+    }
 
 	public class Notify : CPObjBase
 	{//ControlPoint Protocol Manual p.84

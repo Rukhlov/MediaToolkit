@@ -64,14 +64,21 @@ namespace Test.Jupiter
                 var host = textBoxHost.Text;
                 var port = int.Parse(textBoxPort.Text);
 
-                cpClient = new CPClient();
+                if(cpClient == null)
+                {
+                    cpClient = new CPClient();
 
-				cpClient.Notify.WindowStateEvent += Notify_WindowStateEvent;
+                    cpClient.Notify.WindowStateEvent += Notify_WindowStateEvent;
 
-				cpClient.NotificationReceived += CPClient_NotificationReceived;
-                cpClient.StateChanged += CpClient_StateChanged;
+                    cpClient.NotificationReceived += CPClient_NotificationReceived;
+                    cpClient.StateChanged += CpClient_StateChanged;
+                }
 
-                cpClient.Connect(host, port);
+                if (!cpClient.IsConnected)
+                {
+                    cpClient.Connect(host, port);
+                }
+
 
             }
             catch (Exception ex)
@@ -570,6 +577,51 @@ namespace Test.Jupiter
                 //}
 
                 //message = response.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+
+        private async void button18_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                var id = int.Parse(textBox1.Text);
+
+                var winId = new WinId(id);
+
+                var timing = await cpClient.RGBSys.DetectTiming(winId);
+                message = timing.ToString(); 
+
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+
+        private async void button19_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                var id = int.Parse(textBox1.Text);
+
+                var winId = new WinId(id);
+
+                var timing = await cpClient.RGBSys.SetAutoDetectTiming(winId, true);
+
+                message = timing.ToString();
 
             }
             catch (Exception ex)
