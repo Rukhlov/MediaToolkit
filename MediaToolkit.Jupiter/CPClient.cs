@@ -170,18 +170,18 @@ namespace MediaToolkit.Jupiter
             try
             {
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                socket.ReceiveTimeout = 5000;
-                socket.SendTimeout = 5000;
+                socket.ReceiveTimeout = 10000;
+                socket.SendTimeout = 10000;
 
                 logger.Verb($"socket.ConnectAsync(...) {Host} {Port}");
 
                 var connectionTask = socket.ConnectAsync(Host, Port);
 
-                Task.WaitAny(new[] { connectionTask }, 5000);
+                Task.WaitAny(new[] { connectionTask }, 10000);
 
-                if (!socket.Connected)
+                if (!IsSocketConnected())
                 {
-                    throw new TimeoutException("Connection error");
+                    throw new Exception("Connection error");
                 }
 
                 if (state == ClientState.Connecting)
@@ -378,9 +378,9 @@ namespace MediaToolkit.Jupiter
             return isAuthenticated;
         }
 
-        public Task<CPResponseBase> SendAsync(CPRequest request, CancellationToken token, int timeout = 10000)
+        public Task<CPResponseBase> SendAsync(CPRequest request, CancellationToken ct, int timeout = 10000)
         {
-            return Task.Run(() => SendInternal(request, token, timeout));
+            return Task.Run(() => SendInternal(request, ct, timeout));
         }
 
         public Task<CPResponseBase> SendAsync(CPRequest request, int timeout = 10000)
@@ -393,7 +393,7 @@ namespace MediaToolkit.Jupiter
             return SendInternal(request, CancellationToken.None, timeout);
         }
 
-        private CPResponseBase SendInternal(CPRequest request, CancellationToken token, int timeout)
+        private CPResponseBase SendInternal(CPRequest request, CancellationToken ct, int timeout)
         {
             logger.Debug(request.ToString());
 
@@ -416,14 +416,13 @@ namespace MediaToolkit.Jupiter
 
                 StartCommand(command);
 
-                bool tokenCancel = false;
-
-                token.Register(() =>
+                bool cancel = false;
+                ct.Register(() =>
                 {
-                    tokenCancel = true;
+                    cancel = true;
                 });
                 
-                Func<bool> cancelled = () => (state != ClientState.Connected || tokenCancel);
+                Func<bool> cancelled = () => (state != ClientState.Connected || cancel);
 
                 response = command.WaitResult(timeout, cancelled) as CPResponseBase;
             }
@@ -539,10 +538,10 @@ namespace MediaToolkit.Jupiter
                         if (dataRemaining == 0)
                         {// весь буфер прочитан
 
-                            //resultBuffer = new List<byte[]>(dataList);
-                            //dataList.Clear();
+							resultBuffer = new List<byte[]>(dataLines);
+							dataLines.Clear();
 
-                            break;
+							break;
                         }
                         else
                         {// остались данные нужно дочитать...
@@ -585,12 +584,12 @@ namespace MediaToolkit.Jupiter
                     Array.Copy(buffer, startIndex, tempBuffer, offset, dataRemaining);
                 }
 
-                if(dataLines.Count> 0)
-                {
-                    resultBuffer = new List<byte[]>(dataLines);
-                    dataLines.Clear();
+                //if(dataLines.Count> 0)
+                //{
+                //    resultBuffer = new List<byte[]>(dataLines);
+                //    dataLines.Clear();
 
-                }
+                //}
 
                 return resultBuffer;
             }
@@ -735,7 +734,7 @@ namespace MediaToolkit.Jupiter
         {
             this.ObjectName = objName;
             this.Method = method;
-            this.ValueList = string.Join(" ", values); ;// "{ " + string.Join(" ", values) + " }";
+            this.ValueList = string.Join(" ", values); // "{ " + string.Join(" ", values) + " }";
 
             this.RequestString = $"+{ObjectName} {Method} {ValueList}\r\n";
         }
@@ -854,7 +853,7 @@ namespace MediaToolkit.Jupiter
             {
                 if (_resp.StartsWith("OK") || _resp.StartsWith("ER"))
                 {// ответ от Galileo Connect
-                    response = new GalileoResponse(_resp);
+                    response = new GCResponse(_resp);
 
                 }
                 else
@@ -974,25 +973,32 @@ namespace MediaToolkit.Jupiter
         }
     }
 
-    public class GalileoResponse : CPResponseBase
+    public class GCResponse : CPResponseBase
     {
-        public GalileoResponse(string resp) : base(resp)
+        public GCResponse(string resp) : base(resp)
         {
             if (resp.StartsWith("OK"))
             {
                 success = true;
+
+				Data = resp.Substring(2);
+				Data = Data.TrimStart(' ');
+				Data = Data.TrimEnd('\r', '\n');
             }
             else if (resp.StartsWith("ER"))
             {// error...
                 success = false;
-
-            }
+				Data = resp.Substring(2);
+				Data = Data.TrimStart(' ');
+				Data = Data.TrimEnd('\r', '\n');
+			}
             else
             {
-                //invalid...
+				throw new ArgumentException(resp);
             }
         }
 
+		public string Data { get; private set; } = "";
         private bool success = false;
 
         public override bool Success => success;

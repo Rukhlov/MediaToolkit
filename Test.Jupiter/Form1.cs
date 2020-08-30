@@ -668,5 +668,28 @@ namespace Test.Jupiter
             ts.Cancel();
 
         }
-    }
+
+		private async void button22_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+				var result = await cpClient.WinServer.Quit();
+
+				message = result.ToString();
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+	}
 }

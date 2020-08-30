@@ -49,6 +49,9 @@ namespace MediaToolkit.Jupiter
 	public class WinId
 	{// ControlPoint Protocol Manual p. 50
 
+		public WinId(string data) : this(TreeNode.Parse(data))
+		{ }
+
 		internal WinId(TreeNode argsTree)
 		{
 			var valueList = argsTree.ValueList;
@@ -612,6 +615,16 @@ namespace MediaToolkit.Jupiter
 			return new TWindowStateList(response.ValueList);
 		}
 
+		public async Task<WinId> NewWindow()
+		{
+			ThrowIfClientNotReady();
+			var request = new CPRequest(ObjectName, "NewWindow");
+			var response = await client.SendAsync(request) as CPResponse;
+			response.ThrowIfError();
+
+			return new WinId(response.ValueList);
+		}
+
 
 		public async Task<bool> NewWindowWithId(WinId winId)
 		{
@@ -917,6 +930,17 @@ namespace MediaToolkit.Jupiter
 
 			return response.Success;
 		}
+
+		public async Task<bool> Quit()
+		{
+			ThrowIfClientNotReady();
+			var request = new CPRequest(ObjectName, "Quit");
+			var response = await client.SendAsync(request) as CPResponse;
+			response.ThrowIfError();
+
+			return response.Success;
+
+		}
 	}
 
 	public class Window : CPObjBase
@@ -970,6 +994,7 @@ namespace MediaToolkit.Jupiter
 			return response.ValueList.Replace("\"", "");
 
 		}
+
 	}
 
 	public class TreeNode
