@@ -191,7 +191,6 @@ namespace MediaToolkit.Jupiter
 
                 StateChanged?.Invoke();
 
-
                 while (true)
                 {
                     bool socketConnected = IsSocketConnected();
@@ -338,7 +337,7 @@ namespace MediaToolkit.Jupiter
 
         private bool IsSocketConnected()
         {
-            return (!(socket.Poll(1, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
+            return !((socket.Poll(1, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
         }
 
         private void ProcessResponse(CPResponseBase cpResponse, Exception exception)
@@ -894,7 +893,7 @@ namespace MediaToolkit.Jupiter
             var codeStr = resp.Substring(offset, ResultCodeLength);
             offset += ResultCodeLength;
 
-            ResultCode = uint.Parse(codeStr, System.Globalization.NumberStyles.HexNumber);
+            ResultCode = int.Parse(codeStr, System.Globalization.NumberStyles.HexNumber);
 
             var valueList = "";
             if (resp.Length > offset)
@@ -911,7 +910,7 @@ namespace MediaToolkit.Jupiter
 
         public override CPResponseType ResponseType => CPResponseType.Response;
 
-        public uint ResultCode { get; private set; } = 0;
+        public int ResultCode { get; private set; } = 0;
 
         public string ValueList { get; private set; } = "";
 
@@ -919,7 +918,7 @@ namespace MediaToolkit.Jupiter
 
         public override void ThrowIfError()
         {
-            if (ResultCode != (uint)ResultCodes.S_OK && ResultCode != (uint)ResultCodes.S_FALSE)
+            if (ResultCode != (int)ResultCodes.S_OK && ResultCode != (int)ResultCodes.S_FALSE)
             {
                 throw new CPException((ResultCodes)ResultCode);
             }

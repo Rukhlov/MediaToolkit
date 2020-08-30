@@ -433,7 +433,8 @@ namespace Test.Jupiter
 
             try
             {
-                var channel = 1;
+                var channel = int.Parse(textBox2.Text);
+
                 var id = int.Parse(textBox1.Text);
 
 				var winId = new WinId(id);
@@ -515,8 +516,8 @@ namespace Test.Jupiter
 
                     x = 10,
                     y = 10,
-                    w = 640,
-                    h = 480,
+                    w = 200,
+                    h = 200,
 
                     ZAfter = new WinId(-1),
                 };
@@ -544,48 +545,43 @@ namespace Test.Jupiter
                 var winId = new WinId(id);
 
                 var fileName = await cpClient.Window.GrabImage(winId);
+               
+
+                if (!string.IsNullOrEmpty(fileName))
+                {
+
+                    fileName = fileName.Replace("\"", "");
+
+                    var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", fileName);
+
+                    if (File.Exists(fullName))
+                    {
+
+                        var _b = pictureBox1.Image;
+
+
+                        Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
+
+                        pictureBox1.Image = new Bitmap(bmp);
+
+                        if (bmp != null)
+                        {
+                            bmp.Dispose();
+                            bmp = null;
+                        }
+
+                        if (_b != null)
+                        {
+                            _b.Dispose();
+                            _b = null;
+                        }
+
+
+                        File.Delete(fullName);
+                    }
+                }
+
                 message = fileName;
-
-                //var request = new CPRequest("Window", "GrabImage", new WinId(id));
-
-                //var response = await cpClient.SendAsync(request) as CPResponse;
-
-                //if (response.Success)
-                //{
-                //    var file = response.ValueList;
-
-                //    file = file.Replace("\"", "");
-
-                //    var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", file);
-
-                //    if (File.Exists(fullName))
-                //    {
-
-                //        var _b = pictureBox1.Image;
-
-
-                //        Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
-
-                //        pictureBox1.Image = new Bitmap(bmp);
-
-                //        if (bmp != null)
-                //        {
-                //            bmp.Dispose();
-                //            bmp = null;
-                //        }
-
-                //        if (_b != null)
-                //        {
-                //            _b.Dispose();
-                //            _b = null;
-                //        }
-
-
-                //        File.Delete(fullName);
-                //    }
-                //}
-
-                //message = response.ToString();
 
             }
             catch (Exception ex)
@@ -691,5 +687,42 @@ namespace Test.Jupiter
 
 			MessageBox.Show(message);
 		}
-	}
+
+        private async void button23_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                var id = int.Parse(textBox1.Text);
+
+                var winId = new WinId(id);
+
+                var image = await cpClient.Window.GetPreview(winId);
+                if(image != null) 
+                {
+                    var fileName = "GetPreview_" + winId + "_" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
+                    //var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", fileName);
+
+                    File.WriteAllText(fileName, image.ValueList);
+
+                    message = image.Value1 + " " + image.Value2;
+                }
+                else 
+                {
+                    message = "FALSE";
+                }
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+    }
 }

@@ -995,7 +995,56 @@ namespace MediaToolkit.Jupiter
 
 		}
 
+		public async Task<PrevImage> GetPreview(WinId winId)
+		{// недокументированный метод...
+			// судя повсему используется для получения эскизов форм в ContorlPoint-е
+			//= 00000000 128 96DLE...
+
+			ThrowIfClientNotReady();
+
+			var request = new CPRequest(ObjectName, "GetPreview", winId);
+			var response = await client.SendAsync(request) as CPResponse;
+			response.ThrowIfError();
+
+			//=00000000 128 96DLE...
+			return response.Success ? new PrevImage(response.ValueList): null;
+		}
+
 	}
+	public class PrevImage
+	{ 
+		const char DataLinkEscape = (char)0x10;
+
+		public PrevImage(string valueList)
+		{
+			this.ValueList = valueList;
+
+			var index = valueList.IndexOf(DataLinkEscape);
+			if (index > 0)
+			{
+				var values = valueList.Substring(0, index);
+				var pars = values.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+				if (pars.Length == 2)
+				{
+					// скорее всего размеры preview
+					// max 128x128 потом идет разделитель DLE
+					this.Value1 = int.Parse(pars[0]);
+					this.Value2 = int.Parse(pars[1]);
+					//после DLE идет бинарь, но что за формат не понятно
+					this.Bits = valueList.Substring(index + 1);
+				}
+
+			}
+
+		}
+
+		public readonly string ValueList = "";
+		public int Value1 { get; private set; }
+		public int Value2 { get; private set; }
+		public string Bits { get; private set; }
+	}
+
 
 	public class TreeNode
 	{
@@ -1203,11 +1252,11 @@ namespace MediaToolkit.Jupiter
 			{
 				descr = "Engine is already running";
 			}
-			else if (ResultCode == ResultCodes.E_NO_AVAILABLE_ENGINE)
-			{
-				descr = "There is no available engine";
-			}
-			else if (ResultCode == ResultCodes.E_NO_DEVICE_SELECTED)
+            else if (ResultCode == ResultCodes.E_NO_AVAILABLE_ENGINE)
+            {
+                descr = "There is no available engine";
+            }
+            else if (ResultCode == ResultCodes.E_NO_DEVICE_SELECTED)
 			{
 				descr = "No device has been selected";
 			}
@@ -1220,39 +1269,39 @@ namespace MediaToolkit.Jupiter
 
 	}
 
-	public enum ResultCodes : uint
+	public enum ResultCodes : int
 	{ //ControlPoint Protocol Manual p.176
 		S_OK = 0,
 		S_FALSE = 0x00000001,
 
 		// Server errors
-		E_INVALID_WINID = 0x80040301,
-		E_NOTFOUND = 0x80040302,
-		E_WINTYPEMISMATCH = 0x80040303,
-		E_INVALID_ARGS = 0x80040304,
-		E_INVALID_ARCHIVE_VERSION = 0x80040305,
-		E_ARCHIVE_NOTFOUND = 0x80040306,
-		E_WINID_ALLREADYUSED = 0x80040307,
-		E_INVALID_FORMAT = 0x80040308,
+		E_INVALID_WINID = unchecked((int)0x80040301),
+		E_NOTFOUND = unchecked((int)0x80040302),
+		E_WINTYPEMISMATCH = unchecked((int)0x80040303),
+		E_INVALID_ARGS = unchecked((int)0x80040304),
+		E_INVALID_ARCHIVE_VERSION = unchecked((int)0x80040305),
+		E_ARCHIVE_NOTFOUND = unchecked((int)0x80040306),
+		E_WINID_ALLREADYUSED = unchecked((int)0x80040307),
+		E_INVALID_FORMAT = unchecked((int)0x80040308),
 
-		E_FILE_NOTEXIST = 0x80070002,
-		E_WIN_CANNOT_SHOW_OR_REMOVE = 0x800705A9,
+		E_FILE_NOTEXIST = unchecked((int)0x80070002),
+		E_WIN_CANNOT_SHOW_OR_REMOVE = unchecked((int)0x800705A9),
 
 		//Protocol errors enough 
-		E_PARS_NOT_ENOUGH = 0x80040501,
-		E_TOMANY_PARS_SUPPLIED = 0x80040502,
-		E_INVALID_METHODNAME = 0x80040503,
-		E_INVALID_OBJECTNAME = 0x80040504,
-		E_BAD_FORMAT = 0x80040505,
+		E_PARS_NOT_ENOUGH = unchecked((int)0x80040501),
+		E_TOMANY_PARS_SUPPLIED = unchecked((int)0x80040502),
+		E_INVALID_METHODNAME = unchecked((int)0x80040503),
+		E_INVALID_OBJECTNAME = unchecked((int)0x80040504),
+		E_BAD_FORMAT = unchecked((int)0x80040505),
 
 		//RGB Related Error Codes
-		E_UNSUPPORTED_DISPLAY_FORMAT = 0x80040600,
-		E_NO_TIMING_SELECTED = 0x80040601,
-		E_NO_INPUT_SELECTED = 0x80040602,
-		E_NO_DISPLAY_INFO_AVAILABLE = 0x80040603,
-		E_ENGINE_ALREADY_RUNNING = 0x80040604,
-		E_NO_AVAILABLE_ENGINE = 0x80040605,
-		E_NO_DEVICE_SELECTED = 0x80040606,
+		E_UNSUPPORTED_DISPLAY_FORMAT = unchecked((int)0x80040600),
+		E_NO_TIMING_SELECTED = unchecked((int)0x80040601),
+		E_NO_INPUT_SELECTED = unchecked((int)0x80040602),
+		E_NO_DISPLAY_INFO_AVAILABLE = unchecked((int)0x80040603),
+		E_ENGINE_ALREADY_RUNNING = unchecked((int)0x80040604),
+		E_NO_AVAILABLE_ENGINE = unchecked((int)0x80040605),
+		E_NO_DEVICE_SELECTED = unchecked((int)0x80040606),
 
 		//..
 	}
