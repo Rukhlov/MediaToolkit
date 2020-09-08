@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -997,8 +999,8 @@ namespace MediaToolkit.Jupiter
 
 		public async Task<PrevImage> GetPreview(WinId winId)
 		{// недокументированный метод...
-			// судя повсему используется для получения эскизов форм в ContorlPoint-е
-			//= 00000000 128 96DLE...
+			// используется для получения эскизов форм в ContorlPoint-е
+			//= 00000000 128 96DLE...\r\n
 
 			ThrowIfClientNotReady();
 
@@ -1006,8 +1008,8 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			//=00000000 128 96DLE...
-			return response.Success ? new PrevImage(response.ValueList): null;
+			//=00000000 128 96DLE...\r\n
+			return response.Success ? new PrevImage(response) : null;
 		}
 
 	}
@@ -1015,34 +1017,88 @@ namespace MediaToolkit.Jupiter
 	{ 
 		const char DataLinkEscape = (char)0x10;
 
-		public PrevImage(string valueList)
+		public PrevImage(CPResponse resp)
 		{
-			this.ValueList = valueList;
+			this.ValueList = resp.ValueList;
 
-			var index = valueList.IndexOf(DataLinkEscape);
-			if (index > 0)
-			{
-				var values = valueList.Substring(0, index);
-				var pars = values.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var pars = ValueList.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-				if (pars.Length == 2)
-				{
-					// скорее всего размеры preview
-					// max 128x128 потом идет разделитель DLE
-					this.Value1 = int.Parse(pars[0]);
-					this.Value2 = int.Parse(pars[1]);
-					//после DLE идет бинарь, но что за формат не понятно
-					this.Bits = valueList.Substring(index + 1);
-				}
+            this.Width = int.Parse(pars[0]);
+            this.Height = int.Parse(pars[1]);
+            this.Bits = resp.RawData;
+        }
 
-			}
+        public readonly string ValueList = "";
+		public int Width { get; private set; }
+		public int Height { get; private set; }
 
-		}
+        // TODO: должен быть в заголовке...
+        public int Stride { get; private set; }
 
-		public readonly string ValueList = "";
-		public int Value1 { get; private set; }
-		public int Value2 { get; private set; }
-		public string Bits { get; private set; }
+        // данные в формате RGB555
+        public byte[] Bits { get; private set; }
+
+        public Bitmap GetBitmap()
+        {
+            if(!(Width > 0 && Height > 0))
+            {
+                throw new FormatException("Invalid size: " + Width + "x" + Height);
+            }
+
+            // первые 4 байта какой то заголовок...
+            var bits = Bits.Skip(4).ToArray();
+
+            //преобразование вручную rgb555 -> rgb888 
+            /*             
+            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
+            ushort red_mask = 0x7C00;
+            ushort green_mask = 0x3E0;
+            ushort blue_mask = 0x1F;
+
+            var size = bits.Count() / sizeof(ushort);
+            var pixels = new ushort[size];
+            for (var index = 0; index < size; index++)
+            {
+                pixels[index] = BitConverter.ToUInt16(bits, index * sizeof(ushort));
+            }
+
+            foreach (var pixel in pixels)
+            {   
+                var red_value = (pixel & red_mask) >> 10;
+                var green_value = (pixel & green_mask) >> 5;
+                var blue_value = (pixel & blue_mask);
+
+                byte red = (byte)(red_value << 3);
+                byte green = (byte)(green_value << 3);
+                byte blue = (byte)(blue_value << 3);
+            }
+            */
+
+            var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+
+            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            try
+            {// FIXME: могут быть по разному выровнены
+                // т.е нужно знать stride для данных полученых от CP и копировать с учетом выравнивания
+                // сейчас просто проверяем размер данных...
+                var bmpStride = data.Stride;
+                var bmpSize = data.Height * bmpStride;
+                if (bmpSize == bits.Length)
+                {
+                    Marshal.Copy(bits, 0, data.Scan0, bits.Length);
+                }
+                else
+                {// invalid format...
+                    throw new FormatException("Invalid size: " + bmpSize + "x" + bits.Length);
+                }
+            }
+            finally
+            {
+                bmp.UnlockBits(data);
+            }
+
+            return bmp;
+        }
 	}
 
 

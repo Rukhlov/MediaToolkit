@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 using MediaToolkit.Jupiter;
+using System.Runtime.InteropServices;
 
 namespace Test.Jupiter
 {
@@ -698,15 +699,31 @@ namespace Test.Jupiter
 
                 var winId = new WinId(id);
 
-                var image = await cpClient.Window.GetPreview(winId);
-                if(image != null) 
+                var preview = await cpClient.Window.GetPreview(winId);
+                if(preview != null) 
                 {
-                    var fileName = "GetPreview_" + winId + "_" + DateTime.Now.ToString("HH_mm_ss_fff") + ".raw";
-                    //var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", fileName);
+                    var bmp = preview.GetBitmap();
 
-                    File.WriteAllText(fileName, image.ValueList);
+                    var _b = pictureBox1.Image;
 
-                    message = image.Value1 + " " + image.Value2;
+                    pictureBox1.Image = new Bitmap(bmp);
+
+                    if (bmp != null)
+                    {
+                        bmp.Dispose();
+                        bmp = null;
+                    }
+
+                    if (_b != null)
+                    {
+                        _b.Dispose();
+                        _b = null;
+                    }
+
+
+                    //bmp.Save("test.bmp");
+
+                    message = preview.Width + " " + preview.Height;
                 }
                 else 
                 {
@@ -722,7 +739,8 @@ namespace Test.Jupiter
                 message = ex.Message;
             }
 
-            MessageBox.Show(message);
+            Console.WriteLine(message);
+            //MessageBox.Show(message);
         }
     }
 }

@@ -623,14 +623,14 @@ namespace MediaToolkit.Jupiter
 
                 long msec = 0;
                 Stopwatch sw = Stopwatch.StartNew();
-
+                logger.Verb($"Request #{seq} started");
                 bool result = false;
                 do
                 {
                     result = waitEvent.WaitOne(300);
                     if (result)
                     {
-                        logger.Verb("Request completed");
+                        logger.Verb($"Request #{seq} completed " + sw.ElapsedMilliseconds);
                         break;
                     }
 
@@ -638,7 +638,7 @@ namespace MediaToolkit.Jupiter
                     {
                         ex = new OperationCanceledException();
 
-                        logger.Verb("Request canceled");
+                        logger.Verb($"Request #{seq} canceled");
                         break;
                     }
 
@@ -649,12 +649,12 @@ namespace MediaToolkit.Jupiter
                         {
                             ex = new TimeoutException();
 
-                            logger.Verb("Request timed out: " + msec + " " + timeout );
+                            logger.Verb($"Request #{seq} timed out: {msec} {timeout}");
                             break;
                         }
                     }
 
-                    logger.Verb("Waiting for result...");
+                    logger.Verb($"#{seq} waiting for result...");
 
                 } while (!result);
 
@@ -790,10 +790,49 @@ namespace MediaToolkit.Jupiter
 
         public abstract CPResponseType ResponseType { get; }
 
+        public byte[] RawData { get; set; }
+
 
         public static CPResponseBase Create(byte[] bytes)
         {
-            return Parse(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
+
+            const byte DataLinkEscape = 0x10;
+            const byte CarriageReturn = (byte)'\r';
+            const byte LineFeed = (byte)'\n';
+
+            var endIndex = bytes.Length - 2;
+            if (bytes[endIndex] != CarriageReturn || bytes[endIndex + 1] != LineFeed)
+            {
+                //invalid format...
+            }
+
+            for (int i = 0; i< bytes.Length; i++)
+            {
+                var b = bytes[i];
+                if(b == DataLinkEscape)
+                {// после DLE начинаются bin данные
+                 //=00000000 128 96DLE...rgb555...\r\n
+
+                    int offset = 0;
+                    var startIndex = i;
+                    byte[] headerBytes = new byte[startIndex];
+                    Array.Copy(bytes, offset, headerBytes, 0, headerBytes.Length);
+                    offset += headerBytes.Length + 1;
+
+                    var dataSize= endIndex - startIndex - 1;
+
+                    var rawData = new byte[dataSize];
+
+                    Array.Copy(bytes, offset, rawData, 0, rawData.Length);
+
+                    var respStr = Encoding.UTF8.GetString(headerBytes, 0, headerBytes.Length) + "\r\n";
+
+                    return Create(respStr , rawData);
+                    
+                }
+            }
+
+            return Create(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
         }
 
         public virtual void ThrowIfError()
@@ -804,63 +843,44 @@ namespace MediaToolkit.Jupiter
             }
         }
 
-        public static bool TryParse(string _resp, out CPResponseBase response)
-        {
-            response = null;
-            bool result = false;
-            try
-            {
-                response = Parse(_resp);
-                result = true;
-            }
-            catch (Exception ex)
-            {
-                Debug.Fail(ex.Message);
-                Debug.WriteLine(ex);
-            }
-
-            return result;
-        }
-
-
-
-        public static CPResponseBase Parse(string _resp)
+        public static CPResponseBase Create(string respStr, byte[] rawData = null)
         {
 
-            if (string.IsNullOrEmpty(_resp))
+            if (string.IsNullOrEmpty(respStr))
             {
                 throw new ArgumentException("_resp == null");
             }
 
-            if (!_resp.EndsWith("\r\n"))
+            if (!respStr.EndsWith("\r\n"))
             {
-                throw new FormatException("Invalid response format: " + _resp);
+                throw new FormatException("Invalid response format: " + respStr);
             }
 
 
             CPResponseBase response = null;
 
-            if (_resp.StartsWith("="))
+            if (respStr.StartsWith("="))
             {// ответ на запрос от сервера
-                response = new CPResponse(_resp);
+                response = new CPResponse(respStr);
             }
-            else if (_resp.StartsWith(":"))
+            else if (respStr.StartsWith(":"))
             {// события сервера
-                response = new CPNotification(_resp);
+                response = new CPNotification(respStr);
             }
             else
             {
-                if (_resp.StartsWith("OK") || _resp.StartsWith("ER"))
+                if (respStr.StartsWith("OK") || respStr.StartsWith("ER"))
                 {// ответ от Galileo Connect
-                    response = new GCResponse(_resp);
+                    response = new GCResponse(respStr);
 
                 }
                 else
                 {
-                    throw new FormatException("Invalid response format: " + _resp);
+                    throw new FormatException("Invalid response format: " + respStr);
                 }
             }
 
+            response.RawData = rawData;
 
             return response;
 
