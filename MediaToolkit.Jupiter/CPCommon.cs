@@ -567,8 +567,96 @@ namespace MediaToolkit.Jupiter
 
 	}
 
+    public class PrevImage
+    {
+        const char DataLinkEscape = (char)0x10;
 
-	public class GalWinSys : CPObjBase
+        public PrevImage(CPResponse resp)
+        {
+            this.ValueList = resp.ValueList;
+
+            var pars = ValueList.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            this.Width = int.Parse(pars[0]);
+            this.Height = int.Parse(pars[1]);
+            this.Bits = resp.RawData;
+        }
+
+        public readonly string ValueList = "";
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
+        // TODO: должен быть в заголовке...
+        public int Stride { get; private set; }
+
+        // данные в формате RGB555
+        public byte[] Bits { get; private set; }
+
+        public Bitmap GetBitmap()
+        {
+            if (!(Width > 0 && Height > 0))
+            {
+                throw new FormatException("Invalid size: " + Width + "x" + Height);
+            }
+
+            // первые 4 байта какой то заголовок...
+            var bits = Bits.Skip(4).ToArray();
+
+            //преобразование вручную rgb555 -> rgb888 
+            /*             
+            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
+            ushort red_mask = 0x7C00;
+            ushort green_mask = 0x3E0;
+            ushort blue_mask = 0x1F;
+
+            var size = bits.Count() / sizeof(ushort);
+            var pixels = new ushort[size];
+            for (var index = 0; index < size; index++)
+            {
+                pixels[index] = BitConverter.ToUInt16(bits, index * sizeof(ushort));
+            }
+
+            foreach (var pixel in pixels)
+            {   
+                var red_value = (pixel & red_mask) >> 10;
+                var green_value = (pixel & green_mask) >> 5;
+                var blue_value = (pixel & blue_mask);
+
+                byte red = (byte)(red_value << 3);
+                byte green = (byte)(green_value << 3);
+                byte blue = (byte)(blue_value << 3);
+            }
+            */
+
+            var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+
+            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            try
+            {// FIXME: могут быть по разному выровнены
+                // т.е нужно знать stride для данных полученых от CP и копировать с учетом выравнивания
+                // сейчас просто проверяем размер данных...
+                var bmpStride = data.Stride;
+                var bmpSize = data.Height * bmpStride;
+                if (bmpSize == bits.Length)
+                {
+                    Marshal.Copy(bits, 0, data.Scan0, bits.Length);
+                }
+                else
+                {// invalid format...
+                    throw new FormatException("Invalid size: " + bmpSize + "x" + bits.Length);
+                }
+            }
+            finally
+            {
+                bmp.UnlockBits(data);
+            }
+
+            return bmp;
+        }
+    }
+
+
+    public class GalWinSys : CPObjBase
 	{// ControlPoint Protocol Manual p.76
 
 		/*
@@ -634,7 +722,7 @@ namespace MediaToolkit.Jupiter
 			var request = new CPRequest(ObjectName, "NewWindowWithId", winId);
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<bool> Start(WinId winId)
@@ -643,7 +731,7 @@ namespace MediaToolkit.Jupiter
 			var request = new CPRequest(ObjectName, "Start", winId);
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<bool> Freeze(WinId winId)
@@ -652,7 +740,7 @@ namespace MediaToolkit.Jupiter
 			var request = new CPRequest(ObjectName, "Freeze", winId);
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<bool> Stop(WinId winId)
@@ -662,7 +750,7 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 
 
@@ -693,7 +781,7 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 	}
 
@@ -729,7 +817,7 @@ namespace MediaToolkit.Jupiter
             var request = new CPRequest(ObjectName, "SetAutoDetectTiming", winId, enable ? 1 : 0);
             var response = await client.SendAsync(request) as CPResponse;
             response.ThrowIfError();
-            return response.Success;
+            return response.Result;
         }
 
         public async Task<int> GetChannel(WinId winId)
@@ -751,7 +839,7 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<Tuple<int, int>> GetChannelRange()
@@ -864,7 +952,7 @@ namespace MediaToolkit.Jupiter
 
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<TWindowStateList> QueryAllWindows()
@@ -917,7 +1005,7 @@ namespace MediaToolkit.Jupiter
 
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<bool> UnregisterNotifyTarget()
@@ -930,7 +1018,7 @@ namespace MediaToolkit.Jupiter
 
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 		}
 
 		public async Task<bool> Quit()
@@ -940,7 +1028,7 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			return response.Success;
+			return response.Result;
 
 		}
 	}
@@ -1000,7 +1088,7 @@ namespace MediaToolkit.Jupiter
 		public async Task<PrevImage> GetPreview(WinId winId)
 		{// недокументированный метод...
 			// используется для получения эскизов форм в ContorlPoint-е
-			//= 00000000 128 96DLE...\r\n
+			//= 00000000 128 96DLE...rgb555...\r\n
 
 			ThrowIfClientNotReady();
 
@@ -1008,97 +1096,9 @@ namespace MediaToolkit.Jupiter
 			var response = await client.SendAsync(request) as CPResponse;
 			response.ThrowIfError();
 
-			//=00000000 128 96DLE...\r\n
-			return response.Success ? new PrevImage(response) : null;
+			return response.Result ? new PrevImage(response) : null;
 		}
 
-	}
-	public class PrevImage
-	{ 
-		const char DataLinkEscape = (char)0x10;
-
-		public PrevImage(CPResponse resp)
-		{
-			this.ValueList = resp.ValueList;
-
-            var pars = ValueList.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            this.Width = int.Parse(pars[0]);
-            this.Height = int.Parse(pars[1]);
-            this.Bits = resp.RawData;
-        }
-
-        public readonly string ValueList = "";
-		public int Width { get; private set; }
-		public int Height { get; private set; }
-
-        // TODO: должен быть в заголовке...
-        public int Stride { get; private set; }
-
-        // данные в формате RGB555
-        public byte[] Bits { get; private set; }
-
-        public Bitmap GetBitmap()
-        {
-            if(!(Width > 0 && Height > 0))
-            {
-                throw new FormatException("Invalid size: " + Width + "x" + Height);
-            }
-
-            // первые 4 байта какой то заголовок...
-            var bits = Bits.Skip(4).ToArray();
-
-            //преобразование вручную rgb555 -> rgb888 
-            /*             
-            //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
-            ushort red_mask = 0x7C00;
-            ushort green_mask = 0x3E0;
-            ushort blue_mask = 0x1F;
-
-            var size = bits.Count() / sizeof(ushort);
-            var pixels = new ushort[size];
-            for (var index = 0; index < size; index++)
-            {
-                pixels[index] = BitConverter.ToUInt16(bits, index * sizeof(ushort));
-            }
-
-            foreach (var pixel in pixels)
-            {   
-                var red_value = (pixel & red_mask) >> 10;
-                var green_value = (pixel & green_mask) >> 5;
-                var blue_value = (pixel & blue_mask);
-
-                byte red = (byte)(red_value << 3);
-                byte green = (byte)(green_value << 3);
-                byte blue = (byte)(blue_value << 3);
-            }
-            */
-
-            var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
-
-            var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
-            try
-            {// FIXME: могут быть по разному выровнены
-                // т.е нужно знать stride для данных полученых от CP и копировать с учетом выравнивания
-                // сейчас просто проверяем размер данных...
-                var bmpStride = data.Stride;
-                var bmpSize = data.Height * bmpStride;
-                if (bmpSize == bits.Length)
-                {
-                    Marshal.Copy(bits, 0, data.Scan0, bits.Length);
-                }
-                else
-                {// invalid format...
-                    throw new FormatException("Invalid size: " + bmpSize + "x" + bits.Length);
-                }
-            }
-            finally
-            {
-                bmp.UnlockBits(data);
-            }
-
-            return bmp;
-        }
 	}
 
 

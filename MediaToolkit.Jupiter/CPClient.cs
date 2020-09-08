@@ -209,7 +209,7 @@ namespace MediaToolkit.Jupiter
 
                         Exception exception = null;
                         try
-                        {                           
+                        {
                             bool bufferProcessed = false;
                             do
                             {
@@ -313,7 +313,7 @@ namespace MediaToolkit.Jupiter
             }
             finally
             {
-                
+
                 if (socket != null)
                 {
                     if (socket.Connected)
@@ -373,7 +373,7 @@ namespace MediaToolkit.Jupiter
             var resp = await SendAsync(authRequest, timeout);
             resp.ThrowIfError();
 
-            isAuthenticated = resp?.Success ?? false;
+            isAuthenticated = resp?.Result ?? false;
             return isAuthenticated;
         }
 
@@ -420,7 +420,7 @@ namespace MediaToolkit.Jupiter
                 {
                     cancel = true;
                 });
-                
+
                 Func<bool> cancelled = () => (state != ClientState.Connected || cancel);
 
                 response = command.WaitResult(timeout, cancelled) as CPResponseBase;
@@ -491,7 +491,7 @@ namespace MediaToolkit.Jupiter
 
             public IEnumerable<byte[]> ReadLines(byte[] buffer, int size)
             {
-                List<byte[]> resultBuffer = null;  
+                List<byte[]> resultBuffer = null;
                 int dataRemaining = size;
                 int startIndex = 0;
                 for (int i = 0; i < size; i++)
@@ -537,10 +537,10 @@ namespace MediaToolkit.Jupiter
                         if (dataRemaining == 0)
                         {// весь буфер прочитан
 
-							resultBuffer = new List<byte[]>(dataLines);
-							dataLines.Clear();
+                            resultBuffer = new List<byte[]>(dataLines);
+                            dataLines.Clear();
 
-							break;
+                            break;
                         }
                         else
                         {// остались данные нужно дочитать...
@@ -786,7 +786,7 @@ namespace MediaToolkit.Jupiter
         }
 
         public readonly string ResponseString = "";
-        public virtual bool Success { get; } = true;
+        public virtual bool Result { get; } = true;
 
         public abstract CPResponseType ResponseType { get; }
 
@@ -795,7 +795,6 @@ namespace MediaToolkit.Jupiter
 
         public static CPResponseBase Create(byte[] bytes)
         {
-
             const byte DataLinkEscape = 0x10;
             const byte CarriageReturn = (byte)'\r';
             const byte LineFeed = (byte)'\n';
@@ -806,10 +805,9 @@ namespace MediaToolkit.Jupiter
                 //invalid format...
             }
 
-            for (int i = 0; i< bytes.Length; i++)
+            for (int i = 0; i < bytes.Length; i++)
             {
-                var b = bytes[i];
-                if(b == DataLinkEscape)
+                if (bytes[i] == DataLinkEscape)
                 {// после DLE начинаются bin данные
                  //=00000000 128 96DLE...rgb555...\r\n
 
@@ -819,7 +817,7 @@ namespace MediaToolkit.Jupiter
                     Array.Copy(bytes, offset, headerBytes, 0, headerBytes.Length);
                     offset += headerBytes.Length + 1;
 
-                    var dataSize= endIndex - startIndex - 1;
+                    var dataSize = endIndex - startIndex - 1;
 
                     var rawData = new byte[dataSize];
 
@@ -827,8 +825,8 @@ namespace MediaToolkit.Jupiter
 
                     var respStr = Encoding.UTF8.GetString(headerBytes, 0, headerBytes.Length) + "\r\n";
 
-                    return Create(respStr , rawData);
-                    
+                    return Create(respStr, rawData);
+
                 }
             }
 
@@ -837,7 +835,7 @@ namespace MediaToolkit.Jupiter
 
         public virtual void ThrowIfError()
         {
-            if (!Success)
+            if (!Result)
             {
                 throw new Exception();
             }
@@ -934,11 +932,13 @@ namespace MediaToolkit.Jupiter
 
         public string ValueList { get; private set; } = "";
 
-        public override bool Success => (ResultCode == (uint)ResultCodes.S_OK); // || ResultCode == (uint)ResultCodes.S_FALSE);//(ResultCode == 0);
+        public override bool Result => (ResultCode == (uint)ResultCodes.S_OK); // || ResultCode == (uint)ResultCodes.S_FALSE);//(ResultCode == 0);
+
+        public bool Success => (ResultCode == (uint)ResultCodes.S_OK || ResultCode == (uint)ResultCodes.S_FALSE);
 
         public override void ThrowIfError()
         {
-            if (ResultCode != (int)ResultCodes.S_OK && ResultCode != (int)ResultCodes.S_FALSE)
+            if (!Success)
             {
                 throw new CPException((ResultCodes)ResultCode);
             }
@@ -1000,27 +1000,27 @@ namespace MediaToolkit.Jupiter
             {
                 success = true;
 
-				Data = resp.Substring(2);
-				Data = Data.TrimStart(' ');
-				Data = Data.TrimEnd('\r', '\n');
+                Data = resp.Substring(2);
+                Data = Data.TrimStart(' ');
+                Data = Data.TrimEnd('\r', '\n');
             }
             else if (resp.StartsWith("ER"))
             {// error...
                 success = false;
-				Data = resp.Substring(2);
-				Data = Data.TrimStart(' ');
-				Data = Data.TrimEnd('\r', '\n');
-			}
+                Data = resp.Substring(2);
+                Data = Data.TrimStart(' ');
+                Data = Data.TrimEnd('\r', '\n');
+            }
             else
             {
-				throw new ArgumentException(resp);
+                throw new ArgumentException(resp);
             }
         }
 
-		public string Data { get; private set; } = "";
+        public string Data { get; private set; } = "";
         private bool success = false;
 
-        public override bool Success => success;
+        public override bool Result => success;
         public override CPResponseType ResponseType => CPResponseType.Galileo;
     }
 }
