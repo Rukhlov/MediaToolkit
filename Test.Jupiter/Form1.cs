@@ -742,5 +742,10 @@ namespace Test.Jupiter
             Console.WriteLine(message);
             //MessageBox.Show(message);
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

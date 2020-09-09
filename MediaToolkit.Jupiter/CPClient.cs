@@ -187,9 +187,9 @@ namespace MediaToolkit.Jupiter
                 if (state == ClientState.Connecting)
                 {
                     state = ClientState.Connected;
-                }
+                    StateChanged?.Invoke();
 
-                StateChanged?.Invoke();
+                }
 
                 while (true)
                 {
@@ -237,7 +237,7 @@ namespace MediaToolkit.Jupiter
 
                         }
                         catch (Exception ex)
-                        {
+                        {// FIXME: переделать обработку ошибок!!!
                             logger.Error(ex);
                             exception = ex;
                         }
@@ -282,15 +282,15 @@ namespace MediaToolkit.Jupiter
                             {
                                 try
                                 {
-                                    var seq = command.seq;
-                                    var request = (CPRequest)command.request;
+                                    var seq = command.Seq;
+                                    var request = (CPRequest)command.Request;
 
                                     byte[] sendBuffer = request.GetBytes();
                                     int bytesSent = socket.Send(sendBuffer);
 
                                     sendCommand = command;
 
-                                    logger.Debug(">> " + sendCommand.ToString() + "bytesSent: " + bytesSent);
+                                    logger.Verb(">> " + sendCommand.ToString() + "bytesSent: " + bytesSent);
                                 }
                                 catch (Exception ex)
                                 {
@@ -361,6 +361,11 @@ namespace MediaToolkit.Jupiter
 
         public async Task<bool> Authenticate(string user, string password, int timeout = 5000)
         {
+            /*
+             * Authentication is always necessary with an IP connection.
+             * Authentication is only necessary under GalileoConnect if you are changing the login from the default values, 
+             * as in changing the baud rate or other parameters.
+             */
             if (isAuthenticated)
             {
                 return false;
@@ -437,9 +442,6 @@ namespace MediaToolkit.Jupiter
 
             return response;
         }
-
-
-
 
 
         public void Disconnect()
@@ -598,14 +600,14 @@ namespace MediaToolkit.Jupiter
 
         class InvokeCommand
         {
-            public InvokeCommand(object _request, ushort _seq)
+            public InvokeCommand(object request, ushort seq)
             {
-                this.request = _request;
-                this.seq = _seq;
+                this.Request = request;
+                this.Seq = seq;
             }
 
-            public readonly ushort seq = 0;
-            public readonly object request = null;
+            public readonly ushort Seq = 0;
+            public readonly object Request = null;
 
             private object response = null;
             private Exception exception = null;
@@ -621,16 +623,27 @@ namespace MediaToolkit.Jupiter
 
                 Exception ex = null;
 
+                var startTicks = Stopwatch.GetTimestamp();
+                //Func<long, long, long> ElapsedMilliseconds = new Func<long, long, long>((t1, t2) => 
+                //{
+                //    return (long)(((t2 - t1) / (double)Stopwatch.Frequency) * 1000);
+                //});
+
+                Func<long> ElapsedMilliseconds = new Func<long>(() =>
+                {
+                    return (long)(((Stopwatch.GetTimestamp() - startTicks) / (double)Stopwatch.Frequency) * 1000);
+                });
+
                 long msec = 0;
-                Stopwatch sw = Stopwatch.StartNew();
-                logger.Verb($"Request #{seq} started");
+                //Stopwatch sw = Stopwatch.StartNew();
+                logger.Verb($"Request #{Seq} started");
                 bool result = false;
                 do
                 {
                     result = waitEvent.WaitOne(300);
                     if (result)
                     {
-                        logger.Verb($"Request #{seq} completed " + sw.ElapsedMilliseconds);
+                        logger.Verb($"Request #{Seq} completed " + ElapsedMilliseconds());
                         break;
                     }
 
@@ -638,23 +651,23 @@ namespace MediaToolkit.Jupiter
                     {
                         ex = new OperationCanceledException();
 
-                        logger.Verb($"Request #{seq} canceled");
+                        logger.Verb($"Request #{Seq} canceled");
                         break;
                     }
 
                     if (timeout > 0)
                     {
-                        msec = sw.ElapsedMilliseconds;
+                        msec = ElapsedMilliseconds();
                         if (msec > timeout)
                         {
                             ex = new TimeoutException();
 
-                            logger.Verb($"Request #{seq} timed out: {msec} {timeout}");
+                            logger.Verb($"Request #{Seq} timed out: {msec} {timeout}");
                             break;
                         }
                     }
 
-                    logger.Verb($"#{seq} waiting for result...");
+                    logger.Verb($"#{Seq} waiting for result...");
 
                 } while (!result);
 
@@ -671,9 +684,9 @@ namespace MediaToolkit.Jupiter
                 if (response == null)
                 {
                     var message = "Request dropped";
-                    if (request != null)
+                    if (Request != null)
                     {
-                        message = "Request dropped: " + "\"" + request.ToString() + "\"";
+                        message = "Request dropped: " + "\"" + Request.ToString() + "\"";
                     }
 
                     throw new Exception(message);
@@ -694,14 +707,14 @@ namespace MediaToolkit.Jupiter
                 this.exception = ex;
 
 
-                logger.Verb($"<< #{seq} {resp}");
+                logger.Verb($"<< #{Seq} {resp}");
 
                 waitEvent?.Set();
             }
 
             public override string ToString()
             {
-                return $"#{seq} {request}";
+                return $"#{Seq} {Request}";
             }
 
             private bool disposed = false;
@@ -789,9 +802,9 @@ namespace MediaToolkit.Jupiter
         public virtual bool Result { get; } = true;
 
         public abstract CPResponseType ResponseType { get; }
+        public abstract void ThrowIfError();
 
         public byte[] RawData { get; set; }
-
 
         public static CPResponseBase Create(byte[] bytes)
         {
@@ -806,7 +819,8 @@ namespace MediaToolkit.Jupiter
             }
 
             for (int i = 0; i < bytes.Length; i++)
-            {
+            {// FIXME: нужно только для метода GetPreview() который не документирован!
+                // поэтому лучше проверять только после вызова GetPreview...
                 if (bytes[i] == DataLinkEscape)
                 {// после DLE начинаются bin данные
                  //=00000000 128 96DLE...rgb555...\r\n
@@ -833,13 +847,6 @@ namespace MediaToolkit.Jupiter
             return Create(Encoding.UTF8.GetString(bytes, 0, bytes.Length));
         }
 
-        public virtual void ThrowIfError()
-        {
-            if (!Result)
-            {
-                throw new Exception();
-            }
-        }
 
         public static CPResponseBase Create(string respStr, byte[] rawData = null)
         {
@@ -986,18 +993,25 @@ namespace MediaToolkit.Jupiter
 
         public override CPResponseType ResponseType => CPResponseType.Notify;
 
+        public override void ThrowIfError()
+        {
+            throw new NotImplementedException();
+        }
+
         public override string ToString()
         {
             return ":" + ObjectName + " " + Method + " " + string.Join(" ", ValueList) + "\r\n";
         }
     }
 
+    // нужно только для авторизации...
     public class GCResponse : CPResponseBase
     {
         public GCResponse(string resp) : base(resp)
-        {
+        {//ControlPoint Protocol Manual p.32
             if (resp.StartsWith("OK"))
-            {
+            {//GalileoConnect positive responses start with OK, followed by optional text data with the result of the command.
+                //OK localhost 25456 localuser <CR><LF>
                 success = true;
 
                 Data = resp.Substring(2);
@@ -1006,6 +1020,8 @@ namespace MediaToolkit.Jupiter
             }
             else if (resp.StartsWith("ER"))
             {// error...
+                //GalileoConnect negative responses start with ER, followed by optional description of the error condition.
+                //ER Socket error <CR><LF>
                 success = false;
                 Data = resp.Substring(2);
                 Data = Data.TrimStart(' ');
@@ -1022,5 +1038,14 @@ namespace MediaToolkit.Jupiter
 
         public override bool Result => success;
         public override CPResponseType ResponseType => CPResponseType.Galileo;
+
+        public override void ThrowIfError()
+        {
+            if (!Result)
+            {
+                throw new Exception(Data);
+            }
+        }
+
     }
 }
