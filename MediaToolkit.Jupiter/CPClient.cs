@@ -138,34 +138,34 @@ namespace MediaToolkit.Jupiter
             }
         }
 
-        public bool Connect(string host, int port = 25456)
+        public async Task Connect(string host, int port = 25456)
         {
             logger.Debug("Connect() " + host + " " + port);
 
             if (state != ClientState.Disconnected)
             {
-                logger.Warn("Connect(...) invalid state: " + state);
-                return false;
+                throw new InvalidOperationException("Connect(...) invalid state: " + state);
             }
 
             state = ClientState.Connecting;
             StateChanged?.Invoke();
 
-            this.Host = host;
-            this.Port = port;
-
-            Task.Run(() =>
+            await Task.Run(()=>
             {
-                CommunicationLoop();
-            });
 
-            return true;
+                this.Host = host;
+                this.Port = port;
+
+                ClientProc();
+
+            }).ConfigureAwait(false);
+
 
         }
 
-        private void CommunicationLoop()
+        private void ClientProc()
         {
-            logger.Verb("CommunicationLoop BEGIN");
+            logger.Verb("ClientProc BEGIN");
 
             try
             {
@@ -310,6 +310,8 @@ namespace MediaToolkit.Jupiter
             catch (Exception ex)
             {
                 logger.Error(ex);
+
+                throw ex;
             }
             finally
             {
@@ -332,7 +334,7 @@ namespace MediaToolkit.Jupiter
                 StateChanged?.Invoke();
             }
 
-            logger.Verb("CommunicationLoop END");
+            logger.Verb("ClientProc END");
         }
 
         private bool IsSocketConnected()

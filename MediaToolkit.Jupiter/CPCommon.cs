@@ -139,7 +139,14 @@ namespace MediaToolkit.Jupiter
 		public int h { get; set; } = 0;
 		public WinId ZAfter { get; set; } = new WinId(-1);
 
-		public TWindowState() { }
+        public Rectangle Rect => new Rectangle(x, y, w, h);
+        public bool IsVisible => ((State & (uint)StateFlag.wsVisible) != 0);
+        public bool IsMinimized => ((State & (uint)StateFlag.wsMinimized) != 0);
+        public bool IsMaximized => ((State & (uint)StateFlag.wsMaximized) != 0);
+
+        public int WindowId => Id.Id;
+
+        public TWindowState() { }
 		public TWindowState(string data) : this(TreeNode.Parse(data))
 		{ }
 

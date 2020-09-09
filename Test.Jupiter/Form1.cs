@@ -53,7 +53,7 @@ namespace Test.Jupiter
 
         private CPClient cpClient = null;
 
-        private void buttonInit_Click(object sender, EventArgs e)
+        private async void buttonInit_Click(object sender, EventArgs e)
         {
             Console.WriteLine("buttonInit_Click(...)");
 
@@ -75,9 +75,9 @@ namespace Test.Jupiter
                     cpClient.StateChanged += CpClient_StateChanged;
                 }
 
-                if (!cpClient.IsConnected)
+                //if (!cpClient.IsConnected)
                 {
-                    cpClient.Connect(host, port);
+                    await cpClient.Connect(host, port);
                 }
 
 
@@ -746,6 +746,37 @@ namespace Test.Jupiter
         private void button3_Click(object sender, EventArgs e)
         {
 
+        }
+
+
+        CPManager man = new CPManager();
+        private async void button1_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                var host = textBoxHost.Text;
+                var port = int.Parse(textBoxPort.Text);
+
+                var user = textBoxUserName.Text;
+                var pass = textBoxPassword.Text;
+
+
+                Console.WriteLine("Open()");
+                await man.Open(host, port, new System.Net.NetworkCredential(user, pass));
+
+                Console.WriteLine("-----------------------------");
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            man.Close();
         }
     }
 }
