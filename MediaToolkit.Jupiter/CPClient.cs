@@ -160,7 +160,6 @@ namespace MediaToolkit.Jupiter
 
             }).ConfigureAwait(false);
 
-
         }
 
         private void ClientProc()
@@ -370,7 +369,7 @@ namespace MediaToolkit.Jupiter
              */
             if (isAuthenticated)
             {
-                return false;
+                return true;
             }
 
             Credential = new NetworkCredential(user, password);
@@ -626,11 +625,6 @@ namespace MediaToolkit.Jupiter
                 Exception ex = null;
 
                 var startTicks = Stopwatch.GetTimestamp();
-                //Func<long, long, long> ElapsedMilliseconds = new Func<long, long, long>((t1, t2) => 
-                //{
-                //    return (long)(((t2 - t1) / (double)Stopwatch.Frequency) * 1000);
-                //});
-
                 Func<long> ElapsedMilliseconds = new Func<long>(() =>
                 {
                     return (long)(((Stopwatch.GetTimestamp() - startTicks) / (double)Stopwatch.Frequency) * 1000);

@@ -762,7 +762,7 @@ namespace Test.Jupiter
 
 
                 Console.WriteLine("Open()");
-                await man.Open(host, port, new System.Net.NetworkCredential(user, pass));
+                await man.Start(host, port, new System.Net.NetworkCredential(user, pass));
 
                 Console.WriteLine("-----------------------------");
             }
@@ -776,7 +776,40 @@ namespace Test.Jupiter
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            man.Close();
+            man.Stop();
+        }
+
+        private async void button3_Click_1(object sender, EventArgs e)
+        {
+            try
+            {
+                var winId = 1004;
+                var inputId = 1;
+                await man.OpenWindow(winId);
+                await man.ChangeWindow(winId, new Rectangle(20, 20, 100, 100));
+
+                await man.SetWindowInput(winId, inputId);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async void button24_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var winId = 1004;
+
+                var bmp = await man.GetPreview(winId);
+
+                pictureBox1.Image = bmp;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

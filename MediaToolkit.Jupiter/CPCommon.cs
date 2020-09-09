@@ -143,6 +143,7 @@ namespace MediaToolkit.Jupiter
         public bool IsVisible => ((State & (uint)StateFlag.wsVisible) != 0);
         public bool IsMinimized => ((State & (uint)StateFlag.wsMinimized) != 0);
         public bool IsMaximized => ((State & (uint)StateFlag.wsMaximized) != 0);
+        public bool IsFramed => ((State & (uint)StateFlag.wsFramed) != 0);
 
         public int WindowId => Id.Id;
 
@@ -1369,6 +1370,20 @@ namespace MediaToolkit.Jupiter
 		//..
 	}
 
+    public class Utils
+    {
+        public static string LogEnumFlags(Enum flags)
+        {
+            string log = "";
+
+            Type type = flags.GetType();
+
+            var values = Enum.GetValues(type).Cast<Enum>().Where(f => flags.HasFlag(f));
+            log = string.Join(" | ", values);
+
+            return log;
+        }
+    }
 
 	static class IntParser
 	{
