@@ -46,14 +46,8 @@
   <ItemGroup>
     <Compile Include="CPClient.cs" />
     <Compile Include="CPCommon.cs" />
-    <Compile Include="CPManager.cs" />
+    <Compile Include="CPObjects.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
-      <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
-      <Name>MediaToolkit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Doc\ControlPoint Protocol Manual.pdf" />

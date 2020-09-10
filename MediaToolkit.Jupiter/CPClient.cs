@@ -1,4 +1,4 @@
-﻿using MediaToolkit.Logging;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

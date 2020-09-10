@@ -1,4 +1,5 @@
-﻿using MediaToolkit.Logging;
+﻿using MediaToolkit.Jupiter;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,13 +9,13 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
-namespace MediaToolkit.Jupiter
+namespace Test.Jupiter
 {
     public class CPManager
     {
-        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.Jupiter");
-
+        private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private CPClient client = null;
 
@@ -79,9 +80,7 @@ namespace MediaToolkit.Jupiter
                                 foreach (var window in windows)
                                 {
                                     logger.Info(window.WindowId + " " + Utils.LogEnumFlags((StateFlag)window.State) + " " + window.Rect);
-
                                 }
-
 
                                 var rgbWindows = windows.Where(w => w.Kind == SubSystemKind.RGBCapture);
                                 foreach (var rgb in rgbWindows)
