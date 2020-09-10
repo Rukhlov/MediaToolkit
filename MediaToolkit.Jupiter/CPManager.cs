@@ -78,7 +78,7 @@ namespace MediaToolkit.Jupiter
                                 var windows = await client.WinServer.QueryAllWindows().ConfigureAwait(false);
                                 foreach (var window in windows)
                                 {
-                                    logger.Info(window.WindowId + " "+ Utils.LogEnumFlags((StateFlag)window.State) + " " + window.Rect);
+                                    logger.Info(window.WindowId + " " + Utils.LogEnumFlags((StateFlag)window.State) + " " + window.Rect);
 
                                 }
 
@@ -129,7 +129,30 @@ namespace MediaToolkit.Jupiter
 
         private void CpClient_NotificationReceived(CPNotification notification)
         {
-            logger.Debug("CpClient_NotificationReceived(...) " + notification);
+            logger.Debug("CpClient_NotificationReceived(...)");
+
+            if (notification.ObjectName == "Notify")
+            {
+                if (notification.Method == "WindowsState")
+                {// +Notify WindowsState { nCount TWindowState pData[ ] } (Id Kind nState nStateChange x y w h ZAfter)
+
+                    var valueList = notification.ValueList;
+                    var windows = new TWindowStateList(valueList);
+
+                    foreach(var w in windows)
+                    {
+                        if (w.WindowId < 10000)
+                        {
+                            var state = w.State + " {" + Utils.LogEnumFlags((StateFlag)w.State) + "}";
+                            var set = w.StateChange + " {" + Utils.LogEnumFlags((StateFlag)w.StateChange) + "}";
+                            logger.Debug(string.Join(" ", w.WindowId, state, set, w.Rect));
+                        }
+                    }
+
+                    //logger.Debug(windows.ToString());
+                }
+            }
+
 
 
         }
@@ -209,7 +232,7 @@ namespace MediaToolkit.Jupiter
         }
 
 
-        public async Task<Bitmap> GetPreview(int windowId)
+        public async Task<Bitmap> GetWindowPreview(int windowId)
         {
             if (!running || !started)
             {

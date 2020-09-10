@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -137,6 +138,10 @@ namespace MediaToolkit.Jupiter
 		public int y { get; set; } = 0;
 		public int w { get; set; } = 0;
 		public int h { get; set; } = 0;
+
+        /// <summary>
+        /// WinId of window for this window to follow (-1=has focus and on top -2 for in back)
+        /// </summary>
 		public WinId ZAfter { get; set; } = new WinId(-1);
 
         public Rectangle Rect => new Rectangle(x, y, w, h);
@@ -1115,7 +1120,6 @@ namespace MediaToolkit.Jupiter
 		public List<string> ValueList { get; private set; } = new List<string>();
 		public List<TreeNode> Nodes { get; private set; } = new List<TreeNode>();
 
-
 		private int offset = 0;
 		private StringBuilder buffer = new StringBuilder();
 
@@ -1224,7 +1228,7 @@ namespace MediaToolkit.Jupiter
 		public CPException(ResultCodes result)
 		{
 			this.Result = result;
-			this.Description = GetDescription(result);
+			this.Description = GetDescriptionFromResultCode(result);
 		}
 
 
@@ -1233,7 +1237,7 @@ namespace MediaToolkit.Jupiter
 
 		public override string Message => Description + " " + "0x" + Result.ToString("X");
 
-		public static string GetDescription(ResultCodes ResultCode)
+		public static string GetDescriptionFromResultCode(ResultCodes ResultCode)
 		{
 			string descr = "";
 			if (ResultCode == ResultCodes.E_INVALID_WINID)
@@ -1379,9 +1383,39 @@ namespace MediaToolkit.Jupiter
             Type type = flags.GetType();
 
             var values = Enum.GetValues(type).Cast<Enum>().Where(f => flags.HasFlag(f));
-            log = string.Join(" | ", values);
+            log = string.Join("|", values);
 
             return log;
+        }
+
+        public static bool CheckAppRegistration(string appName = "CPServer.exe")
+        {
+            return !string.IsNullOrEmpty(GetRegisterAppFullName(appName));
+        }
+
+
+        public static string GetRegisterAppFullName(string appName)
+        {
+            var fullName = "";
+            try
+            {
+                var regPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\" + appName;
+                var rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regPath);
+                if (rk != null)
+                {
+                    var keyVal = rk.GetValue("");
+                    if (keyVal != null)
+                    {
+                        fullName = keyVal.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return fullName;
         }
     }
 

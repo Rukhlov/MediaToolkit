@@ -802,7 +802,7 @@ namespace Test.Jupiter
             {
                 var winId = 1004;
 
-                var bmp = await man.GetPreview(winId);
+                var bmp = await man.GetWindowPreview(winId);
 
                 pictureBox1.Image = bmp;
             }
