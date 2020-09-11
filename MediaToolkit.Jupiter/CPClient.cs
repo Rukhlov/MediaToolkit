@@ -343,16 +343,13 @@ namespace MediaToolkit.Jupiter
 
         private void ProcessResponse(CPResponseBase cpResponse, Exception exception)
         {
-            if (sendCommand != null)
+            if (sendCommand == null)
             {
-                sendCommand.SetResult(cpResponse, exception);
+                throw new InvalidOperationException("sendCommand == null");
+            }
 
-                sendCommand = null;
-            }
-            else
-            {// что то пошло не так...
-                logger.Warn("!!!!!!!!!!!!!! WARN: " + cpResponse.ToString());
-            }
+            sendCommand.SetResult(cpResponse, exception);
+            sendCommand = null;
         }
 
         private void ProcessNotification(CPResponseBase cpResponse)
@@ -773,6 +770,7 @@ namespace MediaToolkit.Jupiter
 
             return Encoding.UTF8.GetBytes(RequestString);
         }
+
         public override string ToString()
         {
             return RequestString;
@@ -991,7 +989,7 @@ namespace MediaToolkit.Jupiter
 
         public override void ThrowIfError()
         {
-            throw new NotImplementedException();
+           // throw new NotImplementedException();
         }
 
         public override string ToString()

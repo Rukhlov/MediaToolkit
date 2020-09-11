@@ -239,6 +239,7 @@ namespace TestStreamer.Controls
                     Fps = (int)httpFpsNumeric.Value,
                     CaptureTypes = captureType,
                     CaptureMouse = true,
+                    
                     //UseDesktopDuplApi = (captureType == VideoCaptureType.DXGIDeskDupl),
                 };
 
