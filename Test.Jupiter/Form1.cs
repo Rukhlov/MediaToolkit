@@ -749,7 +749,7 @@ namespace Test.Jupiter
         }
 
 
-        CPManager man = new CPManager();
+        ControlPointManager man = new ControlPointManager();
         private async void button1_Click_1(object sender, EventArgs e)
         {
             try
@@ -802,7 +802,9 @@ namespace Test.Jupiter
             {
                 var winId = 1004;
 
-                var bmp = await man.GetWindowPreview(winId);
+                //var bmp = await man.GetWindowPreview(winId);
+
+                var bmp = await man.GetWindowImage(winId);
 
                 pictureBox1.Image = bmp;
             }

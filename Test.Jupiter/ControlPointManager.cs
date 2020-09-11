@@ -10,10 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
+using System.IO;
 
 namespace Test.Jupiter
 {
-    public class CPManager
+    public class ControlPointManager
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -250,6 +251,50 @@ namespace Test.Jupiter
 
             return bmp;
         }
+
+
+        public async Task<Bitmap> GetWindowImage(int windowId)
+        {
+            if (!running || !started)
+            {
+                throw new InvalidOperationException("Invalid state: " + running + " " + started);
+            }
+
+
+            Bitmap bmp = null;
+            var winId = new WinId(windowId);
+
+            var imageName = await client.Window.GrabImage(winId);
+
+            if (!string.IsNullOrEmpty(imageName))
+            {// TODO: проверить файл это или только название
+             // т.к в доках эта функция возвращает полый путь к файлу, а реальный сервер только имя!
+             // может быть в зависимости от версии CPServer, функция работает по разному
+                imageName = imageName.Replace("\"", "");
+
+                var imageFile = Path.Combine(CPEnvironment.ImagesPath, imageName);
+
+                if (File.Exists(imageFile))
+                {
+                    using (var _b = Bitmap.FromFile(imageFile))
+                    {
+                        bmp = new Bitmap(_b);
+                    }
+
+                    try
+                    {
+                        File.Delete(imageFile);
+                    }
+                    catch(Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                    }    
+                }
+            }
+
+            return bmp;
+        }
+
 
         public void Stop()
         {

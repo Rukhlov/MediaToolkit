@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -232,12 +233,20 @@ namespace MediaToolkit.Jupiter
 		}
 
 	}
-    public class CPConsts
+    public class CPEnvironment
     {
         public const string CPServerAppName = "CPServer.exe";
 
+        public readonly static string ProgramDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        public readonly static string ControlPointPath = Path.Combine(ProgramDataPath, "ControlPoint");
+        public readonly static string ServerDataFilesPath = Path.Combine(ControlPointPath, "ServerDataFiles");
+
+        //@"%ProgramData%\ControlPoint\ServerDataFiles\images\"
+        public readonly static string ImagesPath = Path.Combine(ServerDataFilesPath, "images");
+
         public readonly static Guid Galileo_1_0_Type_Library_CLSID = new Guid("DF2DCD09-6FAE-11D4-94B0-0080C84735F0");
         public readonly static Guid GenieSys_1_0_Type_Library_CLSID = new Guid("D7D93C1A-0C59-4CB0-8C90-BEF34ED55013");
+
     }
 
     public class Utils
