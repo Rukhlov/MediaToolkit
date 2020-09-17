@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,6 +13,9 @@ namespace MediaToolkit.Jupiter
     public class CPException : Exception
     {
         public CPException(ResultCodes result) : this(result, GetDescriptionFromResultCode(result))
+        { }
+
+        public CPException(string descr):this(ResultCodes.S_FALSE, descr)
         { }
 
         public CPException(ResultCodes result, string descr)
@@ -54,7 +56,7 @@ namespace MediaToolkit.Jupiter
             {
                 descr = "Archive not found";
             }
-            else if (ResultCode == ResultCodes.E_WINID_ALLREADYUSED)
+            else if (ResultCode == ResultCodes.E_WINID_ALLREADY_USED)
             {
                 descr = "Window ID already used";
             }
@@ -231,18 +233,20 @@ namespace MediaToolkit.Jupiter
 			}
 			return node;
 		}
-
 	}
+
+
     public class CPEnvironment
     {
         public const string CPServerAppName = "CPServer.exe";
 
         public readonly static string ProgramDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-        public readonly static string ControlPointPath = Path.Combine(ProgramDataPath, "ControlPoint");
-        public readonly static string ServerDataFilesPath = Path.Combine(ControlPointPath, "ServerDataFiles");
+        public readonly static string ControlPointPath = System.IO.Path.Combine(ProgramDataPath, "ControlPoint");
+        public readonly static string ServerDataFilesPath = System.IO.Path.Combine(ControlPointPath, "ServerDataFiles");
 
+        // Папка в которую сервер сохраняет изображения окон
         //@"%ProgramData%\ControlPoint\ServerDataFiles\images\"
-        public readonly static string ImagesPath = Path.Combine(ServerDataFilesPath, "images");
+        public readonly static string ImagesPath = System.IO.Path.Combine(ServerDataFilesPath, "images");
 
         public readonly static Guid Galileo_1_0_Type_Library_CLSID = new Guid("DF2DCD09-6FAE-11D4-94B0-0080C84735F0");
         public readonly static Guid GenieSys_1_0_Type_Library_CLSID = new Guid("D7D93C1A-0C59-4CB0-8C90-BEF34ED55013");
@@ -301,6 +305,17 @@ namespace MediaToolkit.Jupiter
             }
 
             return fullName;
+        }
+
+        public static byte[] BitmapToBytes(Bitmap image, System.Drawing.Imaging.ImageFormat format)
+        {
+            byte[] bytes = null;
+            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+            {
+                image.Save(ms, format);
+                bytes = ms.ToArray();
+            }
+            return bytes;
         }
     }
 
@@ -448,19 +463,19 @@ namespace MediaToolkit.Jupiter
             ts.TraceEvent(TraceEventType.Information, 0, message);
         }
 
-        public static void Verb<T>(this TraceSource ts, T t) //where T : Exception
+        public static void Trace<T>(this TraceSource ts, T t) //where T : Exception
         {
             ts.TraceData(TraceEventType.Verbose, 0, t);
         }
 
 
-        public static void Verb(this TraceSource ts, string message)
+        public static void Trace(this TraceSource ts, string message)
         {
             ts.TraceEvent(TraceEventType.Verbose, 0, message);
         }
 
 
-        public static void Verb(this TraceSource ts, string format, params object[] args)
+        public static void Trace(this TraceSource ts, string format, params object[] args)
         {
             ts.TraceEvent(TraceEventType.Verbose, 0, format, args);
         }

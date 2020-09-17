@@ -517,8 +517,8 @@ namespace Test.Jupiter
 
                     x = 10,
                     y = 10,
-                    w = 200,
-                    h = 200,
+                    w = 64,
+                    h = 64,
 
                     ZAfter = new WinId(-1),
                 };
@@ -802,9 +802,9 @@ namespace Test.Jupiter
             {
                 var winId = 1004;
 
-                //var bmp = await man.GetWindowPreview(winId);
+                var bmp = await man.GetWindowPreview(winId);
 
-                var bmp = await man.GetWindowImage(winId);
+                //var bmp = await man.GetWindowImage(winId);
 
                 pictureBox1.Image = bmp;
             }
@@ -813,5 +813,103 @@ namespace Test.Jupiter
                 MessageBox.Show(ex.Message);
             }
         }
-    }
+
+        private async void button25_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                var id = int.Parse(textBox1.Text);
+
+                var winId = new WinId(id);
+
+                var size = await cpClient.RGBSys.GetInputSize(winId);
+                message = "GetInputSize() " + new Size(size.cx, size.cy);
+
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+
+		private async void button26_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+				var frameInfo = await cpClient.Window.GetFrameInfo(winId);
+
+				var rgb = (int)frameInfo.rgbFrameColor;
+				//var color = Color.FromArgb((int)rgb);
+				var color = Color.FromArgb((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, (rgb >> 0) & 0xff);
+				pictureBox1.BackColor = color;
+
+				message = "GetFrameInfo() " + frameInfo;
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+
+		private async void button27_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+
+				var state = new TWindowState
+				{
+					Id = winId,
+					Kind = SubSystemKind.RGBCapture,
+					State = (uint)StateFlag.wsFramed,
+					StateChange = (uint)StateFlag.wsFramed,
+
+				};
+
+				var newState = await cpClient.Window.SetState(state);
+
+				var fi = new CPWndFrameInfo
+				{
+					Set = 15,
+					nFrameWidth = 1,
+					rgbFrameColor = 255,//Color.Red.ToArgb(),
+					bShowTitle = 0,
+					bShowUserData = 0,
+				};
+				var result = await cpClient.Window.SetFrameInfo(winId, fi);
+
+				//var rgb = (int)frameInfo.rgbFrameColor;
+				////var color = Color.FromArgb((int)rgb);
+				//var color = Color.FromArgb((rgb >> 16) & 0xff, (rgb >> 8) & 0xff, (rgb >> 0) & 0xff);
+				//pictureBox1.BackColor = color;
+
+				message = "SetFrameInfo() " + result;
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+	}
 }

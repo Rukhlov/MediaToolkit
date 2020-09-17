@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace MediaToolkit.Jupiter
 {
 
@@ -21,7 +22,7 @@ namespace MediaToolkit.Jupiter
         E_INVALID_ARGS = unchecked((int)0x80040304),
         E_INVALID_ARCHIVE_VERSION = unchecked((int)0x80040305),
         E_ARCHIVE_NOTFOUND = unchecked((int)0x80040306),
-        E_WINID_ALLREADYUSED = unchecked((int)0x80040307),
+        E_WINID_ALLREADY_USED = unchecked((int)0x80040307),
         E_INVALID_FORMAT = unchecked((int)0x80040308),
 
         E_FILE_NOTEXIST = unchecked((int)0x80070002),
@@ -186,6 +187,8 @@ namespace MediaToolkit.Jupiter
         public bool IsMaximized => ((State & (uint)StateFlag.wsMaximized) != 0);
         public bool IsFramed => ((State & (uint)StateFlag.wsFramed) != 0);
 
+        public bool IsClosed => (State == 0);
+
         public int WindowId => Id.Id;
 
         public TWindowState() { }
@@ -325,20 +328,22 @@ namespace MediaToolkit.Jupiter
         {
             var valueList = argsTree.ValueList;
             var nodes = argsTree.Nodes;
-            if (nodes.Count == 0 && valueList.Count == 4)
+            if (nodes.Count == 0 && valueList.Count == 2)
             {
                 this.cx = int.Parse(valueList[0]);
                 this.cy = int.Parse(valueList[1]);
             }
             else
             {
-                throw new ArgumentException("argsTree");
+                throw new ArgumentException("CPSize invalid argsTree: " + nodes.Count + " " + valueList.Count);
             }
 
         }
 
         public int cx { get; set; }
         public int cy { get; set; }
+
+        public Size Size => new Size(cx, cy);
 
         public override string ToString()
         {
@@ -434,16 +439,27 @@ namespace MediaToolkit.Jupiter
 
     public class CPPlatformInfo
     {
-        /*
-		 * PlatformCode:
-		 * 
-		 * 18 - FC 1000
-			19 - FC 4000
-			20 - FC 8000
-			21 - FC 1100
-			22 - VizionPlus II
-			23 - FC4500
-		 */
+        public readonly static Dictionary<long, string> PlatformCodes = new Dictionary<long, string>
+        {
+            {18, "FC 1000" },
+            {19, "FC 4000" },
+            {20, "FC 8000" },
+            {21, "FC 1100" },
+            {22, "VizionPlus II" },
+            {23, "FC4500" },
+        };
+
+        public static string GetPlatformName(long code) 
+        {
+            string platformName = "PlatformCode " + code;
+            if (PlatformCodes.ContainsKey(code)) 
+            {
+                platformName = PlatformCodes[code];
+            }
+
+            return platformName;
+        }
+
 
         public CPPlatformInfo(string data) : this(TreeNode.Parse(data))
         { }
@@ -486,6 +502,12 @@ namespace MediaToolkit.Jupiter
         public long SerialNumber { get; private set; }
 
         public string CPVersion { get; private set; } = "";
+
+        public string GetDescription() 
+        {
+            return "Jupiter Info: " + string.Join("/", CPVersion.Trim('"'), GetPlatformName(PlatformCode), ModelVersion, ModelRevision, OEMCode, SerialNumber);
+
+        }
 
         public override string ToString()
         {
@@ -560,6 +582,71 @@ namespace MediaToolkit.Jupiter
         }
 
     }
+
+    public class CPWndFrameInfo
+    {//ControlPoint Protocol Manual p.63
+		 //=00000000 { 15 4 8421504 1 0 }
+
+		 /*
+		  * 
+		  *  unsigned Set
+			 short nFrameWidth
+			 DWORD rgbFrameColor
+			 Boolean bShowTitle
+			 Boolean bShowUserData
+
+
+		  *  Set * bit field – low order 3 bits (0000 0111)
+			 nFrameWidth frame with – 0 to 100 (default = 4)
+			 rgbFrameColor frame color – RGB(R, G, B) R/G/B - 0 to 255
+			 bShowTitle indicates show/not show title (default = true)
+			 bShowUserData indicates show/not show user data (default = false)
+
+			 *Set argument is used to determine which parameters are to be changed (are valid).
+		  */
+		public CPWndFrameInfo()
+		{ }
+		public CPWndFrameInfo(string data) : this(TreeNode.Parse(data))
+		{ }
+
+		public CPWndFrameInfo(TreeNode argsTree)
+		{
+			var valueList = argsTree.ValueList;
+			var nodes = argsTree.Nodes;
+
+			if (nodes.Count == 0 && valueList.Count == 5)
+			{
+				this.Set = uint.Parse(valueList[0]);
+				this.nFrameWidth = short.Parse(valueList[1]);
+				this.rgbFrameColor = uint.Parse(valueList[2]);
+				this.bShowTitle = int.Parse(valueList[3]);
+				this.bShowUserData = int.Parse(valueList[4]);
+
+			}
+			else
+			{
+				throw new ArgumentException("argsTree");
+			}
+
+		}
+
+        public uint Set { get; set; } = 15;// 1111 -> 15 ALL
+
+        public short nFrameWidth { get; set; } = 2;// 0 to 100 (default = 4)
+
+        public uint rgbFrameColor { get; set; } = 255;//255 RED
+
+        public int bShowTitle { get; set; } = 0; //Boolean 0 or 1
+
+        public int bShowUserData { get; set; } = 0; //Boolean 0 or 1
+
+		public override string ToString()
+		{
+			return "{ " + string.Join(" ", Set, nFrameWidth, rgbFrameColor, bShowTitle, bShowUserData) + " }";
+		}
+	}
+
+
 
     public abstract class CPObjBase
     {
@@ -689,7 +776,7 @@ namespace MediaToolkit.Jupiter
                 }
                 else
                 {// invalid format...
-                    throw new FormatException("Invalid size: " + bmpSize + "x" + bits.Length);
+                    throw new FormatException("Invalid bitmap length: " + bmpSize + "!=" + bits.Length);             
                 }
             }
             finally
@@ -1010,6 +1097,7 @@ namespace MediaToolkit.Jupiter
             return new TWindowStateList(response.ValueList);
         }
 
+
         public async Task<CPServerInfo> GetServerInfo()
         { // не работает !! 
           // сервер возвращает такое:
@@ -1044,7 +1132,6 @@ namespace MediaToolkit.Jupiter
 
             var request = new CPRequest(ObjectName, "RegisterNotifyTarget");
             var response = await client.SendAsync(request) as CPResponse;
-
             response.ThrowIfError();
 
             return response.Result;
@@ -1053,11 +1140,8 @@ namespace MediaToolkit.Jupiter
         public async Task<bool> UnregisterNotifyTarget()
         {
             ThrowIfClientNotReady();
-
             var request = new CPRequest(ObjectName, "UnregisterNotifyTarget");
-
             var response = await client.SendAsync(request) as CPResponse;
-
             response.ThrowIfError();
 
             return response.Result;
@@ -1095,11 +1179,11 @@ namespace MediaToolkit.Jupiter
         public Window(CPClient c) : base(c) { }
         public override string ObjectName => "Window";
 
-        public async Task<TWindowState> GetState(TWindowState state)
+        public async Task<TWindowState> GetState(WinId winId)
         {
             ThrowIfClientNotReady();
 
-            var request = new CPRequest(ObjectName, "GetState", state);
+            var request = new CPRequest(ObjectName, "GetState", winId);
             var response = await client.SendAsync(request) as CPResponse;
             response.ThrowIfError();
 
@@ -1116,9 +1200,31 @@ namespace MediaToolkit.Jupiter
             return new TWindowState(response.ValueList);
         }
 
-
-        public async Task<string> GrabImage(WinId winId)
+        public async Task<CPWndFrameInfo> GetFrameInfo(WinId winId)
         {
+            ThrowIfClientNotReady();
+
+            var request = new CPRequest(ObjectName, "GetFrameInfo", winId);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return new CPWndFrameInfo(response.ValueList);
+        }
+
+        public async Task<bool> SetFrameInfo(WinId winId, CPWndFrameInfo fi)
+        {
+            ThrowIfClientNotReady();
+
+            var request = new CPRequest(ObjectName, "SetFrameInfo", winId, fi);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return response.Result;
+        }
+
+		public async Task<string> GrabImage(WinId winId)
+        { // ContorlPoint Server ver_3.5.7852.526 утекает память !!!
+
             ThrowIfClientNotReady();
             var request = new CPRequest(ObjectName, "GrabImage", winId);
             var response = await client.SendAsync(request) as CPResponse;
@@ -1135,6 +1241,10 @@ namespace MediaToolkit.Jupiter
             ThrowIfClientNotReady();
 
             var request = new CPRequest(ObjectName, "GetPreview", winId);
+
+            // в ответе кроме текста будут бинарные данные...
+            request.BinnaryInResponse = true;
+
             var response = await client.SendAsync(request) as CPResponse;
             response.ThrowIfError();
 

@@ -239,7 +239,6 @@ namespace Test.Jupiter
                 throw new InvalidOperationException("Invalid state: " + running + " " + started);
             }
 
-
             Bitmap bmp = null;
             var winId = new WinId(windowId);
 
