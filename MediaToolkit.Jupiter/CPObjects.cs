@@ -720,7 +720,7 @@ namespace MediaToolkit.Jupiter
         public int Height { get; private set; }
 
         // TODO: должен быть в заголовке...
-        public int Stride { get; private set; }
+        //public int Stride { get; private set; }
 
         // данные в формате RGB555
         public byte[] Bits { get; private set; }
@@ -732,11 +732,12 @@ namespace MediaToolkit.Jupiter
                 throw new FormatException("Invalid size: " + Width + "x" + Height);
             }
 
-            // первые 4 байта какой то заголовок...
-            var bits = Bits.Skip(4).ToArray();
+			// первые 4 байта какой то заголовок...
+			// var bits = Bits.Skip(4).ToArray();
 
-            //преобразование вручную rgb555 -> rgb888 
-            /*             
+
+			//преобразование вручную rgb555 -> rgb888 
+			/*             
             //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
             ushort red_mask = 0x7C00;
             ushort green_mask = 0x3E0;
@@ -761,7 +762,7 @@ namespace MediaToolkit.Jupiter
             }
             */
 
-            var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+			var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
 
             var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
             try
@@ -770,13 +771,13 @@ namespace MediaToolkit.Jupiter
                 // сейчас просто проверяем размер данных...
                 var bmpStride = data.Stride;
                 var bmpSize = data.Height * bmpStride;
-                if (bmpSize == bits.Length)
+                if (bmpSize == Bits.Length)
                 {
-                    Marshal.Copy(bits, 0, data.Scan0, bits.Length);
+                    Marshal.Copy(Bits, 0, data.Scan0, Bits.Length);
                 }
                 else
                 {// invalid format...
-                    throw new FormatException("Invalid bitmap length: " + bmpSize + "!=" + bits.Length);             
+                    throw new FormatException("Invalid bitmap length: " + bmpSize + "!=" + Bits.Length);             
                 }
             }
             finally

@@ -16,77 +16,77 @@ using System.Runtime.InteropServices;
 
 namespace Test.Jupiter
 {
-    public partial class Form1 : Form
-    {
-        public Form1()
-        {
-            InitializeComponent();
-        }
+	public partial class Form1 : Form
+	{
+		public Form1()
+		{
+			InitializeComponent();
+		}
 
-        private void buttonConnect_Click(object sender, EventArgs e)
-        {
+		private void buttonConnect_Click(object sender, EventArgs e)
+		{
 
-            //"+RGBSys NewWindowWithId { " + windowId + " }"
-
-
-            //if (jupiter == null) 
-            //{
-            //    return;
-            //}
-
-            //var channelCount = jupiter.GetChannelCount();
-
-            //if (channelCount > 0) 
-            //{
-            //   var winId = jupiter.OpenWindow(1, 0, 0, 100, 100);
-            //    jupiter.ChangeWindow(winId, 10, 10, 640, 480);
-
-            //   // jupiter.S
-            //}
-
-            ////MessageBox.Show("channelCount " + channelCount);
-        }
-
-        //private JupiterConnection jupiterConnection = null;
-
-        // private JupiterApi jupiter = null;
-
-        private CPClient cpClient = null;
-
-        private async void buttonInit_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine("buttonInit_Click(...)");
-
-            //jupiter = new JupiterApi();
-
-            //var channelCount = jupiter.GetChannelCount();
-            try
-            {
-                var host = textBoxHost.Text;
-                var port = int.Parse(textBoxPort.Text);
-
-                if(cpClient == null)
-                {
-                    cpClient = new CPClient();
-
-                    cpClient.Notify.WindowStateEvent += Notify_WindowStateEvent;
-
-                    cpClient.NotificationReceived += CPClient_NotificationReceived;
-                    cpClient.StateChanged += CpClient_StateChanged;
-                }
-
-                //if (!cpClient.IsConnected)
-                {
-                    await cpClient.Connect(host, port);
-                }
+			//"+RGBSys NewWindowWithId { " + windowId + " }"
 
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
+			//if (jupiter == null) 
+			//{
+			//    return;
+			//}
+
+			//var channelCount = jupiter.GetChannelCount();
+
+			//if (channelCount > 0) 
+			//{
+			//   var winId = jupiter.OpenWindow(1, 0, 0, 100, 100);
+			//    jupiter.ChangeWindow(winId, 10, 10, 640, 480);
+
+			//   // jupiter.S
+			//}
+
+			////MessageBox.Show("channelCount " + channelCount);
+		}
+
+		//private JupiterConnection jupiterConnection = null;
+
+		// private JupiterApi jupiter = null;
+
+		private CPClient cpClient = null;
+
+		private async void buttonInit_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine("buttonInit_Click(...)");
+
+			//jupiter = new JupiterApi();
+
+			//var channelCount = jupiter.GetChannelCount();
+			try
+			{
+				var host = textBoxHost.Text;
+				var port = int.Parse(textBoxPort.Text);
+
+				if (cpClient == null)
+				{
+					cpClient = new CPClient();
+
+					cpClient.Notify.WindowStateEvent += Notify_WindowStateEvent;
+
+					cpClient.NotificationReceived += CPClient_NotificationReceived;
+					cpClient.StateChanged += CpClient_StateChanged;
+				}
+
+				//if (!cpClient.IsConnected)
+				{
+					await cpClient.Connect(host, port);
+				}
+
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+		}
 
 		private void Notify_WindowStateEvent(TWindowStateList obj)
 		{
@@ -95,348 +95,348 @@ namespace Test.Jupiter
 
 		}
 
-        private void CpClient_StateChanged()
-        {
-            Console.WriteLine("CpClient_StateChanged(): " + cpClient.State);
+		private void CpClient_StateChanged()
+		{
+			Console.WriteLine("CpClient_StateChanged(): " + cpClient.State);
 
-            var state = cpClient.State;
-            if (state == ClientState.Connected || state == ClientState.Disconnected)
-            {
-                MessageBox.Show("CpClient_StateChanged(): " + cpClient.State);
-            }
-           
-        }
+			var state = cpClient.State;
+			if (state == ClientState.Connected || state == ClientState.Disconnected)
+			{
+				MessageBox.Show("CpClient_StateChanged(): " + cpClient.State);
+			}
 
-        private void CPClient_NotificationReceived(CPNotification notification)
-        {
-            Console.WriteLine("CPClient_NotificationReceived(...) " + notification.ToString());
+		}
 
-            //if(notification.ObjectName == "Notify") 
-            //{
-            //    if(notification.Method == "WindowsState")
-            //    {// +Notify WindowsState { nCount TWindowState pData[ ] } (Id Kind nState nStateChange x y w h ZAfter)
+		private void CPClient_NotificationReceived(CPNotification notification)
+		{
+			Console.WriteLine("CPClient_NotificationReceived(...) " + notification.ToString());
 
-            //        var valueList = notification.ValueList;
-            //        var windows = new TWindowStateList(valueList);
+			//if(notification.ObjectName == "Notify") 
+			//{
+			//    if(notification.Method == "WindowsState")
+			//    {// +Notify WindowsState { nCount TWindowState pData[ ] } (Id Kind nState nStateChange x y w h ZAfter)
 
-            //        Console.WriteLine(windows.ToString());
-            //    }
-            //}
-        }
+			//        var valueList = notification.ValueList;
+			//        var windows = new TWindowStateList(valueList);
 
-        private async void button6_Click(object sender, EventArgs e)
-        {
+			//        Console.WriteLine(windows.ToString());
+			//    }
+			//}
+		}
 
-            var message = "";
-            try
-            {
-                var user = textBoxUserName.Text;
-                var pass = textBoxPassword.Text;
+		private async void button6_Click(object sender, EventArgs e)
+		{
+
+			var message = "";
+			try
+			{
+				var user = textBoxUserName.Text;
+				var pass = textBoxPassword.Text;
 
 				bool success = await cpClient.Authenticate(user, pass);
 
-                message = "Authenticate " + success;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                message = ex.Message;
-            }
+				message = "Authenticate " + success;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
+			MessageBox.Show(message);
 
-        }
-
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            //{
-            //    if (jupiter == null)
-            //    {
-            //        return;
-            //    }
-
-            //    var winIds = jupiter.QueryAllWindows();
-
-            //    var result = "NotFound";
-            //    if (winIds != null && winIds.Length > 0)
-            //    {
-            //        result = string.Join("; ", winIds);
-            //    }
-            //    comboBox1.DataSource = winIds;
-
-            //    MessageBox.Show("GetWindowIds() " + result);
-            //}
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            //if (jupiter == null)
-            //{
-            //    return;
-            //}
-
-            //jupiter.DeleteAllWindows();
-        }
-
-        //private void button3_Click(object sender, EventArgs e)
-        //{
+		}
 
 
-        //    //var winIds = jupiter.GetWindowIds();
+		private void button1_Click(object sender, EventArgs e)
+		{
+			//{
+			//    if (jupiter == null)
+			//    {
+			//        return;
+			//    }
 
-        //    //var winIds = comboBox1.DataSource as int[];
+			//    var winIds = jupiter.QueryAllWindows();
 
-        //    //if (winIds!=null && winIds.Length > 0) 
-        //    {
-        //        var item = comboBox1.SelectedItem;
-        //        if (item != null)
-        //        {
-        //            var winid = (int)item;
+			//    var result = "NotFound";
+			//    if (winIds != null && winIds.Length > 0)
+			//    {
+			//        result = string.Join("; ", winIds);
+			//    }
+			//    comboBox1.DataSource = winIds;
 
-        //            jupiter.GrabImage(winid, out var file);
+			//    MessageBox.Show("GetWindowIds() " + result);
+			//}
+		}
 
-        //            file = file.Replace("\"", "");
+		private void button2_Click(object sender, EventArgs e)
+		{
+			//if (jupiter == null)
+			//{
+			//    return;
+			//}
 
-        //            var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", file);
+			//jupiter.DeleteAllWindows();
+		}
 
-        //            if (File.Exists(fullName))
-        //            {
-
-        //                var _b = pictureBox1.Image;
-
-
-        //                Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
-
-        //                pictureBox1.Image = new Bitmap(bmp);
-
-        //                if (bmp != null)
-        //                {
-        //                    bmp.Dispose();
-        //                    bmp = null;
-        //                }
-
-        //                if (_b != null)
-        //                {
-        //                    _b.Dispose();
-        //                    _b = null;
-        //                }
+		//private void button3_Click(object sender, EventArgs e)
+		//{
 
 
-        //                File.Delete(fullName);
-        //            }
+		//    //var winIds = jupiter.GetWindowIds();
 
-        //        }
+		//    //var winIds = comboBox1.DataSource as int[];
+
+		//    //if (winIds!=null && winIds.Length > 0) 
+		//    {
+		//        var item = comboBox1.SelectedItem;
+		//        if (item != null)
+		//        {
+		//            var winid = (int)item;
+
+		//            jupiter.GrabImage(winid, out var file);
+
+		//            file = file.Replace("\"", "");
+
+		//            var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", file);
+
+		//            if (File.Exists(fullName))
+		//            {
+
+		//                var _b = pictureBox1.Image;
+
+
+		//                Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
+
+		//                pictureBox1.Image = new Bitmap(bmp);
+
+		//                if (bmp != null)
+		//                {
+		//                    bmp.Dispose();
+		//                    bmp = null;
+		//                }
+
+		//                if (_b != null)
+		//                {
+		//                    _b.Dispose();
+		//                    _b = null;
+		//                }
+
+
+		//                File.Delete(fullName);
+		//            }
+
+		//        }
 
 
 
 
-        //        //MessageBox.Show(resp);
-        //    }
+		//        //MessageBox.Show(resp);
+		//    }
 
-        //}
+		//}
 
-        private async void button4_Click(object sender, EventArgs e)
-        {
-            var message = "";
-            try
-            {
+		private async void button4_Click(object sender, EventArgs e)
+		{
+			var message = "";
+			try
+			{
 				var serverInfo = await cpClient.ConfigSys.GetServerInfo();
 				message = serverInfo.ToString();
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-
-
-
-
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                cpClient.Disconnect();
-
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
+			MessageBox.Show(message);
 
 
 
-        private void buttonClose_Click(object sender, EventArgs e)
-        {
-            //if (jupiter != null)
-            //{
-            //    jupiter.Dispose();
-            //    jupiter = null;
-            //}
-        }
 
-        private async void button7_Click(object sender, EventArgs e)
-        {
-            var message = "";
-            try
-            {
-    			var success = await cpClient.WinServer.RegisterNotifyTarget();
+		}
+
+		private void button5_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				cpClient.Disconnect();
+
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+		}
+
+
+
+		private void buttonClose_Click(object sender, EventArgs e)
+		{
+			//if (jupiter != null)
+			//{
+			//    jupiter.Dispose();
+			//    jupiter = null;
+			//}
+		}
+
+		private async void button7_Click(object sender, EventArgs e)
+		{
+			var message = "";
+			try
+			{
+				var success = await cpClient.WinServer.RegisterNotifyTarget();
 				message = "RegisterNotifyTarget() " + success;
 			}
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
-            MessageBox.Show(message);
-        }
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+			MessageBox.Show(message);
+		}
 
-        private async void button8_Click(object sender, EventArgs e)
-        {
-            var message = "";
-            try
-            {
+		private async void button8_Click(object sender, EventArgs e)
+		{
+			var message = "";
+			try
+			{
 				var success = await cpClient.WinServer.UnregisterNotifyTarget();
 				message = "RegisterNotifyTarget() " + success;
 
 			}
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
-
-
-        private async void button9_Click(object sender, EventArgs e)
-        {
-            var message = "";
-            try
-            {
-
-                var windows = await cpClient.WinServer.QueryAllWindows();
-
-                message = windows.ToString();
-
-                //var request = new CPRequest("WinServer", "QueryAllWindows");
-                //var response = await cpClient.SendAsync(request) as CPResponse;
-
-                //if (response.Success)
-                //{
-                //    var valueList = response.ValueList;
-
-                //    TWindowStateList windows = new TWindowStateList(valueList);
-
-                //    message = windows.ToString();
-
-                //}
+			MessageBox.Show(message);
+		}
 
 
-                //message = response.ToString();
+		private async void button9_Click(object sender, EventArgs e)
+		{
+			var message = "";
+			try
+			{
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+				var windows = await cpClient.WinServer.QueryAllWindows();
 
-            MessageBox.Show(message);
-        }
+				message = windows.ToString();
 
-        private async void button10_Click(object sender, EventArgs e)
-        {
-            //GetChannelRange
+				//var request = new CPRequest("WinServer", "QueryAllWindows");
+				//var response = await cpClient.SendAsync(request) as CPResponse;
 
-            var message = "";
-            try
-            {
+				//if (response.Success)
+				//{
+				//    var valueList = response.ValueList;
+
+				//    TWindowStateList windows = new TWindowStateList(valueList);
+
+				//    message = windows.ToString();
+
+				//}
+
+
+				//message = response.ToString();
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+
+		private async void button10_Click(object sender, EventArgs e)
+		{
+			//GetChannelRange
+
+			var message = "";
+			try
+			{
 
 				var channelRange = await cpClient.RGBSys.GetChannelRange();
 
 				message = "FirstChannel = " + channelRange.Item1 + "\r\n" + "LastChannel = " + channelRange.Item2;
 
-                //message = response.ToString();
+				//message = response.ToString();
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
+			MessageBox.Show(message);
 
-        }
+		}
 
-        private async void button11_Click(object sender, EventArgs e)
-        {
-            var message = "";
-            
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+		private async void button11_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
 				var winId = new WinId(id);
 
 				var success = await cpClient.RGBSys.NewWindowWithId(winId);
 				message = "NewWindowWithId() " + success;
 
-                //var request = new CPRequest("RGBSys", "NewWindowWithId", new WinId(id));
+				//var request = new CPRequest("RGBSys", "NewWindowWithId", new WinId(id));
 
-                //var response = await cpClient.SendAsync(request) as CPResponse;
+				//var response = await cpClient.SendAsync(request) as CPResponse;
 
-                //if (response.Success)
-                //{
+				//if (response.Success)
+				//{
 
-                //}
-                //message = response.ToString();
+				//}
+				//message = response.ToString();
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button12_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button12_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
-                var winId = new WinId(id);
+				var winId = new WinId(id);
 
-                await cpClient.WinServer.DeleteWindow(winId);
+				await cpClient.WinServer.DeleteWindow(winId);
 				message = "OK";
 
 			}
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button13_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button13_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var channel = int.Parse(textBox2.Text);
+			try
+			{
+				var channel = int.Parse(textBox2.Text);
 
-                var id = int.Parse(textBox1.Text);
+				var id = int.Parse(textBox1.Text);
 
 				var winId = new WinId(id);
 
@@ -444,22 +444,22 @@ namespace Test.Jupiter
 
 				message = success ? "OK" : "FALSE";
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button14_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button14_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
 				var winId = new WinId(id);
 
@@ -467,21 +467,21 @@ namespace Test.Jupiter
 
 				message = success ? "OK" : "FALSE";
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button15_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button15_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
+			try
+			{
 				var id = int.Parse(textBox1.Text);
 
 				var winId = new WinId(id);
@@ -491,180 +491,180 @@ namespace Test.Jupiter
 				message = success ? "OK" : "FALSE";
 
 			}
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button16_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button16_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
-                var state = new TWindowState
-                {
-                    Id = new WinId(id),
+				var state = new TWindowState
+				{
+					Id = new WinId(id),
 
-                    Kind = SubSystemKind.RGBCapture,
-                    State = (uint)(StateFlag.wsVisible | StateFlag.wsFramed),
-                    StateChange = (uint)(StateFlag.wsVisible | StateFlag.wsSize | StateFlag.wsPosition | StateFlag.wsZOrder),
+					Kind = SubSystemKind.RGBCapture,
+					State = (uint)(StateFlag.wsVisible | StateFlag.wsFramed),
+					StateChange = (uint)(StateFlag.wsVisible | StateFlag.wsSize | StateFlag.wsPosition | StateFlag.wsZOrder),
 
-                    x = 10,
-                    y = 10,
-                    w = 64,
-                    h = 64,
+					x = 10,
+					y = 10,
+					w = 64,
+					h = 64,
 
-                    ZAfter = new WinId(-1),
-                };
+					ZAfter = new WinId(-1),
+				};
 
-                var newState = await cpClient.Window.SetState(state);
-                message = newState.ToString();
+				var newState = await cpClient.Window.SetState(state);
+				message = newState.ToString();
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
+			MessageBox.Show(message);
+		}
 
-        private async void button17_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button17_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
-                var winId = new WinId(id);
+				var winId = new WinId(id);
 
-                var fileName = await cpClient.Window.GrabImage(winId);
-               
-
-                if (!string.IsNullOrEmpty(fileName))
-                {
-
-                    fileName = fileName.Replace("\"", "");
-
-                    var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", fileName);
-
-                    if (File.Exists(fullName))
-                    {
-
-                        var _b = pictureBox1.Image;
+				var fileName = await cpClient.Window.GrabImage(winId);
 
 
-                        Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
+				if (!string.IsNullOrEmpty(fileName))
+				{
 
-                        pictureBox1.Image = new Bitmap(bmp);
+					fileName = fileName.Replace("\"", "");
 
-                        if (bmp != null)
-                        {
-                            bmp.Dispose();
-                            bmp = null;
-                        }
+					var fullName = Path.Combine(@"C:\ProgramData\ControlPoint\ServerDataFiles\images\", fileName);
 
-                        if (_b != null)
-                        {
-                            _b.Dispose();
-                            _b = null;
-                        }
+					if (File.Exists(fullName))
+					{
+
+						var _b = pictureBox1.Image;
 
 
-                        File.Delete(fullName);
-                    }
-                }
+						Bitmap bmp = (Bitmap)Bitmap.FromFile(fullName);
 
-                message = fileName;
+						pictureBox1.Image = new Bitmap(bmp);
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+						if (bmp != null)
+						{
+							bmp.Dispose();
+							bmp = null;
+						}
 
-            MessageBox.Show(message);
-        }
-
-        private async void button18_Click(object sender, EventArgs e)
-        {
-            var message = "";
-
-            try
-            {
-                var id = int.Parse(textBox1.Text);
-
-                var winId = new WinId(id);
-
-                var timing = await cpClient.RGBSys.DetectTiming(winId);
-                message = timing.ToString(); 
-
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
-
-            MessageBox.Show(message);
-        }
-
-        private async void button19_Click(object sender, EventArgs e)
-        {
-            var message = "";
-
-            try
-            {
-                var id = int.Parse(textBox1.Text);
-
-                var winId = new WinId(id);
-
-                var timing = await cpClient.RGBSys.SetAutoDetectTiming(winId, true);
-
-                message = timing.ToString();
-
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
-
-            MessageBox.Show(message);
-        }
+						if (_b != null)
+						{
+							_b.Dispose();
+							_b = null;
+						}
 
 
-        CancellationTokenSource ts = new CancellationTokenSource();
-        private async void button20_Click(object sender, EventArgs e)
-        {
-            var message = "";
+						File.Delete(fullName);
+					}
+				}
 
-            try
-            {
-                ts = new CancellationTokenSource();
-                var resp = await cpClient.SendAsync(new CPRequest("1234"), ts.Token, 20000);
-                message = resp.ToString();
+				message = fileName;
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-            MessageBox.Show(message);
-        }
-        
-        private void button21_Click(object sender, EventArgs e)
-        {
+			MessageBox.Show(message);
+		}
 
-            ts.Cancel();
+		private async void button18_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-        }
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+				var timing = await cpClient.RGBSys.DetectTiming(winId);
+				message = timing.ToString();
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+
+		private async void button19_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+				var timing = await cpClient.RGBSys.SetAutoDetectTiming(winId, true);
+
+				message = timing.ToString();
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+
+
+		CancellationTokenSource ts = new CancellationTokenSource();
+		private async void button20_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				ts = new CancellationTokenSource();
+				var resp = await cpClient.SendAsync(new CPRequest("1234"), ts.Token, 20000);
+				message = resp.ToString();
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
+
+		private void button21_Click(object sender, EventArgs e)
+		{
+
+			ts.Cancel();
+
+		}
 
 		private async void button22_Click(object sender, EventArgs e)
 		{
@@ -689,152 +689,152 @@ namespace Test.Jupiter
 			MessageBox.Show(message);
 		}
 
-        private async void button23_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button23_Click(object sender, EventArgs e)
+		{
+			var message = "";
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+			try
+			{
+				var id = int.Parse(textBox1.Text);
 
-                var winId = new WinId(id);
+				var winId = new WinId(id);
 
-                var preview = await cpClient.Window.GetPreview(winId);
-                if(preview != null) 
-                {
-                    var bmp = preview.GetBitmap();
+				var preview = await cpClient.Window.GetPreview(winId);
+				if (preview != null)
+				{
+					var bmp = preview.GetBitmap();
 
-                    var _b = pictureBox1.Image;
+					var _b = pictureBox1.Image;
 
-                    pictureBox1.Image = new Bitmap(bmp);
+					pictureBox1.Image = new Bitmap(bmp);
 
-                    if (bmp != null)
-                    {
-                        bmp.Dispose();
-                        bmp = null;
-                    }
+					if (bmp != null)
+					{
+						bmp.Dispose();
+						bmp = null;
+					}
 
-                    if (_b != null)
-                    {
-                        _b.Dispose();
-                        _b = null;
-                    }
-
-
-                    //bmp.Save("test.bmp");
-
-                    message = preview.Width + " " + preview.Height;
-                }
-                else 
-                {
-                    message = "FALSE";
-                }
+					if (_b != null)
+					{
+						_b.Dispose();
+						_b = null;
+					}
 
 
+					//bmp.Save("test.bmp");
+
+					message = preview.Width + " " + preview.Height;
+				}
+				else
+				{
+					message = "FALSE";
+				}
 
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
-
-            Console.WriteLine(message);
-            //MessageBox.Show(message);
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-
-        }
 
 
-        ControlPointManager man = new ControlPointManager();
-        private async void button1_Click_1(object sender, EventArgs e)
-        {
-            try
-            {
-                var host = textBoxHost.Text;
-                var port = int.Parse(textBoxPort.Text);
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
 
-                var user = textBoxUserName.Text;
-                var pass = textBoxPassword.Text;
+			Console.WriteLine(message);
+			//MessageBox.Show(message);
+		}
 
+		private void button3_Click(object sender, EventArgs e)
+		{
 
-                Console.WriteLine("Open()");
-                await man.Start(host, port, new System.Net.NetworkCredential(user, pass));
-
-                Console.WriteLine("-----------------------------");
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+		}
 
 
-        }
+		ControlPointManager man = new ControlPointManager();
+		private async void button1_Click_1(object sender, EventArgs e)
+		{
+			try
+			{
+				var host = textBoxHost.Text;
+				var port = int.Parse(textBoxPort.Text);
 
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-            man.Stop();
-        }
+				var user = textBoxUserName.Text;
+				var pass = textBoxPassword.Text;
 
-        private async void button3_Click_1(object sender, EventArgs e)
-        {
-            try
-            {
-                var winId = 1004;
-                var inputId = 1;
-                await man.OpenWindow(winId);
-                await man.ChangeWindow(winId, new Rectangle(20, 20, 100, 100));
 
-                await man.SetWindowInput(winId, inputId);
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
+				Console.WriteLine("Open()");
+				await man.Start(host, port, new System.Net.NetworkCredential(user, pass));
 
-        private async void button24_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                var winId = 1004;
+				Console.WriteLine("-----------------------------");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
 
-                var bmp = await man.GetWindowPreview(winId);
 
-                //var bmp = await man.GetWindowImage(winId);
+		}
 
-                pictureBox1.Image = bmp;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
+		private void button2_Click_1(object sender, EventArgs e)
+		{
+			man.Stop();
+		}
 
-        private async void button25_Click(object sender, EventArgs e)
-        {
-            var message = "";
+		private async void button3_Click_1(object sender, EventArgs e)
+		{
+			try
+			{
+				var winId = 1004;
+				var inputId = 1;
+				await man.OpenWindow(winId);
+				await man.ChangeWindow(winId, new Rectangle(20, 20, 100, 100));
 
-            try
-            {
-                var id = int.Parse(textBox1.Text);
+				await man.SetWindowInput(winId, inputId);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+		}
 
-                var winId = new WinId(id);
+		private async void button24_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				var winId = 1004;
 
-                var size = await cpClient.RGBSys.GetInputSize(winId);
-                message = "GetInputSize() " + new Size(size.cx, size.cy);
+				var bmp = await man.GetWindowPreview(winId);
 
-            }
-            catch (Exception ex)
-            {
-                message = ex.Message;
-            }
+				//var bmp = await man.GetWindowImage(winId);
 
-            MessageBox.Show(message);
-        }
+				pictureBox1.Image = bmp;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+		}
+
+		private async void button25_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+			try
+			{
+				var id = int.Parse(textBox1.Text);
+
+				var winId = new WinId(id);
+
+				var size = await cpClient.RGBSys.GetInputSize(winId);
+				message = "GetInputSize() " + new Size(size.cx, size.cy);
+
+			}
+			catch (Exception ex)
+			{
+				message = ex.Message;
+			}
+
+			MessageBox.Show(message);
+		}
 
 		private async void button26_Click(object sender, EventArgs e)
 		{
@@ -910,6 +910,73 @@ namespace Test.Jupiter
 			}
 
 			MessageBox.Show(message);
+		}
+
+		private void button28_Click(object sender, EventArgs e)
+		{
+			var message = "";
+
+
+			var id = int.Parse(textBox3.Text);
+
+			var winId = new WinId(id);
+
+			Task.Run(async () =>
+			{
+
+				while (true)
+				{
+					try
+					{
+						var preview = await cpClient.Window.GetPreview(winId);
+						if (preview != null)
+						{
+							var bmp = preview.GetBitmap();
+							this.Invoke(new Action(() =>
+							{
+								var _b = pictureBox1.Image;
+								pictureBox1.Image = new Bitmap(bmp);
+
+								if (bmp != null)
+								{
+									bmp.Dispose();
+									bmp = null;
+								}
+
+								if (_b != null)
+								{
+									_b.Dispose();
+									_b = null;
+								}
+							}));
+	
+
+							//bmp.Save("test.bmp");
+
+							message = preview.Width + " " + preview.Height;
+						}
+						else
+						{
+							message = "FALSE";
+						}
+
+					}
+					catch (Exception ex)
+					{
+						message = ex.Message;
+					}
+
+					Console.WriteLine(message);
+
+					Thread.Sleep(1000);
+				}
+
+			});
+
+
+
+			
+			//MessageBox.Show(message);
 		}
 	}
 }
