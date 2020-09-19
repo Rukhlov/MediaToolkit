@@ -702,8 +702,6 @@ namespace MediaToolkit.Jupiter
 
     public class PrevImage
     {
-        const char DataLinkEscape = (char)0x10;
-
         public PrevImage(CPResponse resp)
         {
             this.ValueList = resp.ValueList;
@@ -712,19 +710,35 @@ namespace MediaToolkit.Jupiter
 
             this.Width = int.Parse(pars[0]);
             this.Height = int.Parse(pars[1]);
-            this.Bits = resp.RawData;
+            //this.Bits = resp.RawData;
+
+            this.binary = resp.BinData;
+
+            const int headerSize = 4;
+            var header = new byte[headerSize];
+            Array.Copy(binary, header, header.Length);
+
+            var bitsSize = BitConverter.ToInt32(header, 0);
+            var realBitsSize = binary.Length - headerSize;
+
+            if (realBitsSize != bitsSize)
+            {
+                throw new FormatException("Invalid bin data length. " + realBitsSize + "!=" + Bits.Length);
+            }
+
+            this.Bits = new byte[bitsSize];
+            Array.Copy(binary, headerSize, Bits, 0, Bits.Length);
+
         }
 
         public readonly string ValueList = "";
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        // TODO: должен быть в заголовке...
-        //public int Stride { get; private set; }
-
-        // данные в формате RGB555
+        // данные в формате 16 bit RGB555
         public byte[] Bits { get; private set; }
 
+        private byte[] binary = null;
         public Bitmap GetBitmap()
         {
             if (!(Width > 0 && Height > 0))
@@ -732,12 +746,8 @@ namespace MediaToolkit.Jupiter
                 throw new FormatException("Invalid size: " + Width + "x" + Height);
             }
 
-			// первые 4 байта какой то заголовок...
-			// var bits = Bits.Skip(4).ToArray();
-
-
-			//преобразование вручную rgb555 -> rgb888 
-			/*             
+            //преобразование вручную rgb555 -> rgb888 
+            /*             
             //https://docs.microsoft.com/en-us/windows/win32/directshow/working-with-16-bit-rgb
             ushort red_mask = 0x7C00;
             ushort green_mask = 0x3E0;
@@ -762,13 +772,11 @@ namespace MediaToolkit.Jupiter
             }
             */
 
-			var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
+            var bmp = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
 
             var data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
             try
-            {// FIXME: могут быть по разному выровнены
-                // т.е нужно знать stride для данных полученых от CP и копировать с учетом выравнивания
-                // сейчас просто проверяем размер данных...
+            {
                 var bmpStride = data.Stride;
                 var bmpSize = data.Height * bmpStride;
                 if (bmpSize == Bits.Length)
@@ -1242,9 +1250,6 @@ namespace MediaToolkit.Jupiter
             ThrowIfClientNotReady();
 
             var request = new CPRequest(ObjectName, "GetPreview", winId);
-
-            // в ответе кроме текста будут бинарные данные...
-            request.BinnaryInResponse = true;
 
             var response = await client.SendAsync(request) as CPResponse;
             response.ThrowIfError();
