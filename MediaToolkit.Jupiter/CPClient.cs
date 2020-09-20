@@ -176,6 +176,7 @@ namespace MediaToolkit.Jupiter
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.ReceiveTimeout = 10000;
                 socket.SendTimeout = 10000;
+                //socket.Blocking = false;
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
                 logger.Trace($"socket.ConnectAsync(...) {Host} {Port}");
@@ -217,7 +218,7 @@ namespace MediaToolkit.Jupiter
                         Exception exception = null;
                         try
                         {
-                            bool bufferProcessed = false;
+                            bool dataAvailable = false;
                             do
                             {
                                 byte[] recBuffer = new byte[10*1024];
@@ -234,10 +235,10 @@ namespace MediaToolkit.Jupiter
                                         dataBuffer.AddRange(respList);
                                     }
 
-                                    bufferProcessed = !(socket.Available > 0);
-                                    //bufferProcessed = (dataBuffer != null && dataBuffer.Count() > 0); //!(socket.Available > 0);
-                                }
-                                else
+                                    //dataAvailable = !(socket.Available > 0);
+									dataAvailable = (dataBuffer != null && dataBuffer.Count() > 0); //!(socket.Available > 0);
+								}
+								else
                                 {// socket closed...
 
                                     socketConnected = false;
@@ -245,7 +246,7 @@ namespace MediaToolkit.Jupiter
                                 }
 
                             }
-                            while (!bufferProcessed);
+                            while (!dataAvailable);
 
                         }
                         catch (Exception ex)
@@ -586,7 +587,7 @@ namespace MediaToolkit.Jupiter
                             {
                                 if (streamState != StreamState.ReadBinnaryHeader ||
                                     streamState != StreamState.ReadBinnaryData)
-                                {// если не в режиме чтения бинарных данных
+                                {// обрабатываем текстовые данные
 
                                     if (startCodeReceived)
                                     {// стартовый код получен повторно, что то пошло не так...
@@ -682,7 +683,7 @@ namespace MediaToolkit.Jupiter
                     if (streamState == StreamState.ReadBinnaryHeader)
                     {// первые 4 байта после <DLE> размер бинарных данных
 
-                        // имется в текущем буфере 
+                        // сколько данных буфере 
                         int bufferRemaining = bufferLength - position;
 
                         var binarySegmentsSize = GetSegLength(binarySegments);
@@ -1027,7 +1028,7 @@ namespace MediaToolkit.Jupiter
     {
         protected CPResponseBase(string resp)
         {
-            this.ResponseString = resp;
+			this.ResponseString = resp;
         }
 
         public readonly string ResponseString = "";
@@ -1040,6 +1041,11 @@ namespace MediaToolkit.Jupiter
 
         public static CPResponseBase Create(byte[] textBytes, byte[] binBytes = null)
         {
+			if (textBytes == null)
+			{
+				throw new ArgumentNullException("textBytes");
+			}
+
 			var respStr = Encoding.UTF8.GetString(textBytes, 0, textBytes.Length);
 
 			if (string.IsNullOrEmpty(respStr))
