@@ -5,7 +5,9 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaToolkit.Jupiter
@@ -239,6 +241,7 @@ namespace MediaToolkit.Jupiter
     public class CPEnvironment
     {
         public const string CPServerAppName = "CPServer.exe";
+        public const string CPSecurity = "CPSecurity";
 
         public readonly static string ProgramDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
         public readonly static string ControlPointPath = System.IO.Path.Combine(ProgramDataPath, "ControlPoint");
@@ -317,6 +320,37 @@ namespace MediaToolkit.Jupiter
             }
             return bytes;
         }
+
+        public bool VerifyServiceRunning(string serviceName)
+        {
+            bool success = false;
+            try
+            {
+                //using (ServiceController sc = new ServiceController())
+                //{
+                //    sc.ServiceName = serviceName;
+                //    if (sc.Status == ServiceControllerStatus.Stopped)
+                //    {
+                //        sc.Start();
+                //        sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
+                //        success = (sc.Status == ServiceControllerStatus.Running);
+                //    }
+                //}
+
+                var status = WinSrvUtil.GetServiceStatus(serviceName);
+                if( status == ServiceState.Stopped)
+                {
+                    WinSrvUtil.StartService(serviceName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return success;
+        }
     }
 
 	static class IntParser
@@ -351,6 +385,337 @@ namespace MediaToolkit.Jupiter
 		}
 
 	}
+
+    public enum ServiceState
+    {
+        Unknown = -1,
+        NotFound = 0,
+        Stopped = 1,
+        StartPending = 2,
+        StopPending = 3,
+        Running = 4,
+        ContinuePending = 5,
+        PausePending = 6,
+        Paused = 7
+    }
+
+    public static class WinSrvUtil
+    {
+        public static bool ServiceIsInstalled(string serviceName)
+        {
+            bool result = false;
+            IntPtr scm = OpenSCManager(ScmAccessRights.Connect);
+
+            try
+            {
+                IntPtr service = OpenService(scm, serviceName, ServiceAccessRights.QueryStatus);
+                result = !(service == IntPtr.Zero);
+
+                CloseServiceHandle(service);
+            }
+            finally
+            {
+                CloseServiceHandle(scm);
+            }
+
+            return result;
+        }
+
+        public static ServiceState GetServiceStatus(string serviceName)
+        {
+            IntPtr hSCManager = OpenSCManager(ScmAccessRights.Connect);
+
+            try
+            {
+                IntPtr hService = OpenService(hSCManager, serviceName, ServiceAccessRights.QueryStatus);
+                if (hService == IntPtr.Zero)
+                {
+                    var errorCode = Marshal.GetLastWin32Error();
+                    Marshal.ThrowExceptionForHR(errorCode);
+                }
+
+                try
+                {
+                    var status = GetServiceStatus(hService);
+
+                    return status.dwCurrentState;
+                }
+                finally
+                {
+                    CloseServiceHandle(hService);
+                }
+            }
+            finally
+            {
+                CloseServiceHandle(hSCManager);
+            }
+        }
+
+        public static void StartService(string serviceName)
+        {
+
+            IntPtr hSCManager = OpenSCManager(ScmAccessRights.Connect);
+            try
+            {
+                IntPtr hService = OpenService(hSCManager, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Start);
+                if (hService == IntPtr.Zero)
+                {
+                    var errorCode = Marshal.GetLastWin32Error();
+                    Marshal.ThrowExceptionForHR(errorCode);
+                }
+
+                try
+                {
+                    StartService(hService);
+                }
+                finally
+                {
+                    CloseServiceHandle(hService);
+                }
+            }
+            finally
+            {
+                CloseServiceHandle(hSCManager);
+            }
+
+        }
+
+        public static void StopService(string serviceName)
+        {
+
+            IntPtr hSCManager = OpenSCManager(ScmAccessRights.Connect);
+            try
+            {
+                IntPtr hService = OpenService(hSCManager, serviceName, ServiceAccessRights.QueryStatus | ServiceAccessRights.Stop);
+
+                if (hService == IntPtr.Zero)
+                {
+                    var errorCode = Marshal.GetLastWin32Error();
+                    Marshal.ThrowExceptionForHR(errorCode);
+                }
+
+                try
+                {
+                    StopService(hService);
+                }
+                finally
+                {
+                    CloseServiceHandle(hService);
+                }
+            }
+            finally
+            {
+                CloseServiceHandle(hSCManager);
+            }
+        }
+
+        private static void StartService(IntPtr hService)
+        {
+            SERVICE_STATUS status = new SERVICE_STATUS();
+            StartService(hService, 0, 0);
+
+            var changedStatus = WaitForServiceStatus(hService, ServiceState.StartPending, ServiceState.Running);
+            if (!changedStatus)
+            {
+                throw new InvalidOperationException("Unable to start service");
+            }
+
+        }
+
+        private static void StopService(IntPtr service)
+        {
+            SERVICE_STATUS status = new SERVICE_STATUS();
+            ControlService(service, ServiceControl.Stop, status);
+            var changedStatus = WaitForServiceStatus(service, ServiceState.StopPending, ServiceState.Stopped);
+            if (!changedStatus)
+            {
+                throw new InvalidOperationException("Unable to stop service");
+            }
+
+        }
+
+
+        private static SERVICE_STATUS GetServiceStatus(IntPtr hService)
+        {
+            SERVICE_STATUS status = new SERVICE_STATUS();
+
+            if (QueryServiceStatus(hService, status) == 0)
+            {
+                var errorCode = Marshal.GetLastWin32Error();
+                Marshal.ThrowExceptionForHR(errorCode);
+            }
+
+            return status;
+        }
+
+        private static bool WaitForServiceStatus(IntPtr hService, ServiceState waitStatus, ServiceState desiredStatus)
+        {
+
+            SERVICE_STATUS status = GetServiceStatus(hService);
+
+            if (status.dwCurrentState == desiredStatus)
+            {
+                return true;
+            }
+
+
+            int dwStartTickCount = Environment.TickCount;
+            int dwOldCheckPoint = status.dwCheckPoint;
+
+            while (status.dwCurrentState == waitStatus)
+            {
+                int dwWaitTime = status.dwWaitHint / 10;
+
+                if (dwWaitTime < 1000) dwWaitTime = 1000;
+                else if (dwWaitTime > 10000) dwWaitTime = 10000;
+
+                Thread.Sleep(dwWaitTime);
+
+                status = GetServiceStatus(hService);
+
+                if (status.dwCheckPoint > dwOldCheckPoint)
+                {
+                    dwStartTickCount = Environment.TickCount;
+                    dwOldCheckPoint = status.dwCheckPoint;
+                }
+                else
+                {
+                    if (Environment.TickCount - dwStartTickCount > status.dwWaitHint)
+                    {
+                        throw new System.TimeoutException();
+                    }
+                }
+            }
+
+            return (status.dwCurrentState == desiredStatus);
+        }
+
+        private static IntPtr OpenSCManager(ScmAccessRights rights)
+        {
+            IntPtr scHandle = OpenSCManager(null, null, rights);
+            if (scHandle == IntPtr.Zero)
+            {
+                var errorCode = Marshal.GetLastWin32Error();
+                Marshal.ThrowExceptionForHR(errorCode);
+            }
+
+            return scHandle;
+        }
+
+        #region NativeMethods
+
+        [Flags]
+        public enum ScmAccessRights
+        {
+            Connect = 0x0001,
+            CreateService = 0x0002,
+            EnumerateService = 0x0004,
+            Lock = 0x0008,
+            QueryLockStatus = 0x0010,
+            ModifyBootConfig = 0x0020,
+            StandardRightsRequired = 0xF0000,
+            AllAccess = (StandardRightsRequired | 
+                Connect | 
+                CreateService | 
+                EnumerateService |
+                Lock |
+                QueryLockStatus | 
+                ModifyBootConfig)
+        }
+
+        [Flags]
+        public enum ServiceAccessRights
+        {
+            QueryConfig = 0x1,
+            ChangeConfig = 0x2,
+            QueryStatus = 0x4,
+            EnumerateDependants = 0x8,
+            Start = 0x10,
+            Stop = 0x20,
+            PauseContinue = 0x40,
+            Interrogate = 0x80,
+            UserDefinedControl = 0x100,
+            Delete = 0x00010000,
+            StandardRightsRequired = 0xF0000,
+            AllAccess = (StandardRightsRequired | 
+                QueryConfig | 
+                ChangeConfig |
+                QueryStatus |
+                EnumerateDependants |
+                Start | 
+                Stop | 
+                PauseContinue | 
+                Interrogate | 
+                UserDefinedControl)
+        }
+
+        public enum ServiceBootFlag
+        {
+            Start = 0x00000000,
+            SystemStart = 0x00000001,
+            AutoStart = 0x00000002,
+            DemandStart = 0x00000003,
+            Disabled = 0x00000004
+        }
+
+        public enum ServiceControl
+        {
+            Stop = 0x00000001,
+            Pause = 0x00000002,
+            Continue = 0x00000003,
+            Interrogate = 0x00000004,
+            Shutdown = 0x00000005,
+            ParamChange = 0x00000006,
+            NetBindAdd = 0x00000007,
+            NetBindRemove = 0x00000008,
+            NetBindEnable = 0x00000009,
+            NetBindDisable = 0x0000000A
+        }
+
+        public enum ServiceError
+        {
+            Ignore = 0x00000000,
+            Normal = 0x00000001,
+            Severe = 0x00000002,
+            Critical = 0x00000003
+        }
+
+        private const int STANDARD_RIGHTS_REQUIRED = 0xF0000;
+        private const int SERVICE_WIN32_OWN_PROCESS = 0x00000010;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private class SERVICE_STATUS
+        {
+            public int dwServiceType = 0;
+            public ServiceState dwCurrentState = 0;
+            public int dwControlsAccepted = 0;
+            public int dwWin32ExitCode = 0;
+            public int dwServiceSpecificExitCode = 0;
+            public int dwCheckPoint = 0;
+            public int dwWaitHint = 0;
+        }
+
+        [DllImport("advapi32.dll", EntryPoint = "OpenSCManagerW", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+        static extern IntPtr OpenSCManager(string machineName, string databaseName, ScmAccessRights dwDesiredAccess);
+
+        [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern IntPtr OpenService(IntPtr hSCManager, string lpServiceName, ServiceAccessRights dwDesiredAccess);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool CloseServiceHandle(IntPtr hSCObject);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern int QueryServiceStatus(IntPtr hService, SERVICE_STATUS lpServiceStatus);
+
+        [DllImport("advapi32.dll")]
+        private static extern int ControlService(IntPtr hService, ServiceControl dwControl, SERVICE_STATUS lpServiceStatus);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        private static extern int StartService(IntPtr hService, int dwNumServiceArgs, int lpServiceArgVectors); 
+        #endregion
+
+    }
 
 
     public class TraceManager

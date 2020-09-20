@@ -186,7 +186,7 @@ namespace MediaToolkit.Jupiter
 
                 if (!IsSocketConnected())
                 {
-                    throw new Exception("Connection error");
+                    throw new InvalidOperationException("Connection error");
                 }
 
                 if (state == ClientState.Connecting)
@@ -475,15 +475,15 @@ namespace MediaToolkit.Jupiter
         {
             logger.Debug("Disconnect()");
 
-            if (state != ClientState.Connected)
+            if (state == ClientState.Connected || state == ClientState.Connecting)
             {//...
+				state = ClientState.Disconnecting;
+				StateChanged?.Invoke();
 
-            }
+				syncEvent?.Set();
+			}
 
-            state = ClientState.Disconnecting;
-            StateChanged?.Invoke();
 
-            syncEvent?.Set();
         }
 
 
@@ -560,8 +560,7 @@ namespace MediaToolkit.Jupiter
                 int bufferOffset = 0;
                 while (true)
                 {
-                    // размер оставшихся в буфере данных
-                    var dataSize = bufferLength - bufferOffset;
+					var dataSize = bufferLength - bufferOffset;
                     if (dataSize < 0)
                     {
                         throw new ArgumentException("Invalid data size: " + bufferLength + " " + bufferOffset);
@@ -591,7 +590,7 @@ namespace MediaToolkit.Jupiter
 
                                     if (startCodeReceived)
                                     {// стартовый код получен повторно, что то пошло не так...
-                                        throw new InvalidDataException("Start code already received");
+                                        throw new FormatException("Start code already received");
                                     }
                                     startCodeReceived = true;
                                 }
@@ -603,7 +602,7 @@ namespace MediaToolkit.Jupiter
 
                                 if (!startCodeReceived)
                                 {// не может быть без заголовка
-                                    throw new InvalidDataException("Invalid data format. Start code missing");
+                                    throw new FormatException("Invalid data format. Start code missing");
                                 }
 
                                 if (streamState == StreamState.WaitCRLF)
@@ -612,7 +611,7 @@ namespace MediaToolkit.Jupiter
                                 }
                                 else
                                 {
-                                    throw new InvalidDataException("Invalid data format. <DLE> already received");
+                                    throw new FormatException("Invalid data format. <DLE> already received");
                                 }
 
                                 if (streamState == StreamState.WaitDLE)
@@ -643,7 +642,7 @@ namespace MediaToolkit.Jupiter
                                 {
                                     if (!carriageReturn)
                                     {
-                                        throw new InvalidDataException("Invalid data format. <CR> missing");
+                                        throw new FormatException("Invalid data format. <CR> missing");
                                     }
 
                                     int dataRemaining = bufferIndex - bufferOffset + 1;
@@ -656,7 +655,7 @@ namespace MediaToolkit.Jupiter
                                     textBytes = SegmentsToArray(textSegments);
                                     if (textBytes == null)
                                     {
-                                        throw new FormatException("Invalid data format");
+                                        throw new FormatException("Invalid data format. Empty text section");
                                     }
                                     else
                                     {
@@ -699,13 +698,13 @@ namespace MediaToolkit.Jupiter
 
                             byte[] header = SegmentsToArray(binarySegments, BinHeaderSize);
                             // из заголовка нужно получить размер всего бина
-                            this.totalBinarySize = BitConverter.ToInt32(header, 0);
+                            totalBinarySize = BitConverter.ToInt32(header, 0);
                             if (this.totalBinarySize <= 0)
                             {
-                                throw new InvalidDataException("Invalid binData size " + this.totalBinarySize);
+                                throw new FormatException("Invalid binary size " + this.totalBinarySize);
                             }
 
-                            // полный размер всех даннх которе идут после <DLE> вместе с заголовком
+                            // добавляем длину заголовка
                             this.totalBinarySize += 4;
                             position += headerRemaining;
 
@@ -731,7 +730,7 @@ namespace MediaToolkit.Jupiter
                         Debug.Assert(binaryRemaining > 0, "binaryRemaining>0");
 
                         if (bufferRemaining >= binaryRemaining)
-                        { // получили все бинарные данные
+                        { // получили все бинарные данные, ждем CRLF
 
                             ArraySegment<byte> segment = new ArraySegment<byte>(buffer, position, binaryRemaining);
                             binarySegments.Add(segment);
@@ -1004,7 +1003,7 @@ namespace MediaToolkit.Jupiter
 
             if (string.IsNullOrEmpty(RequestString))
             {
-                throw new InvalidOperationException("Empty request");
+                throw new ArgumentNullException("RequestString");
             }
 
             return Encoding.UTF8.GetBytes(RequestString);
@@ -1045,7 +1044,7 @@ namespace MediaToolkit.Jupiter
 
 			if (string.IsNullOrEmpty(respStr))
             {
-                throw new ArgumentException("Empty response");
+                throw new ArgumentNullException("respStr");
             }
 
             if (!respStr.EndsWith("\r\n"))
@@ -1101,12 +1100,12 @@ namespace MediaToolkit.Jupiter
         {
             if (!resp.StartsWith("=") )
             {
-                throw new FormatException("Invalid response format. Start code missing" + resp);
+                throw new FormatException("Invalid response format. Start code missing");
             }
 
             if (!resp.EndsWith("\r\n"))
             {
-                throw new FormatException("Invalid response format <CR><LF> missing" + resp);
+                throw new FormatException("Invalid response format <CR><LF> missing");
             }
 
             if ( resp.Length < MinResponseLength)
@@ -1255,659 +1254,5 @@ namespace MediaToolkit.Jupiter
         }
 
     }
-
-
-    /*
-    class CPDataHandler_
-    {
-        private byte[] tempBuffer = new byte[32 * 1024];
-        private int tempBufferOffset = 0;
-
-        enum StreamState
-        {
-            WaitStartCode,
-            WaitDLE,
-            WaitCRLF,
-
-            ReadResultCode,
-            ReadBinnaryHeader,
-            ReadBinnaryData,
-        }
-
-        private StreamState streamState = StreamState.WaitCRLF;
-
-        private int binBufferLength = 0;
-        private byte[] binBuffer = null;
-        private int binBufferOffset = 0;
-
-        private bool startCodeReceived = false;
-        private bool binnaryDataMode = false;
-        private bool carriageReturn = false;
-
-        private byte[] textBuffer = null;
-
-        public event Action<CPData> DataReady;
-        private List<CPData> tempData = new List<CPData>();
-
-        internal IEnumerable<CPData> ProcessBuffer(byte[] buffer, int bufferLength)
-        {
-            // =00000000 128 128<DLE>00800000.........<CR><LF>
-
-            int bufferOffset = 0;
-            while (true)
-            {
-                // размер оставшихся в буфере данных
-                var dataSize = bufferLength - bufferOffset;
-
-                if (dataSize < 0)
-                {
-                    throw new ArgumentException("Invalid data size: " + bufferLength + " " + bufferOffset);
-                }
-
-                if (dataSize == 0)
-                {
-                    break;
-                }
-
-                if (tempBufferOffset > 0)
-                {// если остались не обработанные данные
-                    int newBufLength = tempBufferOffset + dataSize;
-
-                    byte[] newBuf = new byte[newBufLength];
-                    Array.Copy(tempBuffer, 0, newBuf, 0, tempBufferOffset);
-                    Array.Copy(buffer, bufferOffset, newBuf, tempBufferOffset, dataSize);
-                    tempBufferOffset = 0;
-
-                    buffer = newBuf;
-                    bufferLength = newBufLength;
-                }
-
-
-
-                int position = 0;
-
-                if (streamState == StreamState.WaitStartCode ||
-                    streamState == StreamState.WaitDLE ||
-                    streamState == StreamState.WaitCRLF)
-                {//
-
-                    for (int bufferIndex = bufferOffset; bufferIndex < bufferLength; bufferIndex++)
-                    {
-                        char ch = (char)buffer[bufferIndex];
-
-                        if (ch == '=' || ch == ':')
-                        {
-                            if (streamState != StreamState.ReadBinnaryHeader ||
-                                streamState != StreamState.ReadBinnaryData)
-                            {// если не в режиме чтения бинарных данных
-
-                                if (startCodeReceived)
-                                {// стартовый код получен повторно, что то пошло не так...
-                                    //throw new InvalidDataException("Start code already received");
-                                }
-
-                                startCodeReceived = true;
-                            }
-
-                        }
-
-                        if (ch == (char)0x10)
-                        {// получили DLE, начинаем читать бинарь
-
-                            if (!startCodeReceived)
-                            {// не может быть без заголовка
-                                throw new InvalidDataException("Invalid data format. Start code missing");
-                            }
-
-                            if (streamState == StreamState.WaitCRLF)
-                            {
-                                streamState = StreamState.WaitDLE;
-                            }
-                            else
-                            {
-                                //throw new InvalidDataException("Invalid data format. <DLE> already received");
-                            }
-
-                            if (streamState == StreamState.WaitDLE)
-                            {
-                                binnaryDataMode = true;
-                                var textSize = (bufferIndex - bufferOffset);
-                                if (textSize <= 0)
-                                {// просто бинарь без заголовка быть не может...
-
-                                    throw new InvalidDataException("Invalid data format. Header size " + textSize);
-                                }
-
-                                textBuffer = new byte[textSize];
-                                Array.Copy(buffer, bufferOffset, textBuffer, 0, textBuffer.Length);
-                                streamState = StreamState.ReadBinnaryHeader;
-                                position = bufferIndex + 1;
-                                break;
-                            }
-                        }
-
-                        if (ch == '\r')
-                        {
-                            carriageReturn = true;
-
-                            continue;
-                        }
-
-                        if (ch == '\n')
-                        {
-                            if (streamState == StreamState.WaitCRLF)
-                            {
-                                if (!carriageReturn)
-                                {
-                                    //throw new InvalidDataException("Invalid data format. <CR> missing");
-                                    //....
-                                    Console.WriteLine("Invalid data format. <CR> missing");
-                                }
-
-                                if (!binnaryDataMode)
-                                {// только сообщение, без бинаря...
-                                    var textSize = (bufferIndex - 1) - bufferOffset;
-                                    if (textSize > 0)
-                                    {
-                                        textBuffer = new byte[textSize];
-                                        Array.Copy(buffer, bufferOffset, textBuffer, 0, textBuffer.Length);
-                                    }
-                                    else
-                                    {
-                                        throw new InvalidDataException("Text data corrupt or not valid");
-                                    }
-
-                                }
-
-                                byte[] crlf = { (byte)'\r', (byte)'\n' };
-                                var newBufSize = textBuffer.Length + crlf.Length;
-                                var newBuf = new byte[newBufSize];
-                                Array.Copy(textBuffer, newBuf, textBuffer.Length);
-                                Array.Copy(crlf, 0, newBuf, textBuffer.Length, crlf.Length);
-
-                                textBuffer = newBuf;
-
-                            }
-
-                            position = bufferIndex + 1;
-                            bufferOffset = position;
-
-                            var data = new CPData(textBuffer, binBuffer);
-
-                            Reset();
-
-                            DataReady?.Invoke(data);
-                            tempData.Add(data);
-                            //Console.WriteLine("======================================");
-
-                            continue;
-                        }
-
-                        carriageReturn = false;
-                    }
-                }
-
-                if (streamState == StreamState.ReadBinnaryHeader)
-                {// первые 4 байта после <DLE> размер bin-а
-
-                    int bufferRemaining = bufferLength - position;
-                    if (bufferRemaining > 4)
-                    {
-                        binBufferLength = BitConverter.ToInt32(buffer, position);
-
-                        if (binBufferLength <= 0)
-                        {
-                            throw new InvalidDataException("Invalid binData size " + binBufferLength);
-                        }
-
-                        //Console.WriteLine("DataLength: " + DataLength + " pos: " + pos);
-                        position += 4;
-
-                        binBuffer = new byte[binBufferLength];
-                        binBufferOffset = 0;
-
-                        streamState = StreamState.ReadBinnaryData;
-                    }
-                    else
-                    {// сохраняем в буффер то что есть и выходим
-                        bufferOffset = position;
-
-                        //Array.Copy(buffer, pos, tempBuffer, tempBufferOffset, bufferRemaining);
-                        //tempBufferOffset += bufferRemaining;
-                        //break;
-                    }
-                }
-
-
-                if (streamState == StreamState.ReadBinnaryData)
-                {// собираем бинарные данные...
-
-                    int bufferRemaining = bufferLength - position;
-                    int dataRemaining = binBufferLength - binBufferOffset;
-                    Debug.Assert(dataRemaining > 0, "dataRemaining>0");
-
-                    if (bufferRemaining >= dataRemaining)
-                    { // все копируем
-                        Array.Copy(buffer, position, binBuffer, binBufferOffset, dataRemaining);
-
-                        binBufferOffset += dataRemaining;
-                        position += dataRemaining;
-
-                        // ждем конец сообщения
-                        streamState = StreamState.WaitCRLF;
-
-                        //Console.WriteLine("WaitCRLF " + pos);
-                        bufferOffset = position;
-                        continue;
-
-                    }
-                    else
-                    {// не удалось прочитать все бинарные данные, сохраняем то что есть в буфер и выходим 
-
-                        Array.Copy(buffer, position, binBuffer, binBufferOffset, bufferRemaining);
-                        binBufferOffset += bufferRemaining;
-
-                        var _resultData = new List<CPData>(tempData);
-                        tempData.Clear();
-                        return _resultData;
-                        //return;
-                    }
-                }
-
-                int _dataRemaining = bufferLength - bufferOffset;
-                if (_dataRemaining > 0)
-                {  // данных не достаточно, копируем в буфер					
-                    Array.Copy(buffer, bufferOffset, tempBuffer, tempBufferOffset, _dataRemaining);
-                    tempBufferOffset += _dataRemaining;
-                }
-
-                break;
-            }
-
-            var resultData = new List<CPData>(tempData);
-            tempData.Clear();
-
-            return resultData;
-
-        }
-
-        private void Reset()
-        {
-            textBuffer = null;
-            binBuffer = null;
-            binBufferLength = 0;
-            binBufferOffset = 0;
-            binnaryDataMode = false;
-            carriageReturn = false;
-            startCodeReceived = false;
-            //...
-        }
-    }
-
-    class CPSocketHandler
-    {
-        private byte[] tempBuffer = null;
-        private bool carriageReturn = false;
-
-        private List<byte[]> dataLines = new List<byte[]>();
-
-        public IEnumerable<byte[]> ReadLines(byte[] buffer, int size, bool binnaryDataMode = false)
-        {
-            List<byte[]> resultBuffer = null;
-            int dataRemaining = size;
-            int startIndex = 0;
-
-            for (int i = 0; i < size; i++)
-            {
-                var ch = (char)buffer[i];
-
-                if (ch == '\r')
-                {
-                    carriageReturn = true;
-                    continue;
-                }
-                else if (ch == '\n' && carriageReturn)
-                {
-                    var endIndex = i;
-                    var dataSize = (endIndex - startIndex) + 1;
-
-                    int offset = 0;
-                    byte[] dataBuffer = null;
-
-                    if (tempBuffer == null)
-                    {
-                        dataBuffer = new byte[dataSize];
-                    }
-                    else
-                    {
-                        var totalSize = dataSize + tempBuffer.Length;
-                        dataBuffer = new byte[totalSize];
-
-                        Array.Copy(tempBuffer, 0, dataBuffer, offset, tempBuffer.Length);
-                        offset += tempBuffer.Length;
-
-                        tempBuffer = null;
-                    }
-
-                    Array.Copy(buffer, startIndex, dataBuffer, offset, dataSize);
-
-                    startIndex = endIndex + 1;// next char...
-
-                    //оставшиеся в буфере данные
-                    dataRemaining = (size - startIndex);
-
-                    dataLines.Add(dataBuffer);
-
-
-                    if (dataRemaining == 0)
-                    {// весь буфер прочитан
-
-                        resultBuffer = new List<byte[]>(dataLines);
-                        dataLines.Clear();
-
-                        break;
-                    }
-                    else
-                    {// остались данные нужно дочитать...
-
-                    }
-                    carriageReturn = false;
-                }
-                else
-                {
-                    if (carriageReturn)
-                    {
-                        carriageReturn = false;
-                    }
-                }
-            }
-
-            Debug.Assert(dataRemaining >= 0, "dataRemaining >= 0");
-
-            if (dataRemaining > 0)
-            {// остались не обработаные данные сохраняем их в буффер...
-
-                // logger.Trace("dataRemaining == " + dataRemaining);
-
-                int offset = 0;
-                if (tempBuffer != null)
-                {
-                    var tempSize = tempBuffer.Length + dataRemaining;
-                    var newTempBuffer = new byte[tempSize];
-
-                    Array.Copy(tempBuffer, 0, newTempBuffer, offset, tempBuffer.Length);
-                    offset += tempBuffer.Length;
-
-                    tempBuffer = newTempBuffer;
-                }
-                else
-                {
-                    tempBuffer = new byte[dataRemaining];
-                }
-
-                Array.Copy(buffer, startIndex, tempBuffer, offset, dataRemaining);
-            }
-
-            //if(dataLines.Count> 0)
-            //{
-            //    resultBuffer = new List<byte[]>(dataLines);
-            //    dataLines.Clear();
-
-            //}
-
-            return resultBuffer;
-        }
-
-    }
-    */
-
-
-
-    /*
- class CPData
- {
-     public byte[] Message = null;
-     public byte[] Bin = null;
- }
-
- class CPDataHandler
- {
-     enum StreamState
-     {
-         WaitStartCode,
-         WaitDLE,
-         WaitCRLF,
-
-         ReadResultCode,
-         ReadBinnaryHeader,
-         ReadBinnaryData,
-     }
-
-
-     private byte[] tempBuffer = new byte[16 * 1024];
-     private int tempBufferOffset = 0;
-
-     private StreamState streamState = StreamState.WaitCRLF;
-
-     private int DataLength = 0;
-     private byte[] DataBuffer = null;
-     private int DataOffset = 0;
-     private bool dleMode = false;
-     private byte[] MessageBuffer = null;
-
-     public event Action<CPData> DataReady;
-     internal void ProcessBuffer(byte[] buf, int offset, int length)
-     {
-         // =00000000 128 128<DLE>00800000.........<CR><LF>
-
-         while (true)
-         {
-             if (offset >= length)
-             {
-                 //Console.WriteLine("!!!!!!!!!!!!!!!!!!! " + offset + " >= " + length);
-
-                 break;
-                 //return;
-             }
-
-             if (tempBufferOffset > 0)
-             {// если остались не обработанные данные
-                 int len = length - offset;
-                 int newSize = tempBufferOffset + len;
-
-                 byte[] newBuf = new byte[newSize];
-                 Array.Copy(tempBuffer, 0, newBuf, 0, tempBufferOffset);
-                 Array.Copy(buf, offset, newBuf, tempBufferOffset, len);
-                 tempBufferOffset = 0;
-
-                 buf = newBuf;
-                 length = newSize;
-             }
-
-
-
-             int pos = 0;
-
-             if (streamState == StreamState.WaitStartCode ||
-                 streamState == StreamState.WaitDLE ||
-                 streamState == StreamState.WaitCRLF)
-             {//
-
-                 for (int i = offset; i < length; i++)
-                 {
-                     char ch = (char)buf[i];
-
-                     //if (streamState == StreamState.WaitStartCode ||
-                     //	streamState == StreamState.WaitDLE || 
-                     //	streamState == StreamState.WaitCRLF)
-                     {
-
-
-                         if (ch == (char)0x10)
-                         {
-                             if (streamState == StreamState.WaitCRLF)
-                             {
-                                 streamState = StreamState.WaitDLE;
-                             }
-
-                             if (streamState == StreamState.WaitDLE)
-                             {
-                                 dleMode = true;
-
-                                 var messageSize = i - offset;
-                                 MessageBuffer = new byte[messageSize];
-                                 Array.Copy(buf, offset, MessageBuffer, 0, MessageBuffer.Length);
-
-                                 var message = Encoding.UTF8.GetString(MessageBuffer);
-                                 //Console.WriteLine("MessageBody: " + message);
-
-                                 //Console.WriteLine("<DLE> at pos: " + i);
-                                 streamState = StreamState.ReadBinnaryHeader;
-                                 pos = i + 1;
-                                 break;
-                             }
-                         }
-
-
-                         if (ch == '\r')
-                         {
-                             continue;
-                         }
-
-                         if (ch == '\n')
-                         {
-                             if (streamState == StreamState.WaitCRLF)
-                             {
-                                 if (!dleMode)
-                                 {
-                                     var messageSize = (i - 1) - offset;
-
-                                     MessageBuffer = new byte[messageSize];
-                                     Array.Copy(buf, offset, MessageBuffer, 0, MessageBuffer.Length);
-
-                                     //var message = Encoding.UTF8.GetString(MessageBuffer);
-                                     //Console.WriteLine("MessageBody: " + message);
-                                 }
-
-
-                                 byte[] crlf = { (byte)'\r', (byte)'\n' };
-                                 var newBufSize = MessageBuffer.Length + crlf.Length;
-                                 var newBuf = new byte[newBufSize];
-                                 Array.Copy(MessageBuffer, newBuf, MessageBuffer.Length);
-                                 Array.Copy(crlf, 0, newBuf, MessageBuffer.Length, crlf.Length);
-
-                                 MessageBuffer = newBuf;
-
-                                 var message = Encoding.UTF8.GetString(MessageBuffer);
-                                 //Console.WriteLine("MessageBody: " + message);
-
-                             }
-
-                             //Console.WriteLine("Data: " + DataLength + " " + DataOffset);
-                             //Console.WriteLine("<CR><LF> at pos: " + i);
-                             pos = i + 1;
-
-                             offset = pos;
-
-                             var data = new CPData
-                             {
-                                 Message = MessageBuffer,
-                                 Bin = DataBuffer,
-                             };
-
-                             MessageBuffer = null;
-                             DataBuffer = null;
-                             dleMode = false;
-                             DataLength = 0;
-                             DataOffset = 0;
-
-                             DataReady?.Invoke(data);
-
-                             //...
-                             Console.WriteLine("======================================");
-
-
-                             continue;
-                         }
-                     }
-
-                 }
-             }
-
-             if (streamState == StreamState.ReadBinnaryHeader)
-             {// первые 4 байта после <DLE> размер ранных
-
-                 //Console.WriteLine("ReadBinnaryHeader " + pos);
-
-                 int len = length - pos;
-                 if (len > 4)
-                 {
-                     DataLength = BitConverter.ToInt32(buf, pos);
-                     //Console.WriteLine("DataLength: " + DataLength + " pos: " + pos);
-                     pos += 4;
-
-                     DataBuffer = new byte[DataLength];
-                     DataOffset = 0;
-
-                     streamState = StreamState.ReadBinnaryData;
-                 }
-                 else
-                 {// сохраняем в буффер то что есть и выходим
-
-                     Array.Copy(buf, pos, tempBuffer, tempBufferOffset, len);
-                     tempBufferOffset += len;
-                     break;
-                 }
-             }
-
-
-             if (streamState == StreamState.ReadBinnaryData)
-             {
-                 //Console.WriteLine("ReadBinnaryData " + pos);
-
-                 int len = length - pos;
-                 int dataRemaining = DataLength - DataOffset;
-                 if (len >= dataRemaining)
-                 { // сразу все копируем
-                     Array.Copy(buf, pos, DataBuffer, DataOffset, dataRemaining);
-
-                     DataOffset += dataRemaining;
-                     pos += dataRemaining;
-
-                     //Debug.Assert(DataLength == DataOffset, "DataLength == DataOffset");
-
-                     // ждем конец сообщения
-                     streamState = StreamState.WaitCRLF;
-
-                     //Console.WriteLine("WaitCRLF " + pos);
-                     offset = pos;
-                     continue;
-
-                 }
-                 else
-                 {
-                     Array.Copy(buf, pos, DataBuffer, DataOffset, len);
-                     DataOffset += len;
-
-                     return;
-                 }
-             }
-
-             int _dataRemaining = length - offset;
-             if (_dataRemaining > 0)
-             {  // данных не достаточно, копируем в буфер					
-                 Array.Copy(buf, offset, tempBuffer, tempBufferOffset, _dataRemaining);
-                 tempBufferOffset += _dataRemaining;
-             }
-
-             break;
-         }
-
-
-     }
-
-
- }
- */
 
 }
