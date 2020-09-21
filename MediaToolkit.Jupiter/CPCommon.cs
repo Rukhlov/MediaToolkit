@@ -258,6 +258,21 @@ namespace MediaToolkit.Jupiter
 
     public class Utils
     {
+        public static string AutoDoubleQuoteString(string value)
+        {
+            if (!string.IsNullOrEmpty(value) && (value.IndexOf(' ') > -1) && (value.IndexOf('"') == -1))
+            {
+                if (value.EndsWith(@"\"))
+                {
+                    value = string.Concat(value, @"\");
+                }
+
+                return string.Concat('"', value, '"');
+            }
+
+            return value;
+        }
+
         public static string LogEnumFlags(Enum flags)
         {
             string log = "";
@@ -321,36 +336,6 @@ namespace MediaToolkit.Jupiter
             return bytes;
         }
 
-        public bool VerifyServiceRunning(string serviceName)
-        {
-            bool success = false;
-            try
-            {
-                //using (ServiceController sc = new ServiceController())
-                //{
-                //    sc.ServiceName = serviceName;
-                //    if (sc.Status == ServiceControllerStatus.Stopped)
-                //    {
-                //        sc.Start();
-                //        sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(5));
-                //        success = (sc.Status == ServiceControllerStatus.Running);
-                //    }
-                //}
-
-                var status = WinSrvUtil.GetServiceStatus(serviceName);
-                if( status == ServiceState.Stopped)
-                {
-                    WinSrvUtil.StartService(serviceName);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-
-            return success;
-        }
     }
 
 	static class IntParser

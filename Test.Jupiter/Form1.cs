@@ -978,5 +978,35 @@ namespace Test.Jupiter
 			
 			//MessageBox.Show(message);
 		}
-	}
+
+        private async void button29_Click(object sender, EventArgs e)
+        {
+            var message = "";
+
+            try
+            {
+                var id = int.Parse(textBox1.Text);
+
+                var winId = new WinId(id);
+
+                //var fileName = await cpClient.CPDebug.GetFileName();
+                //message = "GetFileName() " + fileName;
+
+                //var level = await cpClient.CPDebug.GetLevel();
+                //message = "GetLevel() " + level;
+
+                var result = await cpClient.CPDebug.OpenFile(@"CPTest.log");
+                message = "OpenFile() " + result;
+
+                //var result = await cpClient.CPDebug.CloseFile();
+                //message = "CloseFile() " + result;
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+            }
+
+            MessageBox.Show(message);
+        }
+    }
 }

@@ -732,6 +732,9 @@ namespace MediaToolkit.Jupiter
         }
 
         public readonly string ValueList = "";
+
+        // максимальный размер по умолчанию 128x128, 
+        // но можно увеличить в конфиге %ProgramData%\ControlPoint\ServerDataFiles\Config.xml
         public int Width { get; private set; }
         public int Height { get; private set; }
 
@@ -1113,10 +1116,8 @@ namespace MediaToolkit.Jupiter
           // { 196613 514589198 30406492 -1941052928 } 
           // вместо сктрктуры из четырех DWORD
             ThrowIfClientNotReady();
-
             var request = new CPRequest(ObjectName, "GetServerInfo");
             var response = await client.SendAsync(request) as CPResponse;
-
             response.ThrowIfError();
 
             return new CPServerInfo(response.ValueList);
@@ -1248,14 +1249,116 @@ namespace MediaToolkit.Jupiter
          //= 00000000 128 96DLE...rgb555...\r\n
 
             ThrowIfClientNotReady();
-
             var request = new CPRequest(ObjectName, "GetPreview", winId);
-
             var response = await client.SendAsync(request) as CPResponse;
             response.ThrowIfError();
 
             return response.Result ? new PrevImage(response) : null;
         }
 
+    }
+
+    public class CPDebug : CPObjBase
+    { //ControlPoint Protocol Manual p.74 
+        /*
+         *  CloseFile ()
+            FlushToFile ( [in, string] )
+            GetFileName ( [out, string] )
+            GetLevel ( [out] unsigned )
+            GetOutputs ( [out] DWORD )
+            OpenFile ( [in, string] )
+            SetOutputs ( [in] DWORD new, [out] DWORD old )
+            SetLevel ( [in] unsigned NewLevel, [out] unsigned OldLevel )
+         */
+        public CPDebug(CPClient c) : base(c) { }
+
+        public override string ObjectName => "Debug";
+
+        public async Task<bool> CloseFile()
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "CloseFile");
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return response.Result;
+        }
+
+        public async Task<bool> FlushToFile(string fileName)
+        {
+            ThrowIfClientNotReady();
+            var arg0 = Utils.AutoDoubleQuoteString(fileName);
+            var request = new CPRequest(ObjectName, "FlushToFile", arg0);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return response.Result;
+        }
+
+        public async Task<bool> OpenFile(string fileName)
+        {// можно задать только имя файла, путь настроить нельзя 
+            // %ProgramData%\ControlPoint\
+
+            ThrowIfClientNotReady();
+
+            var arg0 = Utils.AutoDoubleQuoteString(fileName);
+            var request = new CPRequest(ObjectName, "OpenFile", arg0);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return response.Result;
+        }
+
+
+        public async Task<ushort> GetLevel()
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "GetLevel");
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return IntParser.Parse<ushort>(response.ValueList);
+        }
+
+        public async Task<ushort> SetLevel(ushort level)
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "SetLevel", level);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return IntParser.Parse<ushort>(response.ValueList);
+        }
+
+        public async Task<uint> GetOutputs()
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "GetOutputs");
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return IntParser.Parse<uint>(response.ValueList);
+        }
+
+        public async Task<uint> SetOutputs(uint output )
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "SetOutputs", output);
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return IntParser.Parse<uint>(response.ValueList);
+        }
+
+        public async Task<string> GetFileName()
+        {
+            ThrowIfClientNotReady();
+            var request = new CPRequest(ObjectName, "GetFileName");
+            var response = await client.SendAsync(request) as CPResponse;
+            response.ThrowIfError();
+
+            return response.ValueList;
+
+        }
     }
 }

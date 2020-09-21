@@ -37,6 +37,7 @@ namespace MediaToolkit.Jupiter
             Notify = new Notify(this);
             RGBSys = new RGBSys(this);
             ConfigSys = new ConfigSys(this);
+            CPDebug = new CPDebug(this);
         }
 
         public string Host { get; private set; } = "127.0.0.1";
@@ -49,6 +50,7 @@ namespace MediaToolkit.Jupiter
         public WinServer WinServer { get; } = null;
         public Notify Notify { get; } = null;
         public RGBSys RGBSys { get; } = null;
+        public CPDebug CPDebug { get; } = null;
 
         public event Action<CPNotification> NotificationReceived;
         public event Action StateChanged;
@@ -236,7 +238,7 @@ namespace MediaToolkit.Jupiter
                                     }
 
                                     //dataAvailable = !(socket.Available > 0);
-									dataAvailable = (dataBuffer != null && dataBuffer.Count() > 0); //!(socket.Available > 0);
+									dataAvailable = (dataBuffer != null && dataBuffer.Count() > 0);
 								}
 								else
                                 {// socket closed...
