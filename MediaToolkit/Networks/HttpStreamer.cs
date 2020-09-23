@@ -208,7 +208,8 @@ namespace MediaToolkit.Networks
                             logger.Debug("Client request:\r\n" + request);
                         }
 
-                        if (streamer.clients.Count > 5)
+                        const int MaxClientCount = 100500;
+                        if (streamer.clients.Count > MaxClientCount)
                         {
                             string resp = "HTTP/1.0 503 Service Unavailable\r\n" + "Connectin: close\r\n";
                             byte[] bytes = Encoding.ASCII.GetBytes(resp);
@@ -256,7 +257,7 @@ namespace MediaToolkit.Networks
                             }
 
                             if (stream.CanRead && stream.DataAvailable)
-                            { // Получаем от клиента запрос х.з что с ним делать...
+                            { // Получаем от клиента запрос
 
                                 string _request = "";
                                 byte[] buf = new byte[1024];
@@ -392,11 +393,20 @@ namespace MediaToolkit.Networks
                     //Marshal.Copy(ptr, contentBuffer, 0, len);
 
                     responseBuffer = CreateMJpegResponse(ptr, len, sec);
-
-                    foreach (var client in clients)
+                    lock (syncRoot)
                     {
-                        client.SignalToResponse();
+                        for (int i = 0; i < clients.Count; i++)
+                        {
+                            var c = clients[i];
+                            c?.SignalToResponse();
+                        }
+
+                        //foreach (var client in clients)
+                        //{
+                        //    client.SignalToResponse();
+                        //}
                     }
+ 
                 }
                 else
                 {

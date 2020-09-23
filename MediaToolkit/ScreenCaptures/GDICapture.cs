@@ -602,6 +602,10 @@ namespace MediaToolkit.ScreenCaptures
                     errorCode = ErrorCode.Ok;
 
                 }
+                else
+                {
+                    errorCode = ErrorCode.WaitTimeout;
+                }
 
             }
             catch (Win32Exception ex)
