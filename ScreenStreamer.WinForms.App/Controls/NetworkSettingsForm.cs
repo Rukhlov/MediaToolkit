@@ -278,30 +278,33 @@ namespace ScreenStreamer.WinForms.App
 
         private void runasButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var fileName = Process.GetCurrentProcess().MainModule.FileName;
+            AppManager.RunAsSystem();
+            Application.Exit();
 
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-                Process process = new Process
-                {
-                    StartInfo = startInfo,
-                };
+            //try
+            //{
+            //    var fileName = Process.GetCurrentProcess().MainModule.FileName;
 
-                process.Start();
+            //    ProcessStartInfo startInfo = new ProcessStartInfo
+            //    {
+            //        FileName = fileName,
+            //        UseShellExecute = true,
+            //        Verb = "runas"
+            //    };
+            //    Process process = new Process
+            //    {
+            //        StartInfo = startInfo,
+            //    };
 
-                Application.Exit();
+            //    process.Start();
 
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            //    Application.Exit();
+
+            //}
+            //catch(Exception ex)
+            //{
+            //    MessageBox.Show(ex.Message);
+            //}
 
         }
     }

@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
@@ -45,6 +46,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Discovery" />
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,11 +58,16 @@
     <Compile Include="StreamSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MediaStreamer.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
       <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+      <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
+      <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
       <Project>{d93a9d01-3409-48bb-b1eb-860efe0397f1}</Project>

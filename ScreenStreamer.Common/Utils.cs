@@ -14,11 +14,87 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using MediaToolkit.Managers;
 using NLog;
-using ScreenStreamer.Wpf.Models;
 
-namespace ScreenStreamer.Wpf.Managers
+
+namespace ScreenStreamer.Common
 {
-	public class SystemManager : IWndMessageProcessor
+    public class AppManager
+    {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public static void RunAsSystem()
+        {
+            try
+            {
+                var fileName = Process.GetCurrentProcess().MainModule.FileName;
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    Arguments = "-system",
+                    FileName = fileName,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                };
+                Process process = new Process
+                {
+                    StartInfo = startInfo,
+                };
+
+                process.Start();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        public static int RestartAsSystem()
+        {// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
+         // перезапускам процесс с системными правами
+            logger.Debug("RestartAsSystem()");
+
+            int pid = 0;
+            try
+            {
+                var applicationDir = System.IO.Directory.GetCurrentDirectory();
+                var applicationName = AppDomain.CurrentDomain.FriendlyName;
+
+                var applicatonFullName = System.IO.Path.Combine(applicationDir, applicationName);
+
+                var commandLine = "-norestart";
+
+
+                pid = MediaToolkit.NativeAPIs.Utils.ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
+
+                if (pid > 0)
+                {
+                    using (var process = System.Diagnostics.Process.GetProcessById(pid))
+                    {
+                        if (process != null)
+                        {
+                            logger.Info("New process started: " + process.ProcessName + " " + process.Id);
+                        }
+                    }
+                }
+                else
+                {
+                    //...
+                    //throw new Exception()
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+                // throw;
+            }
+
+            return pid;
+        }
+
+    }
+
+    public class SystemManager : IWndMessageProcessor
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -26,10 +102,6 @@ namespace ScreenStreamer.Wpf.Managers
 
 		private NotifyWindow notifyWindow = null;
 
-		private List<VideoSourceItem> videoSources = null;
-		private List<AudioSourceItem> audioSources = null;
-		private List<EncoderItem> h264Encoders = null;
-		private List<ScreenCaptureItem> screenCaptures = null;
 
 		public event Action<object> VideoSourcesChanged;
 		public event Action<object> AudioSourcesChanged;
@@ -142,13 +214,13 @@ namespace ScreenStreamer.Wpf.Managers
 
 		private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
 		{
-			logger.Debug("SystemEvents_DisplaySettingsChanged(...)");
+			logger.Warn("SystemEvents_DisplaySettingsChanged(...)");
 			//...
 		}
 
 		private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
 		{
-			logger.Debug("SystemEvents_SessionSwitch(...) " + e.Reason);
+			logger.Warn("SystemEvents_SessionSwitch(...) " + e.Reason);
 
 			//...
 		}

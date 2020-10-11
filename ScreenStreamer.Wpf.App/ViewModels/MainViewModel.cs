@@ -43,11 +43,20 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             wndProcService.ShowMainWindow += OnShowMainWindow;
             wndProcService.Init();
+
+            var startParams = Program.StartupParams;
+
+            if (startParams.IsSystem)
+            {
+                mainCaption += " (" + startParams.UserName + ")";
+            }
         }
 
+        private string mainCaption = "Polywall Streamer";
         public override string Caption
         {
-            get => "Polywall Streamer";
+            get => mainCaption;
+            //get => "Polywall Streamer";
             //get => "Polywall Streamer " + AppModel.AppVersion;
         }
 

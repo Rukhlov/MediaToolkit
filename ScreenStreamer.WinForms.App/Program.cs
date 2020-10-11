@@ -49,7 +49,7 @@ namespace ScreenStreamer.WinForms.App
             {
                 if (!StartupParams.NoRestart)
                 {//Restart application with system permissions...
-                    if (RestartAsSystem() > 0)
+                    if (AppManager.RestartAsSystem() > 0)
                     {
                         return;
                     }
@@ -169,78 +169,6 @@ namespace ScreenStreamer.WinForms.App
                 }
                 
             }
-        }
-
-        internal static void RunAsSystem()
-        {
-            try
-            {
-                var fileName = Process.GetCurrentProcess().MainModule.FileName;
-
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    Arguments = "-system",
-                    FileName = fileName,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-                Process process = new Process
-                {
-                    StartInfo = startInfo,
-                };
-
-                process.Start();
-
-                Application.Exit();
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        private static int RestartAsSystem()
-		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
-		 // перезапускам процесс с системными правами
-			logger.Debug("RestartAsSystem()");
-
-            int pid = 0;
-            try
-            {
-                var applicationDir = System.IO.Directory.GetCurrentDirectory();
-                var applicationName = AppDomain.CurrentDomain.FriendlyName;
-
-                var applicatonFullName = System.IO.Path.Combine(applicationDir, applicationName);
-
-                var commandLine = "-norestart";
-
-     
-                pid = MediaToolkit.NativeAPIs.Utils.ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
-
-                if (pid > 0)
-                {
-                    using (var process = System.Diagnostics.Process.GetProcessById(pid))
-                    {
-                        if (process != null)
-                        {
-                            logger.Info("New process started: " + process.ProcessName + " " + process.Id);
-                        }
-                    }
-                }
-                else
-                {
-                    //...
-                    //throw new Exception()
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-               // throw;
-            }
-
-            return pid;
         }
 
         public class StartupParameters

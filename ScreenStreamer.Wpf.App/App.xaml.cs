@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using NLog;
+using ScreenStreamer.Common;
 using ScreenStreamer.Wpf.Helpers;
 using ScreenStreamer.Wpf.Managers;
 

@@ -33,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -135,7 +136,6 @@
     <Compile Include="Helpers\AudioHelper.cs" />
     <Compile Include="Helpers\EncoderHelper.cs" />
     <Compile Include="Managers\SelectAreaManager.cs" />
-    <Compile Include="Managers\SystemManager.cs" />
     <Compile Include="Models\MediaProperties.cs" />
     <Compile Include="Models\MediaStreamModel.cs" />
     <Compile Include="Models\MediaTypes.cs" />

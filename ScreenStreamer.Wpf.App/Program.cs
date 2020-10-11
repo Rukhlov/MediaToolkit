@@ -1,10 +1,12 @@
 ﻿using MediaToolkit;
 using MediaToolkit.NativeAPIs;
-using Microsoft.Win32;
+
 using NLog;
+using ScreenStreamer.Common;
 using ScreenStreamer.Wpf.Managers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -33,6 +35,8 @@ namespace ScreenStreamer.Wpf
             Mutex mutex = null;
             try
             {
+                StartupParams = StartupParameters.Create(args);
+
                 mutex = new Mutex(true, AppConsts.ApplicationId, out createdNew);
                 if (!createdNew)
                 {
@@ -48,13 +52,30 @@ namespace ScreenStreamer.Wpf
 
 				}
 
-                StartupParams = StartupParameters.Create(args);
+                if (StartupParams.RunAsSystem)
+                {
+                    if (StartupParams.IsElevated)
+                    {
+                        if (AppManager.RestartAsSystem() > 0)
+                        {
+                            return 0;
+                        }
+                        logger.Warn("Restart failed...");
+                    }
+                    else
+                    {
+                        AppManager.RunAsSystem();
 
-				logger.Info(StartupParams.GetSysInfo());
+                        return 0;
+                    }
+                }
+
 
                 try
 				{
-					MediaToolkitManager.Startup();
+                    logger.Info(StartupParams.GetSysInfo());
+
+                    MediaToolkitManager.Startup();
 
 					Shcore.SetProcessPerMonitorDpiAwareness();
 
@@ -201,6 +222,8 @@ namespace ScreenStreamer.Wpf
 				}
 			}
 		}
+
+
 
 
 

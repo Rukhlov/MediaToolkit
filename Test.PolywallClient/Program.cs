@@ -29,11 +29,12 @@ namespace Test.PolywallClient
 
                 logger.Info("========== START ============");
                 //var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-                var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+                //var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
                 //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
 
                 //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
                 //@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
+                var mediaToolkitPath = @"..\";
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
