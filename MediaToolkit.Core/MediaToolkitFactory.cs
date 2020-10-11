@@ -9,115 +9,8 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.SharedTypes
 {
-    public class MediaToolkitFactory
-    {
-        private static IMediaToolkitBootstrapper mediaToolkit = null;
-        public static bool IsStarted { get; private set; }
 
-        public static bool Startup(string assemblyPath = "", bool throwExceptions = false)
-        {
-            if (IsStarted)
-            {
-                if (!throwExceptions)
-                {
-                    return false;
-                }
-
-                throw new InvalidOperationException("IsStarted  " + IsStarted);
-            }
-
-            try
-            {
-                InstanceFactory.AssemblyPath = assemblyPath;
-
-                InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
-
-                InstanceFactory.RegisterType<IVideoRenderer>("MediaToolkit.dll");
-                InstanceFactory.RegisterType<IAudioRenderer>("MediaToolkit.dll");
-                InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll");
-
-                InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
-                InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll", "ScreenCastControl");
-
-                //InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll", "ScreenCastControlEx");
-
-                InstanceFactory.RegisterType<IDeckLinkInputControl>("MediaToolkit.UI.dll");
-                //...
-
-                mediaToolkit = InstanceFactory.CreateInstance<IMediaToolkitBootstrapper>();
-
-                mediaToolkit.Startup();
-
-                IsStarted = true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-                //Debug.Fail(ex.Message);
-                if (throwExceptions)
-                {
-                    throw;
-                }
-            }
-
-            return IsStarted;
-        }
-
-        public static void Shutdown()
-        {
-            if (mediaToolkit != null)
-            {
-                mediaToolkit.Shutdown();
-            }
-        }
-
-
-        public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
-        {
-            if (!IsStarted)
-            {
-                if (!throwExceptions)
-                {
-                    return null;
-                }
-
-                throw new InvalidOperationException("IsStarted  " + IsStarted);
-            }
-
-            return InstanceFactory.CreateInstance<T>(args, throwExceptions);
-        }
-
-
-
-        public const string MediaToolkitPathKey = "MediaToolkitPath";
-        public const string SoftwareVisiologyPolywallPathKey = "Software\\Visiology\\Polywall\\Path";
-
-        public static string GetMediaToolkitInstalledPath(string value)
-        {
-            string path = string.Empty;
-            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(SoftwareVisiologyPolywallPathKey);
-            if (rk != null)
-            {
-                var names = rk.GetValueNames();
-                if (names != null)
-                {
-                    if (names.Contains(value))
-                    {
-                        path = rk.GetValue(value)?.ToString();
-                    }
-                }
-            }
-            return path;
-        }
-
-        public static string GetMediaToolkitDirectory()
-        {
-            return GetMediaToolkitInstalledPath(MediaToolkitPathKey);
-        }
-
-    }
-
-    public class InstanceFactory
+	public class InstanceFactory
     {
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -328,6 +221,117 @@ namespace MediaToolkit.SharedTypes
         }
 
     }
+
+	/*
+public class MediaToolkitFactory
+{
+	private static IMediaToolkitBootstrapper mediaToolkit = null;
+	public static bool IsStarted { get; private set; }
+
+	public static bool Startup(string assemblyPath = "", bool throwExceptions = false)
+	{
+		if (IsStarted)
+		{
+			if (!throwExceptions)
+			{
+				return false;
+			}
+
+			throw new InvalidOperationException("IsStarted  " + IsStarted);
+		}
+
+		try
+		{
+			InstanceFactory.AssemblyPath = assemblyPath;
+
+			InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
+
+			InstanceFactory.RegisterType<IVideoRenderer>("MediaToolkit.dll");
+			InstanceFactory.RegisterType<IAudioRenderer>("MediaToolkit.dll");
+			InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll");
+
+			InstanceFactory.RegisterType<IHttpScreenStreamer>("MediaToolkit.dll");
+			InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll", "ScreenCastControl");
+
+			//InstanceFactory.RegisterType<IScreenCasterControl>("MediaToolkit.UI.dll", "ScreenCastControlEx");
+
+			InstanceFactory.RegisterType<IDeckLinkInputControl>("MediaToolkit.UI.dll");
+			//...
+
+			mediaToolkit = InstanceFactory.CreateInstance<IMediaToolkitBootstrapper>();
+
+			mediaToolkit.Startup();
+
+			IsStarted = true;
+		}
+		catch (Exception ex)
+		{
+			Debug.WriteLine(ex);
+			//Debug.Fail(ex.Message);
+			if (throwExceptions)
+			{
+				throw;
+			}
+		}
+
+		return IsStarted;
+	}
+
+	public static void Shutdown()
+	{
+		if (mediaToolkit != null)
+		{
+			mediaToolkit.Shutdown();
+		}
+	}
+
+
+	public static T CreateInstance<T>(object[] args = null, bool throwExceptions = false) where T : class
+	{
+		if (!IsStarted)
+		{
+			if (!throwExceptions)
+			{
+				return null;
+			}
+
+			throw new InvalidOperationException("IsStarted  " + IsStarted);
+		}
+
+		return InstanceFactory.CreateInstance<T>(args, throwExceptions);
+	}
+
+
+
+	public const string MediaToolkitPathKey = "MediaToolkitPath";
+	public const string SoftwareVisiologyPolywallPathKey = "Software\\Visiology\\Polywall\\Path";
+
+	public static string GetMediaToolkitInstalledPath(string value)
+	{
+		string path = string.Empty;
+		Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(SoftwareVisiologyPolywallPathKey);
+		if (rk != null)
+		{
+			var names = rk.GetValueNames();
+			if (names != null)
+			{
+				if (names.Contains(value))
+				{
+					path = rk.GetValue(value)?.ToString();
+				}
+			}
+		}
+		return path;
+	}
+
+	public static string GetMediaToolkitDirectory()
+	{
+		return GetMediaToolkitInstalledPath(MediaToolkitPathKey);
+	}
+
+}
+*/
+
 
 
 

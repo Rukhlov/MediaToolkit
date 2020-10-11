@@ -21,7 +21,7 @@ namespace MediaToolkit
 
             if (!isCompatibleOSVersion)
             {
-                throw new Exception("Windows versions earlier than 8 are not supported.");
+               // throw new Exception("Windows versions earlier than 8 are not supported.");
             }
 
 

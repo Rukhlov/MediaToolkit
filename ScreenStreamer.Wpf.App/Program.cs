@@ -7,7 +7,9 @@ using ScreenStreamer.Wpf.Managers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,23 +17,31 @@ using System.Windows;
 
 namespace ScreenStreamer.Wpf
 {
-    public class Program
-    {
+	public class Program
+	{
+		private static Logger logger = null;
+		public static StartupParameters StartupParams { get; private set; }
+		private static bool initialized = false;
 
-        private static Logger logger = null;
-
-        public static StartupParameters StartupParams { get; private set; }
+		static Program()
+		{
+			if(TryGetAppSettingsValue("MediaToolkitPath", out string mediaToolkitPath))
+			{
+				AssemblyPath = mediaToolkitPath;
+				AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+			}
+		}
 
         [STAThread]
         public static int Main(string[] args)
         {
             int exitCode = 0;
-
+			
 			InitLogger();
 
             logger.Info("============================ START ============================");
 
-            bool createdNew = false;
+			bool createdNew = false;
             Mutex mutex = null;
             try
             {
@@ -74,14 +84,15 @@ namespace ScreenStreamer.Wpf
                 try
 				{
                     logger.Info(StartupParams.GetSysInfo());
+					
 
-                    MediaToolkitManager.Startup();
-
+					MediaToolkitManager.Startup();
 					Shcore.SetProcessPerMonitorDpiAwareness();
 
 					var application = new App();
 					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 					application.InitializeComponent();
+					initialized = true;
 
 					logger.Info("============================ RUN ============================");
 					application.Run();
@@ -112,8 +123,53 @@ namespace ScreenStreamer.Wpf
            
             return exitCode;
         }
+		private static string AssemblyPath = @"..\";
+		private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		{
 
-        private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+			Console.WriteLine("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "");
+			var asmName = args.Name;
+
+			if (asmName.Contains(".resources"))
+			{
+				return null;
+			}
+
+			Assembly assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == asmName);
+			if (assembly != null)
+			{
+				return assembly;
+			}
+
+			string filename = asmName.Split(',')[0];
+			string asmFileFullName = Path.Combine(AssemblyPath, (filename + ".dll"));
+			if (!File.Exists(asmFileFullName))
+			{
+				asmFileFullName = Path.Combine(AssemblyPath, (filename + ".exe"));
+			}
+
+			if (File.Exists(asmFileFullName))
+			{
+				try
+				{
+					return Assembly.LoadFrom(asmFileFullName);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.ToString(), LogLevel.Error);
+					return null;
+				}
+			}
+			else
+			{
+				Console.WriteLine("Assembly not found: " + asmFileFullName, LogLevel.Error);
+				return null;
+			}
+
+			return null;
+		}
+
+		private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
 		{
 			logger.Debug("Application_DispatcherUnhandledException(...)");
 
@@ -128,7 +184,6 @@ namespace ScreenStreamer.Wpf
 			//TODO: process error...
 			//...
 
-
 			var message = "An unexpected error has occurred. Application will be closed";
 
 			try
@@ -137,16 +192,23 @@ namespace ScreenStreamer.Wpf
 
 				logger.Fatal(exceptionMessage);
 
-				var dialogService = new Services.DialogService();
+				if (initialized)
+				{
+					var dialogService = new Services.DialogService();
 
-				var vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
-				var result = dialogService.ShowDialog(vm);
+					var vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
+					var result = dialogService.ShowDialog(vm);
+				}
+				else
+				{
+					MessageBox.Show(exceptionMessage, "Polywall Streamer", MessageBoxButton.OK, MessageBoxImage.Error);
+				}
 
 			}
 			catch (Exception ex1)
 			{
 				logger.Error(ex1);
-				MessageBox.Show(message, "Error", MessageBoxButton.OK);
+				MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
 
@@ -222,9 +284,6 @@ namespace ScreenStreamer.Wpf
 				}
 			}
 		}
-
-
-
 
 
         public class StartupParameters
@@ -316,9 +375,92 @@ namespace ScreenStreamer.Wpf
                 return string.Join(";", UserName, IsElevated, IsSystem, NoRestart, IsRemoteSession, IsRemotelyControlled, IsCompositionEnabled);
             }
 
-
-
         }
-    }
- 
+
+		public static bool TryGetAppSettingsValue<T>(string name, out T t)
+		{
+			bool Result = false;
+			t = default(T);
+			try
+			{
+				var appSettings = System.Configuration.ConfigurationManager.AppSettings;
+				if (appSettings != null)
+				{
+					Result = TryGetValueFromCollection(appSettings, name, out t);
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+
+			return Result;
+		}
+
+		public static bool TryGetValueFromCollection<T>(System.Collections.Specialized.NameValueCollection settings, string paramName, out T t)
+		{
+			Console.WriteLine("TryGetValueFromCollection(...) " + paramName);
+			bool Result = false;
+
+			t = default(T);
+			if (settings == null)
+			{
+				Console.WriteLine("TryGetParams(...) settings == null");
+
+				return Result;
+			}
+
+			if (string.IsNullOrEmpty(paramName))
+			{
+				Console.WriteLine("TryGetParams(...) paramName == null");
+
+				return Result;
+			}
+
+			if (settings.Count <= 0)
+			{
+
+				Console.WriteLine("TryGetParams(...) settings.Count <= 0");
+
+				return Result;
+
+			}
+
+			try
+			{
+				var val = settings[paramName];
+				if (val != null)
+				{
+					val = val.Trim();
+				}
+
+				if (!string.IsNullOrEmpty(val))
+				{
+					Console.WriteLine(paramName + " = " + val);
+
+					var converter = System.ComponentModel.TypeDescriptor.GetConverter(typeof(T));
+					if (converter != null)
+					{
+						t = (T)converter.ConvertFromString(val);
+						Result = true;
+					}
+				}
+				else
+				{
+					Console.WriteLine(paramName + " not found");
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+			return Result;
+		}
+
+
+	}
+
 }
