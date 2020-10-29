@@ -41,7 +41,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             wndProcService = new Services.WndProcService();
 
-            wndProcService.ShowMainWindow += OnShowMainWindow;
+            wndProcService.DispatchMessage += WndProcService_DispatchMessage;
             wndProcService.Init();
 
             var startParams = Program.StartupParams;
@@ -51,6 +51,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
                 mainCaption += " (" + startParams.UserName + ")";
             }
         }
+
+
 
         private string mainCaption = "Polywall Streamer";
         public override string Caption
@@ -200,6 +202,16 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         }
 
 
+        private void WndProcService_DispatchMessage(string message)
+        {
+            if (message == Services.WndProcServiceCommand.ShowMainWindow)
+            {
+                OnShowMainWindow();
+
+                OnActivateMainWindow();
+            }
+        }
+
         private void OnShowMainWindow()
         {
             IsVisible = true;
@@ -215,6 +227,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             }
 
             this.RaisePropertyChanged(nameof(ActiveIcon));
+
+            OnActivateMainWindow();
         }
 
         private void OnHideMainWindow()

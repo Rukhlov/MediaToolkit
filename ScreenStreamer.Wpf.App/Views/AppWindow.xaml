@@ -31,7 +31,7 @@
                 <ResourceDictionary Source="..\Templates\Dialogs\CursorSettingsTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\Dialogs\DeleteTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\Dialogs\QualitySettingsTemplate.xaml"/>
-                <ResourceDictionary Source="..\Templates\Dialogs\StreamMainTemplate.xaml"/>
+                <ResourceDictionary Source="..\Templates\StreamMainTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\Dialogs\VideoSettingsTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\Dialogs\NetworkSettingsTemplate.xaml"/>
                 <ResourceDictionary Source="..\Templates\ContextMenuTemplate.xaml"/>

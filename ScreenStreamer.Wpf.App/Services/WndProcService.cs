@@ -10,33 +10,45 @@ using ScreenStreamer.Wpf.Utils;
 
 namespace ScreenStreamer.Wpf.Services
 {
+    public class WndProcServiceCommand
+    {
+        public const string ShowMainWindow = "SHOW_POLYWALL_STREAMER_MAIN_WINDOW";
+        //...
+    }
+
     public class WndProcService
     {
-        private const string SHOW_POLYWALL_STREAMER_MAIN_WINDOW = "SHOW_POLYWALL_STREAMER_MAIN_WINDOW";
 
         public static bool ShowAnotherInstance()
         {
 			bool Result = false;
-            int message = NativeMethods.RegisterWindowMessage(SHOW_POLYWALL_STREAMER_MAIN_WINDOW);
+            int messageCode = NativeMethods.RegisterWindowMessage(WndProcServiceCommand.ShowMainWindow);
 
-            if (message > 0)
+            if (messageCode != 0)
             {
-				Result = NativeMethods.SendNotifyMessage((IntPtr)NativeMethods.HWND_BROADCAST, message, 0, 0);
-                if (!Result)
+               var hWnd = NativeMethods.FindWindow(null, NotifyWindow.NotifyWindowCaption);
+
+                if (hWnd !=IntPtr.Zero)
                 {
-                    var error = Marshal.GetLastWin32Error();
-                    Debug.WriteLine("SendNotifyMessage(...) " + error);
+                    Result = NativeMethods.SendNotifyMessage(hWnd, messageCode, 0, 0);
+                    if (!Result)
+                    {
+                        var error = Marshal.GetLastWin32Error();
+                        Debug.WriteLine("SendNotifyMessage(...) " + error);
+                    }
                 }
+
             }
 
 			return Result;
         }
 
         private NotifyWindow nativeWindow = null;
-        private int ShowMainWindowMessage = 0;
+        private bool initialized = false;
 
-        public event Action ShowMainWindow;
+        public event Action<string>DispatchMessage;
 
+        private Dictionary<int, string> messageDict = new Dictionary<int, string>();
 
         public void Init()
         {
@@ -46,22 +58,29 @@ namespace ScreenStreamer.Wpf.Services
                 nativeWindow.CreateWindow();
             }
 
-            if(ShowMainWindowMessage == 0)
-            {
-                ShowMainWindowMessage = NativeMethods.RegisterWindowMessage(SHOW_POLYWALL_STREAMER_MAIN_WINDOW);
-            }
+            var messageCode = NativeMethods.RegisterWindowMessage(WndProcServiceCommand.ShowMainWindow);
 
+            if (messageCode != 0)
+            {
+                if (!messageDict.ContainsKey(messageCode))
+                {
+                    messageDict.Add(messageCode, WndProcServiceCommand.ShowMainWindow);
+                }
+            }
+            
+            initialized = true;
         }
 
         private bool ProcessMessage(System.Windows.Forms.Message m)
         {
+            var messagCode = m.Msg;
 
-            if (m.Msg == ShowMainWindowMessage)
+            if (messageDict.ContainsKey(messagCode))
             {
-                //...
-                ShowMainWindow?.Invoke();
+                var message = messageDict[messagCode];
+                DispatchMessage?.Invoke(message);
             }
-
+               
             return true;
         }
 
@@ -78,6 +97,7 @@ namespace ScreenStreamer.Wpf.Services
 
         class NotifyWindow : System.Windows.Forms.NativeWindow
         {
+            public const string NotifyWindowCaption = "PolywallStreamerNotifyWindow";
 
             private readonly WndProcService service = null;
             public NotifyWindow(WndProcService s)
@@ -86,19 +106,18 @@ namespace ScreenStreamer.Wpf.Services
             }
 
             public bool CreateWindow()
-            {
+            {// окно только для сообщений!
                 IntPtr HWndMessage = new IntPtr(-3);
 
                 if (Handle == IntPtr.Zero)
                 {
                     CreateHandle(new System.Windows.Forms.CreateParams
                     {
-                        ////Style = 0,
-                        ////ExStyle = 0,
-                        ////ClassStyle = 0,
-                        //Caption = "NotifyWindow",
-
-                        ////Parent = HWndMessage,
+                        Style = 0,
+                        ExStyle = 0,
+                        ClassStyle = 0,
+                        Caption = NotifyWindow.NotifyWindowCaption,
+                        Parent = HWndMessage,
                     });
                 }
                 return Handle != IntPtr.Zero;
@@ -106,11 +125,8 @@ namespace ScreenStreamer.Wpf.Services
 
             protected override void WndProc(ref System.Windows.Forms.Message m)
             {
-
                 base.WndProc(ref m);
-
                 service?.ProcessMessage(m);
-
             }
 
             public void DestroyWindow()

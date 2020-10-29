@@ -67,8 +67,15 @@ namespace Test.DeskMan
 			{
 				Task.Run(() =>
 				{
-
-					StartTest();
+					try
+					{
+						StartTest();
+					}
+					catch(Exception ex)
+					{
+						Console.WriteLine(ex);
+					}
+					
 
 				});
 
@@ -204,23 +211,23 @@ namespace Test.DeskMan
 			}
 
 
-			var screen = Screen.PrimaryScreen;
+			//var screen = Screen.PrimaryScreen;
 
 
 
-			GDICapture capture = new GDICapture();
-			capture.UseHwContext = false;
+			//GDICapture capture = new GDICapture();
+			//capture.UseHwContext = false;
 
-			var srcRect = screen.Bounds;
-			var destSize = srcRect.Size;
-			capture.Init(srcRect, destSize);
+			//var srcRect = screen.Bounds;
+			//var destSize = srcRect.Size;
+			//capture.Init(srcRect, destSize);
 
 
-			var dir = @"D:\Temp\ScreenShots\" + DateTime.Now.ToString("HH_mm_ss_fff");
-			if (!Directory.Exists(dir))
-			{
-				Directory.CreateDirectory(dir);
-			}
+			//var dir = @"D:\Temp\ScreenShots\" + DateTime.Now.ToString("HH_mm_ss_fff");
+			//if (!Directory.Exists(dir))
+			//{
+			//	Directory.CreateDirectory(dir);
+			//}
 
 			var _decktopName = "";
 
@@ -229,17 +236,19 @@ namespace Test.DeskMan
 
 				try
 				{
+
 					bool result = DesktopManager.SwitchToInputDesktop();
 
-					if (!result)
+					//if (!result)
 					{
 						Console.WriteLine("DesktopManager.SwitchToInputDesktop() " + result);
 					}
 
+
 					result = DesktopManager.GetCurrentDesktop(out string desktopName);
-					if (!result)
+					//if (!result)
 					{
-						Console.WriteLine("DesktopManager.GetCurrentDesktop() " + result);
+						Console.WriteLine("DesktopManager.GetCurrentDesktop() " + result + " " + desktopName);
 					}
 
 					if (desktopName != _decktopName)
@@ -250,65 +259,65 @@ namespace Test.DeskMan
 						Console.WriteLine("--------------------------------------");
 					}
 
-					result = capture.UpdateBuffer();
+					//result = capture.UpdateBuffer();
 
-					if (result)
-					{
-						var buffer = capture.VideoBuffer;
+					//if (result)
+					//{
+					//	var buffer = capture.VideoBuffer;
 
-						Bitmap bmp = buffer.bitmap;
-						if (capture.UseHwContext)
-						{
-							var texture = capture.SharedTexture;
+					//	Bitmap bmp = buffer.bitmap;
+					//	if (capture.UseHwContext)
+					//	{
+					//		var texture = capture.SharedTexture;
 
-							Texture2D stagingTexture = null;
-							try
-							{
-								var device = texture.Device;
-								var descr = texture.Description;
+					//		Texture2D stagingTexture = null;
+					//		try
+					//		{
+					//			var device = texture.Device;
+					//			var descr = texture.Description;
 
-								stagingTexture = new Texture2D(device,
-									new Texture2DDescription
-									{
-										CpuAccessFlags = CpuAccessFlags.Read,
-										BindFlags = BindFlags.None,
-										Format = Format.B8G8R8A8_UNorm,
-										Width = descr.Width,
-										Height = descr.Height,
-										MipLevels = 1,
-										ArraySize = 1,
-										SampleDescription = { Count = 1, Quality = 0 },
-										Usage = ResourceUsage.Staging,
-										OptionFlags = ResourceOptionFlags.None,
-									});
+					//			stagingTexture = new Texture2D(device,
+					//				new Texture2DDescription
+					//				{
+					//					CpuAccessFlags = CpuAccessFlags.Read,
+					//					BindFlags = BindFlags.None,
+					//					Format = Format.B8G8R8A8_UNorm,
+					//					Width = descr.Width,
+					//					Height = descr.Height,
+					//					MipLevels = 1,
+					//					ArraySize = 1,
+					//					SampleDescription = { Count = 1, Quality = 0 },
+					//					Usage = ResourceUsage.Staging,
+					//					OptionFlags = ResourceOptionFlags.None,
+					//				});
 
-								device.ImmediateContext.CopyResource(texture, stagingTexture);
-								device.ImmediateContext.Flush();
+					//			device.ImmediateContext.CopyResource(texture, stagingTexture);
+					//			device.ImmediateContext.Flush();
 
-								DxTool.TextureToBitmap(stagingTexture, ref bmp);
+					//			DxTool.TextureToBitmap(stagingTexture, ref bmp);
 
-							}
-							finally
-							{
-								stagingTexture?.Dispose();
-							}
-
-
-						}
+					//		}
+					//		finally
+					//		{
+					//			stagingTexture?.Dispose();
+					//		}
 
 
-						var timeNow = DateTime.Now.ToString("HH_mm_ss_fff");
+					//	}
 
-						var fileName = _decktopName + " " + timeNow + ".jpg";
 
-						var fullName = Path.Combine(dir, fileName);
+					//	var timeNow = DateTime.Now.ToString("HH_mm_ss_fff");
 
-						bmp.Save(fullName);
-					}
-					else
-					{
-						Console.WriteLine("capture.UpdateBuffer() " + result);
-					}
+					//	var fileName = _decktopName + " " + timeNow + ".jpg";
+
+					//	var fullName = Path.Combine(dir, fileName);
+
+					//	bmp.Save(fullName);
+					//}
+					//else
+					//{
+					//	Console.WriteLine("capture.UpdateBuffer() " + result);
+					//}
 
 					Thread.Sleep(1000);
 				}
