@@ -86,10 +86,10 @@
                 </Grid>
                 
                 <!--Taskbar icon-->
-                <tb:TaskbarIcon PopupActivation="RightClick" 
+                <!--<tb:TaskbarIcon PopupActivation="RightClick" 
                                 IconSource="{Binding ActiveIcon}">
 
-                    <!--IconSource="/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico">-->
+                    --><!--IconSource="/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico">--><!--
 
                     
                     <tb:TaskbarIcon.TrayPopup>
@@ -104,11 +104,13 @@
                             <i:InvokeCommandAction Command="{Binding ShowMainWindowCommand}"/>
                         </i:EventTrigger>
 
-                        <!--<i:EventTrigger EventName="TrayLeftMouseDown">
+                        --><!--<i:EventTrigger EventName="TrayLeftMouseDown">
                             <i:InvokeCommandAction Command="{Binding ActivateMainWindowCommand}"/>
-                        </i:EventTrigger>-->
+                        </i:EventTrigger>--><!--
                     </i:Interaction.Triggers>
-                </tb:TaskbarIcon>
+                </tb:TaskbarIcon>-->
+                
+                
             </StackPanel>
         </Border>
     </DataTemplate>

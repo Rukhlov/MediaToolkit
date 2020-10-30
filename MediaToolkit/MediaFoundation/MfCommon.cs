@@ -1009,6 +1009,48 @@ namespace MediaToolkit.MediaFoundation
             return log.ToString();
         }
 
+        public static int GetDefaultAdapterFeatureLevel()
+        {
+            int featureLevel = 0;
+
+            SharpDX.Direct3D.FeatureLevel[] features =
+            {
+                SharpDX.Direct3D.FeatureLevel.Level_12_1,
+                SharpDX.Direct3D.FeatureLevel.Level_12_0,
+
+                SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                SharpDX.Direct3D.FeatureLevel.Level_11_0,
+
+                SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                SharpDX.Direct3D.FeatureLevel.Level_10_0,
+
+                SharpDX.Direct3D.FeatureLevel.Level_9_3,
+                SharpDX.Direct3D.FeatureLevel.Level_9_2,
+                SharpDX.Direct3D.FeatureLevel.Level_9_1,
+            };
+
+            SharpDX.Direct3D11.Device device = null;
+            try
+            {
+                var flags = DeviceCreationFlags.BgraSupport;
+                device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags, features);
+                featureLevel = (int)device.FeatureLevel;
+
+
+            }
+            catch (Exception) { }
+            finally
+            {
+                if (device != null)
+                {
+                    device.Dispose();
+                    device = null;
+                }
+            }
+
+            return featureLevel;
+        }
+
         public static bool GetSupportedFeatureLevel(Adapter adapter, out SharpDX.Direct3D.FeatureLevel outputLevel )
         {
             bool Result = false;
@@ -1016,10 +1058,12 @@ namespace MediaToolkit.MediaFoundation
                  
             SharpDX.Direct3D.FeatureLevel[] features = 
             {
-                //SharpDX.Direct3D.FeatureLevel.Level_12_1,
-                //SharpDX.Direct3D.FeatureLevel.Level_12_0,
-                //SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                SharpDX.Direct3D.FeatureLevel.Level_12_1,
+                SharpDX.Direct3D.FeatureLevel.Level_12_0,
+
+                SharpDX.Direct3D.FeatureLevel.Level_11_1,
                 SharpDX.Direct3D.FeatureLevel.Level_11_0,
+
                 SharpDX.Direct3D.FeatureLevel.Level_10_1,
                 SharpDX.Direct3D.FeatureLevel.Level_10_0,
 

@@ -21,6 +21,7 @@ namespace ScreenStreamer.Wpf.Models
         public string ConfigVersion { get; set; } = "1.0.0.0";
 
         public string Culture { get; set; } = "en";
+        public int Dx11FeatureLevel { get; set; } = (int)D3DFeatureLevel.Level_11_0;
 
         [JsonProperty]
         public readonly static string MinOSVersion = "6.2";
@@ -63,11 +64,18 @@ namespace ScreenStreamer.Wpf.Models
 			{
 				//...
 
-				logger.Warn($"OS version {winVersion} currently not supported!");
-				//throw new NotSupportedException($"This version of the operating system currently is not supported.");
+				//logger.Warn($"OS version {winVersion} currently not supported!");
+				throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}
 
-			var appVersion = new Version(AppVersion);
+            var featueLevel = (int)ScreenHelper.GetDefaultAdapterFeatureLevel();
+            if(featueLevel < this.Dx11FeatureLevel)
+            {              
+                //logger.Warn("DX11 feature level 11.0 is required");
+                throw new NotSupportedException($"DirectX feature level 11.0 is required");
+            }
+
+            var appVersion = new Version(AppVersion);
 			var configVersion = new Version(ConfigVersion);
 
             logger.Info("Application Version: " + appVersion);

@@ -177,8 +177,15 @@ namespace ScreenStreamer.Wpf.Services
 
             if (parentWindow != null)
             {
-                dialogWindow.Owner = parentWindow;
-                dialogWindow.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+                var handle = new System.Windows.Interop.WindowInteropHelper(parentWindow).Handle;
+                var startupLocation = System.Windows.WindowStartupLocation.CenterScreen;
+                if (handle!= IntPtr.Zero)
+                {
+                    dialogWindow.Owner = parentWindow;
+                    startupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+                }
+
+                dialogWindow.WindowStartupLocation = startupLocation;
 
             }
             _dialogs[model] = dialogWindow;

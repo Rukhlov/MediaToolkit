@@ -72,14 +72,18 @@ namespace ScreenStreamer.Wpf.Views
                 var viewModel = DataContext as IDialogViewModel;
                 if (viewModel != null)
                 {
-                    var dialogService = ServiceLocator.GetInstance<IDialogService>();
+                    var dialogService = ServiceLocator.GetInstance<IDialogService>(true);
                     if (dialogService != null)
                     {
                         dialogService.Hide(viewModel);
+                        return;
                     }
-                }             
-            }
 
+                }
+
+                this.Close();
+                
+            }
 
 
             //if (this.DataContext is IDialogViewModel dialogViewModel)

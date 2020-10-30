@@ -139,6 +139,7 @@
                                 Command="{Binding AcceptChangesCommand}">
                             <TextBlock Margin="4,0,10,0">Save changes</TextBlock>
                         </Button>
+                       
                     </StackPanel>
                 </Grid>
             </Border>
@@ -163,5 +164,8 @@
                     Opacity="0.5"
                     Visibility="{Binding IsModalOpened, Mode=OneWay, Converter={converters:BooleanToVisibilityConverter}}"/>
         </Grid>
+        
+        
+        
     </Border>
 </Window>

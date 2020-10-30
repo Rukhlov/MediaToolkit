@@ -295,6 +295,8 @@ namespace ScreenStreamer.Wpf
             public bool NoRestart { get; private set; } = false;
             public bool RunAsSystem { get; private set; } = false;
 
+            public bool AutoStream { get; private set; } = false;
+
             public bool IsRemoteSession { get; private set; } = false;
             public bool IsRemotelyControlled { get; private set; } = false;
             public bool IsCompositionEnabled { get; private set; } = false;
@@ -316,6 +318,10 @@ namespace ScreenStreamer.Wpf
                     else if (_arg == "-system")
                     {
                         startupParams.RunAsSystem = true;
+                    }
+                    else if (_arg == "-autostream")
+                    {
+                        startupParams.AutoStream = true;
                     }
                     else
                     {

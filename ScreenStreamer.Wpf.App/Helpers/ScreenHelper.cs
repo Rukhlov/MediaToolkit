@@ -12,8 +12,27 @@ using System.Windows.Forms;
 
 namespace ScreenStreamer.Wpf.Helpers
 {
+    public enum D3DFeatureLevel
+    {
+        None = 0,
+        Level_9_1 = 37120,
+        Level_9_2 = 37376,
+        Level_9_3 = 37632,
+        Level_10_0 = 40960,
+        Level_10_1 = 41216,
+        Level_11_0 = 45056,
+        Level_11_1 = 45312,
+        Level_12_0 = 49152,
+        Level_12_1 = 49408
+    }
+
     public class ScreenHelper
     {
+        public static D3DFeatureLevel GetDefaultAdapterFeatureLevel()
+        {    
+           return (D3DFeatureLevel)MediaToolkit.MediaFoundation.DxTool.GetDefaultAdapterFeatureLevel();        
+        }
+
         public static readonly List<ScreenCaptureItem> SupportedCaptures = new List<ScreenCaptureItem>
         {
             new ScreenCaptureItem

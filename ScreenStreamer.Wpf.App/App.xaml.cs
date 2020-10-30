@@ -39,14 +39,14 @@ namespace ScreenStreamer.Wpf
 
             }
 
-           // SystemMan.Initialize();
+            // SystemMan.Initialize();
 
             ServiceLocator.RegisterInstance(appModel);
 
-           // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
+            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
 
             var dialogService = new Services.DialogService();
-			ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
+            ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
 
@@ -57,21 +57,63 @@ namespace ScreenStreamer.Wpf
 
             dialogService.Register(mainViewModel, mainWindow);
 
-            dialogService.Show(mainViewModel);
+            //var interopHelper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
+            //interopHelper.EnsureHandle();
+            
+            InitNotifyIcon(mainViewModel);
 
+            bool autoStartStream = Program.StartupParams.AutoStream;
+            if (!autoStartStream)
+            {
+                mainViewModel.IsVisible = true;
+                dialogService.Show(mainViewModel);
+            }
+            else
+            {
+                mainViewModel.IsVisible = false;
+            }
 
             base.OnStartup(e);
 
+            if (autoStartStream)
+            {
+                mainViewModel.StartAllCommand.Execute(null);
+            }
+
+            //
+            //Console.WriteLine("=======================");
         }
 
-        protected override void OnExit(ExitEventArgs e)
+ 
+        private void InitNotifyIcon(ViewModels.Dialogs.MainViewModel mainViewModel)
+        {
+            notifyIcon = (Hardcodet.Wpf.TaskbarNotification.TaskbarIcon)Application.Current.FindResource("notifyIcon");
+            
+            notifyIcon.TrayRightMouseDown += (o, a) =>
+            {
+                mainViewModel.ActivateMainWindowCommand.Execute(null);
+            };
+
+            notifyIcon.TrayLeftMouseDown += (o, a) =>
+            {
+                mainViewModel.ShowMainWindowCommand.Execute(null);
+            };
+            notifyIcon.DataContext = mainViewModel;
+        }
+
+        private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon notifyIcon = null;
+
+		protected override void OnExit(ExitEventArgs e)
         {
             logger.Debug("OnExit(...) " + e.ApplicationExitCode);
 
            
             ConfigManager.Save();
 
-            //SystemMan.Shutdown();
+			//SystemMan.Shutdown();
+
+			notifyIcon?.Dispose();
+            notifyIcon = null;
 
             base.OnExit(e);
         }
