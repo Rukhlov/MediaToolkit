@@ -13,6 +13,84 @@ using System.Text;
 namespace MediaToolkit.NativeAPIs.Utils
 {
 
+	public class ShortcutUtil
+	{
+
+		public static void CreateShortcut(string shortcutPath, string targetPath,
+			string arguments = null, string workingDirectory = null, string description = null)
+		{
+			CShellLink cShellLink = new CShellLink();
+			try
+			{
+				IShellLink iShellLink = (IShellLink)cShellLink;
+
+				iShellLink.SetPath(targetPath);
+				if (!string.IsNullOrEmpty(arguments))
+				{
+					iShellLink.SetArguments(arguments);
+				}
+
+				if (!string.IsNullOrEmpty(description))
+				{
+					iShellLink.SetDescription(description);
+				}
+
+				if (!string.IsNullOrEmpty(workingDirectory))
+				{
+					iShellLink.SetWorkingDirectory(workingDirectory);
+				}
+
+				iShellLink.SetShowCmd(SW.SHOWNORMAL);
+
+				IPersistFile iPersistFile = (IPersistFile)iShellLink;
+				iPersistFile.Save(shortcutPath, false);
+
+			}
+			finally
+			{
+				ComBase.SafeRelease(cShellLink);
+			}
+		}
+
+
+		public static void DeleteShortcut(string shortcutFile, string targetFile = null)
+		{
+			if (!string.IsNullOrEmpty(targetFile))
+			{
+				CShellLink cShellLink = new CShellLink();
+				try
+				{
+					IShellLink iShellLink = (IShellLink)cShellLink;
+					IPersistFile iPersistFile = (IPersistFile)iShellLink;
+					iPersistFile.Load(shortcutFile, 0);
+
+					StringBuilder sb = new StringBuilder(260);
+
+					WIN32_FIND_DATA data = new WIN32_FIND_DATA();
+					iShellLink.GetPath(sb, 260, ref data, 0);
+
+					var shortcutFileName = System.IO.Path.GetFullPath(sb.ToString());
+
+					if (!string.Equals(shortcutFileName, targetFile, StringComparison.OrdinalIgnoreCase))
+					{
+						return;
+					}
+				}
+				finally
+				{
+					ComBase.SafeRelease(cShellLink);
+				}
+			}
+
+			if (System.IO.File.Exists(shortcutFile))
+			{
+				System.IO.File.Delete(shortcutFile);
+			}
+
+		}
+
+	}
+
 	public class WindowHook
 	{
 		private IntPtr hWnd;
@@ -63,13 +141,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 					if (eventType == SWEH_Events.EVENT_OBJECT_LOCATIONCHANGE)
 					{
-                       var rectangle = GetWindowRect(hWnd);
-                        if (!rectangle.IsEmpty)
-                        {
-                            LocationChanged?.Invoke(rectangle);
-                        }
+						var rectangle = GetWindowRect(hWnd);
+						if (!rectangle.IsEmpty)
+						{
+							LocationChanged?.Invoke(rectangle);
+						}
 
-      //                  bool result = User32.GetWindowRect(hWnd, out var rect);
+						//                  bool result = User32.GetWindowRect(hWnd, out var rect);
 						//if (result)
 						//{
 						//	var rectangle = rect.AsRectangle;
@@ -112,9 +190,9 @@ namespace MediaToolkit.NativeAPIs.Utils
 		}
 
 
-        public Rectangle GetCurrentWindowRect()
+		public Rectangle GetCurrentWindowRect()
 		{
-            return GetWindowRect(hWnd);
+			return GetWindowRect(hWnd);
 
 		}
 
@@ -135,27 +213,27 @@ namespace MediaToolkit.NativeAPIs.Utils
 			return result;
 		}
 
-        public static Rectangle GetWindowRect(IntPtr hwnd)
-        {
-            Rectangle rectangle = Rectangle.Empty;
+		public static Rectangle GetWindowRect(IntPtr hwnd)
+		{
+			Rectangle rectangle = Rectangle.Empty;
 
-            if (hwnd != IntPtr.Zero)
-            {
-                rectangle = MediaToolkit.NativeAPIs.DwmApi.GetExtendedFrameBounds(hwnd);
-                if (rectangle.IsEmpty)
-                {
-                    bool result = User32.GetWindowRect(hwnd, out var rect);
-                    if (result)
-                    {
-                        rectangle = rect.AsRectangle;
-                    }
-                }
-            }
+			if (hwnd != IntPtr.Zero)
+			{
+				rectangle = MediaToolkit.NativeAPIs.DwmApi.GetExtendedFrameBounds(hwnd);
+				if (rectangle.IsEmpty)
+				{
+					bool result = User32.GetWindowRect(hwnd, out var rect);
+					if (result)
+					{
+						rectangle = rect.AsRectangle;
+					}
+				}
+			}
 
-            return rectangle;
-        }
+			return rectangle;
+		}
 
-        public static long SWEH_CHILDID_SELF = 0;
+		public static long SWEH_CHILDID_SELF = 0;
 		public static IntPtr WinEventHookRange(SWEH_Events eventFrom, SWEH_Events eventTo, User32.WinEventDelegate _delegate, uint idProcess, uint idThread)
 		{
 			new System.Security.Permissions.UIPermission(System.Security.Permissions.UIPermissionWindow.AllWindows).Demand();
@@ -184,13 +262,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 	public class ProcessTool
 	{
-        private static TraceSource tracer = new TraceSource("MediaToolkit.NativeAPIs");
+		private static TraceSource tracer = new TraceSource("MediaToolkit.NativeAPIs");
 
-        public static int StartProcessWithSystemToken(string applicationName, string commandLine)
+		public static int StartProcessWithSystemToken(string applicationName, string commandLine)
 		{
-            tracer.TraceEvent(TraceEventType.Verbose, 0, "StartProcessWithSystemToken(...) " + applicationName + " " + commandLine);
+			tracer.TraceEvent(TraceEventType.Verbose, 0, "StartProcessWithSystemToken(...) " + applicationName + " " + commandLine);
 
-            var systemProcessName = "lsass";
+			var systemProcessName = "lsass";
 			//var systemProcessName = "winlogon";
 			using (Process currentProcess = Process.GetCurrentProcess())
 			{
@@ -213,7 +291,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 					//The process that calls CreateProcessWithTokenW must have the SE_IMPERSONATE_NAME privilege. 
 					//If this function fails with ERROR_PRIVILEGE_NOT_HELD(1314), use the CreateProcessAsUser or CreateProcessWithLogonW function instead.			
 					var impersonatePrivilege = accessTokenPrivileges.FirstOrDefault(t => t.Name == PrivilegeConstants.SE_IMPERSONATE_NAME);
-					if(impersonatePrivilege == null)
+					if (impersonatePrivilege == null)
 					{
 						//TODO:
 						throw new NotSupportedException();
@@ -224,9 +302,9 @@ namespace MediaToolkit.NativeAPIs.Utils
 						//TODO:...
 						//AdjustTokenPrivileges(...)
 
-						throw new NotImplementedException(PrivilegeConstants.SE_IMPERSONATE_NAME + " disabled" );
+						throw new NotImplementedException(PrivilegeConstants.SE_IMPERSONATE_NAME + " disabled");
 					}
-					
+
 				}
 				finally
 				{
@@ -251,7 +329,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 					secAttr.bInheritHandle = 0;
 
 
-					bool result = AdvApi32.DuplicateTokenEx(hOriginalSystemToken, 
+					bool result = AdvApi32.DuplicateTokenEx(hOriginalSystemToken,
 									AdvApi32.TokenAccess.TOKEN_ALL_ACCESS, ref secAttr,
 									AdvApi32.SecurityImpersonationLevel.SecurityImpersonation,
 									AdvApi32.TokenType.TokenPrimary,
@@ -400,8 +478,8 @@ namespace MediaToolkit.NativeAPIs.Utils
 		}
 
 		public static string GetUserInfo(IntPtr hToken)
-        {// можно получить с помощью System.Security.Principal.WindowsIdentity
-            string userInfo = string.Empty;
+		{// можно получить с помощью System.Security.Principal.WindowsIdentity
+			string userInfo = string.Empty;
 			uint tokenInfoLength = 0;
 
 			bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenUser, IntPtr.Zero, tokenInfoLength, out tokenInfoLength);
@@ -453,7 +531,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 			uint tokenInfoLength = 0;
 
 			bool success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenGroups, IntPtr.Zero, tokenInfoLength, out tokenInfoLength);
-			if(tokenInfoLength > 0)
+			if (tokenInfoLength > 0)
 			{
 				IntPtr tokenInfo = IntPtr.Zero;
 				try
@@ -462,13 +540,13 @@ namespace MediaToolkit.NativeAPIs.Utils
 					success = AdvApi32.GetTokenInformation(hToken, SECUR32.TOKEN_INFORMATION_CLASS.TokenGroups, tokenInfo, tokenInfoLength, out tokenInfoLength);
 					if (success)
 					{
-						
+
 						AdvApi32.TOKEN_GROUPS groups = (AdvApi32.TOKEN_GROUPS)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_GROUPS));
 						int sidAndAttrSize = Marshal.SizeOf(typeof(AdvApi32.SID_AND_ATTRIBUTES));
 
-                        var infoPtr = new IntPtr(tokenInfo.ToInt64() + IntPtr.Size);
+						var infoPtr = new IntPtr(tokenInfo.ToInt64() + IntPtr.Size);
 
-                        for (int i = 0; i < groups.GroupCount; i++)
+						for (int i = 0; i < groups.GroupCount; i++)
 						{
 							//var infoPtr = new IntPtr(tokenInfo.ToInt64() + i * sidAndAttrSize + IntPtr.Size);
 
@@ -492,9 +570,9 @@ namespace MediaToolkit.NativeAPIs.Utils
 								break;
 							}
 
-                            infoPtr += sidAndAttrSize;
+							infoPtr += sidAndAttrSize;
 
-                        }
+						}
 					}
 				}
 				finally
@@ -504,7 +582,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 						Marshal.FreeHGlobal(tokenInfo);
 					}
 				}
-				
+
 			}
 
 			return userInfo;
@@ -535,64 +613,64 @@ namespace MediaToolkit.NativeAPIs.Utils
 						{
 							AdvApi32.TOKEN_PRIVILEGES tokenPrivileges = (AdvApi32.TOKEN_PRIVILEGES)Marshal.PtrToStructure(tokenInfo, typeof(AdvApi32.TOKEN_PRIVILEGES));
 
-                            IntPtr privArrayPtr = new IntPtr(tokenInfo.ToInt64() + 4); //x86 ?? 
+							IntPtr privArrayPtr = new IntPtr(tokenInfo.ToInt64() + 4); //x86 ?? 
 
-                            var privilegeCount = tokenPrivileges.PrivilegeCount;
-   
-                            MarshalHelper.PtrToArray(privArrayPtr, privilegeCount, out AdvApi32.LUID_AND_ATTRIBUTES[] attrs);
+							var privilegeCount = tokenPrivileges.PrivilegeCount;
 
-                            foreach(var attr in attrs)
-                            {
-                                var privilegeName = "";
- 
-                                IntPtr ptrLuid = IntPtr.Zero;
-                                try
-                                {
-                                    ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(attr.Luid));
-                                    Marshal.StructureToPtr(attr.Luid, ptrLuid, true);
-       
-                                    int luidNameLen = 0;
-                                    AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
+							MarshalHelper.PtrToArray(privArrayPtr, privilegeCount, out AdvApi32.LUID_AND_ATTRIBUTES[] attrs);
 
-                                    //Debug.Assert(luidNameLen > 0, "luidNameLen > 0");
+							foreach (var attr in attrs)
+							{
+								var privilegeName = "";
 
-                                    if (luidNameLen > 0)
-                                    {
-                                        var buf = new StringBuilder(luidNameLen);
-                                        if(AdvApi32.LookupPrivilegeName(null, ptrLuid, buf, ref luidNameLen))
-                                        {
-                                            privilegeName = buf.ToString();
-                                        }
-                                    }
-                                }
-                                finally
-                                {
-                                    if (ptrLuid != IntPtr.Zero)
-                                    {
-                                        Marshal.FreeHGlobal(ptrLuid);
-                                    }
-                                }
+								IntPtr ptrLuid = IntPtr.Zero;
+								try
+								{
+									ptrLuid = Marshal.AllocHGlobal(Marshal.SizeOf(attr.Luid));
+									Marshal.StructureToPtr(attr.Luid, ptrLuid, true);
 
-                                if (string.IsNullOrEmpty(privilegeName))
-                                {
-                                    var code = Marshal.GetLastWin32Error();
-                                    var message = $"Failed to retreive privelege name: {code}";
+									int luidNameLen = 0;
+									AdvApi32.LookupPrivilegeName(null, ptrLuid, null, ref luidNameLen);
 
-                                    throw new Win32Exception(code, message);
-                                }
+									//Debug.Assert(luidNameLen > 0, "luidNameLen > 0");
 
-                                Console.WriteLine("PrivilegeName: " + privilegeName + " " + attr.Attributes);
-                                //tracer.TraceEvent(TraceEventType.Verbose, 0, "PrivilegeName: " + privilegeName);
+									if (luidNameLen > 0)
+									{
+										var buf = new StringBuilder(luidNameLen);
+										if (AdvApi32.LookupPrivilegeName(null, ptrLuid, buf, ref luidNameLen))
+										{
+											privilegeName = buf.ToString();
+										}
+									}
+								}
+								finally
+								{
+									if (ptrLuid != IntPtr.Zero)
+									{
+										Marshal.FreeHGlobal(ptrLuid);
+									}
+								}
 
-                                privs.Add(new ATPrivilege
-                                {
-                                    Name = privilegeName,
-                                    Attributes = attr.Attributes
-                                });
-                            }
+								if (string.IsNullOrEmpty(privilegeName))
+								{
+									var code = Marshal.GetLastWin32Error();
+									var message = $"Failed to retreive privelege name: {code}";
 
-                        }
-                        else
+									throw new Win32Exception(code, message);
+								}
+
+								Console.WriteLine("PrivilegeName: " + privilegeName + " " + attr.Attributes);
+								//tracer.TraceEvent(TraceEventType.Verbose, 0, "PrivilegeName: " + privilegeName);
+
+								privs.Add(new ATPrivilege
+								{
+									Name = privilegeName,
+									Attributes = attr.Attributes
+								});
+							}
+
+						}
+						else
 						{
 							var code = Marshal.GetLastWin32Error();
 							var message = $"GetTokenInformation failed with error: {code}";
@@ -664,27 +742,27 @@ namespace MediaToolkit.NativeAPIs.Utils
 	public class DesktopManager
 	{
 
-        public static readonly string [] Win10ServiceProceses = 
-        {
-            "startmenuexperiencehost.exe",
+		public static readonly string[] Win10ServiceProceses =
+		{
+			"startmenuexperiencehost.exe",
            // "applicationframehost.exe",
             "peopleexperiencehost.exe",
-            "shellexperiencehost.exe",
-            "microsoft.notes.exe",
-            "systemsettings.exe",
-            "textinputhost.exe",
-            "searchapp.exe",
-            "video.ui.exe",
-            "searchui.exe",
-            "lockapp.exe",
-            "cortana.exe",
-            "gamebar.exe",
-            "tabtip.exe",
-            "time.exe",
+			"shellexperiencehost.exe",
+			"microsoft.notes.exe",
+			"systemsettings.exe",
+			"textinputhost.exe",
+			"searchapp.exe",
+			"video.ui.exe",
+			"searchui.exe",
+			"lockapp.exe",
+			"cortana.exe",
+			"gamebar.exe",
+			"tabtip.exe",
+			"time.exe",
 
-        };
+		};
 
-        public static List<WindowDescription> GetWindows()
+		public static List<WindowDescription> GetWindows()
 		{
 
 			List<WindowDescription> windows = new List<WindowDescription>();
@@ -717,67 +795,67 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 				}
 
-                //if(className == "ApplicationFrameWindow")
-                //{ // UWP not supported...
-                //    return true;
-                //}
+				//if(className == "ApplicationFrameWindow")
+				//{ // UWP not supported...
+				//    return true;
+				//}
 
 				if (!ValidateWindow(hWnd))
 				{
 					return true;
 				}
-			
 
-                var clientRect = User32.GetClientRect(hWnd);
 
-				if(clientRect.Width == 0 || clientRect.Height == 0)
+				var clientRect = User32.GetClientRect(hWnd);
+
+				if (clientRect.Width == 0 || clientRect.Height == 0)
 				{
 					return true;
 				}
 
 
-                var cloaked = DwmApi.GetCloaked(hWnd);
+				var cloaked = DwmApi.GetCloaked(hWnd);
 
-                var frameBounds = DwmApi.GetExtendedFrameBounds(hWnd);
+				var frameBounds = DwmApi.GetExtendedFrameBounds(hWnd);
 
-                var windowRect = User32.GetWindowRect(hWnd);
-
-
-                Console.WriteLine(windowRect + " " + frameBounds);
-
-                //clientRect = frameBounds.AsRectangle;
+				var windowRect = User32.GetWindowRect(hWnd);
 
 
+				Console.WriteLine(windowRect + " " + frameBounds);
 
-                var threadId = User32.GetWindowThreadProcessId(new HandleRef(null, hWnd), out var procId);
+				//clientRect = frameBounds.AsRectangle;
+
+
+
+				var threadId = User32.GetWindowThreadProcessId(new HandleRef(null, hWnd), out var procId);
 				if (threadId > 0 && procId > 0)
 				{
 					try
 					{
 						using (Process p = Process.GetProcessById(procId))
 						{
-                            var proccessExe = p.ProcessName.ToLower() + ".exe";
+							var proccessExe = p.ProcessName.ToLower() + ".exe";
 
-                            if(proccessExe == "applicationframewindow.exe")
-                            {
-                                //TODO: uwp process...
+							if (proccessExe == "applicationframewindow.exe")
+							{
+								//TODO: uwp process...
 
-                            }
+							}
 
-                            if(!Win10ServiceProceses.Contains(proccessExe))
-                            {
-                                var windowDescription = new WindowDescription
-                                {
-                                    processId = p.Id,
-                                    processName = p.ProcessName,
-                                    hWnd = hWnd,
-                                    windowTitle = windowTitle,
-                                    windowClass = className,
-                                    clientRect = clientRect,
-                                };
+							if (!Win10ServiceProceses.Contains(proccessExe))
+							{
+								var windowDescription = new WindowDescription
+								{
+									processId = p.Id,
+									processName = p.ProcessName,
+									hWnd = hWnd,
+									windowTitle = windowTitle,
+									windowClass = className,
+									clientRect = clientRect,
+								};
 
-                                windows.Add(windowDescription);
-                            }
+								windows.Add(windowDescription);
+							}
 						}
 					}
 					catch (Exception ex)
@@ -787,7 +865,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 				}
 
-				
+
 
 				// Return true to indicate that we
 				// should continue enumerating windows.
@@ -850,22 +928,22 @@ namespace MediaToolkit.NativeAPIs.Utils
 			return true;
 		}
 
-        private static bool IsUwpWindow(IntPtr hWnd)
-        {
-            string className = "";
+		private static bool IsUwpWindow(IntPtr hWnd)
+		{
+			string className = "";
 
-            StringBuilder buf = new StringBuilder(256);
-            var len = User32.GetClassName(hWnd, buf, buf.Capacity);
-            if (len > 0)
-            {
-                className = buf.ToString();
-            }
+			StringBuilder buf = new StringBuilder(256);
+			var len = User32.GetClassName(hWnd, buf, buf.Capacity);
+			if (len > 0)
+			{
+				className = buf.ToString();
+			}
 
-            return className == "ApplicationFrameWindow";
-        }
+			return className == "ApplicationFrameWindow";
+		}
 
 
-        public enum SessionType
+		public enum SessionType
 		{
 			Console,
 			RDP
@@ -934,7 +1012,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 				IntPtr pvInfo = IntPtr.Zero;
 				try
-				{ 
+				{
 					uint nLenght = 256;
 					pvInfo = Marshal.AllocHGlobal((int)nLenght);
 
@@ -944,8 +1022,8 @@ namespace MediaToolkit.NativeAPIs.Utils
 						Debug.Assert(lenNeeded > 0, "lenNeeded > 0");
 						desktopName = Marshal.PtrToStringAuto(pvInfo);
 					}
-					
-  				    //User32.GetUserObjectInformationW(hDesktop, AdvApi32.UOI_NAME, IntPtr.Zero, 0, out var lenNeeded);
+
+					//User32.GetUserObjectInformationW(hDesktop, AdvApi32.UOI_NAME, IntPtr.Zero, 0, out var lenNeeded);
 					//if(lenNeeded > 0)
 					//{
 					//	uint nLenght = lenNeeded;
@@ -961,7 +1039,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 				}
 				finally
 				{
-					if(pvInfo!= IntPtr.Zero)
+					if (pvInfo != IntPtr.Zero)
 					{
 						Marshal.FreeHGlobal(pvInfo);
 					}
@@ -972,7 +1050,7 @@ namespace MediaToolkit.NativeAPIs.Utils
 				if (hDesktop != IntPtr.Zero)
 				{
 					User32.CloseDesktop(hDesktop);
-				}		
+				}
 			}
 
 			return result;
@@ -1017,11 +1095,11 @@ namespace MediaToolkit.NativeAPIs.Utils
 
 		public static bool SwitchToInputDesktop()
 		{
-            bool result = false;
-            var hDesktop = IntPtr.Zero;
+			bool result = false;
+			var hDesktop = IntPtr.Zero;
 			try
 			{
-                hDesktop = OpenInputDesktop();
+				hDesktop = OpenInputDesktop();
 				if (hDesktop != IntPtr.Zero)
 				{
 					result = User32.SetThreadDesktop(hDesktop);
@@ -1046,21 +1124,21 @@ namespace MediaToolkit.NativeAPIs.Utils
 					Console.WriteLine("OpenInputDesktop() code: " + code);
 				}
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
 			}
 			finally
 			{
-                if (hDesktop != IntPtr.Zero)
-                {
-                    User32.CloseDesktop(hDesktop);
-                }
+				if (hDesktop != IntPtr.Zero)
+				{
+					User32.CloseDesktop(hDesktop);
+				}
 			}
 
-            return result;
+			return result;
 
-        }
+		}
 
 
 		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out AdvApi32.PROCESS_INFORMATION procInfo)
@@ -1157,131 +1235,131 @@ namespace MediaToolkit.NativeAPIs.Utils
 	}
 
 	public class DisplayTool
-    {
-        public class DisplayInfo
-        {
-            public string Name { get; set; }
-            public string Path { get; set; }
-            public string GdiDeviceName { get; set; }
-            public uint DisplayId { get; set; }
-        }
+	{
+		public class DisplayInfo
+		{
+			public string Name { get; set; }
+			public string Path { get; set; }
+			public string GdiDeviceName { get; set; }
+			public uint DisplayId { get; set; }
+		}
 
-        public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDisplayConfigSourceDeviceName(LUID adapterId, uint sourceId)
-        {
-            DISPLAYCONFIG_SOURCE_DEVICE_NAME deviceInfo = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
-            {
-                size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)),
-                adapterId = adapterId,
-                id = sourceId,
-                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
+		public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDisplayConfigSourceDeviceName(LUID adapterId, uint sourceId)
+		{
+			DISPLAYCONFIG_SOURCE_DEVICE_NAME deviceInfo = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
+			{
+				size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)),
+				adapterId = adapterId,
+				id = sourceId,
+				type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
 
-            };
+			};
 
-            int result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
-            if (result != (int)HResult.S_OK)
-            {
-                throw new Win32Exception(result);
-            }
-                
-            return deviceInfo;
-        }
+			int result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
+			if (result != (int)HResult.S_OK)
+			{
+				throw new Win32Exception(result);
+			}
 
-
-        public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDisplayConfigTargetDeviceName(LUID adapterId, uint targetId)
-        {
-
-            var deviceInfo = new DISPLAYCONFIG_TARGET_DEVICE_NAME
-            {
-                size = (uint) Marshal.SizeOf(typeof (DISPLAYCONFIG_TARGET_DEVICE_NAME)),
-                adapterId = adapterId,
-                id = targetId,
-                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
-
-            };
-
-            var result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
-            if (result != (int)HResult.S_OK)
-            {
-                throw new Win32Exception(result);
-            }
-            
-
-            return deviceInfo;
-        }
-
-        public static List<DisplayInfo> GetDisplayInfos()
-        {
-            List<DisplayInfo> displayInfos = new List<DisplayInfo>();
-
-            uint pathCount, modeCount;
-            var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
-
-            if (result != (int)HResult.S_OK)
-            {
-                throw new Win32Exception(result);
-            }
-                
-
-            var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
-            var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
-
-            result = User32.QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-                ref pathCount, displayPaths, ref modeCount, displayModes, IntPtr.Zero);
-
-            if (result != (int)HResult.S_OK)
-            {
-                throw new Win32Exception(result);
-            }
+			return deviceInfo;
+		}
 
 
-            for (int i = 0; i < modeCount; i += 2)
-            {
-                if (displayModes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
-                {
-                    var displayMode = displayModes[i];
+		public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDisplayConfigTargetDeviceName(LUID adapterId, uint targetId)
+		{
 
-                    var monitorInfo = GetDisplayConfigTargetDeviceName(displayMode.adapterId, displayMode.id);
+			var deviceInfo = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+			{
+				size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_TARGET_DEVICE_NAME)),
+				adapterId = adapterId,
+				id = targetId,
+				type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
 
-                    var gdiDeviceInfo = GetDisplayConfigSourceDeviceName(displayModes[i + 1].adapterId, displayModes[i + 1].id);
+			};
 
-                    var di = new DisplayInfo
-                    {
-                        
-                        Name = monitorInfo.monitorFriendlyDeviceName,
-                        Path = monitorInfo.monitorDevicePath,
-                        DisplayId = displayModes[i].id,
-                        GdiDeviceName = gdiDeviceInfo.viewGdiDeviceName,
-  
-                    };
+			var result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
+			if (result != (int)HResult.S_OK)
+			{
+				throw new Win32Exception(result);
+			}
 
-                    displayInfos.Add(di);
-                }
-                    
-            }
 
-            return displayInfos;
+			return deviceInfo;
+		}
 
-        }
-    }
+		public static List<DisplayInfo> GetDisplayInfos()
+		{
+			List<DisplayInfo> displayInfos = new List<DisplayInfo>();
 
-    public class ComBase
-    {
-        public static void SafeRelease(object comObj)
-        {
-            if (comObj == null)
-            {
-                return;
-            }
+			uint pathCount, modeCount;
+			var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
 
-            if (Marshal.IsComObject(comObj))
-            {
-                int refCount = Marshal.ReleaseComObject(comObj);
-                Debug.Assert(refCount == 0 , "refCount == 0");
-                comObj = null;
-            }
-        }
+			if (result != (int)HResult.S_OK)
+			{
+				throw new Win32Exception(result);
+			}
 
-    }
+
+			var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+			var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+
+			result = User32.QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+				ref pathCount, displayPaths, ref modeCount, displayModes, IntPtr.Zero);
+
+			if (result != (int)HResult.S_OK)
+			{
+				throw new Win32Exception(result);
+			}
+
+
+			for (int i = 0; i < modeCount; i += 2)
+			{
+				if (displayModes[i].infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
+				{
+					var displayMode = displayModes[i];
+
+					var monitorInfo = GetDisplayConfigTargetDeviceName(displayMode.adapterId, displayMode.id);
+
+					var gdiDeviceInfo = GetDisplayConfigSourceDeviceName(displayModes[i + 1].adapterId, displayModes[i + 1].id);
+
+					var di = new DisplayInfo
+					{
+
+						Name = monitorInfo.monitorFriendlyDeviceName,
+						Path = monitorInfo.monitorDevicePath,
+						DisplayId = displayModes[i].id,
+						GdiDeviceName = gdiDeviceInfo.viewGdiDeviceName,
+
+					};
+
+					displayInfos.Add(di);
+				}
+
+			}
+
+			return displayInfos;
+
+		}
+	}
+
+	public class ComBase
+	{
+		public static void SafeRelease(object comObj)
+		{
+			if (comObj == null)
+			{
+				return;
+			}
+
+			if (Marshal.IsComObject(comObj))
+			{
+				int refCount = Marshal.ReleaseComObject(comObj);
+				Debug.Assert(refCount == 0, "refCount == 0");
+				comObj = null;
+			}
+		}
+
+	}
 
 	public class MarshalHelper
 	{
@@ -1548,483 +1626,483 @@ namespace MediaToolkit.NativeAPIs.Utils
 	}
 
 	class PVMarshaler : ICustomMarshaler
-    {
-        private class MyProps
-        {
-            public PropVariant m_obj;
-            public IntPtr m_ptr;
-
-            private int m_InProcsss;
-            private bool m_IAllocated;
-            private MyProps m_Parent = null;
-
-            [ThreadStatic]
-            private static MyProps[] m_CurrentProps;
-
-            public int GetStage()
-            {
-                return m_InProcsss;
-            }
-
-            public void StageComplete()
-            {
-                m_InProcsss++;
-            }
-
-            public static MyProps AddLayer(int iIndex)
-            {
-                MyProps p = new MyProps();
-                p.m_Parent = m_CurrentProps[iIndex];
-                m_CurrentProps[iIndex] = p;
-
-                return p;
-            }
-
-            public static void SplitLayer(int iIndex)
-            {
-                MyProps t = AddLayer(iIndex);
-                MyProps p = t.m_Parent;
-
-                t.m_InProcsss = 1;
-                t.m_ptr = p.m_ptr;
-                t.m_obj = p.m_obj;
-
-                p.m_InProcsss = 1;
-            }
-
-            public static MyProps GetTop(int iIndex)
-            {
-                // If the member hasn't been initialized, do it now.  And no, we can't
-                // do this in the PVMarshaler constructor, since the constructor may 
-                // have been called on a different thread.
-                if (m_CurrentProps == null)
-                {
-                    m_CurrentProps = new MyProps[MaxArgs];
-                    for (int x = 0; x < MaxArgs; x++)
-                    {
-                        m_CurrentProps[x] = new MyProps();
-                    }
-                }
-                return m_CurrentProps[iIndex];
-            }
-
-            public void Clear(int iIndex)
-            {
-                if (m_IAllocated)
-                {
-                    Marshal.FreeCoTaskMem(m_ptr);
-                    m_IAllocated = false;
-                }
-                if (m_Parent == null)
-                {
-                    // Never delete the last entry.
-                    m_InProcsss = 0;
-                    m_obj = null;
-                    m_ptr = IntPtr.Zero;
-                }
-                else
-                {
-                    m_obj = null;
-                    m_CurrentProps[iIndex] = m_Parent;
-                }
-            }
-
-            public IntPtr Alloc(int iSize)
-            {
-                IntPtr ip = Marshal.AllocCoTaskMem(iSize);
-                m_IAllocated = true;
-                return ip;
-            }
-        }
-
-        private readonly int m_Index;
-
-        // Max number of arguments in a single method call that can use
-        // PVMarshaler.
-        private const int MaxArgs = 2;
-
-        private PVMarshaler(string cookie)
-        {
-            int iLen = cookie.Length;
-
-            // On methods that have more than 1 PVMarshaler on a
-            // single method, the cookie is in the form:
-            // InterfaceName.MethodName.0 & InterfaceName.MethodName.1.
-            if (cookie[iLen - 2] != '.')
-            {
-                m_Index = 0;
-            }
-            else
-            {
-                m_Index = int.Parse(cookie.Substring(iLen - 1));
-                Debug.Assert(m_Index < MaxArgs);
-            }
-        }
-
-        public IntPtr MarshalManagedToNative(object managedObj)
-        {
-            // Nulls don't invoke custom marshaling.
-            Debug.Assert(managedObj != null);
-
-            MyProps t = MyProps.GetTop(m_Index);
-
-            switch (t.GetStage())
-            {
-                case 0:
-                    {
-                        // We are just starting a "Managed calling unmanaged"
-                        // call.
-
-                        // Cast the object back to a PropVariant and save it
-                        // for use in MarshalNativeToManaged.
-                        t.m_obj = managedObj as PropVariant;
-
-                        // This could happen if (somehow) managedObj isn't a
-                        // PropVariant.  During normal marshaling, the custom
-                        // marshaler doesn't get called if the parameter is
-                        // null.
-                        Debug.Assert(t.m_obj != null);
-
-                        // Release any memory currently allocated in the
-                        // PropVariant.  In theory, the (managed) caller
-                        // should have done this before making the call that
-                        // got us here, but .Net programmers don't generally
-                        // think that way.  To avoid any leaks, do it for them.
-                        t.m_obj.Clear();
-
-                        // Create an appropriately sized buffer (varies from
-                        // x86 to x64).
-                        int iSize = GetNativeDataSize();
-                        t.m_ptr = t.Alloc(iSize);
-
-                        // Copy in the (empty) PropVariant.  In theory we could
-                        // just zero out the first 2 bytes (the VariantType),
-                        // but since PropVariantClear wipes the whole struct,
-                        // that's what we do here to be safe.
-                        Marshal.StructureToPtr(t.m_obj, t.m_ptr, false);
-
-                        break;
-                    }
-                case 1:
-                    {
-                        if (!System.Object.ReferenceEquals(t.m_obj, managedObj))
-                        {
-                            // If we get here, we have already received a call
-                            // to MarshalNativeToManaged where we created a
-                            // PropVariant and stored it into t.m_obj.  But
-                            // the object we just got passed here isn't the
-                            // same one.  Therefore instead of being the second
-                            // half of an "Unmanaged calling managed" (as
-                            // m_InProcsss led us to believe), this is really
-                            // the first half of a nested "Managed calling
-                            // unmanaged" (see Recursion in the comments at the
-                            // top of this class).  Add another layer.
-                            MyProps.AddLayer(m_Index);
-
-                            // Try this call again now that we have fixed
-                            // m_CurrentProps.
-                            return MarshalManagedToNative(managedObj);
-                        }
-
-                        // This is (probably) the second half of "Unmanaged
-                        // calling managed."  However, it could be the first
-                        // half of a nested usage of PropVariants.  If it is a
-                        // nested, we'll eventually figure that out in case 2.
-
-                        // Copy the data from the managed object into the
-                        // native pointer that we received in
-                        // MarshalNativeToManaged.
-                        Marshal.StructureToPtr(t.m_obj, t.m_ptr, false);
-
-                        break;
-                    }
-                case 2:
-                    {
-                        // Apparently this is 'part 3' of a 2 part call.  Which
-                        // means we are doing a nested call.  Normally we would
-                        // catch the fact that this is a nested call with the
-                        // ReferenceEquals check above.  However, if the same
-                        // PropVariant instance is being passed thru again, we
-                        // end up here.
-                        // So, add a layer.
-                        MyProps.SplitLayer(m_Index);
-
-                        // Try this call again now that we have fixed
-                        // m_CurrentProps.
-                        return MarshalManagedToNative(managedObj);
-                    }
-                default:
-                    {
-                        Environment.FailFast("Something horrible has " +
-                                             "happened, probaby due to " +
-                                             "marshaling of nested " +
-                                             "PropVariant calls.");
-                        break;
-                    }
-            }
-            t.StageComplete();
-
-            return t.m_ptr;
-        }
-
-        public object MarshalNativeToManaged(IntPtr pNativeData)
-        {
-            // Nulls don't invoke custom marshaling.
-            Debug.Assert(pNativeData != IntPtr.Zero);
-
-            MyProps t = MyProps.GetTop(m_Index);
-
-            switch (t.GetStage())
-            {
-                case 0:
-                    {
-                        // We are just starting a "Unmanaged calling managed"
-                        // call.
-
-                        // Caller should have cleared variant before calling
-                        // us.  Might be acceptable for types *other* than
-                        // IUnknown, String, Blob and StringArray, but it is
-                        // still bad design.  We're checking for it, but we
-                        // work around it.
-
-                        // Read the 16bit VariantType.
-                        Debug.Assert(Marshal.ReadInt16(pNativeData) == 0);
-
-                        // Create an empty managed PropVariant without using
-                        // pNativeData.
-                        t.m_obj = new PropVariant();
-
-                        // Save the pointer for use in MarshalManagedToNative.
-                        t.m_ptr = pNativeData;
-
-                        break;
-                    }
-                case 1:
-                    {
-                        if (t.m_ptr != pNativeData)
-                        {
-                            // If we get here, we have already received a call
-                            // to MarshalManagedToNative where we created an
-                            // IntPtr and stored it into t.m_ptr.  But the
-                            // value we just got passed here isn't the same
-                            // one.  Therefore instead of being the second half
-                            // of a "Managed calling unmanaged" (as m_InProcsss
-                            // led us to believe) this is really the first half
-                            // of a nested "Unmanaged calling managed" (see
-                            // Recursion in the comments at the top of this
-                            // class).  Add another layer.
-                            MyProps.AddLayer(m_Index);
-
-                            // Try this call again now that we have fixed
-                            // m_CurrentProps.
-                            return MarshalNativeToManaged(pNativeData);
-                        }
-
-                        // This is (probably) the second half of "Managed
-                        // calling unmanaged."  However, it could be the first
-                        // half of a nested usage of PropVariants.  If it is a
-                        // nested, we'll eventually figure that out in case 2.
-
-                        // Copy the data from the native pointer into the
-                        // managed object that we received in
-                        // MarshalManagedToNative.
-                        Marshal.PtrToStructure(pNativeData, t.m_obj);
-
-                        break;
-                    }
-                case 2:
-                    {
-                        // Apparently this is 'part 3' of a 2 part call.  Which
-                        // means we are doing a nested call.  Normally we would
-                        // catch the fact that this is a nested call with the
-                        // (t.m_ptr != pNativeData) check above.  However, if
-                        // the same PropVariant instance is being passed thru
-                        // again, we end up here.  So, add a layer.
-                        MyProps.SplitLayer(m_Index);
-
-                        // Try this call again now that we have fixed
-                        // m_CurrentProps.
-                        return MarshalNativeToManaged(pNativeData);
-                    }
-                default:
-                    {
-                        Environment.FailFast("Something horrible has " +
-                                             "happened, probaby due to " +
-                                             "marshaling of nested " +
-                                             "PropVariant calls.");
-                        break;
-                    }
-            }
-            t.StageComplete();
-
-            return t.m_obj;
-        }
-
-        public void CleanUpManagedData(object ManagedObj)
-        {
-            // Note that if there are nested calls, one of the Cleanup*Data
-            // methods will be called at the end of each pair:
-
-            // MarshalNativeToManaged
-            // MarshalManagedToNative
-            // CleanUpManagedData
-            //
-            // or for recursion:
-            //
-            // MarshalManagedToNative 1
-            // MarshalNativeToManaged 2
-            // MarshalManagedToNative 2
-            // CleanUpManagedData     2
-            // MarshalNativeToManaged 1
-            // CleanUpNativeData      1
-
-            // Clear() either pops an entry, or clears
-            // the values for the next call.
-            MyProps t = MyProps.GetTop(m_Index);
-            t.Clear(m_Index);
-        }
-
-        public void CleanUpNativeData(IntPtr pNativeData)
-        {
-            // Clear() either pops an entry, or clears
-            // the values for the next call.
-            MyProps t = MyProps.GetTop(m_Index);
-            t.Clear(m_Index);
-        }
-
-        // The number of bytes to marshal.  Size varies between x86 and x64.
-        public int GetNativeDataSize()
-        {
-            return Marshal.SizeOf(typeof(PropVariant));
-        }
-
-        // This method is called by interop to create the custom marshaler.
-        // The (optional) cookie is the value specified in
-        // MarshalCookie="asdf", or "" if none is specified.
-        private static ICustomMarshaler GetInstance(string cookie)
-        {
-            return new PVMarshaler(cookie);
-        }
-    }
-
-
-    abstract internal class DsMarshaler : ICustomMarshaler
-    {
-        #region Data Members
-        // The cookie isn't currently being used.
-        protected string m_cookie;
-
-        // The managed object passed in to MarshalManagedToNative, and modified in MarshalNativeToManaged
-        protected object m_obj;
-        #endregion
-
-        // The constructor.  This is called from GetInstance (below)
-        public DsMarshaler(string cookie)
-        {
-            // If we get a cookie, save it.
-            m_cookie = cookie;
-        }
-
-        // Called just before invoking the COM method.  The returned IntPtr is what goes on the stack
-        // for the COM call.  The input arg is the parameter that was passed to the method.
-        virtual public IntPtr MarshalManagedToNative(object managedObj)
-        {
-            // Save off the passed-in value.  Safe since we just checked the type.
-            m_obj = managedObj;
-
-            // Create an appropriately sized buffer, blank it, and send it to the marshaler to
-            // make the COM call with.
-            int iSize = GetNativeDataSize() + 3;
-            IntPtr p = Marshal.AllocCoTaskMem(iSize);
-
-            for (int x = 0; x < iSize / 4; x++)
-            {
-                Marshal.WriteInt32(p, x * 4, 0);
-            }
-
-            return p;
-        }
-
-        // Called just after invoking the COM method.  The IntPtr is the same one that just got returned
-        // from MarshalManagedToNative.  The return value is unused.
-        virtual public object MarshalNativeToManaged(IntPtr pNativeData)
-        {
-            return m_obj;
-        }
-
-        // Release the (now unused) buffer
-        virtual public void CleanUpNativeData(IntPtr pNativeData)
-        {
-            if (pNativeData != IntPtr.Zero)
-            {
-                Marshal.FreeCoTaskMem(pNativeData);
-            }
-        }
-
-        // Release the (now unused) managed object
-        virtual public void CleanUpManagedData(object managedObj)
-        {
-            m_obj = null;
-        }
-
-        // This routine is (apparently) never called by the marshaler.  However it can be useful.
-        abstract public int GetNativeDataSize();
-
-        // GetInstance is called by the marshaler in preparation to doing custom marshaling.  The (optional)
-        // cookie is the value specified in MarshalCookie="asdf", or "" is none is specified.
-
-        // It is commented out in this abstract class, but MUST be implemented in derived classes
-        //public static ICustomMarshaler GetInstance(string cookie)
-    }
-
-    internal class EMTMarshaler : DsMarshaler
-    {
-        public EMTMarshaler(string cookie) : base(cookie)
-        {
-        }
-
-        // Called just after invoking the COM method.  The IntPtr is the same one that just got returned
-        // from MarshalManagedToNative.  The return value is unused.
-        override public object MarshalNativeToManaged(IntPtr pNativeData)
-        {
-            DShow.AMMediaType[] emt = m_obj as DShow.AMMediaType[];
-
-            for (int x = 0; x < emt.Length; x++)
-            {
-                // Copy in the value, and advance the pointer
-                IntPtr p = Marshal.ReadIntPtr(pNativeData, x * IntPtr.Size);
-                if (p != IntPtr.Zero)
-                {
-                    emt[x] = (DShow.AMMediaType)Marshal.PtrToStructure(p, typeof(DShow.AMMediaType));
-                }
-                else
-                {
-                    emt[x] = null;
-                }
-            }
-
-            return null;
-        }
-
-        // The number of bytes to marshal out
-        override public int GetNativeDataSize()
-        {
-            // Get the array size
-            int i = ((Array)m_obj).Length;
-
-            // Multiply that times the size of a pointer
-            int j = i * IntPtr.Size;
-
-            return j;
-        }
-
-        // This method is called by interop to create the custom marshaler.  The (optional)
-        // cookie is the value specified in MarshalCookie="asdf", or "" is none is specified.
-        public static ICustomMarshaler GetInstance(string cookie)
-        {
-            return new EMTMarshaler(cookie);
-        }
-    }
+	{
+		private class MyProps
+		{
+			public PropVariant m_obj;
+			public IntPtr m_ptr;
+
+			private int m_InProcsss;
+			private bool m_IAllocated;
+			private MyProps m_Parent = null;
+
+			[ThreadStatic]
+			private static MyProps[] m_CurrentProps;
+
+			public int GetStage()
+			{
+				return m_InProcsss;
+			}
+
+			public void StageComplete()
+			{
+				m_InProcsss++;
+			}
+
+			public static MyProps AddLayer(int iIndex)
+			{
+				MyProps p = new MyProps();
+				p.m_Parent = m_CurrentProps[iIndex];
+				m_CurrentProps[iIndex] = p;
+
+				return p;
+			}
+
+			public static void SplitLayer(int iIndex)
+			{
+				MyProps t = AddLayer(iIndex);
+				MyProps p = t.m_Parent;
+
+				t.m_InProcsss = 1;
+				t.m_ptr = p.m_ptr;
+				t.m_obj = p.m_obj;
+
+				p.m_InProcsss = 1;
+			}
+
+			public static MyProps GetTop(int iIndex)
+			{
+				// If the member hasn't been initialized, do it now.  And no, we can't
+				// do this in the PVMarshaler constructor, since the constructor may 
+				// have been called on a different thread.
+				if (m_CurrentProps == null)
+				{
+					m_CurrentProps = new MyProps[MaxArgs];
+					for (int x = 0; x < MaxArgs; x++)
+					{
+						m_CurrentProps[x] = new MyProps();
+					}
+				}
+				return m_CurrentProps[iIndex];
+			}
+
+			public void Clear(int iIndex)
+			{
+				if (m_IAllocated)
+				{
+					Marshal.FreeCoTaskMem(m_ptr);
+					m_IAllocated = false;
+				}
+				if (m_Parent == null)
+				{
+					// Never delete the last entry.
+					m_InProcsss = 0;
+					m_obj = null;
+					m_ptr = IntPtr.Zero;
+				}
+				else
+				{
+					m_obj = null;
+					m_CurrentProps[iIndex] = m_Parent;
+				}
+			}
+
+			public IntPtr Alloc(int iSize)
+			{
+				IntPtr ip = Marshal.AllocCoTaskMem(iSize);
+				m_IAllocated = true;
+				return ip;
+			}
+		}
+
+		private readonly int m_Index;
+
+		// Max number of arguments in a single method call that can use
+		// PVMarshaler.
+		private const int MaxArgs = 2;
+
+		private PVMarshaler(string cookie)
+		{
+			int iLen = cookie.Length;
+
+			// On methods that have more than 1 PVMarshaler on a
+			// single method, the cookie is in the form:
+			// InterfaceName.MethodName.0 & InterfaceName.MethodName.1.
+			if (cookie[iLen - 2] != '.')
+			{
+				m_Index = 0;
+			}
+			else
+			{
+				m_Index = int.Parse(cookie.Substring(iLen - 1));
+				Debug.Assert(m_Index < MaxArgs);
+			}
+		}
+
+		public IntPtr MarshalManagedToNative(object managedObj)
+		{
+			// Nulls don't invoke custom marshaling.
+			Debug.Assert(managedObj != null);
+
+			MyProps t = MyProps.GetTop(m_Index);
+
+			switch (t.GetStage())
+			{
+				case 0:
+					{
+						// We are just starting a "Managed calling unmanaged"
+						// call.
+
+						// Cast the object back to a PropVariant and save it
+						// for use in MarshalNativeToManaged.
+						t.m_obj = managedObj as PropVariant;
+
+						// This could happen if (somehow) managedObj isn't a
+						// PropVariant.  During normal marshaling, the custom
+						// marshaler doesn't get called if the parameter is
+						// null.
+						Debug.Assert(t.m_obj != null);
+
+						// Release any memory currently allocated in the
+						// PropVariant.  In theory, the (managed) caller
+						// should have done this before making the call that
+						// got us here, but .Net programmers don't generally
+						// think that way.  To avoid any leaks, do it for them.
+						t.m_obj.Clear();
+
+						// Create an appropriately sized buffer (varies from
+						// x86 to x64).
+						int iSize = GetNativeDataSize();
+						t.m_ptr = t.Alloc(iSize);
+
+						// Copy in the (empty) PropVariant.  In theory we could
+						// just zero out the first 2 bytes (the VariantType),
+						// but since PropVariantClear wipes the whole struct,
+						// that's what we do here to be safe.
+						Marshal.StructureToPtr(t.m_obj, t.m_ptr, false);
+
+						break;
+					}
+				case 1:
+					{
+						if (!System.Object.ReferenceEquals(t.m_obj, managedObj))
+						{
+							// If we get here, we have already received a call
+							// to MarshalNativeToManaged where we created a
+							// PropVariant and stored it into t.m_obj.  But
+							// the object we just got passed here isn't the
+							// same one.  Therefore instead of being the second
+							// half of an "Unmanaged calling managed" (as
+							// m_InProcsss led us to believe), this is really
+							// the first half of a nested "Managed calling
+							// unmanaged" (see Recursion in the comments at the
+							// top of this class).  Add another layer.
+							MyProps.AddLayer(m_Index);
+
+							// Try this call again now that we have fixed
+							// m_CurrentProps.
+							return MarshalManagedToNative(managedObj);
+						}
+
+						// This is (probably) the second half of "Unmanaged
+						// calling managed."  However, it could be the first
+						// half of a nested usage of PropVariants.  If it is a
+						// nested, we'll eventually figure that out in case 2.
+
+						// Copy the data from the managed object into the
+						// native pointer that we received in
+						// MarshalNativeToManaged.
+						Marshal.StructureToPtr(t.m_obj, t.m_ptr, false);
+
+						break;
+					}
+				case 2:
+					{
+						// Apparently this is 'part 3' of a 2 part call.  Which
+						// means we are doing a nested call.  Normally we would
+						// catch the fact that this is a nested call with the
+						// ReferenceEquals check above.  However, if the same
+						// PropVariant instance is being passed thru again, we
+						// end up here.
+						// So, add a layer.
+						MyProps.SplitLayer(m_Index);
+
+						// Try this call again now that we have fixed
+						// m_CurrentProps.
+						return MarshalManagedToNative(managedObj);
+					}
+				default:
+					{
+						Environment.FailFast("Something horrible has " +
+											 "happened, probaby due to " +
+											 "marshaling of nested " +
+											 "PropVariant calls.");
+						break;
+					}
+			}
+			t.StageComplete();
+
+			return t.m_ptr;
+		}
+
+		public object MarshalNativeToManaged(IntPtr pNativeData)
+		{
+			// Nulls don't invoke custom marshaling.
+			Debug.Assert(pNativeData != IntPtr.Zero);
+
+			MyProps t = MyProps.GetTop(m_Index);
+
+			switch (t.GetStage())
+			{
+				case 0:
+					{
+						// We are just starting a "Unmanaged calling managed"
+						// call.
+
+						// Caller should have cleared variant before calling
+						// us.  Might be acceptable for types *other* than
+						// IUnknown, String, Blob and StringArray, but it is
+						// still bad design.  We're checking for it, but we
+						// work around it.
+
+						// Read the 16bit VariantType.
+						Debug.Assert(Marshal.ReadInt16(pNativeData) == 0);
+
+						// Create an empty managed PropVariant without using
+						// pNativeData.
+						t.m_obj = new PropVariant();
+
+						// Save the pointer for use in MarshalManagedToNative.
+						t.m_ptr = pNativeData;
+
+						break;
+					}
+				case 1:
+					{
+						if (t.m_ptr != pNativeData)
+						{
+							// If we get here, we have already received a call
+							// to MarshalManagedToNative where we created an
+							// IntPtr and stored it into t.m_ptr.  But the
+							// value we just got passed here isn't the same
+							// one.  Therefore instead of being the second half
+							// of a "Managed calling unmanaged" (as m_InProcsss
+							// led us to believe) this is really the first half
+							// of a nested "Unmanaged calling managed" (see
+							// Recursion in the comments at the top of this
+							// class).  Add another layer.
+							MyProps.AddLayer(m_Index);
+
+							// Try this call again now that we have fixed
+							// m_CurrentProps.
+							return MarshalNativeToManaged(pNativeData);
+						}
+
+						// This is (probably) the second half of "Managed
+						// calling unmanaged."  However, it could be the first
+						// half of a nested usage of PropVariants.  If it is a
+						// nested, we'll eventually figure that out in case 2.
+
+						// Copy the data from the native pointer into the
+						// managed object that we received in
+						// MarshalManagedToNative.
+						Marshal.PtrToStructure(pNativeData, t.m_obj);
+
+						break;
+					}
+				case 2:
+					{
+						// Apparently this is 'part 3' of a 2 part call.  Which
+						// means we are doing a nested call.  Normally we would
+						// catch the fact that this is a nested call with the
+						// (t.m_ptr != pNativeData) check above.  However, if
+						// the same PropVariant instance is being passed thru
+						// again, we end up here.  So, add a layer.
+						MyProps.SplitLayer(m_Index);
+
+						// Try this call again now that we have fixed
+						// m_CurrentProps.
+						return MarshalNativeToManaged(pNativeData);
+					}
+				default:
+					{
+						Environment.FailFast("Something horrible has " +
+											 "happened, probaby due to " +
+											 "marshaling of nested " +
+											 "PropVariant calls.");
+						break;
+					}
+			}
+			t.StageComplete();
+
+			return t.m_obj;
+		}
+
+		public void CleanUpManagedData(object ManagedObj)
+		{
+			// Note that if there are nested calls, one of the Cleanup*Data
+			// methods will be called at the end of each pair:
+
+			// MarshalNativeToManaged
+			// MarshalManagedToNative
+			// CleanUpManagedData
+			//
+			// or for recursion:
+			//
+			// MarshalManagedToNative 1
+			// MarshalNativeToManaged 2
+			// MarshalManagedToNative 2
+			// CleanUpManagedData     2
+			// MarshalNativeToManaged 1
+			// CleanUpNativeData      1
+
+			// Clear() either pops an entry, or clears
+			// the values for the next call.
+			MyProps t = MyProps.GetTop(m_Index);
+			t.Clear(m_Index);
+		}
+
+		public void CleanUpNativeData(IntPtr pNativeData)
+		{
+			// Clear() either pops an entry, or clears
+			// the values for the next call.
+			MyProps t = MyProps.GetTop(m_Index);
+			t.Clear(m_Index);
+		}
+
+		// The number of bytes to marshal.  Size varies between x86 and x64.
+		public int GetNativeDataSize()
+		{
+			return Marshal.SizeOf(typeof(PropVariant));
+		}
+
+		// This method is called by interop to create the custom marshaler.
+		// The (optional) cookie is the value specified in
+		// MarshalCookie="asdf", or "" if none is specified.
+		private static ICustomMarshaler GetInstance(string cookie)
+		{
+			return new PVMarshaler(cookie);
+		}
+	}
+
+
+	abstract internal class DsMarshaler : ICustomMarshaler
+	{
+		#region Data Members
+		// The cookie isn't currently being used.
+		protected string m_cookie;
+
+		// The managed object passed in to MarshalManagedToNative, and modified in MarshalNativeToManaged
+		protected object m_obj;
+		#endregion
+
+		// The constructor.  This is called from GetInstance (below)
+		public DsMarshaler(string cookie)
+		{
+			// If we get a cookie, save it.
+			m_cookie = cookie;
+		}
+
+		// Called just before invoking the COM method.  The returned IntPtr is what goes on the stack
+		// for the COM call.  The input arg is the parameter that was passed to the method.
+		virtual public IntPtr MarshalManagedToNative(object managedObj)
+		{
+			// Save off the passed-in value.  Safe since we just checked the type.
+			m_obj = managedObj;
+
+			// Create an appropriately sized buffer, blank it, and send it to the marshaler to
+			// make the COM call with.
+			int iSize = GetNativeDataSize() + 3;
+			IntPtr p = Marshal.AllocCoTaskMem(iSize);
+
+			for (int x = 0; x < iSize / 4; x++)
+			{
+				Marshal.WriteInt32(p, x * 4, 0);
+			}
+
+			return p;
+		}
+
+		// Called just after invoking the COM method.  The IntPtr is the same one that just got returned
+		// from MarshalManagedToNative.  The return value is unused.
+		virtual public object MarshalNativeToManaged(IntPtr pNativeData)
+		{
+			return m_obj;
+		}
+
+		// Release the (now unused) buffer
+		virtual public void CleanUpNativeData(IntPtr pNativeData)
+		{
+			if (pNativeData != IntPtr.Zero)
+			{
+				Marshal.FreeCoTaskMem(pNativeData);
+			}
+		}
+
+		// Release the (now unused) managed object
+		virtual public void CleanUpManagedData(object managedObj)
+		{
+			m_obj = null;
+		}
+
+		// This routine is (apparently) never called by the marshaler.  However it can be useful.
+		abstract public int GetNativeDataSize();
+
+		// GetInstance is called by the marshaler in preparation to doing custom marshaling.  The (optional)
+		// cookie is the value specified in MarshalCookie="asdf", or "" is none is specified.
+
+		// It is commented out in this abstract class, but MUST be implemented in derived classes
+		//public static ICustomMarshaler GetInstance(string cookie)
+	}
+
+	internal class EMTMarshaler : DsMarshaler
+	{
+		public EMTMarshaler(string cookie) : base(cookie)
+		{
+		}
+
+		// Called just after invoking the COM method.  The IntPtr is the same one that just got returned
+		// from MarshalManagedToNative.  The return value is unused.
+		override public object MarshalNativeToManaged(IntPtr pNativeData)
+		{
+			DShow.AMMediaType[] emt = m_obj as DShow.AMMediaType[];
+
+			for (int x = 0; x < emt.Length; x++)
+			{
+				// Copy in the value, and advance the pointer
+				IntPtr p = Marshal.ReadIntPtr(pNativeData, x * IntPtr.Size);
+				if (p != IntPtr.Zero)
+				{
+					emt[x] = (DShow.AMMediaType)Marshal.PtrToStructure(p, typeof(DShow.AMMediaType));
+				}
+				else
+				{
+					emt[x] = null;
+				}
+			}
+
+			return null;
+		}
+
+		// The number of bytes to marshal out
+		override public int GetNativeDataSize()
+		{
+			// Get the array size
+			int i = ((Array)m_obj).Length;
+
+			// Multiply that times the size of a pointer
+			int j = i * IntPtr.Size;
+
+			return j;
+		}
+
+		// This method is called by interop to create the custom marshaler.  The (optional)
+		// cookie is the value specified in MarshalCookie="asdf", or "" is none is specified.
+		public static ICustomMarshaler GetInstance(string cookie)
+		{
+			return new EMTMarshaler(cookie);
+		}
+	}
 
 
 }

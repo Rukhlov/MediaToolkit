@@ -58,6 +58,7 @@
     <Compile Include="MF\MfIdl.cs" />
     <Compile Include="MF\MfApi.cs" />
     <Compile Include="Secur32.cs" />
+    <Compile Include="Shell32.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="MF\MfObjects.cs" />
     <Compile Include="MF\MfReadWrite.cs" />

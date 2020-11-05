@@ -201,7 +201,7 @@ namespace ScreenStreamer.Wpf
 				}
 				else
 				{
-					MessageBox.Show(exceptionMessage, "Polywall Streamer", MessageBoxButton.OK, MessageBoxImage.Error);
+					MessageBox.Show(exceptionMessage, AppConsts.ApplicationCaption, MessageBoxButton.OK, MessageBoxImage.Error);
 				}
 
 			}

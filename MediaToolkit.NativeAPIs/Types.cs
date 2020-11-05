@@ -667,9 +667,27 @@ namespace MediaToolkit.NativeAPIs
         //...
     }
 
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-showwindow
+	public static class SW
+	{
+		//SW_HIDE
+		public const int HIDE = 0;
+		//SW_SHOWNORMAL
+		public const int SHOWNORMAL = 1;
+		public const int SHOWMINIMIZED = 2;
+		public const int SHOWMAXIMIZED = 3;
+		public const int SHOWNOACTIVATE = 4;
+		public const int SHOW = 5;
+		public const int MINIMIZE = 6;
+		public const int SHOWMINNOACTIVE = 7;	
+		public const int SHOWNA = 8;
+		public const int RESTORE = 9;
+		public const int SHOWDEFAULT = 10;
+		public const int FORCEMINIMIZE = 11;
+	}
 
 
-    public static class WM
+	public static class WM
     {
         public const int HTCLIENT = 1;
         public const int HTCAPTION = 2;

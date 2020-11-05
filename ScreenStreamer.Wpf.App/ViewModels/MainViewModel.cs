@@ -53,8 +53,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         }
 
 
+        private string mainCaption = AppConsts.ApplicationCaption;
 
-        private string mainCaption = "Polywall Streamer";
         public override string Caption
         {
             get => mainCaption;

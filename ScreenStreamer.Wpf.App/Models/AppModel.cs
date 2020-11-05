@@ -23,6 +23,8 @@ namespace ScreenStreamer.Wpf.Models
         public string Culture { get; set; } = "en";
         public int Dx11FeatureLevel { get; set; } = (int)D3DFeatureLevel.Level_11_0;
 
+        public bool HideOnClose { get; set; } = true;
+
         [JsonProperty]
         public readonly static string MinOSVersion = "6.2";
 
@@ -62,8 +64,6 @@ namespace ScreenStreamer.Wpf.Models
 
 			if (winVersion < minOsVersion)
 			{
-				//...
-
 				//logger.Warn($"OS version {winVersion} currently not supported!");
 				throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}

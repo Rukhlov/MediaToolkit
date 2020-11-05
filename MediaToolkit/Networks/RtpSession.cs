@@ -427,7 +427,7 @@ namespace MediaToolkit.Networks
                 if(timestamp == RtpConst.NoTimestamp || lastTimestamp == RtpConst.NoTimestamp 
                     || timestamp == 0 || lastTimestamp == 0)
                 {// если не удается получить правильные вр.метки - сбрасываем буфер
-                    // т.к декодировать не сгруппированные данные не все декодеры могу...
+                    // т.к декодировать не сгруппированные данные не все декодеры могут...
 
                     logger.Error("No valid timestamp received; drop buffer");
                     naluBuffer.Clear();

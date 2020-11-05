@@ -27,6 +27,30 @@ namespace Test.Encoder
 
 		static void Main(string[] args)
         {
+			//string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+			////string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+			//string name = "ScreenStreamer";
+
+			//string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
+
+			//string workingDir = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug\ScreenStreamer.Wpf.App";
+
+			//string fileName = Path.Combine(workingDir, "ScreenStreamer.Wpf.App.exe");
+			//string _args = "-autostream";
+
+			//ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
+
+			//Console.WriteLine("ShortcutUtil.CreateShortcut(...)");
+			//Console.ReadKey();
+
+
+			//if (File.Exists(shortcutFileName))
+			//{
+			//	ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
+			//}
+			//Console.WriteLine("File.Delete(...)");
+			//Console.ReadKey();
+			//return;
 
             MediaToolkitManager.Startup();
 
