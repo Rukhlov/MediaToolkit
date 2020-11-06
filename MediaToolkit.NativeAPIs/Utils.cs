@@ -65,12 +65,10 @@ namespace MediaToolkit.NativeAPIs.Utils
 					iPersistFile.Load(shortcutFile, 0);
 
 					StringBuilder sb = new StringBuilder(260);
-
 					WIN32_FIND_DATA data = new WIN32_FIND_DATA();
 					iShellLink.GetPath(sb, 260, ref data, 0);
 
 					var shortcutFileName = System.IO.Path.GetFullPath(sb.ToString());
-
 					if (!string.Equals(shortcutFileName, targetFile, StringComparison.OrdinalIgnoreCase))
 					{
 						return;

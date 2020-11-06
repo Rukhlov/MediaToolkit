@@ -8,6 +8,8 @@ using MediaToolkit.NativeAPIs.Utils;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.MediaFoundation;
+using SharpDX.DXGI;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,78 +19,66 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using GDI = System.Drawing;
+using MediaToolkit.NativeAPIs;
+using System.Diagnostics;
+using SharpDX.Direct3D;
+using System.Windows.Forms;
 
 namespace Test.Encoder
 {
     class Program
     {
 
-
-
-		static void Main(string[] args)
+ 
+        [STAThread]
+        static void Main(string[] args)
         {
-			//string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
-			////string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
-			//string name = "ScreenStreamer";
+            //string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+            ////string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+            //string name = "ScreenStreamer";
 
-			//string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
+            //string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
 
-			//string workingDir = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug\ScreenStreamer.Wpf.App";
+            //string workingDir = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug\ScreenStreamer.Wpf.App";
 
-			//string fileName = Path.Combine(workingDir, "ScreenStreamer.Wpf.App.exe");
-			//string _args = "-autostream";
+            //string fileName = Path.Combine(workingDir, "ScreenStreamer.Wpf.App.exe");
+            //string _args = "-autostream";
 
-			//ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
+            //ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
 
-			//Console.WriteLine("ShortcutUtil.CreateShortcut(...)");
-			//Console.ReadKey();
+            //Console.WriteLine("ShortcutUtil.CreateShortcut(...)");
+            //Console.ReadKey();
 
 
-			//if (File.Exists(shortcutFileName))
-			//{
-			//	ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
-			//}
-			//Console.WriteLine("File.Delete(...)");
-			//Console.ReadKey();
-			//return;
+            //if (File.Exists(shortcutFileName))
+            //{
+            //	ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
+            //}
+            //Console.WriteLine("File.Delete(...)");
+            //Console.ReadKey();
+            //return;
 
             MediaToolkitManager.Startup();
 
+            SimpleSwapChain();
+            //CopyAcrossGPU();
 
-			var _flags = DeviceCreationFlags.VideoSupport |
-			DeviceCreationFlags.BgraSupport |
-			DeviceCreationFlags.Debug;
+            //NewMethod1();
 
-			var _device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, _flags);
+            //Console.WriteLine(DxTool.LogDxInfo());
 
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+            return;
 
-			using (var multiThread = _device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-			{
-				multiThread.SetMultithreadProtected(true);
-			}
-			var featureLevel = _device.FeatureLevel;
-
-            using (var dxgiDevice = _device.QueryInterface<SharpDX.DXGI.Device>())
-            {
-                using (var adapter = dxgiDevice.Adapter)
-                {
-                    var descr = adapter.Description;
-                    Console.WriteLine(string.Join(" ", descr.Description));
-                }
-            }
-
-            Console.WriteLine(DxTool.LogDxInfo());
-
-			Console.ReadKey();
-			return;
-
-			// NewMethod1();
+            // NewMethod1();
 
 
 
-			////DxTool.FindAdapter1(4313);
+            ////DxTool.FindAdapter1(4313);
 
-			var videoEncoders = MfTool.FindVideoEncoders();
+            var videoEncoders = MfTool.FindVideoEncoders();
 
             foreach (var enc in videoEncoders)
             {
@@ -98,10 +88,10 @@ namespace Test.Encoder
 
             foreach (var enc in videoEncoders)
             {
-               if(enc.Format == VideoCodingFormat.H264 && enc.Activatable)
-               {
-                    Console.WriteLine(enc.Name + " " + enc.ClsId +  " isHardware: " + enc.IsHardware);
-               }
+                if (enc.Format == VideoCodingFormat.H264 && enc.Activatable)
+                {
+                    Console.WriteLine(enc.Name + " " + enc.ClsId + " isHardware: " + enc.IsHardware);
+                }
             }
 
             Console.ReadKey();
@@ -421,6 +411,31 @@ namespace Test.Encoder
 
         }
 
+        private static void NewMethod1()
+        {
+            var _flags = DeviceCreationFlags.VideoSupport |
+            DeviceCreationFlags.BgraSupport |
+            DeviceCreationFlags.Debug;
+
+            var _device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, _flags);
+
+
+            using (var multiThread = _device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+            var featureLevel = _device.FeatureLevel;
+
+            using (var dxgiDevice = _device.QueryInterface<SharpDX.DXGI.Device>())
+            {
+                using (var adapter = dxgiDevice.Adapter)
+                {
+                    var descr = adapter.Description;
+                    Console.WriteLine(string.Join(" ", descr.Description));
+                }
+            }
+        }
+
         //private static void NewMethod1()
         //{
 
@@ -609,5 +624,531 @@ namespace Test.Encoder
             Console.ReadKey();
             return;
         }
+
+
+        private static void SimpleSwapChain()
+        {
+
+
+
+            var fileName = @"Files\1920x1080.bmp";
+
+            int BufferWidth = 1920;
+            int BufferHeight = 1080;
+            IntPtr ViewHandle = IntPtr.Zero;
+            int FramePerSec = 60;
+
+            int adapterIndex = 0;
+            var dxgiFactory = new SharpDX.DXGI.Factory1();
+            var adapter = dxgiFactory.GetAdapter1(adapterIndex);
+
+            SharpDX.Direct3D.FeatureLevel[] featureLevel =
+            {
+                    FeatureLevel.Level_11_1,
+                    FeatureLevel.Level_11_0,
+                    FeatureLevel.Level_10_1,
+                };
+
+
+            var deviceCreationFlags = DeviceCreationFlags.None;
+            //DeviceCreationFlags.Debug |
+            //DeviceCreationFlags.VideoSupport |
+            //DeviceCreationFlags.BgraSupport;
+
+            var device = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags, featureLevel);
+
+            Console.WriteLine($"RendererAdapter {adapterIndex}: " + adapter.Description.Description);
+            
+            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+
+            var bmp = new System.Drawing.Bitmap(fileName);
+            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+            {
+                var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
+                var _bmp = bmp.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
+                bmp.Dispose();
+                bmp = _bmp;
+            }
+            var sourceTexture0 = GetTexture(bmp, device);
+            bmp.Dispose();
+
+            Form f = new Form
+            {
+                Width = 640,
+                Height = 480,
+                Text = fileName,
+            };
+
+            ViewHandle = f.Handle;
+
+            BufferWidth = sourceTexture0.Description.Width;
+            BufferHeight = sourceTexture0.Description.Height;
+
+            var scd = new SwapChainDescription
+            {
+                SampleDescription = new SampleDescription { Count = 1, Quality = 0 },
+                SwapEffect = SwapEffect.FlipSequential,
+                ModeDescription = new ModeDescription
+                {
+                    Format = Format.B8G8R8A8_UNorm,
+                    Scaling = DisplayModeScaling.Stretched,
+                    //Scaling = DisplayModeScaling.Centered,
+                    Width = BufferWidth,
+                    Height = BufferHeight,
+                    RefreshRate = new Rational(FramePerSec, 1),
+
+                },
+                IsWindowed = true,
+                Usage = Usage.RenderTargetOutput | Usage.BackBuffer,
+                Flags = SwapChainFlags.None,
+                BufferCount = 4,
+
+                OutputHandle = ViewHandle,
+
+            };
+
+            var swapChain = new SwapChain(dxgiFactory, device, scd);
+
+
+            //f.Visible = true;
+            
+            Task.Run(() =>
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                int interval = (int)(1000.0 / FramePerSec);
+                AutoResetEvent syncEvent = new AutoResetEvent(false);
+
+                int count = 1000000;
+                while (count-- > 0)
+                {
+                    try
+                    {
+
+                        using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+                        {
+                            device.ImmediateContext.CopyResource(sourceTexture0, backBuffer);
+                            swapChain.Present(1, PresentFlags.None);
+                        }
+
+
+                        int msec = (int)sw.ElapsedMilliseconds;
+                        int delay = interval - msec;
+                        if (delay <= 0)
+                        {
+                            delay = 1;
+                        }
+
+                        syncEvent.WaitOne(delay);
+
+                        sw.Restart();
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Console.WriteLine(ex.Message + " " + device.DeviceRemovedReason);
+                    }
+
+                }
+
+                syncEvent.Dispose();
+
+                sourceTexture0.Dispose();
+                device.Dispose();
+                adapter.Dispose();
+                dxgiFactory.Dispose();
+            });
+
+            Application.Run(f);
+
+
+
+        }
+
+        private static void CopyAcrossGPU()
+        {
+            Console.WriteLine("CopyAcrossGPU() BEGIN");
+            SharpDX.DXGI.Factory1 factory1 = new SharpDX.DXGI.Factory1();
+
+            var index = 0;
+
+            var adapter0 = factory1.GetAdapter(index);
+
+            Console.WriteLine( "Adapter" + index + ": " + adapter0.Description.Description);
+
+            //var _flags = DeviceCreationFlags.VideoSupport |
+            //             DeviceCreationFlags.BgraSupport |
+            //             DeviceCreationFlags.Debug;
+
+            var _flags = DeviceCreationFlags.None;
+
+            var device0 = new SharpDX.Direct3D11.Device(adapter0, _flags);
+
+            using (var multiThread = device0.QueryInterface<SharpDX.Direct3D11.Multithread>())
+            {
+                multiThread.SetMultithreadProtected(true);
+            }
+
+            var fileName = @"Files\1920x1080.bmp";
+            var bmp = new System.Drawing.Bitmap(fileName);
+            var w = bmp.Width * 2;
+            var h = bmp.Height * 2;
+
+            var b = new GDI.Bitmap(w, h, GDI.Imaging.PixelFormat.Format32bppArgb);
+
+            var g = GDI.Graphics.FromImage(b);
+            g.DrawImage(bmp, 0, 0, b.Width, b.Height);
+            g.Dispose();
+            bmp.Dispose();
+
+            bmp = b;
+
+            Console.WriteLine(string.Join(" ", fileName, bmp.Width, bmp.Height, bmp.PixelFormat));
+            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+            {
+                var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
+                var _bmp = bmp.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
+                bmp.Dispose();
+                bmp = _bmp;
+            }
+
+            var srcSize = new GDI.Size(bmp.Width, bmp.Height);
+
+            var sourceTexture0 = GetTexture(bmp, device0);
+
+            bmp.Dispose();
+            bmp = null;
+
+            var stagingTexture0 = new Texture2D(device0,
+                new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Staging,
+                    Format = Format.B8G8R8A8_UNorm,
+                    //BindFlags = BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.Read,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                });
+
+            device0.ImmediateContext.CopyResource(sourceTexture0, stagingTexture0);
+
+            index = 1;
+            var adapter1 = factory1.GetAdapter(index);
+
+            Console.WriteLine("Adapter" + index + ": " + adapter1.Description.Description);
+            var device1 = new SharpDX.Direct3D11.Device(adapter1, _flags);
+
+            var defaultTexture1 = new Texture2D(device1,
+                new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Default,
+                    Format = Format.B8G8R8A8_UNorm,
+                    BindFlags = BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                });
+
+            var stagingTexture1 = new Texture2D(device1,
+                new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Staging,
+                    Format = Format.B8G8R8A8_UNorm,
+                    CpuAccessFlags = CpuAccessFlags.Write | CpuAccessFlags.Read,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                });
+
+            var dynamicTexture1 = new Texture2D(device1,
+                new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Dynamic,
+                    Format = Format.B8G8R8A8_UNorm,
+                    BindFlags = BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.Write,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                });
+
+
+            int copyCount = 1000;
+
+            Console.WriteLine("Copy texture from " + adapter0.Description.Description + " to " + adapter1.Description.Description );
+
+            Console.WriteLine("CopyCount " + copyCount);
+            Console.WriteLine("Test started...");
+
+            Stopwatch sw = Stopwatch.StartNew();
+            Stopwatch stopwatch = new Stopwatch();
+            int count = copyCount;
+            int interval = 16;
+
+            stopwatch.Start();
+            while (count-->0)
+            {
+				{// stagingTexture0->stagingTexture1->defaultTexture1 ~30msec
+					var srcBox = device0.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+					var destBox = device1.ImmediateContext.MapSubresource(stagingTexture1, 0, MapMode.Write, SharpDX.Direct3D11.MapFlags.None);
+					Kernel32.CopyMemory(destBox.DataPointer, srcBox.DataPointer, (uint)destBox.SlicePitch);
+					device0.ImmediateContext.UnmapSubresource(stagingTexture0, 0);
+					device1.ImmediateContext.UnmapSubresource(stagingTexture1, 0);
+					device1.ImmediateContext.CopyResource(stagingTexture1, defaultTexture1);
+				}
+
+				//{// stagingTexture0->dynamicTexture1->defaultTexture1 ~40
+				//	var srcBox = device0.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+				//	var destBox = device1.ImmediateContext.MapSubresource(dynamicTexture1, 0, MapMode.WriteDiscard, SharpDX.Direct3D11.MapFlags.None);
+				//	Kernel32.CopyMemory(destBox.DataPointer, srcBox.DataPointer, (uint)destBox.SlicePitch);
+				//	device0.ImmediateContext.UnmapSubresource(stagingTexture0, 0);
+				//	device1.ImmediateContext.UnmapSubresource(dynamicTexture1, 0);
+
+				//	device1.ImmediateContext.CopyResource(dynamicTexture1, defaultTexture1);
+				//	device1.ImmediateContext.Flush();
+				//}
+
+
+				//{ // UpdateSubresource(...) ~44 msec
+				//	var srcBox = device0.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+				//	device1.ImmediateContext.UpdateSubresource(srcBox, defaultTexture1);
+				//	device0.ImmediateContext.UnmapSubresource(stagingTexture0, 0);
+				//}
+
+
+				//{ //~ 35msec
+				//	var srcBox = device0.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+				//	var data = new DataBox[] { srcBox };
+
+				//	//var tempTexture1 = new Texture2D(device1,
+				//	//    new SharpDX.Direct3D11.Texture2DDescription
+				//	//    {
+				//	//        Width = srcSize.Width,
+				//	//        Height = srcSize.Height,
+				//	//        MipLevels = 1,
+				//	//        ArraySize = 1,
+				//	//        SampleDescription = new SampleDescription(1, 0),
+				//	//        Usage = ResourceUsage.Staging,
+				//	//        Format = Format.B8G8R8A8_UNorm,
+				//	//        CpuAccessFlags = CpuAccessFlags.Write,//| CpuAccessFlags.Read,
+				//	//                            OptionFlags = ResourceOptionFlags.None,
+				//	//    }, data);
+
+				//	var tempTexture1 = new Texture2D(device1,
+				//			new SharpDX.Direct3D11.Texture2DDescription
+				//			{
+				//				Width = srcSize.Width,
+				//				Height = srcSize.Height,
+				//				MipLevels = 1,
+				//				ArraySize = 1,
+				//				SampleDescription = new SampleDescription(1, 0),
+				//				Usage = ResourceUsage.Dynamic,
+				//				Format = Format.B8G8R8A8_UNorm,
+				//				BindFlags = BindFlags.ShaderResource,
+				//				CpuAccessFlags = CpuAccessFlags.Write,//| CpuAccessFlags.Read,
+				//				OptionFlags = ResourceOptionFlags.None,
+				//			}, data);
+
+
+				//	//var tempTexture1 = new Texture2D(device1,
+				//	//        new SharpDX.Direct3D11.Texture2DDescription
+				//	//        {
+				//	//            Width = srcSize.Width,
+				//	//            Height = srcSize.Height,
+				//	//            MipLevels = 1,
+				//	//            ArraySize = 1,
+				//	//            SampleDescription = new SampleDescription(1, 0),
+				//	//            Usage = ResourceUsage.Default,
+				//	//            Format = Format.B8G8R8A8_UNorm,
+				//	//            //BindFlags = BindFlags.ShaderResource,
+				//	//            CpuAccessFlags = CpuAccessFlags.Write| CpuAccessFlags.Read,
+				//	//            OptionFlags = ResourceOptionFlags.None,
+				//	//        }, data);
+
+				//	device0.ImmediateContext.UnmapSubresource(stagingTexture0, 0);
+
+				//	device1.ImmediateContext.CopyResource(tempTexture1, defaultTexture1);
+				//	device1.ImmediateContext.Flush();
+				//	tempTexture1.Dispose();
+				//}
+
+
+
+				//var msec = stopwatch.ElapsedMilliseconds;
+				//var delay = interval - msec;
+				//if (delay > 0)
+				//{
+				//    Thread.Sleep((int)delay);
+				//}
+				//else
+				//{
+				//    Console.WriteLine(delay);
+				//}
+				//stopwatch.Restart();
+			}
+
+			var totalTime = sw.ElapsedMilliseconds;
+            Console.WriteLine("ElapsedMilliseconds: " + totalTime);
+            Console.WriteLine("mSecPerCopy: " + (double)totalTime / copyCount);
+
+            // device1.ImmediateContext.CopyResource(dynamicTexture1, stagingTexture1);
+            device1.ImmediateContext.CopyResource(defaultTexture1, stagingTexture1);
+
+            GDI.Bitmap destBmp = null;
+            TextureToBitmap(stagingTexture1, ref destBmp);
+
+            destBmp.Save("Test.bmp", GDI.Imaging.ImageFormat.Bmp);
+
+
+
+            device0.Dispose();
+            adapter0.Dispose();
+            sourceTexture0.Dispose();
+            stagingTexture0.Dispose();
+
+            defaultTexture1.Dispose();
+            stagingTexture1.Dispose();
+            dynamicTexture1.Dispose();
+            device1.Dispose();
+            adapter1.Dispose();
+
+            factory1.Dispose();
+
+
+            Console.WriteLine("CopyAcrossGPU() END");
+        }
+
+        public static void TextureToBitmap(Texture2D texture, ref GDI.Bitmap bmp)
+        {
+
+            var descr = texture.Description;
+            if (descr.Format != Format.B8G8R8A8_UNorm)
+            {
+                throw new Exception("Invalid texture format " + descr.Format);
+            }
+
+            if (descr.Width <= 0 || descr.Height <= 0)
+            {
+                throw new Exception("Invalid texture size: " + descr.Width + " " + descr.Height);
+            }
+
+            if (bmp == null)
+            {
+                bmp = new GDI.Bitmap(descr.Width, descr.Height, GDI.Imaging.PixelFormat.Format32bppArgb);
+            }
+
+            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+            {
+                throw new Exception("Invalid bitmap format " + bmp.PixelFormat);
+
+            }
+
+            if (bmp.Width != descr.Width || bmp.Height != descr.Height)
+            {
+                throw new Exception("Invalid params");
+
+            }
+
+            using (Surface surface = texture.QueryInterface<Surface>())
+            {
+                try
+                {
+                    var srcData = surface.Map(SharpDX.DXGI.MapFlags.Read);
+
+                    int width = bmp.Width;
+                    int height = bmp.Height;
+                    var rect = new GDI.Rectangle(0, 0, width, height);
+                    var destData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.WriteOnly, bmp.PixelFormat);
+                    try
+                    {
+                        int bytesPerPixel = GDI.Image.GetPixelFormatSize(bmp.PixelFormat) / 8;
+                        IntPtr srcPtr = srcData.DataPointer;
+                        int srcOffset = rect.Top * srcData.Pitch + rect.Left * bytesPerPixel;
+
+                        srcPtr = IntPtr.Add(srcPtr, srcOffset);
+
+                        var destPtr = destData.Scan0;
+                        for (int row = rect.Top; row < rect.Bottom; row++)
+                        {
+                            Utilities.CopyMemory(destPtr, srcPtr, width * bytesPerPixel);
+                            srcPtr = IntPtr.Add(srcPtr, srcData.Pitch);
+                            destPtr = IntPtr.Add(destPtr, destData.Stride);
+
+                        }
+                    }
+                    finally
+                    {
+                        bmp.UnlockBits(destData);
+                    }
+                }
+                finally
+                {
+                    surface.Unmap();
+                }
+            }
+        }
+
+
+        public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
+        {
+            Texture2D texture = null;
+
+            var rect = new GDI.Rectangle(0, 0, bitmap.Width, bitmap.Height);
+
+            var data = bitmap.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+            try
+            {
+                //Windows 7 
+                var descr = new SharpDX.Direct3D11.Texture2DDescription
+                {
+                    Width = bitmap.Width,
+                    Height = bitmap.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SampleDescription(1, 0),
+                    Usage = ResourceUsage.Dynamic,
+                    Format = Format.B8G8R8A8_UNorm,
+                    BindFlags = BindFlags.ShaderResource,
+                    CpuAccessFlags = CpuAccessFlags.Write,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                };
+
+                var dataRect = new SharpDX.DataRectangle(data.Scan0, data.Stride);
+
+                texture = new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
+            }
+            finally
+            {
+                bitmap.UnlockBits(data);
+            }
+
+            return texture;
+        }
+
     }
+
+
+
+
 }

@@ -248,6 +248,13 @@
     <Content Include="FFmpeg4\lib\swscale-5.def" />
     <Content Include="FFmpeg4\LICENSE.txt" />
     <Content Include="FFmpeg4\README.txt" />
+    <Content Include="Files\Bitmaps\rgba_1920x1080.bmp" />
+    <Content Include="Files\Bitmaps\rgba_1920x1080.raw" />
+    <Content Include="Files\Bitmaps\rgba_352x288.bmp" />
+    <Content Include="Files\Bitmaps\rgba_352x288.raw" />
+    <Content Include="Files\Bitmaps\rgba_640x480.bmp" />
+    <Content Include="Files\Bitmaps\rgba_640x480.raw" />
+    <Content Include="Files\testsrc.mp4" />
     <Content Include="logo.ico" />
     <Content Include="GlobalAssemblyInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -282,6 +289,7 @@
     <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\ReadMe.txt" />
+    <Content Include="Utils\yuvplayer.exe" />
     <Content Include="vs_redist\ReadMe.txt" />
     <Content Include="vs_redist\VC_redist.x86.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -289,8 +297,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />
-    <None Include="FFmpeg4\bin\SDP_239_0_0_1.sdp" />
+    <None Include="Files\SDP_239_0_0_1.sdp" />
+    <None Include="FFmpeg4\bin\TestNV12Gen.bat" />
+    <None Include="FFmpeg4\bin\TestRGBAGen.bat" />
     <None Include="FFmpeg4\bin\TestVidGen.bat" />
+    <None Include="FFmpeg4\bin\TestYUV444Gen.bat" />
     <None Include="FFmpeg4\examples\Makefile" />
     <None Include="FFmpeg4\examples\README" />
     <None Include="FFmpeg4\lib\avcodec.lib" />
@@ -319,6 +330,11 @@
     <None Include="FFmpeg4\presets\libvpx-720p50_60.ffpreset" />
     <None Include="Files\AV_10Sec_30Fps_Click_Sin.mkv" />
     <None Include="Files\AV_60Sec_30Fps_Click_Sin.mkv" />
+    <None Include="Files\Bitmaps\NV12_1920x1080.yuv" />
+    <None Include="Files\Bitmaps\NV12_320x240.yuv" />
+    <None Include="Files\Bitmaps\NV12_352x288.yuv" />
+    <None Include="Files\Bitmaps\NV12_640x480.yuv" />
+    <None Include="Files\Bitmaps\yuva444p_352x288.yuv" />
     <None Include="Utils\mftrace.bat" />
     <None Include="Utils\mftrace_startnew.bat" />
   </ItemGroup>
