@@ -27,7 +27,7 @@ using System.Windows.Forms;
 
 namespace Test.Encoder
 {
-    class Program
+    public partial class  Program
     {
 
  
@@ -61,7 +61,9 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
 
-            SimpleSwapChain();
+            SimpleSwapChain simpleSwapChain = new SimpleSwapChain();
+
+            simpleSwapChain.Init();
             //CopyAcrossGPU();
 
             //NewMethod1();
@@ -625,147 +627,6 @@ namespace Test.Encoder
             return;
         }
 
-
-        private static void SimpleSwapChain()
-        {
-
-
-
-            var fileName = @"Files\1920x1080.bmp";
-
-            int BufferWidth = 1920;
-            int BufferHeight = 1080;
-            IntPtr ViewHandle = IntPtr.Zero;
-            int FramePerSec = 60;
-
-            int adapterIndex = 0;
-            var dxgiFactory = new SharpDX.DXGI.Factory1();
-            var adapter = dxgiFactory.GetAdapter1(adapterIndex);
-
-            SharpDX.Direct3D.FeatureLevel[] featureLevel =
-            {
-                    FeatureLevel.Level_11_1,
-                    FeatureLevel.Level_11_0,
-                    FeatureLevel.Level_10_1,
-                };
-
-
-            var deviceCreationFlags = DeviceCreationFlags.None;
-            //DeviceCreationFlags.Debug |
-            //DeviceCreationFlags.VideoSupport |
-            //DeviceCreationFlags.BgraSupport;
-
-            var device = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags, featureLevel);
-
-            Console.WriteLine($"RendererAdapter {adapterIndex}: " + adapter.Description.Description);
-            
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-
-            var bmp = new System.Drawing.Bitmap(fileName);
-            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
-            {
-                var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
-                var _bmp = bmp.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
-                bmp.Dispose();
-                bmp = _bmp;
-            }
-            var sourceTexture0 = GetTexture(bmp, device);
-            bmp.Dispose();
-
-            Form f = new Form
-            {
-                Width = 640,
-                Height = 480,
-                Text = fileName,
-            };
-
-            ViewHandle = f.Handle;
-
-            BufferWidth = sourceTexture0.Description.Width;
-            BufferHeight = sourceTexture0.Description.Height;
-
-            var scd = new SwapChainDescription
-            {
-                SampleDescription = new SampleDescription { Count = 1, Quality = 0 },
-                SwapEffect = SwapEffect.FlipSequential,
-                ModeDescription = new ModeDescription
-                {
-                    Format = Format.B8G8R8A8_UNorm,
-                    Scaling = DisplayModeScaling.Stretched,
-                    //Scaling = DisplayModeScaling.Centered,
-                    Width = BufferWidth,
-                    Height = BufferHeight,
-                    RefreshRate = new Rational(FramePerSec, 1),
-
-                },
-                IsWindowed = true,
-                Usage = Usage.RenderTargetOutput | Usage.BackBuffer,
-                Flags = SwapChainFlags.None,
-                BufferCount = 4,
-
-                OutputHandle = ViewHandle,
-
-            };
-
-            var swapChain = new SwapChain(dxgiFactory, device, scd);
-
-
-            //f.Visible = true;
-            
-            Task.Run(() =>
-            {
-                Stopwatch sw = Stopwatch.StartNew();
-                int interval = (int)(1000.0 / FramePerSec);
-                AutoResetEvent syncEvent = new AutoResetEvent(false);
-
-                int count = 1000000;
-                while (count-- > 0)
-                {
-                    try
-                    {
-
-                        using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
-                        {
-                            device.ImmediateContext.CopyResource(sourceTexture0, backBuffer);
-                            swapChain.Present(1, PresentFlags.None);
-                        }
-
-
-                        int msec = (int)sw.ElapsedMilliseconds;
-                        int delay = interval - msec;
-                        if (delay <= 0)
-                        {
-                            delay = 1;
-                        }
-
-                        syncEvent.WaitOne(delay);
-
-                        sw.Restart();
-                    }
-                    catch (Exception ex)
-                    {
-
-                        Console.WriteLine(ex.Message + " " + device.DeviceRemovedReason);
-                    }
-
-                }
-
-                syncEvent.Dispose();
-
-                sourceTexture0.Dispose();
-                device.Dispose();
-                adapter.Dispose();
-                dxgiFactory.Dispose();
-            });
-
-            Application.Run(f);
-
-
-
-        }
 
         private static void CopyAcrossGPU()
         {
