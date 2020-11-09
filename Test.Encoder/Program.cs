@@ -63,14 +63,16 @@ namespace Test.Encoder
 
             SimpleSwapChain simpleSwapChain = new SimpleSwapChain();
 
-            simpleSwapChain.Init();
-            //CopyAcrossGPU();
+            simpleSwapChain.Run();
+			//CopyAcrossGPU();
 
-            //NewMethod1();
+			//NewMethod1();
 
-            //Console.WriteLine(DxTool.LogDxInfo());
+			//Console.WriteLine(DxTool.LogDxInfo());
 
-            Console.WriteLine("Press any key to exit...");
+			Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+
+			Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
             return;
 
@@ -677,7 +679,7 @@ namespace Test.Encoder
 
             var srcSize = new GDI.Size(bmp.Width, bmp.Height);
 
-            var sourceTexture0 = GetTexture(bmp, device0);
+            var sourceTexture0 = GetDynamicRgbaTextureFromBitmap(bmp, device0);
 
             bmp.Dispose();
             bmp = null;
@@ -970,7 +972,7 @@ namespace Test.Encoder
         }
 
 
-        public static Texture2D GetTexture(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
+        public static Texture2D GetDynamicRgbaTextureFromBitmap(GDI.Bitmap bitmap, SharpDX.Direct3D11.Device device)
         {
             Texture2D texture = null;
 

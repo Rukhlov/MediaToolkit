@@ -87,7 +87,8 @@ namespace ScreenStreamer.Wpf
  
         private void InitNotifyIcon(ViewModels.Dialogs.MainViewModel mainViewModel)
         {
-            notifyIcon = (Hardcodet.Wpf.TaskbarNotification.TaskbarIcon)Application.Current.FindResource("notifyIcon");
+            
+             notifyIcon = (Hardcodet.Wpf.TaskbarNotification.TaskbarIcon)Application.Current.FindResource("notifyIcon");
             
             notifyIcon.TrayRightMouseDown += (o, a) =>
             {

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
+using MediaToolkit.NativeAPIs.Utils;
 
 namespace ScreenStreamer.Wpf.Models
 {
@@ -236,6 +238,70 @@ namespace ScreenStreamer.Wpf.Models
 
         public string EncoderId { get; set; } = "";
         //public EncoderItem VideoEncoder { get; set; }
+
+        [JsonIgnore]
+        public bool AutoStartStreamingOnStartup
+        {
+            get
+            {
+                string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+                //string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+                string name = "ScreenStreamer";
+                string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
+                return File.Exists(shortcutFileName);
+            }
+            set
+            {
+                if (value)
+                {
+                    EnableAutoStreaming();
+                }
+                else
+                {
+                    DisableAutoStreaming();
+                }
+                
+            }
+
+        }
+
+
+        public void EnableAutoStreaming()
+        {
+            string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+            //string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+            string name = "ScreenStreamer";
+
+            string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
+
+            //string workingDir = AppDomain.CurrentDomain.BaseDirectory;
+            //string appName = AppConsts.ApplicationName
+            //string fileName = Path.Combine(workingDir, "ScreenStreamer.Wpf.App.exe");
+
+            string fileName = System.Reflection.Assembly.GetEntryAssembly().Location;
+            string workingDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            string _args = "-autostream";
+
+            ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
+
+        }
+
+        public void DisableAutoStreaming()
+        {
+            string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Startup);
+            //string shortcutPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+            string name = "ScreenStreamer";
+
+            string shortcutFileName = Path.Combine(shortcutPath, name + ".lnk");
+
+            string fileName = System.Reflection.Assembly.GetEntryAssembly().Location;
+
+            if (File.Exists(shortcutFileName))
+            {
+                ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
+            }
+        }
 
         public void Init(IEnumerable<EncoderItem> encoders = null)
         {

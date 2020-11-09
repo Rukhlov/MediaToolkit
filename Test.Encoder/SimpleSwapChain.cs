@@ -26,19 +26,23 @@ namespace Test.Encoder
 
         private Texture2D sharedTexture = null;
 
-        public void Init()
+        public void Run()
         {
-            Console.WriteLine("Init()");
+            Console.WriteLine("SimpleSwapChain::Run()");
 
+            //var fileName = @"Files\1920x1080.bmp";
 
-            var fileName = @"Files\1920x1080.bmp";
+			var fileName = @"Files\rgba_352x288.bmp";
+			
 
-            int BufferWidth = 1920;
-            int BufferHeight = 1080;
+			int ImageWidth = 1920;
+            int ImageHeight = 1080;
             IntPtr ViewHandle = IntPtr.Zero;
             int FramePerSec = 60;
 
             int adapterIndex = 0;
+
+
             var dxgiFactory = new SharpDX.DXGI.Factory1();
             var adapter = dxgiFactory.GetAdapter1(adapterIndex);
 
@@ -47,7 +51,7 @@ namespace Test.Encoder
                     FeatureLevel.Level_11_1,
                     FeatureLevel.Level_11_0,
                     FeatureLevel.Level_10_1,
-                };
+             };
 
 
             var deviceCreationFlags = DeviceCreationFlags.None;
@@ -64,23 +68,19 @@ namespace Test.Encoder
                 multiThread.SetMultithreadProtected(true);
             }
 
-
             InitShaders();
 
-
-            SamplerStateDescription defaultDescr = new SamplerStateDescription
-            {
-                Filter = Filter.MinMagMipLinear,
-                AddressU = TextureAddressMode.Clamp,
-                AddressV = TextureAddressMode.Clamp,
-                AddressW = TextureAddressMode.Clamp,
-                ComparisonFunction = Comparison.Never,
-                BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
-                MinimumLod = 0,
-                MaximumLod = float.MaxValue,
-            };
-
-            samplerLinear = new SamplerState(device, defaultDescr);
+            samplerLinear = new SamplerState(device, new SamplerStateDescription
+			{
+				Filter = Filter.MinMagMipLinear,
+				AddressU = TextureAddressMode.Clamp,
+				AddressV = TextureAddressMode.Clamp,
+				AddressW = TextureAddressMode.Clamp,
+				ComparisonFunction = Comparison.Never,
+				BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
+				MinimumLod = 0,
+				MaximumLod = float.MaxValue,
+			});
 
             var bmp = new System.Drawing.Bitmap(fileName);
             if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
@@ -90,10 +90,8 @@ namespace Test.Encoder
                 bmp.Dispose();
                 bmp = _bmp;
             }
-            var sourceTexture0 = Program.GetTexture(bmp, device);
 
-
-
+            var sourceTexture0 = Program.GetDynamicRgbaTextureFromBitmap(bmp, device);
             bmp.Dispose();
 
             var srcDescr = sourceTexture0.Description;
@@ -114,16 +112,13 @@ namespace Test.Encoder
 
             });
 
-            RenderTargetViewDescription d = new RenderTargetViewDescription
-            {
-                Format = srcDescr.Format,//Format.R8G8B8A8_UNorm,
-                Dimension = RenderTargetViewDimension.Texture2D,
-                Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-            };
-
-            var renderTargetView = new RenderTargetView(device, sharedTexture, d);
-
-
+            var renderTargetView = new RenderTargetView(device, sharedTexture, 
+				new RenderTargetViewDescription
+			{
+				Format = srcDescr.Format,//Format.R8G8B8A8_UNorm,
+				Dimension = RenderTargetViewDimension.Texture2D,
+				Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+			});
 
             Form f = new Form
             {
@@ -134,8 +129,8 @@ namespace Test.Encoder
 
             ViewHandle = f.Handle;
 
-            BufferWidth = sourceTexture0.Description.Width;
-            BufferHeight = sourceTexture0.Description.Height;
+            ImageWidth = srcDescr.Width;
+            ImageHeight = srcDescr.Height;
 
             var scd = new SwapChainDescription
             {
@@ -146,8 +141,8 @@ namespace Test.Encoder
                     Format = Format.B8G8R8A8_UNorm,
                     Scaling = DisplayModeScaling.Stretched,
                     //Scaling = DisplayModeScaling.Centered,
-                    Width = BufferWidth,
-                    Height = BufferHeight,
+                    Width = ImageWidth,
+                    Height = ImageHeight,
                     RefreshRate = new Rational(FramePerSec, 1),
 
                 },
@@ -168,10 +163,8 @@ namespace Test.Encoder
 			//device.ImmediateContext.CopyResource(sourceTexture0, sharedTexture);
 			//device.ImmediateContext.Flush();
 
-
-			//f.Visible = true;
-
-			Task.Run(() =>
+			bool running = true;
+			var task = Task.Run(() =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 int interval = (int)(1000.0 / FramePerSec);
@@ -179,13 +172,13 @@ namespace Test.Encoder
 				bool aspectRatio = true;
 
                 int count = 1000000;
-                while (count-- > 0)
+                while (running)
                 {
                     try
 					{
 						var deviceContext = device.ImmediateContext;
 
-						_Vertex[] vertices = CreateVertices(f.Size, new GDI.Size(BufferWidth, BufferHeight), aspectRatio);
+						_Vertex[] vertices = CreateVertices(f.Size, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
 
 						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
 						{
@@ -195,10 +188,20 @@ namespace Test.Encoder
 								Stride = Utilities.SizeOf<_Vertex>(),
 								Offset = 0,
 							};
-							device.ImmediateContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+							deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
 						}
 
-						device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
+						deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
+
+						deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
+						{
+							Width = ImageWidth,
+							Height = ImageHeight,
+							MinDepth = 0f,
+							MaxDepth = 1f,
+							X = 0,
+							Y = 100,
+						});
 
 						ShaderResourceView shaderResourceView = null;
 						try
@@ -208,16 +211,6 @@ namespace Test.Encoder
 								Format = sourceTexture0.Description.Format,
 								Dimension = ShaderResourceViewDimension.Texture2D,
 								Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-							});
-
-							deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
-							{
-								Width = BufferWidth,
-								Height = BufferHeight,
-								MinDepth = 0f,
-								MaxDepth = 1f,
-								X = 0,
-								Y = 0,
 							});
 
 							deviceContext.OutputMerger.SetTargets(renderTargetView);
@@ -238,7 +231,7 @@ namespace Test.Encoder
 
 						using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
 						{
-							device.ImmediateContext.CopyResource(sharedTexture, backBuffer);
+							deviceContext.CopyResource(sharedTexture, backBuffer);
 							swapChain.Present(1, PresentFlags.None);
 						}
 
@@ -260,19 +253,27 @@ namespace Test.Encoder
                     }
 
                 }
-
                 syncEvent.Dispose();
-
-                sourceTexture0.Dispose();
-                device.Dispose();
 
             });
 
             Application.Run(f);
 
+			running = false;
 
+			task.Wait();
 
-        }
+			swapChain?.Dispose();
+			samplerLinear?.Dispose();
+			inputLayout?.Dispose();
+			pixelShader?.Dispose();
+			vertexShader?.Dispose();
+			renderTargetView?.Dispose();
+			sharedTexture?.Dispose();
+			sourceTexture0?.Dispose();
+			device?.Dispose();
+
+		}
 
 		private static _Vertex[] CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
 		{
@@ -324,7 +325,7 @@ namespace Test.Encoder
 				var width = viewWidth * normX;
 				var height = viewHeight * normY;
 
-				// в правых координатах -1f, -1f 
+				// в правых координатах -1f, 1f 
 				// сдвигаем на -1,-1 и инвертируем Y 
 				x1 = (float)(left - 1);
 				y1 = (float)(-((height + top) - 1));
@@ -361,130 +362,37 @@ namespace Test.Encoder
 
         private void InitShaders()
         {
-            Console.WriteLine("InitShaders()");
-
+            Console.WriteLine("SimpleSwapChain::InitShaders()");
 
            var appPath = AppDomain.CurrentDomain.BaseDirectory;
-            var shaderPath = Path.Combine(appPath, "Shaders");
-
-
-            /*
-             *  { float3(-0.5f,  0.5f, 0.f), float2(0.f, 0.f) },
-                { float3( 0.5f,  0.5f, 0.f), float2(1.f, 0.f) },
-                { float3( 0.5f, -0.5f, 0.f), float2(1.f, 1.f) },
-                { float3(-0.5f, -0.5f, 0.f), float2(0.f, 1.f) },
-             */
-
-            _Vertex[] _vertices = new _Vertex[]
-            {
-                    new _Vertex(new Vector3(-0.7f, -1f, 0f), new Vector2(0f, 1f)),
-                    new _Vertex(new Vector3(-0.7f,  1f, 0f), new Vector2(0f, 0f)),
-                    new _Vertex(new Vector3(0.7f, -1f, 0f), new Vector2(1f, 1f)),
-                    new _Vertex(new Vector3(0.7f, 1f, 0f), new Vector2(1f, 0f)),
-
-            };
-
-			//_Vertex[] _vertices = new _Vertex[]
-			//    {
-			//        new _Vertex(new Vector3(-1.0f, -1.0f, 0), new Vector2(0.0f, 1.0f)),
-			//        new _Vertex(new Vector3(-1.0f, 1.0f, 0), new Vector2(0.0f, 0.0f)),
-			//        new _Vertex(new Vector3(1.0f, -1.0f, 0), new Vector2(1.0f, 1.0f)),
-			//        new _Vertex(new Vector3(1.0f, -1.0f, 0), new Vector2(1.0f, 1.0f)),
-			//        new _Vertex(new Vector3(-1.0f, 1.0f, 0), new Vector2(0.0f, 0.0f)),
-			//        new _Vertex(new Vector3(1.0f, 1.0f, 0), new Vector2(1.0f, 0.0f)),
-			//    };
-
-			//VertexBufferBinding vertexBuffer = new VertexBufferBinding
-			//{
-			//	Buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, _vertices),
-			//	Stride = Utilities.SizeOf<_Vertex>(),
-			//	Offset = 0,
-			//};
-			//device.ImmediateContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
-			//vertexBuffer.Buffer.Dispose();
-
-
-			//int[] strides = { Utilities.SizeOf<_Vertex>() };
-
-			//int[] offsets = { 0 };
-
-			//SharpDX.Direct3D11.Buffer[] vertices =
-			//{
-			//    SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, _vertices)
-			//};
-
-			//device.ImmediateContext.InputAssembler.SetVertexBuffers(0, vertices, strides, offsets);
-
-
-			//device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleList;
-			//device.ImmediateContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-
-
+           var shaderPath = Path.Combine(appPath, "Shaders");
 
             var profileLevel = "4_0";
             //var profileLevel = "5_0";
             var vsProvile = "vs_" + profileLevel;
             var psProvile = "ps_" + profileLevel;
+       
+            var vsFile = Path.Combine(shaderPath, "VertexShader.hlsl");
+			using (var compResult = CompileShaderFromFile(vsFile, "VS", vsProvile))
+			{
+				vertexShader = new VertexShader(device, compResult.Bytecode);
+				var elements = new[]
+				{
+					new InputElement("POSITION",0,Format.R32G32B32_Float,0,0),
+					new InputElement("TEXCOORD",0,Format.R32G32_Float,12,0)
+				};
 
-            {
-                var vsFile = Path.Combine(shaderPath, "VertexShader.hlsl");
+				using (var inputLayout = new InputLayout(device, compResult.Bytecode, elements))
+				{
+					device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
+				}	
+			}
 
-                var compilationResult = CompileShaderFromFile(vsFile, "VS", vsProvile);
-                vertexShader = new VertexShader(device, compilationResult.Bytecode);
-
-                /*
-                 * 
-                 * D3D11_INPUT_ELEMENT_DESC Layout[] =
-	                {
-		                { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		                { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	                };
-
-                 */
-                //InputElement[] elements =
-                //{
-                //    new InputElement
-                //    {
-                //        SemanticName = "POSITION",
-                //        SemanticIndex = 0,
-                //        Format = Format.R32G32B32_Float,
-                //        Slot = 0,
-                //        AlignedByteOffset = 0,
-                //        Classification = InputClassification.PerVertexData,
-                //        InstanceDataStepRate = 0,
-                //    },
-                //    new InputElement
-                //    {
-                //        SemanticName = "TEXCOORD",
-                //        SemanticIndex = 0,
-                //        Format = Format.R32G32_Float,
-                //        Slot = 0,
-                //        AlignedByteOffset = 12,
-                //        Classification = InputClassification.PerVertexData,
-                //        InstanceDataStepRate = 0,
-                //    }
-                //};
-
-                var elements = new[]
-                {
-                    new InputElement("POSITION",0,Format.R32G32B32_Float,0,0),
-                    new InputElement("TEXCOORD",0,Format.R32G32_Float,12,0)
-                };
-
-                inputLayout = new InputLayout(device, compilationResult.Bytecode, elements);
-
-                device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-            }
-
-            {
-                var psFile = Path.Combine(shaderPath, "PixelShader.hlsl");
-
-                var compilationResult = CompileShaderFromFile(psFile, "PS", psProvile);
-                pixelShader = new PixelShader(device, compilationResult.Bytecode);
-            }
-
-
-
+			var psFile = Path.Combine(shaderPath, "PixelShader.hlsl");
+			using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
+			{
+				pixelShader = new PixelShader(device, compResult.Bytecode);
+			}
         }
 
 
@@ -496,7 +404,7 @@ namespace Test.Encoder
             SharpDX.D3DCompiler.ShaderFlags shaderFlags =
                 SharpDX.D3DCompiler.ShaderFlags.EnableStrictness
                 | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
-            //| SharpDX.D3DCompiler.ShaderFlags.Debug;
+				//| SharpDX.D3DCompiler.ShaderFlags.Debug;
 
             SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
 

@@ -221,6 +221,15 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             }
         }
 
+        public bool AutoStartStreamingOnStartup
+        {
+            get => _model.AutoStartStreamingOnStartup;
+            set
+            {
+                SetProperty(_model, () => _model.AutoStartStreamingOnStartup, value);
+            }
+        }
+
 
         public ICommand AdjustResolutionCommand { get; }
 

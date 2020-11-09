@@ -35,6 +35,8 @@
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="40"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Encoder" Grid.Row="0" Grid.Column="0"/>
@@ -149,7 +151,18 @@
                           IsChecked="{Binding KeepAspectRatio}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
+
+            <Rectangle Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
             
+            <TextBlock Text="Auto Streaming on System Startup" Grid.Row="15" Grid.Column="0"/>
+
+            <ToggleButton Grid.Row="15" Grid.Column="1" 
+                          Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                          IsChecked="{Binding AutoStartStreamingOnStartup}" 
+
+                          HorizontalAlignment="Right"
+                          Cursor="Hand"/>
+
 
         </Grid>
         
