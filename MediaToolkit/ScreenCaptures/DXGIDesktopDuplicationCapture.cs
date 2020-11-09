@@ -27,6 +27,7 @@ using SharpDX.Mathematics.Interop;
 using SharpDX.MediaFoundation;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
+using MediaToolkit.NativeAPIs;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -214,6 +215,8 @@ namespace MediaToolkit.ScreenCaptures
                 //    }
                 //}
 
+                
+   
                 if (adapter == null)
                 {// первым идет адаптер с которому подключен primary монитор
                     adapter = dxgiFactory.GetAdapter1(0);
@@ -223,13 +226,22 @@ namespace MediaToolkit.ScreenCaptures
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
+
+
                 var deviceCreationFlags =
                     //DeviceCreationFlags.Debug |
                     DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
 
-                
-                device = new Device(adapter, deviceCreationFlags);
+                SharpDX.Direct3D.FeatureLevel[] featureLevel =
+                {
+                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                    //SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                };
+
+
+                device = new Device(adapter, deviceCreationFlags, featureLevel);
                 using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                 {
                     multiThread.SetMultithreadProtected(true);
@@ -245,9 +257,7 @@ namespace MediaToolkit.ScreenCaptures
                 foreach (var _output in adapter.Outputs)
                 {
                     var descr = _output.Description;
-
                     var desktopBounds = descr.DesktopBounds;
-
                     var desktopRect = new GDI.Rectangle
                     {
                         X = desktopBounds.Left,
@@ -261,14 +271,12 @@ namespace MediaToolkit.ScreenCaptures
                     {
                         //--------------------------------------
                         logger.Info("Screen source info: " + adapter.Description.Description + " " + descr.DeviceName);
+                        DesktopDuplicator deskDupl = new DesktopDuplicator();
 
-                        DesktopDuplicator deskDupl = new DesktopDuplicator(device);
-
-                        deskDupl.Init(_output, SrcRect);
+                        deskDupl.Init(_output, device, SrcRect);
                         deskDupl.CaptureMouse = this.CaptureMouse;
 
                         deskDupls.Add(deskDupl);
-
                         //-------------------------------------------
                     }
                     else
@@ -279,6 +287,79 @@ namespace MediaToolkit.ScreenCaptures
 
                     _output.Dispose();
                 }
+
+                var adaptersCount = dxgiFactory.GetAdapterCount1();
+                if (adaptersCount > 2)
+                {
+                    var adapters = dxgiFactory.Adapters1;
+                    for (int index= 1; index < adapters.Length; index++)
+                    {
+                        var _adapter = adapters[index];
+                        var adapterDescr = _adapter.Description1;
+                        var flags = adapterDescr.Flags;
+                        if (flags == AdapterFlags.None)
+                        {
+                            var outputCount = _adapter.GetOutputCount();
+                            if (outputCount > 0)
+                            {
+                                var _outputs = _adapter.Outputs;
+                                foreach (var _output in _outputs)
+                                {
+                                    var descr = _output.Description;
+                                    var desktopBounds = descr.DesktopBounds;
+                                    var desktopRect = new GDI.Rectangle
+                                    {
+                                        X = desktopBounds.Left,
+                                        Y = desktopBounds.Top,
+                                        Width = desktopBounds.Right - desktopBounds.Left,
+                                        Height = desktopBounds.Bottom - desktopBounds.Top,
+                                    };
+
+                                    var rect = GDI.Rectangle.Intersect(desktopRect, SrcRect);
+                                    if (rect.Width > 0 && rect.Height > 0)
+                                    {
+                                        logger.Info("Screen source info: " + _adapter.Description.Description + " " + descr.DeviceName);
+
+                                        var secondaryDevice = new Device(_adapter, deviceCreationFlags, featureLevel);
+                                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                                        {
+                                            multiThread.SetMultithreadProtected(true);
+                                        }
+
+                                        DesktopDuplicator deskDupl = new DesktopDuplicator();
+                                        deskDupl.Init(_output, secondaryDevice, SrcRect, device);
+                                        deskDupl.CaptureMouse = this.CaptureMouse;
+
+                                        deskDupls.Add(deskDupl);
+                                    }
+                                    else
+                                    {
+                                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
+                                        //continue;
+                                    }
+                                }
+
+                                for (int i = 0; i < _outputs.Length; i++)
+                                {
+                                    var o = _outputs[i];
+                                    o.Dispose();
+                                    o = null;
+                                }
+                            }
+                        }
+                    }
+
+
+                    for (int i = 0; i < adapters.Length; i++)
+                    {
+                        var a = adapters[i];
+                        a.Dispose();
+                        a = null;
+                    }
+
+                }
+
+
 
             }
             finally
@@ -573,12 +654,7 @@ namespace MediaToolkit.ScreenCaptures
 
         class DesktopDuplicator
         {
-            private readonly Device device = null;
-
-            internal DesktopDuplicator(Device device)
-            {
-                this.device = device;
-            }
+            private Device device = null;
 
             private OutputDuplication deskDupl = null;
             private Texture2D duplTexture = null;
@@ -593,19 +669,27 @@ namespace MediaToolkit.ScreenCaptures
             internal Rectangle drawRect = Rectangle.Empty;
             internal Rectangle duplRect = Rectangle.Empty;
 
-            public void Init(Output output, GDI.Rectangle srcRect)
+            private Device primaryDevice = null;
+            private bool mapToPrimaryDevice = false;
+
+            private Texture2D stagingTexture0 = null;
+            private Texture2D stagingTexture1 = null;
+            
+            public void Init(Output output, Device device, GDI.Rectangle srcRect, Device primaryDev = null)
             {
                 logger.Debug("DesktopDuplicator::Init(...) " + srcRect.ToString());
 
                 try
                 {
+                    this.device = device;
+
                     RawRectangle screenRect = output.Description.DesktopBounds;
                     int width = screenRect.Right - screenRect.Left;
                     int height = screenRect.Bottom - screenRect.Top;
 
                     SetupRegions(screenRect, srcRect);
 
-                    screenTexture = new Texture2D(device,
+                    screenTexture = new Texture2D(this.device,
                       new Texture2DDescription
                       {
                           CpuAccessFlags = CpuAccessFlags.None,
@@ -621,6 +705,44 @@ namespace MediaToolkit.ScreenCaptures
                           OptionFlags = ResourceOptionFlags.Shared,
 
                       });
+
+                    if (primaryDev != null)
+                    {
+                        this.primaryDevice = primaryDev;
+                        mapToPrimaryDevice = true;
+
+                        stagingTexture0 = new Texture2D(device,
+                          new SharpDX.Direct3D11.Texture2DDescription
+                          {
+                              Width = width,
+                              Height = height,
+                              MipLevels = 1,
+                              ArraySize = 1,
+                              SampleDescription = new SampleDescription(1, 0),
+                              Usage = ResourceUsage.Staging,
+                              Format = Format.B8G8R8A8_UNorm,
+                            //BindFlags = BindFlags.ShaderResource,
+                              CpuAccessFlags = CpuAccessFlags.Read,
+                              OptionFlags = ResourceOptionFlags.None,
+
+                          });
+
+                        stagingTexture1 = new Texture2D(primaryDevice,
+                            new SharpDX.Direct3D11.Texture2DDescription
+                            {
+                                Width = width,
+                                Height = height,
+                                MipLevels = 1,
+                                ArraySize = 1,
+                                SampleDescription = new SampleDescription(1, 0),
+                                Usage = ResourceUsage.Staging,
+                                Format = Format.B8G8R8A8_UNorm,
+                                CpuAccessFlags = CpuAccessFlags.Write | CpuAccessFlags.Read,
+                                OptionFlags = ResourceOptionFlags.None,
+
+                            });
+                    }
+
 
                     using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
                     {
@@ -638,7 +760,7 @@ namespace MediaToolkit.ScreenCaptures
                         try
                         {// Duplicate the output
                             //https://docs.microsoft.com/en-us/windows/win32/api/dxgi1_2/nf-dxgi1_2-idxgioutput1-duplicateoutput
-                            deskDupl = output1.DuplicateOutput(device);
+                            deskDupl = output1.DuplicateOutput(this.device);
                         }
                         catch(SharpDXException ex)
                         {
@@ -863,7 +985,25 @@ namespace MediaToolkit.ScreenCaptures
 
                             screenTarget.EndDraw();
                         }
-                        texture = screenTexture;
+
+                        if (!mapToPrimaryDevice)
+                        {
+                            texture = screenTexture;
+                        }
+                        else
+                        {
+
+                            device.ImmediateContext.CopyResource(screenTexture, stagingTexture0);
+
+                            var srcBox = device.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+                            var destBox = primaryDevice.ImmediateContext.MapSubresource(stagingTexture1, 0, MapMode.Write, SharpDX.Direct3D11.MapFlags.None);
+                            Kernel32.CopyMemory(destBox.DataPointer, srcBox.DataPointer, (uint)destBox.SlicePitch);
+
+                            device.ImmediateContext.UnmapSubresource(stagingTexture0, 0);
+                            primaryDevice.ImmediateContext.UnmapSubresource(stagingTexture1, 0);
+
+                            texture = stagingTexture1;
+                        }
 
                         //texture = duplTexture;
 
@@ -1463,6 +1603,26 @@ namespace MediaToolkit.ScreenCaptures
                     cursorInfo = null;
                 }
 
+                if(stagingTexture0!=null && !stagingTexture0.IsDisposed)
+                {
+                    stagingTexture0.Dispose();
+                    stagingTexture0 = null;
+                }
+
+                if (stagingTexture1 != null && !stagingTexture1.IsDisposed)
+                {
+                    stagingTexture1.Dispose();
+                    stagingTexture1 = null;
+                }
+
+                if (mapToPrimaryDevice)
+                {
+                    if (device != null)
+                    {
+                        device.Dispose();
+                        device = null;
+                    }
+                }
             }
 
         }
