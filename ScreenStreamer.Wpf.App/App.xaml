@@ -9,7 +9,6 @@
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/ScreenStreamer.Wpf.App;component/Templates/NotifyIconTemplate.xaml"/>
                 <ResourceDictionary>
                     <SolidColorBrush x:Key="MaterialDesignDivider" Color="#147BE2" />
                 </ResourceDictionary>

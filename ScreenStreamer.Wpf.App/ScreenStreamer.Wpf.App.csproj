@@ -135,6 +135,7 @@
     </Compile>
     <Compile Include="Helpers\AudioHelper.cs" />
     <Compile Include="Helpers\EncoderHelper.cs" />
+    <Compile Include="Managers\NotifyIconManager.cs" />
     <Compile Include="Managers\SelectAreaManager.cs" />
     <Compile Include="Models\MediaProperties.cs" />
     <Compile Include="Models\MediaStreamModel.cs" />

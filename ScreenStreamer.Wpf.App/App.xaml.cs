@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using NLog;
 using ScreenStreamer.Common;
+
 using ScreenStreamer.Wpf.Helpers;
 using ScreenStreamer.Wpf.Managers;
 
@@ -21,6 +22,8 @@ namespace ScreenStreamer.Wpf
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public static SystemManager SystemMan { get; } = new SystemManager();
+
+        private NotifyIcon notifyIcon = null;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -59,8 +62,8 @@ namespace ScreenStreamer.Wpf
 
             //var interopHelper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
             //interopHelper.EnsureHandle();
-            
-            InitNotifyIcon(mainViewModel);
+
+            notifyIcon = new NotifyIcon(mainViewModel);
 
             bool autoStartStream = Program.StartupParams.AutoStream;
             if (!autoStartStream)
@@ -84,25 +87,6 @@ namespace ScreenStreamer.Wpf
             //Console.WriteLine("=======================");
         }
 
- 
-        private void InitNotifyIcon(ViewModels.Dialogs.MainViewModel mainViewModel)
-        {
-            
-             notifyIcon = (Hardcodet.Wpf.TaskbarNotification.TaskbarIcon)Application.Current.FindResource("notifyIcon");
-            
-            notifyIcon.TrayRightMouseDown += (o, a) =>
-            {
-                mainViewModel.ActivateMainWindowCommand.Execute(null);
-            };
-
-            notifyIcon.TrayLeftMouseDown += (o, a) =>
-            {
-                mainViewModel.ShowMainWindowCommand.Execute(null);
-            };
-            notifyIcon.DataContext = mainViewModel;
-        }
-
-        private Hardcodet.Wpf.TaskbarNotification.TaskbarIcon notifyIcon = null;
 
 		protected override void OnExit(ExitEventArgs e)
         {
@@ -111,12 +95,11 @@ namespace ScreenStreamer.Wpf
            
             ConfigManager.Save();
 
-			//SystemMan.Shutdown();
-
-			notifyIcon?.Dispose();
-            notifyIcon = null;
+            //SystemMan.Shutdown();
+            notifyIcon?.Dispose();
 
             base.OnExit(e);
         }
+
     }
 }

@@ -309,5 +309,7 @@ namespace ScreenStreamer.Wpf.Services
                 }
             }
         }
+
+
     }
 }

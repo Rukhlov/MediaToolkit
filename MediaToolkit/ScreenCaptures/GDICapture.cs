@@ -34,6 +34,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public Texture2D SharedTexture { get; private set; }
         public long AdapterId { get; private set; }
+        public int AdapterIndex { get; private set; }
         public bool UseHwContext { get; set; } = false;
 
         public bool CaptureAllLayers { get; set; } = false;
@@ -92,9 +93,10 @@ namespace MediaToolkit.ScreenCaptures
                 //    }
                 //}
 
+                AdapterIndex = 0;
                 if (adapter == null)
                 {// первым идет адаптер с которому подключен primary монитор
-                    adapter = dxgiFactory.GetAdapter1(0);
+                    adapter = dxgiFactory.GetAdapter1(AdapterIndex);
                 }
 
                 AdapterId = adapter.Description.Luid;

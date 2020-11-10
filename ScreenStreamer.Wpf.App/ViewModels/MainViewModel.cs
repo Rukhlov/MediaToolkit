@@ -50,7 +50,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             {
                 mainCaption += " (" + startParams.UserName + ")";
             }
+
         }
+
 
 
         private string mainCaption = AppConsts.ApplicationCaption;
@@ -63,6 +65,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         }
 
         private Services.WndProcService wndProcService = null;
+
 
         private bool isEdit = false;
         public bool IsEdit

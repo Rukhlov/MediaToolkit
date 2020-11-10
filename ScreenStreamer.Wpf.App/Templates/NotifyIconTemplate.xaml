@@ -31,16 +31,18 @@
             
             <!--<i:EventTrigger EventName="TrayRightMouseDown">
                 <i:InvokeCommandAction Command="{Binding ActivateMainWindowCommand}"/>
-            </i:EventTrigger>
-            <i:EventTrigger EventName="TrayLeftMouseDown">
-                <i:InvokeCommandAction Command="{Binding ShowMainWindowCommand}"/>
-            </i:EventTrigger>
+            </i:EventTrigger>-->
 
-            --><!--<i:EventTrigger EventName="TrayLeftMouseDown">
+           <!--<i:EventTrigger EventName="TrayLeftMouseDown">
+                <i:InvokeCommandAction Command="{Binding ShowMainWindowCommand}" />
+            </i:EventTrigger>-->
+
+            <!--<i:EventTrigger EventName="TrayLeftMouseDown">
                             <i:InvokeCommandAction Command="{Binding ActivateMainWindowCommand}"/>
                         </i:EventTrigger>-->
             
         </i:Interaction.Triggers>
+        
     </tb:TaskbarIcon>
 
 

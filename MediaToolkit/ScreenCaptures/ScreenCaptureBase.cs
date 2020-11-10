@@ -74,7 +74,7 @@ namespace MediaToolkit.ScreenCaptures
             }
             else if (type == VideoCaptureType.DXGIDeskDupl)
             {
-                capture = new DXGIDesktopDuplicationCapture(args);
+                capture = new DDACapture(args);
             }
 
             return capture;
