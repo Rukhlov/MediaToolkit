@@ -30,19 +30,23 @@ namespace Test.Encoder
         {
             Console.WriteLine("SimpleSwapChain::Run()");
 
-            //var fileName = @"Files\1920x1080.bmp";
+            var fileName = @"Files\1920x1080.bmp";
 
-			var fileName = @"Files\rgba_352x288.bmp";
-			
+            //var fileName = @"Files\2560x1440.bmp";
+           // var fileName = @"Files\rgba_352x288.bmp";
 
-			int ImageWidth = 1920;
+
+            int ImageWidth = 1920;
             int ImageHeight = 1080;
             IntPtr ViewHandle = IntPtr.Zero;
             int FramePerSec = 60;
 
             int adapterIndex = 0;
 
-
+            //var destSize = new GDI.Size(100, 100);
+            //var destSize = new GDI.Size(ImageWidth, ImageHeight);
+            var destSize = new GDI.Size(1280, 720);
+            //var destSize = new GDI.Size(2560, 1440);
             var dxgiFactory = new SharpDX.DXGI.Factory1();
             var adapter = dxgiFactory.GetAdapter1(adapterIndex);
 
@@ -72,8 +76,9 @@ namespace Test.Encoder
 
             samplerLinear = new SamplerState(device, new SamplerStateDescription
 			{
-				Filter = Filter.MinMagMipLinear,
-				AddressU = TextureAddressMode.Clamp,
+                Filter = Filter.MinMagMipLinear,
+                //Filter = Filter.MinMagMipLinear,
+                AddressU = TextureAddressMode.Clamp,
 				AddressV = TextureAddressMode.Clamp,
 				AddressW = TextureAddressMode.Clamp,
 				ComparisonFunction = Comparison.Never,
@@ -83,6 +88,9 @@ namespace Test.Encoder
 			});
 
             var bmp = new System.Drawing.Bitmap(fileName);
+            ImageWidth = bmp.Width;
+            ImageHeight = bmp.Height;
+
             if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
             {
                 var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
@@ -98,8 +106,10 @@ namespace Test.Encoder
 
             sharedTexture = new Texture2D(device, new Texture2DDescription
             {
-                Width = srcDescr.Width,
-                Height = srcDescr.Height,
+                //Width = srcDescr.Width,
+                //Height = srcDescr.Height,
+                Width = destSize.Width,
+                Height = destSize.Height,
                 MipLevels = 1,
                 ArraySize = 1,
                 SampleDescription = new SampleDescription(1, 0),
@@ -122,8 +132,8 @@ namespace Test.Encoder
 
             Form f = new Form
             {
-                Width = 640,
-                Height = 480,
+                Width = destSize.Width,
+                Height = destSize.Height,
                 Text = fileName,
             };
 
@@ -139,10 +149,11 @@ namespace Test.Encoder
                 ModeDescription = new ModeDescription
                 {
                     Format = Format.B8G8R8A8_UNorm,
+                    //Format = Format.B8G8R8A8_UNorm,
                     Scaling = DisplayModeScaling.Stretched,
                     //Scaling = DisplayModeScaling.Centered,
-                    Width = ImageWidth,
-                    Height = ImageHeight,
+                    Width = destSize.Width,//ImageWidth,
+                    Height = destSize.Height,//ImageHeight,
                     RefreshRate = new Rational(FramePerSec, 1),
 
                 },
@@ -195,12 +206,12 @@ namespace Test.Encoder
 
 						deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
 						{
-							Width = ImageWidth,
-							Height = ImageHeight,
+							Width = destSize.Width,//ImageWidth,
+							Height = destSize.Height,//ImageHeight,
 							MinDepth = 0f,
 							MaxDepth = 1f,
 							X = 0,
-							Y = 100,
+							Y = 0,
 						});
 
 						ShaderResourceView shaderResourceView = null;
