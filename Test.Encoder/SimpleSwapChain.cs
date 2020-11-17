@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GDI = System.Drawing;
+using SharpDX.WIC;
 
 namespace Test.Encoder
 {
@@ -30,10 +31,12 @@ namespace Test.Encoder
         {
             Console.WriteLine("SimpleSwapChain::Run()");
 
-            var fileName = @"Files\1920x1080.bmp";
+            var fileName = @"Files\1920x1080.bmp";            
+            //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
+            //var fileName = @"D:\Dropbox\Public\2.png";
 
             //var fileName = @"Files\2560x1440.bmp";
-           // var fileName = @"Files\rgba_352x288.bmp";
+            // var fileName = @"Files\rgba_352x288.bmp";
 
 
             int ImageWidth = 1920;
@@ -87,20 +90,20 @@ namespace Test.Encoder
 				MaximumLod = float.MaxValue,
 			});
 
-            var bmp = new System.Drawing.Bitmap(fileName);
-            ImageWidth = bmp.Width;
-            ImageHeight = bmp.Height;
+            //var bmp = new System.Drawing.Bitmap(fileName);
+            //ImageWidth = bmp.Width;
+            //ImageHeight = bmp.Height;
+            //if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
+            //{
+            //    var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
+            //    var _bmp = bmp.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
+            //    bmp.Dispose();
+            //    bmp = _bmp;
+            //}
+            ////var sourceTexture0 = Program.GetDynamicRgbaTextureFromBitmap(bmp, device);
+            //bmp.Dispose();
 
-            if (bmp.PixelFormat != GDI.Imaging.PixelFormat.Format32bppArgb)
-            {
-                var rect = new GDI.Rectangle(0, 0, bmp.Width, bmp.Height);
-                var _bmp = bmp.Clone(rect, GDI.Imaging.PixelFormat.Format32bppArgb);
-                bmp.Dispose();
-                bmp = _bmp;
-            }
-
-            var sourceTexture0 = Program.GetDynamicRgbaTextureFromBitmap(bmp, device);
-            bmp.Dispose();
+            var sourceTexture0 = TextureLoader.CreateTexture2DFromBitmapFile(fileName, device);
 
             var srcDescr = sourceTexture0.Description;
 
@@ -148,7 +151,8 @@ namespace Test.Encoder
                 SwapEffect = SwapEffect.FlipSequential,
                 ModeDescription = new ModeDescription
                 {
-                    Format = Format.B8G8R8A8_UNorm,
+                    Format = srcDescr.Format,
+                    //Format = Format.B8G8R8A8_UNorm,
                     //Format = Format.B8G8R8A8_UNorm,
                     Scaling = DisplayModeScaling.Stretched,
                     //Scaling = DisplayModeScaling.Centered,
