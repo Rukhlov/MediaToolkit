@@ -19,6 +19,12 @@ namespace Test.Encoder
     public class SimpleSwapChain
     {
 
+        public static void Run()
+        {
+            new SimpleSwapChain().Start();
+        }
+
+
         private SharpDX.Direct3D11.Device device =null;
         private VertexShader vertexShader = null;
         private InputLayout inputLayout = null;
@@ -27,24 +33,28 @@ namespace Test.Encoder
 
         private Texture2D sharedTexture = null;
 
-        public void Run()
-        {
-            Console.WriteLine("SimpleSwapChain::Run()");
 
-            var fileName = @"Files\1920x1080.bmp";            
-            //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
+        private SwapChain swapChain = null;
+
+        public int ImageWidth = 1920;
+        public int ImageHeight = 1080;
+        public IntPtr ViewHandle = IntPtr.Zero;
+        public int FramePerSec = 60;
+
+        public int adapterIndex = 0;
+
+
+
+        public void Start( )
+        {
+            Console.WriteLine("SimpleSwapChain::Start()");
+
+           // var fileName = @"Files\1920x1080.bmp";            
+            var fileName = @"D:\Dropbox\Public\1681_source.jpg";
             //var fileName = @"D:\Dropbox\Public\2.png";
 
             //var fileName = @"Files\2560x1440.bmp";
             // var fileName = @"Files\rgba_352x288.bmp";
-
-
-            int ImageWidth = 1920;
-            int ImageHeight = 1080;
-            IntPtr ViewHandle = IntPtr.Zero;
-            int FramePerSec = 60;
-
-            int adapterIndex = 0;
 
             //var destSize = new GDI.Size(100, 100);
             //var destSize = new GDI.Size(ImageWidth, ImageHeight);
@@ -103,7 +113,7 @@ namespace Test.Encoder
             ////var sourceTexture0 = Program.GetDynamicRgbaTextureFromBitmap(bmp, device);
             //bmp.Dispose();
 
-            var sourceTexture0 = TextureLoader.CreateTexture2DFromBitmapFile(fileName, device);
+            var sourceTexture0 = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
             var srcDescr = sourceTexture0.Description;
 
@@ -170,7 +180,7 @@ namespace Test.Encoder
 
             };
 
-            var swapChain = new SwapChain(dxgiFactory, device, scd);
+            swapChain = new SwapChain(dxgiFactory, device, scd);
 
             adapter.Dispose();
             dxgiFactory.Dispose();
@@ -289,6 +299,9 @@ namespace Test.Encoder
 			device?.Dispose();
 
 		}
+
+
+
 
 		private static _Vertex[] CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
 		{

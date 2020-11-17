@@ -1605,14 +1605,14 @@ namespace MediaToolkit.MediaFoundation
 	}
 
 
-    public class TextureLoader
+    public class WicTool
     {
 
         public static Texture2D CreateTexture2DFromBitmapFile(string fileName, SharpDX.Direct3D11.Device device)
         {
             using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
             {
-                using (var bitmapSource = LoadBitmapSource(factory, fileName))
+				using (var bitmapSource = LoadBitmapSource(factory, fileName))
                 {
                     return CreateTexture2DFromBitmapSource(device, bitmapSource);
                 }
@@ -1639,7 +1639,7 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource)
+		public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource)
         {
             var bitmapSize = bitmapSource.Size;
 
@@ -1651,8 +1651,8 @@ namespace MediaToolkit.MediaFoundation
                 bitmapSource.CopyPixels(bitmapStride, buffer);
 
                 var dataRect = new SharpDX.DataRectangle(buffer.DataPointer, bitmapStride);
-
-                var descr = new SharpDX.Direct3D11.Texture2DDescription()
+			 
+				var descr = new SharpDX.Direct3D11.Texture2DDescription()
                 {
                     Width = bitmapSize.Width,
                     Height = bitmapSize.Height,
