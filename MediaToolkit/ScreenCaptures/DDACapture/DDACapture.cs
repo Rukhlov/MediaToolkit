@@ -31,18 +31,22 @@ using MediaToolkit.NativeAPIs;
 
 namespace MediaToolkit.ScreenCaptures
 {
-	public interface ITexture2DSource
-	{
-		Texture2D SharedTexture { get; }
-		long AdapterId { get; }
-        int AdapterIndex { get; }
-        bool UseHwContext { get; set; }
-	}
 
-	public class DDACapture : ScreenCapture, ITexture2DSource
+    public interface ITexture2DSource
+    {
+        Texture2D SharedTexture { get; }
+        long AdapterId { get; }
+        bool UseHwContext { get; set; }
+    }
+
+    public class DDACapture : ScreenCapture, ITexture2DSource
     {
         public DDACapture(object[] args) : base()
         { }
+
+        //private static TraceSource logger = TraceManager.GetTrace("DXGIDesktopDuplicationCapture");
+
+        //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private Device mainDevice = null;
 
@@ -53,62 +57,58 @@ namespace MediaToolkit.ScreenCaptures
 
         public Texture2D SharedTexture { get; private set; }
         public long AdapterId { get; private set; }
-        public int AdapterIndex { get; private set; } = 0;
+
         public bool UseHwContext { get; set; } = true;
 
-        private List<DesktopDuplicator> deskDupls = new List<DesktopDuplicator>();
+        public int PrimaryAdapterIndex { get; set; } = 0;
 
-        //private static DesktopDuplicationManager duplicationManager = null;
+        private bool internalOutputManager = false;
+        public DDAOutputManager OutputManager { get; set; } = new DDAOutputManager();
 
-        //private static DesktopDuplicationManager DuplicationManager
-        //{
-        //    get
-        //    {
-        //        if(duplicationManager == null)
-        //        {
-        //            duplicationManager = new DesktopDuplicationManager();
-        //            duplicationManager.Init();
-        //        }
+        // private List<_DesktopDuplicator> deskDupls = new List<_DesktopDuplicator>();
 
-        //        return duplicationManager;
+        private List<DDAOutputProvider> providers = new List<DDAOutputProvider>();
 
-        //    }
-        //}
+        //public GDI.Rectangle SrcRect { get; private set; }
+        //public GDI.Size DestSize { get; private set; }
+        //public bool CaptureMouse { get; set; }
+        //public bool AspectRatio { get; set; }
 
         private GDI.Rectangle normalizedSrcRect = GDI.Rectangle.Empty;
+
+        private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
+
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
             logger.Debug("DXGIDesktopDuplicationCapture::Init() " + srcRect.ToString() + " " + destSize.ToString());
 
             base.Init(srcRect, destSize);
 
-            ////---------------------------------------------
-            //var AllScreensRect = System.Windows.Forms.SystemInformation.VirtualScreen;
-            //DuplicationManager.ToString();
+            this.SrcRect = srcRect;
+            if (destSize.IsEmpty)
+            {
+                destSize.Width = srcRect.Width;
+                destSize.Height = srcRect.Height;
+            }
+            this.DestSize = new GDI.Size(destSize.Width, destSize.Height);
 
-
-            //var rawRect = new RawRectangle
-            //{
-            //    Left = AllScreensRect.Left,
-            //    Right = AllScreensRect.Right,
-            //    Top = AllScreensRect.Top,
-            //    Bottom = AllScreensRect.Bottom,
-            //};
-
-            //normalizedSrcRect = SetupRegions(rawRect, srcRect);
-            ////---------------------------------------------
+            if (OutputManager == null)
+            {
+                OutputManager = new DDAOutputManager();
+                internalOutputManager = true;
+            }
 
             try
             {
-				InitDx();
-			}
-			catch (SharpDXException ex)
-			{
-				// Process error...
-				logger.Error(ex);
+                InitDx();
+            }
+            catch (SharpDXException ex)
+            {
+                // Process error...
+                logger.Error(ex);
 
-				throw new Exception("DXGI initialization error [" + ex.ResultCode + "]");
-			}
+                throw new Exception("DXGI initialization error [" + ex.ResultCode + "]");
+            }
 
         }
 
@@ -184,55 +184,28 @@ namespace MediaToolkit.ScreenCaptures
         }
 
 
-        private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
         private void InitDx()
         {
             logger.Debug("DXGIDesktopDuplicationCapture::InitDx(...) " + SrcRect.ToString());
 
 
             SharpDX.DXGI.Factory1 dxgiFactory = null;
-            Adapter1 mainAdapter = null;
-            Output output = null;
+            Adapter1 primaryAdapter = null;
             try
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
-                
-                logger.Info(MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
-                //var hMonitor = NativeAPIs.User32.GetMonitorFromRect(this.srcRect);
-                //if (hMonitor != IntPtr.Zero)
-                //{
-                //    foreach (var _adapter in dxgiFactory.Adapters1)
-                //    {
-                //        foreach (var _output in _adapter.Outputs)
-                //        {
-                //            var descr = _output.Description;
-                //            if (descr.MonitorHandle == hMonitor)
-                //            {
-                //                adapter = _adapter;
-                //                output = _output;
+                logger.Info(MediaToolkit.MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
-                //                break;
-                //            }
-                //        }
-                //    }
-                //}
-
-                //if (adapter == null)
-                //{// первым идет адаптер с которому подключен primary монитор
-                //    adapter = dxgiFactory.GetAdapter1(0);
-                //}
-
-                AdapterIndex = 0;
+                //PrimaryAdapterIndex = 0;
                 // первым идет адаптер с которому подключен primary монитор
-                mainAdapter = dxgiFactory.GetAdapter1(AdapterIndex);
-                AdapterId = mainAdapter.Description.Luid;
+                primaryAdapter = dxgiFactory.GetAdapter1(PrimaryAdapterIndex);
+                AdapterId = primaryAdapter.Description.Luid;
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
                 var deviceCreationFlags =
                     //DeviceCreationFlags.Debug |
-                    DeviceCreationFlags.VideoSupport |
                     DeviceCreationFlags.BgraSupport;
 
                 SharpDX.Direct3D.FeatureLevel[] featureLevel =
@@ -242,7 +215,7 @@ namespace MediaToolkit.ScreenCaptures
                     //SharpDX.Direct3D.FeatureLevel.Level_10_1,
                 };
 
-                mainDevice = new Device(mainAdapter, deviceCreationFlags, featureLevel);
+                mainDevice = new Device(primaryAdapter, deviceCreationFlags, featureLevel);
                 using (var multiThread = mainDevice.QueryInterface<SharpDX.Direct3D11.Multithread>())
                 {
                     multiThread.SetMultithreadProtected(true);
@@ -250,31 +223,33 @@ namespace MediaToolkit.ScreenCaptures
 
                 adapterToDeviceMap[0] = mainDevice;
 
-                if (deskDupls != null)
+                if (providers != null)
                 {
                     //...
                 }
 
-                deskDupls = new List<DesktopDuplicator>();
+                providers = new List<DDAOutputProvider>();
 
                 var adaptersCount = dxgiFactory.GetAdapterCount1();
                 //if (adaptersCount > 2)
                 {// обычно 2 адаптера hardware(GPU) + software(Microsoft Basic Render Driver)
                     var adapters = dxgiFactory.Adapters1;
-                    for (int adapterIndex= 0; adapterIndex < adapters.Length; adapterIndex++)
+                    for (int adapterIndex = 0; adapterIndex < adapters.Length; adapterIndex++)
                     {
-                        var _adapter = adapters[adapterIndex];
-                        var adapterDescr = _adapter.Description1;
+                        var adapter = adapters[adapterIndex];
+                        var adapterDescr = adapter.Description1;
                         var flags = adapterDescr.Flags;
                         if (flags == AdapterFlags.None)
                         {
-                            var outputCount = _adapter.GetOutputCount();
+                            var outputCount = adapter.GetOutputCount();
                             if (outputCount > 0)
                             {
-                                var _outputs = _adapter.Outputs;
-                                foreach (var _output in _outputs)
+                                var outputs = adapter.Outputs;
+                                for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
                                 {
-                                    var descr = _output.Description;
+                                    var output = outputs[outputIndex];
+
+                                    var descr = output.Description;
                                     var desktopBounds = descr.DesktopBounds;
                                     var desktopRect = new GDI.Rectangle
                                     {
@@ -287,7 +262,7 @@ namespace MediaToolkit.ScreenCaptures
                                     var rect = GDI.Rectangle.Intersect(desktopRect, SrcRect);
                                     if (rect.Width > 0 && rect.Height > 0)
                                     {
-                                        logger.Info("Screen source info: " + _adapter.Description.Description + " " + descr.DeviceName);
+                                        logger.Info("Screen source info: " + adapter.Description.Description + " " + descr.DeviceName);
 
                                         Device device = null;
                                         if (adapterToDeviceMap.ContainsKey(adapterIndex))
@@ -296,26 +271,27 @@ namespace MediaToolkit.ScreenCaptures
                                         }
                                         else
                                         {
-                                            device = new Device(_adapter, deviceCreationFlags, featureLevel);
+                                            device = new Device(adapter, deviceCreationFlags, featureLevel);
                                             using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                                             {
                                                 multiThread.SetMultithreadProtected(true);
                                             }
-                                            adapterToDeviceMap[adapterIndex] = device;
 
+                                            adapterToDeviceMap[adapterIndex] = device;
                                         }
 
                                         Device destDevice = null;
-                                        if (AdapterIndex != adapterIndex)
+                                        if (PrimaryAdapterIndex != adapterIndex)
                                         {
                                             destDevice = mainDevice;
                                         }
 
-                                        DesktopDuplicator deskDupl = new DesktopDuplicator();
-                                        deskDupl.Init(_output, device, SrcRect, destDevice);
-                                        deskDupl.CaptureMouse = this.CaptureMouse;
+                                        DDAOutput duplOutput = OutputManager.GetOutput(adapterIndex, outputIndex);
+                                        duplOutput.CaptureMouse = this.CaptureMouse;
 
-                                        deskDupls.Add(deskDupl);
+                                        DDAOutputProvider prov = new DDAOutputProvider(duplOutput);
+                                        prov.Init(output, device, SrcRect, destDevice);
+                                        providers.Add(prov);
 
                                     }
                                     else
@@ -325,9 +301,9 @@ namespace MediaToolkit.ScreenCaptures
                                     }
                                 }
 
-                                for (int i = 0; i < _outputs.Length; i++)
+                                for (int i = 0; i < outputs.Length; i++)
                                 {
-                                    var o = _outputs[i];
+                                    var o = outputs[i];
                                     o.Dispose();
                                     o = null;
                                 }
@@ -344,19 +320,14 @@ namespace MediaToolkit.ScreenCaptures
                     }
 
                 }
+
             }
             finally
             {
-                if (mainAdapter != null)
+                if (primaryAdapter != null)
                 {
-                    mainAdapter.Dispose();
-                    mainAdapter = null;
-                }
-
-                if (output != null)
-                {
-                    output.Dispose();
-                    output = null;
+                    primaryAdapter.Dispose();
+                    primaryAdapter = null;
                 }
 
                 if (dxgiFactory != null)
@@ -431,70 +402,73 @@ namespace MediaToolkit.ScreenCaptures
                         var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
 
                         renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
-						
-						//var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
-					}
+
+                        //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+                    }
 
                 }
             }
 
-            deviceReady = true;
+            initialized = true;
 
         }
 
-        private bool deviceReady = false;
+        private volatile bool activateCapture = false;
+
+        private bool initialized = false;
+
         public override ErrorCode UpdateBuffer(int timeout = 10)
         {
             ErrorCode Result = ErrorCode.Ok;
 
             try
             {
-                if (!deviceReady)
+                if (!initialized)
                 {
                     InitDx();
                 }
 
-                //DuplicationManager.UpdateBuffer();
-
-                //ResourceRegion srcRegion = new ResourceRegion
-                //{
-                //    Left = normalizedSrcRect.Left,
-                //    Top = normalizedSrcRect.Top,
-                //    Right = normalizedSrcRect.Right,
-                //    Bottom = normalizedSrcRect.Bottom,
-                //    Back = 1,
-                //};
-
-                //var texture = DuplicationManager.compositionTexture;
-                //device.ImmediateContext.CopySubresourceRegion(texture, 0, srcRegion, compositionTexture, 0, 0, 0);
-
-                //------------------------------------------
-                foreach (var dupl in deskDupls)
+                if (!activateCapture)
                 {
-                    var errorCode = dupl.TryGetScreenTexture(out Texture2D screenTexture);
-
-                    if (errorCode != ErrorCode.Ok)
+                    foreach (var d in providers)
                     {
-                        CloseDx();
-
-                        Thread.Sleep(100);
-                        return errorCode;
-
+                        int activationNum = d.ActivateCapture();
+                        logger.Debug("ActivateCapture: " + activationNum);
                     }
-                    var duplRect = dupl.duplRect;
 
-                    ResourceRegion srcRegion = new ResourceRegion
+                    activateCapture = true;
+                }
+
+
+                foreach (var dupl in providers)
+                {
+                    try
                     {
-                        Left = duplRect.Left,
-                        Top = duplRect.Top,
-                        Right = duplRect.Right,
-                        Bottom = duplRect.Bottom,
-                        Back = 1,
-                    };
+                        Result = dupl.TryGetScreenTexture(out Rectangle destRect, out Texture2D texture);
+                        if (Result != ErrorCode.Ok)
+                        {
+                            //...
+                            logger.Warn("TryGetScreenTexture(...) " + Result);
+                            continue;
+                        }
 
-                    var destRect = dupl.drawRect;
+                        var desrc = texture.Description;
+                        var srcRegion = new ResourceRegion
+                        {
+                            Left = 0,
+                            Top = 0,
+                            Right = desrc.Width,
+                            Bottom = desrc.Height,
+                            Back = 1,
+                        };
 
-                    mainDevice.ImmediateContext.CopySubresourceRegion(screenTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
+                        mainDevice.ImmediateContext.CopySubresourceRegion(texture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
+                        mainDevice.ImmediateContext.Flush();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.Error(ex);
+                    }
 
                 }
                 //------------------------------------------------------
@@ -512,13 +486,18 @@ namespace MediaToolkit.ScreenCaptures
                     finalTexture = renderTexture;
                 }
 
+                //SharedTexture = finalTexture;
+
+
                 Result = FinalyzeTexture(finalTexture);
+
+                Result = ErrorCode.Ok;
 
             }
             catch (SharpDXException ex)
             {
-				logger.Error(ex);
-				// Process error...
+                logger.Error(ex);
+                // Process error...
 
                 CloseDx();
 
@@ -539,7 +518,7 @@ namespace MediaToolkit.ScreenCaptures
             {
 
                 deviceContext.CopyResource(texture, SharedTexture);
-                deviceContext.Flush();
+                // deviceContext.Flush();
 
                 errorCode = ErrorCode.Ok;
             }
@@ -634,8 +613,6 @@ namespace MediaToolkit.ScreenCaptures
             }
         }
 
-
-
         private ErrorCode CopyToGdiBuffer(Texture2D texture)
         {
 
@@ -648,9 +625,9 @@ namespace MediaToolkit.ScreenCaptures
                 Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
                 if (lockTaken)
                 {
-					var bmp = videoBuffer.bitmap;
+                    var bmp = videoBuffer.bitmap;
                     MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
-					Result = ErrorCode.Ok;
+                    Result = ErrorCode.Ok;
                 }
                 else
                 {
@@ -677,22 +654,46 @@ namespace MediaToolkit.ScreenCaptures
             logger.Debug("DXGIDesktopDuplicationCapture::Close()");
             base.Close();
 
+            foreach (var d in providers)
+            {
+                int activationNum = d.DeactivateCapture();
+                logger.Debug("DeactivateCapture: " + activationNum);
+            }
+            activateCapture = false;
+
+            if (internalOutputManager)
+            {
+                if (OutputManager != null)
+                {
+                    OutputManager.Dispose();
+                    OutputManager = null;
+                }
+                internalOutputManager = false;
+            }
+
             CloseDx();
+
+
+            //if (OutputManager != null)
+            //{
+            //    OutputManager.Dispose();
+            //    OutputManager = null;
+            //}
         }
 
         private void CloseDx()
         {
             logger.Debug("DXGIDesktopDuplicationCapture::CloseDx()");
 
-            deviceReady = false;
+            initialized = false;
 
-            if (deskDupls != null)
+            if (providers != null)
             {
-                foreach (var dupl in deskDupls)
+                foreach (var dupl in providers)
                 {
                     dupl?.Close();
                 }
-                deskDupls = null;
+                providers = null;
             }
 
             if (compositionTexture != null && !compositionTexture.IsDisposed)
@@ -725,7 +726,8 @@ namespace MediaToolkit.ScreenCaptures
                 mainDevice = null;
             }
 
-            for(int i= 0; i<adapterToDeviceMap.Count; i++)
+
+            for (int i = 0; i < adapterToDeviceMap.Count; i++)
             {
                 var d = adapterToDeviceMap[i];
                 if (d != null && !d.IsDisposed)
@@ -734,10 +736,10 @@ namespace MediaToolkit.ScreenCaptures
                     d = null;
                 }
             }
+
         }
+
+
     }
 
-
-
-   
 }

@@ -278,17 +278,17 @@ namespace ScreenStreamer.Wpf.ViewModels
                         }
                     }
 
-                    if (captureLocked)
-                    {
-                        var caption = "Streaming Error";
-                        var message = "The Desktop Duplication API capture is already in use on this screen area.\r\n" +
-                                      "To start the stream, select another capture type.";
+                    //if (captureLocked)
+                    //{
+                    //    var caption = "Streaming Error";
+                    //    var message = "The Desktop Duplication API capture is already in use on this screen area.\r\n" +
+                    //                  "To start the stream, select another capture type.";
 
-                        ShowError(caption, message);
+                    //    ShowError(caption, message);
 
-                        OnStreamStateChanged(IsStarted);
-                        return;
-                    }
+                    //    OnStreamStateChanged(IsStarted);
+                    //    return;
+                    //}
 
                 }
 

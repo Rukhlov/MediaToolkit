@@ -65,6 +65,7 @@ namespace MediaToolkit
        // public ScreenCaptureDevice CaptureParams { get; private set; }
 		public ScreenCaptureProperties CaptureProps{ get; private set; }
 
+        private static DDAOutputManager outputManager = new DDAOutputManager();
 		private bool deviceReady = false;
         public void Setup(object pars)//ScreenCaptureParams captureParams)
         {
@@ -155,6 +156,11 @@ namespace MediaToolkit
 					d3d11Capture.UseHwContext = CaptureProps.UseHardware;
 					this.hwContext = d3d11Capture;
 					this.AdapterId = d3d11Capture.AdapterId;
+
+                    if(screenCapture is DDACapture)
+                    {
+                        ((DDACapture)screenCapture).OutputManager = outputManager;
+                    }
 				}
 
 				screenCapture.Init(srcRect, destSize);
