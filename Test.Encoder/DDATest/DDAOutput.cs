@@ -30,6 +30,16 @@ using SharpDX.Direct2D1;
 using MediaToolkit.NativeAPIs;
 namespace Test.Encoder.DDATest
 {
+    public enum DDAOutputState
+    {
+        Initialized,
+        InvalidArgs,
+        AccessDenied,
+        Unsupported,
+        NotCurrentlyAvailable,
+        SessionDisconnected,
+        Closed,
+    }
 
     public class DDAOutput
     {
@@ -60,78 +70,89 @@ namespace Test.Encoder.DDATest
             return IntPtr.Zero;
         }
 
-        internal bool CaptureMouse = true;
+        public bool CaptureMouse { get; set; } = true;
         private CursorInfo cursorInfo = null;
 
-        public bool Initialized { get; private set; } = false;
+        public DDAOutputState OutputState { get; private set; } = DDAOutputState.Closed;
 
-        private RawRectangle DesktopRect;
+        public event Action FrameAcquired;
+        public event Action Activated;
+        public event Action Deactivated;
 
-        private bool deviceReady = false;
+        public Tuple<int, int> FrameRate { get; set; } = new Tuple<int, int>(1, 60);
+
+        private bool initialized = false;
 
         public int AdapterIndex { get; private set; } = 0;
         public int OutputIndex { get; private set; } = 0;
+        public RawRectangle DesktopRect { get; private set; }
 
         public void Init(int adapterIndex, int outputIndex)
         {
             logger.Debug("DesktopDuplicator::Init(...) " + adapterIndex + " " + outputIndex);
 
+            if(initialized || activations > 0)
+            {
+                logger.Error("Invalid state " + initialized + " " + activations);
+                //...
+            }
 
             this.AdapterIndex = adapterIndex;
             this.OutputIndex = outputIndex;
 
             var dxgiFactory = new SharpDX.DXGI.Factory1();
-            var adapter = dxgiFactory.GetAdapter(AdapterIndex);
-
-            this.output = adapter.GetOutput(OutputIndex);
-
-            var _descr = output.Description;
-            this.DesktopRect = _descr.DesktopBounds;
-
-            //this.device = device;
-            var deviceCreationFlags =
-                //DeviceCreationFlags.Debug |
-                DeviceCreationFlags.VideoSupport |
-                DeviceCreationFlags.BgraSupport;
-
-            SharpDX.Direct3D.FeatureLevel[] featureLevel =
+            try
             {
-                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                    //SharpDX.Direct3D.FeatureLevel.Level_10_1,
-            };
+                var adapter = dxgiFactory.GetAdapter(AdapterIndex);
+                try
+                {
+                    this.output = adapter.GetOutput(OutputIndex);
 
-            device = new Device(adapter, deviceCreationFlags, featureLevel);
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    var _descr = output.Description;
+                    this.DesktopRect = _descr.DesktopBounds;
+
+                    //this.device = device;
+                    var deviceCreationFlags =
+                        //DeviceCreationFlags.Debug |
+                        //DeviceCreationFlags.VideoSupport |
+                        DeviceCreationFlags.BgraSupport;
+
+                    SharpDX.Direct3D.FeatureLevel[] featureLevel =
+                    {
+                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                        //SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                    };
+
+                    device = new Device(adapter, deviceCreationFlags, featureLevel);
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
+                }
+                finally
+                {
+                    adapter.Dispose();
+                }
+                
+                InitTextures();
+                InitDuplicator();
+                cursorInfo = new CursorInfo();
+
+                initialized = true;
+            }
+            catch(Exception ex)
             {
-                multiThread.SetMultithreadProtected(true);
+                logger.Error(ex);
+                Close();
+                throw;
+            }
+            finally
+            {
+                dxgiFactory.Dispose();
             }
 
-            adapter.Dispose();
-            dxgiFactory.Dispose();
-
-            InitTextures();
-
-            InitDuplicator();
-
-            cursorInfo = new CursorInfo();
-
-            deviceReady = true;
         }
-
-        private void InitDevice(Adapter adapter)
-        {
-            var deviceCreationFlags =
-                //DeviceCreationFlags.Debug |
-                DeviceCreationFlags.BgraSupport;
-
-            device = new Device(adapter, deviceCreationFlags);
-            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-            {
-                multiThread.SetMultithreadProtected(true);
-            }
-        }
-
 
         private void InitTextures()
         {
@@ -198,14 +219,13 @@ namespace Test.Encoder.DDATest
                      //https://docs.microsoft.com/en-us/windows/win32/api/dxgi1_2/nf-dxgi1_2-idxgioutput1-duplicateoutput
                         deskDupl = output1.DuplicateOutput(device);
 
-                        Initialized = true;
+                        OutputState = DDAOutputState.Initialized;
 
                     }
                     catch (SharpDXException ex)
                     {
                         if (ex.HResult == (int)HResult.E_INVALIDARG)
                         {
-
                             /*
                                 * E_INVALIDARG for one of the following reasons:
                                 * 
@@ -214,6 +234,7 @@ namespace Test.Encoder.DDATest
 
                                 --The calling application is already duplicating this desktop output.
                                 */
+                            OutputState = DDAOutputState.InvalidArgs;
                         }
                         else if (ex.HResult == (int)HResult.E_ACCESSDENIED)
                         {
@@ -229,6 +250,7 @@ namespace Test.Encoder.DDATest
                                 * the application can wait for system notification of desktop switches and mode changes and then call DuplicateOutput again after such a notification occurs.
                                 * For more information, refer to EVENT_SYSTEM_DESKTOPSWITCH and mode change notification (WM_DISPLAYCHANGE). 
                                 */
+                            OutputState = DDAOutputState.Unsupported;
 
                         }
                         else if (ex.ResultCode == SharpDX.DXGI.ResultCode.NotCurrentlyAvailable)
@@ -237,10 +259,13 @@ namespace Test.Encoder.DDATest
                                 * if DXGI reached the limit on the maximum number of concurrent duplication applications (default of four).
                                 * Therefore, the calling application cannot create any desktop duplication interfaces until the other applications close.
                                 */
+
+                            OutputState = DDAOutputState.NotCurrentlyAvailable;
                         }
                         else if (ex.ResultCode == SharpDX.DXGI.ResultCode.SessionDisconnected)
                         {
                             //if DuplicateOutput failed because the session is currently disconnected.
+                            OutputState = DDAOutputState.SessionDisconnected;
                         }
 
                         throw;
@@ -259,50 +284,57 @@ namespace Test.Encoder.DDATest
 
         }
 
-        private Tuple<int, int> FrameRate = new Tuple<int, int>(1, 60);
+        private volatile int activations = 0;
+        private Task captureTask = null;
 
-        private bool running = false;
-        public void StartCapture()
+        public int Activate()
         {
 
-            logger.Debug("StartCapture()");
+            logger.Debug("Activate() ");
 
-            if (running)
+            activations++;
+
+            if (activations > 1)
             {
-                logger.Debug("StartCapture() == false");
+                logger.Debug("Activate() == false" + activations);
 
-                return;
+                return activations;
             }
 
-            running = true;
-            Task.Run(() =>
+            captureTask = Task.Run(() =>
             {
+                if(activations > 0)
+                {
+                    Activated?.Invoke();
+                }
+
                 AutoResetEvent syncEvent = new AutoResetEvent(false);
                 Stopwatch sw = new Stopwatch();
                 int interval = (int)(FrameRate.Item1 * 1000.0 / FrameRate.Item2);
-                while (running)
+
+                while (activations > 0)
                 {
                     sw.Restart();
 
-                    if (!Initialized)
+                    if (OutputState!= DDAOutputState.Initialized)
                     {
                         Thread.Sleep(100);
                         ResetDuplicator();
                         continue;
                     }
 
-
-                    if (Initialized)
+                    if (OutputState == DDAOutputState.Initialized)
                     {
                         int timeout = 0;
-                        var res = GrabScreen(timeout);
+                        var res = CaptureScreen(timeout);
                         if (res == ErrorCode.Ok)
                         {
                             FrameAcquired?.Invoke();
                         }
                         else
                         {
-                            Initialized = false;
+                            OutputState = DDAOutputState.Closed;
+                            continue;
                         }
                     }
 
@@ -314,23 +346,40 @@ namespace Test.Encoder.DDATest
                         // logger.Debug(delay);
                     }
                 }
+
+                if (syncEvent != null)
+                {
+                    syncEvent.Dispose();
+                    syncEvent = null;
+                     
+                }
+
+                Deactivated?.Invoke();
             });
+
+            return activations;
         }
 
 
-        public event Action FrameAcquired;
-
-        public void StopCapture()
+        public int Deactivate()
         {
-            logger.Debug("StopCapture()");
-            running = false;
+            logger.Debug("Deactivate()");
+
+            activations--;
+
+            return activations;
 
         }
 
-        public ErrorCode GrabScreen(int timeout = 0)
+        public ErrorCode CaptureScreen(int timeout = 0)
         {
             ErrorCode Result = ErrorCode.Unexpected;
-            if (!deviceReady)
+            if (!initialized)
+            {
+                return ErrorCode.NotInitialized;
+            }
+
+            if (OutputState != DDAOutputState.Initialized)
             {
                 return ErrorCode.NotReady;
             }
@@ -436,7 +485,6 @@ namespace Test.Encoder.DDATest
                         logger.Warn(ex.Descriptor.ToString());
                         Result = ErrorCode.NotInitialized;
                     }
-
                     else
                     {
                         logger.Error(ex);
@@ -992,7 +1040,7 @@ namespace Test.Encoder.DDATest
 
 
 
-        private void ResetDuplicator()
+        public bool ResetDuplicator()
         {
             logger.Debug("ResetDuplicator()");
             try
@@ -1005,6 +1053,8 @@ namespace Test.Encoder.DDATest
             {
                 logger.Error(ex.Message);
             }
+
+            return (OutputState == DDAOutputState.Initialized);
         }
 
         private void CloseDuplicator()
@@ -1016,15 +1066,34 @@ namespace Test.Encoder.DDATest
                 deskDupl = null;
             }
 
-            Initialized = false;
+            OutputState = DDAOutputState.Closed;
         }
 
         public void Close()
         {
-
             logger.Debug("Close()");
 
-            deviceReady = false;
+            activations = 0;
+
+            if (captureTask != null)
+            {
+                if(captureTask.Status == TaskStatus.Running)
+                {
+                    bool waitResult = false;
+                    do
+                    {
+                        waitResult = captureTask.Wait(1000);
+                        if (!waitResult)
+                        {
+                            logger.Warn("DDAOutput::Close() " + waitResult);
+                        }
+                    } while (!waitResult);
+                }
+
+                captureTask.Dispose();
+                captureTask = null;
+            }
+
 
             CloseDuplicator();
 
@@ -1064,6 +1133,8 @@ namespace Test.Encoder.DDATest
                 cursorInfo = null;
             }
 
+            initialized = false;
+            
 
         }
 

@@ -32,7 +32,7 @@ using MediaToolkit.NativeAPIs;
 namespace Test.Encoder.DDATest
 {
 
-    public class DesktopDuplicator
+    class DesktopDuplicator
     {
         internal DesktopDuplicator(DDAOutput duplOut)
         {
@@ -46,6 +46,8 @@ namespace Test.Encoder.DDATest
         internal Rectangle drawRect = Rectangle.Empty;
         internal Rectangle duplRect = Rectangle.Empty;
 
+        public ResourceRegion SrcRegion { get; private set; } = default(ResourceRegion);
+
         private Device destDevice = null;
         private bool copyToAnotherDevice = false;
 
@@ -56,20 +58,28 @@ namespace Test.Encoder.DDATest
 
         private DDAOutput duplOutput = null;
 
-        public void StartCapture()
+        public int ActivateCapture()
         {
+            logger.Debug("DesktopDuplicator::ActivateCapture(...)");
+            int activations = -1;
             if (duplOutput != null)
             {
-                duplOutput.StartCapture();
+                activations = duplOutput.Activate();
             }
+
+            return activations;
         }
 
-        public void StopCapture()
+        public int DeactivateCapture()
         {
+            logger.Debug("DesktopDuplicator::DeactivateCapture(...)");
+            int activations = -1;
             if (duplOutput != null)
             {
-                duplOutput.StopCapture();
+                activations=  duplOutput.Deactivate();
             }
+
+            return activations;
         }
 
 
@@ -80,7 +90,7 @@ namespace Test.Encoder.DDATest
             try
             {
                 this.device = device;
-
+                
                 RawRectangle screenRect = output.Description.DesktopBounds;
                 int width = screenRect.Right - screenRect.Left;
                 int height = screenRect.Bottom - screenRect.Top;
@@ -222,6 +232,14 @@ namespace Test.Encoder.DDATest
                 Height = duplBottom - duplTop,
             };
 
+            SrcRegion = new ResourceRegion
+            {
+                Left = duplRect.Left,
+                Top = duplRect.Top,
+                Right = duplRect.Right,
+                Bottom = duplRect.Bottom,
+                Back = 1,
+            };
 
             logger.Debug("duplRect=" + duplRect.ToString() + " drawRect=" + drawRect.ToString());
 
@@ -231,15 +249,7 @@ namespace Test.Encoder.DDATest
         public ErrorCode TryGetScreenTexture(out ResourceRegion region, out Rectangle desRect, out Texture2D texture)
         {
             texture = null;
-
-            region = new ResourceRegion
-            {
-                Left = duplRect.Left,
-                Top = duplRect.Top,
-                Right = duplRect.Right,
-                Bottom = duplRect.Bottom,
-                Back = 1,
-            };
+            region = this.SrcRegion;
             desRect = this.drawRect;
 
             ErrorCode Result = ErrorCode.Unexpected;
@@ -257,14 +267,19 @@ namespace Test.Encoder.DDATest
                     using (var sharedRes = duplTexture.QueryInterface<SharpDX.DXGI.Resource>())
                     {
                         var handle = sharedRes.SharedHandle;
-                        using (var sharedTex = device.OpenSharedResource<Texture2D>(handle))
+                        if (handle != IntPtr.Zero)
                         {
-                            device.ImmediateContext.CopyResource(sharedTex, SharedTexture);
+                            using (var sharedTex = device.OpenSharedResource<Texture2D>(handle))
+                            {
+                                device.ImmediateContext.CopyResource(sharedTex, SharedTexture);
+                            }
                         }
-                        // var sharedTexture = duplOutput.SharedTexture;
                     }
                 }
+                else
+                {// not ready ... 
 
+                }
 
                 if (!copyToAnotherDevice)
                 {

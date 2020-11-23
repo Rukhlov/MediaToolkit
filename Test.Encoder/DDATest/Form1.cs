@@ -36,6 +36,7 @@ namespace Test.Encoder.DDATest
             var height = 1080;
 
             var fps = 60;
+            int primaryGPUIndex = (int)numericUpDown1.Value;
 
             try
             {
@@ -43,19 +44,24 @@ namespace Test.Encoder.DDATest
                 //var screen = Screen.PrimaryScreen;
                 var screen = Screen.AllScreens[0];
 
-                var screenRect = screen.Bounds;
+               // var screenRect = screen.Bounds;
                 //var screenRect = new Rectangle(0, 0, 640, 480);
                 
-                //var screenRect = SystemInformation.VirtualScreen;
+                var screenRect = SystemInformation.VirtualScreen;
 
                 Console.WriteLine(SystemInformation.VirtualScreen);
 
                 // videoSource.Init(width, height);
 
+                if(outputManager == null)
+                {
+                    outputManager = new DDAOutputManager();
+                }
+
                 deskDuplCapture = new DDACapture(null);
                 deskDuplCapture.OutputManager = outputManager;
 
-                deskDuplCapture.PrimaryAdapterIndex = 0;
+                deskDuplCapture.PrimaryAdapterIndex = primaryGPUIndex;
 
                 deskDuplCapture.AspectRatio = true;
                 deskDuplCapture.CaptureMouse = true;
@@ -140,7 +146,7 @@ namespace Test.Encoder.DDATest
 
                 running = true;
 
-                deskDuplCapture.Start();
+                //deskDuplCapture.Start();
                 //deskDuplCapture1.Start();
 
                 renderer.Resize(videoPanel.Size);
@@ -148,8 +154,6 @@ namespace Test.Encoder.DDATest
                 renderer.Start();
                 var texture = deskDuplCapture.SharedTexture;
                 renderer.UpdateTexture(texture);
-
-
 
 
                 //renderer1.Resize(this.Size);
@@ -160,47 +164,11 @@ namespace Test.Encoder.DDATest
 
                 while (running)
                 {
-                    
-
-                    //videoRenderer.UpdataBuffer();
-
-                    //if (!useSharedTexture) 
-                    //{
-                    //    var texture = deskDuplCapture.SharedTexture;
-                    //    videoRenderer.UpdataBuffer(texture);
-                    //}
-                    //else 
-                    //{
-                    //    var d = videoRenderer.d3device1;
-                    //    using (var texture = d.OpenSharedResource<Texture2D>(sharedTexturePointer)) 
-                    //    {
-                    //        videoRenderer.UpdataBuffer(texture);
-                    //    }
-
-                    //}
-
-
-
-
-                    //var texture = deskDuplCapture.SharedTexture;
-                    //foreach (var r in renderers)
-                    //{
-                    //    r.UpdataBuffer(texture);
-                    //}
-
-                    ////var res = deskDuplCapture.UpdateBuffer(10);
-                    ////if(res == ErrorCode.Ok) 
-                    ////{
-                    ////   var texture = deskDuplCapture.SharedTexture;
-                    ////    videoRenderer.UpdataBuffer(texture);
-                    ////}
-
-                    //var texture = deskDuplCapture.SharedTexture;
-                    //videoRenderer.UpdataBuffer(texture);
-
-                    ////var tex = videoSource.GetTexture();
-                    ////videoRenderer.UpdataBuffer(tex);
-
+                    var res = deskDuplCapture.UpdateBuffer(10);
+                    if (res != ErrorCode.Ok)
+                    {
+                        Console.WriteLine("deskDuplCapture.UpdateBuffer(10)" + res);
+                    }
 
                     Thread.Sleep(16);
 
@@ -213,10 +181,10 @@ namespace Test.Encoder.DDATest
                 renderer.Stop();
                 renderer.Close();
 
-                deskDuplCapture.Stop();
+                //deskDuplCapture.Stop();
                // deskDuplCapture1.Stop();
 
-                //deskDuplCapture.Close();
+                deskDuplCapture.Close();
 
 
                 texture?.Dispose();
@@ -242,6 +210,15 @@ namespace Test.Encoder.DDATest
         {
             running = false;
 
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (outputManager != null)
+            {
+                outputManager.Dispose();
+                outputManager = null;
+            }
         }
     }
 

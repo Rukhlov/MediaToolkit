@@ -257,42 +257,6 @@ namespace MediaToolkit.ScreenCaptures
 
                 deskDupls = new List<DesktopDuplicator>();
 
-                /*
-                foreach (var _output in mainAdapter.Outputs)
-                {
-                    var descr = _output.Description;
-                    var desktopBounds = descr.DesktopBounds;
-                    var desktopRect = new GDI.Rectangle
-                    {
-                        X = desktopBounds.Left,
-                        Y = desktopBounds.Top,
-                        Width = desktopBounds.Right - desktopBounds.Left, 
-                        Height = desktopBounds.Bottom - desktopBounds.Top,
-                    };
-
-                    var rect = GDI.Rectangle.Intersect(desktopRect, SrcRect);
-                    if (rect.Width > 0 && rect.Height > 0)
-                    {
-                        //--------------------------------------
-                        logger.Info("Screen source info: " + mainAdapter.Description.Description + " " + descr.DeviceName);
-                        DesktopDuplicator deskDupl = new DesktopDuplicator();
-
-                        deskDupl.Init(_output, device, SrcRect);
-                        deskDupl.CaptureMouse = this.CaptureMouse;
-
-                        deskDupls.Add(deskDupl);
-                        //-------------------------------------------
-                    }
-                    else
-                    {
-                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
-                        continue;
-                    }
-
-                    _output.Dispose();
-                }
-                */
-
                 var adaptersCount = dxgiFactory.GetAdapterCount1();
                 //if (adaptersCount > 2)
                 {// обычно 2 адаптера hardware(GPU) + software(Microsoft Basic Render Driver)
@@ -380,9 +344,6 @@ namespace MediaToolkit.ScreenCaptures
                     }
 
                 }
-
-
-
             }
             finally
             {

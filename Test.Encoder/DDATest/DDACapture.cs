@@ -62,6 +62,9 @@ namespace Test.Encoder.DDATest
 
         public int PrimaryAdapterIndex { get; set; } = 0;
 
+        private bool internalOutputManager = false;
+        public DDAOutputManager OutputManager { get; set; } = new DDAOutputManager();
+
         // private List<_DesktopDuplicator> deskDupls = new List<_DesktopDuplicator>();
 
         private List<DesktopDuplicator> deskDupls = new List<DesktopDuplicator>();
@@ -83,14 +86,18 @@ namespace Test.Encoder.DDATest
             //base.Init(srcRect, destSize);
 
             this.SrcRect = srcRect;
-
             if (destSize.IsEmpty)
             {
                 destSize.Width = srcRect.Width;
                 destSize.Height = srcRect.Height;
             }
-
             this.DestSize = new GDI.Size(destSize.Width, destSize.Height);
+
+            if (OutputManager == null)
+            {
+                OutputManager = new DDAOutputManager();
+                internalOutputManager = true;
+            }
 
             try
             {
@@ -177,7 +184,6 @@ namespace Test.Encoder.DDATest
             return duplRect;
         }
 
-        public DDAOutputManager OutputManager { get; set; } = new DDAOutputManager();
 
         private void InitDx()
         {
@@ -404,69 +410,36 @@ namespace Test.Encoder.DDATest
                 }
             }
 
-            deviceReady = true;
+            initialized = true;
 
         }
 
-        private volatile bool running = false;
-        public void Start()
-        {
-            logger.Debug("Start() " + running);
+        private volatile bool activateCapture = false;
 
-            if (running)
-            {
-                return;
-            }
-            
-            foreach (var d in deskDupls)
-            {
-                d.StartCapture();
-            }
+        private bool initialized = false;
 
-            running = true;
-
-            Task.Run(() =>
-            {
-                while (running)
-                {
-                    var res = UpdateBuffer(10);
-
-                    if (res != ErrorCode.Ok)
-                    {
-                        logger.Warn("UpdateBuffer(...) " + res);
-                    }
-
-                    //var tex = videoSource.GetTexture();
-                    //videoRenderer.UpdataBuffer(tex);
-                    Thread.Sleep(10);
-
-                }
-
-                foreach (var d in deskDupls)
-                {
-                    d?.StopCapture();
-                }
-
-                Close();
-            });
-        }
-
-        public void Stop()
-        {
-            running = false;
-        }
-
-        private bool deviceReady = false;
         public ErrorCode UpdateBuffer(int timeout = 10)
         {
             ErrorCode Result = ErrorCode.Ok;
 
             try
             {
-                if (!deviceReady)
+                if (!initialized)
                 {
                     InitDx();
                 }
+
+                if (!activateCapture)
+                {
+                    foreach (var d in deskDupls)
+                    {
+                        int activationNum = d.ActivateCapture();
+                        logger.Debug("ActivateCapture: " + activationNum);
+                    }
+
+                    activateCapture = true;
+                }
+
 
                 foreach (var dupl in deskDupls)
                 {
@@ -477,37 +450,16 @@ namespace Test.Encoder.DDATest
                         {
                             //...
                             logger.Warn("TryGetScreenTexture(...) " + Result);
+                            continue;
                         }
 
                         mainDevice.ImmediateContext.CopySubresourceRegion(sharedTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
                         mainDevice.ImmediateContext.Flush();
-
-                        //using (var sharedTexture = device.OpenSharedResource<Texture2D>(dupl.GetSharedHandle()))
-                        //{
-                        //    device.ImmediateContext.CopySubresourceRegion(sharedTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
-                        //    //device.ImmediateContext.Flush();
-                        //}
-
-                        //using (var sharedRes = screenTexture.QueryInterface<SharpDX.DXGI.Resource>())
-                        //{
-                        //   var handle = sharedRes.SharedHandle;
-                        //    using (var sharedTexture = device.OpenSharedResource<Texture2D>(handle))
-                        //    {
-                        //        device.ImmediateContext.CopySubresourceRegion(sharedTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
-                        //        device.ImmediateContext.Flush();
-                        //    }
-                        //}
-
-
-
-                        //device.ImmediateContext.CopySubresourceRegion(screenTexture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
-
                     }
                     catch (Exception ex)
                     {
                         logger.Error(ex);
                     }
-
 
                 }
                 //------------------------------------------------------
@@ -538,7 +490,7 @@ namespace Test.Encoder.DDATest
                 logger.Error(ex);
                 // Process error...
 
-                //CloseDx();
+                CloseDx();
 
                 //throw;
                 Thread.Sleep(100);
@@ -693,7 +645,25 @@ namespace Test.Encoder.DDATest
             logger.Debug("DXGIDesktopDuplicationCapture::Close()");
             //base.Close();
 
+            foreach (var d in deskDupls)
+            {
+                int activationNum = d.DeactivateCapture();
+                logger.Debug("DeactivateCapture: " + activationNum);
+            }
+            activateCapture = false;
+
+            if (internalOutputManager)
+            {
+                if (OutputManager != null)
+                {
+                    OutputManager.Dispose();
+                    OutputManager = null;
+                }
+                internalOutputManager = false;
+            }
+
             CloseDx();
+
 
             //if (OutputManager != null)
             //{
@@ -706,7 +676,7 @@ namespace Test.Encoder.DDATest
         {
             logger.Debug("DXGIDesktopDuplicationCapture::CloseDx()");
 
-            deviceReady = false;
+            initialized = false;
 
             if (deskDupls != null)
             {
@@ -770,16 +740,21 @@ namespace Test.Encoder.DDATest
 
         public DDAOutput GetOutput(int adapterIndex, int outputIndex)
         {
+            Console.WriteLine("DDAOutputManager::GetOutput(...) " + adapterIndex + " "+ outputIndex);
             DDAOutput output = null;
             if (OutputDict.ContainsKey(adapterIndex))
             {
                 var outputs = OutputDict[adapterIndex];
                 if (outputs.ContainsKey(outputIndex))
                 {
+                    Console.WriteLine("outputs[outputIndex]");
+
                     output = outputs[outputIndex];
                 }
                 else
                 {
+                    Console.WriteLine("new DDAOutput()");
+
                     output = new DDAOutput();
                     output.Init(adapterIndex, outputIndex);
                     outputs[outputIndex] = output;
@@ -787,6 +762,8 @@ namespace Test.Encoder.DDATest
             }
             else
             {
+                Console.WriteLine("new Dictionary<int, DDAOutput>()");
+
                 var outputs = new Dictionary<int, DDAOutput>();
                 output = new DDAOutput();
                 output.Init(adapterIndex, outputIndex);
@@ -800,7 +777,10 @@ namespace Test.Encoder.DDATest
 
         public void Dispose()
         {
-            foreach(var adapter in OutputDict.Keys)
+
+            Console.WriteLine("DDAOutputManager::Dispose()");
+
+            foreach (var adapter in OutputDict.Keys)
             {
                 var outputs = OutputDict[adapter];
                 foreach (var output in outputs.Values)
