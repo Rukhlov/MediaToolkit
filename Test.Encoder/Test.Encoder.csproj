@@ -81,6 +81,7 @@
   <ItemGroup>
     <Compile Include="CopyAcrossGPUTest.cs" />
     <Compile Include="DDATest\DDACapture.cs" />
+    <Compile Include="DDATest\DDAOutput.cs" />
     <Compile Include="DDATest\DDATest.cs" />
     <Compile Include="DDATest\DesktopDuplicator.cs" />
     <Compile Include="DDATest\Form1.cs">

@@ -17,11 +17,18 @@ namespace Test.Encoder.DDATest
         {
             InitializeComponent();
 
-            deskDuplCapture = new DDACapture(null);
+            
         }
 
         private Renderer renderer = null;
         private DDACapture deskDuplCapture = null;
+
+
+        private Renderer renderer1 = null;
+        private DDACapture deskDuplCapture1 = null;
+
+        private DDAOutputManager outputManager = new DDAOutputManager();
+
         private void buttonInit_Click(object sender, EventArgs e)
         {
 
@@ -33,30 +40,56 @@ namespace Test.Encoder.DDATest
             try
             {
 
-                var screen = Screen.PrimaryScreen;
-                //var screen = Screen.AllScreens[1];
+                //var screen = Screen.PrimaryScreen;
+                var screen = Screen.AllScreens[0];
 
-                 var screenRect = screen.Bounds;
+                var screenRect = screen.Bounds;
+                //var screenRect = new Rectangle(0, 0, 640, 480);
+                
                 //var screenRect = SystemInformation.VirtualScreen;
 
                 Console.WriteLine(SystemInformation.VirtualScreen);
 
                 // videoSource.Init(width, height);
 
-                deskDuplCapture.adapterIndex = 0;
+                deskDuplCapture = new DDACapture(null);
+                deskDuplCapture.OutputManager = outputManager;
+
+                deskDuplCapture.PrimaryAdapterIndex = 0;
 
                 deskDuplCapture.AspectRatio = true;
                 deskDuplCapture.CaptureMouse = true;
                 deskDuplCapture.Init(screenRect, screenRect.Size);
 
 
+
+
+                //deskDuplCapture1 = new DDACapture(null);
+                //deskDuplCapture1.OutputManager = outputManager;
+
+                //deskDuplCapture1.adapterIndex = 0;
+
+                //deskDuplCapture1.AspectRatio = true;
+                //deskDuplCapture1.CaptureMouse = true;
+                //deskDuplCapture1.Init(screenRect, screenRect.Size);
+
+
+
+
                 renderer = new Renderer();
+                //renderer1 = new Renderer();
+
                 //videoPanel.Size = new Size(1280, 720);
 
                 var srcSize = screenRect.Size;
-                var destSize = new Size(1280, 720);
+                //var destSize = new Size(1280, 720);
+
+                var destSize = new Size(1920, 1080);
+                renderer.adapterIndex = deskDuplCapture.PrimaryAdapterIndex;
+
                 renderer.Init(videoPanel.Handle, srcSize, destSize);
 
+                //renderer1.Init(this.Handle, srcSize, destSize);
 
                 //// Stopwatch sw = Stopwatch.StartNew();
                 //var screens = Screen.AllScreens;
@@ -92,24 +125,36 @@ namespace Test.Encoder.DDATest
         private bool running = false;
         private void buttonPresent_Click(object sender, EventArgs e)
         {
-            running = true;
+            Console.WriteLine("buttonPresent_Click(...)");
 
-            deskDuplCapture.Start();
-            
-            var sharedTexture = deskDuplCapture.SharedTexture;
-
-
-
-            renderer.Resize(videoPanel.Size);
-            
-
-            renderer.Start();
+            if (running)
+            {
+                Console.WriteLine("running == true");
+                return;
+            }
 
             Task.Run(() =>
             {
 
+                Console.WriteLine("Presenter task BEGIN");
+
+                running = true;
+
+                deskDuplCapture.Start();
+                //deskDuplCapture1.Start();
+
+                renderer.Resize(videoPanel.Size);
+
+                renderer.Start();
                 var texture = deskDuplCapture.SharedTexture;
                 renderer.UpdateTexture(texture);
+
+
+
+
+                //renderer1.Resize(this.Size);
+                //renderer1.Start();
+                //renderer1.UpdateTexture(texture);
 
                 //videoRenderer.Setup(texture);
 
@@ -161,8 +206,22 @@ namespace Test.Encoder.DDATest
 
                 }
 
-                sharedTexture?.Dispose();
+                //renderer1.Stop();
+                //renderer1.Close();
 
+
+                renderer.Stop();
+                renderer.Close();
+
+                deskDuplCapture.Stop();
+               // deskDuplCapture1.Stop();
+
+                //deskDuplCapture.Close();
+
+
+                texture?.Dispose();
+
+                Console.WriteLine("Presenter task END");
             });
 
         }
@@ -181,6 +240,7 @@ namespace Test.Encoder.DDATest
 
         private void buttonClose_Click(object sender, EventArgs e)
         {
+            running = false;
 
         }
     }

@@ -337,6 +337,8 @@ namespace MediaToolkit.ScreenCaptures
                                             {
                                                 multiThread.SetMultithreadProtected(true);
                                             }
+                                            adapterToDeviceMap[adapterIndex] = device;
+
                                         }
 
                                         Device destDevice = null;

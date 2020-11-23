@@ -327,7 +327,7 @@ namespace Test.Encoder.DDATest
 
         }
 
-        private void Close()
+        public void Close()
         {
             if (sharedTexture != null && !sharedTexture.IsDisposed)
             {
