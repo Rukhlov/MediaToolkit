@@ -28,7 +28,7 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-
+            MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);
 
             //MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
 

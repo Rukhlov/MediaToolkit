@@ -691,6 +691,36 @@ namespace MediaToolkit.Utils
         }
     }
 
+    public class RegistryTool
+    {
+       
+        public static void SetUserGpuPreferences(string fileName, int UserGpuPreferences)
+        {
+            //Windows 10 Build 1809 and higher
+            //Starting with Windows 10 build 19564, Microsoft updated the Graphics settings page (Settings > System > Display > Graphics settings),
+            //allowing for better control over designating which GPU your apps run on.
+
+            //х.з где это документировано найдено на форуме
+            //https://social.msdn.microsoft.com/Forums/office/en-US/faaa3a92-ed9a-4878-82b9-a43e175cc6e4/graphics-performance-preference
+            /*
+             * HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences
+                Power savings:
+                [application full path with \\ as path separators] = "GpuPreference=1;"
+                Maximum performance:
+                [application full path with \\ as path separators] = "GpuPreference=2;"
+            */
+            var name = @"Software\Microsoft\DirectX\UserGpuPreferences";
+            using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(name, true))
+            {
+                if (key != null)
+                {// if supported, use Windows 10 graphics performance settings
+                    var value = "GpuPreference=" + UserGpuPreferences + ";";
+                    key.SetValue(fileName, value);
+
+                }
+            }
+        }
+    }
 
     public class WcfDiscoveryAddressCustomEndpointBehavior : IEndpointBehavior, IDispatchMessageInspector
     {
