@@ -975,19 +975,28 @@ namespace MediaToolkit.MediaFoundation
         {
             StringBuilder log = new StringBuilder();
             log.AppendLine("");
-            foreach (var _adapter in adapters)
+
+            //foreach (var _adapter in adapters)
+            for (int adapterIndex = 0; adapterIndex < adapters.Length; adapterIndex++)
             {
+                var _adapter = adapters[adapterIndex];
+
                 var featureLevel = SharpDX.Direct3D11.Device.GetSupportedFeatureLevel(_adapter);
-                var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
+                //var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
 
                 bool success = GetSupportedFeatureLevel(_adapter, out var feature);
 
                 var adaptDescr = _adapter.Description1;
                 log.AppendLine("-------------------------------------");
-                log.AppendLine(string.Join("|", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
+                log.AppendLine("#" + adapterIndex + " " + string.Join("| ", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
 
-                foreach (var _output in _adapter.Outputs)
+                var outputs = _adapter.Outputs;
+
+                //foreach (var _output in _adapter.Outputs)
+                for(int outputIndex = 0;outputIndex< outputs.Length; outputIndex++)
                 {
+                    var _output = outputs[outputIndex];
+
                     var outputDescr = _output.Description;
                     var bound = outputDescr.DesktopBounds;
                     var rect = new GDI.Rectangle
@@ -998,8 +1007,8 @@ namespace MediaToolkit.MediaFoundation
                         Height = (bound.Bottom - bound.Top),
                     };
 
-                    log.AppendLine(string.Join("| ", outputDescr.DeviceName, rect.ToString()));
-
+                    log.AppendLine( "#" + outputIndex + " " + string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+                
                     _output.Dispose();
                 }
 

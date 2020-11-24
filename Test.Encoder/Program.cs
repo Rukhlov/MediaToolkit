@@ -29,7 +29,27 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-            Test.Encoder.DDATest.DDATest.Run();
+
+            //MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
+
+            var devices = MediaToolkit.NativeAPIs.Utils.DisplayTool.GetDisplayDevices();
+
+            foreach (var d in devices)
+            {
+                Console.WriteLine(d.ToString());
+                var monitors = d.Monitors;
+                foreach (var m in monitors)
+                {
+                    Console.WriteLine(m.ToString());
+                }
+
+                Console.WriteLine("------------------------------------");
+                Console.WriteLine("");
+            }
+
+            Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
+
+            // Test.Encoder.DDATest.DDATest.Run();
 
             //MfTransformTests.FindEncoderTest();
 

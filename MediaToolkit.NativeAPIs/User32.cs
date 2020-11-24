@@ -278,8 +278,11 @@ namespace MediaToolkit.NativeAPIs
             return result;
         }
 
+        [DllImport("user32.dll")]
+        public static extern bool EnumDisplayDevices(string lpDevice, uint iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, uint dwFlags);
 
-		[DllImport("user32.dll", SetLastError = true)]
+
+        [DllImport("user32.dll", SetLastError = true)]
 		public static extern bool SwitchDesktop(IntPtr hDesktop);
 
 		public delegate bool EnumDesktopsDelegate(string desktop, IntPtr lParam);

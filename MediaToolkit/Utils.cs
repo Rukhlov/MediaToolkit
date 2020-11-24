@@ -581,7 +581,7 @@ namespace MediaToolkit.Utils
 
                     if (displayInfo != null)
                     {
-                        deviceFriendlyName = displayInfo.Name;
+                        deviceFriendlyName = displayInfo.FriendlyName;
                     }
                 }
                 
