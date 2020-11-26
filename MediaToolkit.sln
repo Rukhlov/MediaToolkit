@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Jupiter", "Med
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Jupiter", "Test.Jupiter\Test.Jupiter.csproj", "{AD7C6D48-1749-4F4E-9372-2D05566B503B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.Nvidia", "MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj", "{78B312E1-A492-46F2-98BB-6C841F4E553E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -203,6 +205,14 @@ Global
 		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|x86.ActiveCfg = Release|Any CPU
 		{AD7C6D48-1749-4F4E-9372-2D05566B503B}.Release|x86.Build.0 = Release|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Debug|x86.Build.0 = Debug|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Release|x86.ActiveCfg = Release|Any CPU
+		{78B312E1-A492-46F2-98BB-6C841F4E553E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
