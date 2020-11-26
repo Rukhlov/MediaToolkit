@@ -28,26 +28,30 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-            MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);
 
-            //MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
+            NvEncTest.Run();
 
-            var devices = MediaToolkit.NativeAPIs.Utils.DisplayTool.GetDisplayDevices();
 
-            foreach (var d in devices)
-            {
-                Console.WriteLine(d.ToString());
-                var monitors = d.Monitors;
-                foreach (var m in monitors)
-                {
-                    Console.WriteLine(m.ToString());
-                }
+            //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);
 
-                Console.WriteLine("------------------------------------");
-                Console.WriteLine("");
-            }
+            ////MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
 
-            Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
+            //var devices = MediaToolkit.NativeAPIs.Utils.DisplayTool.GetDisplayDevices();
+
+            //foreach (var d in devices)
+            //{
+            //    Console.WriteLine(d.ToString());
+            //    var monitors = d.Monitors;
+            //    foreach (var m in monitors)
+            //    {
+            //        Console.WriteLine(m.ToString());
+            //    }
+
+            //    Console.WriteLine("------------------------------------");
+            //    Console.WriteLine("");
+            //}
+
+            //Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
 
             // Test.Encoder.DDATest.DDATest.Run();
 

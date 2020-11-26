@@ -93,6 +93,7 @@
     <Compile Include="DDATest\ScreenRenderer.cs" />
     <Compile Include="DDATest\Utils.cs" />
     <Compile Include="MfTransformTests.cs" />
+    <Compile Include="NvEncTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleSwapChain.cs" />
@@ -110,6 +111,10 @@
     <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj">
+      <Project>{78b312e1-a492-46f2-98bb-6c841f4e553e}</Project>
+      <Name>MediaToolkit.Nvidia</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
       <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>

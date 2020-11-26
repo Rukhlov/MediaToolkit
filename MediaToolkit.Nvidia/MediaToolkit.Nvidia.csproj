@@ -48,7 +48,8 @@
     <Compile Include="LibNvEnc.cs" />
     <Compile Include="NvEncodeAPI\Enums.cs" />
     <Compile Include="NvEncodeAPI\Guids.cs" />
-    <Compile Include="NvEncodeAPI\NvEncApiFunctionList.cs" />
+    <Compile Include="NvEncodeAPI\Functions.cs" />
+    <Compile Include="NvEncodeAPI\NvEncodeAPI.cs" />
     <Compile Include="NvEncodeAPI\Structs.cs" />
     <Compile Include="NvEncoder.cs" />
     <Compile Include="NvUtils.cs" />
@@ -61,6 +62,13 @@
     <None Include="Docs\NVENC_Preset_Migration_Guide.pdf" />
     <None Include="Docs\NVENC_VideoEncoder_API_ProgGuide.pdf" />
     <None Include="Docs\Using_FFmpeg_with_NVIDIA_GPU_Hardware_Acceleration.pdf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="NvEncodeAPI\nvEncodeAPI.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Cuda\cuviddec.h" />
+    <None Include="Cuda\nvcuvid.h" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

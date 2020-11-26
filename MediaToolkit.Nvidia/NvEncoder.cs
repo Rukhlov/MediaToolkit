@@ -12,7 +12,7 @@ namespace MediaToolkit.Nvidia
     public class NvEncoder
     {
         private readonly NvEncoderPtr encoderPtr;
-        public NvEncoder(NvEncoderPtr ptr) 
+        internal NvEncoder(NvEncoderPtr ptr) 
         {
             this.encoderPtr = ptr;
         }
@@ -141,12 +141,12 @@ namespace MediaToolkit.Nvidia
             CheckError(status);
         }
 
-        public int GetEncodeCaps(Guid encodeGuig, NvEncCaps encCaps, uint version = 0) 
+        public int GetEncodeCaps(Guid encodeGuig, NvEncCaps encCaps) 
         {
             NvEncCapsParam capsParam = new NvEncCapsParam
             {
                 CapsToQuery = encCaps,
-                Version = version,
+                Version = NvEncodeAPI.NV_ENC_CAPS_PARAM_VER,
             };
 
             int capsVal = 0;
@@ -203,10 +203,10 @@ namespace MediaToolkit.Nvidia
         {
             var presetConfig = new NvEncPresetConfig
             {
-                Version = NV_ENC_PRESET_CONFIG_VER,
+                Version = NvEncodeAPI.NV_ENC_PRESET_CONFIG_VER,
                 PresetCfg = new NvEncConfig
                 {
-                    Version = NV_ENC_CONFIG_VER
+                    Version = NvEncodeAPI.NV_ENC_CONFIG_VER
                 }
             };
 
@@ -231,7 +231,7 @@ namespace MediaToolkit.Nvidia
         {
             var createInputBufferParams = new NvEncCreateInputBuffer
             {
-                Version = NV_ENC_CREATE_INPUT_BUFFER_VER,
+                Version = NvEncodeAPI.NV_ENC_CREATE_INPUT_BUFFER_VER,
                 Width = (uint)width,
                 Height = (uint)height,
                 BufferFmt = bufferFormat
@@ -269,7 +269,7 @@ namespace MediaToolkit.Nvidia
         {
             var createBitstreamBufferParams = new NvEncCreateBitstreamBuffer
             {
-                Version = NV_ENC_CREATE_BITSTREAM_BUFFER_VER
+                Version = NvEncodeAPI.NV_ENC_CREATE_BITSTREAM_BUFFER_VER
             };
 
             var status = NvEncApiFunc.CreateBitstreamBuffer(encoderPtr, ref createBitstreamBufferParams);
@@ -303,7 +303,7 @@ namespace MediaToolkit.Nvidia
         {
             var lockBitstreamBufferParams = new NvEncLockBitstream
             {
-                Version = NV_ENC_LOCK_BITSTREAM_VER,
+                Version = NvEncodeAPI.NV_ENC_LOCK_BITSTREAM_VER,
                 OutputBitstream = buffer.BitstreamBuffer.Handle,
                 DoNotWait = doNotWait
             };
