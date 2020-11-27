@@ -36,7 +36,7 @@ namespace MediaToolkit.Nvidia
             const uint currentVersion = (NVENCAPI_MAJOR_VERSION << 4) | NVENCAPI_MINOR_VERSION;
             if (currentVersion > version)
             {
-                var descr = $"Installed NvEnc version is {version >> 4}.{version & 0xF}, version must be at least { NVENCAPI_MAJOR_VERSION}.{ NvEncodeAPI.NVENCAPI_MINOR_VERSION}. Please upgrade the nvidia display drivers.";
+                var descr = $"Installed NvEnc version is {version >> 4}.{version & 0xF}, version must be at least { NVENCAPI_MAJOR_VERSION}.{ NVENCAPI_MINOR_VERSION}. Please upgrade the nvidia display drivers.";
                 throw new NotSupportedException(descr);
             }
 

@@ -29,7 +29,10 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-            NvEncTest.Run();
+
+            NvApiTest.Run();
+
+            //NvEncTest.Run();
 
 
             //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);

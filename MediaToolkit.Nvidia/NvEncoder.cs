@@ -17,19 +17,17 @@ namespace MediaToolkit.Nvidia
             this.encoderPtr = ptr;
         }
 
+        public uint GetEncodeGuidCount()
+        {
+            GetEncodeGuidCount(out var encodeGuidCount);
+            return encodeGuidCount;
+        }
+
         public void GetEncodeGuidCount(out uint encodeGuidCount)
         {
             encodeGuidCount = 0;
             var status = NvEncApiFunc.GetEncodeGuidCount(encoderPtr, ref encodeGuidCount);
             CheckError(status);
-        }
-
-        public uint GetEncodeGuidCount()
-        {
-            uint encodeGuidCount = 0;
-            var status = NvEncApiFunc.GetEncodeGuidCount(encoderPtr, ref encodeGuidCount);
-            CheckError(status);
-            return encodeGuidCount;
         }
 
         public unsafe void GetEncodeGuids(Guid[] guids, ref uint guidCount)
@@ -103,9 +101,7 @@ namespace MediaToolkit.Nvidia
 
         public uint GetInputFormatCount(Guid encodeGuid)
         {
-            uint inputFmtCount = 0;
-            var status = NvEncApiFunc.GetInputFormatCount(encoderPtr, encodeGuid, ref inputFmtCount);
-            CheckError(status);
+            GetInputFormatCount(encodeGuid, out var inputFmtCount);
             return inputFmtCount;
         }
 
@@ -164,10 +160,8 @@ namespace MediaToolkit.Nvidia
 
         public uint GetEncodePresetCount(Guid encodeGuid)
         {
-            uint encodePresetGuidCount = 0;
-            var status = NvEncApiFunc.GetEncodePresetCount(encoderPtr, encodeGuid, ref encodePresetGuidCount);
-            CheckError(status);
-            return encodePresetGuidCount;
+            GetEncodePresetCount(encodeGuid, out var count);
+            return count;
         }
 
         public unsafe void GetEncodePresetGuids(Guid encodeGuid, Guid[] presetGuids, ref uint encodePresetGuidCount)
@@ -193,7 +187,7 @@ namespace MediaToolkit.Nvidia
             return guids;
         }
    
-        public void GetEncodePresetConfig( Guid encodeGuid, Guid presetGuid, ref NvEncPresetConfig presetConfig)
+        public void GetEncodePresetConfig(Guid encodeGuid, Guid presetGuid, ref NvEncPresetConfig presetConfig)
         {
             var status = NvEncApiFunc.GetEncodePresetConfig(encoderPtr, encodeGuid, presetGuid, ref presetConfig);
             CheckError(status);
