@@ -18,14 +18,30 @@ namespace Test.Encoder
 
             Console.WriteLine("NvAPI_Initialize() " + res);
 
-            var status = NvAPI.DRS.CreateSession(out var phSession);
+			res = NvAPI.GetInterfaceVersionString(out var version);
+			Console.WriteLine("GetInterfaceVersionString() " + res + " " + version);
+
+			res = NvAPI.SYS.GetDriverAndBranchVersion(out var driverVersion, out var buildString);
+			Console.WriteLine("GetDriverAndBranchVersion() " + res + " " + driverVersion + " " + buildString);
+
+
+			ChipsetInfoV4 info = new ChipsetInfoV4();
+
+			res = NvAPI.SYS.GetChipSetInfo(ref info);
+			Console.WriteLine("GetChipSetInfo() " + res + " " + info);
+
+			res = NvAPI.GetErrorMessage(res, out var message);
+			Console.WriteLine("GetErrorMessage() " + res + " " + message);
+
+
+			var status = NvAPI.DRS.CreateSession(out var phSession);
 
             Console.WriteLine("NvAPI_DRS_CreateSession() " + status + " " + phSession);
 
             status = NvAPI.DRS.LoadSettings(phSession);
             Console.WriteLine("DRS_LoadSettings() " + status + " " + phSession);
 
-            var profileName = "TEST4";
+            var profileName = "TEST5";
             status = NvAPI.DRS.FindProfileByName(phSession, profileName, out var hProfile);
             Console.WriteLine("DRS_FindProfileByName() " + status + " " + phSession);
 
@@ -38,7 +54,7 @@ namespace Test.Encoder
                 //var _version =  (uint)(Marshal.SizeOf(typeof(DRSProfile)) | (version << 16));
                 DRSProfile prof = new DRSProfile
                 {
-                    version = NvAPI.NVDRS_PROFILE_VER,
+                    version = NvAPI.MakeVersion<DRSProfile>(1),
                     profileName = profileName,
                 };
 
@@ -58,17 +74,20 @@ namespace Test.Encoder
             }
 
 
-            DRSApplicationV1 app = new DRSApplicationV1
-            {
-                version = NvAPI.NVDRS_APPLICATION_VER_V1,
-                appName = "TEST4.exe",
+			DRSApplicationV2 app = new DRSApplicationV2
+			{
+                appName = "TEST6.exe",
+				
             };
 
-            status = NvAPI.DRS.GetApplicationInfo(phSession, hProfile, app.appName, ref app);
+			//status = NvAPI.DRS.CreateApplication(phSession, hProfile, ref _app);
+			status = NvAPI.DRS.GetApplicationInfo(phSession, hProfile, app.appName, ref app);
 
-            if(status == NvApiStatus.ExecutableNotFound)
+			//status = NvAPI.DRS._CreateApplication(phSession, hProfile, app);
+
+			if (status == NvApiStatus.ExecutableNotFound)
             {
-                status = NvAPI.DRS.CreateApplication(phSession, hProfile, ref app);
+                status = NvAPI.DRS.CreateApplication(phSession, hProfile, app);
             }
             else if(status != NvApiStatus.Ok)
             {
@@ -78,10 +97,10 @@ namespace Test.Encoder
 
             Console.WriteLine("DRS_CreateApplication() " + status + " " + phSession);
 
-
-            var setting1 = new DRSSetting
+			var settingVersion = NvAPI.MakeVersion<DRSSetting>(1);
+			var setting1 = new DRSSetting
             {
-                version = NvAPI.NVDRS_SETTING_VER,
+                version = settingVersion,
                 settingId = (uint)ESetting.SHIM_MCCOMPAT_ID,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion
@@ -96,7 +115,7 @@ namespace Test.Encoder
 
             var setting2 = new DRSSetting
             {
-                version = NvAPI.NVDRS_SETTING_VER,
+                version = settingVersion,
                 settingId = (uint)ESetting.SHIM_MCCOMPAT_ID,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion
@@ -112,7 +131,7 @@ namespace Test.Encoder
 
             var setting3 = new DRSSetting
             {
-                version = NvAPI.NVDRS_SETTING_VER,
+                version = settingVersion,
                 settingId = (uint)ESetting.SHIM_RENDERING_OPTIONS_ID,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion

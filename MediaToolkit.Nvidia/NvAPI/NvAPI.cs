@@ -9,32 +9,34 @@ namespace MediaToolkit.Nvidia.NvAPI
 {
     public class NvAPI
     {
-        public const uint NVAPI_UNICODE_STRING_MAX = 2048;
+		//#define NVAPI_GENERIC_STRING_MAX   4096
+		public const uint GentricStringMax = 4096;
 
-        private const string _path32 = "nvapi.dll";
+		//#define NVAPI_LONG_STRING_MAX   256
+		public const uint LongStringMax = 256;
+
+		//#define NVAPI_SHORT_STRING_MAX   64
+		public const uint ShortStringMax = 64;
+
+		public const uint UnicodeMaxString = 2048;
+
+		public const uint SettingsMaxValue = 100;
+
+		private const string _path32 = "nvapi.dll";
         private const string _path64 = "nvapi64.dll";
 
-        public static uint NVDRS_PROFILE_VER = MakeVersion<DRSProfile>(1);
-        public const uint NVAPI_SETTING_MAX_VALUES = 100;
 
-        public static readonly uint NVDRS_SETTING_VALUES_VER = MakeVersion<DRSSettingValues>(1);
-        public static readonly uint NVDRS_SETTING_VER = MakeVersion<DRSSetting>(1);
-
-        public static readonly uint NVDRS_APPLICATION_VER_V1 = MakeVersion<DRSApplicationV1>(1);
-        public static readonly uint NVDRS_APPLICATION_VER_V2 = MakeVersion<DRSApplicationV2>(2);
-        public static readonly uint NVDRS_APPLICATION_VER_V3 = MakeVersion<DRSApplicationV3>(3);
-        public static readonly uint NVDRS_APPLICATION_VER = NVDRS_APPLICATION_VER_V3;
-
-        private static uint MakeVersion<T>(int version)
+		//#define 	MAKE_NVAPI_VERSION(typeName, ver)   (NvU32)(sizeof(typeName) | ((ver)<<16))
+		public static uint MakeVersion<T>(int version)
         {
             return (uint)((Marshal.SizeOf(typeof(T))) | (int)(version << 16));
         }
 
         [DllImport(_path32, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
-        private static extern IntPtr NvAPI32_QueryInterface(uint interfaceId);
+        internal static extern IntPtr NvAPI32_QueryInterface(uint interfaceId);
 
         [DllImport(_path64, EntryPoint = "nvapi_QueryInterface", CallingConvention = CallingConvention.Cdecl, PreserveSig = true)]
-        private static extern IntPtr NvAPI64_QueryInterface(uint interfaceId);
+		internal static extern IntPtr NvAPI64_QueryInterface(uint interfaceId);
 
         public static IntPtr QueryInterface(uint interfaceId)
         {
@@ -53,22 +55,72 @@ namespace MediaToolkit.Nvidia.NvAPI
             return DelegateFactory.GetDelegate<NvAPI_Unload>().Invoke();
         }
 
+		public static NvApiStatus GetInterfaceVersionString(out string version)
+		{
+			var sb = new StringBuilder(64);
+			var status = DelegateFactory.GetDelegate<NvAPI_GetInterfaceVersionString>().Invoke(sb);
+			version =  sb.ToString();
+			return status;
+		}
+
+		public static NvApiStatus GetErrorMessage(NvApiStatus _status, out string message)
+		{
+			var sb = new StringBuilder(64);
+			var status = DelegateFactory.GetDelegate<NvAPI_GetErrorMessage>().Invoke(_status, sb);
+			message = sb.ToString();
+			return status;
+		}
+
+		public static class SYS
+		{
+			public static NvApiStatus GetDriverAndBranchVersion(out uint driverVersion, out string buildString)
+			{
+				var sb = new StringBuilder(64);
+				var status = DelegateFactory.GetDelegate<NvAPI_SYS_GetDriverAndBranchVersion>().Invoke(out driverVersion, sb);
+				buildString = sb.ToString();
+				return status;
+			}
+
+			public static NvApiStatus GetChipSetInfo<T>(ref T t) where T : ChipsetInfoV1, new()
+			{
+				NvApiStatus status = NvApiStatus.Error;
+				var size = Marshal.SizeOf(t);
+				IntPtr ptr = Marshal.AllocHGlobal(size);
+				try
+				{
+					Marshal.StructureToPtr(t, ptr, false);
+					status = DelegateFactory.GetDelegate<NvAPI_SYS_GetChipSetInfo>().Invoke(ptr);
+					if (status == NvApiStatus.Ok)
+					{
+						T newApp = new T();
+						Marshal.PtrToStructure(ptr, newApp);
+						t = newApp;
+					}
+				}
+				finally
+				{
+					Marshal.FreeHGlobal(ptr);
+				}
+
+				return status;			
+			}
+		}
 
         public static class DRS
         {
-            public static NvApiStatus CreateSession(out DRSSessionHandle phSession)
+            public static NvApiStatus CreateSession(out DRSSessionHandle hSession)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateSession>().Invoke(out phSession);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateSession>().Invoke(out hSession);
             }
 
-            public static NvApiStatus DestroySession(DRSSessionHandle phSession)
+            public static NvApiStatus DestroySession(DRSSessionHandle hSession)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_DestroySession>().Invoke(phSession);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_DestroySession>().Invoke(hSession);
             }
 
-            public static NvApiStatus LoadSettings(DRSSessionHandle phSession)
+            public static NvApiStatus LoadSettings(DRSSessionHandle hSession)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_LoadSettings>().Invoke(phSession);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_LoadSettings>().Invoke(hSession);
             }
 
             public static NvApiStatus GetBaseProfile(DRSSessionHandle hSession, out DRSProfileHandle hProfile)
@@ -76,34 +128,74 @@ namespace MediaToolkit.Nvidia.NvAPI
                 return DelegateFactory.GetDelegate<NvAPI_DRS_GetBaseProfile>().Invoke(hSession, out hProfile);
             }
 
-            public static NvApiStatus FindProfileByName(DRSSessionHandle phSession, string profileName, out DRSProfileHandle profile)
+            public static NvApiStatus FindProfileByName(DRSSessionHandle hSession, string profileName, out DRSProfileHandle profile)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_FindProfileByName>().Invoke(phSession, new StringBuilder(profileName), out profile);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_FindProfileByName>().Invoke(hSession, new StringBuilder(profileName), out profile);
             }
 
-            public static NvApiStatus CreateProfile(DRSSessionHandle phSession, DRSProfile profile, out DRSProfileHandle hProfile)
+            public static NvApiStatus CreateProfile(DRSSessionHandle hSession, DRSProfile profile, out DRSProfileHandle hProfile)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateProfile>().Invoke(phSession, ref profile, out hProfile);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateProfile>().Invoke(hSession, ref profile, out hProfile);
             }
 
-            public static NvApiStatus GetApplicationInfo(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref DRSApplicationV1 app)// where T : NVDRS_APPLICATION_V1
+			public static NvApiStatus GetApplicationInfo<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref T t) 
+				where T : DRSApplicationV1, new()
+			{
+				NvApiStatus status = NvApiStatus.Error;
+				var size = Marshal.SizeOf(t);
+				IntPtr ptr = Marshal.AllocHGlobal(size);
+				try
+				{
+					var buf = new StringBuilder(appName);
+					Marshal.StructureToPtr(t, ptr, true);
+					var getApplicationInfo = DelegateFactory.GetDelegate<NvAPI_DRS_GetApplicationInfo>();
+					status = getApplicationInfo(hSession, hProfile, buf, ptr);
+
+					if(status == NvApiStatus.Ok)
+					{
+						T newApp = new T();
+						Marshal.PtrToStructure(ptr, newApp);
+						t = newApp;
+					}
+				}
+				finally
+				{
+					Marshal.FreeHGlobal(ptr);
+				}
+
+				return status;
+
+			}
+
+			public static NvApiStatus CreateApplication<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, T t)
+				where T : DRSApplicationV1
+			{
+				NvApiStatus status = NvApiStatus.Error;
+				var size = Marshal.SizeOf(t);
+				IntPtr ptr = Marshal.AllocHGlobal(size);
+				try
+				{
+					Marshal.StructureToPtr(t, ptr, true);
+					var createApplication = DelegateFactory.GetDelegate<NvAPI_DRS_CreateApplication>();
+					status = createApplication(hSession, hProfile, ptr);
+				}
+				finally
+				{
+					Marshal.FreeHGlobal(ptr);
+				}
+
+				return status;
+			}
+
+
+            public static NvApiStatus SetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, ref DRSSetting pSetting)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_GetApplicationInfo>().Invoke(hSession, hProfile, new StringBuilder(appName), ref app);
+                return DelegateFactory.GetDelegate<NvAPI_RS_SetSettingDelegate>().Invoke(hSession, hProfile, ref pSetting);
             }
 
-            public static NvApiStatus CreateApplication(DRSSessionHandle phSession, DRSProfileHandle hProfile, ref DRSApplicationV1 app)
+            public static NvApiStatus SaveSettings(DRSSessionHandle hSession)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateApplication>().Invoke(phSession, hProfile, ref app);
-            }
-
-            public static NvApiStatus SetSetting(DRSSessionHandle phSession, DRSProfileHandle hProfile, ref DRSSetting pSetting)
-            {
-                return DelegateFactory.GetDelegate<NvAPI_RS_SetSettingDelegate>().Invoke(phSession, hProfile, ref pSetting);
-            }
-
-            public static NvApiStatus SaveSettings(DRSSessionHandle phSession)
-            {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_SaveSettings>().Invoke(phSession);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_SaveSettings>().Invoke(hSession);
             }
 
         }

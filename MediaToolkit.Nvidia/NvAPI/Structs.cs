@@ -19,81 +19,158 @@ namespace MediaToolkit.Nvidia.NvAPI
         internal readonly IntPtr Handle;
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    public struct DRSApplicationV1
-    {
-        //Structure Version
-        public uint version;
+	//NV_CHIPSET_INFO_v1
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+	public class ChipsetInfoV1
+	{
+		public ChipsetInfoV1()
+		{
+			version = NvAPI.MakeVersion<ChipsetInfoV1>(1);
+		}
 
-        //Is the application userdefined/predefined
-        public uint isPredefined;
+		//NvU32 version;        //structure version
+		public uint version;
 
-        // String name of the Application
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string appName;
+		//NvU32 vendorId;       //vendor ID
+		public uint vendorId;
 
-        //serFriendly name of the Application
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string userFriendlyName;
+		//NvU32 deviceId;       //device ID
+		public uint deviceId;
 
-        //Indicates the name(if any) of the launcher that starts the application
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string launcher;
-    }
+		//NvAPI_ShortString szVendorName;   //vendor Name
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		public string vendorName;
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    public class DRSApplicationV2
-    {
-        public uint version;
-        public uint isPredefined;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string appName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string userFriendlyName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string launcher;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string fileInFolder;
-    }
+		//NvAPI_ShortString szChipsetName;  //device Name
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		public string chipsetName;
+	}
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    public struct DRSApplicationV3
-    {
-        public uint version;
-        public uint isPredefined;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string appName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string userFriendlyName;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string launcher;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
-        public string fileInFolder;
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+	public class ChipsetInfoV2: ChipsetInfoV1
+	{
+		public ChipsetInfoV2()
+		{
+			version = NvAPI.MakeVersion<ChipsetInfoV2>(2);
+		}
+		//NvU32 flags;	//!< Chipset info flags
+		public uint flags;
+	}
 
-        public uint isMetro
-        {
-            get
-            {
-                return ((uint)((bitvector1 & 1)));
-            }
-            set
-            {
-                bitvector1 = ((uint)((value | bitvector1)));
-            }
-        }
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+	public class ChipsetInfoV3 : ChipsetInfoV2
+	{
+		public ChipsetInfoV3()
+		{
+			version = NvAPI.MakeVersion<ChipsetInfoV3> (3);
+		}
 
-        public uint isCommandLine;
+		//NvU32 subSysVendorId;     //!< subsystem vendor ID
+		uint subSysVendorId;
+
+		//NvU32 subSysDeviceId;     //!< subsystem device ID
+		uint subSysDeviceId;
+
+		//NvAPI_ShortString szSubSysVendorName; //!< subsystem vendor Name
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		public string subSysVendorName;
+	}
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+	public class ChipsetInfoV4 : ChipsetInfoV3
+	{
+		public ChipsetInfoV4()
+		{
+			version = NvAPI.MakeVersion<ChipsetInfoV4>(4);
+		}
+
+		//NvU32 HBvendorId;         //!< Host bridge vendor identification
+		uint HBvendorId;
+
+		//NvU32 HBdeviceId;         //!< Host bridge device identification
+		uint HBdeviceId;
+
+		//NvU32 HBsubSysVendorId;   //!< Host bridge subsystem vendor identification
+		uint HBsubSysVendorId;
+
+		//NvU32 HBsubSysDeviceId;   //!< Host bridge subsystem device identification
+		uint HBsubSysDeviceId;
+	}
 
 
-        private uint bitvector1;
-    }
+	//NVDRS_APPLICATION_V1
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class DRSApplicationV1
+	{
+		public DRSApplicationV1()
+		{
+			version = NvAPI.MakeVersion<DRSApplicationV1>(1);
+		}
 
+		//Structure Version
+		public uint version;
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
+		//Is the application userdefined/predefined
+		public uint isPredefined;
+
+		// String name of the Application
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		public string appName;
+
+		//serFriendly name of the Application
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		public string userFriendlyName;
+
+		//Indicates the name(if any) of the launcher that starts the application
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		public string launcher;
+	}
+
+	//NVDRS_APPLICATION_V2
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class DRSApplicationV2 : DRSApplicationV1
+	{
+		public DRSApplicationV2()
+		{
+			version = NvAPI.MakeVersion<DRSApplicationV2>(2);
+		}
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		public string fileInFolder;
+	}
+
+	//NVDRS_APPLICATION_V3
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class DRSApplicationV3 : DRSApplicationV2
+	{
+		public DRSApplicationV3()
+		{
+			version = NvAPI.MakeVersion<DRSApplicationV3>(3);
+		}
+
+		public uint isMetro = 0;
+		public uint isCommandLine;
+		public uint reserved = 0;
+	}
+
+	//NVDRS_APPLICATION_V4
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public class DRSApplicationV4 : DRSApplicationV3
+	{
+		public DRSApplicationV4()
+		{
+			version = NvAPI.MakeVersion<DRSApplicationV4>(4);
+		}
+
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		public string commandLine;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
     public struct DRSProfile
     {
-        public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
+		public uint version;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
         public string profileName;
         public DRSGPUSupport gpuSupport;
         public uint isPredefined;
@@ -108,7 +185,7 @@ namespace MediaToolkit.Nvidia.NvAPI
         public uint numSettingValues;
         public DRSSettingType settingType;
         public DRSSettingUnion defaultValue;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)NvAPI.NVAPI_SETTING_MAX_VALUES)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)NvAPI.SettingsMaxValue)]
         public DRSSettingUnion[] settingValues;
     }
 
@@ -117,7 +194,7 @@ namespace MediaToolkit.Nvidia.NvAPI
     public struct DRSSetting
     {
         public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.NVAPI_UNICODE_STRING_MAX)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
         public string settingName;
         public uint settingId;
         public DRSSettingType settingType;

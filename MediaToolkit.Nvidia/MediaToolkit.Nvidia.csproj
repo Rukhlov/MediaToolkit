@@ -65,6 +65,7 @@
     <None Include="Docs\NVENC_Application_Note.pdf" />
     <None Include="Docs\NVENC_Preset_Migration_Guide.pdf" />
     <None Include="Docs\NVENC_VideoEncoder_API_ProgGuide.pdf" />
+    <None Include="Docs\NVIDIA_Driver_Settings_ProgGuide.pdf" />
     <None Include="Docs\Using_FFmpeg_with_NVIDIA_GPU_Hardware_Acceleration.pdf" />
   </ItemGroup>
   <ItemGroup>
