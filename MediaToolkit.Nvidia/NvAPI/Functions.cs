@@ -250,7 +250,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_DRS_FindProfileByName(
 		[In] DRSSessionHandle sessionHandle,
-		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeStringMax)]
 			StringBuilder profileName,
 		[Out] out DRSProfileHandle profileHandle);
 
@@ -280,7 +280,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	//NVAPI_INTERFACE NvAPI_DRS_CreateProfile(NvDRSSessionHandle hSession, NVDRS_PROFILE* pProfileInfo, NvDRSProfileHandle* phProfile);
 	[FunctionId(FunctionId.NvAPI_DRS_CreateProfile)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	internal delegate NvApiStatus NvAPI_DRS_CreateProfile([In] DRSSessionHandle sessionHandle, [In] ref DRSProfile profile, [Out] out DRSProfileHandle profileHandle);
+	internal delegate NvApiStatus NvAPI_DRS_CreateProfile([In] DRSSessionHandle sessionHandle, [In] DRSProfile profile, [Out] out DRSProfileHandle profileHandle);
 
 
 
@@ -314,7 +314,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_GetApplicationInfo(
 		[In] DRSSessionHandle hSession,
 		[In] DRSProfileHandle hProfile,
-		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeStringMax)]
 		StringBuilder appName,
 		[In, Out] IntPtr hApp);
 
@@ -365,26 +365,79 @@ namespace MediaToolkit.Nvidia.NvAPI
 	//NVAPI_INTERFACE NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting);//
 	[FunctionId(FunctionId.NvAPI_DRS_SetSetting)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	internal delegate NvApiStatus NvAPI_RS_SetSettingDelegate(DRSSessionHandle phSessio, DRSProfileHandle hProfile, ref DRSSetting pSetting);
+	internal delegate NvApiStatus NvAPI_DRS_SetSetting(DRSSessionHandle phSessio, DRSProfileHandle hProfile, ref DRSSettingV1 pSetting);
 
 
-	///////////////////////////////////////////////////////////////////////////////
-	//
-	// FUNCTION NAME: NvAPI_DRS_SaveSettings
-	//
-	//!   DESCRIPTION: This API saves the settings data to the system.
-	//!
-	//! SUPPORTED OS:  Windows 7 and higher
-	//!
-	//!
-	//! \param [in] hSession  Input to the session handle.
-	//!                
-	//! \retval ::NVAPI_OK    SUCCESS
-	//! \retval ::NVAPI_ERROR For miscellaneous errors.
-	//
-	///////////////////////////////////////////////////////////////////////////////
-	//NVAPI_INTERFACE NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession);
-	[FunctionId(FunctionId.NvAPI_DRS_SaveSettings)]
+    /////////////////////////////////////////////////////////////////////////////////
+    ////
+    //// FUNCTION NAME: NvAPI_DRS_GetSetting
+    ////
+    ////!   DESCRIPTION: This API gets information about the given setting.
+    ////!
+    ////! SUPPORTED OS:  Windows 7 and higher
+    ////!
+    ////!
+    ////! \param [in]   hSession   Input to the session handle.
+    ////! \param [in]   hProfile   Input profile handle.
+    ////! \param [in]   settingId  Input settingId.
+    ////! \param [out]  *pSetting  Returns all the setting info
+    ////!                
+    ////! \retval ::NVAPI_OK     SUCCESS
+    ////! \retval ::NVAPI_ERROR  For miscellaneous errors.
+    ////!
+    ////! \ingroup drsapi
+    /////////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting);
+    [FunctionId(FunctionId.NvAPI_DRS_GetSetting)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_GetSetting(DRSSessionHandle phSessio, DRSProfileHandle hProfile, uint settingId, [In, Out] ref DRSSettingV1 pSetting);
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_EnumSettings
+    //
+    //!   DESCRIPTION: This API enumerates all the settings of a given profile from startIndex to the maximum length.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]      hSession        Input to the session handle.
+    //! \param [in]      hProfile        Input profile handle.
+    //! \param [in]      startIndex      Indicates starting index for enumeration.
+    //! \param [in,out]  *settingsCount  Input max length of the passed in arrays, Returns the actual length.
+    //! \param [out]     *pSetting       Returns all the settings info.
+    //!                
+    //! \retval ::NVAPI_OK              SUCCESS
+    //! \retval ::NVAPI_ERROR           For miscellaneous errors.
+    //! \retval ::NVAPI_END_ENUMERATION startIndex exceeds the total appCount.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_EnumSettings(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 startIndex, NvU32* settingsCount, NVDRS_SETTING* pSetting);
+    [FunctionId(FunctionId.NvAPI_DRS_EnumSettings)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_EnumSettings(DRSSessionHandle phSessio, DRSProfileHandle hProfile, uint startIndex, 
+        ref uint settingsCount, IntPtr pSetting);
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_SaveSettings
+    //
+    //!   DESCRIPTION: This API saves the settings data to the system.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in] hSession  Input to the session handle.
+    //!                
+    //! \retval ::NVAPI_OK    SUCCESS
+    //! \retval ::NVAPI_ERROR For miscellaneous errors.
+    //
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_SaveSettings(NvDRSSessionHandle hSession);
+    [FunctionId(FunctionId.NvAPI_DRS_SaveSettings)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_DRS_SaveSettings([In] DRSSessionHandle sessionHandle);
 

@@ -30,7 +30,7 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
 
 
-            NvApiTest.Run();
+            NvApiTest.Run2();
 
             //NvEncTest.Run();
 

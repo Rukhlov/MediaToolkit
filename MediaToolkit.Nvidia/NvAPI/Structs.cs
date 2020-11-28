@@ -114,15 +114,15 @@ namespace MediaToolkit.Nvidia.NvAPI
 		public uint isPredefined;
 
 		// String name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string appName;
 
 		//serFriendly name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string userFriendlyName;
 
 		//Indicates the name(if any) of the launcher that starts the application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string launcher;
 	}
 
@@ -135,7 +135,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV2>(2);
 		}
 
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string fileInFolder;
 	}
 
@@ -162,15 +162,15 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV4>(4);
 		}
 
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string commandLine;
 	}
 
-	[StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    public struct DRSProfile
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public class DRSProfile
     {
 		public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
         public string profileName;
         public DRSGPUSupport gpuSupport;
         public uint isPredefined;
@@ -189,27 +189,70 @@ namespace MediaToolkit.Nvidia.NvAPI
         public DRSSettingUnion[] settingValues;
     }
 
-    //NVDRS_SETTING
+    //NVDRS_SETTING_V1
     [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    public struct DRSSetting
+    public struct DRSSettingV1
     {
+        // NvU32 version; //!< Structure Version
         public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
+
+        //NvAPI_UnicodeString settingName; //!< String name of setting
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
         public string settingName;
+
+        //NvU32 settingId; //!< 32 bit setting Id
         public uint settingId;
+
+        //NVDRS_SETTING_TYPE settingType; //!< Type of setting value.  
         public DRSSettingType settingType;
+
+        //NVDRS_SETTING_LOCATION settingLocation; //!< Describes where the value in CurrentValue comes from. 
         public DRSSettingLocation settingLocation;
+
+        // NvU32 isCurrentPredefined;    //!< It is different than 0 if the currentValue is a predefined Value, 
         public uint isCurrentPredefined;
+
+        //NvU32 isPredefinedValid; //!< It is different than 0 if the PredefinedValue union contains a valid value. 
         public uint isPredefinedValid;
+
         public DRSSettingUnion predefinedValue;
         public DRSSettingUnion currentValue;
+
     }
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode, Size = 4100)]
+
+
+    /*
+    *   union //!< Setting can hold either DWORD or Binary value or string. Not mixed types.
+        {
+            NvU32                      u32PredefinedValue;    //!< Accessing default DWORD value of this setting.
+            NVDRS_BINARY_SETTING       binaryPredefinedValue; //!< Accessing default Binary value of this setting.
+                                                            //!< Must be allocated by caller with valueLength specifying buffer size, 
+                                                            //!< or only valueLength will be filled in.
+            NvAPI_UnicodeString        wszPredefinedValue;    //!< Accessing default unicode string value of this setting.
+        };
+     */
+
+    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode, Size = (NvApi.BinaryDataMax + 4))]
     public struct DRSSettingUnion
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4100)]
+        public const int size = (NvApi.BinaryDataMax + 4);
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (NvApi.BinaryDataMax + 4) )]
         public byte[] rawData;
+
+        public uint dwordValue
+        {
+            get
+            {
+                return BitConverter.ToUInt32(rawData, 0);
+            }
+
+            set
+            {
+                rawData = new byte[size];
+                Buffer.BlockCopy(BitConverter.GetBytes(value), 0, rawData, 0, 4);
+            }
+        }
 
         public byte[] binaryValue
         {
@@ -223,7 +266,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
             set
             {
-                rawData = new byte[4100];
+                rawData = new byte[size];
                 if (value != null)
                 {
                     Buffer.BlockCopy(BitConverter.GetBytes(value.Length), 0, rawData, 0, 4);
@@ -232,19 +275,6 @@ namespace MediaToolkit.Nvidia.NvAPI
             }
         }
 
-        public uint dwordValue
-        {
-            get
-            {
-                return BitConverter.ToUInt32(rawData, 0);
-            }
-
-            set
-            {
-                rawData = new byte[4100];
-                Buffer.BlockCopy(BitConverter.GetBytes(value), 0, rawData, 0, 4);
-            }
-        }
 
         public string stringValue
         {
@@ -255,7 +285,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
             set
             {
-                rawData = new byte[4100];
+                rawData = new byte[size];
                 var bytesRaw = Encoding.Unicode.GetBytes(value);
                 Buffer.BlockCopy(bytesRaw, 0, rawData, 0, bytesRaw.Length);
             }
@@ -270,7 +300,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
             set
             {
-                rawData = new byte[4100];
+                rawData = new byte[size];
                 var bytesRaw = Encoding.Default.GetBytes(value);
                 Buffer.BlockCopy(bytesRaw, 0, rawData, 0, bytesRaw.Length);
             }

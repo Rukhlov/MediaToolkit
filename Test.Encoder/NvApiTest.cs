@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using MediaToolkit.Nvidia;
 using MediaToolkit.Nvidia.NvAPI;
 
 namespace Test.Encoder
@@ -97,15 +98,16 @@ namespace Test.Encoder
 
             Console.WriteLine("DRS_CreateApplication() " + status + " " + phSession);
 
-			var settingVersion = NvApi.MakeVersion<DRSSetting>(1);
-			var setting1 = new DRSSetting
+			var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
+			var setting1 = new DRSSettingV1
             {
                 version = settingVersion,
-                settingId = (uint)ESetting.SHIM_MCCOMPAT_ID,
+                settingId = (uint)ESettingId.ShimMCCOMPAT,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion
                 {
                     dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                    //dwordValue = (uint)ShimMCCOMPAT.Integrated,
                 }
             };
 
@@ -113,14 +115,15 @@ namespace Test.Encoder
             Console.WriteLine("DRS_SetSetting() 1" + status + " " + phSession);
 
 
-            var setting2 = new DRSSetting
+            var setting2 = new DRSSettingV1
             {
                 version = settingVersion,
-                settingId = (uint)ESetting.SHIM_MCCOMPAT_ID,
+                settingId = (uint)ESettingId.ShimMCCOMPAT,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion
                 {
-                    dwordValue = (uint)ShimRenderingMode.Integrated,
+                    dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                    //dwordValue = (uint)ShimRenderingMode.Integrated,
                 },
 
             };
@@ -129,15 +132,18 @@ namespace Test.Encoder
             Console.WriteLine("DRS_SetSetting() 2" + status + " " + phSession);
 
 
-            var setting3 = new DRSSetting
+            var setting3 = new DRSSettingV1
             {
                 version = settingVersion,
-                settingId = (uint)ESetting.SHIM_RENDERING_OPTIONS_ID,
+                settingId = (uint)ESettingId.ShimRenderingOptions,
                 settingType = DRSSettingType.DWORD,
                 currentValue = new DRSSettingUnion
                 {
                     dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
-                    ShimRenderingOptions.IGPUTranscoding),
+                    ShimRenderingOptions.IGPUTranscoding)
+
+                    //dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
+                    //ShimRenderingOptions.IGPUTranscoding),
                 },
 
             };
@@ -149,10 +155,6 @@ namespace Test.Encoder
             Console.WriteLine("DRS_SaveSettings() 3" + status);
 
 
-
-
-
-
             status = NvApi.DRS.DestroySession(phSession);
 
             Console.WriteLine("NvAPI_DRS_DestroySession() " + status + " " + phSession);
@@ -160,6 +162,97 @@ namespace Test.Encoder
             res = NvApi.Unload();
 
             Console.WriteLine("NvAPI_Unload() " + res);
+
+            Console.WriteLine("NvApiTest::Run() END");
+        }
+
+
+        public static void Run2()
+        {
+            Console.WriteLine("NvApiTest::Run2() BEGIN");
+
+            LibNvApi.Initialize();
+
+
+            var session = LibNvApi.CreateDriverSettingSession();
+            session.Load();
+
+            var profileName = "TEST7";
+            var profile = session.FindProfileByName(profileName);
+
+            if(profile == null)
+            {
+                profile = session.CreateProfile(profileName);
+            }
+
+            string appName = "TEST7.exe";
+            DRSApplicationV1 app = profile.GetApplicationInfo<DRSApplicationV1>(appName);
+
+            if(app == null)
+            {
+                app = profile.CreateApplication<DRSApplicationV1>(appName);
+            }
+
+            var settings = profile.EnumSettings();
+
+
+            var setting = profile.GetSetting((uint)ESettingId.ShimMCCOMPAT);
+
+            setting = profile.GetSetting((uint)ESettingId.ShimRenderingOptions);
+
+            var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
+            var setting1 = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimMCCOMPAT,
+                settingType = DRSSettingType.DWORD,
+                currentValue = new DRSSettingUnion
+                {
+                    //dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                    dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                }
+            };
+
+            profile.SetSetting(setting1);
+
+
+            var setting2 = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimMCCOMPAT,
+                settingType = DRSSettingType.DWORD,
+                currentValue = new DRSSettingUnion
+                {
+                    //dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                    dwordValue = (uint)ShimRenderingMode.Integrated,
+                },
+            };
+
+            profile.SetSetting(setting2);
+
+            var setting3 = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimRenderingOptions,
+                settingType = DRSSettingType.DWORD,
+                currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
+                    ShimRenderingOptions.IGPUTranscoding)
+                    //dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
+                    //ShimRenderingOptions.IGPUTranscoding),
+                },
+
+            };
+
+            profile.SetSetting(setting3);
+
+            session.Save();
+
+            session.Close();
+
+            LibNvApi.Shutdown();
+
 
             Console.WriteLine("NvApiTest::Run() END");
         }

@@ -18,13 +18,16 @@ namespace MediaToolkit.Nvidia.NvAPI
 		//#define NVAPI_SHORT_STRING_MAX   64
 		public const int ShortStringMax = 64;
 
-		public const int UnicodeMaxString = 2048;
+        // #define NVAPI_UNICODE_STRING_MAX  2048
+        public const int UnicodeStringMax = 2048;
 
-		public const int SettingsMaxValue = 100;
+        //#define NVAPI_BINARY_DATA_MAX  4096
+        public const int BinaryDataMax = 4096;
 
-		private const string _path32 = "nvapi.dll";
+        public const int SettingsMaxValue = 100;
+
+        private const string _path32 = "nvapi.dll";
         private const string _path64 = "nvapi64.dll";
-
 
 		//#define 	MAKE_NVAPI_VERSION(typeName, ver)   (NvU32)(sizeof(typeName) | ((ver)<<16))
 		public static uint MakeVersion<T>(int version)
@@ -135,7 +138,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
             public static NvApiStatus CreateProfile(DRSSessionHandle hSession, DRSProfile profile, out DRSProfileHandle hProfile)
             {
-                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateProfile>().Invoke(hSession, ref profile, out hProfile);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_CreateProfile>().Invoke(hSession, profile, out hProfile);
             }
 
 			public static NvApiStatus GetApplicationInfo<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref T t) 
@@ -187,15 +190,41 @@ namespace MediaToolkit.Nvidia.NvAPI
 				return status;
 			}
 
-
-            public static NvApiStatus SetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, ref DRSSetting pSetting)
+            public static NvApiStatus GetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint settingId, ref DRSSettingV1 pSetting)
             {
-                return DelegateFactory.GetDelegate<NvAPI_RS_SetSettingDelegate>().Invoke(hSession, hProfile, ref pSetting);
+                return DelegateFactory.GetDelegate<NvAPI_DRS_GetSetting>().Invoke(hSession, hProfile, settingId, ref pSetting);
+            }
+
+            public static NvApiStatus SetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, ref DRSSettingV1 pSetting)
+            {
+                return DelegateFactory.GetDelegate<NvAPI_DRS_SetSetting>().Invoke(hSession, hProfile, ref pSetting);
             }
 
             public static NvApiStatus SaveSettings(DRSSessionHandle hSession)
             {
                 return DelegateFactory.GetDelegate<NvAPI_DRS_SaveSettings>().Invoke(hSession);
+            }
+
+            public static NvApiStatus EnumSettings(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint startIndex, ref DRSSettingV1 [] settings)
+            {
+                NvApiStatus status = NvApiStatus.Error;
+                uint settingsCount = (uint)settings.Length;
+                MarshalHelper.SetArrayData(settings, out var pSettings);
+                try
+                {
+                    status = DelegateFactory.GetDelegate<NvAPI_DRS_EnumSettings>().Invoke(hSession, hProfile, startIndex, ref settingsCount, pSettings);
+                    if (status == NvApiStatus.Ok)
+                    {
+                        settings = MarshalHelper.GetArrayData<DRSSettingV1>(pSettings, (int)settingsCount);
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(pSettings);
+                }
+
+
+                return status;
             }
 
         }

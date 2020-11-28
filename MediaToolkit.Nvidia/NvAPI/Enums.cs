@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,114 +8,655 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Nvidia.NvAPI
 {
 
-    public enum ESetting : uint
+    public enum ESettingId : uint
     {
-        OGL_AA_LINE_GAMMA_ID = 0x2089BF6C,
-        OGL_DEEP_COLOR_SCANOUT_ID = 0x2097C2F6,
-        OGL_DEFAULT_SWAP_INTERVAL_ID = 0x206A6582,
-        OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_ID = 0x206C4581,
-        OGL_DEFAULT_SWAP_INTERVAL_SIGN_ID = 0x20655CFA,
-        OGL_EVENT_LOG_SEVERITY_THRESHOLD_ID = 0x209DF23E,
-        OGL_EXTENSION_STRING_VERSION_ID = 0x20FF7493,
-        OGL_FORCE_BLIT_ID = 0x201F619F,
-        OGL_FORCE_STEREO_ID = 0x204D9A0C,
-        OGL_IMPLICIT_GPU_AFFINITY_ID = 0x20D0F3E6,
-        OGL_MAX_FRAMES_ALLOWED_ID = 0x208E55E3,
-        OGL_OVERLAY_PIXEL_TYPE_ID = 0x209AE66F,
-        OGL_OVERLAY_SUPPORT_ID = 0x206C28C4,
-        OGL_QUALITY_ENHANCEMENTS_ID = 0x20797D6C,
-        OGL_SINGLE_BACKDEPTH_BUFFER_ID = 0x20A29055,
-        OGL_SLI_CFR_MODE_ID = 0x20343843,
-        OGL_SLI_MULTICAST_ID = 0x2092D3BE,
-        OGL_THREAD_CONTROL_ID = 0x20C1221E,
-        OGL_TMON_LEVEL_ID = 0x202888C1,
-        OGL_TRIPLE_BUFFER_ID = 0x20FDD1F9,
-        AA_BEHAVIOR_FLAGS_ID = 0x10ECDB82,
-        AA_MODE_ALPHATOCOVERAGE_ID = 0x10FC2D9C,
-        AA_MODE_GAMMACORRECTION_ID = 0x107D639D,
-        AA_MODE_METHOD_ID = 0x10D773D2,
-        AA_MODE_REPLAY_ID = 0x10D48A85,
-        AA_MODE_SELECTOR_ID = 0x107EFC5B,
-        AA_MODE_SELECTOR_SLIAA_ID = 0x107AFC5B,
-        ANISO_MODE_LEVEL_ID = 0x101E61A9,
-        ANISO_MODE_SELECTOR_ID = 0x10D2BB16,
-        ANSEL_ALLOW_ID = 0x1035DB89,
-        ANSEL_ENABLE_ID = 0x1075D972,
-        ANSEL_WHITELISTED_ID = 0x1085DA8A,
-        APPLICATION_PROFILE_NOTIFICATION_TIMEOUT_ID = 0x104554B6,
-        APPLICATION_STEAM_ID_ID = 0x107CDDBC,
-        AUTOFL_ID = 0x10834FFE,
-        BATTERY_BOOST_APP_FPS_ID = 0x10115C8C,
-        CPL_HIDDEN_PROFILE_ID = 0x106D5CFF,
-        CUDA_EXCLUDED_GPUS_ID = 0x10354FF8,
-        D3DOGL_GPU_MAX_POWER_ID = 0x10D1EF29,
-        EXPORT_PERF_COUNTERS_ID = 0x108F0841,
-        EXTERNAL_QUIET_MODE_ID = 0x10115C8D,
-        FXAA_ALLOW_ID = 0x1034CB89,
-        FXAA_ENABLE_ID = 0x1074C972,
-        FXAA_INDICATOR_ENABLE_ID = 0x1068FB9C,
-        MCSFRSHOWSPLIT_ID = 0x10287051,
-        NV_QUALITY_UPSCALING_ID = 0x10444444,
-        OPTIMUS_MAXAA_ID = 0x10F9DC83,
-        PHYSXINDICATOR_ID = 0x1094F16F,
-        PREFERRED_PSTATE_ID = 0x1057EB71,
-        PREVENT_UI_AF_OVERRIDE_ID = 0x103BCCB5,
-        PS_FRAMERATE_LIMITER_ID = 0x10834FEE,
-        PS_FRAMERATE_LIMITER_2_CONTROL_ID = 0x10834FFF,
-        PS_FRAMERATE_LIMITER_GPS_CTRL_ID = 0x10834F01,
-        PS_FRAMERATE_MONITOR_CTRL_ID = 0x10834F05,
-        SHIM_MAXRES_ID = 0x10F9DC82,
-        SHIM_MCCOMPAT_ID = 0x10F9DC80,
-        SHIM_RENDERING_MODE_ID = 0x10F9DC81,
-        SHIM_RENDERING_OPTIONS_ID = 0x10F9DC84,
-        SLI_GPU_COUNT_ID = 0x1033DCD1,
-        SLI_PREDEFINED_GPU_COUNT_ID = 0x1033DCD2,
-        SLI_PREDEFINED_GPU_COUNT_DX10_ID = 0x1033DCD3,
-        SLI_PREDEFINED_MODE_ID = 0x1033CEC1,
-        SLI_PREDEFINED_MODE_DX10_ID = 0x1033CEC2,
-        SLI_RENDERING_MODE_ID = 0x1033CED1,
-        VRPRERENDERLIMIT_ID = 0x10111133,
-        VRRFEATUREINDICATOR_ID = 0x1094F157,
-        VRROVERLAYINDICATOR_ID = 0x1095F16F,
-        VRRREQUESTSTATE_ID = 0x1094F1F7,
-        VRR_APP_OVERRIDE_ID = 0x10A879CF,
-        VRR_APP_OVERRIDE_REQUEST_STATE_ID = 0x10A879AC,
-        VRR_MODE_ID = 0x1194F158,
-        VSYNCSMOOTHAFR_ID = 0x101AE763,
-        VSYNCVRRCONTROL_ID = 0x10A879CE,
-        VSYNC_BEHAVIOR_FLAGS_ID = 0x10FDEC23,
-        WKS_API_STEREO_EYES_EXCHANGE_ID = 0x11AE435C,
-        WKS_API_STEREO_MODE_ID = 0x11E91A61,
-        WKS_MEMORY_ALLOCATION_POLICY_ID = 0x11112233,
-        WKS_STEREO_DONGLE_SUPPORT_ID = 0x112493BD,
-        WKS_STEREO_SUPPORT_ID = 0x11AA9E99,
-        WKS_STEREO_SWAP_MODE_ID = 0x11333333,
-        AO_MODE_ID = 0x00667329,
-        AO_MODE_ACTIVE_ID = 0x00664339,
-        AUTO_LODBIASADJUST_ID = 0x00638E8F,
-        EXPORT_PERF_COUNTERS_DX9_ONLY_ID = 0x00B65E72,
-        ICAFE_LOGO_CONFIG_ID = 0x00DB1337,
-        LODBIASADJUST_ID = 0x00738E8F,
-        MAXWELL_B_SAMPLE_INTERLEAVE_ID = 0x0098C1AC,
-        PRERENDERLIMIT_ID = 0x007BA09E,
-        PS_SHADERDISKCACHE_ID = 0x00198FFF,
-        PS_TEXFILTER_ANISO_OPTS2_ID = 0x00E73211,
-        PS_TEXFILTER_BILINEAR_IN_ANISO_ID = 0x0084CD70,
-        PS_TEXFILTER_DISABLE_TRILIN_SLOPE_ID = 0x002ECAF2,
-        PS_TEXFILTER_NO_NEG_LODBIAS_ID = 0x0019BB68,
-        QUALITY_ENHANCEMENTS_ID = 0x00CE2691,
-        QUALITY_ENHANCEMENT_SUBSTITUTION_ID = 0x00CE2692,
-        REFRESH_RATE_OVERRIDE_ID = 0x0064B541,
-        SET_POWER_THROTTLE_FOR_PCIe_COMPLIANCE_ID = 0x00AE785C,
-        SET_VAB_DATA_ID = 0x00AB8687,
-        VSYNCMODE_ID = 0x00A879CF,
-        VSYNCTEARCONTROL_ID = 0x005A375C,
+        /// <summary>
+        ///     Antialiasing - Line gamma
+        ///     OGL_AA_LINE_GAMMA_ID 
+        /// </summary>
+        [Description("Antialiasing - Line gamma")]
+        OpenGLAntiAliasingLineGamma = 0x2089BF6C,
+
+        /// <summary>
+        ///     Deep color for 3D applications
+        ///     OGL_DEEP_COLOR_SCANOUT_ID 
+        /// </summary>
+        [Description("Deep color for 3D applications")]
+        OpenGLDeepColorScanOut = 0x2097C2F6,
+
+        /// <summary>
+        ///     OpenGL default swap interval
+        ///     OGL_DEFAULT_SWAP_INTERVAL_ID 
+        /// </summary>
+        [Description("OpenGL default swap interval")]
+        OpenGLDefaultSwapInterval = 0x206A6582,
+
+        /// <summary>
+        ///     OpenGL default swap interval fraction
+        ///     OGL_DEFAULT_SWAP_INTERVAL_FRACTIONAL_ID 
+        /// </summary>
+        [Description("OpenGL default swap interval fraction")]
+        OpenGLDefaultSwapIntervalFractional = 0x206C4581,
+
+        /// <summary>
+        ///     OpenGL default swap interval sign
+        ///     OGL_DEFAULT_SWAP_INTERVAL_SIGN_ID 
+        /// </summary>
+        [Description("OpenGL default swap interval sign")]
+        OpenGLDefaultSwapIntervalSign = 0x20655CFA,
+
+        /// <summary>
+        ///     Event Log Severity Threshold
+        ///     OGL_EVENT_LOG_SEVERITY_THRESHOLD_ID 
+        /// </summary>
+        [Description("Event Log Severity Threshold")]
+        OpenGLEventLogSeverityThreshold = 0x209DF23E,
+
+        /// <summary>
+        ///     Extension String version
+        ///     OGL_EXTENSION_STRING_VERSION_ID 
+        /// </summary>
+        [Description("Extension String version")]
+        OpenGLExtensionStringVersion = 0x20FF7493,
+
+        /// <summary>
+        ///     Buffer-flipping mode
+        ///     OGL_FORCE_BLIT_ID 
+        /// </summary>
+        [Description("Buffer-flipping mode")] OpenGLForceBlit = 0x201F619F,
+
+        /// <summary>
+        ///     Force Stereo shuttering
+        ///     OGL_FORCE_STEREO_ID 
+        /// </summary>
+        [Description("Force Stereo shuttering")]
+        OpenGLForceStereo = 0x204D9A0C,
+
+        /// <summary>
+        ///     Preferred OpenGL GPU
+        ///     OGL_IMPLICIT_GPU_AFFINITY_ID 
+        /// </summary>
+        [Description("Preferred OpenGL GPU")] OpenGLImplicitGPUAffinity = 0x20D0F3E6,
+
+        /// <summary>
+        ///     Maximum frames allowed
+        ///     OGL_MAX_FRAMES_ALLOWED_ID 
+        /// </summary>
+        [Description("Maximum frames allowed")]
+        OpenGLMaximumFramesAllowed = 0x208E55E3,
+
+        /// <summary>
+        ///     Exported Overlay pixel types
+        ///     OGL_OVERLAY_PIXEL_TYPE_ID 
+        /// </summary>
+        [Description("Exported Overlay pixel types")]
+        OpenGLOverlayPixelType = 0x209AE66F,
+
+        /// <summary>
+        ///     Enable overlay
+        ///     OGL_OVERLAY_SUPPORT_ID 
+        /// </summary>
+        [Description("Enable overlay")] OpenGLOverlaySupport = 0x206C28C4,
+
+        /// <summary>
+        ///     High level control of the rendering quality on OpenGL
+        ///     OGL_QUALITY_ENHANCEMENTS_ID 
+        /// </summary>
+        [Description("High level control of the rendering quality on OpenGL")]
+        OpenGLQualityEnhancements = 0x20797D6C,
+
+        /// <summary>
+        ///     Unified back/depth buffer
+        ///     OGL_SINGLE_BACKDEPTH_BUFFER_ID 
+        /// </summary>
+        [Description("Unified back/depth buffer")]
+        OpenGLSingleBackDepthBuffer = 0x20A29055,
+
+        /// <summary>
+        ///     Enable NV_gpu_multicast extension
+        ///     OGL_SLI_MULTICAST_ID  
+        /// </summary>
+        [Description("Enable NV_gpu_multicast extension")]
+        OpenGLSLIMulticast = 0x2092D3BE,
+
+        /// <summary>
+        ///     Threaded optimization
+        ///     OGL_THREAD_CONTROL_ID 
+        /// </summary>
+        [Description("Threaded optimization")] OpenGLThreadControl = 0x20C1221E,
+
+        /// <summary>
+        ///     Event Log Tmon Severity Threshold
+        ///     OGL_TMON_LEVEL_ID 
+        /// </summary>
+        [Description("Event Log Tmon Severity Threshold")]
+        OpenGLTMONLevel = 0x202888C1,
+
+        /// <summary>
+        ///     Triple buffering
+        ///     OGL_TRIPLE_BUFFER_ID 
+        /// </summary>
+        [Description("Triple buffering")] OpenGLTripleBuffer = 0x20FDD1F9,
+
+        /// <summary>
+        ///     Antialiasing - Behavior Flags
+        ///     AA_BEHAVIOR_FLAGS_ID 
+        /// </summary>
+        [Description("Antialiasing - Behavior Flags")]
+        AntiAliasingBehaviorFlags = 0x10ECDB82,
+
+        /// <summary>
+        ///     Antialiasing - Transparency Multisampling
+        ///     AA_MODE_ALPHATOCOVERAGE_ID 
+        /// </summary>
+        [Description("Antialiasing - Transparency Multisampling")]
+        AntiAliasingModeAlphaToCoverage = 0x10FC2D9C,
+
+        /// <summary>
+        ///     Antialiasing - Gamma correction
+        ///     AA_MODE_GAMMACORRECTION_ID 
+        /// </summary>
+        [Description("Antialiasing - Gamma correction")]
+        AntiAliasingModeGammaCorrection = 0x107D639D,
+
+        /// <summary>
+        ///     Antialiasing - Setting
+        ///     AA_MODE_METHOD_ID 
+        /// </summary>
+        [Description("Antialiasing - Setting")]
+        AntiAliasingModeMethod = 0x10D773D2,
+
+        /// <summary>
+        ///     Antialiasing - Transparency Supersampling
+        ///     AA_MODE_REPLAY_ID 
+        /// </summary>
+        [Description("Antialiasing - Transparency Supersampling")]
+        AntiAliasingModeReplay = 0x10D48A85,
+
+        /// <summary>
+        ///     Antialiasing - Mode
+        ///     AA_MODE_SELECTOR_ID 
+        /// </summary>
+        [Description("Antialiasing - Mode")] AntiAliasingModeSelector = 0x107EFC5B,
+
+        /// <summary>
+        ///     Antialiasing - SLI AA
+        ///     AA_MODE_SELECTOR_SLIAA_ID 
+        /// </summary>
+        [Description("Antialiasing - SLI AA")] AntiAliasingModeSelectorSLIAntiAliasing = 0x107AFC5B,
+
+        /// <summary>
+        ///     Anisotropic filtering setting
+        ///     ANISO_MODE_LEVEL_ID 
+        /// </summary>
+        [Description("Anisotropic filtering setting")]
+        AnisotropicModeLevel = 0x101E61A9,
+
+        /// <summary>
+        ///     Anisotropic filtering mode
+        ///     ANISO_MODE_SELECTOR_ID 
+        /// </summary>
+        [Description("Anisotropic filtering mode")]
+        AnisotropicModeSelector = 0x10D2BB16,
+
+        /// <summary>
+        ///     NVIDIA Predefined Ansel Usage
+        ///     ANSEL_ALLOW_ID 
+        /// </summary>
+        [Description("NVIDIA Predefined Ansel Usage")]
+        AnselAllow = 0x1035DB89,
+
+        /// <summary>
+        ///     Enable Ansel
+        ///     ANSEL_ENABLE_ID 
+        /// </summary>
+        [Description("Enable Ansel")] AnselEnable = 0x1075D972,
+
+        /// <summary>
+        ///     Ansel flags for enabled applications
+        ///     ANSEL_WHITELISTED_ID 
+        /// </summary>
+        [Description("Ansel flags for enabled applications")]
+        AnselWhiteListed = 0x1085DA8A,
+
+        /// <summary>
+        ///     Application Profile Notification Popup Timeout
+        ///     APPLICATION_PROFILE_NOTIFICATION_TIMEOUT_ID 
+        /// </summary>
+        [Description("Application Profile Notification Popup Timeout")]
+        ApplicationProfileNotificationTimeOut = 0x104554B6,
+
+        /// <summary>
+        ///     Steam Application ID
+        ///     APPLICATION_STEAM_ID_ID 
+        /// </summary>
+        [Description("Steam Application ID")] ApplicationSteamId = 0x107CDDBC,
+
+        /// <summary>
+        ///     Battery Boost
+        ///     BATTERY_BOOST_APP_FPS_ID 
+        /// </summary>
+        [Description("Battery Boost")] BatteryBoost = 0x10115C89,
+
+        /// <summary>
+        ///     Do not display this profile in the Control Panel
+        ///     CPL_HIDDEN_PROFILE_ID 
+        /// </summary>
+        [Description("Do not display this profile in the Control Panel")]
+        ControlPanelHiddenProfile = 0x106D5CFF,
+
+        /// <summary>
+        ///     List of Universal GPU ids
+        ///     CUDA_EXCLUDED_GPUS_ID 
+        /// </summary>
+        [Description("List of Universal GPU ids")]
+        CUDAExcludedGPUs = 0x10354FF8,
+
+        /// <summary>
+        ///     Maximum GPU Power
+        ///     D3DOGL_GPU_MAX_POWER_ID 
+        /// </summary>
+        [Description("Maximum GPU Power")] D3DOpenGLGPUMaximumPower = 0x10D1EF29,
+
+        /// <summary>
+        ///     Export Performance Counters
+        ///     EXPORT_PERF_COUNTERS_ID 
+        /// </summary>
+        [Description("Export Performance Counters")]
+        ExportPerformanceCounters = 0x108F0841,
+
+        /// <summary>
+        ///     NVIDIA Predefined FXAA Usage
+        ///     FXAA_ALLOW_ID  
+        /// </summary>
+        [Description("NVIDIA Predefined FXAA Usage")]
+        FXAAAllow = 0x1034CB89,
+
+        /// <summary>
+        ///     Enable FXAA
+        ///     FXAA_ENABLE_ID 
+        /// </summary>
+        [Description("Enable FXAA")] FXAAEnable = 0x1074C972,
+
+        /// <summary>
+        ///     Enable FXAA Indicator
+        ///     FXAA_INDICATOR_ENABLE_ID 
+        /// </summary>
+        [Description("Enable FXAA Indicator")] FXAAIndicatorEnable = 0x1068FB9C,
+
+        /// <summary>
+        ///     SLI indicator
+        ///     MCSFRSHOWSPLIT_ID 
+        /// </summary>
+        [Description("SLI indicator")] MCSFRShowSplit = 0x10287051,
+
+        /// <summary>
+        ///     NVIDIA Quality upscaling
+        ///     NV_QUALITY_UPSCALING_ID 
+        /// </summary>
+        [Description("NVIDIA Quality upscaling")]
+        NvidiaQualityUpScaling = 0x10444444,
+
+        /// <summary>
+        ///     Maximum AA samples allowed for a given application
+        ///     OPTIMUS_MAXAA_ID 
+        /// </summary>
+        [Description("Maximum AA samples allowed for a given application")]
+        OptimusMaximumAntiAliasing = 0x10F9DC83,
+
+        /// <summary>
+        ///     Display the PhysX indicator
+        ///     PHYSXINDICATOR_ID 
+        /// </summary>
+        [Description("Display the PhysX indicator")]
+        PhysxIndicator = 0x1094F16F,
+
+        /// <summary>
+        ///     Power management mode
+        ///     PREFERRED_PSTATE_ID 
+        /// </summary>
+        [Description("Power management mode")] PreferredPerformanceState = 0x1057EB71,
+
+        /// <summary>
+        ///     No override of Anisotropic filtering
+        ///     PREVENT_UI_AF_OVERRIDE_ID 
+        /// </summary>
+        [Description("No override of Anisotropic filtering")]
+        PreventUiAnisotropicOverride = 0x103BCCB5,
+
+        /// <summary>
+        ///     Frame Rate Limiter
+        ///     PS_FRAMERATE_LIMITER_ID 
+        /// </summary>
+        [Description("Frame Rate Limiter")] PerformanceStateFrameRateLimiter = 0x10834FEE,
+
+        /// <summary>
+        ///     Frame Rate Limiter 2 Control
+        ///     PS_FRAMERATE_LIMITER_2_CONTROL_ID 
+        /// </summary>
+        [Description("Frame Rate Limiter 2 Control")]
+        PerformanceStateFrameRateLimiter2Control = 0x10834FFF,
+
+        /// <summary>
+        ///     Frame Rate Monitor
+        ///     PS_FRAMERATE_LIMITER_GPS_CTRL_ID 
+        /// </summary>
+        [Description("Frame Rate Monitor")] PerformanceStateFrameRateLimiterGpsControl = 0x10834F01,
+
+        /// <summary>
+        ///     Frame Rate Monitor Control
+        ///     PS_FRAMERATE_MONITOR_CTRL_ID 
+        /// </summary>
+        [Description("Frame Rate Monitor Control")]
+        PerformanceStateFrameRateMonitorControl = 0x10834F05,
+
+        /// <summary>
+        ///     Maximum resolution allowed for a given application
+        ///     SHIM_MAXRES_ID 
+        /// </summary>
+        [Description("Maximum resolution allowed for a given application")]
+        ShimMaxResolution = 0x10F9DC82,
+
+        /// <summary>
+        ///     Optimus flags for enabled applications
+        ///     SHIM_MCCOMPAT_ID 
+        /// </summary>
+        [Description("Optimus flags for enabled applications")]
+        ShimMCCOMPAT = 0x10F9DC80,
+
+        /// <summary>
+        ///     Enable application for Optimus
+        ///     SHIM_RENDERING_MODE_ID 
+        /// </summary>
+        [Description("Enable application for Optimus")]
+        ShimRenderingMode = 0x10F9DC81,
+
+        /// <summary>
+        ///     Shim Rendering Mode Options per application for Optimus
+        ///     SHIM_RENDERING_OPTIONS_ID 
+        /// </summary>
+        [Description("Shim Rendering Mode Options per application for Optimus")]
+        ShimRenderingOptions = 0x10F9DC84,
+
+        /// <summary>
+        ///     Number of GPUs to use on SLI rendering mode
+        ///     SLI_GPU_COUNT_ID 
+        /// </summary>
+        [Description("Number of GPUs to use on SLI rendering mode")]
+        SLIGPUCount = 0x1033DCD1,
+
+        /// <summary>
+        ///     NVIDIA predefined number of GPUs to use on SLI rendering mode
+        ///     SLI_PREDEFINED_GPU_COUNT_ID 
+        /// </summary>
+        [Description("NVIDIA predefined number of GPUs to use on SLI rendering mode")]
+        SLIPredefinedGPUCount = 0x1033DCD2,
+
+        /// <summary>
+        ///     NVIDIA predefined number of GPUs to use on SLI rendering mode on DirectX 10
+        ///     SLI_PREDEFINED_GPU_COUNT_DX10_ID 
+        /// </summary>
+        [Description("NVIDIA predefined number of GPUs to use on SLI rendering mode on DirectX 10")]
+        SLIPredefinedGPUCountDX10 = 0x1033DCD3,
+
+        /// <summary>
+        ///     NVIDIA predefined SLI mode
+        ///     SLI_PREDEFINED_MODE_ID 
+        /// </summary>
+        [Description("NVIDIA predefined SLI mode")]
+        SLIPredefinedMode = 0x1033CEC1,
+
+        /// <summary>
+        ///     NVIDIA predefined SLI mode on DirectX 10
+        ///     SLI_PREDEFINED_MODE_DX10_ID 
+        /// </summary>
+        [Description("NVIDIA predefined SLI mode on DirectX 10")]
+        SLIPredefinedModeDX10 = 0x1033CEC2,
+
+        /// <summary>
+        ///     SLI rendering mode
+        ///     SLI_RENDERING_MODE_ID 
+        /// </summary>
+        [Description("SLI rendering mode")] SLIRenderingMode = 0x1033CED1,
+
+        /// <summary>
+        ///     Virtual Reality pre-rendered frames
+        ///     VRPRERENDERLIMIT_ID 
+        /// </summary>
+        [Description("Virtual Reality pre-rendered frames")]
+        VRPreRenderLimit = 0x10111133,
+
+        /// <summary>
+        ///     Toggle the VRR global feature
+        ///     VRRFEATUREINDICATOR_ID 
+        /// </summary>
+        [Description("Toggle the VRR global feature")]
+        VRRFeatureIndicator = 0x1094F157,
+
+        /// <summary>
+        ///     Display the VRR Overlay Indicator
+        ///     VRROVERLAYINDICATOR_ID 
+        /// </summary>
+        [Description("Display the VRR Overlay Indicator")]
+        VRROverlayIndicator = 0x1095F16F,
+
+        /// <summary>
+        ///     VRR requested state
+        ///     VRRREQUESTSTATE_ID 
+        /// </summary>
+        [Description("VRR requested state")] VRRRequestState = 0x1094F1F7,
+
+        /// <summary>
+        ///     G-SYNC
+        ///     VRR_APP_OVERRIDE_ID 
+        /// </summary>
+        [Description("G-SYNC")] VRRApplicationOverride = 0x10A879CF,
+
+        /// <summary>
+        ///     G-SYNC
+        ///     VRR_APP_OVERRIDE_REQUEST_STATE_ID 
+        /// </summary>
+        [Description("G-SYNC")] VRRApplicationOverrideRequestState = 0x10A879AC,
+
+        /// <summary>
+        ///     Enable G-SYNC globally
+        ///     VRR_MODE_ID 
+        /// </summary>
+        [Description("Enable G-SYNC globally")]
+        VRRMode = 0x1194F158,
+
+        /// <summary>
+        ///     Flag to control smooth AFR behavior
+        ///     VSYNCSMOOTHAFR_ID 
+        /// </summary>
+        [Description("Flag to control smooth AFR behavior")]
+        VSyncSmoothAFR = 0x101AE763,
+
+        /// <summary>
+        ///     Variable refresh Rate
+        ///     VSYNCVRRCONTROL_ID 
+        /// </summary>
+        [Description("Variable refresh Rate")] VSyncVRRControl = 0x10A879CE,
+
+        /// <summary>
+        ///     Vsync - Behavior Flags
+        ///     VSYNC_BEHAVIOR_FLAGS_ID 
+        /// </summary>
+        [Description("Vsync - Behavior Flags")]
+        VSyncBehaviorFlags = 0x10FDEC23,
+
+        /// <summary>
+        ///     Stereo - Swap eyes
+        ///     WKS_API_STEREO_EYES_EXCHANGE_ID 
+        /// </summary>
+        [Description("Stereo - Swap eyes")] WKSAPIStereoEyesExchange = 0x11AE435C,
+
+        /// <summary>
+        ///     Stereo - Display mode
+        ///     WKS_API_STEREO_MODE_ID 
+        /// </summary>
+        [Description("Stereo - Display mode")] WKSAPIStereoMode = 0x11E91A61,
+
+        /// <summary>
+        ///     Memory Allocation Policy
+        ///     WKS_MEMORY_ALLOCATION_POLICY_ID 
+        /// </summary>
+        [Description("Memory Allocation Policy")]
+        WKSMemoryAllocationPolicy = 0x11112233,
+
+        /// <summary>
+        ///     Stereo - Dongle Support
+        ///     WKS_STEREO_DONGLE_SUPPORT_ID 
+        /// </summary>
+        [Description("Stereo - Dongle Support")]
+        WKSStereoDongleSupport = 0x112493BD,
+
+        /// <summary>
+        ///     Stereo - Enable
+        ///     WKS_STEREO_SUPPORT_ID 
+        /// </summary>
+        [Description("Stereo - Enable")] WKSStereoSupport = 0x11AA9E99,
+
+        /// <summary>
+        ///     Stereo � swap mode
+        ///     WKS_STEREO_SWAP_MODE_ID 
+        /// </summary>
+        [Description("Stereo � swap mode")] WKSStereoSwapMode = 0x11333333,
+
+        /// <summary>
+        ///     Ambient Occlusion
+        ///     AO_MODE_ID 
+        /// </summary>
+        [Description("Ambient Occlusion")] AmbientOcclusionMode = 0x667329,
+
+        /// <summary>
+        ///     NVIDIA Predefined Ambient Occlusion Usage
+        ///     AO_MODE_ACTIVE_ID 
+        /// </summary>
+        [Description("NVIDIA Predefined Ambient Occlusion Usage")]
+        AmbientOcclusionModeActive = 0x664339,
+
+        /// <summary>
+        ///     Texture filtering - Driver Controlled LOD Bias
+        ///     AUTO_LODBIASADJUST_ID 
+        /// </summary>
+        [Description("Texture filtering - Driver Controlled LOD Bias")]
+        AutoLODBiasAdjust = 0x638E8F,
+
+        /// <summary>
+        ///     Export Performance Counters for DX9 only
+        ///     EXPORT_PERF_COUNTERS_DX9_ONLY_ID 
+        /// </summary>
+        [Description("Export Performance Counters for DX9 only")]
+        ExportPerformanceCountersDX9Only = 0xB65E72,
+
+        /// <summary>
+        ///     ICafe Settings
+        ///     ICAFE_LOGO_CONFIG_ID 
+        /// </summary>
+        [Description("ICafe Settings")] ICafeLogoConfig = 0xDB1337,
+
+        /// <summary>
+        ///     Texture filtering - LOD Bias
+        ///     LODBIASADJUST_ID 
+        /// </summary>
+        [Description("Texture filtering - LOD Bias")]
+        LODBiasAdjust = 0x738E8F,
+
+        /// <summary>
+        ///     Enable sample interleaving (MFAA)
+        ///     MAXWELL_B_SAMPLE_INTERLEAVE_ID 
+        /// </summary>
+        [Description("Enable sample interleaving (MFAA)")]
+        MaxwellBSampleInterleave = 0x98C1AC,
+
+        /// <summary>
+        ///     Maximum pre-rendered frames
+        ///     PRERENDERLIMIT_ID 
+        /// </summary>
+        [Description("Maximum pre-rendered frames")]
+        PreRenderLimit = 0x7BA09E,
+
+        /// <summary>
+        ///     Shader Cache
+        ///     PS_SHADERDISKCACHE_ID 
+        /// </summary>
+        [Description("Shader Cache")] PerformanceStateShaderDiskCache = 0x198FFF,
+
+        /// <summary>
+        ///     Texture filtering - Anisotropic sample optimization
+        ///     PS_TEXFILTER_ANISO_OPTS2_ID 
+        /// </summary>
+        [Description("Texture filtering - Anisotropic sample optimization")]
+        PerformanceStateTextureFilteringAnisotropicOptimization = 0xE73211,
+
+        /// <summary>
+        ///     Texture filtering - Anisotropic filter optimization
+        ///     PS_TEXFILTER_BILINEAR_IN_ANISO_ID 
+        /// </summary>
+        [Description("Texture filtering - Anisotropic filter optimization")]
+        PerformanceStateTextureFilteringBiLinearInAnisotropic = 0x84CD70,
+
+        /// <summary>
+        ///     Texture filtering - Trilinear optimization
+        ///     PS_TEXFILTER_DISABLE_TRILIN_SLOPE_ID 
+        /// </summary>
+        [Description("Texture filtering - Trilinear optimization")]
+        PerformanceStateTextureFilteringDisableTrilinearSlope = 0x2ECAF2,
+
+        /// <summary>
+        ///     Texture filtering - Negative LOD bias
+        ///     PS_TEXFILTER_NO_NEG_LODBIAS_ID 
+        /// </summary>
+        [Description("Texture filtering - Negative LOD bias")]
+        PerformanceStateTextureFilteringNoNegativeLODBias = 0x19BB68,
+
+        /// <summary>
+        ///     Texture filtering - Quality
+        ///     QUALITY_ENHANCEMENTS_ID 
+        /// </summary>
+        [Description("Texture filtering - Quality")]
+        QualityEnhancements = 0xCE2691,
+
+        /// <summary>
+        ///     Preferred refresh rate
+        ///     REFRESH_RATE_OVERRIDE_ID 
+        /// </summary>
+        [Description("Preferred refresh rate")]
+        RefreshRateOverride = 0x64B541,
+
+        /// <summary>
+        ///     PowerThrottle
+        ///     SET_POWER_THROTTLE_FOR_PCIe_COMPLIANCE_ID 
+        /// </summary>
+        [Description("PowerThrottle")] SetPowerThrottleForPCIeCompliance = 0xAE785C,
+
+        /// <summary>
+        ///     VAB Default Data
+        ///     SET_VAB_DATA_ID 
+        /// </summary>
+        [Description("VAB Default Data")] SetVABData = 0xAB8687,
+
+        /// <summary>
+        ///     Vertical Sync
+        ///     VSYNCMODE_ID 
+        /// </summary>
+        [Description("Vertical Sync")] VSyncMode = 0xA879CF,
+
+        /// <summary>
+        ///     Vertical Sync Tear Control
+        ///     VSYNCTEARCONTROL_ID 
+        /// </summary>
+        [Description("Vertical Sync Tear Control")]
+        VSyncTearControl = 0x5A375C,
+
         TOTAL_DWORD_SETTING_NUM = 96,
         TOTAL_WSTRING_SETTING_NUM = 4,
         TOTAL_SETTING_NUM = 100,
-        INVALID_SETTING_ID = 0xFFFFFFFF
-    }
 
+        //INVALID_SETTING_ID 
+        InvalidSetting = 0xFFFFFFFF
+    }
 
     [Flags]
     public enum ShimMCCOMPAT : uint
