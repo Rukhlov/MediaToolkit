@@ -4,6 +4,11 @@ using System.Text;
 
 namespace MediaToolkit.Nvidia
 {
+	public class LibNvApiException : Exception
+	{
+		public LibNvApiException(string callerName, string description, NvAPI.NvApiStatus status)
+			: base($"{callerName} returned invalid status: {status}, {description}") { }
+	}
 
 	public class LibNvEncException : Exception
     {

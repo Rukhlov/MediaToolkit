@@ -52,7 +52,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	[FunctionId(FunctionId.NvAPI_GetErrorMessage)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_GetErrorMessage([In] NvApiStatus status,
-		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = 64)] StringBuilder message);
+		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = NvApi.ShortStringMax)] StringBuilder message);
 
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	[FunctionId(FunctionId.NvAPI_GetInterfaceVersionString)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_GetInterfaceVersionString(
-		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = 64)] StringBuilder message);
+		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = NvApi.ShortStringMax)] StringBuilder message);
 
 
 
@@ -86,7 +86,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	[FunctionId(FunctionId.NvAPI_SYS_GetDriverAndBranchVersion)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_SYS_GetDriverAndBranchVersion(out uint driverVersion,
-		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = 64)] StringBuilder buildBranchString);
+		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = NvApi.ShortStringMax)] StringBuilder buildBranchString);
 
 
 
@@ -250,7 +250,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_DRS_FindProfileByName(
 		[In] DRSSessionHandle sessionHandle,
-		[MarshalAs(UnmanagedType.LPWStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeMaxString)]
 			StringBuilder profileName,
 		[Out] out DRSProfileHandle profileHandle);
 
@@ -314,7 +314,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_GetApplicationInfo(
 		[In] DRSSessionHandle hSession,
 		[In] DRSProfileHandle hProfile,
-		[MarshalAs(UnmanagedType.LPWStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeMaxString)]
 		StringBuilder appName,
 		[In, Out] IntPtr hApp);
 

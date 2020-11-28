@@ -14,35 +14,35 @@ namespace Test.Encoder
         {
             Console.WriteLine("NvApiTest::Run() BEGIN");
 
-            var res = NvAPI.Initialize();
+            var res = NvApi.Initialize();
 
             Console.WriteLine("NvAPI_Initialize() " + res);
 
-			res = NvAPI.GetInterfaceVersionString(out var version);
+			res = NvApi.GetInterfaceVersionString(out var version);
 			Console.WriteLine("GetInterfaceVersionString() " + res + " " + version);
 
-			res = NvAPI.SYS.GetDriverAndBranchVersion(out var driverVersion, out var buildString);
+			res = NvApi.SYS.GetDriverAndBranchVersion(out var driverVersion, out var buildString);
 			Console.WriteLine("GetDriverAndBranchVersion() " + res + " " + driverVersion + " " + buildString);
 
 
 			ChipsetInfoV4 info = new ChipsetInfoV4();
 
-			res = NvAPI.SYS.GetChipSetInfo(ref info);
+			res = NvApi.SYS.GetChipSetInfo(ref info);
 			Console.WriteLine("GetChipSetInfo() " + res + " " + info);
 
-			res = NvAPI.GetErrorMessage(res, out var message);
+			res = NvApi.GetErrorMessage(res, out var message);
 			Console.WriteLine("GetErrorMessage() " + res + " " + message);
 
 
-			var status = NvAPI.DRS.CreateSession(out var phSession);
+			var status = NvApi.DRS.CreateSession(out var phSession);
 
             Console.WriteLine("NvAPI_DRS_CreateSession() " + status + " " + phSession);
 
-            status = NvAPI.DRS.LoadSettings(phSession);
+            status = NvApi.DRS.LoadSettings(phSession);
             Console.WriteLine("DRS_LoadSettings() " + status + " " + phSession);
 
             var profileName = "TEST5";
-            status = NvAPI.DRS.FindProfileByName(phSession, profileName, out var hProfile);
+            status = NvApi.DRS.FindProfileByName(phSession, profileName, out var hProfile);
             Console.WriteLine("DRS_FindProfileByName() " + status + " " + phSession);
 
             //status = nvapi.DRS_GetBaseProfile(phSession, out var hProfile);
@@ -54,11 +54,11 @@ namespace Test.Encoder
                 //var _version =  (uint)(Marshal.SizeOf(typeof(DRSProfile)) | (version << 16));
                 DRSProfile prof = new DRSProfile
                 {
-                    version = NvAPI.MakeVersion<DRSProfile>(1),
+                    version = NvApi.MakeVersion<DRSProfile>(1),
                     profileName = profileName,
                 };
 
-                status = NvAPI.DRS.CreateProfile(phSession, prof, out hProfile);
+                status = NvApi.DRS.CreateProfile(phSession, prof, out hProfile);
                 Console.WriteLine("DRS_CreateProfile() " + status + " " + phSession);
             }
             else if( status != NvApiStatus.Ok)
@@ -81,13 +81,13 @@ namespace Test.Encoder
             };
 
 			//status = NvAPI.DRS.CreateApplication(phSession, hProfile, ref _app);
-			status = NvAPI.DRS.GetApplicationInfo(phSession, hProfile, app.appName, ref app);
+			status = NvApi.DRS.GetApplicationInfo(phSession, hProfile, app.appName, ref app);
 
 			//status = NvAPI.DRS._CreateApplication(phSession, hProfile, app);
 
 			if (status == NvApiStatus.ExecutableNotFound)
             {
-                status = NvAPI.DRS.CreateApplication(phSession, hProfile, app);
+                status = NvApi.DRS.CreateApplication(phSession, hProfile, app);
             }
             else if(status != NvApiStatus.Ok)
             {
@@ -97,7 +97,7 @@ namespace Test.Encoder
 
             Console.WriteLine("DRS_CreateApplication() " + status + " " + phSession);
 
-			var settingVersion = NvAPI.MakeVersion<DRSSetting>(1);
+			var settingVersion = NvApi.MakeVersion<DRSSetting>(1);
 			var setting1 = new DRSSetting
             {
                 version = settingVersion,
@@ -109,7 +109,7 @@ namespace Test.Encoder
                 }
             };
 
-            status = NvAPI.DRS.SetSetting(phSession, hProfile, ref setting1);
+            status = NvApi.DRS.SetSetting(phSession, hProfile, ref setting1);
             Console.WriteLine("DRS_SetSetting() 1" + status + " " + phSession);
 
 
@@ -125,7 +125,7 @@ namespace Test.Encoder
 
             };
 
-            status = NvAPI.DRS.SetSetting(phSession, hProfile, ref setting2);
+            status = NvApi.DRS.SetSetting(phSession, hProfile, ref setting2);
             Console.WriteLine("DRS_SetSetting() 2" + status + " " + phSession);
 
 
@@ -142,10 +142,10 @@ namespace Test.Encoder
 
             };
 
-            status = NvAPI.DRS.SetSetting(phSession, hProfile, ref setting3);
+            status = NvApi.DRS.SetSetting(phSession, hProfile, ref setting3);
             Console.WriteLine("DRS_SetSetting() 3" + status + " " + phSession);
 
-            status = NvAPI.DRS.SaveSettings(phSession);
+            status = NvApi.DRS.SaveSettings(phSession);
             Console.WriteLine("DRS_SaveSettings() 3" + status);
 
 
@@ -153,11 +153,11 @@ namespace Test.Encoder
 
 
 
-            status = NvAPI.DRS.DestroySession(phSession);
+            status = NvApi.DRS.DestroySession(phSession);
 
             Console.WriteLine("NvAPI_DRS_DestroySession() " + status + " " + phSession);
 
-            res = NvAPI.Unload();
+            res = NvApi.Unload();
 
             Console.WriteLine("NvAPI_Unload() " + res);
 

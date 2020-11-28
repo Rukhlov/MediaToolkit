@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cuda\LibCuVideo.Enums.cs" />
+    <Compile Include="LibNvApi.cs" />
     <Compile Include="LibNvEnc.cs" />
     <Compile Include="NvAPI\Enums.cs" />
     <Compile Include="NvAPI\Functions.cs" />

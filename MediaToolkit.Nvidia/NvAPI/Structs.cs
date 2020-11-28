@@ -25,7 +25,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public ChipsetInfoV1()
 		{
-			version = NvAPI.MakeVersion<ChipsetInfoV1>(1);
+			version = NvApi.MakeVersion<ChipsetInfoV1>(1);
 		}
 
 		//NvU32 version;        //structure version
@@ -38,11 +38,11 @@ namespace MediaToolkit.Nvidia.NvAPI
 		public uint deviceId;
 
 		//NvAPI_ShortString szVendorName;   //vendor Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string vendorName;
 
 		//NvAPI_ShortString szChipsetName;  //device Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string chipsetName;
 	}
 
@@ -51,7 +51,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public ChipsetInfoV2()
 		{
-			version = NvAPI.MakeVersion<ChipsetInfoV2>(2);
+			version = NvApi.MakeVersion<ChipsetInfoV2>(2);
 		}
 		//NvU32 flags;	//!< Chipset info flags
 		public uint flags;
@@ -62,7 +62,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public ChipsetInfoV3()
 		{
-			version = NvAPI.MakeVersion<ChipsetInfoV3> (3);
+			version = NvApi.MakeVersion<ChipsetInfoV3> (3);
 		}
 
 		//NvU32 subSysVendorId;     //!< subsystem vendor ID
@@ -72,7 +72,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 		uint subSysDeviceId;
 
 		//NvAPI_ShortString szSubSysVendorName; //!< subsystem vendor Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.ShortStringMax)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string subSysVendorName;
 	}
 
@@ -81,7 +81,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public ChipsetInfoV4()
 		{
-			version = NvAPI.MakeVersion<ChipsetInfoV4>(4);
+			version = NvApi.MakeVersion<ChipsetInfoV4>(4);
 		}
 
 		//NvU32 HBvendorId;         //!< Host bridge vendor identification
@@ -104,7 +104,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public DRSApplicationV1()
 		{
-			version = NvAPI.MakeVersion<DRSApplicationV1>(1);
+			version = NvApi.MakeVersion<DRSApplicationV1>(1);
 		}
 
 		//Structure Version
@@ -114,15 +114,15 @@ namespace MediaToolkit.Nvidia.NvAPI
 		public uint isPredefined;
 
 		// String name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
 		public string appName;
 
 		//serFriendly name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
 		public string userFriendlyName;
 
 		//Indicates the name(if any) of the launcher that starts the application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
 		public string launcher;
 	}
 
@@ -132,10 +132,10 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public DRSApplicationV2()
 		{
-			version = NvAPI.MakeVersion<DRSApplicationV2>(2);
+			version = NvApi.MakeVersion<DRSApplicationV2>(2);
 		}
 
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
 		public string fileInFolder;
 	}
 
@@ -145,7 +145,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public DRSApplicationV3()
 		{
-			version = NvAPI.MakeVersion<DRSApplicationV3>(3);
+			version = NvApi.MakeVersion<DRSApplicationV3>(3);
 		}
 
 		public uint isMetro = 0;
@@ -159,10 +159,10 @@ namespace MediaToolkit.Nvidia.NvAPI
 	{
 		public DRSApplicationV4()
 		{
-			version = NvAPI.MakeVersion<DRSApplicationV4>(4);
+			version = NvApi.MakeVersion<DRSApplicationV4>(4);
 		}
 
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
 		public string commandLine;
 	}
 
@@ -170,7 +170,7 @@ namespace MediaToolkit.Nvidia.NvAPI
     public struct DRSProfile
     {
 		public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
         public string profileName;
         public DRSGPUSupport gpuSupport;
         public uint isPredefined;
@@ -185,7 +185,7 @@ namespace MediaToolkit.Nvidia.NvAPI
         public uint numSettingValues;
         public DRSSettingType settingType;
         public DRSSettingUnion defaultValue;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)NvAPI.SettingsMaxValue)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst =NvApi.SettingsMaxValue)]
         public DRSSettingUnion[] settingValues;
     }
 
@@ -194,7 +194,7 @@ namespace MediaToolkit.Nvidia.NvAPI
     public struct DRSSetting
     {
         public uint version;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvAPI.UnicodeMaxString)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeMaxString)]
         public string settingName;
         public uint settingId;
         public DRSSettingType settingType;

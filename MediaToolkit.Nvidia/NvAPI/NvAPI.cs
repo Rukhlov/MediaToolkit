@@ -7,20 +7,20 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Nvidia.NvAPI
 {
-    public class NvAPI
+    public class NvApi
     {
 		//#define NVAPI_GENERIC_STRING_MAX   4096
-		public const uint GentricStringMax = 4096;
+		public const int GenericStringMax = 4096;
 
 		//#define NVAPI_LONG_STRING_MAX   256
-		public const uint LongStringMax = 256;
+		public const int LongStringMax = 256;
 
 		//#define NVAPI_SHORT_STRING_MAX   64
-		public const uint ShortStringMax = 64;
+		public const int ShortStringMax = 64;
 
-		public const uint UnicodeMaxString = 2048;
+		public const int UnicodeMaxString = 2048;
 
-		public const uint SettingsMaxValue = 100;
+		public const int SettingsMaxValue = 100;
 
 		private const string _path32 = "nvapi.dll";
         private const string _path64 = "nvapi64.dll";
@@ -57,7 +57,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
 		public static NvApiStatus GetInterfaceVersionString(out string version)
 		{
-			var sb = new StringBuilder(64);
+			var sb = new StringBuilder(ShortStringMax);
 			var status = DelegateFactory.GetDelegate<NvAPI_GetInterfaceVersionString>().Invoke(sb);
 			version =  sb.ToString();
 			return status;
@@ -65,7 +65,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
 		public static NvApiStatus GetErrorMessage(NvApiStatus _status, out string message)
 		{
-			var sb = new StringBuilder(64);
+			var sb = new StringBuilder(ShortStringMax);
 			var status = DelegateFactory.GetDelegate<NvAPI_GetErrorMessage>().Invoke(_status, sb);
 			message = sb.ToString();
 			return status;
@@ -75,7 +75,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 		{
 			public static NvApiStatus GetDriverAndBranchVersion(out uint driverVersion, out string buildString)
 			{
-				var sb = new StringBuilder(64);
+				var sb = new StringBuilder(ShortStringMax);
 				var status = DelegateFactory.GetDelegate<NvAPI_SYS_GetDriverAndBranchVersion>().Invoke(out driverVersion, sb);
 				buildString = sb.ToString();
 				return status;
@@ -203,43 +203,6 @@ namespace MediaToolkit.Nvidia.NvAPI
     }
 
 
-
-    public class DRSSession
-    {
-        private readonly DRSSessionHandle sessionHandle;
-        internal DRSSession(DRSSessionHandle handle)
-        {
-            this.sessionHandle = handle;
-        }
-
-        public static DRSSession CreateSession()
-        {
-            var status = NvAPI.DRS.CreateSession(out var pSession);
-            if (status != NvApiStatus.Ok)
-            {
-                //...
-            }
-
-            return new DRSSession(pSession);
-        }
-
-        public void Close()
-        {
-            var handle = sessionHandle.Handle;
-            if (handle != IntPtr.Zero)
-            {
-                var status = NvAPI.DRS.DestroySession(sessionHandle);
-
-                if (status != NvApiStatus.Ok)
-                {
-                    //...
-                }
-            }
-        }
-    }
-
-
-
     internal static class DelegateFactory
     {
         private static readonly Dictionary<KeyValuePair<FunctionId, Type>, object> Delegates = new Dictionary<KeyValuePair<FunctionId, Type>, object>();
@@ -269,7 +232,7 @@ namespace MediaToolkit.Nvidia.NvAPI
                     return Delegates[delegateKey] as T;
                 }
 
-                var ptr = NvAPI.QueryInterface((uint)functionId.FunctionId);
+                var ptr = NvApi.QueryInterface((uint)functionId.FunctionId);
 
                 if (ptr != IntPtr.Zero)
                 {
