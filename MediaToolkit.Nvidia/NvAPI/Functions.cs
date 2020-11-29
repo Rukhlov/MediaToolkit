@@ -251,12 +251,8 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_FindProfileByName(
 		[In] DRSSessionHandle sessionHandle,
 		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeStringMax)]
-			StringBuilder profileName,
+		StringBuilder profileName,
 		[Out] out DRSProfileHandle profileHandle);
-
-	//internal delegate NvApiStatus NvAPI_DRS_FindProfileByName([In] DRSSessionHandle sessionHandle, [In] string profileName, [Out] out DRSProfileHandle profileHandle);
-
-
 
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -283,33 +279,78 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_CreateProfile([In] DRSSessionHandle sessionHandle, [In] DRSProfile profile, [Out] out DRSProfileHandle profileHandle);
 
 
-
-	// FUNCTION NAME: NvAPI_DRS_GetApplicationInfo
+	///////////////////////////////////////////////////////////////////////////////
 	//
-	//!   DESCRIPTION: This API gets information about the given application.  The input application name
-	//!                must match exactly what the Profile has stored for the application. 
-	//!                This function is better used to retrieve application information from a previous
-	//!                enumeration.
+	// FUNCTION NAME: NvAPI_DRS_DeleteProfile
+	//
+	//!   DESCRIPTION: This API deletes a profile or sets it back to a predefined value.
 	//!
 	//! SUPPORTED OS:  Windows 7 and higher
 	//!
 	//!
-	//! \param [in]   hSession       Input to the session handle.
-	//! \param [in]   hProfile       Input profile handle.
-	//! \param [in]   appName        Input application name.
-	//! \param [out]  *pApplication  Returns NVDRS_APPLICATION struct with all the attributes.
+	//! \param [in] hSession  Input to the session handle.
+	//! \param [in] hProfile  Input profile handle.
 	//!                
-	//! \return  This API can return any of the error codes enumerated in #NvAPI_Status. 
-	//!          If there are return error codes with specific meaning for this API, 
-	//!          they are listed below.
-	//! \retval ::NVAPI_EXECUTABLE_PATH_IS_AMBIGUOUS   The application name could not 
-	//                                                single out only one executable.
-	//! \retval ::NVAPI_EXECUTABLE_NOT_FOUND           No application with that name is found on the profile.
+	//! \retval ::NVAPI_OK     SUCCESS if the profile is found
+	//! \retval ::NVAPI_ERROR  For miscellaneous errors.
 	//!
 	//! \ingroup drsapi
 	///////////////////////////////////////////////////////////////////////////////
-	//NVAPI_INTERFACE NvAPI_DRS_GetApplicationInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvAPI_UnicodeString appName, NVDRS_APPLICATION* pApplication);
-	[FunctionId(FunctionId.NvAPI_DRS_GetApplicationInfo)]
+	//NVAPI_INTERFACE NvAPI_DRS_DeleteProfile(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile);
+	[FunctionId(FunctionId.NvAPI_DRS_DeleteProfile)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	internal delegate NvApiStatus NvAPI_DRS_DeleteProfile([In] DRSSessionHandle hSession, [In] DRSProfileHandle hProfile);
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// FUNCTION NAME: NvAPI_DRS_GetProfileInfo
+	//
+	//!   DESCRIPTION: This API gets information about the given profile. User needs to specify the name of the Profile.
+	//!
+	//! SUPPORTED OS:  Windows 7 and higher
+	//!
+	//!
+	//! \param [in]  hSession       Input to the session handle.
+	//! \param [in]  hProfile       Input profile handle.
+	//! \param [out] *pProfileInfo  Return the profile info.
+	//!                
+	//! \retval ::NVAPI_OK     SUCCESS
+	//! \retval ::NVAPI_ERROR  For miscellaneous errors.
+	//!
+	//! \ingroup drsapi
+	///////////////////////////////////////////////////////////////////////////////
+	//NVAPI_INTERFACE NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo);
+	[FunctionId(FunctionId.NvAPI_DRS_GetProfileInfo)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_GetProfileInfo([In] DRSSessionHandle hSessinon, [In] DRSProfileHandle hProfile, [Out] IntPtr profileHandle);
+
+    // FUNCTION NAME: NvAPI_DRS_GetApplicationInfo
+    //
+    //!   DESCRIPTION: This API gets information about the given application.  The input application name
+    //!                must match exactly what the Profile has stored for the application. 
+    //!                This function is better used to retrieve application information from a previous
+    //!                enumeration.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]   hSession       Input to the session handle.
+    //! \param [in]   hProfile       Input profile handle.
+    //! \param [in]   appName        Input application name.
+    //! \param [out]  *pApplication  Returns NVDRS_APPLICATION struct with all the attributes.
+    //!                
+    //! \return  This API can return any of the error codes enumerated in #NvAPI_Status. 
+    //!          If there are return error codes with specific meaning for this API, 
+    //!          they are listed below.
+    //! \retval ::NVAPI_EXECUTABLE_PATH_IS_AMBIGUOUS   The application name could not 
+    //                                                single out only one executable.
+    //! \retval ::NVAPI_EXECUTABLE_NOT_FOUND           No application with that name is found on the profile.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_GetApplicationInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvAPI_UnicodeString appName, NVDRS_APPLICATION* pApplication);
+    [FunctionId(FunctionId.NvAPI_DRS_GetApplicationInfo)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_DRS_GetApplicationInfo(
 		[In] DRSSessionHandle hSession,
@@ -346,24 +387,85 @@ namespace MediaToolkit.Nvidia.NvAPI
 
 	///////////////////////////////////////////////////////////////////////////////
 	//
-	// FUNCTION NAME: NvAPI_DRS_SetSetting
+	// FUNCTION NAME: NvAPI_DRS_DeleteApplication
 	//
-	//!   DESCRIPTION: This API adds/modifies a setting to a profile.
+	//!   DESCRIPTION: This API removes an executable name from a profile.
 	//!
 	//! SUPPORTED OS:  Windows 7 and higher
 	//!
 	//!
-	//! \param [in]  hSession     Input to the session handle.
-	//! \param [in]  hProfile     Input profile handle.
-	//! \param [in]   *pSetting   Input NVDRS_SETTING struct pointer.
+	//! \param [in]  hSessionPARAMETERS   Input to the session handle.
+	//! \param [in]  hProfile             Input profile handle.
+	//! \param [in]  appName              Input the executable name to be removed.
 	//!                
 	//! \retval ::NVAPI_OK     SUCCESS
 	//! \retval ::NVAPI_ERROR  For miscellaneous errors.
+	//! \retval ::NVAPI_EXECUTABLE_PATH_IS_AMBIGUOUS If the path provided could refer to two different executables,
+	//!                                              this error will be returned
 	//!
 	//! \ingroup drsapi
 	///////////////////////////////////////////////////////////////////////////////
-	//NVAPI_INTERFACE NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting);//
-	[FunctionId(FunctionId.NvAPI_DRS_SetSetting)]
+	//NVAPI_INTERFACE NvAPI_DRS_DeleteApplication(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvAPI_UnicodeString appName);
+	[FunctionId(FunctionId.NvAPI_DRS_DeleteApplication)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	internal delegate NvApiStatus NvAPI_DRS_DeleteApplication([In] DRSSessionHandle hSession, [In] DRSProfileHandle hProfile, 
+		[MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeStringMax)] StringBuilder appName);
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// FUNCTION NAME: NvAPI_DRS_FindApplicationByName
+	//
+	//!   DESCRIPTION: This API searches the application and the associated profile for the given application name.
+	//!                If a fully qualified path is provided, this function will always return the profile
+	//!                the driver will apply upon running the application (on the path provided).
+	//!
+	//! SUPPORTED OS:  Windows 7 and higher
+	//!
+	//!
+	//! \param [in]      hSession       Input to the hSession handle
+	//! \param [in]      appName        Input appName. For best results, provide a fully qualified path of the type
+	//!                                 c:/Folder1/Folder2/App.exe
+	//! \param [out]     *phProfile     Returns profile handle.
+	//! \param [in,out]  *pApplication  Returns NVDRS_APPLICATION struct pointer.
+	//!                
+	//! \return  This API can return any of the error codes enumerated in #NvAPI_Status. 
+	//!                  If there are return error codes with specific meaning for this API, 
+	//!                  they are listed below:
+	//! \retval ::NVAPI_APPLICATION_NOT_FOUND          If App not found
+	//! \retval ::NVAPI_EXECUTABLE_PATH_IS_AMBIGUOUS   If the input appName was not fully qualified, this error might return in the case of multiple matches
+	//!
+	//! \ingroup drsapi
+	///////////////////////////////////////////////////////////////////////////////
+	//NVAPI_INTERFACE NvAPI_DRS_FindApplicationByName(__in NvDRSSessionHandle hSession, __in NvAPI_UnicodeString appName, __out NvDRSProfileHandle *phProfile, __inout NVDRS_APPLICATION *pApplication);
+
+	[FunctionId(FunctionId.NvAPI_DRS_FindApplicationByName)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_FindApplicationByName([In] DRSSessionHandle hSession,
+        [MarshalAs(UnmanagedType.LPWStr, SizeConst = NvApi.UnicodeStringMax)]StringBuilder appName, 
+        [Out] out DRSProfileHandle hProfile,
+        [In, Out] IntPtr pApplication);
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_SetSetting
+    //
+    //!   DESCRIPTION: This API adds/modifies a setting to a profile.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]  hSession     Input to the session handle.
+    //! \param [in]  hProfile     Input profile handle.
+    //! \param [in]   *pSetting   Input NVDRS_SETTING struct pointer.
+    //!                
+    //! \retval ::NVAPI_OK     SUCCESS
+    //! \retval ::NVAPI_ERROR  For miscellaneous errors.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_SetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_SETTING* pSetting);//
+    [FunctionId(FunctionId.NvAPI_DRS_SetSetting)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_DRS_SetSetting(DRSSessionHandle phSessio, DRSProfileHandle hProfile, ref DRSSettingV1 pSetting);
 
@@ -390,33 +492,55 @@ namespace MediaToolkit.Nvidia.NvAPI
     //NVAPI_INTERFACE NvAPI_DRS_GetSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId, NVDRS_SETTING* pSetting);
     [FunctionId(FunctionId.NvAPI_DRS_GetSetting)]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate NvApiStatus NvAPI_DRS_GetSetting(DRSSessionHandle phSessio, DRSProfileHandle hProfile, uint settingId, [In, Out] ref DRSSettingV1 pSetting);
+    internal delegate NvApiStatus NvAPI_DRS_GetSetting(DRSSessionHandle phSession, DRSProfileHandle hProfile, uint settingId, [In, Out] ref DRSSettingV1 pSetting);
 
 
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// FUNCTION NAME: NvAPI_DRS_DeleteProfileSetting
+	//
+	//!   DESCRIPTION: This API deletes a setting or sets it back to predefined value.
+	//!
+	//! SUPPORTED OS:  Windows 7 and higher
+	//!
+	//!
+	//! \param [in]  hSession            Input to the session handle.
+	//! \param [in]  hProfile            Input profile handle.
+	//! \param [in]  settingId           Input settingId to be deleted.
+	//!                
+	//! \retval ::NVAPI_OK     SUCCESS if the profile is found
+	//! \retval ::NVAPI_ERROR  For miscellaneous errors.
+	//!
+	//! \ingroup drsapi
+	/////////////////////////////////////////////////////////////////////////////// 
+	//NVAPI_INTERFACE NvAPI_DRS_DeleteProfileSetting(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 settingId);
+	[FunctionId(FunctionId.NvAPI_DRS_DeleteProfileSetting)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	internal delegate NvApiStatus NvAPI_DRS_DeleteProfileSetting(DRSSessionHandle phSession, DRSProfileHandle hProfile, uint settingId);
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //
-    // FUNCTION NAME: NvAPI_DRS_EnumSettings
-    //
-    //!   DESCRIPTION: This API enumerates all the settings of a given profile from startIndex to the maximum length.
-    //!
-    //! SUPPORTED OS:  Windows 7 and higher
-    //!
-    //!
-    //! \param [in]      hSession        Input to the session handle.
-    //! \param [in]      hProfile        Input profile handle.
-    //! \param [in]      startIndex      Indicates starting index for enumeration.
-    //! \param [in,out]  *settingsCount  Input max length of the passed in arrays, Returns the actual length.
-    //! \param [out]     *pSetting       Returns all the settings info.
-    //!                
-    //! \retval ::NVAPI_OK              SUCCESS
-    //! \retval ::NVAPI_ERROR           For miscellaneous errors.
-    //! \retval ::NVAPI_END_ENUMERATION startIndex exceeds the total appCount.
-    //!
-    //! \ingroup drsapi
-    ///////////////////////////////////////////////////////////////////////////////
-    //NVAPI_INTERFACE NvAPI_DRS_EnumSettings(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 startIndex, NvU32* settingsCount, NVDRS_SETTING* pSetting);
-    [FunctionId(FunctionId.NvAPI_DRS_EnumSettings)]
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// FUNCTION NAME: NvAPI_DRS_EnumSettings
+	//
+	//!   DESCRIPTION: This API enumerates all the settings of a given profile from startIndex to the maximum length.
+	//!
+	//! SUPPORTED OS:  Windows 7 and higher
+	//!
+	//!
+	//! \param [in]      hSession        Input to the session handle.
+	//! \param [in]      hProfile        Input profile handle.
+	//! \param [in]      startIndex      Indicates starting index for enumeration.
+	//! \param [in,out]  *settingsCount  Input max length of the passed in arrays, Returns the actual length.
+	//! \param [out]     *pSetting       Returns all the settings info.
+	//!                
+	//! \retval ::NVAPI_OK              SUCCESS
+	//! \retval ::NVAPI_ERROR           For miscellaneous errors.
+	//! \retval ::NVAPI_END_ENUMERATION startIndex exceeds the total appCount.
+	//!
+	//! \ingroup drsapi
+	///////////////////////////////////////////////////////////////////////////////
+	//NVAPI_INTERFACE NvAPI_DRS_EnumSettings(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NvU32 startIndex, NvU32* settingsCount, NVDRS_SETTING* pSetting);
+	[FunctionId(FunctionId.NvAPI_DRS_EnumSettings)]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate NvApiStatus NvAPI_DRS_EnumSettings(DRSSessionHandle phSessio, DRSProfileHandle hProfile, uint startIndex, 
         ref uint settingsCount, IntPtr pSetting);

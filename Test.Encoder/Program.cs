@@ -29,10 +29,11 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
+			//NvApiTest.SetupNvOptimusProfile("TEST1", "TEST1.exe", true);
 
-            NvApiTest.Run2();
+			//NvApiTest.GetDisplayInfoTest();
 
-            //NvEncTest.Run();
+			NvApiTest.Run2();
 
 
             //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);

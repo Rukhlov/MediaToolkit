@@ -166,15 +166,31 @@ namespace MediaToolkit.Nvidia.NvAPI
 		public string commandLine;
 	}
 
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    //NVDRS_PROFILE
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public class DRSProfile
     {
-		public uint version;
+        public DRSProfile()
+        {
+            version = NvApi.MakeVersion<DRSProfile>(1);
+        }
+
+        public uint version;
+
+        //NvAPI_UnicodeString profileName; String name of the Profile
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
         public string profileName;
+
+        //NVDRS_GPU_SUPPORT gpuSupport; //!< This read-only flag indicates the profile support on either Quadro, or Geforce, or both.
         public DRSGPUSupport gpuSupport;
+
+        //NvU32 isPredefined; //!< Is the Profile user-defined, or predefined
         public uint isPredefined;
+
+        //NvU32 numOfApps; //!< Total number of applications that belong to this profile. Read-only
         public uint numOfApps;
+
+        //NvU32 numOfSettings;//!< Total number of settings applied for this Profile. Read-only
         public uint numOfSettings;
     }
 
@@ -193,8 +209,13 @@ namespace MediaToolkit.Nvidia.NvAPI
     [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
     public struct DRSSettingV1
     {
-        // NvU32 version; //!< Structure Version
-        public uint version;
+		//public DRSSettingV1()
+		//{
+		//	version = NvApi.MakeVersion<DRSSettingV1>(1);
+		//}
+
+		// NvU32 version; //!< Structure Version
+		public uint version;
 
         //NvAPI_UnicodeString settingName; //!< String name of setting
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]

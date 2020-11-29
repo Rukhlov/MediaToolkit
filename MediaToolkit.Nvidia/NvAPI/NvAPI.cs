@@ -141,7 +141,36 @@ namespace MediaToolkit.Nvidia.NvAPI
                 return DelegateFactory.GetDelegate<NvAPI_DRS_CreateProfile>().Invoke(hSession, profile, out hProfile);
             }
 
-			public static NvApiStatus GetApplicationInfo<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref T t) 
+			public static NvApiStatus DeleteProfile(DRSSessionHandle hSession, DRSProfileHandle hProfile)
+			{
+				return DelegateFactory.GetDelegate<NvAPI_DRS_DeleteProfile>().Invoke(hSession, hProfile);
+			}
+
+			public static NvApiStatus GetProfileInfo(DRSSessionHandle hSession,DRSProfileHandle hProfile, out DRSProfile profile)
+            {
+                NvApiStatus status = NvApiStatus.Error;
+                profile = new DRSProfile();
+                var size = Marshal.SizeOf(typeof(DRSProfile));
+                IntPtr hInfo = Marshal.AllocHGlobal(size);
+                try
+                {
+                    Marshal.StructureToPtr(profile, hInfo, true);
+                    status = DelegateFactory.GetDelegate<NvAPI_DRS_GetProfileInfo>().Invoke(hSession, hProfile, hInfo);
+                    if(status == NvApiStatus.Ok)
+                    {
+                        Marshal.PtrToStructure(hInfo, profile);
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(hInfo);
+                }
+
+                return status;
+            }
+
+
+            public static NvApiStatus GetApplicationInfo<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref T t) 
 				where T : DRSApplicationV1, new()
 			{
 				NvApiStatus status = NvApiStatus.Error;
@@ -170,7 +199,38 @@ namespace MediaToolkit.Nvidia.NvAPI
 
 			}
 
-			public static NvApiStatus CreateApplication<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, T t)
+            public static NvApiStatus FindApplicationByName<T>(DRSSessionHandle hSession, string appName, 
+                out DRSProfileHandle profileHandle, out T t) where T : DRSApplicationV1, new()
+            {
+                profileHandle = default(DRSProfileHandle);
+                t = new T();
+                
+                NvApiStatus status = NvApiStatus.Error;
+                var size = Marshal.SizeOf(t);
+                IntPtr pApp = Marshal.AllocHGlobal(size);
+                try
+                {
+                    Marshal.StructureToPtr(t, pApp, true);
+                    var findApplicationByName = DelegateFactory.GetDelegate<NvAPI_DRS_FindApplicationByName>();
+                    var sb = new StringBuilder(appName);
+                    status = findApplicationByName(hSession, sb, out var hProfile, pApp);
+                    if(status == NvApiStatus.Ok)
+                    {
+                        profileHandle = hProfile;
+                        Marshal.PtrToStructure(pApp, t);
+                    }
+
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(pApp);
+                }
+ 
+                return status;
+            }
+
+
+            public static NvApiStatus CreateApplication<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, T t)
 				where T : DRSApplicationV1
 			{
 				NvApiStatus status = NvApiStatus.Error;
@@ -190,7 +250,12 @@ namespace MediaToolkit.Nvidia.NvAPI
 				return status;
 			}
 
-            public static NvApiStatus GetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint settingId, ref DRSSettingV1 pSetting)
+			public static NvApiStatus DeleteApplication(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName)
+			{
+				return DelegateFactory.GetDelegate<NvAPI_DRS_DeleteApplication>().Invoke(hSession, hProfile, new StringBuilder(appName));
+			}
+
+			public static NvApiStatus GetSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint settingId, ref DRSSettingV1 pSetting)
             {
                 return DelegateFactory.GetDelegate<NvAPI_DRS_GetSetting>().Invoke(hSession, hProfile, settingId, ref pSetting);
             }
@@ -205,7 +270,12 @@ namespace MediaToolkit.Nvidia.NvAPI
                 return DelegateFactory.GetDelegate<NvAPI_DRS_SaveSettings>().Invoke(hSession);
             }
 
-            public static NvApiStatus EnumSettings(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint startIndex, ref DRSSettingV1 [] settings)
+			public static NvApiStatus DeleteProfileSetting(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint settingId)
+			{
+				return DelegateFactory.GetDelegate<NvAPI_DRS_DeleteProfileSetting>().Invoke(hSession, hProfile, settingId);
+			}
+
+			public static NvApiStatus EnumSettings(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint startIndex, ref DRSSettingV1 [] settings)
             {
                 NvApiStatus status = NvApiStatus.Error;
                 uint settingsCount = (uint)settings.Length;
@@ -222,7 +292,6 @@ namespace MediaToolkit.Nvidia.NvAPI
                 {
                     Marshal.FreeHGlobal(pSettings);
                 }
-
 
                 return status;
             }

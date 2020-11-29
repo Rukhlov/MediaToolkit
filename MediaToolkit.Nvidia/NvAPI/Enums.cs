@@ -1425,16 +1425,17 @@ namespace MediaToolkit.Nvidia.NvAPI
         NVIDIADisplayNotFound = -210
     }
 
-
+	// ------------------------------------------------------
+	// адреса функций взяты из nvapi.lib (см NvidiaInspector)
+	// ------------------------------------------------------
     internal enum FunctionId : uint
     {
-        // -------------------------------------------------
-        // Public NvAPI Functions
-        // -------------------------------------------------
+		NvAPI_Unload = 0xD22BDD7E,
+		NvAPI_Initialize = 0x150E828,
 
-        #region Public NvAPI Functions
+		#region Public NvAPI Functions
 
-        NvAPI_CreateDisplayFromUnAttachedDisplay = 0x63F9799E,
+		NvAPI_CreateDisplayFromUnAttachedDisplay = 0x63F9799E,
         NvAPI_D3D_BeginResourceRendering = 0x91123D6A,
         NvAPI_D3D_ConfigureAnsel = 0x341C6C7F,
         NvAPI_D3D_CreateLateLatchObject = 0x2DB27D09,
@@ -1762,10 +1763,6 @@ namespace MediaToolkit.Nvidia.NvAPI
         NvAPI_VIO_SyncFormatDetect = 0x118D48A3,
 
         #endregion
-
-        // -------------------------------------------------
-        // Private Internal NvAPI Functions
-        // -------------------------------------------------
 
         #region Private Internal NvAPI Functions
 
@@ -2126,7 +2123,5 @@ namespace MediaToolkit.Nvidia.NvAPI
 
         #endregion
 
-        NvAPI_Unload = 0xD22BDD7E,
-        NvAPI_Initialize = 0x150E828
     }
 }
