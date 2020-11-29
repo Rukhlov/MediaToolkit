@@ -566,4 +566,9 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_SaveSettings([In] DRSSessionHandle sessionHandle);
 
 
+
+	[FunctionId(FunctionId.NvAPI_GPU_GetPCIIdentifiers)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate NvApiStatus NvAPI_GPU_GetPCIIdentifiers([In] IntPtr physicalGpu,
+		[Out] out uint deviceId, [Out] out uint subSystemId, [Out] out uint revisionId, [Out] out uint extDeviceId);
 }

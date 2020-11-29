@@ -31,9 +31,9 @@ namespace Test.Encoder
 
 			//NvApiTest.SetupNvOptimusProfile("TEST1", "TEST1.exe", true);
 
-			//NvApiTest.GetDisplayInfoTest();
+			 DisplayDeviceTest.GetDisplayInfoTest();
 
-			NvApiTest.Run2();
+			//NvApiTest.Run2();
 
 
             //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);

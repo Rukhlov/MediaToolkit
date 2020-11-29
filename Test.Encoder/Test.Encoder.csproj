@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="DDATest\ScreenRenderer.cs" />
     <Compile Include="DDATest\Utils.cs" />
+    <Compile Include="DisplayDeviceTest.cs" />
     <Compile Include="MfTransformTests.cs" />
     <Compile Include="NvApiTest.cs" />
     <Compile Include="NvEncTest.cs" />

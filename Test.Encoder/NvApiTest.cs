@@ -373,20 +373,6 @@ namespace Test.Encoder
             Console.WriteLine("NvApiTest::Run() END");
         }
 
-		public static void GetDisplayInfoTest()
-		{
-			Console.WriteLine("GetDisplayInfoTest::Run() BEGIN");
-			
-			var displayDevices = DisplayTool.GetDisplayDevices();
-			foreach(var dd in displayDevices)
-			{
-				Console.WriteLine("-----------------------------");
-				Console.WriteLine(dd);
-				
-			}
 
-			Console.WriteLine("-----------------------------");
-			Console.WriteLine("GetDisplayInfoTest::Run() END");
-		}
     }
 }
