@@ -181,92 +181,132 @@ namespace Test.Encoder
         {
             Console.WriteLine("NvApiTest::SetupNvOptimusProfile() BEGIN");
 
+            Console.WriteLine(profileName + " " + appName + " " + forceIntegrated);
+
             LibNvApi.Initialize();
             try
             {
                 var session = LibNvApi.CreateDriverSettingSession();
-                session.LoadSettings();
-
-                var profile = session.FindProfileByName(profileName);
-
-                if (profile == null)
+                try
                 {
-                    profile = session.CreateProfile(profileName);
+                    session.LoadSettings();
+
+                    //var profile = session.FindProfileByName(profileName);
+
+                    var profile = session.FindProfileByApplicationName(appName, out DRSApplicationV1 app);
+                    if (profile != null)
+                    {
+                        var apps = profile.GetApplications<DRSApplicationV1>();
+                    }
+
+                    if (profile == null)
+                    {//ExecutableNotFound
+
+                        profile = session.CreateProfile(profileName);
+                        if(profile == null)
+                        {// ProfileNameInUse
+                            profile = session.FindProfileByName(profileName);
+                        }
+
+                        var friendlyName = System.IO.Path.GetFileName(appName);
+                        var appSettings = new DRSApplicationV1
+                        {
+                            appName = appName,
+                            userFriendlyName = friendlyName,                          
+                        };
+
+                        app = profile.CreateApplication(appSettings);
+
+                        if (app == null)
+                        {// ExecutableAlreadyInUse
+                           /// ???
+                        }
+  
+                    }
+                    
+                    //profile.Delete();
+                    //session.SaveSettings();
+                    //return;
+
+                    var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
+                    var setting1 = new DRSSettingV1
+                    {
+                        version = settingVersion,
+                        settingId = (uint)ESettingId.ShimMCCOMPAT,
+                        settingType = DRSSettingType.DWORD,
+                    };
+
+                    var setting2 = new DRSSettingV1
+                    {
+                        version = settingVersion,
+                        settingId = (uint)ESettingId.ShimRenderingMode,
+                        settingType = DRSSettingType.DWORD,
+                    };
+
+                    var setting3 = new DRSSettingV1
+                    {
+                        version = settingVersion,
+                        settingId = (uint)ESettingId.ShimRenderingOptions,
+                        settingType = DRSSettingType.DWORD,
+                    };
+
+                    if (forceIntegrated)
+                    {
+                        setting1.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                        };
+                        setting2.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)ShimRenderingMode.Integrated,
+                        };
+                        setting3.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
+                            ShimRenderingOptions.IGPUTranscoding)
+                        };
+                    }
+                    else
+                    {
+                        setting1.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)ShimMCCOMPAT.Enable,
+                        };
+                        setting2.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)ShimRenderingMode.Enable,
+                        };
+                        setting3.currentValue = new DRSSettingUnion
+                        {
+                            dwordValue = (uint)ShimRenderingOptions.DefaultRenderingMode,
+                        };
+                    }
+
+                    profile.SetSetting(setting1);
+                    profile.SetSetting(setting2);
+                    profile.SetSetting(setting3);
+
+                    session.SaveSettings();
+
+                    var settings = profile.GetSettings();
+                    foreach(var s in settings)
+                    {
+                        Console.WriteLine(s.settingId + " " + s.settingName + " " + s.currentValue.dwordValue);
+                    }
+
+
+                }
+                finally
+                {
+                    if (session != null)
+                    {
+                        session.Close();
+                        session = null;
+                             
+                    }
+                    
                 }
 
-                DRSApplicationV1 app = profile.GetApplicationInfo<DRSApplicationV1>(appName);
-
-                if (app == null)
-                {
-                    app = profile.CreateApplication<DRSApplicationV1>(appName);
-                }
-
-                if (app == null)
-                {// ExecutableAlreadyInUse
-                    //TODO:
-                }
-
-                var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
-                var setting1 = new DRSSettingV1
-                {
-                    version = settingVersion,
-                    settingId = (uint)ESettingId.ShimMCCOMPAT,
-                    settingType = DRSSettingType.DWORD,
-                };
-               
-                var setting2 = new DRSSettingV1
-                {
-                    version = settingVersion,
-                    settingId = (uint)ESettingId.ShimRenderingMode,
-                    settingType = DRSSettingType.DWORD,
-                };
-
-                var setting3 = new DRSSettingV1
-                {
-                    version = settingVersion,
-                    settingId = (uint)ESettingId.ShimRenderingOptions,
-                    settingType = DRSSettingType.DWORD,
-                };
-
-                if (forceIntegrated)
-                {
-                    setting1.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)ShimMCCOMPAT.Integrated,
-                    };
-                    setting2.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)ShimRenderingMode.Integrated,
-                    };
-                    setting3.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
-                        ShimRenderingOptions.IGPUTranscoding)
-                    };
-                }
-                else
-                {
-                    setting1.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)ShimMCCOMPAT.Enable,
-                    };
-                    setting2.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)ShimRenderingMode.Enable,
-                    };
-                    setting3.currentValue = new DRSSettingUnion
-                    {
-                        dwordValue = (uint)ShimRenderingOptions.DefaultRenderingMode,
-                    };
-                }
-
-                profile.SetSetting(setting1);
-                profile.SetSetting(setting2);
-                profile.SetSetting(setting3);
-
-                session.SaveSettings();
-
-                session.Close();
             }
             catch(Exception ex)
             {

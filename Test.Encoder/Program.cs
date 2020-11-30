@@ -29,9 +29,18 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-			//NvApiTest.SetupNvOptimusProfile("TEST1", "TEST1.exe", true);
 
-			 DisplayDeviceTest.GetDisplayInfoTest();
+            string path = AppDomain.CurrentDomain.BaseDirectory;
+            string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
+            //fileFullName = @"d:\Test.Encoder.exe";
+            //fileFullName = @"vlc.exe";
+            string fileName = Path.GetFileName(fileFullName);
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            bool forceIntegratedGPU = true;
+
+            NvApiTest.SetupNvOptimusProfile(name, fileFullName, forceIntegratedGPU);
+
+			DisplayDeviceTest.GetDisplayInfoTest();
 
 			//NvApiTest.Run2();
 

@@ -166,6 +166,24 @@ namespace MediaToolkit.Nvidia.NvAPI
 		public string commandLine;
 	}
 
+    //[StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
+    //public struct NVDRS_APPLICATION_V3
+    //{
+    //    public uint isMetro { get { return ((uint)((bitvector1 & 1))); } set { bitvector1 = ((uint)((value | bitvector1))); } }
+
+    //    public uint version;
+    //    public uint isPredefined;
+    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+    //    public string appName;
+    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+    //    public string userFriendlyName;
+    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+    //    public string launcher;
+    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+    //    public string fileInFolder;
+    //    private uint bitvector1;
+    //}
+
     //NVDRS_PROFILE
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public class DRSProfile

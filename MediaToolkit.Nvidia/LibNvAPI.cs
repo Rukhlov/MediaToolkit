@@ -7,86 +7,86 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Nvidia
 {
-	public class LibNvApi
-	{
-		private static bool _isInitialized = false;
+    public class LibNvApi
+    {
+        private static bool _isInitialized = false;
 
-		public static bool Initialize()
-		{
-			if (_isInitialized)
-			{
-				return false;
-			}
+        public static bool Initialize()
+        {
+            if (_isInitialized)
+            {
+                return false;
+            }
 
-			var status = NvApi.Initialize();
+            var status = NvApi.Initialize();
 
-			CheckStatus(status, "Initialize");
+            CheckStatus(status, "Initialize");
 
-			_isInitialized = (status == NvApiStatus.Ok);
+            _isInitialized = (status == NvApiStatus.Ok);
 
-			return true;
-		}
+            return true;
+        }
 
-		public static NvDriverSettingSession CreateDriverSettingSession()
-		{
-			var status = NvApi.DRS.CreateSession(out var pSession);
+        public static NvDriverSettingSession CreateDriverSettingSession()
+        {
+            var status = NvApi.DRS.CreateSession(out var pSession);
 
-			CheckStatus(status, "CreateSession");
+            CheckStatus(status, "CreateSession");
 
-			return new NvDriverSettingSession(pSession);
-		}
+            return new NvDriverSettingSession(pSession);
+        }
 
-		public static bool Shutdown()
-		{
-			if (!_isInitialized)
-			{
-				return false;
-			}
+        public static bool Shutdown()
+        {
+            if (!_isInitialized)
+            {
+                return false;
+            }
 
-			var status = NvApi.Unload();
+            var status = NvApi.Unload();
 
-			CheckStatus(status, "Unload");
+            CheckStatus(status, "Unload");
 
-			return true;
-		}
+            return true;
+        }
 
-		public static void CheckStatus(NvApiStatus status, string callerName = "")
-		{
-			if (status != NvApiStatus.Ok)
-			{
-				string description = "";
-				if (_isInitialized)
-				{
-					NvApi.GetErrorMessage(status, out description);
-				}
-				
-				throw new LibNvApiException(callerName, description, status);
-			}
-		}
-	}
+        public static void CheckStatus(NvApiStatus status, string callerName = "")
+        {
+            if (status != NvApiStatus.Ok)
+            {
+                string description = "";
+                if (_isInitialized)
+                {
+                    NvApi.GetErrorMessage(status, out description);
+                }
+
+                throw new LibNvApiException(callerName, description, status);
+            }
+        }
+    }
 
 
 
-	public class NvDriverSettingSession
-	{
-		private readonly DRSSessionHandle sessionHandle;
-		internal NvDriverSettingSession(DRSSessionHandle handle)
-		{
-			this.sessionHandle = handle;
-		}
+    public class NvDriverSettingSession
+    {
+        private readonly DRSSessionHandle sessionHandle;
+        internal NvDriverSettingSession(DRSSessionHandle handle)
+        {
+            this.sessionHandle = handle;
+        }
 
-		public void LoadSettings()
-		{
-			var status = NvApi.DRS.LoadSettings(sessionHandle);
+        public void LoadSettings()
+        {
+            var status = NvApi.DRS.LoadSettings(sessionHandle);
 
-			LibNvApi.CheckStatus(status, "LoadSettings");
-		}
+            LibNvApi.CheckStatus(status, "LoadSettings");
+        }
 
-		public void SaveSettings()
-		{
-			var status = NvApi.DRS.SaveSettings(sessionHandle);
-			LibNvApi.CheckStatus(status, "SaveSettings");
-		}
+        public void SaveSettings()
+        {
+            var status = NvApi.DRS.SaveSettings(sessionHandle);
+            LibNvApi.CheckStatus(status, "SaveSettings");
+        }
 
         public NvDriverSettingProfile CreateProfile(string name)
         {
@@ -99,40 +99,45 @@ namespace MediaToolkit.Nvidia
         }
 
         public NvDriverSettingProfile CreateProfile(DRSProfile profile)
-		{
-			var status = NvApi.DRS.CreateProfile(sessionHandle, profile, out var hProfile);
-			LibNvApi.CheckStatus(status, "CreateProfile");
-
-			return new NvDriverSettingProfile(hProfile, sessionHandle);
-		}
-
-
-		public NvDriverSettingProfile GetBaseProfile()
-		{
-			var status = NvApi.DRS.GetBaseProfile(sessionHandle, out var hProfile);
-			LibNvApi.CheckStatus(status, "GetBaseProfile");
-
-			return new NvDriverSettingProfile(hProfile, sessionHandle);
-		}
-
-		public NvDriverSettingProfile FindProfileByName(string name)
-		{
-			var status = NvApi.DRS.FindProfileByName(sessionHandle, name, out var hProfile);
-
-            if(status == NvApiStatus.ProfileNotFound)
+        {
+            var status = NvApi.DRS.CreateProfile(sessionHandle, profile, out var hProfile);
+            if (status == NvApiStatus.ProfileNameInUse)
             {
                 return null;
             }
 
-			LibNvApi.CheckStatus(status, "FindProfileByName");
+            LibNvApi.CheckStatus(status, "CreateProfile");
 
-			return new NvDriverSettingProfile(hProfile, sessionHandle, name);
-		}
+            return new NvDriverSettingProfile(hProfile, sessionHandle);
+        }
 
-        public NvDriverSettingProfile FindProfileByApplicationName(string applicationFullName) 
+
+        public NvDriverSettingProfile GetBaseProfile()
+        {
+            var status = NvApi.DRS.GetBaseProfile(sessionHandle, out var hProfile);
+            LibNvApi.CheckStatus(status, "GetBaseProfile");
+
+            return new NvDriverSettingProfile(hProfile, sessionHandle);
+        }
+
+        public NvDriverSettingProfile FindProfileByName(string name)
+        {
+            var status = NvApi.DRS.FindProfileByName(sessionHandle, name, out var hProfile);
+
+            if (status == NvApiStatus.ProfileNotFound)
+            {
+                return null;
+            }
+
+            LibNvApi.CheckStatus(status, "FindProfileByName");
+
+            return new NvDriverSettingProfile(hProfile, sessionHandle);
+        }
+
+        public NvDriverSettingProfile FindProfileByApplicationName(string applicationFullName)
         {
             var status = NvApi.DRS.FindApplicationByName<DRSApplicationV1>(sessionHandle, applicationFullName, out var profileHanle, out var _app);
-            if(status == NvApiStatus.ExecutableNotFound)
+            if (status == NvApiStatus.ExecutableNotFound)
             {
                 return null;
             }
@@ -142,29 +147,43 @@ namespace MediaToolkit.Nvidia
             return new NvDriverSettingProfile(profileHanle, sessionHandle);
         }
 
+        public NvDriverSettingProfile FindProfileByApplicationName<T>(string applicationFullName, out T t)
+            where T : DRSApplicationV1, new()
+        {
+            t = new T();
+            var status = NvApi.DRS.FindApplicationByName<T>(sessionHandle, applicationFullName, out var profileHanle, out T _app);
+            if (status == NvApiStatus.ExecutableNotFound)
+            {
+                return null;
+            }
+
+            LibNvApi.CheckStatus(status, "FindApplicationByName");
+
+            t = _app;
+
+            return new NvDriverSettingProfile(profileHanle, sessionHandle);
+        }
+
         public void Close()
-		{
-			var handle = sessionHandle.Handle;
-			if (handle != IntPtr.Zero)
-			{
-				var status = NvApi.DRS.DestroySession(sessionHandle);
-				LibNvApi.CheckStatus(status, "DestroySession");
-			}
-		}
-	}
+        {
+            var handle = sessionHandle.Handle;
+            if (handle != IntPtr.Zero)
+            {
+                var status = NvApi.DRS.DestroySession(sessionHandle);
+                LibNvApi.CheckStatus(status, "DestroySession");
+            }
+        }
+    }
 
-	public class NvDriverSettingProfile
-	{
-		private readonly DRSProfileHandle profileHandle;
-		private readonly DRSSessionHandle sessionHandle;
-		internal NvDriverSettingProfile(DRSProfileHandle hProfile, DRSSessionHandle hSession, string name = "")
-		{
-			this.profileHandle = hProfile;
-			this.sessionHandle = hSession;
-			this.Name = name;
-		}
-
-		public string Name { get; private set; }
+    public class NvDriverSettingProfile
+    {
+        private readonly DRSProfileHandle profileHandle;
+        private readonly DRSSessionHandle sessionHandle;
+        internal NvDriverSettingProfile(DRSProfileHandle hProfile, DRSSessionHandle hSession)
+        {
+            this.profileHandle = hProfile;
+            this.sessionHandle = hSession;
+        }
 
         public DRSProfile GetProfileInfo()
         {
@@ -176,10 +195,10 @@ namespace MediaToolkit.Nvidia
 
 
         public void SetSetting(DRSSettingV1 setting)
-		{
-			var status = NvApi.DRS.SetSetting(sessionHandle, profileHandle, ref setting);
-			LibNvApi.CheckStatus(status, "SetSetting");
-		}
+        {
+            var status = NvApi.DRS.SetSetting(sessionHandle, profileHandle, ref setting);
+            LibNvApi.CheckStatus(status, "SetSetting");
+        }
 
         public DRSSettingV1 GetSetting(uint settingId)
         {
@@ -194,45 +213,47 @@ namespace MediaToolkit.Nvidia
             return setting;
         }
 
-		public bool DeleteSetting(uint settingId)
-		{
-			var status = NvApi.DRS.DeleteProfileSetting(sessionHandle, profileHandle, settingId);
-			if(status == NvApiStatus.SettingNotFound)
-			{
-				return false;
-			}
+        public bool DeleteSetting(uint settingId)
+        {
+            var status = NvApi.DRS.DeleteProfileSetting(sessionHandle, profileHandle, settingId);
+            if (status == NvApiStatus.SettingNotFound)
+            {
+                return false;
+            }
 
-			LibNvApi.CheckStatus(status, "DeleteProfileSetting");
+            LibNvApi.CheckStatus(status, "DeleteProfileSetting");
 
-			return true;
-		}
+            return true;
+        }
 
-		public IEnumerable<DRSSettingV1> GetSettings()
-		{
-			List<DRSSettingV1> allSetting = new List<DRSSettingV1>();
-;
-			uint index = 0;
-			do
-			{
-				DRSSettingV1[] settings = new DRSSettingV1[1];
-				settings[0].version = NvApi.MakeVersion<DRSSettingV1>(1);
-				var status = NvApi.DRS.EnumSettings(sessionHandle, profileHandle, index, ref settings);
+        public IEnumerable<DRSSettingV1> GetSettings()
+        {
+            List<DRSSettingV1> allSetting = new List<DRSSettingV1>();
+            ;
+            uint index = 0;
+            do
+            {
+                const int settingsCount = 128;
+                DRSSettingV1[] settings = new DRSSettingV1[settingsCount];
+                settings[0].version = NvApi.MakeVersion<DRSSettingV1>(1);
 
-				if (status == NvApiStatus.EndEnumeration)
-				{
-					break;
-				}
+                var status = NvApi.DRS.EnumSettings(sessionHandle, profileHandle, index, ref settings);
 
-				LibNvApi.CheckStatus(status, "EnumSettings");
+                if (status == NvApiStatus.EndEnumeration)
+                {
+                    break;
+                }
 
-				allSetting.AddRange(settings);
-				index++;
+                LibNvApi.CheckStatus(status, "EnumSettings");
 
-			} while (true);
+                allSetting.AddRange(settings);
+                index += (uint)settings.Length;
+
+            } while (true);
 
 
-			return allSetting;
-		}
+            return allSetting;
+        }
 
         public T CreateApplication<T>(string name) where T : DRSApplicationV1, new()
         {
@@ -245,54 +266,87 @@ namespace MediaToolkit.Nvidia
         }
 
         public T CreateApplication<T>(T app) where T : DRSApplicationV1, new()
-		{
-			var status = NvApi.DRS.CreateApplication(sessionHandle, profileHandle, app);
-            if(status == NvApiStatus.ExecutableAlreadyInUse)
+        {
+            var status = NvApi.DRS.CreateApplication(sessionHandle, profileHandle, app);
+            if (status == NvApiStatus.ExecutableAlreadyInUse)
             {
                 return null;
             }
 
-			LibNvApi.CheckStatus(status, "CreateApplication");
+            LibNvApi.CheckStatus(status, "CreateApplication");
 
-			return app;
-		}
+            return app;
+        }
 
-		public bool DeleteApplication(string appName)
-		{
-			var status = NvApi.DRS.DeleteApplication(sessionHandle, profileHandle, appName);
-			if(status == NvApiStatus.ExecutableNotFound)
-			{
-				return false;
-			}
+        public bool DeleteApplication(string appName)
+        {
+            var status = NvApi.DRS.DeleteApplication(sessionHandle, profileHandle, appName);
+            if (status == NvApiStatus.ExecutableNotFound)
+            {
+                return false;
+            }
 
-			LibNvApi.CheckStatus(status, "DeleteApplication");
+            LibNvApi.CheckStatus(status, "DeleteApplication");
 
-			return true;
-		}
+            return true;
+        }
 
-		public T GetApplicationInfo<T> (string appName) where T: DRSApplicationV1, new()
-		{
-			T app = new T();
+        public T GetApplicationInfo<T>(string appName) where T : DRSApplicationV1, new()
+        {
+            T app = new T();
 
-			var status = NvApi.DRS.GetApplicationInfo(sessionHandle, profileHandle, appName, ref app);
-            if(status == NvApiStatus.ExecutableNotFound)
+            var status = NvApi.DRS.GetApplicationInfo(sessionHandle, profileHandle, appName, ref app);
+            if (status == NvApiStatus.ExecutableNotFound)
             {
                 return null;
             }
 
-			LibNvApi.CheckStatus(status, "GetApplicationInfo");
+            LibNvApi.CheckStatus(status, "GetApplicationInfo");
 
-			return app;
-		}
+            return app;
+        }
 
-		public void Delete()
-		{
-			var status = NvApi.DRS.DeleteProfile(sessionHandle, profileHandle);
+        public IEnumerable<T> GetApplications<T>() where T : DRSApplicationV1, new()
+        {
+            List<T> allApplications = new List<T>();
 
-			LibNvApi.CheckStatus(status, "DeleteProfile");
-		}
+            uint index = 0;
+            do
+            {
+                const int appCount = 1;
+                T[] apps = new T[appCount];
+                for (int i = 0; i < apps.Length; i++)
+                {
+                    apps[i] = new T();
+                }
+  
+                var status = NvApi.DRS.EnumApplicatons(sessionHandle, profileHandle, index, ref apps);
 
-	}
+                if (status == NvApiStatus.EndEnumeration)
+                {
+                    break;
+                }
+
+                LibNvApi.CheckStatus(status, "EnumApplicatons");
+
+                allApplications.AddRange(apps);
+                index += (uint)apps.Length;
+
+            } while (true);
+
+
+            return allApplications;
+
+        }
+
+        public void Delete()
+        {
+            var status = NvApi.DRS.DeleteProfile(sessionHandle, profileHandle);
+
+            LibNvApi.CheckStatus(status, "DeleteProfile");
+        }
+
+    }
 
 
 }

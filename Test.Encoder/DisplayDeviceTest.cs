@@ -28,6 +28,8 @@ namespace Test.Encoder
 
 			Console.WriteLine("GetDisplayInfoTest::PCIDeviceIdTest() END");
 		}
+
+
 		public static void GetDisplayInfoTest()
 		{
 			Console.WriteLine("GetDisplayInfoTest::Run() BEGIN");

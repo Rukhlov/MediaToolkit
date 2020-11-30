@@ -230,6 +230,29 @@ namespace MediaToolkit.Nvidia.NvAPI
             }
 
 
+            public static NvApiStatus EnumApplicatons<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, uint startIndex, ref T[] applications) 
+                where T : DRSApplicationV1, new()
+            {
+                NvApiStatus status = NvApiStatus.Error;
+                uint appCount = (uint)applications.Length;
+                MarshalHelper.SetArrayData(applications, out var pApp);
+                try
+                {
+                    status = DelegateFactory.GetDelegate<NvAPI_DRS_EnumApplications>().Invoke(hSession, hProfile, startIndex, ref appCount, pApp);
+                    if (status == NvApiStatus.Ok)
+                    {
+                        applications = MarshalHelper.GetArrayData<T>(pApp, (int)appCount);
+                    }
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(pApp);
+                }
+
+                return status;
+            }
+
+
             public static NvApiStatus CreateApplication<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, T t)
 				where T : DRSApplicationV1
 			{
