@@ -302,26 +302,75 @@ namespace MediaToolkit.Nvidia.NvAPI
 	internal delegate NvApiStatus NvAPI_DRS_DeleteProfile([In] DRSSessionHandle hSession, [In] DRSProfileHandle hProfile);
 
 
-	///////////////////////////////////////////////////////////////////////////////
-	//
-	// FUNCTION NAME: NvAPI_DRS_GetProfileInfo
-	//
-	//!   DESCRIPTION: This API gets information about the given profile. User needs to specify the name of the Profile.
-	//!
-	//! SUPPORTED OS:  Windows 7 and higher
-	//!
-	//!
-	//! \param [in]  hSession       Input to the session handle.
-	//! \param [in]  hProfile       Input profile handle.
-	//! \param [out] *pProfileInfo  Return the profile info.
-	//!                
-	//! \retval ::NVAPI_OK     SUCCESS
-	//! \retval ::NVAPI_ERROR  For miscellaneous errors.
-	//!
-	//! \ingroup drsapi
-	///////////////////////////////////////////////////////////////////////////////
-	//NVAPI_INTERFACE NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo);
-	[FunctionId(FunctionId.NvAPI_DRS_GetProfileInfo)]
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_EnumProfiles
+    //
+    //!   DESCRIPTION: This API enumerates through all the profiles in the session.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]   hSession        Input to the session handle.
+    //! \param [in]   index           Input the index for enumeration.
+    //! \param [out]  *phProfile      Returns profile handle.
+    //!                
+    //!   RETURN STATUS: NVAPI_OK: SUCCESS if the profile is found
+    //!                  NVAPI_ERROR: For miscellaneous errors.
+    //!                  NVAPI_END_ENUMERATION: index exceeds the total number of available Profiles in DB.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_EnumProfiles(NvDRSSessionHandle hSession, NvU32 index, NvDRSProfileHandle* phProfile);
+    [FunctionId(FunctionId.NvAPI_DRS_EnumProfiles)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_EnumProfiles([In] DRSSessionHandle hSession, uint index, [Out] out DRSProfileHandle profileHandle);
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_GetNumProfiles
+    //
+    //!   DESCRIPTION: This API obtains the number of profiles in the current session object.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]  hSession       Input to the session handle.
+    //! \param out]  *numProfiles   Returns count of profiles in the current hSession.
+    //!                
+    //! \retval ::NVAPI_OK                  SUCCESS
+    //! \retval ::NVAPI_API_NOT_INTIALIZED  Failed to initialize.
+    //! \retval ::NVAPI_INVALID_ARGUMENT    Invalid Arguments.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    // NVAPI_INTERFACE NvAPI_DRS_GetNumProfiles(NvDRSSessionHandle hSession, NvU32* numProfiles);
+    [FunctionId(FunctionId.NvAPI_DRS_GetNumProfiles)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate NvApiStatus NvAPI_DRS_GetNumProfiles([In] DRSSessionHandle hSession, out uint numProfiles);
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_DRS_GetProfileInfo
+    //
+    //!   DESCRIPTION: This API gets information about the given profile. User needs to specify the name of the Profile.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //!
+    //! \param [in]  hSession       Input to the session handle.
+    //! \param [in]  hProfile       Input profile handle.
+    //! \param [out] *pProfileInfo  Return the profile info.
+    //!                
+    //! \retval ::NVAPI_OK     SUCCESS
+    //! \retval ::NVAPI_ERROR  For miscellaneous errors.
+    //!
+    //! \ingroup drsapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_DRS_GetProfileInfo(NvDRSSessionHandle hSession, NvDRSProfileHandle hProfile, NVDRS_PROFILE* pProfileInfo);
+    [FunctionId(FunctionId.NvAPI_DRS_GetProfileInfo)]
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate NvApiStatus NvAPI_DRS_GetProfileInfo([In] DRSSessionHandle hSessinon, [In] DRSProfileHandle hProfile, [Out] IntPtr profileHandle);
 

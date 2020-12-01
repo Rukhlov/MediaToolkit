@@ -131,6 +131,16 @@ namespace MediaToolkit.Nvidia.NvAPI
                 return DelegateFactory.GetDelegate<NvAPI_DRS_GetBaseProfile>().Invoke(hSession, out hProfile);
             }
 
+            public static NvApiStatus GetNumProfiles(DRSSessionHandle hSession, out uint numProfiles)
+            {
+                return DelegateFactory.GetDelegate<NvAPI_DRS_GetNumProfiles>().Invoke(hSession, out numProfiles);
+            }
+
+            public static NvApiStatus EnumProfiles(DRSSessionHandle hSession, uint index, out DRSProfileHandle profile)
+            {
+                return DelegateFactory.GetDelegate<NvAPI_DRS_EnumProfiles>().Invoke(hSession, index, out profile);
+            }
+
             public static NvApiStatus FindProfileByName(DRSSessionHandle hSession, string profileName, out DRSProfileHandle profile)
             {
                 return DelegateFactory.GetDelegate<NvAPI_DRS_FindProfileByName>().Invoke(hSession, new StringBuilder(profileName), out profile);
@@ -168,6 +178,7 @@ namespace MediaToolkit.Nvidia.NvAPI
 
                 return status;
             }
+
 
 
             public static NvApiStatus GetApplicationInfo<T>(DRSSessionHandle hSession, DRSProfileHandle hProfile, string appName, ref T t) 

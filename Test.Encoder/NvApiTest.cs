@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -177,6 +178,68 @@ namespace Test.Encoder
             Console.WriteLine("NvApiTest::Run() END");
         }
 
+        public static void Run3(string profileName)
+        {
+            Console.WriteLine("NvApiTest::Run3() BEGIN");
+            LibNvApi.Initialize();
+            var session = LibNvApi.CreateDriverSettingSession();
+
+            session.LoadSettings();
+
+            var profiles = session.GetProfiles();
+            StringBuilder sb = new StringBuilder();
+            int num = 0;
+            foreach(var profile in profiles)
+            {
+                var info = profile.GetProfileInfo();
+               // if (info.isPredefined == 0)
+                {
+                    var profStr = (++num) + " " + info.profileName + " (" + info.isPredefined + " " + info.gpuSupport + " " + info.numOfApps + " " + info.numOfSettings + ")";
+                    //Console.WriteLine(profStr);
+                    sb.AppendLine(profStr);
+                    //var profile = session.FindProfileByName(profileName);
+                    var apps = profile.GetApplications<DRSApplicationV4>();
+                    foreach (var a in apps)
+                    {
+                       
+                        //if (!string.IsNullOrEmpty(a.launcher))
+                        {
+                            var appStr = string.Join(" ", a.appName, a.userFriendlyName, a.launcher, a.fileInFolder, a.isPredefined);
+                            //Console.WriteLine(appStr);
+                            sb.AppendLine(appStr);
+                        }
+                    }
+
+                    sb.AppendLine();
+
+                    //if(info.isPredefined == 0)
+                    //{
+                    //    var settings = profile.GetSettings();
+                    //    foreach (var s in settings)
+                    //    {
+                    //        if (s.isCurrentPredefined == 1)
+                    //        {
+                    //            var setStr = string.Join(" ", s.settingId, s.settingName, s.currentValue.stringValue);
+                    //            sb.AppendLine(setStr);
+                    //        }
+
+                    //    }
+
+
+                    //}
+
+                    //Console.WriteLine("--------------------------");
+                    sb.AppendLine("-----------------------");
+                }
+
+               // Console.WriteLine("");
+            }
+
+            File.WriteAllText("log.txt", sb.ToString());
+
+            Console.WriteLine("NvApiTest::Run3() END");
+        }
+
         public static void SetupNvOptimusProfile(string profileName, string appName, bool forceIntegrated = true)
         {
             Console.WriteLine("NvApiTest::SetupNvOptimusProfile() BEGIN");
@@ -193,7 +256,7 @@ namespace Test.Encoder
 
                     //var profile = session.FindProfileByName(profileName);
 
-                    var profile = session.FindProfileByApplicationName(appName, out DRSApplicationV1 app);
+                    var profile = session.FindProfileByApplicationName(appName, out DRSApplicationV4 app);
                     if (profile != null)
                     {
                         var apps = profile.GetApplications<DRSApplicationV1>();
@@ -209,7 +272,7 @@ namespace Test.Encoder
                         }
 
                         var friendlyName = System.IO.Path.GetFileName(appName);
-                        var appSettings = new DRSApplicationV1
+                        var appSettings = new DRSApplicationV4
                         {
                             appName = appName,
                             userFriendlyName = friendlyName,                          

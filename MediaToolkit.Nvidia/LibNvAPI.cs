@@ -120,6 +120,27 @@ namespace MediaToolkit.Nvidia
             return new NvDriverSettingProfile(hProfile, sessionHandle);
         }
 
+        public IEnumerable<NvDriverSettingProfile> GetProfiles()
+        {
+            List<NvDriverSettingProfile> profiles = new List<NvDriverSettingProfile>();
+            var status = NvApi.DRS.GetNumProfiles(sessionHandle, out var numProfiles);
+
+            for(uint index = 0; index < numProfiles; index++)
+            {
+                status = NvApi.DRS.EnumProfiles(sessionHandle, index, out var profileHandle);
+                if(status == NvApiStatus.Ok)
+                {
+                    profiles.Add(new NvDriverSettingProfile(profileHandle, sessionHandle));
+                }
+                else
+                {//...
+
+                }
+            }
+
+            return profiles;
+        }
+
         public NvDriverSettingProfile FindProfileByName(string name)
         {
             var status = NvApi.DRS.FindProfileByName(sessionHandle, name, out var hProfile);
@@ -233,7 +254,7 @@ namespace MediaToolkit.Nvidia
             uint index = 0;
             do
             {
-                const int settingsCount = 128;
+                const int settingsCount = 32;
                 DRSSettingV1[] settings = new DRSSettingV1[settingsCount];
                 settings[0].version = NvApi.MakeVersion<DRSSettingV1>(1);
 

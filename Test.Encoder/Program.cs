@@ -34,15 +34,22 @@ namespace Test.Encoder
             string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
             //fileFullName = @"d:\Test.Encoder.exe";
             //fileFullName = @"vlc.exe";
+
+           
+
             string fileName = Path.GetFileName(fileFullName);
             string name = Path.GetFileNameWithoutExtension(fileName);
             bool forceIntegratedGPU = true;
+            NvApiTest.SetupNvOptimusProfile(name, fileName, forceIntegratedGPU);
 
-            NvApiTest.SetupNvOptimusProfile(name, fileFullName, forceIntegratedGPU);
 
-			DisplayDeviceTest.GetDisplayInfoTest();
+            var profileName = "Calculator";
+             profileName = "Skype Metro App";
+            //NvApiTest.Run3(profileName);
 
-			//NvApiTest.Run2();
+            //DisplayDeviceTest.GetDisplayInfoTest();
+
+            //NvApiTest.Run2();
 
 
             //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);

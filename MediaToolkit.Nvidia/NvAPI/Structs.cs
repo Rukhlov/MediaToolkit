@@ -135,6 +135,8 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV2>(2);
 		}
 
+        //Select this application only if this file is found.
+        // When specifying multiple files, separate them using the ':' character.
 		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string fileInFolder;
 	}
@@ -148,13 +150,30 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV3>(3);
 		}
 
-		public uint isMetro = 0;
-		public uint isCommandLine;
-		public uint reserved = 0;
-	}
+        //-----------------------------------------
+        // не реализовано т.к нигде не используется...
+        public uint bitvector;
+        //NvU32 isMetro:1;//!< Windows 8 style app
+        //public uint isMetro
+        //{
+        //    get
+        //    {
+        //        return ((uint)((bitvector & 1)));
+        //    }
+        //    set
+        //    {
+        //        bitvector = ((uint)((value | bitvector)));
+        //    }
+        //}
+        //NvU32 isCommandLine:1; //!< Command line parsing for the application name
+        //public uint isCommandLine ........
+        //NvU32 reserved:30;//!< Reserved. Should be 0.
+        //public uint reserved ...
+        //----------------------------------------------
+    }
 
-	//NVDRS_APPLICATION_V4
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    //NVDRS_APPLICATION_V4
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 	public class DRSApplicationV4 : DRSApplicationV3
 	{
 		public DRSApplicationV4()
@@ -162,27 +181,11 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV4>(4);
 		}
 
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+        //If isCommandLine is set to 0 this must be an empty.
+        //If isCommandLine is set to 1 this contains application's command line as if it was returned by GetCommandLineW.
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string commandLine;
 	}
-
-    //[StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode)]
-    //public struct NVDRS_APPLICATION_V3
-    //{
-    //    public uint isMetro { get { return ((uint)((bitvector1 & 1))); } set { bitvector1 = ((uint)((value | bitvector1))); } }
-
-    //    public uint version;
-    //    public uint isPredefined;
-    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
-    //    public string appName;
-    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
-    //    public string userFriendlyName;
-    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
-    //    public string launcher;
-    //    [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
-    //    public string fileInFolder;
-    //    private uint bitvector1;
-    //}
 
     //NVDRS_PROFILE
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
