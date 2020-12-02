@@ -40,8 +40,9 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
 
 
-             DisplayManager.Init();
-
+             var adapterMode =  DisplayManager.CheckDisplayAdapterMode();
+            Console.WriteLine("adapterMode " + adapterMode);
+            Console.WriteLine("-----------------------------\r\n");
             //NvApiTest.Run4();
 
             var gdiDevices = MediaToolkit.NativeAPIs.Utils.DisplayTool.EnumDisplayDevices();
@@ -112,7 +113,7 @@ namespace Test.Encoder
             //    Console.WriteLine("");
             //}
 
-           // Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
+            //Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
 
             // Test.Encoder.DDATest.DDATest.Run();
 

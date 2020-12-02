@@ -91,6 +91,7 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Managers\DisplayManager.cs" />
     <Compile Include="Managers\WTSSessionManager.cs" />
     <Compile Include="MediaFoundation\D3D11Provider.cs" />
     <Compile Include="MediaFoundation\MediaRenderSession.cs" />

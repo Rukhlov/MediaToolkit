@@ -1,59 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.NativeAPIs;
 using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Test.Encoder
+namespace MediaToolkit.Managers
 {
-
-    //public class GpuDevice
-    //{
-    //    public int EnumIndex { get; set; } = -1;
-    //    public int VendorId { get; set; } = -1;
-    //    public int DeviceId { get; set; } = -1;
-    //    public string DeviceName { get; set; } = "";
-
-    //    public string Description { get; set; } = "";
-
-    //    public int Flags { get; set; } = -1;
-
-    //    public bool IsGdiDevice { get; set; } = false;
-
-    //    public List<DisplayDevice> Displays { get; set; } = new List<DisplayDevice>();
-
-
-    //    public override string ToString()
-    //    {
-    //        return "#" + EnumIndex + " " + string.Join("; ", DeviceName, VendorId, DeviceId, Description, Flags, IsGdiDevice);
-    //    }
-    //}
-
-    //public class DisplayDevice
-    //{
-    //    public int EnumIndex { get; set; } = -1;
-    //    public string DeviceName { get; set; } = "";
-    //    public int VendorId { get; set; } = -1;
-    //    public int DeviceId { get; set; } = -1;
-    //    public string Description { get; set; } = "";
-
-
-    //    public Rectangle Bounds { get; set; }
-    //    public int Flags { get; set; } = -1;
-
-    //    public override string ToString()
-    //    {
-    //        return "#" + EnumIndex + " " + string.Join("; ", DeviceName, VendorId, DeviceId, Description, Flags);
-    //    }
-    //}
-
-
-
     public class DisplayDevice
     {
         public int EnumIndex { get; set; } = -1;
@@ -93,7 +48,7 @@ namespace Test.Encoder
 
             var gdiDevices = GetGdiDisplayDevices();
             var gdiDeivce0 = gdiDevices.FirstOrDefault();
-            if(gdiDeivce0 == null)
+            if (gdiDeivce0 == null)
             {
                 return DisplayAdapterMode.Invalid;
             }
@@ -118,7 +73,7 @@ namespace Test.Encoder
                 if (dxDevice.DeviceId != gdiDevice.DeviceId)
                 {// разные GDI и DirectX адаптеры  
                  // гибридный режим NvOptimus, AMDSwitchableGraphics,...
-                 // TODO: насколько это правильно, но других способов не найдено ?!
+                 // TODO: непонятно насколько это правильно, но других способов не найдено ?!
                     return DisplayAdapterMode.HybridModeEnabled;
                 }
             }
@@ -244,4 +199,5 @@ namespace Test.Encoder
 
 
     }
+
 }
