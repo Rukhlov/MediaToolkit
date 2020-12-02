@@ -266,7 +266,7 @@ namespace Test.Encoder
                     {//ExecutableNotFound
 
                         profile = session.CreateProfile(profileName);
-                        if(profile == null)
+                        if (profile == null)
                         {// ProfileNameInUse
                             profile = session.FindProfileByName(profileName);
                         }
@@ -275,87 +275,32 @@ namespace Test.Encoder
                         var appSettings = new DRSApplicationV4
                         {
                             appName = appName,
-                            userFriendlyName = friendlyName,                          
+                            userFriendlyName = friendlyName,
                         };
 
                         app = profile.CreateApplication(appSettings);
 
                         if (app == null)
                         {// ExecutableAlreadyInUse
-                           /// ???
+                         /// ???
                         }
-  
+
                     }
-                    
+
                     //profile.Delete();
                     //session.SaveSettings();
                     //return;
 
-                    var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
-                    var setting1 = new DRSSettingV1
-                    {
-                        version = settingVersion,
-                        settingId = (uint)ESettingId.ShimMCCOMPAT,
-                        settingType = DRSSettingType.DWORD,
-                    };
+                    DRSSettingV1[] settings = CreateShimRenderingSettings(forceIntegrated);
 
-                    var setting2 = new DRSSettingV1
-                    {
-                        version = settingVersion,
-                        settingId = (uint)ESettingId.ShimRenderingMode,
-                        settingType = DRSSettingType.DWORD,
-                    };
-
-                    var setting3 = new DRSSettingV1
-                    {
-                        version = settingVersion,
-                        settingId = (uint)ESettingId.ShimRenderingOptions,
-                        settingType = DRSSettingType.DWORD,
-                    };
-
-                    if (forceIntegrated)
-                    {
-                        setting1.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)ShimMCCOMPAT.Integrated,
-                        };
-                        setting2.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)ShimRenderingMode.Integrated,
-                        };
-                        setting3.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
-                            ShimRenderingOptions.IGPUTranscoding)
-                        };
-                    }
-                    else
-                    {
-                        setting1.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)ShimMCCOMPAT.Enable,
-                        };
-                        setting2.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)ShimRenderingMode.Enable,
-                        };
-                        setting3.currentValue = new DRSSettingUnion
-                        {
-                            dwordValue = (uint)ShimRenderingOptions.DefaultRenderingMode,
-                        };
-                    }
-
-                    profile.SetSetting(setting1);
-                    profile.SetSetting(setting2);
-                    profile.SetSetting(setting3);
-
+                    profile.SetSettings(settings);
                     session.SaveSettings();
 
-                    var settings = profile.GetSettings();
-                    foreach(var s in settings)
-                    {
-                        Console.WriteLine(s.settingId + " " + s.settingName + " " + s.currentValue.dwordValue);
-                    }
+                    //var _settings = profile.GetSettings();
+                    //foreach (var s in _settings)
+                    //{
+                    //    Console.WriteLine(s.settingId + " " + s.settingName + " " + s.currentValue.dwordValue);
+                    //}
 
 
                 }
@@ -384,12 +329,170 @@ namespace Test.Encoder
             Console.WriteLine("NvApiTest::SetupNvOptimusProfile() BEGIN");
         }
 
+
+        public static void SetupNvProfile(string profileName, string appName, DRSSettingV1[] settings)
+        {
+            Console.WriteLine("NvApiTest::SetupNvProfile() BEGIN");
+
+            Console.WriteLine(profileName + " " + appName);
+            //foreach (var s in settings)
+            //{
+            //    Console.WriteLine(s.settingId + " " + s.settingName + " " + s.currentValue.dwordValue);
+            //}
+
+            LibNvApi.Initialize();
+            try
+            {
+                var session = LibNvApi.CreateDriverSettingSession();
+                try
+                {
+                    session.LoadSettings();
+
+                    //var profile = session.FindProfileByName(profileName);
+
+                    var profile = session.FindProfileByApplicationName(appName, out DRSApplicationV1 app);
+                    if (profile != null)
+                    {
+                        var apps = profile.GetApplications<DRSApplicationV1>();
+                    }
+
+                    if (profile == null)
+                    {//ExecutableNotFound
+
+                        profile = session.CreateProfile(profileName);
+                        if (profile == null)
+                        {// ProfileNameInUse
+                            profile = session.FindProfileByName(profileName);
+                        }
+
+                        var friendlyName = System.IO.Path.GetFileName(appName);
+                        var appSettings = new DRSApplicationV1
+                        {
+                            appName = appName,
+                            userFriendlyName = friendlyName,
+                        };
+
+                        app = profile.CreateApplication(appSettings);
+
+                        if (app == null)
+                        {// ExecutableAlreadyInUse
+                         /// ???
+                        }
+                    }
+
+                    profile.SetSettings(settings);
+                    session.SaveSettings();
+
+                    var _settings = profile.GetSettings();
+                    foreach (var s in _settings)
+                    {
+                        Console.WriteLine(s.settingId + " " + s.settingName + " " + s.currentValue.dwordValue);
+                    }
+                }
+                finally
+                {
+                    if (session != null)
+                    {
+                        session.Close();
+                        session = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                //throw;
+            }
+            finally
+            {
+                LibNvApi.Shutdown();
+            }
+
+            Console.WriteLine("NvApiTest::SetupNvProfile() END");
+        }
+
+        public static DRSSettingV1[] CreateShimRenderingSettings(bool useIntegratedGpu)
+        {
+            var settingVersion = NvApi.MakeVersion<DRSSettingV1>(1);
+            var shimMCCOMPAT = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimMCCOMPAT,
+                settingType = DRSSettingType.DWORD,
+            };
+
+            var shimRenderingMode = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimRenderingMode,
+                settingType = DRSSettingType.DWORD,
+            };
+
+            var shimRenderingOptions = new DRSSettingV1
+            {
+                version = settingVersion,
+                settingId = (uint)ESettingId.ShimRenderingOptions,
+                settingType = DRSSettingType.DWORD,
+            };
+
+            if (useIntegratedGpu)
+            {
+                shimMCCOMPAT.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)ShimMCCOMPAT.Integrated,
+                };
+                shimRenderingMode.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)ShimRenderingMode.Integrated,
+                };
+                shimRenderingOptions.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)(ShimRenderingOptions.DefaultRenderingMode |
+                    ShimRenderingOptions.IGPUTranscoding)
+                };
+            }
+            else
+            {
+                shimMCCOMPAT.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)ShimMCCOMPAT.Enable,
+                };
+                shimRenderingMode.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)ShimRenderingMode.Enable,
+                };
+                shimRenderingOptions.currentValue = new DRSSettingUnion
+                {
+                    dwordValue = (uint)ShimRenderingOptions.DefaultRenderingMode,
+                };
+            }
+
+            return  new DRSSettingV1[] { shimMCCOMPAT, shimRenderingMode, shimRenderingOptions };
+
+        }
+
+        public static void Run4()
+        {
+            Console.WriteLine("NvApiTest::Run4() BEGIN");
+
+            LibNvApi.Initialize();
+            var chipSetInfo = LibNvApi.GetChipSetInfo<ChipsetInfoV2>();
+
+            Console.WriteLine("chipSetInfo " + chipSetInfo.ToString());
+
+            LibNvApi.Shutdown();
+
+
+            Console.WriteLine("NvApiTest::Run4() END");
+        }
+
+
         public static void Run2()
         {
             Console.WriteLine("NvApiTest::Run2() BEGIN");
 
             LibNvApi.Initialize();
-
+            var chipSetInfo = LibNvApi.GetChipSetInfo<ChipsetInfoV4>();
 
             var session = LibNvApi.CreateDriverSettingSession();
             session.LoadSettings();

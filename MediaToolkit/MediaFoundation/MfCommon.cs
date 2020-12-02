@@ -996,7 +996,7 @@ namespace MediaToolkit.MediaFoundation
                 for(int outputIndex = 0;outputIndex< outputs.Length; outputIndex++)
                 {
                     var _output = outputs[outputIndex];
-
+                    
                     var outputDescr = _output.Description;
                     var bound = outputDescr.DesktopBounds;
                     var rect = new GDI.Rectangle

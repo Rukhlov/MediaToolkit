@@ -1233,139 +1233,6 @@ namespace MediaToolkit.NativeAPIs.Utils
     }
 
 
-	public class PciDeviceInfo
-	{
-		//https://docs.microsoft.com/en-us/windows-hardware/drivers/install/identifiers-for-pci-devices
-		/*
-		 * PCI\\VEN_v(4)&DEV_d(4)&SUBSYS_s(4)n(4)&REV_r(2)
-		   PCI\\VEN_v(4)&DEV_d(4)&SUBSYS_s(4)n(4)
-		   PCI\\VEN_v(4)&DEV_d(4)&REV_r(2)
-		   PCI\\VEN_v(4)&DEV_d(4)
-		   PCI\\VEN_v(4)&DEV_d(4)&CC_c(2)s(2)p(2)
-		   PCI\\VEN_v(4)&DEV_d(4)&CC_c(2)s(2)
-		   Where:
-
-			   v(4) is the four-character PCI SIG-assigned identifier for the vendor of the device, where the term device,
-				   following PCI SIG usage, refers to a specific PCI chip.
-				   As specified in Publishing restrictions, 0000 and FFFF are invalid codes for this identifier.
-
-			   d(4) is the four-character vendor-defined identifier for the device.
-
-			   s(4) is the four-character vendor-defined subsystem identifier.
-
-			   n(4) is the four-character PCI SIG-assigned identifier for the vendor of the subsystem.
-				   As specified in Publishing restrictions, 0000 and FFFF are invalid codes for this identifier.
-			   r(2) is the two-character revision number.
-
-			   c(2) is the two-character base class code from the configuration space.
-
-			   s(2) is the two-character subclass code.
-
-			   p(2) is the Programming Interface code.
-
-		 */
-
-
-		private PciDeviceInfo(string deviceIdString)
-		{
-			this.deviceIdString = deviceIdString;
-		}
-
-		public readonly string deviceIdString = "";
-		public int VendorId { get; private set; }
-		public string Vendor { get; private set; }
-
-		public int DeviceId { get; private set; }
-		public string Device { get; private set; }
-
-		//...
-		public string SubSys { get; private set; }
-		public string Revision { get; private set; }
-		public string ClassCode { get; private set; }
-
-		public static PciDeviceInfo Parse(string deviceIdString)
-		{
-			PciDeviceInfo info = new PciDeviceInfo(deviceIdString);
-
-			string _deviceIdString = deviceIdString.ToLower().Replace(" ", "");
-
-			if (!_deviceIdString.StartsWith("pci\\"))
-			{// invalid string ...
-
-			}
-
-			_deviceIdString = _deviceIdString.Replace("pci\\", "");
-
-			 var strings = _deviceIdString.Split('&');
-
-			foreach (var substring in strings)
-			{
-				if (substring.StartsWith("ven_"))
-				{
-					var vendorStr = substring.Substring(4);
-					if(vendorStr.Length != 4)
-					{// invalid string ...
-					}
-					int vendorId = int.Parse(vendorStr, System.Globalization.NumberStyles.HexNumber);
-					info.VendorId = vendorId;
-					info.Vendor = vendorStr;
-
-				}
-				else if (substring.StartsWith("dev_"))
-				{
-					var deviceStr = substring.Substring(4);
-					if (deviceStr.Length != 4)
-					{// invalid string ...
-					}
-					int deviceId = int.Parse(deviceStr, System.Globalization.NumberStyles.HexNumber);
-					info.DeviceId = deviceId;
-					info.Device = deviceStr;
-				}
-				else if (substring.StartsWith("subsys_"))
-				{
-					info.SubSys = substring.Substring(7);
-				}
-				else if (substring.StartsWith("rev_"))
-				{
-					info.Revision = substring.Substring(4);
-				}
-				else if (substring.StartsWith("cc_"))
-				{
-					info.ClassCode = substring.Substring(3);
-				}
-			}
-
-			return info;
-		}
-
-		public override string ToString()
-		{
-			var str = "pci\\";
-			if (!string.IsNullOrEmpty(Vendor))
-			{
-				str += ("ven_" + Vendor);
-			}
-			if (!string.IsNullOrEmpty(Device))
-			{
-				str += ("&dev_" + Device);
-			}
-			if (!string.IsNullOrEmpty(SubSys))
-			{
-				str += ("&subsys_" + SubSys);
-			}
-			if (!string.IsNullOrEmpty(Revision))
-			{
-				str += ("&rev_" + Revision);
-			}
-			if (!string.IsNullOrEmpty(ClassCode))
-			{
-				str += ("&cc_" + ClassCode);
-			}
-
-			return str.ToUpper();
-		}
-	}
-
 
 	public class DisplayTool
     {
@@ -1507,84 +1374,47 @@ namespace MediaToolkit.NativeAPIs.Utils
             }
 
             return displayInfos;
-
         }
 
-
-		public class DisplayDevice
+        public static Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>> EnumDisplayDevices(bool attached = true)
         {
-            internal DisplayDevice(uint index, DISPLAY_DEVICE dd)
-            {
-                EnumIndex = index;
-                DeviceID = dd.DeviceID;
-                DeviceKey = dd.DeviceKey;
-                DeviceName = dd.DeviceName;
-                DeviceString = dd.DeviceString;
-                StateFlags = dd.StateFlags;
-
-
-            }
-
-            public uint EnumIndex { get; private set; } = 0;
-            public string DeviceName { get; private set; }
-            public string DeviceString { get; private set; }
-            public DisplayDeviceStateFlags StateFlags { get; private set; }
-            public string DeviceID { get; private set; }
-            public string DeviceKey { get; private set; }
-
-            public List<DisplayDevice> Monitors { get; set; } = new List<DisplayDevice>();
-
-            public override string ToString()
-            {
-                return "#" + EnumIndex + " " + string.Join("\r\n", DeviceName, DeviceString, DeviceID, DeviceKey, StateFlags);
-            }
-
-        }
-
-        public static List<DisplayDevice> GetDisplayDevices(bool attached = true)
-        {
-            List<DisplayDevice> displayDevices = new List<DisplayDevice>();
-
-            DISPLAY_DEVICE dd = new DISPLAY_DEVICE
-            {
-                cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
-            };
+            Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>> displayDict = new Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>>();
 
             try
             {
-                uint adapterNum = 0;
-                while (User32.EnumDisplayDevices(null, adapterNum, ref dd, 0))
+				DISPLAY_DEVICE adapter = new DISPLAY_DEVICE
+				{
+					cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+				};
+
+				uint adapterNum = 0;
+                while (User32.EnumDisplayDevices(null, adapterNum, ref adapter, 0))
                 {
                     if (attached)
                     {
-                        if (!dd.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
+                        if (!adapter.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
                         {
                             adapterNum++;
                             continue;
                         }
                     }
-
-
-                    uint monitorNum = 0;
-                    var deviceName = dd.DeviceName;
-                    DisplayDevice adapter = new DisplayDevice(adapterNum, dd);
-  
-                    var monitors = adapter.Monitors;
-
-                    DISPLAY_DEVICE md = new DISPLAY_DEVICE
+      
+                    DISPLAY_DEVICE monitor = new DISPLAY_DEVICE
                     {
                         cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
                     };
 
-                    while (User32.EnumDisplayDevices(deviceName, monitorNum, ref md, 0))
-                    {
-                        DisplayDevice monitor = new DisplayDevice(monitorNum, md);
+					uint monitorNum = 0;
+					var adapterName = adapter.DeviceName;
+					List<DISPLAY_DEVICE> monitors = new List<DISPLAY_DEVICE>();
 
+                    while (User32.EnumDisplayDevices(adapterName, monitorNum, ref monitor, 0))
+                    {
                         monitors.Add(monitor);
                         monitorNum++;
                     }
 
-                    displayDevices.Add(adapter);
+                    displayDict.Add(adapter, monitors);
 
                     adapterNum++;
 
@@ -1595,72 +1425,169 @@ namespace MediaToolkit.NativeAPIs.Utils
                 Console.WriteLine(ex.Message);
             }
 
-            return displayDevices;
+            return displayDict;
         }
 
 
-        public static void DumpDevices()
-        {
-            DISPLAY_DEVICE deviceInfo = new DISPLAY_DEVICE
-            {
-                cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
-            };
 
-            try
-            {
-                uint deviceNum = 0;
-                while (User32.EnumDisplayDevices(null, deviceNum, ref deviceInfo, 0))
-                {
-                    uint monitorNum = 0;
-                    var deviceName = deviceInfo.DeviceName;
+        //public class DisplayDevice
+        //{
+        //    internal DisplayDevice(uint index, DISPLAY_DEVICE dd)
+        //    {
+        //        this.dd = dd;
+        //        this.EnumIndex = index;
+        //        this.DeviceID = dd.DeviceID;
+        //        this.DeviceKey = dd.DeviceKey;
+        //        this.DeviceName = dd.DeviceName;
+        //        this.DeviceString = dd.DeviceString;
+        //        this.StateFlags = dd.StateFlags;
 
-                    if (deviceInfo.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
-                    {
+        //        //this.PciInfo = PciDeviceInfo.Parse(DeviceID);
+        //    }
 
-                        var log = string.Join("\r\n",
-                            deviceInfo.DeviceName,
-                            deviceInfo.DeviceString,
-                            deviceInfo.DeviceKey,
-                            deviceInfo.DeviceID,
-                            deviceInfo.StateFlags);
-
-                        Console.WriteLine(deviceNum + " Adapter: " + log);
-
-                        DISPLAY_DEVICE monitorInfo = new DISPLAY_DEVICE
-                        {
-                            cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
-                        };
-
-                        //Console.WriteLine("");
-                        while (User32.EnumDisplayDevices(deviceName, monitorNum, ref monitorInfo, 0))
-                        {
-                            var monitorLog = string.Join("\r\n ",
-                                monitorInfo.DeviceName,
-                                monitorInfo.DeviceString,
-                                monitorInfo.DeviceKey,
-                                monitorInfo.DeviceID,
-                                monitorInfo.StateFlags);
-
-                            Console.WriteLine(" " + monitorNum + " Monitor: " + monitorLog);
-
-                            monitorNum++;
-                        }
-
-                        Console.WriteLine("--------------------------------------");
-
-                    }
-
-                    deviceNum++;
-
-                }
+        //    private readonly DISPLAY_DEVICE dd ;
+        //    public uint EnumIndex { get; private set; } = 0;
+        //    public string DeviceName { get; private set; }
+        //    public string DeviceString { get; private set; }
+        //    public DisplayDeviceStateFlags StateFlags { get; private set; }
+        //    public string DeviceID { get; private set; }
+        //    public string DeviceKey { get; private set; }
 
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
+        //    //public PciDeviceInfo PciInfo { get; private set; }
+        //    //public int VendorId => PciInfo?.VendorId ?? -1;
+        //    //public int DeviceIdentificator => PciInfo?.DeviceId ?? -1;
+
+
+        //    public List<DisplayDevice> Monitors { get; set; } = new List<DisplayDevice>();
+
+        //    public override string ToString()
+        //    {
+        //        return "#" + EnumIndex + " " + string.Join("\r\n", DeviceName, DeviceString, DeviceID, DeviceKey, StateFlags); //,// (VendorId + "|" + DeviceIdentificator));
+        //    }
+        //}
+
+
+        //public static List<DisplayDevice> _GetDisplayDevices(bool attached = true)
+        //{
+        //    List<DisplayDevice> displayDevices = new List<DisplayDevice>();
+
+        //    DISPLAY_DEVICE dd = new DISPLAY_DEVICE
+        //    {
+        //        cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+        //    };
+
+        //    try
+        //    {
+        //        uint adapterNum = 0;
+        //        while (User32.EnumDisplayDevices(null, adapterNum, ref dd, 0))
+        //        {
+        //            if (attached)
+        //            {
+        //                if (!dd.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
+        //                {
+        //                    adapterNum++;
+        //                    continue;
+        //                }
+        //            }
+
+
+        //            uint monitorNum = 0;
+        //            var deviceName = dd.DeviceName;
+        //            DisplayDevice adapter = new DisplayDevice(adapterNum, dd);
+  
+        //            var monitors = adapter.Monitors;
+
+        //            DISPLAY_DEVICE md = new DISPLAY_DEVICE
+        //            {
+        //                cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+        //            };
+
+        //            while (User32.EnumDisplayDevices(deviceName, monitorNum, ref md, 0))
+        //            {
+        //                DisplayDevice monitor = new DisplayDevice(monitorNum, md);
+
+        //                monitors.Add(monitor);
+        //                monitorNum++;
+        //            }
+
+        //            displayDevices.Add(adapter);
+
+        //            adapterNum++;
+
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //    }
+
+        //    return displayDevices;
+        //}
+
+
+        //public static void DumpDevices()
+        //{
+        //    DISPLAY_DEVICE deviceInfo = new DISPLAY_DEVICE
+        //    {
+        //        cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+        //    };
+
+        //    try
+        //    {
+        //        uint deviceNum = 0;
+        //        while (User32.EnumDisplayDevices(null, deviceNum, ref deviceInfo, 0))
+        //        {
+        //            uint monitorNum = 0;
+        //            var deviceName = deviceInfo.DeviceName;
+
+        //            if (deviceInfo.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
+        //            {
+
+        //                var log = string.Join("\r\n",
+        //                    deviceInfo.DeviceName,
+        //                    deviceInfo.DeviceString,
+        //                    deviceInfo.DeviceKey,
+        //                    deviceInfo.DeviceID,
+        //                    deviceInfo.StateFlags);
+
+        //                Console.WriteLine(deviceNum + " Adapter: " + log);
+
+        //                DISPLAY_DEVICE monitorInfo = new DISPLAY_DEVICE
+        //                {
+        //                    cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+        //                };
+
+        //                //Console.WriteLine("");
+        //                while (User32.EnumDisplayDevices(deviceName, monitorNum, ref monitorInfo, 0))
+        //                {
+        //                    var monitorLog = string.Join("\r\n ",
+        //                        monitorInfo.DeviceName,
+        //                        monitorInfo.DeviceString,
+        //                        monitorInfo.DeviceKey,
+        //                        monitorInfo.DeviceID,
+        //                        monitorInfo.StateFlags);
+
+        //                    Console.WriteLine(" " + monitorNum + " Monitor: " + monitorLog);
+
+        //                    monitorNum++;
+        //                }
+
+        //                Console.WriteLine("--------------------------------------");
+
+        //            }
+
+        //            deviceNum++;
+
+        //        }
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //    }
+        //}
 
 
     }

@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.NativeAPIs.Utils;
+using MediaToolkit.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,13 +35,13 @@ namespace Test.Encoder
 		{
 			Console.WriteLine("GetDisplayInfoTest::Run() BEGIN");
 
-			var displayDevices = DisplayTool.GetDisplayDevices();
-			foreach (var dd in displayDevices)
+			var displayDevices = DisplayTool.EnumDisplayDevices();
+			foreach (var adapter in displayDevices.Keys)
 			{
 				Console.WriteLine("-----------------------------");
-				Console.WriteLine(dd);
+				Console.WriteLine(adapter);
 
-				var pciInfo = PciDeviceInfo.Parse(dd.DeviceID);
+				var pciInfo = PciDeviceInfo.Parse(adapter.DeviceID);
 				Console.WriteLine("VenId " + pciInfo.VendorId + " DevId " + pciInfo.DeviceId);
 
 			}

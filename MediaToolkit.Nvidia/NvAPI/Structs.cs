@@ -19,8 +19,15 @@ namespace MediaToolkit.Nvidia.NvAPI
         internal readonly IntPtr Handle;
     }
 
-	//NV_CHIPSET_INFO_v1
-	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    //NV_CHIPSET_INFO_FLAGS
+    public enum ChipsetInfoFlags : uint
+    {
+        //NV_CHIPSET_INFO_HYBRID
+        Hybrid = 0x00000001, //не работает, как определить гибридный GPU?!?! 
+    }
+
+    //NV_CHIPSET_INFO_v1
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 	public class ChipsetInfoV1
 	{
 		public ChipsetInfoV1()
@@ -28,23 +35,43 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<ChipsetInfoV1>(1);
 		}
 
-		//NvU32 version;        //structure version
-		public uint version;
+        /// <summary>
+        /// structure version
+        /// </summary>
+        public uint version;
 
-		//NvU32 vendorId;       //vendor ID
-		public uint vendorId;
+        /// <summary>
+        /// vendor ID
+        /// </summary>
+        public uint vendorId;
 
-		//NvU32 deviceId;       //device ID
-		public uint deviceId;
+        /// <summary>
+        /// device ID
+        /// </summary>
+        public uint deviceId;
 
-		//NvAPI_ShortString szVendorName;   //vendor Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
+        /// <summary>
+        ///  vendor Name
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string vendorName;
 
-		//NvAPI_ShortString szChipsetName;  //device Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
+        /// <summary>
+        /// device Name
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string chipsetName;
-	}
+
+
+        public override string ToString()
+        {
+            return "version: " + version + "\r\n" +
+                   "vendorId: " + vendorId + "\r\n" +
+                   "deviceId: " + deviceId + "\r\n" +
+                   "vendorName: " + vendorName + "\r\n" +
+                   "chipsetName: " + chipsetName + "\r\n";
+        }
+    }
 
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 	public class ChipsetInfoV2: ChipsetInfoV1
@@ -53,9 +80,18 @@ namespace MediaToolkit.Nvidia.NvAPI
 		{
 			version = NvApi.MakeVersion<ChipsetInfoV2>(2);
 		}
-		//NvU32 flags;	//!< Chipset info flags
-		public uint flags;
-	}
+
+        /// <summary>
+        /// Chipset info flags - obsolete
+        /// </summary>
+        public uint flags;
+
+        public override string ToString()
+        {
+            return base.ToString() + 
+                "flags: " + flags + "\r\n";
+        }
+    }
 
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 	public class ChipsetInfoV3 : ChipsetInfoV2
@@ -65,16 +101,30 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<ChipsetInfoV3> (3);
 		}
 
-		//NvU32 subSysVendorId;     //!< subsystem vendor ID
-		uint subSysVendorId;
+        /// <summary>
+        /// subsystem vendor ID
+        /// </summary>
+        public uint subSysVendorId;
 
-		//NvU32 subSysDeviceId;     //!< subsystem device ID
-		uint subSysDeviceId;
+        /// <summary>
+        ///  subsystem device ID
+        /// </summary>
+        public uint subSysDeviceId;
 
-		//NvAPI_ShortString szSubSysVendorName; //!< subsystem vendor Name
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
+        /// <summary>
+        /// subsystem vendor Name
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = (int)NvApi.ShortStringMax)]
 		public string subSysVendorName;
-	}
+
+        public override string ToString()
+        {
+            return base.ToString() +
+                "subSysVendorId: " + subSysVendorId + "\r\n" +
+                "subSysDeviceId: " + subSysDeviceId + "\r\n" +
+                "subSysVendorName: " + subSysVendorName + "\r\n";
+        }
+    }
 
 	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
 	public class ChipsetInfoV4 : ChipsetInfoV3
@@ -84,18 +134,36 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<ChipsetInfoV4>(4);
 		}
 
-		//NvU32 HBvendorId;         //!< Host bridge vendor identification
-		uint HBvendorId;
+        /// <summary>
+        /// Host bridge vendor identification
+        /// </summary>
+        public uint HBvendorId;
 
-		//NvU32 HBdeviceId;         //!< Host bridge device identification
-		uint HBdeviceId;
+        /// <summary>
+        /// Host bridge device identification
+        /// </summary>
+        public uint HBdeviceId;
 
-		//NvU32 HBsubSysVendorId;   //!< Host bridge subsystem vendor identification
-		uint HBsubSysVendorId;
+        /// <summary>
+        /// Host bridge subsystem vendor identification
+        /// </summary>
+        public uint HBsubSysVendorId;
 
-		//NvU32 HBsubSysDeviceId;   //!< Host bridge subsystem device identification
-		uint HBsubSysDeviceId;
-	}
+        /// <summary>
+        /// Host bridge subsystem device identification
+        /// </summary>
+        public uint HBsubSysDeviceId;
+
+        public override string ToString()
+        {
+            return base.ToString() +
+                   "HBvendorId: " + HBvendorId + "\r\n" +
+                   "HBdeviceId: " + HBdeviceId + "\r\n" +
+                   "HBsubSysVendorId: " + HBsubSysVendorId + "\r\n" +
+                   "HBsubSysDeviceId: " + HBsubSysDeviceId + "\r\n";
+        }
+
+    }
 
 
 	//NVDRS_APPLICATION_V1
@@ -107,22 +175,32 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV1>(1);
 		}
 
-		//Structure Version
-		public uint version;
+        /// <summary>
+        /// Structure Version
+        /// </summary>
+        public uint version;
 
-		//Is the application userdefined/predefined
-		public uint isPredefined;
+        /// <summary>
+        /// Is the application userdefined/predefined
+        /// </summary>
+        public uint isPredefined;
 
-		// String name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+        /// <summary>
+        ///  String name of the Application
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string appName;
 
-		//serFriendly name of the Application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+        /// <summary>
+        /// UserFriendly name of the Application
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string userFriendlyName;
 
-		//Indicates the name(if any) of the launcher that starts the application
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+        /// <summary>
+        /// Indicates the name(if any) of the launcher that starts the application
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string launcher;
 	}
 
@@ -135,9 +213,11 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV2>(2);
 		}
 
-        //Select this application only if this file is found.
-        // When specifying multiple files, separate them using the ':' character.
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
+        /// <summary>
+        ///Select this application only if this file is found.
+        /// When specifying multiple files, separate them using the ':' character.
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string fileInFolder;
 	}
 
@@ -150,8 +230,9 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV3>(3);
 		}
 
-        //-----------------------------------------
-        // не реализовано т.к нигде не используется...
+        /// <summary>
+        ///  не реализовано т.к нигде не используется...
+        /// </summary>
         public uint bitvector;
         //NvU32 isMetro:1;//!< Windows 8 style app
         //public uint isMetro
@@ -181,8 +262,11 @@ namespace MediaToolkit.Nvidia.NvAPI
 			version = NvApi.MakeVersion<DRSApplicationV4>(4);
 		}
 
-        //If isCommandLine is set to 0 this must be an empty.
-        //If isCommandLine is set to 1 this contains application's command line as if it was returned by GetCommandLineW.
+        /// <summary>
+        /// If isCommandLine is set to 0 this must be an empty.
+        /// If isCommandLine is set to 1 this contains application's command line as if it was returned by GetCommandLineW.
+        /// </summary>
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
 		public string commandLine;
 	}
@@ -198,11 +282,16 @@ namespace MediaToolkit.Nvidia.NvAPI
 
         public uint version;
 
-        //NvAPI_UnicodeString profileName; String name of the Profile
+        /// <summary>
+        /// NvAPI_UnicodeString profileName; String name of the Profile
+        /// </summary>
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = NvApi.UnicodeStringMax)]
         public string profileName;
 
-        //NVDRS_GPU_SUPPORT gpuSupport; //!< This read-only flag indicates the profile support on either Quadro, or Geforce, or both.
+        /// <summary>
+        /// This read-only flag indicates the profile support on either Quadro, or Geforce, or both.
+        /// NVDRS_GPU_SUPPORT gpuSupport;
+        /// </summary>
         public DRSGPUSupport gpuSupport;
 
         //NvU32 isPredefined; //!< Is the Profile user-defined, or predefined
@@ -275,7 +364,7 @@ namespace MediaToolkit.Nvidia.NvAPI
         };
      */
 
-    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode, Size = (NvApi.BinaryDataMax + 4))]
+    [StructLayout(LayoutKind.Sequential, Pack = 8, CharSet = CharSet.Unicode, Size = (NvApi.BinaryDataMax + 4))] //BinaryDataMax + sizeof(Uint32)
     public struct DRSSettingUnion
     {
         public const int size = (NvApi.BinaryDataMax + 4);

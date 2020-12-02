@@ -9,7 +9,6 @@ namespace MediaToolkit.Nvidia
 {
     public class LibNvApi
     {
-        private static bool _isInitialized = false;
 
         public static bool Initialize()
         {
@@ -19,22 +18,23 @@ namespace MediaToolkit.Nvidia
             }
 
             var status = NvApi.Initialize();
-
             CheckStatus(status, "Initialize");
+
+            status = NvApi.SYS.GetDriverAndBranchVersion(out var driverVersion, out var buildString);
+            CheckStatus(status, "GetDriverAndBranchVersion");
+
+            DriverVersion = driverVersion;
+            BuildString = buildString;
 
             _isInitialized = (status == NvApiStatus.Ok);
 
             return true;
         }
 
-        public static NvDriverSettingSession CreateDriverSettingSession()
-        {
-            var status = NvApi.DRS.CreateSession(out var pSession);
+        private static bool _isInitialized = false;
 
-            CheckStatus(status, "CreateSession");
-
-            return new NvDriverSettingSession(pSession);
-        }
+        public static uint DriverVersion { get; private set; }
+        public static string BuildString { get; private set; }
 
         public static bool Shutdown()
         {
@@ -47,8 +47,32 @@ namespace MediaToolkit.Nvidia
 
             CheckStatus(status, "Unload");
 
+            _isInitialized = false;
+            DriverVersion = 0;
+            BuildString = "";
+
             return true;
         }
+
+        public static T GetChipSetInfo<T>() where T : ChipsetInfoV1, new()
+        {
+            T info = new T();
+            var status = NvApi.SYS.GetChipSetInfo(ref info);
+            CheckStatus(status, "GetChipSetInfo");
+
+            return info;
+        }
+
+
+        public static NvDriverSettingSession CreateDriverSettingSession()
+        {
+            var status = NvApi.DRS.CreateSession(out var pSession);
+
+            CheckStatus(status, "CreateSession");
+
+            return new NvDriverSettingSession(pSession);
+        }
+
 
         public static void CheckStatus(NvApiStatus status, string callerName = "")
         {
@@ -219,6 +243,18 @@ namespace MediaToolkit.Nvidia
         {
             var status = NvApi.DRS.SetSetting(sessionHandle, profileHandle, ref setting);
             LibNvApi.CheckStatus(status, "SetSetting");
+        }
+
+        public void SetSettings(DRSSettingV1[] settings)
+        {
+            foreach(var setting in settings)
+            {
+                var _setting = setting;
+                var status = NvApi.DRS.SetSetting(sessionHandle, profileHandle, ref _setting);
+
+                LibNvApi.CheckStatus(status, "SetSetting");
+            }
+
         }
 
         public DRSSettingV1 GetSetting(uint settingId)

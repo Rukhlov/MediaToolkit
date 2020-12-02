@@ -136,7 +136,8 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Utils\PciDeviceInfo.cs" />
+    <Compile Include="Utils\Utils.cs" />
     <Compile Include="MediaStreamers\VideoStreamer.cs" />
   </ItemGroup>
   <ItemGroup>

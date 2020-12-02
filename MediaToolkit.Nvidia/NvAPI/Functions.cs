@@ -82,8 +82,27 @@ namespace MediaToolkit.Nvidia.NvAPI
 
 
 
-
-	[FunctionId(FunctionId.NvAPI_SYS_GetDriverAndBranchVersion)]
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // FUNCTION NAME: NvAPI_SYS_GetDriverAndBranchVersion
+    //
+    //!   DESCRIPTION: This API returns display driver version and driver-branch string.
+    //!
+    //! SUPPORTED OS:  Windows 7 and higher
+    //!
+    //! 
+    //! \param [out]  pDriverVersion         Contains the driver version after successful return.
+    //! \param [out]  szBuildBranchString    Contains the driver-branch string after successful return.
+    //!
+    //! \retval ::NVAPI_INVALID_ARGUMENT: either pDriverVersion is NULL or enum index too big
+    //! \retval ::NVAPI_OK - completed request
+    //! \retval ::NVAPI_API_NOT_INTIALIZED - NVAPI not initialized
+    //! \retval ::NVAPI_ERROR - miscellaneous error occurred
+    //! 
+    //! \ingroup driverapi
+    ///////////////////////////////////////////////////////////////////////////////
+    //NVAPI_INTERFACE NvAPI_SYS_GetDriverAndBranchVersion(NvU32* pDriverVersion, NvAPI_ShortString szBuildBranchString);
+    [FunctionId(FunctionId.NvAPI_SYS_GetDriverAndBranchVersion)]
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	internal delegate NvApiStatus NvAPI_SYS_GetDriverAndBranchVersion(out uint driverVersion,
 		[Out, MarshalAs(UnmanagedType.LPStr, SizeConst = NvApi.ShortStringMax)] StringBuilder buildBranchString);
