@@ -674,7 +674,7 @@ namespace ScreenStreamer.WinForms.App
 					gdiDisplayInfo =  displayInfos[deviceName];
 				}
 
-				var friendlyName = gdiDisplayInfo?.GdiDeviceName ?? "";
+				var friendlyName = gdiDisplayInfo?.FriendlyName ?? "";
 
 				//var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
 
@@ -684,7 +684,7 @@ namespace ScreenStreamer.WinForms.App
                 {
                     CaptureRegion = bounds,
                     DisplayRegion = bounds,
-                    Name = screen.DeviceName,
+                    Name = deviceName,
 
                     Resolution = bounds.Size,
                     Properties = captureProperties,

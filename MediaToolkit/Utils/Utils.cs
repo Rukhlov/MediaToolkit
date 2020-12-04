@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 
+
 namespace MediaToolkit.Utils
 {
 
@@ -27,11 +28,32 @@ namespace MediaToolkit.Utils
         private static System.Security.Cryptography.RNGCryptoServiceProvider provider =
             new System.Security.Cryptography.RNGCryptoServiceProvider();
 
+
         public static uint GetRandomNumber()
         {
-            byte[] bytes = new byte[sizeof(UInt32)];
+            byte[] bytes = new byte[sizeof(uint)];
             provider.GetNonZeroBytes(bytes);
             return BitConverter.ToUInt32(bytes, 0);
+        }
+
+        public static T GetRandom<T>() where T : struct, IComparable, IFormattable, IConvertible
+        {
+            var type = typeof(T);
+            int size = Marshal.SizeOf(type);
+            int offset = 0;
+            byte[] bytes = new byte[size];
+            provider.GetNonZeroBytes(bytes);
+
+            if (type == typeof(sbyte)) return (T)(object)((sbyte)bytes[offset]);
+            if (type == typeof(byte)) return (T)(object)bytes[offset];
+            if (type == typeof(short)) return (T)(object)BitConverter.ToInt16(bytes, offset);
+            if (type == typeof(ushort)) return (T)(object)BitConverter.ToUInt16(bytes, offset);
+            if (type == typeof(int)) return (T)(object)BitConverter.ToInt32(bytes, offset);
+            if (type == typeof(uint)) return (T)(object)BitConverter.ToUInt32(bytes, offset);
+            if (type == typeof(long)) return (T)(object)BitConverter.ToInt64(bytes, offset);
+            if (type == typeof(ulong)) return (T)(object)BitConverter.ToUInt64(bytes, offset);
+
+            throw new NotImplementedException();
         }
     }
 
@@ -206,36 +228,6 @@ namespace MediaToolkit.Utils
         }
     }
 
-    public class RegistryTool
-    {
-       
-        public static void SetUserGpuPreferences(string fileName, int UserGpuPreferences)
-        {
-            //Windows 10 Build 1809 and higher
-            //Starting with Windows 10 build 19564, Microsoft updated the Graphics settings page (Settings > System > Display > Graphics settings),
-            //allowing for better control over designating which GPU your apps run on.
-
-            //х.з где это документировано найдено на форуме
-            //https://social.msdn.microsoft.com/Forums/office/en-US/faaa3a92-ed9a-4878-82b9-a43e175cc6e4/graphics-performance-preference
-            /*
-             * HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences
-                Power savings:
-                [application full path with \\ as path separators] = "GpuPreference=1;"
-                Maximum performance:
-                [application full path with \\ as path separators] = "GpuPreference=2;"
-            */
-            var name = @"Software\Microsoft\DirectX\UserGpuPreferences";
-            using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(name, true))
-            {
-                if (key != null)
-                {// if supported, use Windows 10 graphics performance settings
-                    var value = "GpuPreference=" + UserGpuPreferences + ";";
-                    key.SetValue(fileName, value);
-
-                }
-            }
-        }
-    }
 
     public class WcfDiscoveryAddressCustomEndpointBehavior : IEndpointBehavior, IDispatchMessageInspector
     {

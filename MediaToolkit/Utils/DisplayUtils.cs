@@ -1,4 +1,5 @@
-﻿using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.Core;
+using MediaToolkit.NativeAPIs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,7 +24,10 @@ namespace MediaToolkit.Utils
 		public Rectangle Bounds { get; set; }
 
 		public uint PixelFormat { get; set; }
+		public uint Rotation { get; set; }
+		public uint Scaling { get; set; }
 
+		public MediaRatio RefreshRate { get; set; }
 	}
 
 
@@ -116,7 +120,36 @@ namespace MediaToolkit.Utils
 
 		}
 
-		public static List<DisplayDevice> GetDxDisplayDevices(bool attached = true)
+
+        public static void SetUserGpuPreferences(string fileName, int UserGpuPreferences)
+        {
+            //Windows 10 Build 1809 and higher
+            //Starting with Windows 10 build 19564, Microsoft updated the Graphics settings page (Settings > System > Display > Graphics settings),
+            //allowing for better control over designating which GPU your apps run on.
+
+            //х.з где это документировано найдено на форуме
+            //https://social.msdn.microsoft.com/Forums/office/en-US/faaa3a92-ed9a-4878-82b9-a43e175cc6e4/graphics-performance-preference
+            /*
+             * HKEY_CURRENT_USER\SOFTWARE\Microsoft\DirectX\UserGpuPreferences
+                Power savings:
+                [application full path with \\ as path separators] = "GpuPreference=1;"
+                Maximum performance:
+                [application full path with \\ as path separators] = "GpuPreference=2;"
+            */
+            var name = @"Software\Microsoft\DirectX\UserGpuPreferences";
+            using (Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(name, true))
+            {
+                if (key != null)
+                {// if supported, use Windows 10 graphics performance settings
+                    var value = "GpuPreference=" + UserGpuPreferences + ";";
+                    key.SetValue(fileName, value);
+
+                }
+            }
+        }
+
+
+        public static List<DisplayDevice> GetDxDisplayDevices(bool attached = true)
 		{
 			List<DisplayDevice> displayDevices = new List<DisplayDevice>();
 
@@ -238,11 +271,31 @@ namespace MediaToolkit.Utils
 				throw new Win32Exception(result);
 			}
 
-			for (int i = 0; i < modeCount; i += 2)
+
+			Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO> sourceInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO>();
+			Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO> targetInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO>();
+
+			for (int i = 0; i < pathCount; i++)
+			{
+				var pathInfo = displayPaths[i];
+				
+				var sourceInfo = pathInfo.sourceInfo;
+				var srcModeIdx = sourceInfo.modeInfoIdx;
+				sourceInfos[srcModeIdx] = sourceInfo;
+
+				var targetInfo = pathInfo.targetInfo;
+				var targetModeIdx = targetInfo.modeInfoIdx;
+				targetInfos[targetModeIdx] = targetInfo;
+			}
+
+		    for (uint i = 0; i < modeCount; i += 2)
 			{
 				var targetDisplayMode = displayModes[i];
 				var sourceDisplayMode = displayModes[i + 1];
 
+				var targetPathInfo = targetInfos[i];
+				var sourcePathInfo = sourceInfos[i + 1];
+				
 				if (targetDisplayMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
 				{
 					var monitorInfo = GetDisplayConfigTargetDeviceName(targetDisplayMode.adapterId, targetDisplayMode.id);
@@ -254,6 +307,7 @@ namespace MediaToolkit.Utils
 					var pos = sourceMode.position;
 					int width = (int)sourceMode.width;
 					int height = (int)sourceMode.height;
+					var refreshRate = targetPathInfo.refreshRate;
 
 					var di = new DisplayInfo
 					{
@@ -264,7 +318,10 @@ namespace MediaToolkit.Utils
 						AdapterDevicePath = adapterInfo.adapterDevicePath,
 						Bounds = new Rectangle(pos.x, pos.y, width, height),
 						PixelFormat = (uint)sourceMode.pixelFormat,
-						
+						Rotation = (uint)targetPathInfo.rotation,
+						Scaling = (uint)targetPathInfo.scaling,
+						RefreshRate = new MediaRatio((int)refreshRate.Numerator, (int)refreshRate.Denominator),
+
 					};
 
 					displayInfos.Add(di);

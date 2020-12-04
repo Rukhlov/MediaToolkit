@@ -1226,11 +1226,11 @@ namespace MediaToolkit.NativeAPIs
         public LUID adapterId;
         public uint id;
         public uint modeInfoIdx;
-        private DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
-        private DISPLAYCONFIG_ROTATION rotation;
-        private DISPLAYCONFIG_SCALING scaling;
-        private DISPLAYCONFIG_RATIONAL refreshRate;
-        private DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+		public DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY outputTechnology;
+		public DISPLAYCONFIG_ROTATION rotation;
+		public DISPLAYCONFIG_SCALING scaling;
+		public DISPLAYCONFIG_RATIONAL refreshRate;
+		public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
         public bool targetAvailable;
         public uint statusFlags;
     }
