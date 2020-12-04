@@ -1377,8 +1377,11 @@ namespace MediaToolkit.NativeAPIs
         Disconnect = 0x2000000
     }
 
+    /// <summary>
+    /// DISPLAY_DEVICE
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct DISPLAY_DEVICE
+    public struct DisplayDevice
     {
         /// <summary>
         /// Size, in bytes, of the DISPLAY_DEVICE structure. 

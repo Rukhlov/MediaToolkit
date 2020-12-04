@@ -31,7 +31,7 @@ namespace ScreenStreamer.Wpf.Helpers
     {
         public static D3DFeatureLevel GetDefaultAdapterFeatureLevel()
         {    
-           return (D3DFeatureLevel)MediaToolkit.MediaFoundation.DxTool.GetDefaultAdapterFeatureLevel();        
+           return (D3DFeatureLevel)MediaToolkit.DirectX.DxTool.GetDefaultAdapterFeatureLevel();        
         }
 
         public static readonly List<ScreenCaptureItem> SupportedCaptures = new List<ScreenCaptureItem>
@@ -100,23 +100,41 @@ namespace ScreenStreamer.Wpf.Helpers
             {
                 videoSourceItems = new List<VideoSourceItem>();
 
-				var displayInfos = DisplayUtil.GetDisplayInfos().ToDictionary(d => d.GdiDeviceName);
+                var displayDeviceInfos = DisplayUtil.GetDisplayDeviceInfos();
+
+                var displayConfigInfos = DisplayUtil.GetDisplayConfigInfos().ToDictionary(d => d.GdiDeviceName);
 
 				int monitorIndex = 1;
                 foreach (var screen in Screen.AllScreens)
                 {
 					var deviceName = screen.DeviceName;
-					DisplayInfo gdiDisplayInfo = null;
-					if (displayInfos.ContainsKey(deviceName))
+					DisplayConfigInfo gdiDisplayInfo = null;
+					if (displayConfigInfos.ContainsKey(deviceName))
 					{
-						gdiDisplayInfo = displayInfos[deviceName];
+						gdiDisplayInfo = displayConfigInfos[deviceName];
 					}
 
+                    MediaToolkit.NativeAPIs.DisplayDevice displayDevice = default(MediaToolkit.NativeAPIs.DisplayDevice);
+                    if (displayDeviceInfos.ContainsKey(deviceName))
+                    {
+                        displayDevice = displayDeviceInfos[deviceName];
+                    }
+
+                    var adapterName = displayDevice.DeviceString;
 					var friendlyName = gdiDisplayInfo?.FriendlyName ?? "";
 
-					//var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+                    string refreshRateStr = "";
+                    string formatStr = "";
+                    if (gdiDisplayInfo != null)
+                    {
+                        var refreshRate = gdiDisplayInfo.RefreshRate;
+                        double _refreshRate = ((double)refreshRate.Num / refreshRate.Den);
+                        refreshRateStr = System.Math.Round(_refreshRate).ToString() + "Hz";
 
-					var bounds = screen.Bounds;
+                        formatStr = (gdiDisplayInfo.PixelFormat * 8).ToString() + "bit";
+                    }
+
+                    var bounds = screen.Bounds;
 
                     ScreenCaptureDevice device = new ScreenCaptureDevice
                     {
@@ -129,11 +147,21 @@ namespace ScreenStreamer.Wpf.Helpers
                         DeviceId = deviceName,
 
                     };
-
+                    
                     var monitorDescr = bounds.Width + "x" + bounds.Height;
                     if (!string.IsNullOrEmpty(friendlyName))
                     {
                         monitorDescr = friendlyName + " " + monitorDescr;
+                    }
+
+                    if (!string.IsNullOrEmpty(formatStr))
+                    {
+                        monitorDescr += " " + formatStr;
+                    }
+
+                    if (!string.IsNullOrEmpty(refreshRateStr))
+                    {
+                        monitorDescr += " " + refreshRateStr;
                     }
 
                     var monitorName = "Display " + monitorIndex + " (" + monitorDescr + ")";

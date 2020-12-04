@@ -2,6 +2,7 @@
 using MediaToolkit.Core;
 using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.UI;
+using MediaToolkit.Utils;
 using NLog;
 using ScreenStreamer.Common;
 using ScreenStreamer.WinForms.App;

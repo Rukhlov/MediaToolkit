@@ -195,7 +195,7 @@ namespace MediaToolkit.ScreenCaptures
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
-                logger.Info(MediaToolkit.MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
+                logger.Info(MediaToolkit.DirectX.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
                 //PrimaryAdapterIndex = 0;
                 // первым идет адаптер с которому подключен primary монитор
@@ -626,7 +626,7 @@ namespace MediaToolkit.ScreenCaptures
                 if (lockTaken)
                 {
                     var bmp = videoBuffer.bitmap;
-                    MediaFoundation.DxTool.TextureToBitmap(texture, ref bmp);
+                    DirectX.DxTool.TextureToBitmap(texture, ref bmp);
                     Result = ErrorCode.Ok;
                 }
                 else

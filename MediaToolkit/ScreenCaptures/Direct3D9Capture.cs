@@ -14,7 +14,6 @@ using MediaToolkit.SharedTypes;
 namespace MediaToolkit.ScreenCaptures
 {
 
-
     /// <summary>
     /// с включенной композитной отрисовкой работает лучше чем GDI
     /// </summary>

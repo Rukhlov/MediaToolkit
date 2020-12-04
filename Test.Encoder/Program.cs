@@ -39,7 +39,7 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-			var displayInfos = DisplayUtil.GetDisplayInfos();
+			var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
 			var adapterMode =  DisplayManager.CheckDisplayAdapterMode();
             Console.WriteLine("adapterMode " + adapterMode);

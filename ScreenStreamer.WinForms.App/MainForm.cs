@@ -660,7 +660,7 @@ namespace ScreenStreamer.WinForms.App
 
             var captureProperties = Config.Data.ScreenCaptureProperties;
 
-			var displayInfos =  DisplayUtil.GetDisplayInfos()
+			var displayInfos =  DisplayUtil.GetDisplayConfigInfos()
 				.ToDictionary(d => d.GdiDeviceName);		
 
 			int monitorIndex = 1;
@@ -668,7 +668,7 @@ namespace ScreenStreamer.WinForms.App
             {
 				var deviceName = screen.DeviceName;
 	
-				DisplayInfo gdiDisplayInfo = null;
+				DisplayConfigInfo gdiDisplayInfo = null;
 				if (displayInfos.ContainsKey(deviceName))
 				{
 					gdiDisplayInfo =  displayInfos[deviceName];

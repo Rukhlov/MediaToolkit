@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MediaToolkit.Core;
+using MediaToolkit.DirectX;
 using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 

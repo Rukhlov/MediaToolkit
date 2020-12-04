@@ -164,24 +164,13 @@ namespace MediaToolkit.NativeAPIs.MF.ReadWrite
     public interface IMFSourceReaderCallback
     {
         [PreserveSig]
-        HResult OnReadSample(
-            HResult hrStatus,
-            int dwStreamIndex,
-            MF_SOURCE_READER_FLAG dwStreamFlags,
-            long llTimestamp,
-            IMFSample pSample
-        );
+        HResult OnReadSample(HResult hrStatus, int dwStreamIndex, MF_SOURCE_READER_FLAG dwStreamFlags,long llTimestamp, IMFSample pSample);
 
         [PreserveSig]
-        HResult OnFlush(
-            int dwStreamIndex
-        );
+        HResult OnFlush(int dwStreamIndex);
 
         [PreserveSig]
-        HResult OnEvent(
-            int dwStreamIndex,
-            IMFMediaEvent pEvent
-        );
+        HResult OnEvent(int dwStreamIndex, IMFMediaEvent pEvent);
     }
 
     public enum MF_SOURCE_READER_CONTROL_FLAG

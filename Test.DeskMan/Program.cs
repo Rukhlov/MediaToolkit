@@ -2,6 +2,7 @@
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.NativeAPIs.Utils;
 using MediaToolkit.ScreenCaptures;
+using MediaToolkit.Utils;
 using Microsoft.Win32;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;

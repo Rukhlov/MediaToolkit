@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Utils
 {
 
-	public class DisplayInfo
+	public class DisplayConfigInfo
 	{
 		public string FriendlyName { get; set; }
 		public string Path { get; set; }
@@ -31,7 +31,7 @@ namespace MediaToolkit.Utils
 	}
 
 
-	public class DisplayDevice
+	public class DisplayDeviceInfo
 	{
 		public int EnumIndex { get; set; } = -1;
 		public string DeviceName { get; set; } = "";
@@ -65,7 +65,7 @@ namespace MediaToolkit.Utils
 		{
 			GraphicsMode adapterMode = GraphicsMode.Default;
 
-			var gdiDevices = GetGdiDisplayDevices();
+			var gdiDevices = GetGdiDisplayDeviceInfos();
 			var gdiDeivce0 = gdiDevices.FirstOrDefault();
 			if (gdiDeivce0 == null)
 			{
@@ -94,9 +94,10 @@ namespace MediaToolkit.Utils
 					// проверяем NvOptimus, AMDSwitchableGraphics,...
 					// сравниваем DeviceId полученные от GDI и DirectX для одного монитора
 					// в гибридном режиме GDI определяет что монитры подключены к интегрированной карте(iGPU), а DirectX - к дискретной (dGPU)
-					// непонятно насколько это правильно
-					// но это единственный найденый способ проверки (в nvapi есть флаг NV_CHIPSET_INFO_HYBRID, но он obsolete и не работает)
-					// TODO: в dxdiag.exe dGPU определяется как Render-Only Device, а iGPU -> FullDevice т.е где то в винде это можно найти...
+					// непонятно насколько это правильно, но это единственный найденый способ проверки
+					// (в nvapi есть флаг NV_CHIPSET_INFO_HYBRID, но он obsolete и не работает)
+					// TODO: Win10 dxdiag.exe dGPU определяется как Render-Only Device, 
+					// а iGPU -> FullDevice т.е где то в винде это можно найти...
 
 
 					return GraphicsMode.Hybrid;
@@ -149,9 +150,9 @@ namespace MediaToolkit.Utils
         }
 
 
-        public static List<DisplayDevice> GetDxDisplayDevices(bool attached = true)
+        public static List<DisplayDeviceInfo> GetDxDisplayDevices(bool attached = true)
 		{
-			List<DisplayDevice> displayDevices = new List<DisplayDevice>();
+			List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
 
 
 			using (var dxgiFactory = new SharpDX.DXGI.Factory1())
@@ -179,7 +180,7 @@ namespace MediaToolkit.Utils
 						}
 
 						var flags = adaptDescr.Flags;
-						DisplayDevice displayDevice = new DisplayDevice
+						DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
 						{
 							EnumIndex = adapterIndex,
 							DeviceName = outputDescr.DeviceName,
@@ -215,9 +216,9 @@ namespace MediaToolkit.Utils
 			return displayDevices;
 		}
 
-		public static List<DisplayDevice> GetGdiDisplayDevices(bool attached = true)
+		public static List<DisplayDeviceInfo> GetGdiDisplayDeviceInfos(bool attached = true)
 		{
-			List<DisplayDevice> displayDevices = new List<DisplayDevice>();
+			List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
 
 			var gdiDisplayDevices = DisplayUtil.EnumDisplayDevices();
 			int _adapterNum = 0;
@@ -227,7 +228,7 @@ namespace MediaToolkit.Utils
 				var pciInfo = PciDeviceInfo.Parse(adapter.DeviceID);
 
 				var stateFlags = adapter.StateFlags;
-				DisplayDevice displayDevice = new DisplayDevice
+				DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
 				{
 					EnumIndex = _adapterNum,
 					DeviceName = deviceName,
@@ -248,9 +249,9 @@ namespace MediaToolkit.Utils
 		}
 
 
-		public static List<DisplayInfo> GetDisplayInfos()
+		public static List<DisplayConfigInfo> GetDisplayConfigInfos()
 		{
-			List<DisplayInfo> displayInfos = new List<DisplayInfo>();
+			List<DisplayConfigInfo> displayInfos = new List<DisplayConfigInfo>();
 
 			uint pathCount, modeCount;
 			var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
@@ -309,7 +310,7 @@ namespace MediaToolkit.Utils
 					int height = (int)sourceMode.height;
 					var refreshRate = targetPathInfo.refreshRate;
 
-					var di = new DisplayInfo
+					var di = new DisplayConfigInfo
 					{
 						FriendlyName = monitorInfo.monitorFriendlyDeviceName,
 						Path = monitorInfo.monitorDevicePath,
@@ -399,17 +400,21 @@ namespace MediaToolkit.Utils
 			return adapterName;
 		}
 
+        public static Dictionary<string, DisplayDevice> GetDisplayDeviceInfos(bool attached = true)
+        {
+            return EnumDisplayDevices().Keys.ToDictionary(d => d.DeviceName); 
+        }
 
 
-		public static Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>> EnumDisplayDevices(bool attached = true)
+        public static Dictionary<DisplayDevice, IEnumerable<DisplayDevice>> EnumDisplayDevices(bool attached = true)
 		{
-			Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>> displayDict = new Dictionary<DISPLAY_DEVICE, IEnumerable<DISPLAY_DEVICE>>();
+			Dictionary<DisplayDevice, IEnumerable<DisplayDevice>> displayDict = new Dictionary<DisplayDevice, IEnumerable<DisplayDevice>>();
 
 			try
 			{
-				DISPLAY_DEVICE adapter = new DISPLAY_DEVICE
+				DisplayDevice adapter = new DisplayDevice
 				{
-					cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+					cb = Marshal.SizeOf(typeof(DisplayDevice)),
 				};
 
 				uint adapterNum = 0;
@@ -424,14 +429,14 @@ namespace MediaToolkit.Utils
 						}
 					}
 
-					DISPLAY_DEVICE monitor = new DISPLAY_DEVICE
+					DisplayDevice monitor = new DisplayDevice
 					{
-						cb = Marshal.SizeOf(typeof(DISPLAY_DEVICE)),
+						cb = Marshal.SizeOf(typeof(DisplayDevice)),
 					};
 
 					uint monitorNum = 0;
 					var adapterName = adapter.DeviceName;
-					List<DISPLAY_DEVICE> monitors = new List<DISPLAY_DEVICE>();
+					List<DisplayDevice> monitors = new List<DisplayDevice>();
 
 					while (User32.EnumDisplayDevices(adapterName, monitorNum, ref monitor, 0))
 					{
