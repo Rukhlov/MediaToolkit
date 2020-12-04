@@ -287,7 +287,7 @@ namespace MediaToolkit
 
                             logger.Warn("screenCapture.UpdateBuffer(...) == ERROR_ACCESS_DENIED try SwitchToInputDesktop()");
 
-                            NativeAPIs.Utils.DesktopManager.SwitchToInputDesktop();
+                            Utils.DesktopManager.SwitchToInputDesktop();
 
                         }
                         else

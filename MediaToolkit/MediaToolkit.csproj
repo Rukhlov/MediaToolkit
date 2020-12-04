@@ -136,13 +136,17 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
+    <Compile Include="Utils\DesktopTools.cs" />
     <Compile Include="Utils\DisplayUtils.cs" />
     <Compile Include="Utils\MediaTimer.cs" />
     <Compile Include="Utils\NotifyWindow.cs" />
     <Compile Include="Utils\PciDeviceInfo.cs" />
+    <Compile Include="Utils\ProcessTool.cs" />
+    <Compile Include="Utils\ShortcutUtil.cs" />
     <Compile Include="Utils\StatCounter.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="MediaStreamers\VideoStreamer.cs" />
+    <Compile Include="Utils\WindowHook.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

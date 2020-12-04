@@ -65,7 +65,7 @@ namespace ScreenStreamer.Common
                 var commandLine = "-norestart";
 
 
-                pid = MediaToolkit.NativeAPIs.Utils.ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
+                pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
 
                 if (pid > 0)
                 {

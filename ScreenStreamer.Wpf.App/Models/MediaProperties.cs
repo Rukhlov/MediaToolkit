@@ -283,7 +283,7 @@ namespace ScreenStreamer.Wpf.Models
 
             string _args = "-autostream";
 
-            ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
+			MediaToolkit.Utils.ShortcutUtil.CreateShortcut(shortcutFileName, fileName, _args, workingDir, name);
 
         }
 
@@ -299,7 +299,7 @@ namespace ScreenStreamer.Wpf.Models
 
             if (File.Exists(shortcutFileName))
             {
-                ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
+                MediaToolkit.Utils.ShortcutUtil.DeleteShortcut(shortcutFileName, fileName);
             }
         }
 
