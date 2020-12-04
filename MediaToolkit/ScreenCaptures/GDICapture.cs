@@ -560,7 +560,6 @@ namespace MediaToolkit.ScreenCaptures
                     var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                     //var dwRop = TernaryRasterOperations.SRCCOPY;
 
-
                     if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
                     {
                         //IntPtr hOldBmp = Gdi32.SelectObject(hMemoryDC, hBitmap);
@@ -579,7 +578,6 @@ namespace MediaToolkit.ScreenCaptures
                         {
                             User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
                         }
-
                     }
                     else
                     {// Лучше не использовать масштабирование StretchBlt !!!
@@ -599,6 +597,8 @@ namespace MediaToolkit.ScreenCaptures
                             int code = Marshal.GetLastWin32Error();
                             throw new Win32Exception(code);
                         }
+
+						// TODO: draw cursor...
                     }
 
                     errorCode = ErrorCode.Ok;

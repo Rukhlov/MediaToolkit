@@ -213,7 +213,7 @@ namespace Test.Encoder
         {
             List<DisplayDevice> displayDevices = new List<DisplayDevice>();
 
-            var _displayDevices = DisplayTool.EnumDisplayDevices();
+            var _displayDevices = DisplayUtil.EnumDisplayDevices();
             int _adapterNum = 0;
             foreach (var adapter in _displayDevices.Keys)
             {

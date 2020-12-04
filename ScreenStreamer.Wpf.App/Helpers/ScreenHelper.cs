@@ -1,5 +1,6 @@
-﻿using MediaToolkit.Core;
-
+﻿using MediaToolkit;
+using MediaToolkit.Core;
+using MediaToolkit.Utils;
 using ScreenStreamer.Wpf.Models;
 using System.Collections.Generic;
 using System.Drawing;
@@ -99,12 +100,23 @@ namespace ScreenStreamer.Wpf.Helpers
             {
                 videoSourceItems = new List<VideoSourceItem>();
 
-                int monitorIndex = 1;
+				var displayInfos = DisplayUtil.GetDisplayInfos().ToDictionary(d => d.GdiDeviceName);
+
+				int monitorIndex = 1;
                 foreach (var screen in Screen.AllScreens)
                 {
-                    var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+					var deviceName = screen.DeviceName;
+					DisplayInfo gdiDisplayInfo = null;
+					if (displayInfos.ContainsKey(deviceName))
+					{
+						gdiDisplayInfo = displayInfos[deviceName];
+					}
 
-                    var bounds = screen.Bounds;
+					var friendlyName = gdiDisplayInfo?.GdiDeviceName ?? "";
+
+					//var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+
+					var bounds = screen.Bounds;
 
                     ScreenCaptureDevice device = new ScreenCaptureDevice
                     {

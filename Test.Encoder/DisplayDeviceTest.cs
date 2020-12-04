@@ -35,7 +35,7 @@ namespace Test.Encoder
 		{
 			Console.WriteLine("GetDisplayInfoTest::Run() BEGIN");
 
-			var displayDevices = DisplayTool.EnumDisplayDevices();
+			var displayDevices = DisplayUtil.EnumDisplayDevices();
 			foreach (var adapter in displayDevices.Keys)
 			{
 				Console.WriteLine("-----------------------------");

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 
 using System.Windows.Forms;
+using MediaToolkit.Utils;
 
 namespace Test.Encoder
 {
@@ -38,14 +39,14 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
+			var displayInfos = DisplayUtil.GetDisplayInfos();
 
-
-             var adapterMode =  DisplayManager.CheckDisplayAdapterMode();
+			var adapterMode =  DisplayManager.CheckDisplayAdapterMode();
             Console.WriteLine("adapterMode " + adapterMode);
             Console.WriteLine("-----------------------------\r\n");
             //NvApiTest.Run4();
 
-            var gdiDevices = MediaToolkit.NativeAPIs.Utils.DisplayTool.EnumDisplayDevices();
+            var gdiDevices = MediaToolkit.Utils.DisplayUtil.EnumDisplayDevices();
 
             foreach (var adapter in gdiDevices.Keys)
             {

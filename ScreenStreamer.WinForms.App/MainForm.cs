@@ -27,6 +27,7 @@ using MediaToolkit;
 using MediaToolkit.Managers;
 using MediaToolkit.NativeAPIs;
 using ScreenStreamer.WinForms.App.Controls;
+using MediaToolkit.Utils;
 
 namespace ScreenStreamer.WinForms.App
 {
@@ -659,12 +660,25 @@ namespace ScreenStreamer.WinForms.App
 
             var captureProperties = Config.Data.ScreenCaptureProperties;
 
-            int monitorIndex = 1;
+			var displayInfos =  DisplayUtil.GetDisplayInfos()
+				.ToDictionary(d => d.GdiDeviceName);		
+
+			int monitorIndex = 1;
             foreach (var screen in Screen.AllScreens)
             {
-                var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+				var deviceName = screen.DeviceName;
+	
+				DisplayInfo gdiDisplayInfo = null;
+				if (displayInfos.ContainsKey(deviceName))
+				{
+					gdiDisplayInfo =  displayInfos[deviceName];
+				}
 
-                var bounds = screen.Bounds;
+				var friendlyName = gdiDisplayInfo?.GdiDeviceName ?? "";
+
+				//var friendlyName = MediaToolkit.Utils.DisplayHelper.GetFriendlyScreenName(screen);
+
+				var bounds = screen.Bounds;
 
                 ScreenCaptureDevice device = new ScreenCaptureDevice
                 {

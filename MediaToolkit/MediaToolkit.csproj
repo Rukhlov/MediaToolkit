@@ -91,7 +91,6 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Managers\DisplayManager.cs" />
     <Compile Include="Managers\WTSSessionManager.cs" />
     <Compile Include="MediaFoundation\D3D11Provider.cs" />
     <Compile Include="MediaFoundation\MediaRenderSession.cs" />
@@ -137,7 +136,11 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
+    <Compile Include="Utils\DisplayUtils.cs" />
+    <Compile Include="Utils\MediaTimer.cs" />
+    <Compile Include="Utils\NotifyWindow.cs" />
     <Compile Include="Utils\PciDeviceInfo.cs" />
+    <Compile Include="Utils\StatCounter.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="MediaStreamers\VideoStreamer.cs" />
   </ItemGroup>

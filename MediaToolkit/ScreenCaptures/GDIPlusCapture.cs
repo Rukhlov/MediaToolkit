@@ -64,7 +64,12 @@ namespace MediaToolkit.ScreenCaptures
                                 Graphics _g = Graphics.FromImage(bmp);
                                 try
                                 {
-                                    _g.DrawImage(buf, 0, 0);
+
+									//_g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+									//_g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+									//_g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
+									_g.DrawImage(buf, 0, 0);
                                     code = ErrorCode.Ok;
                                 }
                                 finally
