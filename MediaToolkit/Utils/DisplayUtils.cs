@@ -41,10 +41,11 @@ namespace MediaToolkit.Utils
 
 		public bool IsPrimary { get; set; } = false;
 		public bool IsRemote { get; set; } = false;
+        public bool IsSoftware { get; set; } = false;
 
-		public override string ToString()
+        public override string ToString()
 		{
-			return "#" + EnumIndex + " " + string.Join("; ", DeviceName, Description, VendorId, DeviceId, IsPrimary, IsRemote);
+			return "#" + EnumIndex + " " + string.Join("; ", DeviceName, Description, VendorId, DeviceId, IsPrimary, IsRemote, IsSoftware);
 		}
 	}
 
@@ -54,8 +55,9 @@ namespace MediaToolkit.Utils
 		Hybrid,
 		Remote,
 		MultiGpu,
+        Software,
 
-		Invalid,
+        Invalid,
 	}
 
 	public class DisplayUtil
@@ -77,49 +79,74 @@ namespace MediaToolkit.Utils
 				return GraphicsMode.Remote;
 			}
 
-			var dxDevices = GetDxDisplayDevices();
+			var dxDevices = GetDxDisplayDevices(false);
+            var dxDevice0 = dxDevices[0];
+            Console.WriteLine("dxDevice0 " + dxDevice0.ToString());
 
-			foreach (var gdiDevice in gdiDevices)
-			{
-				// Console.WriteLine("GDI: " + gdiDevice);
+            if (dxDevice0.IsSoftware)
+            {//
+                return GraphicsMode.Software;
+            }
 
-				var deviceName = gdiDevice.DeviceName;
+            var hwGpuDevices = dxDevices.Where(d => !d.IsSoftware);
+            if(hwGpuDevices.Count() > 1)
+            {
+                var activeHwGpuDevices = hwGpuDevices.Where(d => !string.IsNullOrEmpty(d.DeviceName)).ToList();
 
-				var dxDevice = dxDevices.FirstOrDefault(d => d.DeviceName == deviceName);
+                if (activeHwGpuDevices.Count > 1)
+                {
+                    //var dxDevice0 = dxDevices[0];
+                    if (activeHwGpuDevices.All(d => d.EnumIndex == dxDevice0.EnumIndex))
+                    {// все мониторы подключены к одному адаптеру обычный режим
+                        adapterMode = GraphicsMode.Default;
+                    }
+                    else
+                    {// несколько активных видео адаптеров 
+                        adapterMode = GraphicsMode.MultiGpu;
+                    }
+                }
+                else if(activeHwGpuDevices.Count == 1)
+                {
+                    foreach (var gdiDevice in gdiDevices)
+                    {
+                        var deviceName = gdiDevice.DeviceName;
 
-				//Console.WriteLine("DiX: " + dxDevice);
+                        var dxDevice = activeHwGpuDevices[0];
+                        Console.WriteLine(deviceName + " " + dxDevice.DeviceId + " " + gdiDevice.DeviceId);
 
-				if (dxDevice.DeviceId != gdiDevice.DeviceId)
-				{
-					// проверяем NvOptimus, AMDSwitchableGraphics,...
-					// сравниваем DeviceId полученные от GDI и DirectX для одного монитора
-					// в гибридном режиме GDI определяет что монитры подключены к интегрированной карте(iGPU), а DirectX - к дискретной (dGPU)
-					// непонятно насколько это правильно, но это единственный найденый способ проверки
-					// (в nvapi есть флаг NV_CHIPSET_INFO_HYBRID, но он obsolete и не работает)
-					// TODO: Win10 dxdiag.exe dGPU определяется как Render-Only Device, 
-					// а iGPU -> FullDevice т.е где то в винде это можно найти...
+                        if (dxDevice.DeviceId != gdiDevice.DeviceId)
+                        { // проверяем NvOptimus, AMDSwitchableGraphics,...
+                          // сравниваем DeviceId полученные от GDI и DirectX для одного монитора.
+                          // В гибридном режиме GDI определяет что монитры подключены к iGPU интегрированной карте  (дискретную карту он вообще не видит),
+                          // а DirectX - наоборот к dGPU дискретной карте.
+                          // В обычном режиме подключения мониторов совпадают.
+                          // Таким образом можно определить, что приложение запущено в гибридном режими и работать с DesktopDuplicationApi не будет.
+                          // Непонятно насколько это правильно, но это единственный найденый способ проверки
+                          // каких то флагов или функций возвращающих режим работы графики я не нашел...
+                          // (в nvapi есть флаг NV_CHIPSET_INFO_HYBRID, но он obsolete и не работает)
 
+                            // TODO: Win10 dxdiag.exe dGPU определяется как Render-Only Device, а iGPU -> FullDevice
+                            //https://docs.microsoft.com/en-us/windows-hardware/drivers/display/wddm-driver-and-feature-caps
 
-					return GraphicsMode.Hybrid;
-				}
-			}
+                            return GraphicsMode.Hybrid;
+                        }
+                    }
 
-			if (dxDevices.Count > 1)
-			{
-				var dxDevice0 = dxDevices[0];
-				if (dxDevices.All(d => d.EnumIndex == dxDevice0.EnumIndex))
-				{// все мониторы подключены к одному адаптеру обычный режим
-					adapterMode = GraphicsMode.Default;
-				}
-				else
-				{// несколько активных видео адаптеров 
-					adapterMode = GraphicsMode.MultiGpu;
-				}
-			}
+                    adapterMode = GraphicsMode.Default;
+                }
+                else
+                {// activeHwGpuDevices.Count <= 0
+                    adapterMode = GraphicsMode.Invalid;
+                }
 
-			return adapterMode;
+            }
+            else
+            {// один адаптер - один монитор
+                adapterMode = GraphicsMode.Default;
+            }
 
-		}
+            return adapterMode;
+        }
 
 
         public static void SetUserGpuPreferences(string fileName, int UserGpuPreferences)
@@ -164,44 +191,71 @@ namespace MediaToolkit.Utils
 					var adapter = adapters[adapterIndex];
 					var adaptDescr = adapter.Description1;
 
+                    //Console.WriteLine(adaptDescr.Description + " " + adaptDescr.Flags);
+
 					var outputs = adapter.Outputs;
+                    if (outputs.Length > 0)
+                    {
+                        for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
+                        {
+                            var output = outputs[outputIndex];
 
-					for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
-					{
-						var output = outputs[outputIndex];
+                            var outputDescr = output.Description;
+                            if (attached)
+                            {
+                                if (!outputDescr.IsAttachedToDesktop)
+                                {
+                                    continue;
+                                }
+                            }
 
-						var outputDescr = output.Description;
-						if (attached)
-						{
-							if (!outputDescr.IsAttachedToDesktop)
-							{
-								continue;
-							}
-						}
+                            var flags = adaptDescr.Flags;
+                            DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
+                            {
+                                EnumIndex = adapterIndex,
+                                DeviceName = outputDescr.DeviceName,
+                                Description = adaptDescr.Description,
+                                VendorId = adaptDescr.VendorId,
+                                DeviceId = adaptDescr.DeviceId,
+                                IsRemote = flags.HasFlag(SharpDX.DXGI.AdapterFlags.Remote),
+                                IsSoftware = flags.HasFlag(SharpDX.DXGI.AdapterFlags.Software),
+                                IsPrimary = (adapterIndex == 0 && outputIndex == 0),
 
-						var flags = adaptDescr.Flags;
-						DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
-						{
-							EnumIndex = adapterIndex,
-							DeviceName = outputDescr.DeviceName,
-							Description = adaptDescr.Description,
-							VendorId = adaptDescr.VendorId,
-							DeviceId = adaptDescr.DeviceId,
-							IsRemote = flags.HasFlag(SharpDX.DXGI.AdapterFlags.Remote),
-							IsPrimary = (adapterIndex == 0 && outputIndex == 0),
+                            };
 
-						};
+                            displayDevices.Add(displayDevice);
+                            //Console.WriteLine("+++" + displayDevice);
 
-						displayDevices.Add(displayDevice);
-					}
+                        }
+                        foreach (var o in outputs)
+                        {
+                            if (o != null && !o.IsDisposed)
+                            {
+                                o.Dispose();
+                            }
+                        }
 
-					foreach (var o in outputs)
-					{
-						if (o != null && !o.IsDisposed)
-						{
-							o.Dispose();
-						}
-					}
+                    }
+                    else
+                    {
+                        var flags = adaptDescr.Flags;
+                        DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
+                        {
+                            EnumIndex = adapterIndex,
+                            DeviceName = "",
+                            Description = adaptDescr.Description,
+                            VendorId = adaptDescr.VendorId,
+                            DeviceId = adaptDescr.DeviceId,
+                            IsRemote = flags.HasFlag(SharpDX.DXGI.AdapterFlags.Remote),
+                            IsSoftware = flags.HasFlag(SharpDX.DXGI.AdapterFlags.Software),
+
+                        };
+
+                        displayDevices.Add(displayDevice);
+                        //Console.WriteLine("+++" + displayDevice);
+                    }
+
+ 
 				}
 
 				foreach (var a in adapters)
@@ -220,7 +274,7 @@ namespace MediaToolkit.Utils
 		{
 			List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
 
-			var gdiDisplayDevices = DisplayUtil.EnumDisplayDevices();
+			var gdiDisplayDevices = EnumDisplayDevices();
 			int _adapterNum = 0;
 			foreach (var adapter in gdiDisplayDevices.Keys)
 			{

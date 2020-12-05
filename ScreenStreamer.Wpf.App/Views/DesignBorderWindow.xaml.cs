@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 
 using System.Windows.Input;
@@ -27,7 +28,11 @@ namespace ScreenStreamer.Wpf.Views
             
             InitializeComponent();
             this.SizeChanged += DesignBorderWindow_SizeChanged;
+            //this.Loaded += DesignBorderWindow_Loaded;
         }
+
+
+
 
         private void DesignBorderWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -49,6 +54,12 @@ namespace ScreenStreamer.Wpf.Views
         private void Window1_SourceInitialized(object sender, EventArgs e)
         {
             hwndSource = PresentationSource.FromVisual((Visual)sender) as HwndSource;
+
+            // задаем стиль ToolWindow что бы скрыть окно из Alt+Tab
+            int exStyle = (int)NativeMethods.GetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE);
+            exStyle |= (int)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+            NativeMethods.SetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE, (IntPtr)exStyle);
+
             //var dataContext = this.DataContext;
         }
 
@@ -62,7 +73,11 @@ namespace ScreenStreamer.Wpf.Views
         }
 
         protected void Resize(object sender, MouseButtonEventArgs e)
-        {
+        {//FIXME: при масштабировании сильно расходуется память 
+            // т.е окно развернутое на fullHd может сожрать > 500Мб
+            // при этом память не утекает, если окно уменьшить то память освобождается
+            // но несколько окон могут израсходовать всю память процесса !!!
+  
             var clickedShape = sender as Border;
 
             switch (clickedShape.Name)
@@ -130,6 +145,21 @@ namespace ScreenStreamer.Wpf.Views
                     break;
             }
         }
+
+
+        //private WindowInteropHelper hwndSource;
+        //private void DesignBorderWindow_Loaded(object sender, RoutedEventArgs e)
+        //{
+        //    hwndSource = new WindowInteropHelper(this);
+
+        //    int exStyle = (int)NativeMethods.GetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE);
+
+        //    exStyle |= (int)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+        //    NativeMethods.SetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE, (IntPtr)exStyle);
+        //}
+
+
+
 
         //protected void DragWindow(object sender, MouseButtonEventArgs e)
         //{

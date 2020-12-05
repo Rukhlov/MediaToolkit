@@ -48,7 +48,7 @@ namespace Test.Encoder
 
 			Console.WriteLine("-----------------------------");
 
-			Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
+			Console.WriteLine(MediaToolkit.DirectX.DxTool.LogDxInfo());
 
 
 			Console.WriteLine("GetDisplayInfoTest::Run() END");

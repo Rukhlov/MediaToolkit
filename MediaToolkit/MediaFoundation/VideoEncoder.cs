@@ -66,11 +66,14 @@ namespace MediaToolkit.MediaFoundation
 
 				logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-				var flags = DeviceCreationFlags.VideoSupport |
-								DeviceCreationFlags.BgraSupport;
-				//DeviceCreationFlags.Debug;
+                // var flags = DeviceCreationFlags.BgraSupport;
 
-				device = new SharpDX.Direct3D11.Device(adapter, flags);
+                var flags = DeviceCreationFlags.VideoSupport |
+                            DeviceCreationFlags.BgraSupport;
+
+                //DeviceCreationFlags.Debug;
+
+                device = new SharpDX.Direct3D11.Device(adapter, flags);
 				using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
 				{
 					multiThread.SetMultithreadProtected(true);

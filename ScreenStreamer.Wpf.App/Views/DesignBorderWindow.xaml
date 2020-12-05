@@ -21,7 +21,7 @@
         Height="{Binding WpfHeight, Mode=TwoWay}"
         Width="{Binding WpfWidth, Mode=TwoWay}"
         MinHeight="50"
-        MinWidth="50">
+        MinWidth="50" d:DesignWidth="781.215" d:DesignHeight="545.111">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -58,6 +58,7 @@
             <!--BorderBrush="{Binding StripesBrush}"-->
             
             <Grid>
+                
                 <Border Grid.Row="0" 
                         Background="#FF17162A"
                         HorizontalAlignment="Right" VerticalAlignment="Top"

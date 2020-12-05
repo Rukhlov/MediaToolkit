@@ -39,14 +39,23 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-			var displayInfos = DisplayUtil.GetDisplayConfigInfos();
+			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-			var adapterMode =  DisplayManager.CheckDisplayAdapterMode();
-            Console.WriteLine("adapterMode " + adapterMode);
+
+			var adapterMode = DisplayUtil.CheckGraphicsMode();
+
+            Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
             Console.WriteLine("-----------------------------\r\n");
             //NvApiTest.Run4();
 
-            var gdiDevices = MediaToolkit.Utils.DisplayUtil.EnumDisplayDevices();
+            var dxDevices = DisplayUtil.GetDxDisplayDevices();
+            foreach(var d in dxDevices)
+            {
+                Console.WriteLine(d.ToString());
+            }
+
+
+            var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
 
             foreach (var adapter in gdiDevices.Keys)
             {

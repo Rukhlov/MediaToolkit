@@ -196,7 +196,7 @@ namespace Test.Encoder.DDATest
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
 
-                logger.Info(MediaToolkit.MediaFoundation.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
+                logger.Info(MediaToolkit.DirectX.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
 
                 //PrimaryAdapterIndex = 0;
                 // первым идет адаптер с которому подключен primary монитор

@@ -24,8 +24,7 @@ using MediaToolkit.NativeAPIs;
 using System.Diagnostics;
 using SharpDX.Direct3D;
 using System.Windows.Forms;
-
-
+using MediaToolkit.DirectX;
 
 namespace Test.Encoder
 {
