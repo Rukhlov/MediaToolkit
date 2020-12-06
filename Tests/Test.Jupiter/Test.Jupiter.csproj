@@ -93,7 +93,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Jupiter\MediaToolkit.Jupiter.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.Jupiter\MediaToolkit.Jupiter.csproj">
       <Project>{73618614-e2c0-4d1f-9e6a-ff1d6f9d0c61}</Project>
       <Name>MediaToolkit.Jupiter</Name>
     </ProjectReference>

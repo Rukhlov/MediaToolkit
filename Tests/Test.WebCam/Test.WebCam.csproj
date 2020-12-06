@@ -58,7 +58,7 @@
       <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.MediaFoundation">
-      <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll</HintPath>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -95,19 +95,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53a308c8-f2ae-4dc2-a4b5-a51eccd77cfe}</Project>
       <Name>MediaToolkit.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
+    <ProjectReference Include="..\..\MediaToolkit\MediaToolkit.csproj">
       <Project>{d93a9d01-3409-48bb-b1eb-860efe0397f1}</Project>
       <Name>MediaToolkit</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.UI\MediaToolkit.UI.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.UI\MediaToolkit.UI.csproj">
       <Project>{6ec45781-0060-4f0a-ad0e-1452704f0740}</Project>
       <Name>MediaToolkit.UI</Name>
     </ProjectReference>

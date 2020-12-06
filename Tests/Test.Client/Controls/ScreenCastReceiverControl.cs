@@ -278,7 +278,7 @@ namespace TestClient.Controls
                                 Resolution = videoInfo.Resolution,
                                 //Width = videoInfo.Resolution.Width,
                                 //Height = videoInfo.Resolution.Height,
-                                FrameRate = new MediaRatio(videoInfo.Fps,
+                                FrameRate = new MediaRatio(videoInfo.Fps, 
                             };
 
                             var outputPars = new VideoEncoderSettings

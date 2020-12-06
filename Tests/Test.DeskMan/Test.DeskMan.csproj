@@ -64,15 +64,15 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}</Project>
       <Name>MediaToolkit.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
+    <ProjectReference Include="..\..\MediaToolkit\MediaToolkit.csproj">
       <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>
       <Name>MediaToolkit</Name>
     </ProjectReference>

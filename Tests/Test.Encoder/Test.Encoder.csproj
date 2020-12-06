@@ -40,7 +40,7 @@
       <HintPath>..\bin\Debug\MediaToolkit.FFmpeg.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.7.0\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\..\packages\NLog.4.7.5\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.dll</HintPath>
@@ -107,19 +107,19 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
       <Project>{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}</Project>
       <Name>MediaToolkit.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj">
+    <ProjectReference Include="..\..\MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj">
       <Project>{78b312e1-a492-46f2-98bb-6c841f4e553e}</Project>
       <Name>MediaToolkit.Nvidia</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
+    <ProjectReference Include="..\..\MediaToolkit\MediaToolkit.csproj">
       <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>
       <Name>MediaToolkit</Name>
     </ProjectReference>
