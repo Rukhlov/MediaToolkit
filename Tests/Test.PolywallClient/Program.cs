@@ -29,34 +29,55 @@ namespace Test.PolywallClient
 
                 logger.Info("========== START ============");
                 //var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-                //var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+                var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
                 //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
 
                 //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
                 //@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-                var mediaToolkitPath = @"..\";
+                // var mediaToolkitPath = @"..\";
+
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-
-                if (!System.IO.Directory.Exists(mediaToolkitPath))
+                bool initialized = false;
+                do
                 {
-                    FolderBrowserDialog dlg = new FolderBrowserDialog();
-                    if (dlg.ShowDialog() == DialogResult.OK)
+                    try
                     {
-                        mediaToolkitPath = dlg.SelectedPath;
+                        initialized = MediaManager.Startup(mediaToolkitPath, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        var message = "MediaToolkit startup error:\r\n\r\n"
+                            + ex.Message +  "\r\n\r\n" +
+                            "Select another folder and try again?";
+
+                        var result = MessageBox.Show(message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                        if(result == DialogResult.Cancel)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            FolderBrowserDialog dlg = new FolderBrowserDialog
+                            {
+                                ShowNewFolderButton = false,
+                                SelectedPath = Environment.ExpandEnvironmentVariables(mediaToolkitPath),
+                            };
+
+                            if (dlg.ShowDialog() == DialogResult.OK)
+                            {
+                                mediaToolkitPath = dlg.SelectedPath;
+                            }
+                            else
+                            {
+                                return;
+                            }
+                        }
                     }
                 }
-
-
-                if (!MediaManager.Startup(mediaToolkitPath))
-                {
-                    MessageBox.Show("Error at MediaToolkit startup:\r\n\r\n" + mediaToolkitPath);
-
-                    return;
-                }
-
+                while (!initialized);
 
                 var screenCasterControl = MediaManager.CreateInstance<IScreenCasterControl>();
                 screenCasterControl.ShowDebugPanel = true;
@@ -119,11 +140,11 @@ namespace Test.PolywallClient
                 {
                     InstanceFactory.AssemblyPath = assemblyPath;
 
-                    InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll");
+                    InstanceFactory.RegisterType<IMediaToolkitBootstrapper>("MediaToolkit.dll", throwExceptions: true);
 
-                    InstanceFactory.RegisterType<IVideoRenderer>("MediaToolkit.dll");
-                    InstanceFactory.RegisterType<IAudioRenderer>("MediaToolkit.dll");
-                    InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll");
+                    InstanceFactory.RegisterType<IVideoRenderer>("MediaToolkit.dll", throwExceptions: true);
+                    InstanceFactory.RegisterType<IAudioRenderer>("MediaToolkit.dll", throwExceptions: true);
+                    InstanceFactory.RegisterType<IMediaRenderSession>("MediaToolkit.dll", throwExceptions: true);
 
 
                     if(!TryGetAppSettingsValue("ScreenCasterClassName", out string className))

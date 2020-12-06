@@ -45,6 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX.Direct2D1, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll</HintPath>
@@ -91,6 +94,7 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DirectX\D3D11Presenter.cs" />
     <Compile Include="DirectX\DxCommon.cs" />
     <Compile Include="Managers\WTSSessionManager.cs" />
     <Compile Include="DirectX\D3D11Provider.cs" />
@@ -167,6 +171,9 @@
       <Name>MediaToolkit.NativeAPIs</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="DirectX\Shaders\PixelShader.hlsl" />
+    <Resource Include="DirectX\Shaders\VertexShader.hlsl" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -25,7 +25,7 @@ using System.Reflection;
 
 [assembly: AssemblyVersion("1.0.0.<#= GetBuild() #>")]
 [assembly: AssemblyFileVersion("1.0.0.<#= GetBuild() #>")]
-[assembly: AssemblyInformationalVersion("1.0.0-master+<#= GetSha1().Substring(0,7) #>")]
+[assembly: AssemblyInformationalVersion("1.0.0-<#= GetBranch() #>+<#= GetSha1().Substring(0,7) #>")]
 
 
 
@@ -79,6 +79,11 @@ using System.Reflection;
             return null;
         }
 
+		public  string GetBranch()
+		{
+			//TODO: ...
+			return "master";
+		}
 
 
           
