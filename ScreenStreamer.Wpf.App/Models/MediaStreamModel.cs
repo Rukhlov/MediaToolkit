@@ -363,7 +363,7 @@ namespace ScreenStreamer.Wpf.Models
             {
                 var deviceId = PropertyAudio.DeviceId;
 
-                var audioDevice = MediaToolkit.AudioTool.GetAudioCaptureDevices().FirstOrDefault(d => d.DeviceId == deviceId);
+                var audioDevice = MediaToolkit.Utils.AudioUtils.GetAudioCaptureDevices().FirstOrDefault(d => d.DeviceId == deviceId);
                 if (audioDevice != null)
                 {
                     session.AudioSettings.Enabled = true;

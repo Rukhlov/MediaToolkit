@@ -137,6 +137,7 @@
     <Compile Include="MediaSources\ScreenSource.cs" />
     <Compile Include="MediaFoundation\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
+    <Compile Include="Utils\AudioUtils.cs" />
     <Compile Include="Utils\DesktopTools.cs" />
     <Compile Include="Utils\DisplayUtils.cs" />
     <Compile Include="Utils\MediaTimer.cs" />

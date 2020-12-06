@@ -58,24 +58,24 @@ namespace MediaToolkit.ScreenCaptures
 				gdiCapt.CaptureAllLayers = (type == VideoCaptureType.GDILayered);
 
 				capture = gdiCapt;
-
 			}
-            else if (type == VideoCaptureType.Direct3D9)
+            else if (type == VideoCaptureType.DXGIDeskDupl)
             {
-                capture = new Direct3D9Capture(args);
+                capture = new DDACapture(args);
             }
             else if (type == VideoCaptureType.GDIPlus)
             {
                 capture = new GDIPlusCapture();
             }
+            else if (type == VideoCaptureType.Direct3D9)
+            {
+                capture = new Direct3D9Capture(args);
+            }
             else if (type == VideoCaptureType.Datapath)
             {
                 capture = new DatapathDesktopCapture();
             }
-            else if (type == VideoCaptureType.DXGIDeskDupl)
-            {
-                capture = new DDACapture(args);
-            }
+
 
             return capture;
         }

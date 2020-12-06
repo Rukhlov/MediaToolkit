@@ -814,7 +814,7 @@ namespace ScreenStreamer.WinForms.App
 
             audioSourceItems = new BindingList<ComboBoxItem>();
 
-            var audioDevices = AudioTool.GetAudioCaptureDevices();
+            var audioDevices = AudioUtils.GetAudioCaptureDevices();
 
 			var captureProps = Config.Data.WasapiCaptureProps;
 

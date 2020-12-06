@@ -1,4 +1,4 @@
-﻿using MediaToolkit;
+﻿using MediaToolkit.Utils;
 //using NAudio.CoreAudioApi;
 
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace ScreenStreamer.Wpf.Helpers
         {
             if(audioSourceItems == null || ForceUpdate)
             { 
-                audioSourceItems = AudioTool.GetAudioCaptureDevices().Select(d => new AudioSourceItem(d)).ToList();
+                audioSourceItems = AudioUtils.GetAudioCaptureDevices().Select(d => new AudioSourceItem(d)).ToList();
             }
 
             return new List<AudioSourceItem>(audioSourceItems);
