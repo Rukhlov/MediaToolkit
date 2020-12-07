@@ -10,6 +10,7 @@ using System.Threading;
 using GDI = System.Drawing;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
+using System.Collections.Generic;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -20,11 +21,14 @@ namespace MediaToolkit.ScreenCaptures
     public class Direct3D9Capture : ScreenCapture
     {
        
-        public Direct3D9Capture(object[] args) : base()
+        public Direct3D9Capture(Dictionary<string, object> args = null) : base()
         {
-            if(args!=null && args.Length > 0)
+            if (args != null)
             {
-                this.hWnd = (IntPtr)args[0];
+                if (args.ContainsKey("WindowHandle"))
+                {
+                    this.hWnd = (IntPtr)args["WindowHandle"];
+                }
             }
 
         }

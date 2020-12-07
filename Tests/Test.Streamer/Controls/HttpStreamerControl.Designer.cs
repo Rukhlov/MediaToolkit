@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.panel3 = new System.Windows.Forms.Panel();
+            this.checkBoxResizeOnCapture = new System.Windows.Forms.CheckBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.captureTypesComboBox = new System.Windows.Forms.ComboBox();
@@ -48,18 +51,20 @@
             this.httpAddrTextBox = new System.Windows.Forms.TextBox();
             this.httpStartButton = new System.Windows.Forms.Button();
             this.httpStopButton = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
+            this.numericGdiStretchingMode = new System.Windows.Forms.NumericUpDown();
             this.panel3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.httpDestWidthNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.httpDestHeightNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.httpFpsNumeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.httpPortNumeric)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericGdiStretchingMode)).BeginInit();
             this.SuspendLayout();
             // 
             // panel3
             // 
+            this.panel3.Controls.Add(this.numericGdiStretchingMode);
+            this.panel3.Controls.Add(this.checkBoxResizeOnCapture);
             this.panel3.Controls.Add(this.button2);
             this.panel3.Controls.Add(this.button3);
             this.panel3.Controls.Add(this.button1);
@@ -80,9 +85,41 @@
             this.panel3.Size = new System.Drawing.Size(461, 278);
             this.panel3.TabIndex = 23;
             // 
+            // checkBoxResizeOnCapture
+            // 
+            this.checkBoxResizeOnCapture.AutoSize = true;
+            this.checkBoxResizeOnCapture.Location = new System.Drawing.Point(297, 147);
+            this.checkBoxResizeOnCapture.Name = "checkBoxResizeOnCapture";
+            this.checkBoxResizeOnCapture.Size = new System.Drawing.Size(142, 21);
+            this.checkBoxResizeOnCapture.TabIndex = 44;
+            this.checkBoxResizeOnCapture.Text = "ResizeOnCapture";
+            this.checkBoxResizeOnCapture.UseVisualStyleBackColor = true;
+            // 
+            // button2
+            // 
+            this.button2.AutoSize = true;
+            this.button2.Location = new System.Drawing.Point(318, 178);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(121, 27);
+            this.button2.TabIndex = 42;
+            this.button2.Text = "_Start";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button3
+            // 
+            this.button3.AutoSize = true;
+            this.button3.Location = new System.Drawing.Point(318, 211);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(107, 27);
+            this.button3.TabIndex = 43;
+            this.button3.Text = "_Stop";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(341, 243);
+            this.button1.Location = new System.Drawing.Point(364, 249);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 41;
@@ -302,27 +339,27 @@
             this.httpStopButton.UseVisualStyleBackColor = true;
             this.httpStopButton.Click += new System.EventHandler(this.httpStopButton_Click);
             // 
-            // button2
+            // numericGdiStretchingMode
             // 
-            this.button2.AutoSize = true;
-            this.button2.Location = new System.Drawing.Point(295, 147);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(121, 27);
-            this.button2.TabIndex = 42;
-            this.button2.Text = "_Start";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button3
-            // 
-            this.button3.AutoSize = true;
-            this.button3.Location = new System.Drawing.Point(295, 180);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(107, 27);
-            this.button3.TabIndex = 43;
-            this.button3.Text = "_Stop";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
+            this.numericGdiStretchingMode.Location = new System.Drawing.Point(392, 120);
+            this.numericGdiStretchingMode.Maximum = new decimal(new int[] {
+            4,
+            0,
+            0,
+            0});
+            this.numericGdiStretchingMode.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericGdiStretchingMode.Name = "numericGdiStretchingMode";
+            this.numericGdiStretchingMode.Size = new System.Drawing.Size(47, 22);
+            this.numericGdiStretchingMode.TabIndex = 45;
+            this.numericGdiStretchingMode.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
             // 
             // HttpStreamerControl
             // 
@@ -341,6 +378,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.httpDestHeightNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.httpFpsNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.httpPortNumeric)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericGdiStretchingMode)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -370,5 +408,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.CheckBox checkBoxResizeOnCapture;
+        private System.Windows.Forms.NumericUpDown numericGdiStretchingMode;
     }
 }

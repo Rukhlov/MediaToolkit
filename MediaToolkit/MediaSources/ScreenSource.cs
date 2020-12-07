@@ -89,6 +89,7 @@ namespace MediaToolkit
 			var destSize = Size.Empty;
 			var hwnd = IntPtr.Zero;
 
+
 			if (captureParams.CaptureMode == CaptureMode.Screen)
 			{
 				var screenCaptParams = (ScreenCaptureDevice)pars;
@@ -133,20 +134,23 @@ namespace MediaToolkit
 				}
 
 				hwnd = windowCaptParams.hWnd;
-			}
 
+            }
 
+            var captArgs = CaptureProps.Attributes;
 
-			try
+            try
             {
                 //var captureDescr = captureParams.CaptureDescription;
                 
-				var captArgs = new object[]
-				{
-					hwnd,
-				};
+				//var captArgs = new object[]
+				//{
+				//	hwnd,
+				//};
 
-				screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
+                captArgs["WindowHandle"] = hwnd;
+
+                screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
                 screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
                 screenCapture.AspectRatio = CaptureProps.AspectRatio;
 

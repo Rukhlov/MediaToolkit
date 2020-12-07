@@ -239,9 +239,11 @@ namespace TestStreamer.Controls
                     Fps = (int)httpFpsNumeric.Value,
                     CaptureTypes = captureType,
                     CaptureMouse = true,
-                    
-                    //UseDesktopDuplApi = (captureType == VideoCaptureType.DXGIDeskDupl),
+
                 };
+
+                args.Attributes["ResizeOnCapture"] = checkBoxResizeOnCapture.Checked;
+                args.Attributes["GdiStretchingMode"] = (int)numericGdiStretchingMode.Value;
 
                 httpScreenStreamer.Setup(args);
 
@@ -313,6 +315,7 @@ namespace TestStreamer.Controls
             }
 
         }
+
     }
 
 }

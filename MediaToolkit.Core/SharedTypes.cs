@@ -26,6 +26,9 @@ namespace MediaToolkit.SharedTypes
         public bool CaptureMouse = true;
         public Core.VideoCaptureType CaptureTypes = Core.VideoCaptureType.GDI;
 
+        public readonly Dictionary<string, object> Attributes = new Dictionary<string, object>();
+
+
         public override string ToString()
         {
             return string.Join("; ", new { Addres, Port, CaptureRegion, Resolution, Fps, CaptureTypes, CaptureMouse });

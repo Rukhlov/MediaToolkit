@@ -46,7 +46,7 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("HttpScreenStreamer::Setup() " + args.ToString());
 
-            if(state!= MediaState.Closed)
+            if (state != MediaState.Closed)
             {
                 throw new InvalidOperationException("Invalid state " + State);
             }
@@ -71,6 +71,23 @@ namespace MediaToolkit.MediaStreamers
             destSize = new Size(destWidth, destHeight);
             var captureType = args.CaptureTypes;
 
+            bool resizeOnCapture = false;
+            var captAttrs = args.Attributes;
+            if (captAttrs != null)
+            {
+                //public bool ResizeOnCapture = false;
+                //public int GdiStretchingMode = 3;     
+                if (captAttrs.ContainsKey("ResizeOnCapture"))
+                {
+                    var attr = captAttrs["ResizeOnCapture"];
+                    if (attr != null)
+                    {
+                        bool.TryParse(attr.ToString(), out resizeOnCapture);
+
+                    }                  
+                }
+            }
+
             var captureProp = new ScreenCaptureProperties
             {
                 CaptureType = captureType,
@@ -78,6 +95,7 @@ namespace MediaToolkit.MediaStreamers
                 CaptureMouse = args.CaptureMouse,
                 AspectRatio = true,
                 UseHardware = false,
+                Attributes = captAttrs,
             };
 
             ScreenCaptureDevice captureParams = new ScreenCaptureDevice
@@ -94,13 +112,15 @@ namespace MediaToolkit.MediaStreamers
                 //UseHardware = false,
             };
 
-
-            if (captureType == VideoCaptureType.GDI
-				|| captureType == VideoCaptureType.GDILayered 
-				|| captureType == VideoCaptureType.GDIPlus
-				|| captureType == VideoCaptureType.Datapath)
-            {// масштабируем на энкодере
-                captureParams.Resolution = new Size(srcRect.Width, srcRect.Height);
+            if (!resizeOnCapture)
+            {
+                if (captureType == VideoCaptureType.GDI
+                    || captureType == VideoCaptureType.GDILayered
+                    || captureType == VideoCaptureType.GDIPlus
+                    || captureType == VideoCaptureType.Datapath)
+                {// масштабируем на энкодере
+                    captureParams.Resolution = new Size(srcRect.Width, srcRect.Height);
+                }
             }
 
             VideoEncoderSettings encodingParams = new VideoEncoderSettings

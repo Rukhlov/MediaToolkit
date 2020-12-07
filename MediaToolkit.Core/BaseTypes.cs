@@ -412,6 +412,9 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public bool ShowDebugInfo { get; set; } = true;
 
+        [XmlIgnore]
+        public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
+
     }
 
 

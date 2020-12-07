@@ -48,7 +48,7 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        public static ScreenCapture Create(VideoCaptureType type, object[] args = null)
+        public static ScreenCapture Create(VideoCaptureType type, Dictionary<string, object> args = null)
         {
             ScreenCapture capture = null;
 
@@ -76,7 +76,6 @@ namespace MediaToolkit.ScreenCaptures
                 capture = new DatapathDesktopCapture();
             }
 
-
             return capture;
         }
 
@@ -86,6 +85,8 @@ namespace MediaToolkit.ScreenCaptures
         protected VideoBuffer videoBuffer = null;
 
         public VideoBuffer VideoBuffer { get => videoBuffer; }
+
+        public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
 
         public abstract ErrorCode UpdateBuffer(int timeout = 10);
 

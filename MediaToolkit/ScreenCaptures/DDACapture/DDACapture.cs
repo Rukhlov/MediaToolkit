@@ -41,7 +41,7 @@ namespace MediaToolkit.ScreenCaptures
 
     public class DDACapture : ScreenCapture, ITexture2DSource
     {
-        public DDACapture(object[] args) : base()
+        public DDACapture(Dictionary<string, object> args = null) : base()
         { }
 
         //private static TraceSource logger = TraceManager.GetTrace("DXGIDesktopDuplicationCapture");

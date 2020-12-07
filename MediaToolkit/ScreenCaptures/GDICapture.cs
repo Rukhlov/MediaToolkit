@@ -39,16 +39,28 @@ namespace MediaToolkit.ScreenCaptures
 
         public bool CaptureAllLayers { get; set; } = false;
 
-		public GDICapture(object[] args = null) : base()
+		public GDICapture(Dictionary<string, object> args = null) : base()
 		{
-			if (args != null && args.Length > 0)
+			if (args != null)
 			{
-				this.hWnd = (IntPtr)args[0];
+                if (args.ContainsKey("WindowHandle"))
+                {
+                    this.hWnd = (IntPtr)args["WindowHandle"];
+                }
+
+                if (args.ContainsKey("GdiStretchingMode"))
+                {
+                    this.GdiStretchingMode = (int)args["GdiStretchingMode"];
+                }
 			}
 
 		}
 
-		public IntPtr hWnd { get; set; } = IntPtr.Zero; 
+        public int GdiStretchingMode { get; set; } = 3;
+        private StretchingMode stretchingMode = StretchingMode.COLORONCOLOR;
+
+
+        public IntPtr hWnd { get; set; } = IntPtr.Zero; 
 
 		public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
@@ -57,6 +69,17 @@ namespace MediaToolkit.ScreenCaptures
             if (UseHwContext)
             {
                 InitDx();
+            }
+            else
+            {
+                if (GdiStretchingMode >=1 && GdiStretchingMode <= 4)
+                {
+                    // COLORONCOLOR = 3 <-самый быстрый 
+                    // HALFTONE = 4 <-cамый качественный
+                    // остальное не нужно...
+                    stretchingMode = (StretchingMode)GdiStretchingMode;
+                }
+
             }
 
         }
@@ -223,7 +246,7 @@ namespace MediaToolkit.ScreenCaptures
             }
             else
             {
-                result = TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout);
+                result = TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout, stretchingMode);
             }
 
             return result;
@@ -520,7 +543,10 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        public static ErrorCode TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer, bool captureMouse = false, int timeout = 10)
+        public static ErrorCode TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer,
+            bool captureMouse = false, 
+            int timeout = 10,
+            StretchingMode stretchingMode = StretchingMode.COLORONCOLOR)
         {
             bool success = false;
             ErrorCode errorCode = ErrorCode.Unexpected;
@@ -583,10 +609,12 @@ namespace MediaToolkit.ScreenCaptures
                     {// Лучше не использовать масштабирование StretchBlt !!!
 
                         //самый быстрый и самый кривой режим масштабирования
-                        Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR);
+                        //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR);
 
                         //самый качественный но все равно выглядит хуже чем масштабирование sws_scale
                         //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.HALFTONE);
+ 
+                        Gdi32.SetStretchBltMode(hdcDest, stretchingMode);
 
                         success = Gdi32.StretchBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
                             hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc,
