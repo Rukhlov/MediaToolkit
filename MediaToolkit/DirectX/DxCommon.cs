@@ -83,6 +83,103 @@ namespace MediaToolkit.DirectX
 	public class DxTool
     {
 
+        public unsafe static Texture2D TextureFromDump(SharpDX.Direct3D11.Device device, Texture2DDescription descr, byte[] srcBuffer)
+        {
+            //descr.CpuAccessFlags = CpuAccessFlags.None;
+            //descr.Usage = ResourceUsage.Default;
+            //descr.BindFlags = SharpDX.Direct3D11.BindFlags.None;
+            //descr.OptionFlags = ResourceOptionFlags.None;
+
+            int width = descr.Width;
+            int height = descr.Height;
+            var format = descr.Format;
+
+            int rowPitch = 0;
+            int slicePitch = 0;
+            if (format == Format.R8G8B8A8_UNorm)
+            {
+                rowPitch = 4 * width;
+                slicePitch = rowPitch * height;
+
+            }
+            else if (format == Format.NV12)
+            {// Width and height must be even.
+
+                rowPitch = width;
+                slicePitch = rowPitch * (height + height / 2);       
+            }
+            else
+            {// not supported...
+
+            }
+
+            fixed (byte* ptr = srcBuffer)
+            {
+                DataBox[] initData =
+                {
+                    new DataBox((IntPtr)ptr,  rowPitch, 0),
+                };
+
+                return new Texture2D(device, descr, initData);
+            }
+
+        }
+
+        public static byte[] DumpTexture(SharpDX.Direct3D11.Device device, Texture2D texture)
+        {
+            byte[] destBuffer = null;
+
+            var stagingDescr = texture.Description;
+            stagingDescr.BindFlags = BindFlags.None;
+            stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
+            stagingDescr.Usage = ResourceUsage.Staging;
+            stagingDescr.OptionFlags = ResourceOptionFlags.None;
+
+            using (var stagingTexture = new Texture2D(device, stagingDescr))
+            {
+                device.ImmediateContext.CopyResource(texture, stagingTexture);
+
+                var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+                try
+                {
+                    int width = stagingDescr.Width;
+                    int height = stagingDescr.Height;
+
+                    var srcPitch = dataBox.RowPitch;
+                    var srcDataSize = dataBox.SlicePitch;
+                    var srcPtr = dataBox.DataPointer;
+
+                    var destPitch = 4 * width;
+                    var destRowNumber = height;
+                    var destBufferSize = destPitch * destRowNumber;
+
+                    if (stagingDescr.Format == Format.NV12)
+                    {
+                        destPitch = width;
+                        destRowNumber = height + height / 2;
+                        destBufferSize = destPitch * destRowNumber;
+                    }
+
+                    destBuffer = new byte[destBufferSize];
+                    int bufOffset = 0;
+                    for (int i = 0; i < destRowNumber; i++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(srcPtr, destBuffer, bufOffset, destPitch);
+                        bufOffset += destPitch;
+                        srcPtr += srcPitch;
+                    }
+
+                }
+                finally
+                {
+                    device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+                }
+
+            }
+
+            return destBuffer;
+        }
+
         public static Adapter1 FindAdapter1(long luid)
         {
             Adapter1 adapter1 = null;

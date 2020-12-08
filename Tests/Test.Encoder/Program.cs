@@ -42,42 +42,47 @@ namespace Test.Encoder
 			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
 
-			var adapterMode = DisplayUtil.CheckGraphicsMode();
-
-            Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
-            Console.WriteLine("-----------------------------\r\n");
-            //NvApiTest.Run4();
-
-            var dxDevices = DisplayUtil.GetDxDisplayDevices();
-            foreach(var d in dxDevices)
-            {
-                Console.WriteLine(d.ToString());
-            }
+			D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
+			videoProcessor.Test();
+			
 
 
-            var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
+			//var adapterMode = DisplayUtil.CheckGraphicsMode();
 
-            foreach (var adapter in gdiDevices.Keys)
-            {
-				Console.WriteLine("Adapter: ");
+   //         Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
+   //         Console.WriteLine("-----------------------------\r\n");
+   //         //NvApiTest.Run4();
 
-				Console.WriteLine(adapter.ToString());
-
-                var monitors = gdiDevices[adapter];
-
-				Console.WriteLine("Monitors: ");
-				foreach (var m in monitors)
-                {
-                    Console.WriteLine(m.ToString());
-                }
-				Console.WriteLine("---------------------");
-			}
+   //         var dxDevices = DisplayUtil.GetDxDisplayDevices();
+   //         foreach(var d in dxDevices)
+   //         {
+   //             Console.WriteLine(d.ToString());
+   //         }
 
 
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
-            //fileFullName = @"d:\Test.Encoder.exe";
-            //fileFullName = @"vlc.exe";
+   //         var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
+
+   //         foreach (var adapter in gdiDevices.Keys)
+   //         {
+			//	Console.WriteLine("Adapter: ");
+
+			//	Console.WriteLine(adapter.ToString());
+
+   //             var monitors = gdiDevices[adapter];
+
+			//	Console.WriteLine("Monitors: ");
+			//	foreach (var m in monitors)
+   //             {
+   //                 Console.WriteLine(m.ToString());
+   //             }
+			//	Console.WriteLine("---------------------");
+			//}
+
+
+   //         string path = AppDomain.CurrentDomain.BaseDirectory;
+   //         string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
+   //         //fileFullName = @"d:\Test.Encoder.exe";
+   //         //fileFullName = @"vlc.exe";
 
            
 
