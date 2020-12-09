@@ -11,8 +11,8 @@ struct PS_INPUT
 
 struct PS_OUTPUT
 {
-	float ColorY: SV_Target0;
-	float2 ColorUV: SV_Target1;
+	float ColorY	: SV_Target0;
+	float2 ColorUV	: SV_Target1;
 };
 
 PS_OUTPUT PS(PS_INPUT input) : SV_Target

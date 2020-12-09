@@ -159,7 +159,7 @@ namespace Test.Encoder
             });
 
             deviceContext.PixelShader.SetSamplers(0, samplerLinear);
-
+            // RBG->NV12
             SetViewPort(width, height);
             deviceContext.VertexShader.SetShader(vertexShader, null, 0);
 
@@ -213,7 +213,77 @@ namespace Test.Encoder
                 Console.WriteLine("OutputFile: " + _fileName);
             }
 
-            
+
+            // NV12->RGB
+            var rgbdescr = new SharpDX.Direct3D11.Texture2DDescription
+            {
+                Width = width,
+                Height = height,
+                MipLevels = 1,
+                ArraySize = 1,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = ResourceUsage.Default,
+                Format = Format.R8G8B8A8_UNorm,
+                BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                CpuAccessFlags = CpuAccessFlags.None,
+                OptionFlags = ResourceOptionFlags.None,
+            };
+
+            using (var rgbDestTexture = new Texture2D(device, rgbdescr))
+            {
+                RenderTargetViewDescription rtvDescr = new RenderTargetViewDescription
+                {
+                    Format = Format.R8G8B8A8_UNorm,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                };
+
+                using (var rgbRT = new RenderTargetView(device, rgbDestTexture, rtvDescr))
+                {
+                    ShaderResourceViewDescription srvDescr = new ShaderResourceViewDescription
+                    {
+                        Format = Format.R8_UNorm,
+                        Dimension = ShaderResourceViewDimension.Texture2D,
+                        Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+                    };
+
+                    using (var nv12LumaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
+                    {
+                        srvDescr.Format = Format.R8G8_UNorm;
+                        using (var nv12ChromaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
+                        {
+                            SetViewPort(width, height);
+                            deviceContext.OutputMerger.SetTargets(rgbRT);
+                            deviceContext.ClearRenderTargetView(rgbRT, Color.Black);
+
+                            deviceContext.PixelShader.SetShader(nv12ToRgbPixShader, null, 0);
+                            deviceContext.PixelShader.SetShaderResources(0, nv12LumaSRV, nv12ChromaSRV);
+                            deviceContext.Draw(vertices.Length, 0);
+                        }
+                    }
+
+                }
+
+
+
+                {
+                    var descr = rgbDestTexture.Description;
+                    var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, rgbDestTexture);
+
+                    var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+                    File.WriteAllBytes(_fileName, bytes);
+
+                    Console.WriteLine("OutputFile: " + _fileName);
+                }
+
+
+
+            }
+
+
+
+
+
             nv12ChromaRT.Dispose();
             nv12LumaRT.Dispose();
             nv12Texture.Dispose();
@@ -223,6 +293,7 @@ namespace Test.Encoder
             lumaRT.Dispose();
             samplerLinear.Dispose();
 
+            nv12ToRgbPixShader.Dispose();
             rgbToYuvPixShader.Dispose();
             vertexShader.Dispose();
             pixelShader.Dispose();
@@ -275,8 +346,14 @@ namespace Test.Encoder
             {
                 rgbToYuvPixShader = new PixelShader(device, compResult.Bytecode);
             }
-        }
 
+            psFile = Path.Combine(shaderPath, "Nv12ToRgbPs.hlsl");
+            using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
+            {
+                nv12ToRgbPixShader = new PixelShader(device, compResult.Bytecode);
+            }
+        }
+        private PixelShader nv12ToRgbPixShader = null;
 
 
         private void InitNv12RenderResources(int width, int height)
