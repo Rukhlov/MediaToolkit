@@ -319,7 +319,7 @@ namespace Test.Encoder
             var vsProvile = "vs_" + profileLevel;
             var psProvile = "ps_" + profileLevel;
 
-            var vsFile = Path.Combine(shaderPath, "VertexShader.hlsl");
+            var vsFile = Path.Combine(shaderPath, "DefaultVS.hlsl");
             using (var compResult = CompileShaderFromFile(vsFile, "VS", vsProvile))
             {
                 vertexShader = new VertexShader(device, compResult.Bytecode);
@@ -335,7 +335,7 @@ namespace Test.Encoder
                 }
             }
 
-            var psFile = Path.Combine(shaderPath, "PixelShader.hlsl");
+            var psFile = Path.Combine(shaderPath, "DefaultPS.hlsl");
             using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
             {
                 pixelShader = new PixelShader(device, compResult.Bytecode);
@@ -352,7 +352,25 @@ namespace Test.Encoder
             {
                 nv12ToRgbPixShader = new PixelShader(device, compResult.Bytecode);
             }
-        }
+
+			psFile = Path.Combine(shaderPath, "BiLinerealResizerPS.hlsl");
+			SharpDX.D3DCompiler.ShaderFlags shaderFlags =
+				SharpDX.D3DCompiler.ShaderFlags.SkipOptimization 
+				| SharpDX.D3DCompiler.ShaderFlags.EnableBackwardsCompatibility;
+			//| SharpDX.D3DCompiler.ShaderFlags.Debug;
+			using (var compResult = CompileShaderFromFile(psFile, "main_bilinear", psProvile))
+			{
+				var resizerPixShader = new PixelShader(device, compResult.Bytecode);
+			}
+
+			//psFile = Path.Combine(shaderPath, "BiLinearScaling.hlsl");
+			//using (var compResult = CompileShaderFromFile(psFile, "PSDrawLowresBilinearRGBA", psProvile))
+			//{
+			//	var BiLinearScalingPixShader = new PixelShader(device, compResult.Bytecode);
+			//}
+
+
+		}
         private PixelShader nv12ToRgbPixShader = null;
 
 
@@ -594,10 +612,19 @@ namespace Test.Encoder
 
             SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
 
-            return SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
+            return CompileShaderFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
         }
 
-        public static string LogEnumFlags(Enum flags)
+		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromFile(string file, string entryPoint, string profile,
+			SharpDX.D3DCompiler.ShaderFlags shaderFlags, 
+			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None)
+		{
+			Console.WriteLine("CompileShaderFromFile() " + string.Join(" ", file, entryPoint, profile));
+
+			return SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
+		}
+
+		public static string LogEnumFlags(Enum flags)
         {
             string log = "";
 

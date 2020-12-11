@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GDI = System.Drawing;
 using SharpDX.WIC;
+using System.Runtime.InteropServices;
+using Direct2D = SharpDX.Direct2D1;
 
 namespace Test.Encoder
 {
@@ -26,10 +28,10 @@ namespace Test.Encoder
 
 
         private SharpDX.Direct3D11.Device device =null;
-        private VertexShader vertexShader = null;
+        private VertexShader defaultVertexShader = null;
         private InputLayout inputLayout = null;
-        private PixelShader pixelShader = null;
-        private SamplerState samplerLinear;
+        private PixelShader defaultPixelShader = null;
+        private SamplerState sampler;
 
         private Texture2D sharedTexture = null;
 
@@ -49,17 +51,23 @@ namespace Test.Encoder
         {
             Console.WriteLine("SimpleSwapChain::Start()");
 
-           // var fileName = @"Files\1920x1080.bmp";            
-            var fileName = @"D:\Dropbox\Public\1681_source.jpg";
-            //var fileName = @"D:\Dropbox\Public\2.png";
+            //var fileName = @"Files\1920x1080.bmp";
+			// var fileName = @"D:\Dropbox\Public\1681_source.jpg";
+			//var fileName = @"D:\Dropbox\Public\2.png";
 
-            //var fileName = @"Files\2560x1440.bmp";
+			var fileName = @"Files\2560x1440.bmp";
             // var fileName = @"Files\rgba_352x288.bmp";
 
             //var destSize = new GDI.Size(100, 100);
             //var destSize = new GDI.Size(ImageWidth, ImageHeight);
-            var destSize = new GDI.Size(1280, 720);
+            //var destSize = new GDI.Size(1280, 720);
+
+            var destSize = new GDI.Size(640, 360);
+
             //var destSize = new GDI.Size(2560, 1440);
+
+            //var destSize = new GDI.Size(1920, 1080);
+
             var dxgiFactory = new SharpDX.DXGI.Factory1();
             var adapter = dxgiFactory.GetAdapter1(adapterIndex);
 
@@ -71,7 +79,7 @@ namespace Test.Encoder
              };
 
 
-            var deviceCreationFlags = DeviceCreationFlags.None;
+            var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
             //DeviceCreationFlags.Debug |
             //DeviceCreationFlags.VideoSupport |
             //DeviceCreationFlags.BgraSupport;
@@ -87,18 +95,7 @@ namespace Test.Encoder
 
             InitShaders();
 
-            samplerLinear = new SamplerState(device, new SamplerStateDescription
-			{
-                Filter = Filter.MinMagMipLinear,
-                //Filter = Filter.MinMagMipLinear,
-                AddressU = TextureAddressMode.Clamp,
-				AddressV = TextureAddressMode.Clamp,
-				AddressW = TextureAddressMode.Clamp,
-				ComparisonFunction = Comparison.Never,
-				BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
-				MinimumLod = 0,
-				MaximumLod = float.MaxValue,
-			});
+
 
             //var bmp = new System.Drawing.Bitmap(fileName);
             //ImageWidth = bmp.Width;
@@ -128,20 +125,20 @@ namespace Test.Encoder
                 SampleDescription = new SampleDescription(1, 0),
                 Usage = ResourceUsage.Default,
                 Format = srcDescr.Format,//Format.R8G8B8A8_UNorm,
-
+               // Format = Format,
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                 CpuAccessFlags = CpuAccessFlags.None,
                 OptionFlags = ResourceOptionFlags.None,
 
             });
 
-            var renderTargetView = new RenderTargetView(device, sharedTexture, 
-				new RenderTargetViewDescription
-			{
-				Format = srcDescr.Format,//Format.R8G8B8A8_UNorm,
-				Dimension = RenderTargetViewDimension.Texture2D,
-				Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-			});
+            var renderTargetView = new RenderTargetView(device, sharedTexture,
+                new RenderTargetViewDescription
+                {
+                    Format = srcDescr.Format,//Format.R8G8B8A8_UNorm,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                });
 
             Form f = new Form
             {
@@ -177,7 +174,6 @@ namespace Test.Encoder
                 BufferCount = 4,
 
                 OutputHandle = ViewHandle,
-
             };
 
             swapChain = new SwapChain(dxgiFactory, device, scd);
@@ -185,10 +181,27 @@ namespace Test.Encoder
             adapter.Dispose();
             dxgiFactory.Dispose();
 
-			//device.ImmediateContext.CopyResource(sourceTexture0, sharedTexture);
-			//device.ImmediateContext.Flush();
+            //device.ImmediateContext.CopyResource(sourceTexture0, sharedTexture);
+            //device.ImmediateContext.Flush();
 
-			bool running = true;
+            //Direct2D.RenderTarget renderTarget = null;
+            //using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
+            //{
+            //    using (var surf = sharedTexture.QueryInterface<Surface>())
+            //    {
+            //        //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
+
+            //        var pixelFormat = new Direct2D.PixelFormat(srcDescr.Format, Direct2D.AlphaMode.Premultiplied);
+            //        var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
+
+            //        renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
+
+            //        //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
+            //    }
+
+            //}
+
+            bool running = true;
 			var task = Task.Run(() =>
             {
                 Stopwatch sw = Stopwatch.StartNew();
@@ -196,65 +209,100 @@ namespace Test.Encoder
                 AutoResetEvent syncEvent = new AutoResetEvent(false);
 				bool aspectRatio = true;
 
-                int count = 1000000;
+				/*
+				 * Для варианта Точечная фильтрация текстур определенный приложением режим фильтрации заменяется на D3D11_FILTER_MIN_MAG_MIP_POINT,
+				 * для варианта Билинейная фильтрация текстур он заменяется на D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT, 
+				 * а для варианта Трилинейная фильтрация текстур он заменяется на D3D11_FILTER_MIN_MAG_MIP_LINEAR.
+
+					Для варианта Анизотропная фильтрация текстур определенный приложением режим фильтрации заменяется на D3D11_FILTER_ANISOTROPIC, 
+					а свойству "Максимальная анизотропия" присваивается значение 16.
+				 */
+				sampler = new SamplerState(device, new SamplerStateDescription
+				{
+	
+					//Filter = Filter.MinMagMipPoint,
+					//Filter = Filter.MinMagLinearMipPoint,
+					Filter = Filter.MinMagMipLinear,
+					//Filter = Filter.Anisotropic,
+					MaximumAnisotropy = 16,
+
+					AddressU = TextureAddressMode.Clamp,
+					AddressV = TextureAddressMode.Clamp,
+					AddressW = TextureAddressMode.Clamp,
+					//ComparisonFunction = Comparison.Never,
+					//BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
+					//MinimumLod = 0,
+					//MaximumLod = float.MaxValue,
+				});
+
+				var deviceContext = device.ImmediateContext;
+				deviceContext.PixelShader.SetSamplers(0, sampler);
+
+				int count = 1;
                 while (running)
                 {
                     try
 					{
-						var deviceContext = device.ImmediateContext;
 
-						_Vertex[] vertices = CreateVertices(f.Size, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
+                        _Vertex[] vertices = CreateVertices(f.Size, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
 
-						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
-						{
-							VertexBufferBinding vertexBuffer = new VertexBufferBinding
-							{
-								Buffer = buffer,
-								Stride = Utilities.SizeOf<_Vertex>(),
-								Offset = 0,
-							};
-							deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
-						}
+                        using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+                        {
+                            VertexBufferBinding vertexBuffer = new VertexBufferBinding
+                            {
+                                Buffer = buffer,
+                                Stride = Utilities.SizeOf<_Vertex>(),
+                                Offset = 0,
+                            };
+                            deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+                        }
 
-						deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
+                        deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
 
-						deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
-						{
-							Width = destSize.Width,//ImageWidth,
-							Height = destSize.Height,//ImageHeight,
-							MinDepth = 0f,
-							MaxDepth = 1f,
-							X = 0,
-							Y = 0,
-						});
+                        deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
+                        {
+                            Width = destSize.Width,//ImageWidth,
+                            Height = destSize.Height,//ImageHeight,
+                            MinDepth = 0f,
+                            MaxDepth = 1f,
+                            X = 0,
+                            Y = 0,
+                        });
 
-						ShaderResourceView shaderResourceView = null;
-						try
-						{
-							shaderResourceView = new ShaderResourceView(device, sourceTexture0, new ShaderResourceViewDescription
-							{
-								Format = sourceTexture0.Description.Format,
-								Dimension = ShaderResourceViewDimension.Texture2D,
-								Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-							});
+                        ShaderResourceView shaderResourceView = null;
+                        try
+                        {
+                            shaderResourceView = new ShaderResourceView(device, sourceTexture0, new ShaderResourceViewDescription
+                            {
+                                Format = sourceTexture0.Description.Format,
+                                Dimension = ShaderResourceViewDimension.Texture2D,
+                                Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+                            });
 
-							deviceContext.OutputMerger.SetTargets(renderTargetView);
-							deviceContext.ClearRenderTargetView(renderTargetView, Color.Black);
+                            deviceContext.OutputMerger.SetTargets(renderTargetView);
+                            deviceContext.ClearRenderTargetView(renderTargetView, Color.Blue);
 
-							deviceContext.VertexShader.SetShader(vertexShader, null, 0);
-							deviceContext.PixelShader.SetShader(pixelShader, null, 0);
-							deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
-							deviceContext.PixelShader.SetSamplers(0, samplerLinear);
+                            deviceContext.VertexShader.SetShader(defaultVertexShader, null, 0);
+                            deviceContext.PixelShader.SetShader(defaultPixelShader, null, 0);
 
-							deviceContext.Draw(vertices.Length, 0);
-							//deviceContext.Flush();
-						}
-						finally
-						{
-							shaderResourceView?.Dispose();
-						}
+                            //deviceContext.PixelShader.SetShader(downscalePixelShader, null, 0);
 
-						using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+                            deviceContext.PixelShader.SetShaderResource(0, shaderResourceView);
+
+                            deviceContext.Draw(vertices.Length, 0);
+                            //deviceContext.Flush();
+                        }
+                        finally
+                        {
+                            shaderResourceView?.Dispose();
+                        }
+
+                        //renderTarget.BeginDraw();
+                        //renderTarget.Clear(Color.Black);//(Color.Red);
+                        //DrawScreen(renderTarget, sourceTexture0, destSize, aspectRatio);
+                        //renderTarget.EndDraw();
+
+                        using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
 						{
 							deviceContext.CopyResource(sharedTexture, backBuffer);
 							swapChain.Present(1, PresentFlags.None);
@@ -280,19 +328,40 @@ namespace Test.Encoder
                 }
                 syncEvent.Dispose();
 
-            });
 
-            Application.Run(f);
+				var descr = sharedTexture.Description;
+				var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, sharedTexture);
+				var _fileName = "!!!!MinMagMipPoint_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+				File.WriteAllBytes(_fileName, bytes);
+				Console.WriteLine("OutputFile: " + _fileName);
+
+				//var ptr = Marshal.AllocHGlobal(bytes.Length);
+				//Marshal.Copy(bytes, 0, ptr, bytes.Length);
+				//GDI.Bitmap bmp = new GDI.Bitmap(descr.Width, descr.Height, descr.Width, GDI.Imaging.PixelFormat.Format32bppRgb, ptr);
+				//var _bmpfileName = "!!!!MinMagMipPoint_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".bmp";
+				//bmp.Save(_bmpfileName);
+				//Marshal.FreeHGlobal(ptr);
+
+
+
+			});
+
+
+		
+
+		Application.Run(f);
 
 			running = false;
 
 			task.Wait();
 
 			swapChain?.Dispose();
-			samplerLinear?.Dispose();
+			sampler?.Dispose();
 			inputLayout?.Dispose();
-			pixelShader?.Dispose();
-			vertexShader?.Dispose();
+			defaultPixelShader?.Dispose();
+			defaultVertexShader?.Dispose();
+            downscalePixelShader?.Dispose();
+
 			renderTargetView?.Dispose();
 			sharedTexture?.Dispose();
 			sourceTexture0?.Dispose();
@@ -400,10 +469,10 @@ namespace Test.Encoder
             var vsProvile = "vs_" + profileLevel;
             var psProvile = "ps_" + profileLevel;
        
-            var vsFile = Path.Combine(shaderPath, "VertexShader.hlsl");
+            var vsFile = Path.Combine(shaderPath, "DefaultVS.hlsl");
 			using (var compResult = CompileShaderFromFile(vsFile, "VS", vsProvile))
 			{
-				vertexShader = new VertexShader(device, compResult.Bytecode);
+				defaultVertexShader = new VertexShader(device, compResult.Bytecode);
 				var elements = new[]
 				{
 					new InputElement("POSITION",0,Format.R32G32B32_Float,0,0),
@@ -416,28 +485,122 @@ namespace Test.Encoder
 				}	
 			}
 
-			var psFile = Path.Combine(shaderPath, "PixelShader.hlsl");
+			var psFile = Path.Combine(shaderPath, "DefaultPS.hlsl");
 			using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
 			{
-				pixelShader = new PixelShader(device, compResult.Bytecode);
+				defaultPixelShader = new PixelShader(device, compResult.Bytecode);
 			}
+
+
+
+
+            //psFile = Path.Combine(shaderPath, "DownscaleBilinear9YUV.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "main", psProvile))
+            //{
+            //    downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+            //         psFile = Path.Combine(shaderPath, "DownscaleBicubicYUV.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "main", psProvile))
+            //{
+            //	downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+            psFile = Path.Combine(shaderPath, "DownscaleLanczos6tapYUV.hlsl");
+            using (var compResult = CompileShaderFromFile(psFile, "main", psProvile))
+            {
+                downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            }
+
+
+            //psFile = Path.Combine(shaderPath, "BiCubicScale.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "PSDrawBicubicRGBADivide", psProvile))
+            //{
+            //	downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+            //psFile = Path.Combine(shaderPath, "BiLinearScaling.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "PSDrawLowresBilinearRGBA", psProvile))
+            //{
+            //    downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+
         }
+        private PixelShader downscalePixelShader = null;
 
 
-        private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromFile(string file, string entryPoint, string profile)
+		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromFile(string file, string entryPoint, string profile)
         {
 
             Console.WriteLine("CompileShaderFromFile() " + string.Join(" ", file, entryPoint, profile));
 
             SharpDX.D3DCompiler.ShaderFlags shaderFlags =
                 SharpDX.D3DCompiler.ShaderFlags.EnableStrictness
-                | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
-				//| SharpDX.D3DCompiler.ShaderFlags.Debug;
+                | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization
+				| SharpDX.D3DCompiler.ShaderFlags.Debug;
 
             SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
 
             return SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
         }
 
+
+        private static void DrawScreen(SharpDX.Direct2D1.RenderTarget renderTarget, Texture2D texture, GDI.Size DestSize, bool AspectRatio = true)
+        {
+            using (var surf = texture.QueryInterface<Surface1>())
+            {
+                var descr = texture.Description;
+
+                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(descr.Format, Direct2D.AlphaMode.Premultiplied));
+                Direct2D.Bitmap screenBits = new Direct2D.Bitmap(renderTarget, surf, prop);
+                try
+                {
+                    var srcDecr = surf.Description;
+                    float srcWidth = srcDecr.Width;
+                    float srcHeight = srcDecr.Height;
+
+                    float destX = 0;
+                    float destY = 0;
+                    float destWidth = DestSize.Width;
+                    float destHeight = DestSize.Height;
+
+                    float scaleX = destWidth / srcWidth;
+                    float scaleY = destHeight / srcHeight;
+
+                    if (AspectRatio)
+                    {
+                        if (scaleY < scaleX)
+                        {
+                            scaleX = scaleY;
+                            destX = ((destWidth - srcWidth * scaleX) / 2);
+                        }
+                        else
+                        {
+                            scaleY = scaleX;
+                            destY = ((destHeight - srcHeight * scaleY) / 2);
+                        }
+                    }
+
+                    destWidth = srcWidth * scaleX;
+                    destHeight = srcHeight * scaleY;
+
+                    var destRect = new SharpDX.Mathematics.Interop.RawRectangleF
+                    {
+                        Left = destX,
+                        Right = destX + destWidth,
+                        Top = destY,
+                        Bottom = destY + destHeight,
+                    };
+
+                    renderTarget.DrawBitmap(screenBits, destRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+
+                }
+                finally
+                {
+                    screenBits?.Dispose();
+                }
+            }
+        }
     }
 }

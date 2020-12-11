@@ -39,10 +39,11 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-            //var displayInfos = DisplayUtil.GetDisplayConfigInfos();
+			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
+			SimpleSwapChain.Run();
 
-            RgbToNv12Converter.Run();
+            //RgbToNv12Converter.Run();
 
 			//D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
 			//videoProcessor.Test();

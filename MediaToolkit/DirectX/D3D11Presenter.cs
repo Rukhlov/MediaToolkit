@@ -392,7 +392,7 @@ namespace MediaToolkit.DirectX
             var vsProvile = "vs_" + profileLevel;
             var psProvile = "ps_" + profileLevel;
 
-            var vsFile = Path.Combine(shaderPath, "VertexShader.hlsl");
+            var vsFile = Path.Combine(shaderPath, "DefaultVS.hlsl");
             using (var compResult = CompileShaderFromFile(vsFile, "VS", vsProvile))
             {
                 vertexShader = new VertexShader(device, compResult.Bytecode);
@@ -408,7 +408,7 @@ namespace MediaToolkit.DirectX
                 }
             }
 
-            var psFile = Path.Combine(shaderPath, "PixelShader.hlsl");
+            var psFile = Path.Combine(shaderPath, "DefaultPS.hlsl");
             using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
             {
                 pixelShader = new PixelShader(device, compResult.Bytecode);
