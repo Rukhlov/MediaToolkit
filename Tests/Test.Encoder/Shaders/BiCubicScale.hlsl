@@ -84,7 +84,7 @@ float4 undistort_line(float4 xpos, float ypos, float4 rowtaps)
 
 float4 DrawBicubic(FragData f_in, bool undistort)
 {
-	float2 base_dimension = float2(2560.0, 1440.0);
+	float2 base_dimension = float2(1280.0, 720.0);
 	//float2 base_dimension_i = float2(1.0 / 2560.0, 1.0 / 1440.0);
 
 	float2 pos = f_in.uv;

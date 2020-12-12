@@ -136,6 +136,11 @@ namespace FFmpegLib {
 
 					encoder_ctx->flags |= AV_CODEC_FLAG_QSCALE;
 					encoder_ctx->global_quality = 10;// (2-31)//FF_QP2LAMBDA * qscale;
+
+					//TODO: set color range
+					// https://stackoverflow.com/questions/23067722/swscaler-warning-deprecated-pixel-format-used
+					// https://stackoverflow.com/questions/33932581/how-to-convert-yuv420p-image-to-jpeg-using-ffmpegs-libraries
+					//encoder_ctx->color_range = AVColorRange::AVCOL_RANGE_JPEG;
 				}
 
 				encoder_ctx->profile = profile;
@@ -181,6 +186,9 @@ namespace FFmpegLib {
 				frame->height = encoder_ctx->height;
 				frame->format = encoder_ctx->pix_fmt;
 				//frame->quality = 1;
+
+				//frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
+
 
 				AVPixelFormat pixFormat;
 				switch (encoder_ctx->pix_fmt) {
@@ -283,25 +291,38 @@ namespace FFmpegLib {
 						BitmapData^ bmpData = bmp->LockBits(bmpRect, ImageLockMode::ReadOnly, bmpFmt);
 						try {
 
-
-							sws_ctx = sws_getCachedContext(sws_ctx,
-								width, height, pix_fmt, // input
-								frame->width, frame->height, (AVPixelFormat)frame->format,  // output
-								//SWS_POINT,
-								//SWS_FAST_BILINEAR,
-								//SWS_BILINEAR,
-								//SWS_AREA,
-								SWS_BICUBIC,
-								//SWS_LANCZOS,
-								//SWS_SPLINE,
-	
-								NULL, NULL, NULL);
-
-
 							if (sws_ctx == NULL) {
 
-								throw gcnew Exception("Could not allocate convert context");
+								sws_ctx = sws_getCachedContext(sws_ctx,
+									width, height, pix_fmt, // input
+									frame->width, frame->height, (AVPixelFormat)frame->format,  // output
+									//SWS_POINT,
+									//SWS_FAST_BILINEAR,
+									//SWS_BILINEAR,
+									//SWS_AREA,
+									SWS_BICUBIC,
+									//SWS_LANCZOS,
+									//SWS_SPLINE,
+
+									NULL, NULL, NULL);
+
+								if (sws_ctx == NULL) {
+
+									throw gcnew Exception("Could not allocate convert context");
+								}
+
+								int table[4];
+								int inv_table[4];
+								int srcRange, dstRange;
+								int brightness, contrast, saturation;
+								sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
+								const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+
+								srcRange = 1; // this marks that values are according to yuvj
+								int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+
 							}
+
 
 							const uint8_t* src_data[1] =
 							{
