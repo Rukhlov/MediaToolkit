@@ -289,24 +289,37 @@ namespace ScreenStreamer.Common
             var videoSettings = Session.VideoSettings;
 
             if (videoSettings.Enabled)
-            {
+            {  
                 var captureDevice = (VideoCaptureDevice)videoSettings.CaptureDevice.Clone();
                 if(captureDevice.CaptureMode == CaptureMode.Screen)
                 {
                     var screenDevice = (ScreenCaptureDevice)captureDevice;
 
-                    if (screenDevice.CaptureRegion.Width > Config.MaxVideoEncoderWidth)
-                    {
-                        screenDevice.CaptureRegion.Width = Config.MaxVideoEncoderWidth;
-                    }
+                    //if (screenDevice.CaptureRegion.Width > Config.MaxVideoEncoderWidth)
+                    //{
+                    //    screenDevice.CaptureRegion.Width = Config.MaxVideoEncoderWidth;
+                    //}
 
-                    if (screenDevice.CaptureRegion.Height > Config.MaxVideoEncoderHeight)
-                    {
-                        screenDevice.CaptureRegion.Height = Config.MaxVideoEncoderHeight;
-                    }
+                    //if (screenDevice.CaptureRegion.Height > Config.MaxVideoEncoderHeight)
+                    //{
+                    //    screenDevice.CaptureRegion.Height = Config.MaxVideoEncoderHeight;
+                    //}
 
                     screenDevice.Resolution = MediaToolkit.Utils.GraphicTools.DecreaseToEven(screenDevice.CaptureRegion.Size);
                 }
+
+                var captureResolution = captureDevice.Resolution;
+                if (captureResolution.Width > Config.MaxVideoEncoderWidth)
+                {
+                    captureResolution.Width = Config.MaxVideoEncoderWidth;
+                }
+                if (captureResolution.Height > Config.MaxVideoEncoderHeight)
+                {
+                    captureResolution.Height = Config.MaxVideoEncoderHeight;
+                }
+                captureDevice.Resolution = captureResolution;
+
+
 
                 var videoEncoderSettings = (VideoEncoderSettings)videoSettings.EncoderSettings.Clone();
                 if (videoSettings.UseEncoderResoulutionFromSource)
@@ -319,7 +332,7 @@ namespace ScreenStreamer.Common
                     captureDevice.Resolution = videoEncoderSettings.Resolution;
                 }
 
-  
+
                 if (captureDevice.CaptureMode == CaptureMode.UvcDevice)
                 {
                     videoSource = new VideoCaptureSource();

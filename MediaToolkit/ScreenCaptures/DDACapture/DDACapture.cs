@@ -452,6 +452,7 @@ namespace MediaToolkit.ScreenCaptures
                             continue;
                         }
 
+                        
                         var desrc = texture.Description;
                         var srcRegion = new ResourceRegion
                         {
