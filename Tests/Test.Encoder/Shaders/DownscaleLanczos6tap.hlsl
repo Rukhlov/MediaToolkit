@@ -1,13 +1,12 @@
-﻿//lanczos sharper (some ridiculously complex interpolation type that I can't pronounce)
-//note - this shader is adapted from the GPL bsnes shader, very good stuff there.
-
+﻿
 Texture2D diffuseTexture : register(t0);
 SamplerState textureSampler  : register(s0);
 
-uniform float2 baseDimensionI = float2(1.0 / 1920.0, 1.0 / 1080.0);
-
-//uniform float4x4 yuvMat;
-//uniform float2 baseDimensionI;
+cbuffer dataBuffer : register(b0)
+{
+	float2 baseDimensionI;
+	//...
+};
 
 //SamplerState textureSampler
 //{
@@ -65,8 +64,10 @@ float3 get_line(float ypos, float3 xpos1, float3 xpos2, float3 linetaps1, float3
 
 float4 main(VertData input) : SV_Target
 {
-	//float2 stepxy = baseDimensionI;
-	float2 stepxy = float2(0.00005,0.00009);
+	//float2 stepxy = float2(0.00005,0.00009);
+
+	float2 stepxy = baseDimensionI;
+
 	float2 pos = input.texCoord + stepxy * 0.5;
 	float2 f = frac(pos / stepxy);
 
@@ -98,11 +99,5 @@ float4 main(VertData input) : SV_Target
 
 	rgba.a = 1.0;
 
-	//-------------------------------------------------------------
-
 	return rgba;
-
-	////a nice quick colorspace conversion
-	//float4 yuvx = mul(float4(rgba.rgb, 1.0), yuvMat);
-	//return float4(saturate(yuvx.zxy), rgba.a);
 }

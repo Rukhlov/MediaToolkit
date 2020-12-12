@@ -1,14 +1,10 @@
-﻿uniform Texture2D diffuseTexture;
-uniform float2 baseDimensionI = float2(1.0 / 1920.0, 1.0 / 1080.0);
+﻿
+Texture2D diffuseTexture : register(t0);
+SamplerState textureSampler  : register(s0);
 
-//uniform float4x4 yuvMat;
-//uniform float2 baseDimensionI;
-
-SamplerState textureSampler
+cbuffer dataBuffer : register(b0)
 {
-	AddressU = Clamp;
-	AddressV = Clamp;
-	Filter = Linear;
+	float2 baseDimensionI;
 };
 
 struct VertData
@@ -21,8 +17,8 @@ float4 main(VertData input) : SV_Target
 {
 	float2 texCoord = input.texCoord;
 
-	//float2 adjust = baseDimensionI;
-	float2 adjust = float2(0.00005, 0.00009);
+	float2 adjust = baseDimensionI;
+	//float2 adjust = float2(0.00005, 0.00009);
 	float4 rgba;
 	rgba.rgb = diffuseTexture.Sample(textureSampler, texCoord).rgb;
 	rgba.rgb += diffuseTexture.Sample(textureSampler, texCoord + float2(-adjust.x, -adjust.y)).rgb;
@@ -39,9 +35,4 @@ float4 main(VertData input) : SV_Target
 
 	return rgba;
 
-	////-------------------------------------------------------------
-
-	////a nice quick colorspace conversion
-	//float4 yuvx = mul(float4(rgba.rgb, 1.0), yuvMat);
-	//return float4(saturate(yuvx.zxy), rgba.a);
 }

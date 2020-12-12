@@ -2,11 +2,18 @@
 Texture2D image				 : register(t0);
 SamplerState textureSampler  : register(s0);
 
+cbuffer dataBuffer : register(b0)
+{
+	float2 base_dimension_i;
+	//...
+};
+
+
 //uniform float4x4 ViewProj;
 
-static  float2 base_dimension = float2(1920.0,1080.0);
-static  float2 base_dimension_i = float2(1.0/ 1920.0, 1.0/ 1080.0);
-static  float undistort_factor = 1.0;
+//static  float2 base_dimension;
+//static  float2 base_dimension_i;
+static float undistort_factor = 1.0;
 
 
 struct VertData {
@@ -22,8 +29,7 @@ struct VertData {
 struct FragData {
 
 	float4 pos : SV_Position;
-
-	float2 uv : TEXCOORD0;
+	float2 uv : TexCoord0;
 };
 
 //VertOut VSDefault(VertData v_in)
@@ -53,6 +59,8 @@ float AspectUndistortX(float x, float a)
 float AspectUndistortU(float u)
 {
 	// Normalize texture coord to -1.0 to 1.0 range, and back.
+	//return AspectUndistortX((u - 0.5) * 2.0, 1) * 0.5 + 0.5;
+
 	return AspectUndistortX((u - 0.5) * 2.0, undistort_factor) * 0.5 + 0.5;
 }
 
@@ -76,6 +84,9 @@ float4 undistort_line(float4 xpos, float ypos, float4 rowtaps)
 
 float4 DrawBicubic(FragData f_in, bool undistort)
 {
+	float2 base_dimension = float2(2560.0, 1440.0);
+	//float2 base_dimension_i = float2(1.0 / 2560.0, 1.0 / 1440.0);
+
 	float2 pos = f_in.uv;
 	float2 pos1 = floor(pos - 0.5) + 0.5;
 	float2 f = pos - pos1;
@@ -125,11 +136,15 @@ float4 DrawBicubic(FragData f_in, bool undistort)
 
 	return total;
 }
-
-float4 PSDrawBicubicRGBA(FragData f_in, bool undistort) : SV_Target
+float4 PSDrawBicubicRGBA(FragData f_in) : SV_Target
 {
-	return DrawBicubic(f_in, undistort);
+	return DrawBicubic(f_in, true);
 }
+
+//float4 PSDrawBicubicRGBA(FragData f_in, bool undistort) : SV_Target
+//{
+//	return DrawBicubic(f_in, undistort);
+//}
 
 float4 PSDrawBicubicRGBADivide(FragData f_in) : SV_Target
 {

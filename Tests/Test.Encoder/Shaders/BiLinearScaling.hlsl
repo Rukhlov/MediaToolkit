@@ -2,6 +2,7 @@
 Texture2D image				 : register(t0); 
 SamplerState textureSampler  : register(s0);
 
+
 //SamplerState textureSampler {
 //	Filter = Linear;
 //	AddressU = Clamp;
