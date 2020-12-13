@@ -66,14 +66,16 @@ namespace MediaToolkit.MediaStreamers
 
         private StreamStats streamStats = new StreamStats();
         public StatCounter Stats => streamStats;
-        
-
-        //private FFmpegVideoEncoder encoder = null;
-        //private RtpStreamer rtpStreamer = null;
-        private VideoEncoder videoEncoder = null;
 
 
-        public VideoEncoderSettings EncoderSettings { get; private set; }
+		//private FFmpegVideoEncoder encoder = null;
+		//private RtpStreamer rtpStreamer = null;
+
+
+		//private MfVideoEncoder videoEncoder = null;
+		private VideoEncoderWin7 videoEncoder = null;
+
+		public VideoEncoderSettings EncoderSettings { get; private set; }
         public NetworkSettings NetworkSettings { get; private set; }
 
         public event Action StateChanged;
@@ -111,22 +113,25 @@ namespace MediaToolkit.MediaStreamers
                 
                 RtpSender.Start();
 
-                //var hwContext = screenSource.hwContext;
-                //var hwDevice = hwContext.device;
+				//var hwContext = screenSource.hwContext;
+				//var hwDevice = hwContext.device;
 
-                //var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
+				//var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-                //if (encodingSettings.UseResoulutionFromSource)
-                //{
-                //    encodingSettings.Resolution = srcSize;
-                //}
+				//if (encodingSettings.UseResoulutionFromSource)
+				//{
+				//    encodingSettings.Resolution = srcSize;
+				//}
 
-                //encoder = new FFmpegVideoEncoder();
-                //encoder.Open(encodingParams);
-                //encoder.DataEncoded += Encoder_DataEncoded;
+				//encoder = new FFmpegVideoEncoder();
+				//encoder.Open(encodingParams);
+				//encoder.DataEncoded += Encoder_DataEncoded;
 
-                videoEncoder = new VideoEncoder(videoSource);
-                videoEncoder.Open(encoderSettings);
+				//videoEncoder = new MfVideoEncoder(videoSource);
+
+				videoEncoder = new VideoEncoderWin7(videoSource);
+
+				videoEncoder.Open(encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
                 videoSource.BufferUpdated += ScreenSource_BufferUpdated;

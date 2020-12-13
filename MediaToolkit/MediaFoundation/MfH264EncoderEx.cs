@@ -20,7 +20,7 @@ using MediaToolkit.Logging;
 namespace MediaToolkit.MediaFoundation
 {
 
-    public class MfH264EncoderEx : IMfVideoEncoder
+    public class MfH264EncoderEx : IMfVideoTransform
     {
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");

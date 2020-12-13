@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using FFmpegLib;
 using MediaToolkit.Core;
 using MediaToolkit.DirectX;
 using MediaToolkit.Logging;
@@ -18,19 +19,19 @@ using SharpDX.MediaFoundation;
 namespace MediaToolkit.MediaFoundation
 {
 
-    public class VideoEncoder
+    public class MfVideoEncoder
     {
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
         private readonly IVideoSource videoSource = null;
 
-        public VideoEncoder(IVideoSource source)
+        public MfVideoEncoder(IVideoSource source)
         {
             this.videoSource = source;
         }
 
-        private IMfVideoEncoder encoder = null;
+        private IMfVideoTransform encoder = null;
 
         //private MfH264Encoder encoder = null;
         //private MfH264EncoderEx encoder = null;
@@ -40,7 +41,7 @@ namespace MediaToolkit.MediaFoundation
 
         private Texture2D bufTexture = null;
 
-        private Device device = null;
+		private Device device = null;
         public void Open(VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Setup(...)");
@@ -290,7 +291,7 @@ namespace MediaToolkit.MediaFoundation
     }
 
 
-    public interface IMfVideoEncoder
+    public interface IMfVideoTransform
     {
         void Setup(MfVideoArgs args);
         void Start();
@@ -302,7 +303,7 @@ namespace MediaToolkit.MediaFoundation
         event Action<IntPtr, int, double> DataEncoded;
     }
 
-    class MfFFMpegVideoEncoder : IMfVideoEncoder
+    class MfFFMpegVideoEncoder : IMfVideoTransform
     {
 		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 		private FFmpegLib.H264Encoder encoder = null;
