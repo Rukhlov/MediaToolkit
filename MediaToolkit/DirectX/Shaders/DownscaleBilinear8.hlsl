@@ -43,7 +43,7 @@ float4 DrawLowresBilinear(VertData v_in)
 	return out_color * 0.125;
 }
 
-float4 main(VertData v_in) : SV_Target
+float4 PS(VertData v_in) : SV_Target
 {
 	return DrawLowresBilinear(v_in);
 }

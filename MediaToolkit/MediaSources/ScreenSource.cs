@@ -154,10 +154,12 @@ namespace MediaToolkit
                 screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
                 screenCapture.AspectRatio = CaptureProps.AspectRatio;
 
+
+
 				var d3d11Capture = screenCapture as ITexture2DSource;
 				if (d3d11Capture != null)
 				{
-					d3d11Capture.UseHwContext = CaptureProps.UseHardware;
+                    d3d11Capture.UseHwContext = CaptureProps.UseHardware;
 					this.hwContext = d3d11Capture;
 					this.AdapterId = d3d11Capture.AdapterId;
 

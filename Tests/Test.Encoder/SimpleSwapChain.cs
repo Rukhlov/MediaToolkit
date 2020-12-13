@@ -64,8 +64,8 @@ namespace Test.Encoder
             //var destSize = new GDI.Size(100, 100);
             //var destSize = new GDI.Size(ImageWidth, ImageHeight);
 
-            //var destSize = new GDI.Size(640, 360);
-            var destSize = new GDI.Size(852, 480);
+            var destSize = new GDI.Size(640, 360);
+            //var destSize = new GDI.Size(852, 480);
            // var destSize = new GDI.Size(1280, 720);
 
             //var destSize = new GDI.Size(2560, 1440);
@@ -94,12 +94,12 @@ namespace Test.Encoder
             //var rect = Screen.PrimaryScreen.Bounds;
             //using (GDI.Bitmap bmp = new GDI.Bitmap(rect.Width, rect.Height))
             //{
-            //	using (GDI.Graphics g = GDI.Graphics.FromImage(bmp))
-            //	{
-            //		g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, GDI.CopyPixelOperation.SourceCopy );
-            //	}
-            //	fileName = @"Files\Screen0_2560x1440.bmp";
-            //	bmp.Save(fileName, GDI.Imaging.ImageFormat.Bmp);
+            //    using (GDI.Graphics g = GDI.Graphics.FromImage(bmp))
+            //    {
+            //        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size, GDI.CopyPixelOperation.SourceCopy);
+            //    }
+            //    fileName = @"Files\Screen0_2560x1440.bmp";
+            //    bmp.Save(fileName, GDI.Imaging.ImageFormat.Bmp);
             //}
 
 
@@ -385,7 +385,7 @@ namespace Test.Encoder
 
                 //var descr = sharedTexture.Description;
                 //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, sharedTexture);
-                //var _fileName = "!!!!MinMagMipPoint_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+                //var _fileName = "!!!!NV12_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
                 //File.WriteAllBytes(_fileName, bytes);
                 //Console.WriteLine("OutputFile: " + _fileName);
 

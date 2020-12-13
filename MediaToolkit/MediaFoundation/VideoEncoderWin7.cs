@@ -44,120 +44,99 @@ namespace MediaToolkit.MediaFoundation
 		private SharpDX.Direct3D11.Device device = null;
 		private GDI.Size srcSize;
         private GDI.Size destSize;
+        private Texture2DDescription srcDecription;
 
         public void Open(VideoEncoderSettings encoderSettings)
-		{
-			logger.Debug("VideoEncoder::Setup(...)");
+        {
+            logger.Debug("VideoEncoder::Setup(...)");
 
-			var encoderName = encoderSettings.EncoderId;
+            var encoderName = encoderSettings.EncoderId;
 
-			if (encoderName == "libx264" || encoderName == "h264_nvenc")
-			{
-				//ffmpegEncoder = new FFmpegVideoEncoder();
-				ffmpegEncoder = new H264Encoder();
-			}
-			else
-			{
-				throw new NotSupportedException("Invalid encoder name: " + encoderName);
-			}
+            if (encoderName == "libx264" || encoderName == "h264_nvenc")
+            {
+                //ffmpegEncoder = new FFmpegVideoEncoder();
+                ffmpegEncoder = new H264Encoder();
+            }
+            else
+            {
+                throw new NotSupportedException("Invalid encoder name: " + encoderName);
+            }
+            //ffmpegEncoder.Open(encoderSettings);
+            ffmpegEncoder.Setup(encoderSettings);
+            ffmpegEncoder.DataEncoded += FFmpegEncoder_DataEncoded;
 
-			ffmpegEncoder.Setup(encoderSettings);
-			ffmpegEncoder.DataEncoded += FFmpegEncoder_DataEncoded;
+            InitDx(encoderSettings);
 
+        }
 
-			var hwBuffer = videoSource.SharedTexture;
-			var hwDescr = hwBuffer.Description;
-			srcSize = new Size(hwDescr.Width, hwDescr.Height);
-			
+        private void InitDx(VideoEncoderSettings encoderSettings)
+        {
+            var hwBuffer = videoSource.SharedTexture;
+            srcDecription = hwBuffer.Description;
+            srcSize = new Size(srcDecription.Width, srcDecription.Height);
 
-			destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
-			var adapterId = videoSource.AdapterId;
-			using (var adapter = DxTool.FindAdapter1(adapterId))
-			{
-				var descr = adapter.Description;
-				int adapterVenId = descr.VendorId;
+            destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
+            var adapterId = videoSource.AdapterId;
+            using (var adapter = DxTool.FindAdapter1(adapterId))
+            {
+                var descr = adapter.Description;
+                int adapterVenId = descr.VendorId;
 
-				logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+                logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-				var flags = DeviceCreationFlags.BgraSupport;
+                var flags = DeviceCreationFlags.BgraSupport;
 
-				device = new SharpDX.Direct3D11.Device(adapter, flags);
-				using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-				{
-					multiThread.SetMultithreadProtected(true);
-				}
+                device = new SharpDX.Direct3D11.Device(adapter, flags);
+                using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                {
+                    multiThread.SetMultithreadProtected(true);
+                }
 
-			}
+            }
 
-			rgbTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
-			{
-				Width = hwDescr.Width,
-				Height = hwDescr.Height,
-				Format = hwDescr.Format,
+            InitRenderResources();
 
-				SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-				BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-				Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-				CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-				OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-				MipLevels = 1,
-				ArraySize = 1,
+            InitShaders();
 
-			});
+            //samplerLinear = new SamplerState(device, new SamplerStateDescription
+            //{
+            //    Filter = Filter.MinMagMipLinear,
+            //    //Filter = Filter.MinMagMipLinear,
+            //    AddressU = TextureAddressMode.Clamp,
+            //    AddressV = TextureAddressMode.Clamp,
+            //    AddressW = TextureAddressMode.Clamp,
+            //    ComparisonFunction = Comparison.Never,
+            //    BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
+            //    MinimumLod = 0,
+            //    MaximumLod = float.MaxValue,
+            //});
 
-			//// для NV12 размеры должны быть четными!!!
-			//var newSize = MediaToolkit.Utils.GraphicTools.DecreaseToEven(new GDI.Size(width, height));
+            samplerLinear = new SamplerState(device, new SamplerStateDescription
+            {
 
-			ShaderResourceViewDescription description = new ShaderResourceViewDescription
-			{
-				Format = hwDescr.Format,
-				Dimension = ShaderResourceViewDimension.Texture2D,
-				Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-			};
+                //Filter = Filter.MinMagMipPoint,
+                //Filter = Filter.MinMagLinearMipPoint,
+                Filter = Filter.MinMagMipLinear,
+                //Filter = Filter.Anisotropic,
+                MaximumAnisotropy = 16,
 
-			rgbSRV = new ShaderResourceView(device, rgbTexture, description);
+                //AddressU = TextureAddressMode.Wrap,
+                //AddressV = TextureAddressMode.Wrap,
+                //AddressW = TextureAddressMode.Wrap,
 
-			InitLumaRenderResources(srcSize);
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Clamp,
+                AddressW = TextureAddressMode.Clamp,
+                //ComparisonFunction = Comparison.Never,
+                //BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
+                //MinimumLod = 0,
+                //MaximumLod = float.MaxValue,
+            });
 
-			InitChromaRenderResources(srcSize);
-           // InitNv12RenderResources(srcSize);
+            //device.ImmediateContext.PixelShader.SetSamplers(0, samplerLinear);
+        }
 
-			InitShaders();
-
-			var deviceContext = device.ImmediateContext;
-
-			_Vertex[] vertices = CreateVertices(srcSize, srcSize, false);
-			using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
-			{
-				VertexBufferBinding vertexBuffer = new VertexBufferBinding
-				{
-					Buffer = buffer,
-					Stride = Utilities.SizeOf<_Vertex>(),
-					Offset = 0,
-				};
-				deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
-			}
-
-			deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-
-			samplerLinear = new SamplerState(device, new SamplerStateDescription
-			{
-				Filter = Filter.MinMagMipLinear,
-				//Filter = Filter.MinMagMipLinear,
-				AddressU = TextureAddressMode.Clamp,
-				AddressV = TextureAddressMode.Clamp,
-				AddressW = TextureAddressMode.Clamp,
-				ComparisonFunction = Comparison.Never,
-				BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
-				MinimumLod = 0,
-				MaximumLod = float.MaxValue,
-			});
-
-			deviceContext.PixelShader.SetSamplers(0, samplerLinear);
-
-		}
-
-		private void FFmpegEncoder_DataEncoded(IntPtr data, int size, double timestamp)
+        private void FFmpegEncoder_DataEncoded(IntPtr data, int size, double timestamp)
 		{
 			var buf = new byte[size];
 			Marshal.Copy(data, buf, 0, size);
@@ -166,166 +145,294 @@ namespace MediaToolkit.MediaFoundation
 		}
 
 
-		private void RgbToNv12()
-		{
-			var deviceContext = device.ImmediateContext;
+		public void Encode()
+        {
 
-			_Vertex[] vertices = CreateVertices(srcSize, srcSize, false);
-            int width = srcSize.Width;
-            int height = srcSize.Height;
-
-            SetViewPort(width, height);
-            deviceContext.VertexShader.SetShader(vertexShader, null, 0);
+            //ffmpegEncoder.Encode(videoSource.SharedBitmap);
 
 
-            deviceContext.OutputMerger.SetTargets(lumaRT, chromaRT);
-            deviceContext.ClearRenderTargetView(lumaRT, SharpDX.Color.Black);
-            deviceContext.ClearRenderTargetView(chromaRT, SharpDX.Color.Black);
-            deviceContext.PixelShader.SetShader(rgbToYuvPixShader, null, 0);
-            deviceContext.PixelShader.SetShaderResources(0, rgbSRV);
-            deviceContext.Draw(vertices.Length, 0);
-
-            deviceContext.OutputMerger.SetTargets(nv12LumaRT);
-            deviceContext.ClearRenderTargetView(nv12LumaRT, SharpDX.Color.Black);
-            deviceContext.PixelShader.SetShader(pixelShader, null, 0);
-            deviceContext.PixelShader.SetShaderResources(0, lumaSRV);
-            deviceContext.Draw(vertices.Length, 0);
-
-            SetViewPort(srcSize.Width / 2, srcSize.Height / 2);
-            deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
-            deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
-            deviceContext.PixelShader.SetShaderResources(0, chromaSRV);
-            deviceContext.Draw(vertices.Length, 0);
-
+            PrepareTexture();
+            
+            EncodeTexture();
 
         }
 
+        private void PrepareTexture()
+        {
+            var sharedTexture = videoSource.SharedTexture;
+            if (sharedTexture != null)
+            {
+                using (var sharedRes = sharedTexture.QueryInterface<SharpDX.DXGI.Resource>())
+                {
+                    var handle = sharedRes.SharedHandle;
+                    if (handle != IntPtr.Zero)
+                    {
+                        using (var sharedTex = device.OpenSharedResource<Texture2D>(handle))
+                        {
+                            var deviceContext = device.ImmediateContext;
 
-		public void Encode()
-		{
-			var sharedTexture = videoSource.SharedTexture;
-			if (sharedTexture != null)
-			{
-				using (var sharedRes = sharedTexture.QueryInterface<SharpDX.DXGI.Resource>())
-				{
-					var handle = sharedRes.SharedHandle;
-					if (handle != IntPtr.Zero)
-					{
-						using (var sharedTex = device.OpenSharedResource<Texture2D>(handle))
-						{
-							device.ImmediateContext.CopyResource(sharedTex, rgbTexture);
-						}
-					}
-				}
-			}
+                            int destWidth = destSize.Width;
+                            int destHeight = destSize.Height;
+
+                            var vertices = new _Vertex[]
+                            {
+                                new _Vertex(new Vector3(-1f, -1f, 0f), new Vector2(0f, 1f)),
+                                new _Vertex(new Vector3(-1f, 1f, 0f), new Vector2(0f, 0f)),
+                                new _Vertex(new Vector3(1f, -1f, 0f), new Vector2(1f, 1f)),
+                                new _Vertex(new Vector3(1f, 1f, 0f), new Vector2(1f, 0f)),
+                            };
+
+                            if (destSize == srcSize)
+                            {
+                                deviceContext.CopyResource(sharedTex, rgbTexture);
+                            }
+                            else
+                            {
+                                var descr = sharedTex.Description;
+                                Texture2D srcTexture = null;
+                                try
+                                {
+                                    srcTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
+                                    {
+                                        Width = descr.Width,
+                                        Height = descr.Height,
+                                        Format = descr.Format,
+
+                                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                                        BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                                        Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                                        MipLevels = 1,
+                                        ArraySize = 1,
+                                    });
+
+                                    deviceContext.CopyResource(sharedTex, srcTexture);
+
+                                    ShaderResourceView srcSRV = null;
+                                    try
+                                    {
+                                        srcSRV = new ShaderResourceView(device, srcTexture, new ShaderResourceViewDescription
+                                        {
+                                            Format = srcTexture.Description.Format,
+                                            Dimension = ShaderResourceViewDimension.Texture2D,
+                                            Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+                                        });
+
+                                        vertices = CreateVertices(srcSize, destSize, true);         
+                                        using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+                                        {
+                                            VertexBufferBinding vertexBuffer = new VertexBufferBinding
+                                            {
+                                                Buffer = buffer,
+                                                Stride = Utilities.SizeOf<_Vertex>(),
+                                                Offset = 0,
+                                            };
+                                            deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+                                        }
+
+                                        deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
+
+                                        ////var baseDimensionI = new Vector2(1f / (1f * destSize.Width), 1f / (1f * destSize.Height));
+                                        //var baseDimensionI = new Vector2(1f / (3f * destSize.Width), 1f / (3f * destSize.Height));
+                                        ////var baseDimensionI = new Vector2(1f / (3f * srcDescr.Width), 1f / (3f * srcDescr.Height ));
+                                        //using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref baseDimensionI, 16))
+                                        //{
+                                        //    deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+                                        //}
+
+                                        device.ImmediateContext.PixelShader.SetSamplers(0, samplerLinear);
+                                        deviceContext.PixelShader.SetShader(downscalePixelShader, null, 0);
+
+                                        SetViewPort(destWidth, destHeight);
+                                        deviceContext.VertexShader.SetShader(vertexShader, null, 0);
+
+                                        deviceContext.OutputMerger.SetTargets(rgbRTV);
+                                        deviceContext.ClearRenderTargetView(rgbRTV, SharpDX.Color.Blue);
+                                        //deviceContext.PixelShader.SetShader(pixelShader, null, 0);
+
+        
+
+                                        //
+                                        deviceContext.PixelShader.SetShaderResource(0, srcSRV);
+
+                                        deviceContext.Draw(vertices.Length, 0);
+
+                                    }
+                                    finally
+                                    {
+                                        if (srcSRV != null)
+                                        {
+                                            srcSRV.Dispose();
+                                            srcSRV = null;
+                                        }
+                                    }
+                                }
+                                finally
+                                {
+                                    if (srcTexture != null)
+                                    {
+                                        srcTexture.Dispose();
+                                        srcTexture = null;
+                                    }
+                                }
+                            }
+
+                            using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+                            {
+                                VertexBufferBinding vertexBuffer = new VertexBufferBinding
+                                {
+                                    Buffer = buffer,
+                                    Stride = Utilities.SizeOf<_Vertex>(),
+                                    Offset = 0,
+                                };
+                                deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+                            }
+                            deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
+
+                            SetViewPort(destWidth, destHeight);
+                            deviceContext.VertexShader.SetShader(vertexShader, null, 0);
+
+                            deviceContext.OutputMerger.SetTargets(lumaRT, chromaRT);
+                            deviceContext.ClearRenderTargetView(lumaRT, SharpDX.Color.Black);
+                            deviceContext.ClearRenderTargetView(chromaRT, SharpDX.Color.Black);
+                            deviceContext.PixelShader.SetShader(rgbToYuvPixShader, null, 0);
+                            deviceContext.PixelShader.SetShaderResources(0, rgbSRV);
+                            deviceContext.Draw(vertices.Length, 0);
+
+                            deviceContext.PixelShader.SetShader(pixelShader, null, 0);
+
+                            SetViewPort(destWidth / 2, destHeight / 2);
+                            deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
+                            deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
+                            deviceContext.PixelShader.SetShaderResources(0, chromaSRV);
+                            deviceContext.Draw(vertices.Length, 0);
+
+                        }
+                    }
+                }
+            }
+        }
 
 
-			RgbToNv12();
-
+        private void EncodeTexture()
+        {
             //var descr = nv12Texture.Description;
             //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, nv12Texture);
             //var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
             //File.WriteAllBytes(_fileName, bytes);
             //Console.WriteLine("OutputFile: " + _fileName);
 
-            var width = srcSize.Width;
-			var height = srcSize.Height;
-			var destPitch = width; 
-			var destRowNumber = height + height / 2;
-			var destBufferSize = destPitch * destRowNumber;
 
-			IntPtr destPtr = Marshal.AllocHGlobal(destBufferSize);
-			IntPtr _destPtr = destPtr;
-			int lumaSize = 0;
-			using (var tex = lumaRT.ResourceAs<Texture2D>())
-			{
-				var stagingDescr = tex.Description;
-				stagingDescr.BindFlags = BindFlags.None;
-				stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
-				stagingDescr.Usage = ResourceUsage.Staging;
-				stagingDescr.OptionFlags = ResourceOptionFlags.None;
-
-				using (var stagingTexture = new Texture2D(device, stagingDescr))
-				{
-					device.ImmediateContext.CopyResource(tex, stagingTexture);
-					var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-
-					var srcPitch = dataBox.RowPitch;
-					var srcDataSize = dataBox.SlicePitch;
-					var srcPtr = dataBox.DataPointer;
-
-					destPitch =  width;
-					destRowNumber = height;
-
-					for (int i = 0; i < destRowNumber; i++)
-					{
-						Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
-						_destPtr += destPitch;
-						srcPtr += srcPitch;
-						lumaSize += destPitch;
-					}
-
-					device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
-				}
-
-			}
-
-            using (var tex = nv12ChromaRT.ResourceAs<Texture2D>())
+            IntPtr destPtr = IntPtr.Zero;
+            try
             {
-                //var descr = tex.Description;
-                //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, tex);
-                //var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
-                //File.WriteAllBytes(_fileName, bytes);
-                //Console.WriteLine("OutputFile: " + _fileName);
+                var width = destSize.Width;
+                var height = destSize.Height;
+                var destPitch = width;
+                var destRowNumber = height + height / 2;
+                var destBufferSize = destPitch * destRowNumber;
 
-                var stagingDescr = tex.Description;
-                stagingDescr.BindFlags = BindFlags.None;
-                stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
-                stagingDescr.Usage = ResourceUsage.Staging;
-                stagingDescr.OptionFlags = ResourceOptionFlags.None;
-                using (var stagingTexture = new Texture2D(device, stagingDescr))
+                destPtr = Marshal.AllocHGlobal(destBufferSize);
+
+                IntPtr _destPtr = destPtr;
+                using (var tex = lumaRT.ResourceAs<Texture2D>())
                 {
-                    device.ImmediateContext.CopyResource(tex, stagingTexture);
+                    var stagingDescr = tex.Description;
+                    stagingDescr.BindFlags = BindFlags.None;
+                    stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
+                    stagingDescr.Usage = ResourceUsage.Staging;
+                    stagingDescr.OptionFlags = ResourceOptionFlags.None;
 
-                    var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-                    width = stagingDescr.Width;
-                    height = stagingDescr.Height;
-
-                    var srcPitch = dataBox.RowPitch;
-                    var srcDataSize = dataBox.SlicePitch;
-                    var srcPtr = dataBox.DataPointer;
-
-                    destPitch = 2 * width;
-                    destRowNumber = height;// / 2;
-
-                    for (int i = 0; i < destRowNumber; i++)
+                    using (var stagingTexture = new Texture2D(device, stagingDescr))
                     {
-                        Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
-                        _destPtr += destPitch;
-                        srcPtr += srcPitch;
+                        device.ImmediateContext.CopyResource(tex, stagingTexture);
+                        var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+                        try
+                        {
+                            var srcPitch = dataBox.RowPitch;
+                            var srcDataSize = dataBox.SlicePitch;
+                            var srcPtr = dataBox.DataPointer;
+
+                            destPitch = width;
+                            destRowNumber = height;
+
+                            for (int i = 0; i < destRowNumber; i++)
+                            {
+                                Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
+                                _destPtr += destPitch;
+                                srcPtr += srcPitch;
+                            }
+                        }
+                        finally
+                        {
+                            device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+                        }
+
                     }
 
-                    device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+                }
+
+                using (var tex = nv12ChromaRT.ResourceAs<Texture2D>())
+                {
+                    //var descr = tex.Description;
+                    //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, tex);
+                    //var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+                    //File.WriteAllBytes(_fileName, bytes);
+                    //Console.WriteLine("OutputFile: " + _fileName);
+
+                    var stagingDescr = tex.Description;
+                    stagingDescr.BindFlags = BindFlags.None;
+                    stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
+                    stagingDescr.Usage = ResourceUsage.Staging;
+                    stagingDescr.OptionFlags = ResourceOptionFlags.None;
+                    using (var stagingTexture = new Texture2D(device, stagingDescr))
+                    {
+                        device.ImmediateContext.CopyResource(tex, stagingTexture);
+
+                        var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+                        try
+                        {
+                            width = stagingDescr.Width;
+                            height = stagingDescr.Height;
+
+                            var srcPitch = dataBox.RowPitch;
+                            var srcDataSize = dataBox.SlicePitch;
+                            var srcPtr = dataBox.DataPointer;
+
+                            destPitch = 2 * width;
+                            destRowNumber = height;
+
+                            for (int i = 0; i < destRowNumber; i++)
+                            {
+                                Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
+                                _destPtr += destPitch;
+                                srcPtr += srcPitch;
+                            }
+                        }
+                        finally
+                        {
+                            device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+                        }
+                    }
+                }
+                //Utils.TestTools.WriteFile((destPtr), destBufferSize, "TEST_NV12.raw");
+
+                ffmpegEncoder.Encode(destPtr, destBufferSize, 0);
+            }
+            finally
+            {
+                if (destPtr != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(destPtr);
+                    destPtr = IntPtr.Zero;
                 }
             }
+        }
 
 
-            //Utils.TestTools.WriteFile((destPtr), destBufferSize, "TEST_NV12.raw");
 
-			ffmpegEncoder.Encode(destPtr, destBufferSize, 0);
-
-			//ffmpegEncoder.Encode(videoSource.SharedBitmap);
-
-			if (destPtr != IntPtr.Zero)
-			{
-				Marshal.FreeHGlobal(destPtr);
-				destPtr = IntPtr.Zero;
-			}
-			
-
-		}
-
-		public void Close()
+        public void Close()
 		{
 			logger.Debug("VideoEncoder::Close()");
 
@@ -355,13 +462,17 @@ namespace MediaToolkit.MediaFoundation
 
 		private Texture2D rgbTexture = null;
 		private ShaderResourceView rgbSRV = null;
+        private RenderTargetView rgbRTV = null;
 
-		private ShaderResourceView lumaSRV = null;
+        private ShaderResourceView lumaSRV = null;
 		private RenderTargetView lumaRT = null;
 		private ShaderResourceView chromaSRV = null;
 		private RenderTargetView chromaRT = null;
+        private RenderTargetView nv12ChromaRT = null;
+        private PixelShader downscalePixelShader = null;
 
-		private void InitShaders()
+
+        private void InitShaders()
 		{
 			logger.Debug("InitShaders()");
 			
@@ -370,8 +481,7 @@ namespace MediaToolkit.MediaFoundation
 			var vsProvile = "vs_" + profileLevel;
 			var psProvile = "ps_" + profileLevel;
 
-			var vsFile =  "DefaultVS.hlsl";
-			using (var compResult = CompileShader(vsFile, "VS", vsProvile))
+			using (var compResult = CompileShader("DefaultVS.hlsl", "VS", vsProvile))
 			{
 				vertexShader = new VertexShader(device, compResult.Bytecode);
 				var elements = new[]
@@ -386,26 +496,64 @@ namespace MediaToolkit.MediaFoundation
 				}
 			}
 
-			var psFile = "DefaultPS.hlsl";
-			using (var compResult = CompileShader(psFile, "PS", psProvile))
+			using (var compResult = CompileShader("DefaultPS.hlsl", "PS", psProvile))
 			{
 				pixelShader = new PixelShader(device, compResult.Bytecode);
 			}
 
-			psFile = "RgbToNv12.hlsl";
-			using (var compResult = CompileShader(psFile, "PS", psProvile))
+			using (var compResult = CompileShader("RgbToNv12.hlsl", "PS", psProvile))
 			{
 				rgbToYuvPixShader = new PixelShader(device, compResult.Bytecode);
 			}
-		}
+            using (var compResult = CompileShader("DownscaleBilinear8.hlsl", "PS", psProvile))
+            //using (var compResult = CompileShader("DownscaleBilinear9.hlsl", "PS", psProvile))
+            {
+                downscalePixelShader = new PixelShader(device, compResult.Bytecode);
+            }
+        }
 
-		private void InitLumaRenderResources(GDI.Size size)
+		private void InitRenderResources()
 		{
-			logger.Debug("InitLumaRenderResources(...) " + size);
-			var descr = new SharpDX.Direct3D11.Texture2DDescription
+			logger.Debug("InitRenderResources(...) " + destSize);
+
+            rgbTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
+            {
+                Width = destSize.Width,
+                Height = destSize.Height,
+                Format = srcDecription.Format,
+
+                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                MipLevels = 1,
+                ArraySize = 1,
+
+            });
+
+            //// для NV12 размеры должны быть четными!!!
+            //var newSize = MediaToolkit.Utils.GraphicTools.DecreaseToEven(new GDI.Size(width, height));
+            rgbSRV = new ShaderResourceView(device, rgbTexture,
+                new ShaderResourceViewDescription
+                {
+                    Format = srcDecription.Format,
+                    Dimension = ShaderResourceViewDimension.Texture2D,
+                    Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+                });
+
+            rgbRTV = new RenderTargetView(device, rgbTexture,
+                new RenderTargetViewDescription
+                {
+                    Format = srcDecription.Format,//Format.R8G8B8A8_UNorm,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                });
+
+            var textureDescr = new SharpDX.Direct3D11.Texture2DDescription
 			{
-				Width = size.Width,
-				Height = size.Height,
+				Width = destSize.Width,
+				Height = destSize.Height,
 				MipLevels = 1,
 				ArraySize = 1,
 				SampleDescription = new SampleDescription(1, 0),
@@ -417,127 +565,63 @@ namespace MediaToolkit.MediaFoundation
 				OptionFlags = ResourceOptionFlags.None,
 			};
 
-			using (var tex = new Texture2D(device, descr))
+            // Init luminance resources...
+			using (var tex = new Texture2D(device, textureDescr))
 			{
-				ShaderResourceViewDescription description = new ShaderResourceViewDescription
-				{
-					Format = Format.R8_UNorm,
-					Dimension = ShaderResourceViewDimension.Texture2D,
-					Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-				};
-
-				lumaSRV = new ShaderResourceView(device, tex, description);
-
-				RenderTargetViewDescription d = new RenderTargetViewDescription
-				{
-					Format = Format.R8_UNorm,
-					Dimension = RenderTargetViewDimension.Texture2D,
-					Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-				};
-
-				lumaRT = new RenderTargetView(device, tex, d);
+				lumaSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
+                {
+                    Format = textureDescr.Format,
+                    Dimension = ShaderResourceViewDimension.Texture2D,
+                    Texture2D = new ShaderResourceViewDescription.Texture2DResource
+                    {
+                        MipLevels = 1,
+                        MostDetailedMip = 0
+                    },
+                });
+				lumaRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                {
+                    Format = textureDescr.Format,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                });
 			}
 
-		}
-
-		private RenderTargetView nv12ChromaRT = null;
-
-		private void InitChromaRenderResources(GDI.Size size)
-		{
-			logger.Debug("InitChromaRenderResources(...) " + size);
-			var descr = new SharpDX.Direct3D11.Texture2DDescription
-			{
-				Width = size.Width,
-				Height = size.Height,
-				MipLevels = 1,
-				ArraySize = 1,
-				SampleDescription = new SampleDescription(1, 0),
-				Usage = ResourceUsage.Default,
-				Format = Format.R8G8_UNorm,
-				BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-				CpuAccessFlags = CpuAccessFlags.None,
-				OptionFlags = ResourceOptionFlags.None,
-			};
-
-			using (var tex = new Texture2D(device, descr))
-			{
-				ShaderResourceViewDescription description = new ShaderResourceViewDescription
-				{
-					Format = Format.R8G8_UNorm,
-					Dimension = ShaderResourceViewDimension.Texture2D,
-					Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-				};
-
-				chromaSRV = new ShaderResourceView(device, tex, description);
-
-				RenderTargetViewDescription d = new RenderTargetViewDescription
-				{
-					Format = Format.R8G8_UNorm,
-					Dimension = RenderTargetViewDimension.Texture2D,
-					Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-				};
-
-				chromaRT = new RenderTargetView(device, tex, d);
-			}
-
-            descr.Width = size.Width / 2;
-            descr.Height = size.Height / 2;
-            using (var tex = new Texture2D(device, descr))
+            // Init chrominance resources...
+            textureDescr.Format = Format.R8G8_UNorm;
+            using (var tex = new Texture2D(device, textureDescr))
             {
-                RenderTargetViewDescription d = new RenderTargetViewDescription
+                chromaSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
                 {
                     Format = Format.R8G8_UNorm,
-                    Dimension = RenderTargetViewDimension.Texture2D,
-                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-                };
+                    Dimension = ShaderResourceViewDimension.Texture2D,
+                    Texture2D = new ShaderResourceViewDescription.Texture2DResource
+                    {
+                        MipLevels = 1,
+                        MostDetailedMip = 0
+                    },
+                });
 
-                nv12ChromaRT = new RenderTargetView(device, tex, d);
-            }
-        }
-
-        private Texture2D nv12Texture = null;
-        private RenderTargetView nv12LumaRT = null;
-
-        private void InitNv12RenderResources(GDI.Size size)
-        {
-            logger.Debug("InitNv12RenderResources(...) " + size);
-            var descr = new SharpDX.Direct3D11.Texture2DDescription
-            {
-                Width = size.Width,
-                Height = size.Height,
-                MipLevels = 1,
-                ArraySize = 1,
-                SampleDescription = new SampleDescription(1, 0),
-                Usage = ResourceUsage.Default,
-                Format = Format.NV12,
-                BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                CpuAccessFlags = CpuAccessFlags.None,
-                OptionFlags = ResourceOptionFlags.None,
-            };
-
-            nv12Texture = new Texture2D(device, descr);
-            {
-                RenderTargetViewDescription d = new RenderTargetViewDescription
+                chromaRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
                 {
-                    Format = Format.R8_UNorm,
+                    Format = textureDescr.Format,
                     Dimension = RenderTargetViewDimension.Texture2D,
                     Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-                };
-
-                nv12LumaRT = new RenderTargetView(device, nv12Texture, d);
-
-                d = new RenderTargetViewDescription
-                {
-                    Format = Format.R8G8_UNorm,
-                    Dimension = RenderTargetViewDimension.Texture2D,
-                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-                };
-
-                nv12ChromaRT = new RenderTargetView(device, nv12Texture, d);
+                });
             }
 
+            // Init nv12 chroma...
+            textureDescr.Width = destSize.Width / 2;
+            textureDescr.Height = destSize.Height / 2;
+            using (var tex = new Texture2D(device, textureDescr))
+            {
+                nv12ChromaRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                {
+                    Format = textureDescr.Format,
+                    Dimension = RenderTargetViewDimension.Texture2D,
+                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                });
+            }
         }
-
 
 
         private void CloseDx()

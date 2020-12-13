@@ -178,7 +178,7 @@
     <EmbeddedResource Include="DirectX\Shaders\DefaultVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Shaders\DownscaleBillinear8.hlsl" />
+    <EmbeddedResource Include="DirectX\Shaders\DownscaleBilinear8.hlsl" />
     <EmbeddedResource Include="DirectX\Shaders\DownscaleBicubic.hlsl" />
     <EmbeddedResource Include="DirectX\Shaders\DownscaleBilinear9.hlsl" />
     <EmbeddedResource Include="DirectX\Shaders\DownscaleLanczos6.hlsl" />

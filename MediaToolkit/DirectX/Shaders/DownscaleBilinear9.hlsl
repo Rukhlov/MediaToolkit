@@ -13,7 +13,7 @@ struct VertData
 	float2 texCoord : TexCoord0;
 };
 
-float4 main(VertData input) : SV_Target
+float4 PS(VertData input) : SV_Target
 {
 	float2 texCoord = input.texCoord;
 
