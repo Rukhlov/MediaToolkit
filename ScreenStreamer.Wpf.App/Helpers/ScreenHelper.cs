@@ -53,7 +53,13 @@ namespace ScreenStreamer.Wpf.Helpers
                 CaptType = VideoCaptureType.GDILayered,
                 Name = "GDI Layered"
             },
-        };
+
+			new ScreenCaptureItem
+			{
+				CaptType = VideoCaptureType.Datapath,
+				Name = "_Datapath"
+			},
+		};
 
 
         public enum LengthDirection
