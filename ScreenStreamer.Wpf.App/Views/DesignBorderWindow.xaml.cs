@@ -57,10 +57,14 @@ namespace ScreenStreamer.Wpf.Views
 
             // задаем стиль ToolWindow что бы скрыть окно из Alt+Tab
             int exStyle = (int)NativeMethods.GetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE);
-            exStyle |= (int)ExtendedWindowStyles.WS_EX_TOOLWINDOW;
+            exStyle |= (int)WS_EX.ToolWindow;
+            exStyle |= (int)WS_EX.TopMost;
+
             NativeMethods.SetWindowLong(hwndSource.Handle, (int)GetWindowLongFields.GWL_EXSTYLE, (IntPtr)exStyle);
 
             //var dataContext = this.DataContext;
+
+            NativeMethods.SetTopMost(hwndSource.Handle);
         }
 
 

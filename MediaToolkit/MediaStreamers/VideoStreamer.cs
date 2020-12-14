@@ -72,8 +72,8 @@ namespace MediaToolkit.MediaStreamers
 		//private RtpStreamer rtpStreamer = null;
 
 
-		//private MfVideoEncoder videoEncoder = null;
-		private VideoEncoderWin7 videoEncoder = null;
+		private MfVideoEncoder videoEncoder = null;
+		//private VideoEncoderWin7 videoEncoder = null;
 
 		public VideoEncoderSettings EncoderSettings { get; private set; }
         public NetworkSettings NetworkSettings { get; private set; }
@@ -127,9 +127,9 @@ namespace MediaToolkit.MediaStreamers
 				//encoder.Open(encodingParams);
 				//encoder.DataEncoded += Encoder_DataEncoded;
 
-				//videoEncoder = new MfVideoEncoder(videoSource);
+				videoEncoder = new MfVideoEncoder(videoSource);
 
-				videoEncoder = new VideoEncoderWin7(videoSource);
+				//videoEncoder = new VideoEncoderWin7(videoSource);
 
 				videoEncoder.Open(encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;

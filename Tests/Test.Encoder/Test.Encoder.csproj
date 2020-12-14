@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -30,7 +30,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,29 +40,37 @@
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NLog.4.7.5\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.dll</HintPath>
+    <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.D3DCompiler">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll</HintPath>
+    <Reference Include="SharpDX.D3DCompiler, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct2D1">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll</HintPath>
+    <Reference Include="SharpDX.Direct2D1, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D11, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D9">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.Direct3D9.dll</HintPath>
+    <Reference Include="SharpDX.Direct3D9, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.DXGI.dll</HintPath>
+    <Reference Include="SharpDX.DXGI, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.DXGI.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Mathematics">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.Mathematics.dll</HintPath>
+    <Reference Include="SharpDX.Mathematics, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.Mathematics.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.MediaFoundation">
-      <HintPath>..\..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll</HintPath>
+    <Reference Include="SharpDX.MediaFoundation, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

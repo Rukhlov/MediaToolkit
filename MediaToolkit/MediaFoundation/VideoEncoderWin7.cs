@@ -510,8 +510,9 @@ namespace MediaToolkit.MediaFoundation
 
 				device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
 				deviceContext.PixelShader.SetShader(downscalePS, null, 0);
+                //deviceContext.PixelShader.SetShader(defaultPS, null, 0);
 
-				SetViewPort(0, 0, destWidth, destHeight);
+                SetViewPort(0, 0, destWidth, destHeight);
 				deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
 				deviceContext.OutputMerger.SetTargets(rgbRTV);

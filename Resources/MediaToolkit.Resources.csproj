@@ -275,6 +275,8 @@
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.dll" />
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll" />
+    <Content Include="SharpDX.4.2.1\net45\SharpDX.D3DCompiler.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll" />
@@ -298,6 +300,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />
+    <None Include="FFmpeg4\bin\SDP_239_0_0_1.sdp" />
+    <None Include="FFmpeg4\bin\Sdp_to_mp4.bat" />
     <None Include="Files\SDP_239_0_0_1.sdp" />
     <None Include="FFmpeg4\bin\TestNV12Gen.bat" />
     <None Include="FFmpeg4\bin\TestRGBAGen.bat" />

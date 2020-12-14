@@ -54,11 +54,11 @@ namespace ScreenStreamer.Wpf.Helpers
                 Name = "GDI Layered"
             },
 
-			new ScreenCaptureItem
-			{
-				CaptType = VideoCaptureType.Datapath,
-				Name = "_Datapath"
-			},
+			//new ScreenCaptureItem
+			//{
+			//	CaptType = VideoCaptureType.Datapath,
+			//	Name = "_Datapath"
+			//},
 		};
 
 

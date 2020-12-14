@@ -15,9 +15,11 @@
 
 ;Путь к исходным файлам 
 #define CurrentSourcePath TrunkPath + ReleasePath
+#define CurrentTestPath TrunkPath + "Tests\bin\Release"
 
 #ifdef DEBUG 
   #define CurrentSourcePath TrunkPath + DebugPath
+  #define CurrentTestPath TrunkPath + "Tests\bin\Debug"
 #endif
 
 #define WpfSourcePath CurrentSourcePath + "\ScreenStreamer.Wpf.App\"
@@ -190,6 +192,9 @@ Source: "{#WpfSourcePath}\SharpDX.Mathematics.dll"; DestDir: "{app}"; Flags: rep
 Source: "{#WpfSourcePath}\SharpDX.MediaFoundation.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\SharpDX.MediaFoundation.pdb"; DestDir: "{app}"; Flags: replacesameversion
 
+Source: "{#WpfSourcePath}\SharpDX.D3DCompiler.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.D3DCompiler.pdb"; DestDir: "{app}"; Flags: replacesameversion
+
 Source: "{#WpfSourcePath}\System.Runtime.CompilerServices.Unsafe.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\System.Runtime.CompilerServices.Unsafe.xml"; DestDir: "{app}"; Flags: replacesameversion
 
@@ -212,8 +217,8 @@ Source: "{#WpfSourcePath}\System.Windows.Interactivity.dll"; DestDir: "{app}"; F
 ;Source: "{#WpfSourcePath}\WindowsInput.xml"; DestDir: "{app}"; Flags: replacesameversion
 
 
-Source: "{#CurrentSourcePath}\Test.PolywallClient.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentSourcePath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentTestPath}\Test.PolywallClient.exe"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentTestPath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion
 
 
 

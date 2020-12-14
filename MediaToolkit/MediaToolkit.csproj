@@ -46,8 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.D3DCompiler">
-      <HintPath>..\..\ScreenStreamer\Resources\SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll</HintPath>
+    <Reference Include="SharpDX.D3DCompiler, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Resources\SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct2D1, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

@@ -100,14 +100,30 @@ namespace ScreenStreamer.Wpf.Utils
         [DllImport("kernel32.dll", EntryPoint = "SetLastError")]
         public static extern void SetLastError(int dwErrorCode);
 
+
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const UInt32 SWP_NOSIZE = 0x0001;
+        private const UInt32 SWP_NOMOVE = 0x0002;
+        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        public static void SetTopMost(IntPtr hWnd)
+        {
+            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+        }
+
     }
 
     [Flags]
-    public enum ExtendedWindowStyles
+    public enum WS_EX
     {
         // ...
-        WS_EX_TOOLWINDOW = 0x00000080,
-        // ...
+        Composited = 0x02000000,
+        ToolWindow = 0x00000080,
+        TopMost = 0x00000008,
     }
 
     public enum GetWindowLongFields
