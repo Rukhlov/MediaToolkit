@@ -65,15 +65,16 @@ namespace Test.Encoder
             //var destSize = new GDI.Size(ImageWidth, ImageHeight);
 
             var destSize = new GDI.Size(640, 360);
-            //var destSize = new GDI.Size(852, 480);
-           // var destSize = new GDI.Size(1280, 720);
+			//var destSize = new GDI.Size(852, 480);
+			// var destSize = new GDI.Size(1280, 720);
 
-            //var destSize = new GDI.Size(2560, 1440);
-            //var destSize = new GDI.Size(1920, 1080);
+			//var destSize = new GDI.Size(2560, 1440);
+			//var destSize = new GDI.Size(1920, 1080);
 
-            psName = "DownscaleBilinear9.hlsl";
+			//psName = "BiCubicPS.hlsl";
+			psName = "DownscaleBilinear9.hlsl";
             //psName = "DownscaleBicubic.hlsl";
-            //psName = "DownscaleLanczos6tap.hlsl";
+           // psName = "DownscaleLanczos6tap.hlsl";
             //psName = "BiCubicScale.hlsl";
             //psName = "BiLinearScaling.hlsl";
 

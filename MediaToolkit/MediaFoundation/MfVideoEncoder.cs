@@ -81,6 +81,8 @@ namespace MediaToolkit.MediaFoundation
 				}
 
 			}
+
+
 			var profile = MfTool.GetMfH264Profile(encoderSettings.Profile);
 
 			var bitrateMode = MfTool.GetMfBitrateMode(encoderSettings.BitrateMode);
