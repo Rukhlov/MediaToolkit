@@ -285,39 +285,55 @@ namespace MediaToolkit.DirectX
             for (int adapterIndex = 0; adapterIndex < adapters.Length; adapterIndex++)
             {
                 var _adapter = adapters[adapterIndex];
-
-                var featureLevel = SharpDX.Direct3D11.Device.GetSupportedFeatureLevel(_adapter);
-                //var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
-
-                bool success = GetSupportedFeatureLevel(_adapter, out var feature);
-
-                var adaptDescr = _adapter.Description1;
-                log.AppendLine("-------------------------------------");
-                log.AppendLine("#" + adapterIndex + " " + string.Join("| ", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
-
-                var outputs = _adapter.Outputs;
-
-                //foreach (var _output in _adapter.Outputs)
-                for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
+                try
                 {
-                    var _output = outputs[outputIndex];
+                    var adaptDescr = _adapter.Description1;
 
-                    var outputDescr = _output.Description;
-                    var bound = outputDescr.DesktopBounds;
-                    var rect = new GDI.Rectangle
+                    var featureLevel = SharpDX.Direct3D11.Device.GetSupportedFeatureLevel(_adapter);
+                    //var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
+
+                    bool success = GetSupportedFeatureLevel(_adapter, out var feature);
+                   
+                    log.AppendLine("-------------------------------------");
+                    log.AppendLine("#" + adapterIndex + " " + string.Join("| ", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
+
+                    var outputs = _adapter.Outputs;
+
+                    //foreach (var _output in _adapter.Outputs)
+                    for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
                     {
-                        X = bound.Left,
-                        Y = bound.Top,
-                        Width = (bound.Right - bound.Left),
-                        Height = (bound.Bottom - bound.Top),
-                    };
+                        var _output = outputs[outputIndex];
+                        try
+                        {
+                            var outputDescr = _output.Description;
+                            var bound = outputDescr.DesktopBounds;
+                            var rect = new GDI.Rectangle
+                            {
+                                X = bound.Left,
+                                Y = bound.Top,
+                                Width = (bound.Right - bound.Left),
+                                Height = (bound.Bottom - bound.Top),
+                            };
 
-                    log.AppendLine("#" + outputIndex + " " + string.Join("| ", outputDescr.DeviceName, rect.ToString()));
-
-                    _output.Dispose();
+                            log.AppendLine("#" + outputIndex + " " + string.Join("| ", outputDescr.DeviceName, rect.ToString()));
+                           
+                        }
+                        finally
+                        {
+                            _output?.Dispose();
+                        }
+ 
+                    }
                 }
-
-                _adapter.Dispose();
+                catch(SharpDXException ex)
+                {
+                    log.AppendLine(ex.Message);
+                }
+                finally
+                {
+                    _adapter?.Dispose();
+                }
+                
             }
 
             return log.ToString();

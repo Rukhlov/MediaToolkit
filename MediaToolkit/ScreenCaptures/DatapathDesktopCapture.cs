@@ -205,7 +205,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public override ErrorCode UpdateBuffer(int timeout = 10)
         {
-            logger.Verb("Update(...) " + timeout);
+            //logger.Verb("Update(...) " + timeout);
 
             ErrorCode errorCode = ErrorCode.Unexpected;
 

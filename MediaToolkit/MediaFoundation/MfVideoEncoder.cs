@@ -40,137 +40,177 @@ namespace MediaToolkit.MediaFoundation
         private MfVideoProcessor processor = null;
 
         private Texture2D bufTexture = null;
-
 		private Device device = null;
+
+        private FFmpegVideoEncoder ffmpegEncoder = null;
+
+
+        private bool SoftwareMode = false;
         public void Open(VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Setup(...)");
 
-			//var hwContext = videoSource.hwContext;
-			// var hwDevice = hwContext.Device3D11;
+            //var hwContext = videoSource.hwContext;
+            // var hwDevice = hwContext.Device3D11;
 
-			var hwBuffer = videoSource.SharedTexture;
+            var destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
+            var aspectRatio = encoderSettings.AspectRatio;
 
-			var hwDescr = hwBuffer.Description;
-
-			var srcSize = new Size(hwDescr.Width, hwDescr.Height);
-			var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
-
-			var destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
-
-			var adapterId = videoSource.AdapterId;
-
-			using (var adapter = DxTool.FindAdapter1(adapterId))
-			{
-				var descr = adapter.Description;
-				int adapterVenId = descr.VendorId;
-
-				logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
-
-                // var flags = DeviceCreationFlags.BgraSupport;
-
-                var flags = DeviceCreationFlags.VideoSupport |
-                            DeviceCreationFlags.BgraSupport;
-
-                //DeviceCreationFlags.Debug;
-
-                device = new SharpDX.Direct3D11.Device(adapter, flags);
-				using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-				{
-					multiThread.SetMultithreadProtected(true);
-				}
-
-			}
-
-
-			var profile = MfTool.GetMfH264Profile(encoderSettings.Profile);
-
-			var bitrateMode = MfTool.GetMfBitrateMode(encoderSettings.BitrateMode);
-
-			var aspectRatio = encoderSettings.AspectRatio;
-			var encArgs = new MfVideoArgs
-			{
-				Width = destSize.Width, //srcSize.Width,
-				Height = destSize.Height, //srcSize.Height,
-				Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
-
-				FrameRate = MfTool.PackToLong(encoderSettings.FrameRate),
-
-                MaxBitrate = encoderSettings.MaxBitrate * 1000, //kbps->bps
-				AvgBitrate = encoderSettings.Bitrate * 1000,
-				LowLatency = encoderSettings.LowLatency,
-				AdapterId = videoSource.AdapterId,
-				Profile = profile,
-				BitrateMode = bitrateMode,
-				GopSize = encoderSettings.GOPSize,
-                Quality = encoderSettings.Quality,
-               
-                EncoderId = encoderSettings.EncoderId,
-
-				AspectRatio= MfTool.PackToLong(aspectRatio)
-			};
-
-
-
-			processor = new MfVideoProcessor(device);
-			var inProcArgs = new MfVideoArgs
-			{
-				Width = srcSize.Width,
-				Height = srcSize.Height,
-				Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
-			};
-
-			var outProcArgs = new MfVideoArgs
-			{
-				Width = encArgs.Width,
-				Height = encArgs.Height,
-				Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
-			};
-
-			processor.Setup(inProcArgs, outProcArgs);
-
-
-			bufTexture = new Texture2D(device,
-				new Texture2DDescription
-				{
-					// Format = Format.NV12,
-					Format = hwDescr.Format,//SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-					Width = srcSize.Width,
-					Height = srcSize.Height,
-					MipLevels = 1,
-					ArraySize = 1,
-					SampleDescription = { Count = 1 },
-				});
-
-			processor?.Start();
-
-            var encoderName = encoderSettings.EncoderId;
-
-            if (encoderName == "libx264" || encoderName == "h264_nvenc")
+            var hwBuffer = videoSource.SharedTexture;
+            if (hwBuffer != null)
             {
-                encoder = new MfFFMpegVideoEncoder();
+                SoftwareMode = false;
+                var hwDescr = hwBuffer.Description;
+
+                var srcSize = new Size(hwDescr.Width, hwDescr.Height);
+                var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
+
+                var adapterId = videoSource.AdapterId;
+
+                using (var adapter = DxTool.FindAdapter1(adapterId))
+                {
+                    var descr = adapter.Description;
+                    int adapterVenId = descr.VendorId;
+
+                    logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+
+                    // var flags = DeviceCreationFlags.BgraSupport;
+
+                    var flags = //DeviceCreationFlags.VideoSupport |
+                                DeviceCreationFlags.BgraSupport;
+
+                    //DeviceCreationFlags.Debug;
+
+                    device = new SharpDX.Direct3D11.Device(adapter, flags);
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
+                }
+
+                var profile = MfTool.GetMfH264Profile(encoderSettings.Profile);
+
+                var bitrateMode = MfTool.GetMfBitrateMode(encoderSettings.BitrateMode);
+
+
+                var encArgs = new MfVideoArgs
+                {
+                    Width = destSize.Width, //srcSize.Width,
+                    Height = destSize.Height, //srcSize.Height,
+                    Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
+
+                    FrameRate = MfTool.PackToLong(encoderSettings.FrameRate),
+
+                    MaxBitrate = encoderSettings.MaxBitrate * 1000, //kbps->bps
+                    AvgBitrate = encoderSettings.Bitrate * 1000,
+                    LowLatency = encoderSettings.LowLatency,
+                    AdapterId = videoSource.AdapterId,
+                    Profile = profile,
+                    BitrateMode = bitrateMode,
+                    GopSize = encoderSettings.GOPSize,
+                    Quality = encoderSettings.Quality,
+
+                    EncoderId = encoderSettings.EncoderId,
+
+                    AspectRatio = MfTool.PackToLong(aspectRatio)
+                };
+                processor = new MfVideoProcessor(device);
+                var inProcArgs = new MfVideoArgs
+                {
+                    Width = srcSize.Width,
+                    Height = srcSize.Height,
+                    Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+                };
+
+                var outProcArgs = new MfVideoArgs
+                {
+                    Width = encArgs.Width,
+                    Height = encArgs.Height,
+                    Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
+                };
+
+                processor.Setup(inProcArgs, outProcArgs);
+
+
+                bufTexture = new Texture2D(device,
+                    new Texture2DDescription
+                    {
+                    // Format = Format.NV12,
+                    Format = hwDescr.Format,//SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    Width = srcSize.Width,
+                        Height = srcSize.Height,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1 },
+                    });
+
+                processor?.Start();
+
+                var encoderName = encoderSettings.EncoderId;
+
+                if (encoderName == "libx264" || encoderName == "h264_nvenc")
+                {
+                    encoder = new MfFFMpegVideoEncoder();
+                }
+                else
+                {
+                    encoder = new MfH264EncoderEx(device);
+                }
+
+                encoder.Setup(encArgs);
+
+                encoder.DataEncoded += Encoder_DataEncoded;
+
+                ////encoder.DataReady += MfEncoder_DataReady;
+                encoder.Start();
+            }
+            else
+            {// software mode...
+                SoftwareMode = true;
+
+ 
+                var encoderName = encoderSettings.EncoderId;
+
+                if (encoderName == "libx264" || encoderName == "h264_nvenc")
+                {
+                    //ffmpegEncoder = new FFmpegVideoEncoder();
+                    ffmpegEncoder = new FFmpegVideoEncoder();
+                }
+                else
+                {
+                    throw new NotSupportedException("Invalid encoder name: " + encoderName);
+                }
+                ffmpegEncoder.Open(encoderSettings);
+                //ffmpegEncoder.Setup(encoderSettings);
+                ffmpegEncoder.DataEncoded += FFmpegEncoder_DataEncoded;
+
+            }
+
+        }
+
+        private void FFmpegEncoder_DataEncoded(IntPtr data, int size, double timestamp)
+        {
+            var buf = new byte[size];
+            Marshal.Copy(data, buf, 0, size);
+
+            OnDataReady(buf, timestamp);
+        }
+
+        public void Encode()
+        {
+            if (!SoftwareMode)
+            {
+                var texture = videoSource?.SharedTexture;
+
+                Encode(texture);
             }
             else
             {
-                encoder = new MfH264EncoderEx(device);
+                var videoBuffer = videoSource.SharedBitmap;
+                ffmpegEncoder.Encode(videoBuffer);
+
             }
-           
-			encoder.Setup(encArgs);
 
-			encoder.DataEncoded += Encoder_DataEncoded;
-
-			////encoder.DataReady += MfEncoder_DataReady;
-			encoder.Start();
-
-		}
-
-
-
-		public void Encode()
-        {
-            var texture = videoSource?.SharedTexture;
-
-            Encode(texture);
 
         }
 
@@ -279,6 +319,13 @@ namespace MediaToolkit.MediaFoundation
             {
                 bufTexture.Dispose();
                 bufTexture = null;
+            }
+
+            if (ffmpegEncoder != null)
+            {
+                ffmpegEncoder.DataEncoded -= FFmpegEncoder_DataEncoded;
+                ffmpegEncoder.Close();
+                ffmpegEncoder = null;
             }
 
         }
