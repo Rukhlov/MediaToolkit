@@ -212,7 +212,8 @@ namespace MediaToolkit.Core
         FastLinear,
         Linear,
         Bicubic,
-
+        Lanczos,
+        Spline,
     }
 
     [Serializable]

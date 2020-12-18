@@ -226,7 +226,13 @@ namespace MediaToolkit.Utils
 
             return new Size(width, height);
         }
-    }
+
+
+		public static int Align(int val, int align)
+		{
+			return ((val + align - 1) & ~(align - 1));
+		}
+	}
 
 
     public class WcfDiscoveryAddressCustomEndpointBehavior : IEndpointBehavior, IDispatchMessageInspector

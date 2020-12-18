@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Test.Encoder
 {
@@ -38,34 +39,43 @@ namespace Test.Encoder
 
             //var inputFileName = @"Files\NV12_1920x1080.yuv";
 
-            //var inputFileName = @"Files\rgba_1920x1080.raw";
+            var inputFileName = @"Files\rgba_1920x1080.raw";
 
-            //Size srcSize = new Size(1920, 1080);
+            Size srcSize = new Size(1920, 1080);
 
 
-            var inputFileName = @"Files\RGB32_1280x720.raw";
-            Size srcSize = new Size(1280, 720);
+            //var inputFileName = @"Files\RGB32_1280x720.raw";
+            //Size srcSize = new Size(1280, 720);
+            //Size srcSize = new Size(352, 288);
+
+            //Size srcSize = new Size(351, 280);
             MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB32;
 
-            //var inputFileName = @"Files\RGB24_1280x720.raw";
-            //Size srcSize = new Size(1280, 720);
-            //MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB24;
+			//var a = MediaToolkit.Utils.GraphicTools.Align(176, 32);
+			//Console.WriteLine(a); 
+			//var inputFileName = @"Files\RGB24_1280x720.raw";
+			//Size srcSize = new Size(1280, 720);
+			//MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB24;
 
 
-            //var inputFileName = @"Files\RGB565_1280x720.raw";
-            //Size srcSize = new Size(1280, 720);
-            //MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB565;
+			//var inputFileName = @"Files\RGB565_1280x720.raw";
+			//Size srcSize = new Size(1280, 720);
+			//MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB565;
 
 
-            var srcBytes = File.ReadAllBytes(inputFileName);
+			var srcBytes = File.ReadAllBytes(inputFileName);
 
-            //Size destSize = new Size(1920, 1080);
+			// Size destSize = new Size(3840, 2160);
+			//Size destSize = new Size(2560, 1440);
+			// Size destSize = new Size(1900, 1000);
+			//Size destSize = new Size(1280, 720);
+			// Size destSize = new Size(640, 480);
+			//Size destSize = new Size(352, 288);
+			//Size destSize = new Size(393, 211);
+			Size destSize = new Size(555, 333);
+			destSize = MediaToolkit.Utils.GraphicTools.DecreaseToEven(destSize);
 
-            Size destSize = new Size(1280, 720);
-            //Size destSize = new Size(640, 480);
-            //Size destSize = new Size(352, 288);
-
-            MediaToolkit.Core.PixFormat destFormat = MediaToolkit.Core.PixFormat.NV12;
+            MediaToolkit.Core.PixFormat destFormat = MediaToolkit.Core.PixFormat.I420;
 
 
             FFmpegLib.FFmpegPixelConverter converter = new FFmpegLib.FFmpegPixelConverter();
@@ -73,29 +83,43 @@ namespace Test.Encoder
             converter.Init(srcSize, srcFormat, destSize, destFormat, MediaToolkit.Core.ScalingFilter.Bicubic);
 
             byte[] destBuffer = null;
-
-            int count = 1;
-            while (count-- > 0)
+            Stopwatch sw = new Stopwatch();
+            const int count = 1;
+            int num = count;
+            sw.Start();
+            while (num-- > 0)
             {
-                
+
                 fixed (byte* ptr = srcBytes)
                 {
+
                     converter.Convert((IntPtr)ptr, srcBytes.Length, out var destData, out var destLinesize);
+                    // converter.Convert((IntPtr)ptr, 1280, out var destData, out var destLinesize);
 
                     destBuffer = ConvertToContiguousBuffer(destData, destLinesize, destSize, destFormat);
 
                     //converter.Convert2((IntPtr)ptr, 0, out destData);
                 }
+                //Thread.Sleep(33);
 
-                Thread.Sleep(16);
             }
+            var time = sw.Elapsed;
+            var frameInterval = time.TotalSeconds / count ;
 
+            Console.WriteLine("TotalSec: " + time.TotalSeconds);
+            Console.WriteLine("Interval: " + frameInterval + "\r\nFPS: " + 1.0/ frameInterval);
 
             if (destBuffer != null)
             {
+				var outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Output");
+				if (!Directory.Exists(outputPath))
+				{
+					Directory.CreateDirectory(outputPath);
 
-                var outputFile = destFormat + "_" + destSize.Width + "x" + destSize.Height + ".raw";
-
+				}
+                var fileName = destFormat + "_" + destSize.Width + "x" + destSize.Height + ".raw";
+				var outputFile = Path.Combine(outputPath, fileName);
+				
                 Console.WriteLine("Output File: " + outputFile);
                 File.WriteAllBytes(outputFile, destBuffer);
 
@@ -111,99 +135,128 @@ namespace Test.Encoder
 
         }
 
-        private static unsafe byte[] ConvertToContiguousBuffer( IntPtr[] pData, int[] pLinesize, Size size, MediaToolkit.Core.PixFormat format )
+        private static unsafe byte[] ConvertToContiguousBuffer(IntPtr[] data, int[] linesize, Size size, MediaToolkit.Core.PixFormat format)
         {
             byte[] buffer = null;
             if (format == MediaToolkit.Core.PixFormat.NV12)
             {
-                var bufferSize = pLinesize[0] * size.Height + pLinesize[1] * size.Height / 2;
+				var lumaStride = size.Width;
+				var lumaHeight = size.Height;
+
+				var chromaStride = size.Width;
+				var chromaHeight = size.Height / 2;
+
+				//lumaStride = MediaToolkit.Utils.GraphicTools.Align(lumaStride, 16);
+				//chomaStride = MediaToolkit.Utils.GraphicTools.Align(chomaStride, 16);
+				var bufferSize = lumaStride * lumaHeight + chromaStride * chromaHeight;
                 buffer = new byte[bufferSize];
 
-                int offset = 0;
-                var data = pData[0];
-                var linesize = pLinesize[0];
+				int offset = 0;
+				var pData = data[0];
+				var dataStride = linesize[0];
+				for (int row = 0; row < lumaHeight; row++)
+				{ //Y
+					Marshal.Copy(pData, buffer, offset, lumaStride);
+					offset += lumaStride;
+					pData += dataStride;
+				}
 
-                if (linesize > 0)
-                {
-                    var _size = linesize * size.Height;
-                    Marshal.Copy(data, buffer, offset, _size);
-                    offset += _size;
-                }
-
-                for (int i = 1; i < pData.Length; i++)
-                {
-                    data = pData[i];
-                    linesize = pLinesize[i];
-
-                    if (linesize > 0)
-                    {
-                        var _size = linesize * size.Height / 2;
-                        Marshal.Copy(data, buffer, offset, _size);
-                        offset += _size;
-                    }
-
-                }
-            }
+				pData = data[1];
+				dataStride = linesize[1];
+				for (int row = 0; row < chromaHeight; row++)
+				{// packed CbCr
+					Marshal.Copy(pData, buffer, offset, chromaStride);
+					offset += chromaStride;
+					pData += dataStride;
+				}
+			}
             else if (format == MediaToolkit.Core.PixFormat.RGB32
                || format == MediaToolkit.Core.PixFormat.RGB24
                || format == MediaToolkit.Core.PixFormat.RGB565)
             {
-                var bufferSize = pLinesize[0] * size.Height;
+				int bytesPerPixel = 4;		
+				if(format == MediaToolkit.Core.PixFormat.RGB24)
+				{
+					bytesPerPixel = 3;
+				}
+				else if (format == MediaToolkit.Core.PixFormat.RGB565)
+				{
+					bytesPerPixel = 2;
+				}
+
+				var rgbStride = bytesPerPixel * size.Width;
+
+				var bufferSize = rgbStride * size.Height;
                 buffer = new byte[bufferSize];
 
                 int offset = 0;
-                var data = pData[0];
-                var linesize = pLinesize[0];
+                var pData = data[0];
+                var dataStride = linesize[0];
 
-                if (linesize > 0)
-                {
-                    var dataSize = linesize * size.Height;
-                    Marshal.Copy(data, buffer, offset, dataSize);
-                    offset += dataSize;
-                }
-            }
+				for (int row = 0; row < size.Height; row++)
+				{
+					Marshal.Copy(pData, buffer, offset, rgbStride);
+					offset += rgbStride;
+					pData += dataStride;
+				}
+			}
             else if (format == MediaToolkit.Core.PixFormat.I444 ||
-                        format == MediaToolkit.Core.PixFormat.I422 ||
-                        format == MediaToolkit.Core.PixFormat.I420)
-            {// TODO: могут быть поразному выровнены...
+                format == MediaToolkit.Core.PixFormat.I422 ||
+                format == MediaToolkit.Core.PixFormat.I420)
+            {
                 var lumaHeight = size.Height;
                 var chromaHeight = size.Height;
+
+                var lumaStride = size.Width;
+                var chomaStride = size.Width;
+
                 if (format == MediaToolkit.Core.PixFormat.I420)
                 {
                     chromaHeight = size.Height / 2;
+                    chomaStride = size.Width / 2;
+
+				}
+                else if (format == MediaToolkit.Core.PixFormat.I422)
+                {
+                    chomaStride = size.Width / 2;
                 }
 
-                var bufferSize = pLinesize[0] * lumaHeight + pLinesize[1] * chromaHeight + pLinesize[2] * chromaHeight;
+				//lumaStride = MediaToolkit.Utils.GraphicTools.Align(lumaStride, 16);
+				//chomaStride = MediaToolkit.Utils.GraphicTools.Align(chomaStride, 16);
+
+				var bufferSize = lumaStride * lumaHeight + 2 * chomaStride * chromaHeight;
+
                 buffer = new byte[bufferSize];
 
                 int offset = 0;
-                var data = pData[0];
-                var linesize = pLinesize[0];
+                var pData = data[0];
+                var dataStride = linesize[0];
 
-                if (linesize > 0)
-                {
-                    var dataSize = linesize * lumaHeight;
-                    Marshal.Copy(data, buffer, offset, dataSize);
-                    offset += dataSize;
+                for (int row = 0; row < lumaHeight; row++)
+                {//Y
+                    Marshal.Copy(pData, buffer, offset, lumaStride);
+                    offset += lumaStride;
+                    pData += dataStride;
                 }
 
-                for (int i = 1; i < pData.Length; i++)
-                {
-                    data = pData[i];
-                    linesize = pLinesize[i];
-
-                    if (linesize > 0)
+                for (int i = 1; i < 3; i++)
+                {// CbCr
+                    pData = data[i];
+                    dataStride = linesize[i];
+                    for (int row = 0; row < chromaHeight; row++)
                     {
-                        var dataSize = linesize * chromaHeight;
-                        Marshal.Copy(data, buffer, offset, dataSize);
-                        offset += dataSize;
+                        Marshal.Copy(pData, buffer, offset, chomaStride);
+                        offset += chomaStride;
+                        pData += dataStride;
                     }
-
+                    
                 }
             }
 
 
             return buffer;
         }
+
+
     }
 }

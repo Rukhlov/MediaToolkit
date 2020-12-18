@@ -35,7 +35,7 @@ namespace FFmpegLib {
 
 			logger->TraceEvent(TraceEventType::Verbose, 0, "FFmpegPixelConverter::Init(...) " 
 				+ srcSize.ToString() + " " + srcPixFormat.ToString() + " >> " 
-				+ destSize.ToString() + " " + destPixFormat.ToString());
+				+ destSize.ToString() + " " + destPixFormat.ToString() + " " + filter.ToString());
 
 			try {
 
@@ -43,7 +43,7 @@ namespace FFmpegLib {
 				srcWidth = srcSize.Width;
 				srcHeight = srcSize.Height;
 
-				srcFormat = GetAVPixelFromat(srcPixFormat);
+				srcFormat = GetAVPixelFormat(srcPixFormat);
 				if (srcFormat == AV_PIX_FMT_NONE) {
 					throw gcnew Exception("Unsupported pixel format " + srcPixFormat.ToString());
 				}
@@ -53,7 +53,7 @@ namespace FFmpegLib {
 				destFrame->height = destSize.Height;
 				//frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
 
-				int frameFormat = GetAVPixelFromat(destPixFormat);
+				int frameFormat = GetAVPixelFormat(destPixFormat);
 				if(frameFormat == AV_PIX_FMT_NONE){
 					throw gcnew Exception("Unsupported pixel format " + destPixFormat.ToString());
 				}
@@ -64,7 +64,7 @@ namespace FFmpegLib {
 					throw gcnew Exception("Could not allocate frame data " + res);
 				}
 
-				swsFilter = GetAVFilter(filter);
+				swsFilter = GetSwsFilter(filter);
 
 				sws_ctx = sws_getCachedContext(sws_ctx,
 					srcWidth, srcHeight, srcFormat, // input
@@ -87,8 +87,12 @@ namespace FFmpegLib {
 			}
 		}
 
-
 		void Convert(IntPtr srcData, int srcDataSize, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+
+			Convert(srcData, srcDataSize, 16, destData, destLinesize);
+		}
+
+		void Convert(IntPtr srcData, int srcDataSize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
 
 			if (!initialized) {
 
@@ -98,32 +102,53 @@ namespace FFmpegLib {
 			AVFrame* srcFrame = NULL;
 			try {
 
+				//uint8_t* src_data[4];
+				//int scr_linesize[4];
+
+				//int srcSize = av_image_alloc(src_data, scr_linesize, srcWidth, srcWidth, srcFormat, 16);
+
+				//srcSize = av_image_fill_arrays(src_data, scr_linesize,
+				//	reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcWidth, srcHeight, 16);
+				////const uint8_t* src_data[1] =
+				////{
+				////	reinterpret_cast<uint8_t*>(srcData.ToPointer())
+				////};
+				////const int scr_linesize[1] =
+				////{
+				////	srcDataSize,
+				////	//bmpStride
+				////};
+				//int res = sws_scale(sws_ctx, src_data, scr_linesize, 0, srcHeight, destFrame->data, destFrame->linesize);
+
+
 				srcFrame = av_frame_alloc();
 				srcFrame->width = srcWidth;
 				srcFrame->height = srcHeight;
 				srcFrame->format = srcFormat;
 
 				//int srcSize = avpicture_fill((AVPicture*)srcFrame, 
-				//	reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcPixFormat, srcFrame->width, srcFrame->height);
-	
+				//	reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcFrame->width, srcFrame->height);
+				//
+				//
 				int srcSize = av_image_fill_arrays(srcFrame->data, srcFrame->linesize,
-					reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcWidth, srcHeight, 16);
+					reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcWidth, srcHeight, srcAlign);
+
 				if (srcSize < 0) {
 					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
 				}
+				
 
-				if (srcSize > 0) {
-					//  конвертируем в новый формат
-					int res = sws_scale(sws_ctx, srcFrame->data, srcFrame->linesize, 0, srcHeight, destFrame->data, destFrame->linesize);
+				//  конвертируем в новый формат
+				int res = sws_scale(sws_ctx, srcFrame->data, srcFrame->linesize, 0, srcHeight, destFrame->data, destFrame->linesize);
+				
+				destData = gcnew array<IntPtr>(4);
+				destLinesize = gcnew array<int>(4);
 
-					destData = gcnew array<IntPtr>(4);
-					destLinesize = gcnew array<int>(4);
-
-					for (int i = 0; i < 4; i++) {
-						destData[i] = (IntPtr)destFrame->data[i];
-						destLinesize[i] = destFrame->linesize[i];
-					}
+				for (int i = 0; i < 4; i++) {
+					destData[i] = (IntPtr)destFrame->data[i];
+					destLinesize[i] = destFrame->linesize[i];
 				}
+				
 
 			}
 			catch (Exception^ ex) {
@@ -165,7 +190,7 @@ namespace FFmpegLib {
 
 	private:
 
-		AVPixelFormat GetAVPixelFromat(MediaToolkit::Core::PixFormat pixFormat)
+		AVPixelFormat GetAVPixelFormat(MediaToolkit::Core::PixFormat pixFormat)
 		{
 			AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
 			switch (pixFormat) {
@@ -198,7 +223,7 @@ namespace FFmpegLib {
 			return pix_fmt;
 		}
 
-		int GetAVFilter(MediaToolkit::Core::ScalingFilter scalingFilter)
+		int GetSwsFilter(MediaToolkit::Core::ScalingFilter scalingFilter)
 		{
 			int sws_filter = SWS_FAST_BILINEAR;
 			switch (scalingFilter) {
@@ -214,7 +239,12 @@ namespace FFmpegLib {
 			case ScalingFilter::Bicubic:
 				sws_filter = SWS_BICUBIC;
 				break;
-
+			case ScalingFilter::Lanczos:
+				sws_filter = SWS_LANCZOS;
+				break;
+			case ScalingFilter::Spline:
+				sws_filter = SWS_SPLINE;
+				break;
 			default:
 				break;
 			}
@@ -231,7 +261,7 @@ namespace FFmpegLib {
 		int swsFilter = SWS_FAST_BILINEAR;
 		struct SwsContext* sws_ctx;
 		AVFrame* destFrame;
-
+		AVFrame* srcFrame;
 
 		static TraceSource^ logger = TraceManager::GetTrace("MediaToolkit.FFmpeg");
 
