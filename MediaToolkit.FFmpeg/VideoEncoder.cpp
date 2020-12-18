@@ -311,15 +311,15 @@ namespace FFmpegLib {
 									throw gcnew Exception("Could not allocate convert context");
 								}
 
-								int table[4];
-								int inv_table[4];
-								int srcRange, dstRange;
-								int brightness, contrast, saturation;
-								sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
-								const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+								//int table[4];
+								//int inv_table[4];
+								//int srcRange, dstRange;
+								//int brightness, contrast, saturation;
+								//sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
+								//const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
 
-								srcRange = 1; // this marks that values are according to yuvj
-								int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+								//srcRange = 1; // this marks that values are according to yuvj
+								//int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
 
 							}
 

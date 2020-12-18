@@ -29,8 +29,11 @@ namespace Test.Encoder
             new SimpleSwapChain().Start();
         }
 
+		private SharpDX.Direct2D1.DeviceContext d2dContext = null;
+		private SharpDX.DirectWrite.TextFormat textFormat = null;
+		private Direct2D.SolidColorBrush sceneColorBrush = null;
 
-        private SharpDX.Direct3D11.Device device = null;
+		private SharpDX.Direct3D11.Device device = null;
         private VertexShader defaultVertexShader = null;
         private InputLayout inputLayout = null;
         private PixelShader defaultPixelShader = null;
@@ -47,6 +50,7 @@ namespace Test.Encoder
         public int FramePerSec = 60;
 
         public int adapterIndex = 0;
+
 
 
         private string psName = "";
@@ -120,7 +124,8 @@ namespace Test.Encoder
                 multiThread.SetMultithreadProtected(true);
             }
 
-            InitShaders();
+
+			InitShaders();
 
 
 
@@ -209,7 +214,54 @@ namespace Test.Encoder
 
             swapChain = new SwapChain(dxgiFactory, device, scd);
 
-            adapter.Dispose();
+
+			using (var d2dFactory = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.SingleThreaded, SharpDX.Direct2D1.DebugLevel.Information))
+			{
+				// Create Direct2D device
+				using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
+				{
+					using (var d2dDevice = new SharpDX.Direct2D1.Device(d2dFactory, dxgiDevice))
+					{
+						// Create Direct2D context
+						d2dContext = new SharpDX.Direct2D1.DeviceContext(d2dDevice, SharpDX.Direct2D1.DeviceContextOptions.None);
+
+						var bitmapProperties = new SharpDX.Direct2D1.BitmapProperties1(
+							new SharpDX.Direct2D1.PixelFormat(swapChain.Description.ModeDescription.Format, SharpDX.Direct2D1.AlphaMode.Premultiplied),
+							96, 96,
+							SharpDX.Direct2D1.BitmapOptions.Target | SharpDX.Direct2D1.BitmapOptions.CannotDraw);
+
+						// Direct2D needs the dxgi version of the backbuffer surface pointer.
+						// Get a D2D surface from the DXGI back buffer to use as the D2D render target.
+						//using (var dxgiBackBuffer = swapChain.GetBackBuffer<SharpDX.DXGI.Surface>(0))
+						//{
+						//	d2dContext.Target = new SharpDX.Direct2D1.Bitmap1(d2dContext, dxgiBackBuffer, bitmapProperties);
+						//}
+
+						using (var surf = sharedTexture.QueryInterface<Surface>())
+						{
+							d2dContext.Target = new SharpDX.Direct2D1.Bitmap1(d2dContext, surf, bitmapProperties);
+						}
+
+						d2dContext.TextAntialiasMode = SharpDX.Direct2D1.TextAntialiasMode.Grayscale;
+						d2dContext.DotsPerInch = new SharpDX.Size2F(96, 96);
+					}
+
+				}
+
+			}
+			using (var dwriteFactory = new SharpDX.DirectWrite.Factory(SharpDX.DirectWrite.FactoryType.Shared))
+			{
+				sceneColorBrush = new Direct2D.SolidColorBrush(d2dContext, Color.White);
+
+				textFormat = new SharpDX.DirectWrite.TextFormat(dwriteFactory, "Calibri", 16)
+				{
+					TextAlignment = SharpDX.DirectWrite.TextAlignment.Leading,
+					ParagraphAlignment = SharpDX.DirectWrite.ParagraphAlignment.Center
+				};
+			}
+
+
+			adapter.Dispose();
             dxgiFactory.Dispose();
 
             //device.ImmediateContext.CopyResource(sourceTexture0, sharedTexture);
@@ -296,7 +348,9 @@ namespace Test.Encoder
                     try
                     {
 
-                        _Vertex[] vertices = CreateVertices(f.ClientSize, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
+
+
+						_Vertex[] vertices = CreateVertices(f.ClientSize, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
 
                         using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                         {
@@ -352,27 +406,40 @@ namespace Test.Encoder
                             shaderResourceView?.Dispose();
                         }
 
-                        //renderTarget.BeginDraw();
-                        //renderTarget.Clear(Color.Black);//(Color.Red);
-                        //DrawScreen(renderTarget, sourceTexture0, destSize, aspectRatio);
-                        //renderTarget.EndDraw();
+						int msec = (int)sw.ElapsedMilliseconds;
+						int delay = interval - msec;
+						if (delay <= 0)
+						{
+							delay = 1;
+						}
 
-                        using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+						syncEvent.WaitOne(delay);
+
+						frameCount++;
+						var averageTick = CalcAverageTick(sw.ElapsedTicks) / Stopwatch.Frequency;
+						var text = string.Format("{0:F2} FPS ({1:F1} ms)", 1.0 / averageTick, averageTick * 1000.0);
+
+
+						d2dContext.BeginDraw();
+						d2dContext.Transform = Matrix3x2.Identity;
+						var lineLength = 256;
+						var location = new Point(8, 8);
+						var rect = new RectangleF(location.X, location.Y, location.X + lineLength, location.Y + 16);
+						d2dContext.DrawText(text, textFormat, rect, sceneColorBrush);
+						d2dContext.EndDraw();
+
+
+
+						using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
                         {
                             deviceContext.CopyResource(sharedTexture, backBuffer);
                             swapChain.Present(1, PresentFlags.None);
                         }
 
-                        int msec = (int)sw.ElapsedMilliseconds;
-                        int delay = interval - msec;
-                        if (delay <= 0)
-                        {
-                            delay = 1;
-                        }
 
-                        syncEvent.WaitOne(delay);
 
-                        sw.Restart();
+
+						sw.Restart();
                     }
                     catch (Exception ex)
                     {
@@ -632,5 +699,37 @@ namespace Test.Encoder
                 }
             }
         }
+
+		//class FpsCalc
+		//{
+			const int MAXSAMPLES = 100;
+			int tickindex = 0;
+			long ticksum = 0;
+			long[] ticklist = new long[MAXSAMPLES];
+			long frameCount;
+
+			/* need to zero out the ticklist array before starting */
+			/* average will ramp up until the buffer is full */
+			/* returns average ticks per frame over the MAXSAMPPLES last frames */
+			//http://stackoverflow.com/questions/87304/calculating-frames-per-second-in-a-game/87732#87732
+			double CalcAverageTick(long newtick)
+			{
+				ticksum -= ticklist[tickindex];  /* subtract value falling off */
+				ticksum += newtick;              /* add new value */
+				ticklist[tickindex] = newtick;   /* save new value so it can be subtracted later */
+				if (++tickindex == MAXSAMPLES)    /* inc buffer index */
+					tickindex = 0;
+
+				/* return average */
+				if (frameCount < MAXSAMPLES)
+				{
+					return (double)ticksum / frameCount;
+				}
+				else
+				{
+					return (double)ticksum / MAXSAMPLES;
+				}
+			}
+		//}
     }
 }

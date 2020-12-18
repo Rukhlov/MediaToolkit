@@ -104,6 +104,7 @@
     <Compile Include="DDATest\ScreenRenderer.cs" />
     <Compile Include="DDATest\Utils.cs" />
     <Compile Include="DisplayDeviceTest.cs" />
+    <Compile Include="FFmpegPixConverterTest.cs" />
     <Compile Include="MfTransformTests.cs" />
     <Compile Include="NvApiTest.cs" />
     <Compile Include="NvEncTest.cs" />
@@ -149,6 +150,17 @@
     <Content Include="Files\1920x1080.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Files\I420_1280x720.raw" />
+    <Content Include="Files\I420_352x288.raw" />
+    <Content Include="Files\I420_640x480.raw" />
+    <Content Include="Files\I422_1280x720.raw" />
+    <Content Include="Files\I422_352x288.raw" />
+    <Content Include="Files\I444_1280x720.raw" />
+    <Content Include="Files\NV12_352x288.raw" />
+    <Content Include="Files\RGB24_1280x720.raw" />
+    <Content Include="Files\RGB24_352x288.raw" />
+    <Content Include="Files\RGB32_1280x720.raw" />
+    <Content Include="Files\RGB565_1280x720.raw" />
     <Content Include="Files\rgba_1920x1080.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

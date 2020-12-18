@@ -1,9 +1,12 @@
 ﻿using SharpDX;
 using SharpDX.Direct3D11;
+
 using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using GDI = System.Drawing;
@@ -108,10 +111,72 @@ namespace MediaToolkit.DirectX
 		}
 
 	}
+	public class HlslCompiler
+	{
 
+		public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile, 
+			SharpDX.Direct3D.ShaderMacro[] defines = null)
+		{
+
+			SharpDX.D3DCompiler.ShaderFlags flags = SharpDX.D3DCompiler.ShaderFlags.None;
+#if DEBUG
+			flags |= SharpDX.D3DCompiler.ShaderFlags.Debug | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
+#endif
+
+			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
+
+			return CompileShaderFromResources(file, entryPoint, profile, flags, effectFlags);
+		}
+
+		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
+			SharpDX.D3DCompiler.ShaderFlags shaderFlags = SharpDX.D3DCompiler.ShaderFlags.None,
+			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None, 
+			SharpDX.Direct3D.ShaderMacro[] defines = null)
+		{
+
+			var assembly = Assembly.GetExecutingAssembly();
+			var resourceName = "MediaToolkit.DirectX.Shaders." + file;
+
+			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+			{
+				using (StreamReader ms = new StreamReader(stream))
+				{
+					var shaderSource = ms.ReadToEnd();
+					var result = SharpDX.D3DCompiler.ShaderBytecode.Compile(shaderSource, entryPoint, profile, shaderFlags, effectFlags, defines, null, file);
+
+					return result;
+				}
+			}
+		}
+
+
+
+	}
 
 	public class DxTool
     {
+
+
+//		public static ShaderBytecode CompileFromFile(string hlslFile, string entryPoint, string profile, SharpDX.Direct3D.ShaderMacro[] defines = null)
+//		{
+//			if (!Path.IsPathRooted(hlslFile))
+//				hlslFile = Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), hlslFile);
+//			var shaderSource = SharpDX.IO.NativeFile.ReadAllText(hlslFile);
+//			CompilationResult result = null;
+
+//			// Compile the shader file
+//			ShaderFlags flags = ShaderFlags.None;
+//#if DEBUG
+//			flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
+//#endif
+//			var includeHandler = new HLSLFileIncludeHandler(Path.GetDirectoryName(hlslFile));
+//			result = ShaderBytecode.Compile(shaderSource, entryPoint, profile, flags, EffectFlags.None, defines, includeHandler, Path.GetFileName(hlslFile));
+
+//			if (result.ResultCode.Failure)
+//				throw new CompilationException(result.ResultCode, result.Message);
+
+//			return result;
+//		}
 
 
 		public unsafe static Texture2D TextureFromDump(SharpDX.Direct3D11.Device device, Texture2DDescription descr, byte[] srcBuffer)

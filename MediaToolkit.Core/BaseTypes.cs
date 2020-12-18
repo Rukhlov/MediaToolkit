@@ -192,6 +192,29 @@ namespace MediaToolkit.Core
         Quality,
     }
 
+    public enum PixFormat
+    {
+        Unknown,
+
+        RGB565,
+        RGB24,
+        RGB32,
+
+        NV12,
+        I420,
+        I422,
+        I444,
+    }
+
+    public enum ScalingFilter
+    {
+        Point,
+        FastLinear,
+        Linear,
+        Bicubic,
+
+    }
+
     [Serializable]
     public class AudioEncoderSettings : ICloneable
     {

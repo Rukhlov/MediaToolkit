@@ -195,7 +195,7 @@ namespace MediaToolkit.MediaFoundation
 			var vsProvile = "vs_" + profileLevel;
 			var psProvile = "ps_" + profileLevel;
 
-			using (var compResult = CompileShaderFromResources("DefaultVS.hlsl", "VS", vsProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("DefaultVS.hlsl", "VS", vsProvile))
 			{
 				defaultVS = new VertexShader(device, compResult.Bytecode);
 				var elements = new[]
@@ -210,17 +210,17 @@ namespace MediaToolkit.MediaFoundation
 				}
 			}
 
-			using (var compResult = CompileShaderFromResources("DefaultPS.hlsl", "PS", psProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("DefaultPS.hlsl", "PS", psProvile))
 			{
 				defaultPS = new PixelShader(device, compResult.Bytecode);
 			}
 
-			using (var compResult = CompileShaderFromResources("RgbToNv12.hlsl", "PS", psProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("RgbToNv12.hlsl", "PS", psProvile))
 			{
 				rgbToYuvPS = new PixelShader(device, compResult.Bytecode);
 			}
 
-			using (var compResult = CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
 			//using (var compResult = CompileShader("DownscaleBilinear9.hlsl", "PS", psProvile))
 			{
 				downscalePS = new PixelShader(device, compResult.Bytecode);
@@ -754,39 +754,6 @@ namespace MediaToolkit.MediaFoundation
 				dispose.Dispose();
 				dispose = null;
 			}
-		}
-
-		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile)
-		{
-			SharpDX.D3DCompiler.ShaderFlags shaderFlags =
-				SharpDX.D3DCompiler.ShaderFlags.EnableStrictness
-				| SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
-			//| SharpDX.D3DCompiler.ShaderFlags.Debug;
-
-			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
-
-			return CompileShader(file, entryPoint, profile, shaderFlags, effectFlags);
-		}
-
-		private static SharpDX.D3DCompiler.CompilationResult CompileShader(string file, string entryPoint, string profile,
-			SharpDX.D3DCompiler.ShaderFlags shaderFlags,
-			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None)
-		{
-			logger.Debug("CompileShader(...) " + string.Join(" ", file, entryPoint, profile));
-
-			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "MediaToolkit.DirectX.Shaders." + file;
-
-			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-			{
-				using (StreamReader ms = new StreamReader(stream))
-				{
-					var code = ms.ReadToEnd();
-					return SharpDX.D3DCompiler.ShaderBytecode.Compile(code, entryPoint, profile, shaderFlags, effectFlags);
-				}
-
-			}
-
 		}
 
 	}
