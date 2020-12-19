@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using MediaToolkit.Core;
+using SharpDX;
 using SharpDX.Direct3D11;
 
 using SharpDX.DXGI;
@@ -13,173 +14,170 @@ using GDI = System.Drawing;
 
 namespace MediaToolkit.DirectX
 {
-	public class WicTool
-	{
-		public static Texture2D CreateTexture2DFromBitmapFile(string fileName, SharpDX.Direct3D11.Device device)
-		{
-			using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
-			{
-				using (var bitmapSource = LoadBitmapSource(factory, fileName))
-				{
-					var descr = new SharpDX.Direct3D11.Texture2DDescription()
-					{
-						MipLevels = 1,
-						ArraySize = 1,
-						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-						BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-						Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-						CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-						Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+    public class WicTool
+    {
+        public static Texture2D CreateTexture2DFromBitmapFile(string fileName, SharpDX.Direct3D11.Device device)
+        {
+            using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
+            {
+                using (var bitmapSource = LoadBitmapSource(factory, fileName))
+                {
+                    var descr = new SharpDX.Direct3D11.Texture2DDescription()
+                    {
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                        Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                        Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
 
-						OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
 
-					};
+                    };
 
-					return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
-				}
-			}
-		}
+                    return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
+                }
+            }
+        }
 
-		public static Texture2D CreateTexture2DFromBitmapFile(string fileName, SharpDX.Direct3D11.Device device, SharpDX.Direct3D11.Texture2DDescription descr)
-		{
-			using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
-			{
-				using (var bitmapSource = LoadBitmapSource(factory, fileName))
-				{
-					return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
-				}
-			}
-		}
+        public static Texture2D CreateTexture2DFromBitmapFile(string fileName, SharpDX.Direct3D11.Device device, SharpDX.Direct3D11.Texture2DDescription descr)
+        {
+            using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
+            {
+                using (var bitmapSource = LoadBitmapSource(factory, fileName))
+                {
+                    return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
+                }
+            }
+        }
 
-		public static SharpDX.WIC.BitmapSource LoadBitmapSource(SharpDX.WIC.ImagingFactory2 factory, string filename)
-		{
-			using (var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(factory, filename, SharpDX.WIC.DecodeOptions.CacheOnDemand))
-			{
-				var formatConverter = new SharpDX.WIC.FormatConverter(factory);
+        public static SharpDX.WIC.BitmapSource LoadBitmapSource(SharpDX.WIC.ImagingFactory2 factory, string filename)
+        {
+            using (var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(factory, filename, SharpDX.WIC.DecodeOptions.CacheOnDemand))
+            {
+                var formatConverter = new SharpDX.WIC.FormatConverter(factory);
 
-				using (var frameDecode = bitmapDecoder.GetFrame(0))
-				{
-					formatConverter.Initialize(frameDecode,
-						SharpDX.WIC.PixelFormat.Format32bppPRGBA,
-						SharpDX.WIC.BitmapDitherType.None,
-						null,
-						0.0,
-						SharpDX.WIC.BitmapPaletteType.Custom);
-				}
+                using (var frameDecode = bitmapDecoder.GetFrame(0))
+                {
+                    formatConverter.Initialize(frameDecode,
+                        SharpDX.WIC.PixelFormat.Format32bppPRGBA,
+                        SharpDX.WIC.BitmapDitherType.None,
+                        null,
+                        0.0,
+                        SharpDX.WIC.BitmapPaletteType.Custom);
+                }
 
-				return formatConverter;
-			}
-		}
+                return formatConverter;
+            }
+        }
 
-		public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource)
-		{
-			var descr = new SharpDX.Direct3D11.Texture2DDescription()
-			{
-				MipLevels = 1,
-				ArraySize = 1,
-				SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-				BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-				Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-				CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+        public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource)
+        {
+            var descr = new SharpDX.Direct3D11.Texture2DDescription()
+            {
+                MipLevels = 1,
+                ArraySize = 1,
+                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
 
-				OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
 
-			};
+            };
 
-			return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
-		}
+            return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
+        }
 
-		public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.Direct3D11.Texture2DDescription descr, SharpDX.WIC.BitmapSource bitmapSource)
-		{
-			var bitmapSize = bitmapSource.Size;
+        public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.Direct3D11.Texture2DDescription descr, SharpDX.WIC.BitmapSource bitmapSource)
+        {
+            var bitmapSize = bitmapSource.Size;
 
-			descr.Width = bitmapSize.Width;
-			descr.Height = bitmapSize.Height;
-			descr.Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm;
+            descr.Width = bitmapSize.Width;
+            descr.Height = bitmapSize.Height;
+            descr.Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm;
 
-			int bitmapStride = bitmapSize.Width * 4;
-			int bitmapLenght = bitmapSize.Height * bitmapStride;
+            int bitmapStride = bitmapSize.Width * 4;
+            int bitmapLenght = bitmapSize.Height * bitmapStride;
 
-			using (var buffer = new SharpDX.DataStream(bitmapLenght, true, true))
-			{
-				bitmapSource.CopyPixels(bitmapStride, buffer);
+            using (var buffer = new SharpDX.DataStream(bitmapLenght, true, true))
+            {
+                bitmapSource.CopyPixels(bitmapStride, buffer);
 
-				var dataRect = new SharpDX.DataRectangle(buffer.DataPointer, bitmapStride);
+                var dataRect = new SharpDX.DataRectangle(buffer.DataPointer, bitmapStride);
 
-				return new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
-			}
-		}
+                return new SharpDX.Direct3D11.Texture2D(device, descr, dataRect);
+            }
+        }
 
-	}
-	public class HlslCompiler
-	{
+    }
+    public class HlslCompiler
+    {
 
-		public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile, 
-			SharpDX.Direct3D.ShaderMacro[] defines = null)
-		{
+        public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
+            SharpDX.Direct3D.ShaderMacro[] defines = null)
+        {
 
-			SharpDX.D3DCompiler.ShaderFlags flags = SharpDX.D3DCompiler.ShaderFlags.None;
+            SharpDX.D3DCompiler.ShaderFlags flags = SharpDX.D3DCompiler.ShaderFlags.None;
 #if DEBUG
-			flags |= SharpDX.D3DCompiler.ShaderFlags.Debug | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
+            flags |= SharpDX.D3DCompiler.ShaderFlags.Debug | SharpDX.D3DCompiler.ShaderFlags.SkipOptimization;
 #endif
 
-			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
+            SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None;
 
-			return CompileShaderFromResources(file, entryPoint, profile, flags, effectFlags);
-		}
+            return CompileShaderFromResources(file, entryPoint, profile, flags, effectFlags);
+        }
 
-		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
-			SharpDX.D3DCompiler.ShaderFlags shaderFlags = SharpDX.D3DCompiler.ShaderFlags.None,
-			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None, 
-			SharpDX.Direct3D.ShaderMacro[] defines = null)
-		{
+        private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
+            SharpDX.D3DCompiler.ShaderFlags shaderFlags = SharpDX.D3DCompiler.ShaderFlags.None,
+            SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None,
+            SharpDX.Direct3D.ShaderMacro[] defines = null)
+        {
 
-			var assembly = Assembly.GetExecutingAssembly();
-			var resourceName = "MediaToolkit.DirectX.Shaders." + file;
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "MediaToolkit.DirectX.Shaders." + file;
 
-			using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-			{
-				using (StreamReader ms = new StreamReader(stream))
-				{
-					var shaderSource = ms.ReadToEnd();
-					var result = SharpDX.D3DCompiler.ShaderBytecode.Compile(shaderSource, entryPoint, profile, shaderFlags, effectFlags, defines, null, file);
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                using (StreamReader ms = new StreamReader(stream))
+                {
+                    var shaderSource = ms.ReadToEnd();
+                    var result = SharpDX.D3DCompiler.ShaderBytecode.Compile(shaderSource, entryPoint, profile, shaderFlags, effectFlags, defines, null, file);
 
-					return result;
-				}
-			}
-		}
+                    return result;
+                }
+            }
+        }
+    }
 
-
-
-	}
-
-	public class DxTool
+    public class DxTool
     {
 
 
-//		public static ShaderBytecode CompileFromFile(string hlslFile, string entryPoint, string profile, SharpDX.Direct3D.ShaderMacro[] defines = null)
-//		{
-//			if (!Path.IsPathRooted(hlslFile))
-//				hlslFile = Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), hlslFile);
-//			var shaderSource = SharpDX.IO.NativeFile.ReadAllText(hlslFile);
-//			CompilationResult result = null;
+        //		public static ShaderBytecode CompileFromFile(string hlslFile, string entryPoint, string profile, SharpDX.Direct3D.ShaderMacro[] defines = null)
+        //		{
+        //			if (!Path.IsPathRooted(hlslFile))
+        //				hlslFile = Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), hlslFile);
+        //			var shaderSource = SharpDX.IO.NativeFile.ReadAllText(hlslFile);
+        //			CompilationResult result = null;
 
-//			// Compile the shader file
-//			ShaderFlags flags = ShaderFlags.None;
-//#if DEBUG
-//			flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
-//#endif
-//			var includeHandler = new HLSLFileIncludeHandler(Path.GetDirectoryName(hlslFile));
-//			result = ShaderBytecode.Compile(shaderSource, entryPoint, profile, flags, EffectFlags.None, defines, includeHandler, Path.GetFileName(hlslFile));
+        //			// Compile the shader file
+        //			ShaderFlags flags = ShaderFlags.None;
+        //#if DEBUG
+        //			flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
+        //#endif
+        //			var includeHandler = new HLSLFileIncludeHandler(Path.GetDirectoryName(hlslFile));
+        //			result = ShaderBytecode.Compile(shaderSource, entryPoint, profile, flags, EffectFlags.None, defines, includeHandler, Path.GetFileName(hlslFile));
 
-//			if (result.ResultCode.Failure)
-//				throw new CompilationException(result.ResultCode, result.Message);
+        //			if (result.ResultCode.Failure)
+        //				throw new CompilationException(result.ResultCode, result.Message);
 
-//			return result;
-//		}
+        //			return result;
+        //		}
 
 
-		public unsafe static Texture2D TextureFromDump(SharpDX.Direct3D11.Device device, Texture2DDescription descr, byte[] srcBuffer)
+        public unsafe static Texture2D TextureFromDump(SharpDX.Direct3D11.Device device, Texture2DDescription descr, byte[] srcBuffer)
         {
             //descr.CpuAccessFlags = CpuAccessFlags.None;
             //descr.Usage = ResourceUsage.Default;
@@ -202,7 +200,7 @@ namespace MediaToolkit.DirectX
             {// Width and height must be even.
 
                 rowPitch = width;
-                slicePitch = rowPitch * (height + height / 2);       
+                slicePitch = rowPitch * (height + height / 2);
             }
             else
             {// not supported...
@@ -249,7 +247,7 @@ namespace MediaToolkit.DirectX
                     var destRowNumber = height;
                     var destBufferSize = destPitch * destRowNumber;
 
-                    if(stagingDescr.Format == Format.R8G8B8A8_SNorm)
+                    if (stagingDescr.Format == Format.R8G8B8A8_SNorm)
                     {
 
                     }
@@ -358,7 +356,7 @@ namespace MediaToolkit.DirectX
                     //var isSupported = SharpDX.Direct3D11.Device.IsSupportedFeatureLevel(_adapter, SharpDX.Direct3D.FeatureLevel.Level_12_1);
 
                     bool success = GetSupportedFeatureLevel(_adapter, out var feature);
-                   
+
                     log.AppendLine("-------------------------------------");
                     log.AppendLine("#" + adapterIndex + " " + string.Join("| ", adaptDescr.Description, adaptDescr.DeviceId, adaptDescr.VendorId, featureLevel));
 
@@ -381,16 +379,16 @@ namespace MediaToolkit.DirectX
                             };
 
                             log.AppendLine("#" + outputIndex + " " + string.Join("| ", outputDescr.DeviceName, rect.ToString()));
-                           
+
                         }
                         finally
                         {
                             _output?.Dispose();
                         }
- 
+
                     }
                 }
-                catch(SharpDXException ex)
+                catch (SharpDXException ex)
                 {
                     log.AppendLine(ex.Message);
                 }
@@ -398,7 +396,7 @@ namespace MediaToolkit.DirectX
                 {
                     _adapter?.Dispose();
                 }
-                
+
             }
 
             return log.ToString();
@@ -651,6 +649,135 @@ namespace MediaToolkit.DirectX
 
             return texture;
         }
+    }
+
+    public class ColorSpaceHelper
+    {
+        static ColorSpaceHelper()
+        {
+            rgbToYuvDict = new Dictionary<ColorSpace, Dictionary<ColorRange, float[]>>
+            {
+                {
+                    ColorSpace.BT601,
+                    new Dictionary<ColorRange, float[]>
+                    {
+                        { ColorRange.Partial, RgbToYuv601 },
+                        { ColorRange.Full, RgbToYuv601Full }
+                    }
+                },
+
+                {
+                    ColorSpace.BT709,
+                    new Dictionary<ColorRange, float[]>
+                    {
+                        { ColorRange.Partial, RgbToYuv709 },
+                        { ColorRange.Full, RgbToYuv709Full }
+                    }
+                }
+            };
+
+            yuvToRgbDict = new Dictionary<ColorSpace, Dictionary<ColorRange, float[]>>
+            {
+                {
+                    ColorSpace.BT601,
+                    new Dictionary<ColorRange, float[]>
+                    {
+                        { ColorRange.Partial, YuvToRgb601 },
+                        { ColorRange.Full, YuvToRgb601Full }
+                    }
+                },
+
+                {
+                    ColorSpace.BT709,
+                    new Dictionary<ColorRange, float[]>
+                    {
+                        { ColorRange.Partial, YuvToRgb709 },
+                        { ColorRange.Full, YuvToRgb709Full }
+                    }
+                }
+            };
+        }
+
+        private readonly static Dictionary<ColorSpace, Dictionary<ColorRange, float[]>> rgbToYuvDict = null;
+        private readonly static Dictionary<ColorSpace, Dictionary<ColorRange, float[]>> yuvToRgbDict = null;
+
+        public static Matrix GetRgbToYuvMatrix(ColorSpace colorSpace = ColorSpace.BT601, ColorRange colorRange = ColorRange.Partial)
+        {
+            var colorDict = rgbToYuvDict[colorSpace];
+            return new Matrix(colorDict[colorRange]);
+        }
+
+        public static Matrix GetYuvToRgbMatrix(ColorSpace colorSpace = ColorSpace.BT601, ColorRange colorRange = ColorRange.Partial)
+        {
+            var colorDict = yuvToRgbDict[colorSpace];
+            return new Matrix(colorDict[colorRange]);
+        }
+
+
+        public readonly static float[] RgbToYuv601 =
+        {
+             0.256788f,  0.504129f,  0.097906f,  0.062745f,
+            -0.148223f, -0.290993f,  0.439216f,  0.501961f,
+             0.439216f, -0.367788f, -0.071427f,  0.501961f,
+             0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] RgbToYuv601Full =
+        {
+             0.299000f,  0.587000f,  0.114000f,  0.000000f,
+            -0.168074f, -0.329965f,  0.498039f,  0.501961f,
+             0.498039f, -0.417046f, -0.080994f,  0.501961f,
+             0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] RgbToYuv709 =
+        {
+             0.182586f,  0.614231f,  0.062007f,  0.062745f,
+            -0.100644f, -0.338572f,  0.439216f,  0.501961f,
+             0.439216f, -0.398942f, -0.040274f,  0.501961f,
+             0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] RgbToYuv709Full =
+        {
+             0.212600f,  0.715200f,  0.072200f,  0.000000f,
+            -0.114123f, -0.383916f,  0.498039f,  0.501961f,
+             0.498039f, -0.452372f, -0.045667f,  0.501961f,
+             0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] YuvToRgb601 =
+        {
+            1.000000f,  0.000000f,  1.407520f, -0.706520f,
+            1.000000f, -0.345491f, -0.716948f,  0.533303f,
+            1.000000f,  1.778976f,  0.000000f, -0.892976f,
+            0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] YuvToRgb601Full =
+        {
+            1.164384f,  0.000000f,  1.596027f, -0.874202f,
+            1.164384f, -0.391762f, -0.812968f,  0.531668f,
+            1.164384f,  2.017232f,  0.000000f, -1.085631f,
+            0.000000f,  0.000000f,  0.000000f,  1.000000f
+        };
+
+        public readonly static float[] YuvToRgb709 =
+        {
+            1.164384f, 0.000000f, 1.792741f, -0.972945f,
+            1.164384f, -0.213249f, -0.532909f, 0.301483f,
+            1.164384f, 2.112402f, 0.000000f, -1.133402f,
+            0.000000f, 0.000000f, 0.000000f, 1.000000f
+        };
+
+        public readonly static float[] YuvToRgb709Full =
+        {
+            1.000000f, 0.000000f, 1.581000f, -0.793600f,
+            1.000000f, -0.188062f, -0.469967f, 0.330305f,
+            1.000000f, 1.862906f, 0.000000f, -0.935106f,
+            0.000000f, 0.000000f, 0.000000f, 1.000000f
+        };
+
     }
 
 }

@@ -102,34 +102,11 @@ namespace FFmpegLib {
 			AVFrame* srcFrame = NULL;
 			try {
 
-				//uint8_t* src_data[4];
-				//int scr_linesize[4];
-
-				//int srcSize = av_image_alloc(src_data, scr_linesize, srcWidth, srcWidth, srcFormat, 16);
-
-				//srcSize = av_image_fill_arrays(src_data, scr_linesize,
-				//	reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcWidth, srcHeight, 16);
-				////const uint8_t* src_data[1] =
-				////{
-				////	reinterpret_cast<uint8_t*>(srcData.ToPointer())
-				////};
-				////const int scr_linesize[1] =
-				////{
-				////	srcDataSize,
-				////	//bmpStride
-				////};
-				//int res = sws_scale(sws_ctx, src_data, scr_linesize, 0, srcHeight, destFrame->data, destFrame->linesize);
-
-
 				srcFrame = av_frame_alloc();
 				srcFrame->width = srcWidth;
 				srcFrame->height = srcHeight;
 				srcFrame->format = srcFormat;
 
-				//int srcSize = avpicture_fill((AVPicture*)srcFrame, 
-				//	reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcFrame->width, srcFrame->height);
-				//
-				//
 				int srcSize = av_image_fill_arrays(srcFrame->data, srcFrame->linesize,
 					reinterpret_cast<uint8_t*>(srcData.ToPointer()), srcFormat, srcWidth, srcHeight, srcAlign);
 
@@ -147,8 +124,7 @@ namespace FFmpegLib {
 				for (int i = 0; i < 4; i++) {
 					destData[i] = (IntPtr)destFrame->data[i];
 					destLinesize[i] = destFrame->linesize[i];
-				}
-				
+				}			
 
 			}
 			catch (Exception^ ex) {

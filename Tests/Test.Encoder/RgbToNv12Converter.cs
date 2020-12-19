@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 using System.IO;
 using SharpDX.Direct3D;
 using GDI = System.Drawing;
-
-
+using MediaToolkit.Core;
+using MediaToolkit.DirectX;
 
 namespace Test.Encoder
 {
@@ -97,7 +97,7 @@ namespace Test.Encoder
 
             //var fileName = @"Files\2560x1440.bmp";
             //var fileName = @"Files\1920x1080.bmp";          
-             var fileName = @"Files\rgba_640x480.bmp";
+            var fileName = @"Files\rgba_640x480.bmp";
             //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
             rgbTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
@@ -126,7 +126,7 @@ namespace Test.Encoder
 
             InitChromaRenderResources(width, height);
 
-            InitNv12RenderResources(width, height);
+            //InitNv12RenderResources(width, height);
 
             var deviceContext = device.ImmediateContext;
             var size = new GDI.Size(width, height);
@@ -165,7 +165,14 @@ namespace Test.Encoder
 
             deviceContext.OutputMerger.SetTargets(lumaRT, chromaRT);
             deviceContext.ClearRenderTargetView(lumaRT, Color.Black);
-            deviceContext.ClearRenderTargetView(chromaRT, Color.Black);  
+            deviceContext.ClearRenderTargetView(chromaRT, Color.Black);
+
+            var colorMatrix = ColorSpaceHelper.GetRgbToYuvMatrix();
+            using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref colorMatrix))
+            {
+                deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+            }
+
             deviceContext.PixelShader.SetShader(rgbToYuvPixShader, null, 0);
             deviceContext.PixelShader.SetShaderResources(0, rgbSRV);
             deviceContext.Draw(vertices.Length, 0);
@@ -203,15 +210,15 @@ namespace Test.Encoder
             //}
 
 
-            {
-                var descr = nv12Texture.Description;
-                var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, nv12Texture);
+            //{
+            //    var descr = nv12Texture.Description;
+            //    var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, nv12Texture);
 
-                var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
-                File.WriteAllBytes(_fileName, bytes);
+            //    var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+            //    File.WriteAllBytes(_fileName, bytes);
 
-                Console.WriteLine("OutputFile: " + _fileName);
-            }
+            //    Console.WriteLine("OutputFile: " + _fileName);
+            //}
 
 
             // NV12->RGB
@@ -247,20 +254,36 @@ namespace Test.Encoder
                         Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
                     };
 
-                    using (var nv12LumaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
-                    {
-                        srvDescr.Format = Format.R8G8_UNorm;
-                        using (var nv12ChromaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
-                        {
-                            SetViewPort(width, height);
-                            deviceContext.OutputMerger.SetTargets(rgbRT);
-                            deviceContext.ClearRenderTargetView(rgbRT, Color.Black);
+                    //using (var nv12LumaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
+                    //{
+                    //    srvDescr.Format = Format.R8G8_UNorm;
+                    //    using (var nv12ChromaSRV = new ShaderResourceView(device, nv12Texture, srvDescr))
+                    //    {
+                    //        SetViewPort(width, height);
+                    //        deviceContext.OutputMerger.SetTargets(rgbRT);
+                    //        deviceContext.ClearRenderTargetView(rgbRT, Color.Black);
 
-                            deviceContext.PixelShader.SetShader(nv12ToRgbPixShader, null, 0);
-                            deviceContext.PixelShader.SetShaderResources(0, nv12LumaSRV, nv12ChromaSRV);
-                            deviceContext.Draw(vertices.Length, 0);
-                        }
+                    //        deviceContext.PixelShader.SetShader(nv12ToRgbPixShader, null, 0);
+                    //        deviceContext.PixelShader.SetShaderResources(0, nv12LumaSRV, nv12ChromaSRV);
+                    //        deviceContext.Draw(vertices.Length, 0);
+                    //    }
+                    //}
+
+                    SetViewPort(width, height);
+                    deviceContext.OutputMerger.SetTargets(rgbRT);
+                    deviceContext.ClearRenderTargetView(rgbRT, Color.Black);
+
+
+                    var yuvToRgbMatrix = ColorSpaceHelper.GetYuvToRgbMatrix();
+
+                    using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref yuvToRgbMatrix))
+                    {
+                        deviceContext.PixelShader.SetConstantBuffer(0, buffer);
                     }
+
+                    deviceContext.PixelShader.SetShader(nv12ToRgbPixShader, null, 0);
+                    deviceContext.PixelShader.SetShaderResources(0, lumaSRV, chromaSRV);
+                    deviceContext.Draw(vertices.Length, 0);
 
                 }
 
@@ -284,20 +307,20 @@ namespace Test.Encoder
 
 
 
-            nv12ChromaRT.Dispose();
-            nv12LumaRT.Dispose();
-            nv12Texture.Dispose();
-            chromaSRV.Dispose();
-            chromaRT.Dispose();
-            lumaSRV.Dispose();
-            lumaRT.Dispose();
-            samplerLinear.Dispose();
+            nv12ChromaRT?.Dispose();
+            nv12LumaRT?.Dispose();
+            nv12Texture?.Dispose();
+            chromaSRV?.Dispose();
+            chromaRT?.Dispose();
+            lumaSRV?.Dispose();
+            lumaRT?.Dispose();
+            samplerLinear?.Dispose();
 
-            nv12ToRgbPixShader.Dispose();
-            rgbToYuvPixShader.Dispose();
-            vertexShader.Dispose();
-            pixelShader.Dispose();
-            
+            nv12ToRgbPixShader?.Dispose();
+            rgbToYuvPixShader?.Dispose();
+            vertexShader?.Dispose();
+            pixelShader?.Dispose();
+
             rgbSRV.Dispose();
             rgbTexture.Dispose();
 
@@ -341,36 +364,48 @@ namespace Test.Encoder
                 pixelShader = new PixelShader(device, compResult.Bytecode);
             }
 
-            psFile = Path.Combine(shaderPath, "RgbToYuvPS.hlsl");
+            //psFile = Path.Combine(shaderPath, "RgbToYuvPS.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
+            //{
+            //    rgbToYuvPixShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+            psFile = Path.Combine(shaderPath, "RgbToYuvPS_2.hlsl");
             using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
             {
                 rgbToYuvPixShader = new PixelShader(device, compResult.Bytecode);
             }
 
-            psFile = Path.Combine(shaderPath, "Nv12ToRgbPs.hlsl");
+            //psFile = Path.Combine(shaderPath, "Nv12ToRgbPs.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
+            //{
+            //    nv12ToRgbPixShader = new PixelShader(device, compResult.Bytecode);
+            //}
+
+            psFile = Path.Combine(shaderPath, "Nv12ToRgb2Ps.hlsl");
             using (var compResult = CompileShaderFromFile(psFile, "PS", psProvile))
             {
                 nv12ToRgbPixShader = new PixelShader(device, compResult.Bytecode);
             }
 
-			psFile = Path.Combine(shaderPath, "BiLinerealResizerPS.hlsl");
-			SharpDX.D3DCompiler.ShaderFlags shaderFlags =
-				SharpDX.D3DCompiler.ShaderFlags.SkipOptimization 
-				| SharpDX.D3DCompiler.ShaderFlags.EnableBackwardsCompatibility;
-			//| SharpDX.D3DCompiler.ShaderFlags.Debug;
-			using (var compResult = CompileShaderFromFile(psFile, "main_bilinear", psProvile))
-			{
-				var resizerPixShader = new PixelShader(device, compResult.Bytecode);
-			}
+            psFile = Path.Combine(shaderPath, "BiLinerealResizerPS.hlsl");
+            SharpDX.D3DCompiler.ShaderFlags shaderFlags =
+                SharpDX.D3DCompiler.ShaderFlags.SkipOptimization
+                | SharpDX.D3DCompiler.ShaderFlags.EnableBackwardsCompatibility;
+            //| SharpDX.D3DCompiler.ShaderFlags.Debug;
+            using (var compResult = CompileShaderFromFile(psFile, "main_bilinear", psProvile))
+            {
+                var resizerPixShader = new PixelShader(device, compResult.Bytecode);
+            }
 
-			//psFile = Path.Combine(shaderPath, "BiLinearScaling.hlsl");
-			//using (var compResult = CompileShaderFromFile(psFile, "PSDrawLowresBilinearRGBA", psProvile))
-			//{
-			//	var BiLinearScalingPixShader = new PixelShader(device, compResult.Bytecode);
-			//}
+            //psFile = Path.Combine(shaderPath, "BiLinearScaling.hlsl");
+            //using (var compResult = CompileShaderFromFile(psFile, "PSDrawLowresBilinearRGBA", psProvile))
+            //{
+            //	var BiLinearScalingPixShader = new PixelShader(device, compResult.Bytecode);
+            //}
 
 
-		}
+        }
         private PixelShader nv12ToRgbPixShader = null;
 
 
@@ -615,16 +650,16 @@ namespace Test.Encoder
             return CompileShaderFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
         }
 
-		private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromFile(string file, string entryPoint, string profile,
-			SharpDX.D3DCompiler.ShaderFlags shaderFlags, 
-			SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None)
-		{
-			Console.WriteLine("CompileShaderFromFile() " + string.Join(" ", file, entryPoint, profile));
+        private static SharpDX.D3DCompiler.CompilationResult CompileShaderFromFile(string file, string entryPoint, string profile,
+            SharpDX.D3DCompiler.ShaderFlags shaderFlags,
+            SharpDX.D3DCompiler.EffectFlags effectFlags = SharpDX.D3DCompiler.EffectFlags.None)
+        {
+            Console.WriteLine("CompileShaderFromFile() " + string.Join(" ", file, entryPoint, profile));
 
-			return SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
-		}
+            return SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(file, entryPoint, profile, shaderFlags, effectFlags);
+        }
 
-		public static string LogEnumFlags(Enum flags)
+        public static string LogEnumFlags(Enum flags)
         {
             string log = "";
 
@@ -635,6 +670,8 @@ namespace Test.Encoder
 
             return log;
         }
+
+
 
     }
 }

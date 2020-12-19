@@ -206,6 +206,18 @@ namespace MediaToolkit.Core
         I444,
     }
 
+    public enum ColorSpace
+    {
+        BT601 = 0,
+        BT709 = 1,
+    }
+
+    public enum ColorRange
+    {
+        Partial = 0,
+        Full = 1,
+    }
+
     public enum ScalingFilter
     {
         Point,

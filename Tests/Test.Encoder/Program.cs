@@ -41,11 +41,11 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
             //var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-            FFmpegPixConverterTest.Run();
+            //FFmpegPixConverterTest.Run();
 
 			//SimpleSwapChain.Run();
 
-            //RgbToNv12Converter.Run();
+            RgbToNv12Converter.Run();
 
 			//D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
 			//videoProcessor.Test();
