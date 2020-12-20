@@ -105,6 +105,7 @@
     <Compile Include="DDATest\Utils.cs" />
     <Compile Include="DisplayDeviceTest.cs" />
     <Compile Include="DisplayManager.cs" />
+    <Compile Include="FFmpegJpegEncoderTest.cs" />
     <Compile Include="FFmpegPixConverterTest.cs" />
     <Compile Include="MfTransformTests.cs" />
     <Compile Include="NvApiTest.cs" />

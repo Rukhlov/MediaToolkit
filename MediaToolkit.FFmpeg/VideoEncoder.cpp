@@ -185,12 +185,9 @@ namespace FFmpegLib {
 				frame->width = encoder_ctx->width;
 				frame->height = encoder_ctx->height;
 				frame->format = encoder_ctx->pix_fmt;
-				//frame->quality = 1;
 
-				//frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
-
-
-				AVPixelFormat pixFormat;
+				
+				AVPixelFormat pixFormat = encoder_ctx->pix_fmt;
 				switch (encoder_ctx->pix_fmt) {
 				case AV_PIX_FMT_YUVJ420P:
 					pixFormat = AV_PIX_FMT_YUV420P;
@@ -205,7 +202,6 @@ namespace FFmpegLib {
 					pixFormat = AV_PIX_FMT_YUV440P;
 					break;
 				default:
-					pixFormat = encoder_ctx->pix_fmt;
 					break;
 				}
 
@@ -214,7 +210,6 @@ namespace FFmpegLib {
 
 
 				if (av_frame_get_buffer(frame, 0) < 0) {
-					//if (av_frame_get_buffer(frame, 32) < 0) {
 					throw gcnew Exception("Could not allocate frame data.");
 				}
 
@@ -311,16 +306,22 @@ namespace FFmpegLib {
 									throw gcnew Exception("Could not allocate convert context");
 								}
 
-								//int table[4];
-								//int inv_table[4];
-								//int srcRange, dstRange;
-								//int brightness, contrast, saturation;
-								//sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
-								//const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+								if (encoder_ctx->codec_id == AV_CODEC_ID_MJPEG) {
 
-								//srcRange = 1; // this marks that values are according to yuvj
-								//int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+									int table[4];
+									int inv_table[4];
+									int srcRange, dstRange;
+									int brightness, contrast, saturation;
+									sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
+									const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
 
+									//srcRange = 1;
+									dstRange = 1;
+									int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+									if (res < 0) {
+										throw gcnew Exception("Invalid color space");
+									}
+								}
 							}
 
 

@@ -154,29 +154,6 @@ namespace MediaToolkit.DirectX
     public class DxTool
     {
 
-
-        //		public static ShaderBytecode CompileFromFile(string hlslFile, string entryPoint, string profile, SharpDX.Direct3D.ShaderMacro[] defines = null)
-        //		{
-        //			if (!Path.IsPathRooted(hlslFile))
-        //				hlslFile = Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), hlslFile);
-        //			var shaderSource = SharpDX.IO.NativeFile.ReadAllText(hlslFile);
-        //			CompilationResult result = null;
-
-        //			// Compile the shader file
-        //			ShaderFlags flags = ShaderFlags.None;
-        //#if DEBUG
-        //			flags |= ShaderFlags.Debug | ShaderFlags.SkipOptimization;
-        //#endif
-        //			var includeHandler = new HLSLFileIncludeHandler(Path.GetDirectoryName(hlslFile));
-        //			result = ShaderBytecode.Compile(shaderSource, entryPoint, profile, flags, EffectFlags.None, defines, includeHandler, Path.GetFileName(hlslFile));
-
-        //			if (result.ResultCode.Failure)
-        //				throw new CompilationException(result.ResultCode, result.Message);
-
-        //			return result;
-        //		}
-
-
         public unsafe static Texture2D TextureFromDump(SharpDX.Direct3D11.Device device, Texture2DDescription descr, byte[] srcBuffer)
         {
             //descr.CpuAccessFlags = CpuAccessFlags.None;
