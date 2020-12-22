@@ -307,23 +307,25 @@ namespace FFmpegLib {
 								}
 
 								if (encoder_ctx->codec_id == AV_CODEC_ID_MJPEG) {
-
+									// для jpeg-а нужен color full range
 									int table[4];
 									int inv_table[4];
 									int srcRange, dstRange;
 									int brightness, contrast, saturation;
-									sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
-									const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+									int res = sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);									
+									if (res < 0) {
+										throw gcnew Exception("getColorspaceDetails not supported");
+									}
 
+									const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
 									//srcRange = 1;
 									dstRange = 1;
-									int res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+									res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
 									if (res < 0) {
 										throw gcnew Exception("Invalid color space");
 									}
 								}
 							}
-
 
 							const uint8_t* src_data[1] =
 							{

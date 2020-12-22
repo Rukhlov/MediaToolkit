@@ -43,11 +43,12 @@ namespace Test.Encoder
 
 			//FFmpegPixConverterTest.Run();
 
+			DisplaySettingChanged.Run();
 			//SimpleSwapChain.Run();
 
 			//RgbToNv12Converter.Run();
 
-			FFmpegJpegEncoderTest.Run();
+			//FFmpegJpegEncoderTest.Run();
 
 			//D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
 			//videoProcessor.Test();

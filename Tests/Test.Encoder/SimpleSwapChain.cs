@@ -290,7 +290,7 @@ namespace Test.Encoder
                 Stopwatch sw = Stopwatch.StartNew();
                 int interval = (int)(1000.0 / FramePerSec);
                 AutoResetEvent syncEvent = new AutoResetEvent(false);
-                bool aspectRatio = true;
+                bool aspectRatio = false;
 
                 /*
 				 * Для варианта Точечная фильтрация текстур определенный приложением режим фильтрации заменяется на D3D11_FILTER_MIN_MAG_MIP_POINT,
@@ -496,16 +496,25 @@ namespace Test.Encoder
 
         private static _Vertex[] CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
         {
-            float x1 = -1f;
-            float y1 = -1f;
-            float x2 = -1f;
-            float y2 = 1f;
-            float x3 = 1f;
-            float y3 = -1f;
-            float x4 = 1f;
-            float y4 = 1f;
+			float x1 = -1f;
+			float y1 = -1f;
+			float x2 = -1f;
+			float y2 = 1f;
+			float x3 = 1f;
+			float y3 = -1f;
+			float x4 = 1f;
+			float y4 = 1f;
 
-            if (aspectRatio)
+			//float x1 = -1f;
+			//float y1 = 1f;
+			//float x2 = 1f;
+			//float y2 = 1f;
+			//float x3 = -1f;
+			//float y3 = -1f;
+			//float x4 = 1f;
+			//float y4 = -1f;
+
+			if (aspectRatio)
             {
                 double targetWidth = targetSize.Width;
                 double targetHeight = targetSize.Height;

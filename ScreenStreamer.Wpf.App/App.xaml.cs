@@ -46,14 +46,13 @@ namespace ScreenStreamer.Wpf
 
             ServiceLocator.RegisterInstance(appModel);
 
-            // ServiceLocator.RegisterSingleton(GalaSoft.MvvmLight.Messaging.Messenger.Default); //х.з зачем это...
+			LocalizationManager.Init(appModel.Culture);
 
-            var dialogService = new Services.DialogService();
+			var dialogService = new Services.DialogService();
             ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
-
-            Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
+			Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
             {
                 Title = "Polywall Streamer",
             };

@@ -21,12 +21,12 @@ namespace ScreenStreamer.Wpf.Models
         public string ConfigVersion { get; set; } = "1.0.0.0";
 
         public string Culture { get; set; } = "en";
-        public int Dx11FeatureLevel { get; set; } = (int)D3DFeatureLevel.Level_11_0;
+        public int Dx11FeatureLevel { get; set; } = (int)D3DFeatureLevel.Level_10_1;
 
         public bool HideOnClose { get; set; } = true;
 
         [JsonProperty]
-        public readonly static string MinOSVersion = "6.2";
+        public readonly static string MinOSVersion = "6.1";
 
         //[JsonProperty]
         public readonly static bool AllowMutipleInstance = false;

@@ -190,12 +190,27 @@ namespace ScreenStreamer.Wpf.ViewModels
         public bool IsBorderVisible { get; set; }
 
 
-        public string StartCommandText => IsStarted ? "Stop Stream" : "Start Stream";
+		//public string StartCommandText => IsStarted ? "Stop Stream" : "Start Stream";
 
-        public string StartContextMenuText => IsStarted ? $"Stop {Name}" : $"Start {Name}";
+		public string StartCommandText => IsStarted ?
+			LocalizationManager.GetString("StartCommandText_StopStream") :
+			LocalizationManager.GetString("StartCommandText_StartStream");
+
+		//public string StartContextMenuText => IsStarted ? $"Stop {Name}" : $"Start {Name}";
+		public string StartContextMenuText
+		{
+			get
+			{
+				var text = IsStarted ? 
+					LocalizationManager.GetString("StartContextMenuText_Stop") :
+					LocalizationManager.GetString("StartContextMenuText_Start");
+
+				return text + " " + Name;
+			}
+		}
 
 
-        public ICommand StartCommand { get; set; }
+		public ICommand StartCommand { get; set; }
         public ICommand EditNameCommand { get; set; }
         public ICommand CopyUrlCommand { get; set; }
         public ICommand PreferencesCommand { get; set; }

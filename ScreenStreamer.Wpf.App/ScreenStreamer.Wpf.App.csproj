@@ -136,6 +136,7 @@
     </Compile>
     <Compile Include="Helpers\AudioHelper.cs" />
     <Compile Include="Helpers\EncoderHelper.cs" />
+    <Compile Include="Managers\LocalizationManager.cs" />
     <Compile Include="Managers\NotifyIconManager.cs" />
     <Compile Include="Managers\SelectAreaManager.cs" />
     <Compile Include="Models\MediaProperties.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Prism\Interactivity.cs" />
     <Compile Include="Prism\Mvvm.cs" />
     <Compile Include="Prism\Commands.cs" />
+    <Compile Include="Utils\Utils.cs" />
     <Compile Include="ViewModels\Common\MessageBoxViewModel.cs" />
     <Compile Include="Utils\NativeMethods.cs" />
     <Compile Include="ViewModels\Dialogs\AdvancedSettingsViewModel.cs" />
@@ -243,6 +245,14 @@
     <Page Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Localizations\AppStrings.ru.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Localizations\AppStrings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\CommonStyles.xaml">
       <SubType>Designer</SubType>

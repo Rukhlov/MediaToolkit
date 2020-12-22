@@ -38,10 +38,10 @@
                             Command="{Binding PreferencesCommand}"
                             CommandParameter="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
                             IsEnabled="{Binding IsEditable}"
-                            ToolTip="Open advanced settings">
+                            ToolTip="{DynamicResource AdvancedSettingsButtonToolTip}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>
-                            <TextBlock Margin="4,0,10,0">Advanced Settings</TextBlock>
+                            <TextBlock Margin="4,0,10,0" Text="{DynamicResource AdvancedSettingsButtonText}"></TextBlock>
                         </StackPanel>
                     </Button>
                 </DockPanel>

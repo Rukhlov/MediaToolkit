@@ -21,8 +21,7 @@
         </StackPanel>
 
         <!--<TextBlock Text="{Binding Caption}" Style="{StaticResource textBlockCaption}"/>-->
-        
-        
+               
         
     </DataTemplate>
 </ResourceDictionary>

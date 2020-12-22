@@ -52,6 +52,7 @@ namespace FFmpegLib {
 				destFrame->width = destSize.Width;
 				destFrame->height = destSize.Height;
 				//frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
+				//destFrame->colorspace = AVColorSpace::AVCOL_SPC_BT470BG;
 
 				int frameFormat = GetAVPixelFormat(destPixFormat);
 				if(frameFormat == AV_PIX_FMT_NONE){

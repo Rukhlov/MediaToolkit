@@ -15,9 +15,9 @@
                 </ResourceDictionary.MergedDictionaries>
                 <DataTemplate x:Key="toggleContentTemplate">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding StartCommandText, Mode=OneWay}"/>
-                        <materialDesign:PackIcon Kind="Pause" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
-                        <materialDesign:PackIcon Kind="PlayOutline" Margin="8,0,0,0" Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
+                        <TextBlock Text="{Binding StartCommandText, Mode=OneWay}" Margin="6,0,0,0"/>
+                        <materialDesign:PackIcon Kind="Pause" Margin="4,0,0,0" Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>
+                        <materialDesign:PackIcon Kind="PlayOutline" Margin="4,0,0,0" Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
                     </StackPanel>
                 </DataTemplate>
             </ResourceDictionary>
@@ -25,7 +25,7 @@
         <Grid Height="48">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="300"/>
-                <ColumnDefinition Width="109"/>
+                <ColumnDefinition Width="*"/>
                 <!--<ColumnDefinition Width="32"/>--> 
             </Grid.ColumnDefinitions>
 
@@ -65,11 +65,12 @@
                 </Border>
             </StackPanel>
 
+            <!--Width="109"-->
             <!--Start/Pause command-->
             <ToggleButton Command="{Binding StartCommand}"
                           Grid.Column="1"
                           HorizontalAlignment="Right"
-                          Width="109"
+                         
                           Height="32"
                           ContentTemplate="{StaticResource toggleContentTemplate}" Style="{StaticResource defaultToggleButton}"
                           Content="{Binding}"

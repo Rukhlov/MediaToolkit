@@ -1,0 +1,13 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:v="clr-namespace:System;assembly=mscorlib">
+
+    <v:String x:Key="StartCommandText_StartStream">Запустить стрим</v:String>
+    <v:String x:Key="StartCommandText_StopStream">Остановить стрим</v:String>
+
+    <v:String x:Key="StartContextMenuText_Start">Запустить</v:String>
+    <v:String x:Key="StartContextMenuText_Stop">Остановить</v:String>
+    
+    <v:String x:Key="AdvancedSettingsButtonText">Дополнительные настройки</v:String>
+    <v:String x:Key="AdvancedSettingsButtonToolTip">Открыть дополнительные настройки</v:String>
+</ResourceDictionary>

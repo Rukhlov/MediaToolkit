@@ -385,8 +385,8 @@ namespace MediaToolkit.DirectX
 
             SharpDX.Direct3D.FeatureLevel[] features =
             {
-                SharpDX.Direct3D.FeatureLevel.Level_12_1,
-                SharpDX.Direct3D.FeatureLevel.Level_12_0,
+                //SharpDX.Direct3D.FeatureLevel.Level_12_1,
+                //SharpDX.Direct3D.FeatureLevel.Level_12_0,
 
                 SharpDX.Direct3D.FeatureLevel.Level_11_1,
                 SharpDX.Direct3D.FeatureLevel.Level_11_0,
@@ -402,13 +402,14 @@ namespace MediaToolkit.DirectX
             SharpDX.Direct3D11.Device device = null;
             try
             {
-                var flags = DeviceCreationFlags.BgraSupport;
-                device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags, features);
+				var flags = DeviceCreationFlags.None;
+				//var flags = DeviceCreationFlags.BgraSupport;
+				device = new SharpDX.Direct3D11.Device(SharpDX.Direct3D.DriverType.Hardware, flags, features);
                 featureLevel = (int)device.FeatureLevel;
 
 
             }
-            catch (Exception) { }
+            catch (Exception ex) { }
             finally
             {
                 if (device != null)
