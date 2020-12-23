@@ -10,7 +10,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class VideoSettingsViewModel : PropertyWindowViewModel
     {
-        public override string Caption => "Video Stream";
+        public override string Caption => LocalizationManager.GetString("VideoSettingsCaption");// Video Stream;
 
         public ObservableCollection<VideoSourceItem> Displays { get; set; } = new ObservableCollection<VideoSourceItem>();
         public ObservableCollection<ScreenCaptureItem> ScreenCaptures { get; set; } = new ObservableCollection<ScreenCaptureItem>();

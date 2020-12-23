@@ -11,11 +11,16 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
     public class DeleteViewModel : WindowViewModel
     {
-        public override string Caption => "Delete";
+		//public override string Caption => "Delete";
+		//private string _dialogTextFormat = "Are you sure want to delete '{0}'?";
+
+		//Delete
+		public override string Caption => LocalizationManager.GetString("DeleteStreamDialogCaption");
+		//"Are you sure want to delete '{0}'?";
+		private string _dialogTextFormat = LocalizationManager.GetString("DeleteStreamDialogMessageMask");
 
 
-        private string _dialogTextFormat = "Are you sure want to delete '{0}'?";
-        public string DialogText { get; set; }
+		public string DialogText { get; set; }
 
         public override double MinWidth => 300d;
 

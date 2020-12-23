@@ -19,11 +19,11 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
     public class PropertyNetworkViewModel : PropertyBaseViewModel
     {
         private readonly PropertyNetworkModel _model;
-        public override string Name => "Network";
+		//public override string Name => "Network";
+		public override string Name => LocalizationManager.GetString("NetworkPropertyName");
 
 
-  
-        private IPAddressInfoItem _selectedNetwork;
+		private IPAddressInfoItem _selectedNetwork;
         [Track]
         public IPAddressInfoItem SelectedNetwork
         {

@@ -24,7 +24,7 @@
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Video Source" />
+                <TextBlock Text="{DynamicResource VideoSettingsVideoSource}" />
                 
                 <!--<RadioButton  GroupName="display"
                               IsChecked="{Binding Property.IsRegion, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
@@ -40,7 +40,7 @@
 
                     <Border Margin="4,0,0,0" 
                         Style="{StaticResource clickableBorder}"
-                        ToolTip="Refresh" >
+                        ToolTip="{DynamicResource VideoSettingsRefreshButton}" >
                             <materialDesign:PackIcon Kind="Refresh" />
                             <i:Interaction.Behaviors>
                                 <behaviors:HandleMouseDownBorderBehavior/>
@@ -85,7 +85,7 @@
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Capture Type" />
+                <TextBlock Text="{DynamicResource VideoSettingsCaptureType}" />
 
                 <!--<RadioButton  GroupName="display"
                               IsChecked="{Binding Property.IsRegion, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
@@ -135,7 +135,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Left"/>
+                <TextBlock Text="{DynamicResource VideoSettingsLeft}"/>
 
                 <TextBox  Grid.Column="1"
                           IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
@@ -152,7 +152,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Top" />
+                <TextBlock Text="{DynamicResource VideoSettingsTop}" />
 
                 <TextBox Grid.Column="1"
                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
@@ -171,7 +171,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Resolution" />
+                <TextBlock Text="{DynamicResource VideoSettingsResolution}" />
 
                 <TextBox Grid.Column="1" 
                          IsEnabled="{Binding Property.IsRegion, Mode=OneWay}"
@@ -200,7 +200,7 @@
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Capture Mouse" />
+                <TextBlock Text="{DynamicResource VideoSettingsCaptureMouse}" />
 
                 <ToggleButton  Grid.Column="1"
                               Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
@@ -220,7 +220,7 @@
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Show Capture Border" />
+                <TextBlock Text="{DynamicResource VideoSettingsShowCaptureBorder}" />
 
                 <ToggleButton  Grid.Column="1"
                               Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"

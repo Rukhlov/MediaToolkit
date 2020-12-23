@@ -168,9 +168,13 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         {
             var dialogService = ServiceLocator.GetInstance<IDialogService>();
 
-            var message = $"Are you sure want to delete '{SelectedStream.Name}'?";
-            var caption = "Delete";
-            var messageBoxView = new MessageBoxViewModel(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Warning);
+			//var message = $"Are you sure want to delete '{SelectedStream.Name}'?";
+			//var caption = "Delete";
+			var caption = LocalizationManager.GetString("DeleteStreamDialogCaption");
+			var mask0 = LocalizationManager.GetString("DeleteStreamDialogMessageMask");
+			var message = string.Format(mask0, SelectedStream.Name);
+
+			var messageBoxView = new MessageBoxViewModel(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             //var deleteViewModel = new DeleteViewModel(SelectedStream);
             //if (dialogService.ShowDialog(this, deleteViewModel) == true)

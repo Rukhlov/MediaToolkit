@@ -92,7 +92,9 @@ namespace ScreenStreamer.Wpf.Models
 				//...
 			}
 
-            if(StreamList.Count == 0)
+			LocalizationManager.Init(this.Culture);
+
+			if (StreamList.Count == 0)
             {
 				logger.Warn("StreamList.Count == 0");
 

@@ -44,7 +44,7 @@
                                 Margin="0,4"
                                 HorizontalAlignment="Center"
                                 Command="{Binding AddCommand}"
-                                ToolTip="Create new stream" 
+                                ToolTip="{DynamicResource AddStreamButtonToolTip}" 
                                 IsEnabled="{Binding HasMaxStreamsLimit, Mode=OneWay,  Converter={converters:InverseBooleanConverter}}">
                             
                             <!--Visibility="{Binding HasMaxStreamsLimit, Mode=OneWay,  Converter={converters:InvertedBooleanToVisibilityConverter}}">-->

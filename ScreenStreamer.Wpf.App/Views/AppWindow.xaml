@@ -101,7 +101,7 @@
                             Height="24"
                             Width="24"
                             Style="{StaticResource clickableBorder}"
-                            ToolTip="Close"
+                            ToolTip="{DynamicResource ClostButtonToolTip}"
                             Visibility="{Binding IsChanged, Mode=OneWay, Converter={converters:InvertedBooleanToVisibilityConverter}}">
                         <materialDesign:PackIcon Kind="WindowClose" 
                                                  VerticalAlignment="Center"

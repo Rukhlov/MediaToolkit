@@ -201,11 +201,12 @@ namespace ScreenStreamer.Wpf.ViewModels
 		{
 			get
 			{
-				var text = IsStarted ? 
-					LocalizationManager.GetString("StartContextMenuText_Stop") :
-					LocalizationManager.GetString("StartContextMenuText_Start");
+				return Name;
+				//var text = IsStarted ? 
+				//	LocalizationManager.GetString("ContextMenu_Stop") :
+				//	LocalizationManager.GetString("ContextMenu_Start");
 
-				return text + " " + Name;
+				//return text + " " + Name;
 			}
 		}
 

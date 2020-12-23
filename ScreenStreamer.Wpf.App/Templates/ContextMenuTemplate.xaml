@@ -19,7 +19,7 @@
                         Visibility="{Binding IsAllStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="PlayOutline" Margin="10,0,0,0"/>
-                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="Start all"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="{DynamicResource ContextMenu_StartAll}"/>
                     </StackPanel>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
@@ -33,7 +33,7 @@
                         Visibility="{Binding IsAllStarted, Converter={converters:BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="Pause" Margin="10,0,0,0"/>
-                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="Stop all"/>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="{DynamicResource ContextMenu_StopAll}"/>
                     </StackPanel>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
@@ -55,7 +55,7 @@
                         Style="{StaticResource clickableBorder}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="SettingsOutline" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
-                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Show settings</TextBlock>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="{DynamicResource ContextMenu_ShowSettings}"/>
                     </StackPanel>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
@@ -70,7 +70,7 @@
                         Style="{StaticResource clickableBorder}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon  Kind="HideOutline" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
-                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Hide settings</TextBlock>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="{DynamicResource ContextMenu_HideSettings}"/>
                     </StackPanel>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">
@@ -86,7 +86,7 @@
                         Style="{StaticResource clickableBorder}">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="ExitToApp" Margin="10, 0, 0, 0" Style="{StaticResource packIconDefault}"/>
-                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}">Exit</TextBlock>
+                        <TextBlock Margin="4,0,10,0" Style="{StaticResource textBlockDefault}" Text="{DynamicResource ContextMenuExit}"/>
                     </StackPanel>
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseDown">

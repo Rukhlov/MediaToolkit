@@ -16,10 +16,10 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         //public MessageBoxResult DialogResult { get; private set; }
 
-        public string OkButtonText { get; set; } = "OK";
-        public string CancelButtonText { get; set; } = "Cancel";
+        public string OkButtonText { get; set; } = LocalizationManager.GetString("MessageBoxButtonOKText");//"OK";
+		public string CancelButtonText { get; set; } = LocalizationManager.GetString("MessageBoxButtonCancelText");//"Cancel";
 
-        public bool IsCancelVisible => (messageBoxButton != MessageBoxButton.OK);
+		public bool IsCancelVisible => (messageBoxButton != MessageBoxButton.OK);
 
         public override string Caption => Title;
 
@@ -65,18 +65,18 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             if (messageBoxButton == MessageBoxButton.OK)
             {
-                OkButtonText = "OK";
+				OkButtonText = LocalizationManager.GetString("MessageBoxButtonOKText");//"OK";
             }
             else if (messageBoxButton == MessageBoxButton.OKCancel)
             {
-                OkButtonText = "OK";
-                CancelButtonText = "Cancel";
-            }
+                OkButtonText = LocalizationManager.GetString("MessageBoxButtonOKText");//"OK";
+				CancelButtonText = LocalizationManager.GetString("MessageBoxButtonCancelText");//"Cancel";
+			}
             else if (messageBoxButton == MessageBoxButton.YesNo)
             {
-                OkButtonText = "Yes";
-                CancelButtonText = "No";
-            }
+                OkButtonText = LocalizationManager.GetString("MessageBoxButtonYesText");//"Yes";
+				CancelButtonText = LocalizationManager.GetString("MessageBoxButtonNoText");//"No";
+			}
             else
             {
                 // not supported...

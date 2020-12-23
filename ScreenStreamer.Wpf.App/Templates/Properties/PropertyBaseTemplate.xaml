@@ -38,7 +38,7 @@
                         CornerRadius="2" 
                         Margin="6,0,0,0"
                         Style="{StaticResource clickableBorder}"
-                        ToolTip="Details">
+                        ToolTip="{DynamicResource DetailsButtonToolTip}">
                     
                     
                     <materialDesign:PackIcon Kind="ChevronRight"/>

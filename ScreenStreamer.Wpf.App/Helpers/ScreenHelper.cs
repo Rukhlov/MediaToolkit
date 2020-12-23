@@ -135,9 +135,9 @@ namespace ScreenStreamer.Wpf.Helpers
                     {
                         var refreshRate = gdiDisplayInfo.RefreshRate;
                         double _refreshRate = ((double)refreshRate.Num / refreshRate.Den);
-                        refreshRateStr = System.Math.Round(_refreshRate).ToString() + "Hz";
+                        refreshRateStr = System.Math.Round(_refreshRate).ToString() + LocalizationManager.GetString("CommonStringsHz");
 
-                        formatStr = (gdiDisplayInfo.PixelFormat * 8).ToString() + "bit";
+                        formatStr = (gdiDisplayInfo.PixelFormat * 8).ToString() + LocalizationManager.GetString("CommonStringsBit");
                     }
 
                     var bounds = screen.Bounds;
@@ -170,7 +170,7 @@ namespace ScreenStreamer.Wpf.Helpers
                         monitorDescr += " " + refreshRateStr;
                     }
 
-                    var monitorName = "Display " + monitorIndex + " (" + monitorDescr + ")";
+                    var monitorName = LocalizationManager.GetString("CommonStringsDisplay") + " " + monitorIndex + " (" + monitorDescr + ")";
 
                     //var name = screen.DeviceName;
                     //if (!string.IsNullOrEmpty(friendlyName))
@@ -197,8 +197,8 @@ namespace ScreenStreamer.Wpf.Helpers
 
                     Resolution = customRegion.Size,
 
-                    Name = "Screen Region",
-                    DeviceId = "ScreenRegion",
+                    Name = LocalizationManager.GetString("CommonStringsScreenRegion"),//"Screen Region",
+					DeviceId = "ScreenRegion",
 
                 };
 
@@ -213,15 +213,15 @@ namespace ScreenStreamer.Wpf.Helpers
                 if (videoSourceItems.Count > 1)
                 {
                     var allScreenRect = SystemInformation.VirtualScreen;
-
-                    ScreenCaptureDevice device = new ScreenCaptureDevice
+					var name = LocalizationManager.GetString("CommonStringsAllDisplays") + " (" + allScreenRect.Width + "x" + allScreenRect.Height + ")";
+					ScreenCaptureDevice device = new ScreenCaptureDevice
                     {
                         DisplayRegion = allScreenRect,
                         CaptureRegion = allScreenRect,
                         Resolution = allScreenRect.Size,
                         //Properties = captureProperties,
-                        Name = "All Displays (" + allScreenRect.Width + "x" + allScreenRect.Height + ")",
-                        DeviceId = "AllScreens",
+                        Name = name, //"All Displays (" + allScreenRect.Width + "x" + allScreenRect.Height + ")",
+						DeviceId = "AllScreens",
                     };
 
                     videoSourceItems.Add(new VideoSourceItem

@@ -12,9 +12,10 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class AudioSettingsViewModel : PropertyWindowViewModel
     {
-        public override string Caption => "Audio";
+		public override string Caption => LocalizationManager.GetString("AudioSettingsCaption"); //"Audio";
 
-        public ObservableCollection<AudioSourceItem> AudioSources { get; set; } = new ObservableCollection<AudioSourceItem>();
+
+		public ObservableCollection<AudioSourceItem> AudioSources { get; set; } = new ObservableCollection<AudioSourceItem>();
 
         public System.Windows.Input.ICommand UpdateAudioSourcesCommand { get; }
 

@@ -11,11 +11,11 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
     public class PropertyAudioViewModel : PropertyBaseViewModel
     {
         private readonly PropertyAudioModel _model;
-        public override string Name => "Audio";
+		//public override string Name => "Audio";
+		public override string Name => LocalizationManager.GetString("AudioPropertyName");
 
-
-        //[Track]
-        public bool IsAudioEnabled
+		//[Track]
+		public bool IsAudioEnabled
         {
             get => _model.IsEnabled;
             set

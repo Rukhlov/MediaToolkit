@@ -46,7 +46,7 @@ namespace ScreenStreamer.Wpf
 
             ServiceLocator.RegisterInstance(appModel);
 
-			LocalizationManager.Init(appModel.Culture);
+			//LocalizationManager.Init(appModel.Culture);
 
 			var dialogService = new Services.DialogService();
             ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);

@@ -16,7 +16,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
     public class AdvancedSettingsViewModel : WindowViewModel
     {
         private readonly AdvancedSettingsModel _model;
-        public override string Caption => "Advanced Settings";
+		public override string Caption => LocalizationManager.GetString("AdvancedSettingsCaption");//"Advanced Settings";
 
         private PropertyVideoViewModel videoVeiwModel = null;
 

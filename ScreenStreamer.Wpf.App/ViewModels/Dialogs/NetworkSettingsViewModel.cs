@@ -11,7 +11,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 {
     public class NetworkSettingsViewModel : PropertyWindowViewModel
     {
-        public override string Caption => "Network";
+		public override string Caption => LocalizationManager.GetString("NetworkSettingsCaption");//"Network";
 
         public ObservableCollection<IPAddressInfoItem> Networks { get; set; } = new ObservableCollection<IPAddressInfoItem>();
         public ObservableCollection<ProtocolKind> UnicastProtocols { get; set; } = new ObservableCollection<ProtocolKind>();

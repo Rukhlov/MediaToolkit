@@ -27,10 +27,12 @@
                             Background="#FF131223"
                             Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource Mode=FindAncestor, AncestorLevel=3, AncestorType=StackPanel}}"
                             IsEnabled="{Binding IsEditable}"
-                            ToolTip="Delete current stream">
+                            ToolTip="{DynamicResource DeleteStreamButtonToolTip}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Bin" Foreground="#FFE74444" Margin="10,0,0,0"/>
-                            <TextBlock Foreground="#FFE74444" Margin="4,0,10,0">Delete</TextBlock>
+                            <TextBlock Foreground="#FFE74444" 
+                                       Margin="4,0,10,0" 
+                                       Text="{DynamicResource DeleteStreamButtonText}"/>
                         </StackPanel>
                     </Button>
                     <Button HorizontalAlignment="Right" 

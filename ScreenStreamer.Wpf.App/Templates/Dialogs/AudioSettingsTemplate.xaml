@@ -24,8 +24,8 @@
                 <RowDefinition Height="32"/>
              
             </Grid.RowDefinitions>
-            <TextBlock Text="Enabled" Grid.Row="0" Grid.Column="0"/>
-            <TextBlock Text="Audio Sources" Grid.Row="1" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AudioSettingsEnabled}" Grid.Row="0" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AudioSettingsAudioSource}" Grid.Row="1" Grid.Column="0"/>
             <!--<TextBlock Text="Computer sound" Grid.Row="2" Grid.Column="0" Visibility="Collapsed"/>-->
             <ToggleButton Grid.Row="0" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}" 
@@ -43,7 +43,7 @@
 
                 <Border Margin="4,0,0,0" 
                         Style="{StaticResource clickableBorder}"
-                        ToolTip="Refresh" 
+                        ToolTip="{DynamicResource CommonStringsRefresh}" 
                         IsEnabled="{Binding Property.IsAudioEnabled}">
                     <materialDesign:PackIcon Kind="Refresh" />
                     <i:Interaction.Behaviors>

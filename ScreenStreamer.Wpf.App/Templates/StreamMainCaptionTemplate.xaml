@@ -23,7 +23,7 @@
                      Cursor="Hand"
                      IsEnabled="{Binding SelectedStream, Converter={converters:NullToBooleanConverter}}">
                 <ListBoxItem IsSelected="{Binding IsEdit, Converter={converters:InverseBooleanConverter}, Mode=OneWay}"
-                             ToolTip="List mode">
+                             ToolTip="{DynamicResource ListModeButtonToolTip}">
                     <ListBoxItem.Resources>
                         <Style TargetType="{x:Type Border}">
                             <Setter Property="CornerRadius" Value="6,0,0,6"/>
@@ -32,7 +32,7 @@
                     <materialDesign:PackIcon Kind="BallotOutline" Style="{StaticResource packIconDefault}"/>
                 </ListBoxItem>
                 <ListBoxItem IsSelected="{Binding IsEdit}"
-                             ToolTip="Edit mode">
+                             ToolTip="{DynamicResource EditModeButtonToolTip}">
                     <ListBoxItem.Resources>
                         <Style TargetType="{x:Type Border}">
                             <Setter Property="CornerRadius" Value="0,6,6,0"/>

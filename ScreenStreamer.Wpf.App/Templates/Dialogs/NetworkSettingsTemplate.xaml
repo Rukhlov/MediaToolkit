@@ -21,7 +21,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Network" />
+                <TextBlock Text="{DynamicResource NetworkSettingsNetwork}" />
 
                 <ComboBox Grid.Column="1" 
                           ItemsSource="{Binding Networks}" 
@@ -35,7 +35,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="160"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Port" />
+                <TextBlock Text="{DynamicResource NetworkSettingsPort}" />
 
                 <TextBox Grid.Column="1"
                          Text="{Binding Property.Port, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
@@ -49,8 +49,8 @@
 
             <Rectangle Height="1" Style="{StaticResource divider}"/>
 
-            <TextBlock Height="32"
-                       Text="Transmission"
+            <TextBlock Margin="0,8,0,8"
+                       Text="{DynamicResource NetworkSettingsTransmission}"
                        FontSize="14"/>
 
             <Grid Height="32">
@@ -60,7 +60,7 @@
                 </Grid.ColumnDefinitions>
                 <RadioButton  GroupName="protocol"
                              IsChecked="{Binding Property.IsUnicast, Mode=TwoWay}"
-                             Content="Unicast" 
+                             Content="{DynamicResource NetworkSettingsUnicast}"
                              Style="{StaticResource defaultRadioButtonStyle}"/>
                 <!--"{Binding Property.IsUnicast, Mode=OneWay}"-->
                 <ComboBox Grid.Column="1" 
@@ -85,7 +85,7 @@
                 
                 <RadioButton GroupName="protocol"
                              IsChecked="{Binding Property.IsUnicast, Mode=TwoWay, Converter={converters:InverseBooleanConverter}}"
-                             Content="Multicast"
+                             Content="{DynamicResource NetworkSettingsMulticast}"
                              Style="{StaticResource defaultRadioButtonStyle}"/>
 
                 <TextBox Grid.Column="1"
@@ -103,7 +103,7 @@
                     </i:Interaction.Behaviors>
                 </TextBox>
 
-                <TextBlock Grid.Column="0" Grid.Row="1"  Margin="20,0,0,0" Text="Video Port" />
+                <TextBlock Grid.Column="0" Grid.Row="1"  Margin="20,0,0,0" Text="{DynamicResource NetworkSettingsVideoPort}" />
 
                 <TextBox Grid.Column="1" Grid.Row="1" 
                          IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
@@ -115,7 +115,7 @@
 
                 </TextBox>
 
-                <TextBlock Grid.Column="0" Grid.Row="2" Margin="20,0,0,0" Text="Audio Port" />
+                <TextBlock Grid.Column="0" Grid.Row="2" Margin="20,0,0,0" Text="{DynamicResource NetworkSettingsAudioPort}" />
 
                 <TextBox Grid.Column="1" Grid.Row="2" 
                           IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"

@@ -39,23 +39,23 @@
                 <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Encoder" Grid.Row="0" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AdvancedSettingsEncoder}" Grid.Row="0" Grid.Column="0"/>
             <ComboBox Grid.Row="0" Grid.Column="1" 
                       ItemsSource="{Binding VideoEncoders}" 
                       DisplayMemberPath="Name"
                       SelectedItem="{Binding VideoEncoder}"
                       
                       Cursor="Hand"/>
-            
-            <TextBlock Text="Profile" Grid.Row="1" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsProfile}" Grid.Row="1" Grid.Column="0"/>
             <ComboBox Grid.Row="1" Grid.Column="1" 
                       ItemsSource="{Binding H264Profiles}" 
                       SelectedItem="{Binding H264Profile}"
                       Cursor="Hand"/>
 
             <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
-            
-            <TextBlock Text="Bitrate" Grid.Row="3" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsBitrate}" Grid.Row="3" Grid.Column="0"/>
             <TextBox Grid.Row="3" Grid.Column="1"
                      Text="{Binding Bitrate, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
                      Style="{StaticResource defaultTextBoxStyle}">
@@ -63,8 +63,8 @@
                     <behaviors:RestrictedInputTextBoxBehavior/>
                 </i:Interaction.Behaviors>
             </TextBox>
-            
-            <TextBlock Text="Max" Grid.Row="4" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsMaxBitrate}" Grid.Row="4" Grid.Column="0"/>
             <TextBox Grid.Row="4" Grid.Column="1"
                      Text="{Binding MaxBitrate, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
                      Style="{StaticResource defaultTextBoxStyle}">
@@ -75,7 +75,7 @@
 
             <Rectangle Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
 
-            <TextBlock Text="FPS" Grid.Row="6" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AdvancedSettingsFps}" Grid.Row="6" Grid.Column="0"/>
             <TextBox Grid.Row="6" Grid.Column="1"
                      Text="{Binding Fps, Converter={converters:IntegerToStringConverter}, Mode=TwoWay}"
                      Style="{StaticResource defaultTextBoxStyle}">
@@ -84,7 +84,7 @@
                 </i:Interaction.Behaviors>
             </TextBox>
 
-            <TextBlock Text="Low latency" Grid.Row="7" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AdvancedSettingsLowLatency}" Grid.Row="7" Grid.Column="0"/>
             <ToggleButton Grid.Row="7" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding LowLatency}" 
@@ -92,16 +92,16 @@
                           Cursor="Hand"/>
 
             <Rectangle Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
-            
-            <TextBlock Text="Native Resolution of the Source" Grid.Row="9" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsUseNativeResolution}" Grid.Row="9" Grid.Column="0"/>
             <ToggleButton Grid.Row="9" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding UseResolutionFromCaptureSource}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
 
-            
-            <TextBlock Text="Width" Grid.Row="10" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsWidth}" Grid.Row="10" Grid.Column="0"/>
             <TextBox Grid.Row="10" Grid.Column="1"
                      Style="{StaticResource defaultTextBoxStyle}" 
                      IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
@@ -116,7 +116,8 @@
                 
             </TextBox>
 
-            <TextBlock Text="Height" Grid.Row="11" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AdvancedSettingsHeight}" 
+                       Grid.Row="11" Grid.Column="0"/>
             <TextBox Grid.Row="11" Grid.Column="1"
                      Style="{StaticResource defaultTextBoxStyle}" 
                      IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
@@ -137,13 +138,14 @@
                         Style="{StaticResource actionButtonStyle}"
                         IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
                         Command="{Binding AdjustResolutionCommand}"
-                        Content="Adjust Resolution To Capture Size" 
+                        Content="{DynamicResource AdvancedSettingsAdjustResolutionToCaptureSize}" 
                         Padding="10,0"
 
                         VerticalAlignment="Center" HorizontalAlignment="Center" />
 
 
-            <TextBlock Text="Keep Aspect Ratio" Grid.Row="13" Grid.Column="0"/>
+            <TextBlock Text="{DynamicResource AdvancedSettingsKeepAspectRatio}" 
+                       Grid.Row="13" Grid.Column="0"/>
 
             <ToggleButton Grid.Row="13" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
@@ -153,8 +155,9 @@
                           Cursor="Hand"/>
 
             <Rectangle Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
-            
-            <TextBlock Text="Auto Streaming on System Startup" Grid.Row="15" Grid.Column="0"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsAutoStartStreamingOnStartup}" 
+                       Grid.Row="15" Grid.Column="0"/>
 
             <ToggleButton Grid.Row="15" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
