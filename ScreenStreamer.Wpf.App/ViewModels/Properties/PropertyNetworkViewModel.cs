@@ -24,7 +24,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
 
 
 		private IPAddressInfoItem _selectedNetwork;
-        [Track]
+       // [Track]
         public IPAddressInfoItem SelectedNetwork
         {
             get => _selectedNetwork;
@@ -49,7 +49,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
 
         public int CommunicationPort => _model.CommunicationPort;
 
-        [Track]
+       // [Track]
         public int Port
         {
             get => _model.Port;
@@ -62,8 +62,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
         }
 
 
-
-        [Track]
+		//[Track]
         public bool IsUnicast
         {
             get => _model.IsUnicast;
@@ -76,7 +75,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
 
 
 
-        [Track]
+        //[Track]
         public ProtocolKind UnicastProtocol
         {
             get => _model.UnicastProtocol;
@@ -89,7 +88,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
 
 
 
-        [Track]
+        //[Track]
         public string MulticastIp
         {
             get => _model.MulticastIp;
@@ -104,7 +103,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             }
         }
 
-        [Track]
+        //[Track]
         public int MulticastVideoPort
         {
             get => _model.MulticasVideoPort;
@@ -115,7 +114,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             }
         }
 
-        [Track]
+       // [Track]
         public int MulticastAudioPort
         {
             get => _model.MulticasAudioPort;
@@ -159,7 +158,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
                 var _port = isStarted? this.CommunicationPort : this.Port;
 
 
-                string port = (_port > 0 ? _port.ToString() : "Auto");
+                string port = (_port > 0 ? _port.ToString() : LocalizationManager.GetString("CommonStringsAuto"));
 
                 var ipAddrInfo= SelectedNetwork.IPAddressInfo;
                 if(ipAddrInfo != null)

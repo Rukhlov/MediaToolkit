@@ -38,7 +38,12 @@
                 <TextBlock Text="{DynamicResource NetworkSettingsPort}" />
 
                 <TextBox Grid.Column="1"
-                         Text="{Binding Property.Port, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
+                         Text="{Binding Property.Port, 
+                                        Converter={converters:NetworkPortToStringConverter}, 
+                                        Mode=TwoWay,
+                                        UpdateSourceTrigger=PropertyChanged,
+                                        TargetNullValue=0}"
+                         
                          Style="{StaticResource defaultTextBoxStyle}">
                     <i:Interaction.Behaviors>
                         <behaviors:RestrictedInputTextBoxBehavior/>
@@ -107,7 +112,11 @@
 
                 <TextBox Grid.Column="1" Grid.Row="1" 
                          IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
-                         Text="{Binding Property.MulticastVideoPort, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
+                         Text="{Binding Property.MulticastVideoPort,
+                                        Converter={converters:NetworkPortToStringConverter},
+                                        Mode=TwoWay, 
+                                        UpdateSourceTrigger=PropertyChanged,
+                                        TargetNullValue=0}"
                          Style="{StaticResource defaultTextBoxStyle}">
                     <i:Interaction.Behaviors>
                         <behaviors:RestrictedInputTextBoxBehavior/>
@@ -119,7 +128,11 @@
 
                 <TextBox Grid.Column="1" Grid.Row="2" 
                           IsEnabled="{Binding Property.IsUnicast, Mode=OneWay, Converter={converters:InverseBooleanConverter}}"
-                         Text="{Binding Property.MulticastAudioPort, Converter={converters:NetworkPortToStringConverter}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, TargetNullValue=Auto}"
+                         Text="{Binding Property.MulticastAudioPort, 
+                                    Converter={converters:NetworkPortToStringConverter}, 
+                                    Mode=TwoWay,
+                                    UpdateSourceTrigger=PropertyChanged, 
+                                    TargetNullValue=0}"
                          Style="{StaticResource defaultTextBoxStyle}">
                     <i:Interaction.Behaviors>
                         <behaviors:RestrictedInputTextBoxBehavior/>

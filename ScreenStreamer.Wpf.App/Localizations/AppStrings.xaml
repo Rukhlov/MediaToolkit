@@ -86,17 +86,25 @@
     <v:String x:Key="NetworkSettingsVideoPort">Video Port</v:String>
     <v:String x:Key="NetworkSettingsUnicast">Unicast</v:String>
     <v:String x:Key="NetworkSettingsMulticast">Multicast</v:String>
+    <v:String x:Key="NetworkSettingsAnyNetworks">Any Networks</v:String>
+
     <!--CommonStrings-->
-    <v:String x:Key="CommonStringsDisplayDeviceNotFound">Device is not found!</v:String>
+    <v:String x:Key="CommonStringsDeviceNotFound">Device is not found!</v:String>
+    <v:String x:Key="CommonStringsDisabled">Disabled</v:String>
     <v:String x:Key="CommonStringsScreenRegion">Screen Region</v:String>
-    <v:String x:Key="CommonStringsAllDisplays">All Displays</v:String>
+    <v:String x:Key="CommonStringsAllDisplays">Desktop</v:String>
     <v:String x:Key="CommonStringsDisplay">Display</v:String>
     <v:String x:Key="CommonStringsWidth">Width</v:String>
     <v:String x:Key="CommonStringsHeight">Height</v:String>
     <v:String x:Key="CommonStringsHz">Hz</v:String>
     <v:String x:Key="CommonStringsBit">bit</v:String>
     <v:String x:Key="CommonStringsAll">All</v:String>
+    <v:String x:Key="CommonStringsAny">Any</v:String>
     <v:String x:Key="CommonStringsNone">None</v:String>
     <v:String x:Key="CommonStringsRefresh">Refresh</v:String>
     <v:String x:Key="CommonStringsAuto">Auto</v:String>
+    <v:String x:Key="CommonStringsDefault">Default</v:String>
+    <v:String x:Key="CommonStringsSaveChanges">Save Changes</v:String>
+    <v:String x:Key="CommonStringsDiscardChanges">Discard</v:String>
+    
 </ResourceDictionary>

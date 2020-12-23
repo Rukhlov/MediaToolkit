@@ -128,7 +128,7 @@
                                 ToolTip="Discard changes">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Bin" Foreground="#FFE74444" Margin="10,0,0,0"/>
-                                <TextBlock Foreground="#FFE74444" Margin="4,0,10,0">Discard</TextBlock>
+                                <TextBlock Foreground="#FFE74444" Margin="4,0,10,0" Text="{DynamicResource CommonStringsDiscardChanges}"/>
                             </StackPanel>
                         </Button>
 
@@ -137,7 +137,7 @@
                         <Button Style="{StaticResource actionButtonStyle}" Background="#FF42CF4C" 
                                 ToolTip="Save changes"
                                 Command="{Binding AcceptChangesCommand}">
-                            <TextBlock Margin="4,0,10,0">Save changes</TextBlock>
+                            <TextBlock Margin="4,0,10,0" Text="{DynamicResource CommonStringsSaveChanges}"/>
                         </Button>
                        
                     </StackPanel>

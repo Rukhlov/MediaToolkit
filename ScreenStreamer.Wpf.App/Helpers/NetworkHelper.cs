@@ -102,8 +102,8 @@ namespace ScreenStreamer.Wpf.Helpers
             {
                 new IPAddressInfoItem
                 {
-                    DisplayName = "All",
-                    InterfaceName = "All",
+                    DisplayName = LocalizationManager.GetString("CommonStringsDefault"), //"All",
+                    InterfaceName = LocalizationManager.GetString("CommonStringsDefault"), //"All"
                     IPAddressInfo = null
                 }
             };

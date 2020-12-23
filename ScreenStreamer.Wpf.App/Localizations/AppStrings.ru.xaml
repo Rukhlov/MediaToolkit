@@ -55,7 +55,7 @@
     <v:String x:Key="AdvancedSettingsUseNativeResolution">Использовать размеры источника</v:String>
     <v:String x:Key="AdvancedSettingsWidth">Ширина</v:String>
     <v:String x:Key="AdvancedSettingsHeight">Высота</v:String>
-    <v:String x:Key="AdvancedSettingsAdjustResolutionToCaptureSize">Настроить разрешение под размер источника</v:String>
+    <v:String x:Key="AdvancedSettingsAdjustResolutionToCaptureSize">Настроить размеры под разрешение источника</v:String>
     <v:String x:Key="AdvancedSettingsKeepAspectRatio">Сохранять соотношение сторон</v:String>
     <v:String x:Key="AdvancedSettingsAutoStartStreamingOnStartup">Автоматическая трансляция при запуске системы</v:String>
     
@@ -85,18 +85,25 @@
     <v:String x:Key="NetworkSettingsVideoPort">Видео порт</v:String>
     <v:String x:Key="NetworkSettingsUnicast">Unicast</v:String>
     <v:String x:Key="NetworkSettingsMulticast">Multicast</v:String>
+    <v:String x:Key="NetworkSettingsAnyNetworks">Любая сеть</v:String>
     
     <!--CommonStrings-->
-    <v:String x:Key="CommonStringsDisplayDeviceNotFound">Устройство не найдено!</v:String>
+    <v:String x:Key="CommonStringsDeviceNotFound">Устройство не найдено!</v:String>
+    <v:String x:Key="CommonStringsDisabled">Выключено</v:String>
     <v:String x:Key="CommonStringsScreenRegion">Область экрана</v:String>
-    <v:String x:Key="CommonStringsAllDisplays">Все экраны</v:String>
+    <v:String x:Key="CommonStringsAllDisplays">Рабочий стол</v:String>
     <v:String x:Key="CommonStringsDisplay">Экран</v:String>
     <v:String x:Key="CommonStringsWidth">Ширина</v:String>
     <v:String x:Key="CommonStringsHeight">Высота</v:String>
     <v:String x:Key="CommonStringsHz">Гц</v:String>
     <v:String x:Key="CommonStringsBit">бит</v:String>
     <v:String x:Key="CommonStringsAll">Все</v:String>
+    <v:String x:Key="CommonStringsAny">Любой</v:String>
     <v:String x:Key="CommonStringsNone">None</v:String>
     <v:String x:Key="CommonStringsRefresh">Обновить</v:String>
     <v:String x:Key="CommonStringsAuto">Авто</v:String>
+    <v:String x:Key="CommonStringsDefault">По умолчанию</v:String>
+    <v:String x:Key="CommonStringsSaveChanges">Сохранить</v:String>
+    <v:String x:Key="CommonStringsDiscardChanges">Отменить</v:String>
+    
 </ResourceDictionary>

@@ -5,6 +5,7 @@ using ScreenStreamer.Wpf;
 using System.Linq;
 using ScreenStreamer.Wpf.Models;
 using ScreenStreamer.Wpf.ViewModels.Common;
+using System.Text;
 
 namespace ScreenStreamer.Wpf.ViewModels.Properties
 {
@@ -22,7 +23,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             {
                 SetProperty(_model, () => _model.IsEnabled, value);
                 Parent?.OnAudioEnabledChanged();
-            }
+				RaisePropertyChanged(nameof(Info));
+			}
         }
 
 
@@ -47,7 +49,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
                 _selectedSource = value;
                 RaisePropertyChanged(() => SelectedSource);
                 _model.DeviceId = value?.DeviceId;
-            }
+
+				RaisePropertyChanged(nameof(Info));
+			}
         }
 
 
@@ -74,5 +78,30 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
         {
             return new AudioSettingsViewModel(this, Parent);
         }
-    }
+
+		public override string Info
+		{
+			get
+			{
+				var builder = new StringBuilder();
+
+				if (IsAudioEnabled)
+				{
+					var info = _selectedSource?.DisplayName ?? LocalizationManager.GetString("CommonStringsDeviceNotFound");
+					builder.Append(info);
+				}
+				else
+				{
+					builder.Append(LocalizationManager.GetString("CommonStringsDisabled"));
+				}
+
+				if (builder.Length > MaxInfoLength)
+				{
+					return builder.ToString(0, MaxInfoLength - 3) + "...";
+				}
+				return builder.ToString();
+			}
+
+		}
+	}
 }

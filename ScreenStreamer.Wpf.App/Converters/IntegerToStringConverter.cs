@@ -48,8 +48,9 @@ namespace ScreenStreamer.Wpf.Converters
     public class NetworkPortToStringConverter : MarkupExtension, IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value != null)
+        {string portStr = string.Empty;//LocalizationManager.GetString("CommonStringsAuto");
+
+			if (value != null)
             {
                 var intValue = System.Convert.ToInt32(value);
                 if (intValue <= 0)
@@ -64,25 +65,34 @@ namespace ScreenStreamer.Wpf.Converters
                 return intValue.ToString();
             }
 
-            return string.Empty;
+            return null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var strValue = value as string;
-            if (string.IsNullOrEmpty(strValue))
-            {
-                return 0;
-            }
+
+			//ushort port = 0;
+			//if(ushort.TryParse(strValue, out port))
+			//{
+
+			//}
+
+			//return port;
+
+			if (string.IsNullOrEmpty(strValue))
+			{
+				return 0;
+			}
 			try
 			{
 				return ushort.Parse(strValue);
 			}
-			catch(Exception exception)
+			catch (Exception exception)
 			{
 				return new ValidationResult(false, exception.Message);
 			}
-        }
+		}
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {

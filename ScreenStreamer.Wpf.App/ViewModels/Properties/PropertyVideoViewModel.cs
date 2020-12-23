@@ -269,7 +269,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
 				}
                 else
                 {
-                    var displayName = Display?.Name ?? LocalizationManager.GetString("CommonStringsDisplayDeviceNotFound");
+                    var displayName = Display?.Name ?? LocalizationManager.GetString("CommonStringsDeviceNotFound");
                     builder.Append(displayName);
 
                     //builder.Append(this.Display?.Name);
