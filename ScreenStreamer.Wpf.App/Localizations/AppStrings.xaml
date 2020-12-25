@@ -106,5 +106,10 @@
     <v:String x:Key="CommonStringsDefault">Default</v:String>
     <v:String x:Key="CommonStringsSaveChanges">Save Changes</v:String>
     <v:String x:Key="CommonStringsDiscardChanges">Discard</v:String>
+    <v:String x:Key="CommonStringsSettings">Settings</v:String>
+    <v:String x:Key="CommonStringsLeft">Left</v:String>
+    <v:String x:Key="CommonStringsTop">Top</v:String>
+    <v:String x:Key="CommonStringsRight">Right</v:String>
+    <v:String x:Key="CommonStringsBottom">Bottom</v:String>
     
 </ResourceDictionary>

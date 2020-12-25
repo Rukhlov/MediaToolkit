@@ -105,5 +105,6 @@
     <v:String x:Key="CommonStringsDefault">По умолчанию</v:String>
     <v:String x:Key="CommonStringsSaveChanges">Сохранить</v:String>
     <v:String x:Key="CommonStringsDiscardChanges">Отменить</v:String>
-    
+    <v:String x:Key="CommonStringsSettings">Настройки</v:String>
+
 </ResourceDictionary>

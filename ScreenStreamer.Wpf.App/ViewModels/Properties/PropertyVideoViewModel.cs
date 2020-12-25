@@ -249,25 +249,22 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             return new VideoSettingsViewModel(this,Parent);
         }
 
-        public override string Info
+
+		public override string Info
         {
             get
             {
                 var builder = new StringBuilder();
                 if (IsRegion)
                 {
-					//var screenRegion = LocalizationManager.GetString("CommonStringsScreenRegion");
-					////var screenCoord = Top + ""
-					////builder.Append(screenRegion + ": " + screenCoord);
-					//var mask0123 = LocalizationManager.GetString("CommonStringsScreenRegionMask0123");
-					//var info = screenRegion + " (" + string.Format(mask0123, Left, Top, ResolutionWidth, ResolutionHeight) + ")";
+					var screenRegion = LocalizationManager.GetString("CommonStringsScreenRegion");
+					var info = screenRegion + " (" + RegionInfo + ")";
+					builder.Append(info);
 
-					//builder.Append(info);
-					
-					builder.Append($"{nameof(this.Top)}: {this.Top}, {nameof(this.Left)}: {this.Left}, Width: {this.ResolutionWidth}, Height: {this.ResolutionHeight}");
+					//builder.Append($"{nameof(this.Top)}: {this.Top}, {nameof(this.Left)}: {this.Left}, Width: {this.ResolutionWidth}, Height: {this.ResolutionHeight}");
 
 				}
-                else
+				else
                 {
                     var displayName = Display?.Name ?? LocalizationManager.GetString("CommonStringsDeviceNotFound");
                     builder.Append(displayName);
@@ -284,8 +281,18 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             }
         }
 
+		public string RegionInfo
+		{
+			get
+			{
+				var mask0123 = LocalizationManager.GetString("CommonStringsScreenRegionMask0123");
+				return string.Format(mask0123, Left, Top, ResolutionWidth, ResolutionHeight);
+			}
+		}
 
-        public void OnStreamStateChanged(bool isStarted)
+
+
+		public void OnStreamStateChanged(bool isStarted)
         {
             //...
             //selectAreaManager.SetBorder(isStarted);

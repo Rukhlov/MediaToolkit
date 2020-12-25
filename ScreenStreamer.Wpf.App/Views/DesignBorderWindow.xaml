@@ -77,7 +77,7 @@
                         <!--Stream settings button-->
                         <Border Style="{StaticResource clickableBorder}"
                         Background="Transparent"
-                        ToolTip="Settings">
+                        ToolTip="{DynamicResource CommonStringsSettings}">
                             <materialDesign:PackIcon Kind="SettingsOutline" Margin="10,0,0,0"/>
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="MouseDown">
@@ -105,19 +105,40 @@
                         </materialDesign:PackIcon>
 
 
-                        <TextBlock Margin="10,0"> 
-                    
-                    <Run Text="Top: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" /> 
+                        <!--<TextBlock Margin="10,0" Text="{Binding Stream.VideoViewModel.Info}"/>-->
+                        <TextBlock Margin="10,0">
+                            
+                            <Run Text="Left: "/> 
+                            <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" Top: "/>
+                            <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" Height: "/> 
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
 
-                    <Run Text=" Left: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" Width: "/> 
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+                            
+                            
+                            <!--<Run Text="{StaticResource VideoSettingsLeft}"/>
+                            <Run Text=": " />
+                            <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" " />
+                          
+                            <Run Text="{StaticResource VideoSettingsTop}"/>
+                            <Run Text=": " />
+                            <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" " />
 
-                    <Run Text=" Height: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text="{StaticResource CommonStringsWidth}"/>
+                            <Run Text=": " />
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text=" " />
+                            
+                            <Run Text="{StaticResource CommonStringsHeight}"/>
+                            <Run Text=": " />
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />-->
 
-                    <Run Text=" Width: "/> 
-                    <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+
                         </TextBlock>
                     </StackPanel>
                 </Border>
