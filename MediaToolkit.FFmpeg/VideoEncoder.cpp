@@ -269,12 +269,11 @@ namespace FFmpegLib {
 						}
 						else if (bmpFmt == PixelFormat::Format32bppArgb || bmpFmt == PixelFormat::Format32bppRgb) {
 
-							pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_RGBA;
+							pix_fmt = AV_PIX_FMT_BGRA;
 
 						}
 						else if (bmpFmt == PixelFormat::Format16bppRgb565) {
 
-							//pix_fmt = AV_PIX_FMT_BGR565LE;//AV_PIX_FMT_RGBA;
 							pix_fmt = AV_PIX_FMT_RGB565LE;
 							
 						}

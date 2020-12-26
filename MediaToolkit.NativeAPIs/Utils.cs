@@ -65,6 +65,23 @@ namespace MediaToolkit.NativeAPIs.Utils
 		{
 			return (T)Marshal.PtrToStructure(sourcePointer, typeof(T));
 		}
+
+		public static IntPtr Align(IntPtr ptr, int align)
+		{
+			checked { align--; }
+			if (IntPtr.Size == sizeof(Int32))
+			{//x86
+				return new IntPtr((ptr.ToInt32() + align) & ~align);
+			}
+			else if (IntPtr.Size == sizeof(Int64))
+			{//amd64
+				return new IntPtr((ptr.ToInt64() + align) & ~align);
+			}
+			else
+			{
+				throw new NotSupportedException("Platform is neither 32 bits nor 64 bits.");
+			}
+		}
 	}
 
     [StructLayout(LayoutKind.Sequential)]

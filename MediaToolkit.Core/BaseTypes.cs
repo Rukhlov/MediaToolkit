@@ -204,13 +204,17 @@ namespace MediaToolkit.Core
         I420,
         I422,
         I444,
+
+        R8,
+        R8G8,
     }
 
     public enum ColorSpace
     {
         BT601 = 0,
         BT709 = 1,
-    }
+		BT2020 = 2,
+	}
 
     public enum ColorRange
     {
@@ -218,17 +222,65 @@ namespace MediaToolkit.Core
         Full = 1,
     }
 
-    public enum ScalingFilter
+	public enum VideoDriverType
+	{
+		CPU,
+		DirectX,
+
+		//not supported...
+		Cuda,
+		OpenGL,
+	}
+
+    public interface IVideoFrame
     {
-        Point,
-        FastLinear,
-        Linear,
-        Bicubic,
-        Lanczos,
-        Spline,
+        IFrameBuffer[] Buffer {get;}
+
+        double Time { get; }
+        double Duration { get; }
+
+        int Width { get; }
+        int Height { get; }
+        PixFormat Format { get; }
+        int Align { get; }
+
+        ColorSpace ColorSpace { get; }
+        ColorRange ColorRange { get; }
+
+        int Size { get; }
+
+        VideoDriverType DriverType { get; }
     }
 
-    [Serializable]
+    public interface IFrameBuffer
+    {
+        IntPtr Data { get; }
+        int Stride { get; }
+    }
+
+    public class FrameBuffer : IFrameBuffer
+    {
+        public IntPtr Data { get; } = IntPtr.Zero;
+        public int Stride { get; } = 0;
+
+        public FrameBuffer(IntPtr data, int stride)
+        {
+            this.Data = data;
+            this.Stride = stride;
+        }
+    }
+	
+	public enum ScalingFilter
+	{
+		Point,
+		FastLinear,
+		Linear,
+		Bicubic,
+		Lanczos,
+		Spline,
+	}
+
+	[Serializable]
     public class AudioEncoderSettings : ICloneable
     {
         [XmlAttribute]

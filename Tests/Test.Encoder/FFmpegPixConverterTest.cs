@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Diagnostics;
+using MediaToolkit.Core;
 
 namespace Test.Encoder
 {
@@ -118,11 +119,12 @@ namespace Test.Encoder
 
                 fixed (byte* ptr = srcBytes)
                 {
+                    converter.Convert((IntPtr)ptr, srcLinesize, 32, out var destData);
 
-                    converter.Convert((IntPtr)ptr, srcLinesize, out var destData, out var destLinesize);
+                    //converter.Convert((IntPtr)ptr, srcLinesize, out var destData, out var destLinesize);
                     // converter.Convert((IntPtr)ptr, 1280, out var destData, out var destLinesize);
 
-                    destBuffer = ConvertToContiguousBuffer(destData, destLinesize, destSize, destFormat);
+                    destBuffer = ConvertToContiguousBuffer(destData, destSize, destFormat);
 
                     //converter.Convert2((IntPtr)ptr, 0, out destData);
                 }
@@ -161,7 +163,7 @@ namespace Test.Encoder
 
         }
 
-        private static unsafe byte[] ConvertToContiguousBuffer(IntPtr[] data, int[] linesize, Size size, MediaToolkit.Core.PixFormat format)
+        private static unsafe byte[] ConvertToContiguousBuffer(IFrameBuffer[] frameBuffer, Size size, MediaToolkit.Core.PixFormat format)
         {
             byte[] buffer = null;
             if (format == MediaToolkit.Core.PixFormat.NV12)
@@ -178,8 +180,8 @@ namespace Test.Encoder
                 buffer = new byte[bufferSize];
 
 				int offset = 0;
-				var pData = data[0];
-				var dataStride = linesize[0];
+				var pData = frameBuffer[0].Data;
+				var dataStride = frameBuffer[0].Stride;
 				for (int row = 0; row < lumaHeight; row++)
 				{ //Y
 					Marshal.Copy(pData, buffer, offset, lumaStride);
@@ -187,8 +189,8 @@ namespace Test.Encoder
 					pData += dataStride;
 				}
 
-				pData = data[1];
-				dataStride = linesize[1];
+				pData = frameBuffer[1].Data;
+				dataStride = frameBuffer[1].Stride;
 				for (int row = 0; row < chromaHeight; row++)
 				{// packed CbCr
 					Marshal.Copy(pData, buffer, offset, chromaStride);
@@ -216,8 +218,8 @@ namespace Test.Encoder
                 buffer = new byte[bufferSize];
 
                 int offset = 0;
-                var pData = data[0];
-                var dataStride = linesize[0];
+                var pData = frameBuffer[0].Data;
+                var dataStride = frameBuffer[0].Stride;
 
 				for (int row = 0; row < size.Height; row++)
 				{
@@ -255,8 +257,8 @@ namespace Test.Encoder
                 buffer = new byte[bufferSize];
 
                 int offset = 0;
-                var pData = data[0];
-                var dataStride = linesize[0];
+                var pData = frameBuffer[0].Data;
+                var dataStride = frameBuffer[0].Stride;
 
                 for (int row = 0; row < lumaHeight; row++)
                 {//Y
@@ -267,8 +269,8 @@ namespace Test.Encoder
 
                 for (int i = 1; i < 3; i++)
                 {// CbCr
-                    pData = data[i];
-                    dataStride = linesize[i];
+                    pData = frameBuffer[i].Data;
+                    dataStride = frameBuffer[i].Stride;
                     for (int row = 0; row < chromaHeight; row++)
                     {
                         Marshal.Copy(pData, buffer, offset, chomaStride);

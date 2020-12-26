@@ -88,12 +88,13 @@ namespace FFmpegLib {
 			}
 		}
 
-		void Convert(IntPtr srcData, int srcDataSize, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+		//void Convert(IntPtr srcData, int srcDataSize, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
 
-			Convert(srcData, srcDataSize, 16, destData, destLinesize);
-		}
+		//	Convert(srcData, srcDataSize, 16, destData, destLinesize);
+		//}
 
-		void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+		//void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+		void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IFrameBuffer^>^% destData) {
 
 			if (!initialized) {
 
@@ -130,12 +131,10 @@ namespace FFmpegLib {
 				//int res = sws_scale(sws_ctx, src_data, scr_size, 0, srcHeight, destFrame->data, destFrame->linesize);
 				//
 
-				destData = gcnew array<IntPtr>(4);
-				destLinesize = gcnew array<int>(4);
+				destData = gcnew array<IFrameBuffer^>(4);
 
 				for (int i = 0; i < 4; i++) {
-					destData[i] = (IntPtr)destFrame->data[i];
-					destLinesize[i] = destFrame->linesize[i];
+					destData[i] = gcnew FFmpegFrameBuffer((IntPtr)destFrame->data[i], destFrame->linesize[i]);
 				}			
 
 			}
