@@ -108,18 +108,17 @@
                         <!--<TextBlock Margin="10,0" Text="{Binding Stream.VideoViewModel.Info}"/>-->
                         <TextBlock Margin="10,0">
                             
-                            <Run Text="Left: "/> 
+                            <!--<Run Text="Left: "/> 
                             <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
                             <Run Text=" Top: "/>
                             <Run Text="{Binding Stream.VideoViewModel.Top, Converter={converters:IntegerToStringConverter}}" />
                             <Run Text=" Height: "/> 
                             <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
-
                             <Run Text=" Width: "/> 
-                            <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionWidth, Converter={converters:IntegerToStringConverter}}" />-->
                             
                             
-                            <!--<Run Text="{StaticResource VideoSettingsLeft}"/>
+                            <Run Text="{StaticResource VideoSettingsLeft}"/>
                             <Run Text=": " />
                             <Run Text="{Binding Stream.VideoViewModel.Left, Converter={converters:IntegerToStringConverter}}" />
                             <Run Text=" " />
@@ -136,7 +135,7 @@
                             
                             <Run Text="{StaticResource CommonStringsHeight}"/>
                             <Run Text=": " />
-                            <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />-->
+                            <Run Text="{Binding Stream.VideoViewModel.ResolutionHeight, Converter={converters:IntegerToStringConverter}}" />
 
 
                         </TextBlock>

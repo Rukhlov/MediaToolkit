@@ -18,28 +18,51 @@ namespace Test.Encoder
 
             Console.WriteLine("FFmpegPixConverterTest::Run()");
 
-            //var inputFileName = @"Files\1920x1080.bmp";
-            //Bitmap bmp = new Bitmap(inputFileName);
+			var srcLinesize = 0;
+			//var inputFileName = @"Files\1920x1080.bmp";
+			//Bitmap bmp = new Bitmap(inputFileName);
 
-            //var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            //var g = Graphics.FromImage(b);
-            //g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
-            //g.Dispose();
-            //bmp.Dispose();
+			//var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+			//	System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-            //bmp = b;
-            //bmp.Save("TEST.bmp");
+			//var _size = new Size(bmpData.Width, bmpData.Height);
+			//var src = bmpData.Scan0;
+			//	var _totalSize = FFmpegLib.Utils.FillImageData(src, _size, MediaToolkit.Core.PixFormat.RGB24, 32,
+			//	out var _destData, out var _destLinesize);
 
-            //var inputFileName = @"Files\NV12_352x288.yuv";
-            //var inputFileName = @"Files\rgba_352x288.raw";
-            //Size srcSize = new Size(352, 288);
+			//byte[] srcBytes = new byte[_totalSize];
+			//Marshal.Copy(_destData[0], srcBytes, 0, _totalSize);
+			//var srcLinesize = _destLinesize[0];
+
+			//bmp.UnlockBits(bmpData);
+
+			//var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			//var g = Graphics.FromImage(b);
+			//g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
+			//g.Dispose();
+			//bmp.Dispose();
+
+			//bmp = b;
+			//bmp.Save("TEST.bmp");
 
 
-            //var inputFileName = @"Files\rgba_1920x1080.raw";
 
-            //var inputFileName = @"Files\NV12_1920x1080.yuv";
+			//var totalSize = FFmpegLib.Utils.AllocImageData(new Size(1920, 1080), MediaToolkit.Core.PixFormat.RGB24, 32, 
+			//	out var _destData, out var _destLinesize);
 
-            var inputFileName = @"Files\rgba_1920x1080.raw";
+
+
+
+			//var inputFileName = @"Files\NV12_352x288.yuv";
+			//var inputFileName = @"Files\rgba_352x288.raw";
+			//Size srcSize = new Size(352, 288);
+
+
+			var inputFileName = @"Files\rgba_1920x1080.raw";
+
+			//var inputFileName = @"Files\NV12_1920x1080.yuv";
+
+			//var inputFileName = @"Files\rgba_1920x1080.raw";
 
             Size srcSize = new Size(1920, 1080);
 
@@ -65,6 +88,7 @@ namespace Test.Encoder
 
 			var srcBytes = File.ReadAllBytes(inputFileName);
 
+			Size destSize = new Size(1920, 1080);
 			// Size destSize = new Size(3840, 2160);
 			//Size destSize = new Size(2560, 1440);
 			// Size destSize = new Size(1900, 1000);
@@ -72,7 +96,7 @@ namespace Test.Encoder
 			// Size destSize = new Size(640, 480);
 			//Size destSize = new Size(352, 288);
 			//Size destSize = new Size(393, 211);
-			Size destSize = new Size(555, 333);
+			//Size destSize = new Size(555, 333);
 			destSize = MediaToolkit.Utils.GraphicTools.DecreaseToEven(destSize);
 
             MediaToolkit.Core.PixFormat destFormat = MediaToolkit.Core.PixFormat.I420;
@@ -80,7 +104,9 @@ namespace Test.Encoder
 
             FFmpegLib.FFmpegPixelConverter converter = new FFmpegLib.FFmpegPixelConverter();
 
-            converter.Init(srcSize, srcFormat, destSize, destFormat, MediaToolkit.Core.ScalingFilter.Bicubic);
+
+
+			converter.Init(srcSize, srcFormat, destSize, destFormat, MediaToolkit.Core.ScalingFilter.Bicubic);
 
             byte[] destBuffer = null;
             Stopwatch sw = new Stopwatch();
@@ -93,7 +119,7 @@ namespace Test.Encoder
                 fixed (byte* ptr = srcBytes)
                 {
 
-                    converter.Convert((IntPtr)ptr, srcBytes.Length, out var destData, out var destLinesize);
+                    converter.Convert((IntPtr)ptr, srcLinesize, out var destData, out var destLinesize);
                     // converter.Convert((IntPtr)ptr, 1280, out var destData, out var destLinesize);
 
                     destBuffer = ConvertToContiguousBuffer(destData, destLinesize, destSize, destFormat);

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#include "Utils.cpp"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -43,7 +43,7 @@ namespace FFmpegLib {
 				srcWidth = srcSize.Width;
 				srcHeight = srcSize.Height;
 
-				srcFormat = GetAVPixelFormat(srcPixFormat);
+				srcFormat = Utils::GetAVPixelFormat(srcPixFormat);
 				if (srcFormat == AV_PIX_FMT_NONE) {
 					throw gcnew Exception("Unsupported pixel format " + srcPixFormat.ToString());
 				}
@@ -54,7 +54,7 @@ namespace FFmpegLib {
 				//frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
 				//destFrame->colorspace = AVColorSpace::AVCOL_SPC_BT470BG;
 
-				int frameFormat = GetAVPixelFormat(destPixFormat);
+				int frameFormat = Utils::GetAVPixelFormat(destPixFormat);
 				if(frameFormat == AV_PIX_FMT_NONE){
 					throw gcnew Exception("Unsupported pixel format " + destPixFormat.ToString());
 				}
@@ -65,7 +65,7 @@ namespace FFmpegLib {
 					throw gcnew Exception("Could not allocate frame data " + res);
 				}
 
-				swsFilter = GetSwsFilter(filter);
+				swsFilter = Utils::GetSwsFilter(filter);
 
 				sws_ctx = sws_getCachedContext(sws_ctx,
 					srcWidth, srcHeight, srcFormat, // input
@@ -93,7 +93,7 @@ namespace FFmpegLib {
 			Convert(srcData, srcDataSize, 16, destData, destLinesize);
 		}
 
-		void Convert(IntPtr srcData, int srcDataSize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+		void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
 
 			if (!initialized) {
 
@@ -114,11 +114,22 @@ namespace FFmpegLib {
 				if (srcSize < 0) {
 					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
 				}
-				
-
 				//  конвертируем в новый формат
 				int res = sws_scale(sws_ctx, srcFrame->data, srcFrame->linesize, 0, srcHeight, destFrame->data, destFrame->linesize);
-				
+
+
+				//const uint8_t* src_data[1] =
+				//{
+				//	reinterpret_cast<uint8_t*>(srcData.ToPointer())
+				//};
+				//const int scr_size[1] =
+				//{
+				//	srcLinesize
+				//};
+				////  конвертируем в новый формат
+				//int res = sws_scale(sws_ctx, src_data, scr_size, 0, srcHeight, destFrame->data, destFrame->linesize);
+				//
+
 				destData = gcnew array<IntPtr>(4);
 				destLinesize = gcnew array<int>(4);
 
@@ -166,68 +177,6 @@ namespace FFmpegLib {
 		}
 
 	private:
-
-		AVPixelFormat GetAVPixelFormat(MediaToolkit::Core::PixFormat pixFormat)
-		{
-			AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-			switch (pixFormat) {
-
-			case PixFormat::NV12:
-				pix_fmt = AV_PIX_FMT_NV12;
-				break;
-			case PixFormat::I420:
-				pix_fmt = AV_PIX_FMT_YUV420P;
-				break;
-			case PixFormat::RGB32:
-				pix_fmt = AV_PIX_FMT_BGRA;//AV_PIX_FMT_BGRA;
-				break;
-			case PixFormat::RGB24:
-				pix_fmt = AV_PIX_FMT_BGR24;
-				break;
-			case PixFormat::RGB565:
-				pix_fmt = AV_PIX_FMT_RGB565LE;
-				break;
-			case PixFormat::I444:
-				pix_fmt = AV_PIX_FMT_YUV444P;
-				break;
-			case PixFormat::I422:
-				pix_fmt = AV_PIX_FMT_YUV422P;
-				break;
-			default:
-				break;
-			}
-
-			return pix_fmt;
-		}
-
-		int GetSwsFilter(MediaToolkit::Core::ScalingFilter scalingFilter)
-		{
-			int sws_filter = SWS_FAST_BILINEAR;
-			switch (scalingFilter) {
-			case ScalingFilter::Point:
-				sws_filter = SWS_POINT;
-				break;
-			case ScalingFilter::FastLinear:
-				sws_filter = SWS_FAST_BILINEAR;
-				break;
-			case ScalingFilter::Linear:
-				sws_filter = SWS_BILINEAR;
-				break;
-			case ScalingFilter::Bicubic:
-				sws_filter = SWS_BICUBIC;
-				break;
-			case ScalingFilter::Lanczos:
-				sws_filter = SWS_LANCZOS;
-				break;
-			case ScalingFilter::Spline:
-				sws_filter = SWS_SPLINE;
-				break;
-			default:
-				break;
-			}
-
-			return sws_filter;
-		}
 
 
 		bool initialized;

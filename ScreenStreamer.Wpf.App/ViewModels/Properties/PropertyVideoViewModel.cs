@@ -258,8 +258,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
                 if (IsRegion)
                 {
 					var screenRegion = LocalizationManager.GetString("CommonStringsScreenRegion");
-					var info = screenRegion + " (" + RegionInfo + ")";
-					builder.Append(info);
+                    //var info = screenRegion + " (" + RegionInfo + ")";
+                    var info = screenRegion + " (" + this.ResolutionWidth + "x" + this.ResolutionHeight + ")";
+                    builder.Append(info);
 
 					//builder.Append($"{nameof(this.Top)}: {this.Top}, {nameof(this.Left)}: {this.Left}, Width: {this.ResolutionWidth}, Height: {this.ResolutionHeight}");
 

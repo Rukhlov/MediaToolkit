@@ -41,9 +41,9 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
 			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-			//FFmpegPixConverterTest.Run();
+			FFmpegPixConverterTest.Run();
 
-			DisplaySettingChanged.Run();
+			//DisplaySettingChanged.Run();
 			//SimpleSwapChain.Run();
 
 			//RgbToNv12Converter.Run();
