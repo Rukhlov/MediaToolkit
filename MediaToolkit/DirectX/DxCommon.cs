@@ -272,7 +272,7 @@ namespace MediaToolkit.DirectX
             Adapter1 adapter1 = null;
             using (var dxgiFactory = new SharpDX.DXGI.Factory1())
             {
-
+                
                 if (luid > 0)
                 {
                     var adapters = dxgiFactory.Adapters1;

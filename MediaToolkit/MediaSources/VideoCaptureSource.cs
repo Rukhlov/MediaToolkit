@@ -32,8 +32,8 @@ namespace MediaToolkit
 
         private SharpDX.Direct3D11.Device device = null;
         public Texture2D SharedTexture { get; private set; }
-        public long AdapterId { get; private set; } = -1;
-
+        //public long AdapterId { get; private set; } = -1;
+        public int AdapterIndex { get; private set; } = 0;
         public VideoBuffer SharedBitmap { get; private set; }
 
         public event Action BufferUpdated;
@@ -80,13 +80,13 @@ namespace MediaToolkit
 
             try
             {
-                int adapterIndex = 0;
+                AdapterIndex = 0;
                 using (var dxgiFactory = new SharpDX.DXGI.Factory1())
                 {
-                    using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
+                    using (var adapter = dxgiFactory.GetAdapter1(AdapterIndex))
                     {
                         var deviceCreationFlags = //DeviceCreationFlags.Debug |
-                                                  DeviceCreationFlags.VideoSupport |
+                                                  //DeviceCreationFlags.VideoSupport |
                                                   DeviceCreationFlags.BgraSupport;
 
                         device = new Device(adapter, deviceCreationFlags);
@@ -124,7 +124,7 @@ namespace MediaToolkit
 
 
                 mediaType?.Dispose();
-
+               
 
                 SharedTexture = new Texture2D(device,
                      new Texture2DDescription

@@ -21,7 +21,8 @@ namespace MediaToolkit
     {
         VideoBuffer SharedBitmap { get; }
         SharpDX.Direct3D11.Texture2D SharedTexture { get; }
-        long AdapterId { get; }
+        //int AdapterIndex { get; }
+        //long AdapterId { get; }
 
         object LastError { get; }
         int ErrorCode { get; }

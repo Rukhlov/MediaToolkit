@@ -838,21 +838,24 @@ namespace ScreenStreamer.WinForms.App
             encoderItems.Clear();
 
             var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
-
-            foreach(var enc in encoders)
+            if (encoders.Count > 0)
             {
-                if(enc.Activatable && enc.Format == VideoCodingFormat.H264)
+                encoders = encoders.GroupBy(e => e.Id).Select(y => y.First()).ToList();
+                foreach (var enc in encoders)
                 {
-                    var item = new ComboBoxItem
+                    if (enc.Activatable && enc.Format == VideoCodingFormat.H264)
                     {
-                        Name = enc.Name,
-                        Tag = enc,
-                    };
-
-                    encoderItems.Add(item);
+                        var item = new ComboBoxItem
+                        {
+                            Name = enc.Name,
+                            Tag = enc,
+                        };
+                        encoderItems.Add(item);
+                    }
                 }
-
             }
+
+
 
             VideoEncoderDescription libx264Description = new VideoEncoderDescription
             {

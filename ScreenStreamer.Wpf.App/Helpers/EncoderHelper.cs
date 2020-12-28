@@ -17,22 +17,27 @@ namespace ScreenStreamer.Wpf.Helpers
 			{
 				encoderItems = new List<EncoderItem>();
 
-				var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
+                var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
+                if (encoders.Count > 0)
+                {// отфильтровываем одинаковые энкодеры (могут быть одинаковые Intel H264 MFT)
+                    encoders = encoders.GroupBy(e => e.Id).Select(y => y.First()).ToList();
 
-				foreach (var enc in encoders)
-				{
-					if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
-					{
-						var item = new EncoderItem
-						{
-							Name = enc.Name,
-							Id = enc.Id,
-						};
+                    foreach (var enc in encoders)
+                    {
+                        if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
+                        {
+                            var item = new EncoderItem
+                            {
+                                Name = enc.Name,
+                                Id = enc.Id,
+                            };
 
-						encoderItems.Add(item);
-					}
+                            encoderItems.Add(item);
+                        }
+                    }
+                }
 
-				}
+
 
 				VideoEncoderDescription libx264Description = new VideoEncoderDescription
 				{

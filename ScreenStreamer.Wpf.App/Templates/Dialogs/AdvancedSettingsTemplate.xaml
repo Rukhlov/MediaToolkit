@@ -17,7 +17,7 @@
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
-                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="180"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="32"/>
@@ -43,8 +43,7 @@
             <ComboBox Grid.Row="0" Grid.Column="1" 
                       ItemsSource="{Binding VideoEncoders}" 
                       DisplayMemberPath="Name"
-                      SelectedItem="{Binding VideoEncoder}"
-                      
+                      SelectedItem="{Binding VideoEncoder}"                     
                       Cursor="Hand"/>
 
             <TextBlock Text="{DynamicResource AdvancedSettingsProfile}" Grid.Row="1" Grid.Column="0"/>

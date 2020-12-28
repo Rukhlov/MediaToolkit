@@ -74,42 +74,43 @@ namespace MediaToolkit.MediaFoundation
 
             try
             {
-                var adapterId = args.AdapterId;
+                var adapterIndex = args.AdapterIndex;
 
-                using (var adapter = FindAdapter(adapterId))
+                using (var dxgiFactory = new SharpDX.DXGI.Factory1())
                 {
-                    var descr = adapter.Description;
-                    int adapterVenId = descr.VendorId;
-                    long adapterLuid = descr.Luid;
-
-                    logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
-
-
-                    if (device == null)
+                    using (var adapter = dxgiFactory.GetAdapter(adapterIndex))
+                    //using (var adapter = FindAdapter(adapterId))
                     {
-                        var flags =  DeviceCreationFlags.VideoSupport |
-                                     DeviceCreationFlags.BgraSupport;
-                                    //DeviceCreationFlags.Debug;
+                        var descr = adapter.Description;
+                        int adapterVenId = descr.VendorId;
+                        long adapterLuid = descr.Luid;
 
-                        device = new SharpDX.Direct3D11.Device(adapter, flags);
-                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                        logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+
+
+                        if (device == null)
                         {
-                            multiThread.SetMultithreadProtected(true);
+                            var flags = DeviceCreationFlags.VideoSupport |
+                                         DeviceCreationFlags.BgraSupport;
+                            //DeviceCreationFlags.Debug;
+
+                            device = new SharpDX.Direct3D11.Device(adapter, flags);
+                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                            {
+                                multiThread.SetMultithreadProtected(true);
+                            }
                         }
+
+
+                        SetupSampleBuffer(args);
+
+                        encoder = FindEncoder(adapterVenId);
+                        syncMode = false;
+
+                        //encoder = new Transform(ClsId.MSH264EncoderMFT);
+                        //syncMode = true;
+
                     }
-                   
-
-
-
-                    SetupSampleBuffer(args);
-
-                    encoder = FindEncoder(adapterVenId);
-                    syncMode = false;
-
-                    //encoder = new Transform(ClsId.MSH264EncoderMFT);
-                    //syncMode = true;
-
-
 
 
                 }

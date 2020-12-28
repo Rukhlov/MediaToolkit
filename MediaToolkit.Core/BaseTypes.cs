@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -821,7 +822,8 @@ namespace MediaToolkit.Core
     }
 
 
-    public class VideoBuffer
+
+	public class VideoBuffer
     {
         public VideoBuffer(int width, int height, System.Drawing.Imaging.PixelFormat fmt)
         {
@@ -843,7 +845,7 @@ namespace MediaToolkit.Core
         private long length = -1;
         public long DataLength { get => length; }
 
-        public void Dispose()
+		public void Dispose()
         {
             lock (syncRoot)
             {

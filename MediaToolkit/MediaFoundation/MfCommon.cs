@@ -1231,7 +1231,7 @@ namespace MediaToolkit.MediaFoundation
 
         public Guid Format { get; set; } = VideoFormatGuids.NV12;
 
-        public long AdapterId { get; set; } = -1;
+        public int AdapterIndex { get; set; } = -1;
 
         // bit per sec
         public int AvgBitrate { get; set; } = 2_500_000;

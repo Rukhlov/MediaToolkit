@@ -26,9 +26,9 @@ namespace MediaToolkit
         {
             get { return hwContext?.SharedTexture; }
         }
-        
-        public long AdapterId { get; private set; } = -1;
 
+        // public long AdapterId { get; private set; } = -1;
+        public int AdapterIndex { get; private set; } = 0;
 
         public Size SrcSize
         {
@@ -161,7 +161,8 @@ namespace MediaToolkit
 				{
                     d3d11Capture.UseHwContext = CaptureProps.UseHardware;
 					this.hwContext = d3d11Capture;
-					this.AdapterId = d3d11Capture.AdapterId;
+                    //this.AdapterId = d3d11Capture.AdapterId;
+                    this.AdapterIndex = d3d11Capture.AdapterIndex;
 
                     if(screenCapture is DDACapture)
                     {

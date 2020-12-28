@@ -265,6 +265,8 @@ namespace MediaToolkit.ScreenCaptures
                 var duplTexture = duplOutput.SharedTexture;
                 if (duplTexture != null)
                 {
+                    //device.ImmediateContext.CopySubresourceRegion(duplTexture, 0, SrcRegion, SharedTexture, 0);
+
                     using (var sharedRes = duplTexture.QueryInterface<SharpDX.DXGI.Resource>())
                     {
                         var handle = sharedRes.SharedHandle;

@@ -106,6 +106,7 @@
     <Compile Include="DisplayDeviceTest.cs" />
     <Compile Include="DisplayManager.cs" />
     <Compile Include="DisplaySettingChanged.cs" />
+    <Compile Include="DxTextureTest.cs" />
     <Compile Include="FFmpegJpegEncoderTest.cs" />
     <Compile Include="FFmpegPixConverterTest.cs" />
     <Compile Include="MfTransformTests.cs" />

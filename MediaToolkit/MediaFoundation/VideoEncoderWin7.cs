@@ -157,9 +157,11 @@ namespace MediaToolkit.MediaFoundation
 			srcSize = new Size(sharedTextureDecription.Width, sharedTextureDecription.Height);
 
 			destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
-			var adapterId = videoSource.AdapterId;
 
-			InitDevice(adapterId);
+            //var adapterId = videoSource.AdapterId;
+            //var adapterIndex = videoSource.AdapterIndex;
+            var adapterIndex = 0;
+            InitDevice(adapterIndex);
 
 			InitShaders();
 
@@ -167,23 +169,28 @@ namespace MediaToolkit.MediaFoundation
 
 		}
 
-		private void InitDevice(long adapterId)
+		private void InitDevice(int adapterIndex)
 		{
-			using (var adapter = DxTool.FindAdapter1(adapterId))
-			{
-				var descr = adapter.Description;
-				int adapterVenId = descr.VendorId;
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+            {
+                using (var adapter = dxgiFactory.GetAdapter(adapterIndex))
+                //using (var adapter = DxTool.FindAdapter1(adapterId))
+                {
+                    var descr = adapter.Description;
+                    int adapterVenId = descr.VendorId;
 
-				logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+                    logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
 
-				var flags = DeviceCreationFlags.BgraSupport;
+                    var flags = DeviceCreationFlags.BgraSupport;
 
-				device = new SharpDX.Direct3D11.Device(adapter, flags);
-				using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-				{
-					multiThread.SetMultithreadProtected(true);
-				}
-			}
+                    device = new SharpDX.Direct3D11.Device(adapter, flags);
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
+                }
+            }
+
 		}
 
 		private void InitShaders()

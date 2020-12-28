@@ -39,9 +39,13 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
+
+
+			DxTextureTest.Run();
+
 			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-			FFmpegPixConverterTest.Run();
+			//FFmpegPixConverterTest.Run();
 
 			//DisplaySettingChanged.Run();
 			//SimpleSwapChain.Run();

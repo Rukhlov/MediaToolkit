@@ -110,6 +110,7 @@
     <Compile Include="MediaReceivers\AudioReceiver.cs" />
     <Compile Include="MediaReceivers\VideoReceiverEx.cs" />
     <Compile Include="MediaSinks\D3D9RendererSink.cs" />
+    <Compile Include="MediaSources\VideoBuffer.cs" />
     <Compile Include="MediaStreamers\AudioStreamer.cs" />
     <Compile Include="Managers\UsbDeviceManager.cs" />
     <Compile Include="MediaSources\IVideoSource.cs" />

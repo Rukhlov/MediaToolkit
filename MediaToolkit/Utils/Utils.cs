@@ -1,4 +1,5 @@
-﻿using MediaToolkit.NativeAPIs;
+﻿using MediaToolkit.Core;
+using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,8 @@ using System.Xml;
 namespace MediaToolkit.Utils
 {
 
-    public class RngProvider
+
+	public class RngProvider
     {
         private static System.Security.Cryptography.RNGCryptoServiceProvider provider =
             new System.Security.Cryptography.RNGCryptoServiceProvider();

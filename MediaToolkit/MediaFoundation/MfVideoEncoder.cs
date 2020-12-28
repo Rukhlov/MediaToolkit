@@ -65,28 +65,49 @@ namespace MediaToolkit.MediaFoundation
                 var srcSize = new Size(hwDescr.Width, hwDescr.Height);
                 var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
 
-                var adapterId = videoSource.AdapterId;
+                //var adapterIndex = videoSource.AdapterIndex;
+                //using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+                //{
+                //    //using (var adapter = DxTool.FindAdapter1(adapterId))
+                //    using (var adapter = dxgiFactory.GetAdapter(adapterIndex))
+                //    {
+                //        var descr = adapter.Description;
+                //        int adapterVenId = descr.VendorId;
 
-                using (var adapter = DxTool.FindAdapter1(adapterId))
+                //        logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
+
+                //        // var flags = DeviceCreationFlags.BgraSupport;
+
+                //        var flags = //DeviceCreationFlags.VideoSupport |
+                //                    DeviceCreationFlags.BgraSupport;
+
+                //        //DeviceCreationFlags.Debug;
+
+                //        device = new SharpDX.Direct3D11.Device(adapter, flags);
+                //        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                //        {
+                //            multiThread.SetMultithreadProtected(true);
+                //        }
+                //    }
+                //}
+
+                //hwBuffer.Device <-- memory leak SharpDX bug...
+                using (var surf = hwBuffer.QueryInterface<SharpDX.DXGI.Surface>())
                 {
-                    var descr = adapter.Description;
-                    int adapterVenId = descr.VendorId;
-
-                    logger.Info("Adapter: " + descr.Description + " " + adapterVenId);
-
-                    // var flags = DeviceCreationFlags.BgraSupport;
-
-                    var flags = //DeviceCreationFlags.VideoSupport |
-                                DeviceCreationFlags.BgraSupport;
-
-                    //DeviceCreationFlags.Debug;
-
-                    device = new SharpDX.Direct3D11.Device(adapter, flags);
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
+                    using (var dxgiDevice = surf.GetDevice<SharpDX.DXGI.Device>())
+                    {                   
+                        using (var adapter = dxgiDevice.Adapter)
+                        {
+                            var flags = DeviceCreationFlags.BgraSupport;
+                            device = new SharpDX.Direct3D11.Device(adapter, flags);
+                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                            {
+                                multiThread.SetMultithreadProtected(true);
+                            }
+                        }
                     }
                 }
+
 
                 var profile = MfTool.GetMfH264Profile(encoderSettings.Profile);
 
@@ -104,7 +125,7 @@ namespace MediaToolkit.MediaFoundation
                     MaxBitrate = encoderSettings.MaxBitrate * 1000, //kbps->bps
                     AvgBitrate = encoderSettings.Bitrate * 1000,
                     LowLatency = encoderSettings.LowLatency,
-                    AdapterId = videoSource.AdapterId,
+                    //AdapterIndex = videoSource.AdapterIndex,
                     Profile = profile,
                     BitrateMode = bitrateMode,
                     GopSize = encoderSettings.GOPSize,

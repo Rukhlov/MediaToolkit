@@ -35,7 +35,8 @@ namespace MediaToolkit.ScreenCaptures
     public interface ITexture2DSource
     {
         Texture2D SharedTexture { get; }
-        long AdapterId { get; }
+        // long AdapterId { get; }
+        int AdapterIndex { get; }
         bool UseHwContext { get; set; }
     }
 
@@ -56,7 +57,9 @@ namespace MediaToolkit.ScreenCaptures
         Direct2D.RenderTarget renderTarget = null;
 
         public Texture2D SharedTexture { get; private set; }
-        public long AdapterId { get; private set; }
+        //public long AdapterId { get; private set; }
+
+        public int AdapterIndex { get; private set; }
 
         public bool UseHwContext { get; set; } = true;
 
@@ -200,7 +203,8 @@ namespace MediaToolkit.ScreenCaptures
                 //PrimaryAdapterIndex = 0;
                 // первым идет адаптер с которому подключен primary монитор
                 primaryAdapter = dxgiFactory.GetAdapter1(PrimaryAdapterIndex);
-                AdapterId = primaryAdapter.Description.Luid;
+                //AdapterId = primaryAdapter.Description.Luid;
+                AdapterIndex = PrimaryAdapterIndex;
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
