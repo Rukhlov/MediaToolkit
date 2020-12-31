@@ -34,7 +34,6 @@ namespace ScreenStreamer.Wpf.Models
         // [JsonProperty]
         // public readonly static GlobalVideoConfig VideoConfig = new GlobalVideoConfig();
 
-
         public int MaxStreamCount { get; set; } = 4;
 
         public static AppModel Default => CreateDefault();
@@ -116,6 +115,8 @@ namespace ScreenStreamer.Wpf.Models
 				StreamList.RemoveAt(MaxStreamCount-1);
 			}
 
+
+            logger.Debug("Init video encoders...");
             var videoEncoders = EncoderHelper.GetVideoEncoders();
 
             if(videoEncoders.Count == 0)
@@ -124,6 +125,7 @@ namespace ScreenStreamer.Wpf.Models
                 //...
             }
 
+            logger.Debug("Init audio sources...");
             var audioSources = AudioHelper.GetAudioSources();
 
             if (audioSources.Count == 0)
@@ -132,6 +134,7 @@ namespace ScreenStreamer.Wpf.Models
                 //...
             }
 
+            logger.Debug("Init video sources...");
             var videoSources = ScreenHelper.GetVideoSources();
             if (videoSources.Count == 0)
             {
@@ -139,7 +142,7 @@ namespace ScreenStreamer.Wpf.Models
                 //...
             }
 
-
+            logger.Debug("Init streams...");
             foreach (var stream in StreamList)
             {
                 stream.Init(videoEncoders, videoSources, audioSources);

@@ -654,6 +654,8 @@ namespace MediaToolkit.MediaFoundation
 
         public static List<Core.VideoEncoderDescription> FindVideoEncoders()
         {
+            Console.WriteLine("FindVideoEncoders()");
+
             List<Core.VideoEncoderDescription> encoderDescriptions = new List<Core.VideoEncoderDescription>();
 
 
@@ -746,6 +748,8 @@ namespace MediaToolkit.MediaFoundation
                         try
                         {// x.з как по другому понять будет энкодер работать или нет!!
                             // т.к могут быть энкодеры связанные с оключенными или удаленными видеокартами
+                            Console.WriteLine("Try activate encoder: " + encoderDescription.Name);
+
                             transform = activate.ActivateObject<Transform>();
                             encoderDescription.Activatable = true;
                         }

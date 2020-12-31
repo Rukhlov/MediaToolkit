@@ -21,7 +21,8 @@ namespace ScreenStreamer.Wpf
 
 		public static void Init(string cultureName)
 		{
-			var defaultLang = new ResourceDictionary
+            logger.Debug("LocalizationManager::Init(...) " + cultureName);
+            var defaultLang = new ResourceDictionary
 			{
 				Source = new Uri(localizationsPath + "/" + "AppStrings.xaml"),
 			};

@@ -3,6 +3,8 @@
 					xmlns:v="clr-namespace:System;assembly=mscorlib">
 
     <!--Main Window-->
+
+    <v:String x:Key="MainWindowTitle">Polywall Streamer</v:String>
     
     <v:String x:Key="StartCommandText_StartStream">Start Stream</v:String>
     <v:String x:Key="StartCommandText_StopStream">Stop Stream</v:String>
@@ -91,6 +93,7 @@
     <!--CommonStrings-->
     <v:String x:Key="CommonStringsDeviceNotFound">Device is not found!</v:String>
     <v:String x:Key="CommonStringsDisabled">Disabled</v:String>
+    <v:String x:Key="CommonStringsEnabled">Enabled</v:String>
     <v:String x:Key="CommonStringsScreenRegion">Screen Region</v:String>
     <v:String x:Key="CommonStringsAllDisplays">Desktop</v:String>
     <v:String x:Key="CommonStringsDisplay">Display</v:String>
@@ -111,5 +114,5 @@
     <v:String x:Key="CommonStringsTop">Top</v:String>
     <v:String x:Key="CommonStringsRight">Right</v:String>
     <v:String x:Key="CommonStringsBottom">Bottom</v:String>
-    
+    <v:String x:Key="CommonStringsStream">Stream</v:String>
 </ResourceDictionary>

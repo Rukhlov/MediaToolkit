@@ -3,6 +3,7 @@
 					xmlns:v="clr-namespace:System;assembly=mscorlib">
     
     <!--Main Window-->
+
     <v:String x:Key="StartCommandText_StartStream">Запустить стрим</v:String>
     <v:String x:Key="StartCommandText_StopStream">Остановить стрим</v:String>
     <v:String x:Key="StartButtonToolTip">Нажмите, чтобы начать или остановить стрим</v:String>
@@ -90,6 +91,7 @@
     <!--CommonStrings-->
     <v:String x:Key="CommonStringsDeviceNotFound">Устройство не найдено!</v:String>
     <v:String x:Key="CommonStringsDisabled">Выключено</v:String>
+    <v:String x:Key="CommonStringsEnabled">Включено</v:String>
     <v:String x:Key="CommonStringsScreenRegion">Область экрана</v:String>
     <v:String x:Key="CommonStringsAllDisplays">Рабочий стол</v:String>
     <v:String x:Key="CommonStringsDisplay">Экран</v:String>
@@ -106,5 +108,5 @@
     <v:String x:Key="CommonStringsSaveChanges">Сохранить</v:String>
     <v:String x:Key="CommonStringsDiscardChanges">Отменить</v:String>
     <v:String x:Key="CommonStringsSettings">Настройки</v:String>
-
+    <v:String x:Key="CommonStringsStream">Поток</v:String>
 </ResourceDictionary>

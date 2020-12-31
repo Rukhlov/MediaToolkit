@@ -32,8 +32,8 @@ namespace ScreenStreamer.Wpf
             var args = e.Args;
 
             var appModel = ConfigManager.LoadConfigurations();
-            //TODO: validate...
 
+            ServiceLocator.RegisterInstance(appModel);
 
             if (!appModel.Init())
             {
@@ -44,17 +44,14 @@ namespace ScreenStreamer.Wpf
 
             // SystemMan.Initialize();
 
-            ServiceLocator.RegisterInstance(appModel);
-
-			//LocalizationManager.Init(appModel.Culture);
 
 			var dialogService = new Services.DialogService();
             ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
-			Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
+            Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
             {
-                Title = "Polywall Streamer",
+                Title = LocalizationManager.GetString("MainWindowTitle"),//"Polywall Streamer",
             };
 
             dialogService.Register(mainViewModel, mainWindow);

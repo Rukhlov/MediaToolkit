@@ -59,7 +59,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         public override string Caption
         {
-            get => mainCaption;
+
+            get => LocalizationManager.GetString("MainWindowTitle");
+            //get => mainCaption;
             //get => "Polywall Streamer";
             //get => "Polywall Streamer " + AppModel.AppVersion;
         }
