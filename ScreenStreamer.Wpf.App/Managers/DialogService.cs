@@ -9,7 +9,7 @@ using System.Linq;
 using System.Windows.Forms;
 using ScreenStreamer.Wpf.ViewModels;
 
-namespace ScreenStreamer.Wpf.Services
+namespace ScreenStreamer.Wpf
 {
     internal class DialogService : IDialogService
     {

@@ -15,22 +15,27 @@ namespace ScreenStreamer.Wpf.Helpers
 {
     internal static class NetworkHelper
     {
+        internal static IEnumerable<int> GetAppConfigPorts()
+        {           
+            IEnumerable<int> appPorts = null;
+            var appModel = ServiceLocator.GetInstance<AppModel>();
+            if (appModel != null)
+            {
+                var streamList = appModel.StreamList;
+                if (streamList.Count > 0)
+                {
+                    appPorts = streamList.Select(s => s.PropertyNetwork.Port);
+                }
+            }
+
+            return appPorts;
+        }
 
         internal static int FindAvailableTcpPort()
         {
             var port = -1;
 
-            var appModel =  ServiceLocator.GetInstance<AppModel>();
-            IEnumerable<int> appPorts = null;
-
-            if (appModel != null)
-            {
-                var streamList = appModel.StreamList;
-                if(streamList.Count > 0)
-                {
-                    appPorts = streamList.Select(s => s.PropertyNetwork.Port);
-                }
-            }
+            var appPorts = GetAppConfigPorts();
 
             var freeTcpPorts = MediaToolkit.Utils.NetTools.GetFreePortRange(ProtocolType.Tcp, 1, 808, exceptPorts: appPorts);
             if (freeTcpPorts != null)

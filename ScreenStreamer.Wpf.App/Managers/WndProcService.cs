@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ScreenStreamer.Wpf.Utils;
 
-namespace ScreenStreamer.Wpf.Services
+namespace ScreenStreamer.Wpf
 {
     public class WndProcServiceCommand
     {

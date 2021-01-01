@@ -53,7 +53,7 @@ namespace ScreenStreamer.Wpf
                     logger.Info("Another instance is already running...");
 					if (!Models.AppModel.AllowMutipleInstance)
 					{
-						var res = Services.WndProcService.ShowAnotherInstance();
+						var res = WndProcService.ShowAnotherInstance();
 						return 0;
 
 						//return -1;
@@ -194,7 +194,7 @@ namespace ScreenStreamer.Wpf
 
 				if (initialized)
 				{
-					var dialogService = new Services.DialogService();
+					var dialogService = new DialogService();
 
 					var vm = new ViewModels.Dialogs.MessageBoxViewModel(exceptionMessage, "Error", MessageBoxButton.OK);
 					var result = dialogService.ShowDialog(vm);
@@ -295,7 +295,9 @@ namespace ScreenStreamer.Wpf
             public bool NoRestart { get; private set; } = false;
             public bool RunAsSystem { get; private set; } = false;
 
-            public bool AutoStream { get; private set; } = false;
+			public bool ResetConfig { get; private set; } = false;
+
+			public bool AutoStream { get; private set; } = false;
 
             public bool IsRemoteSession { get; private set; } = false;
             public bool IsRemotelyControlled { get; private set; } = false;
@@ -319,7 +321,11 @@ namespace ScreenStreamer.Wpf
                     {
                         startupParams.RunAsSystem = true;
                     }
-                    else if (_arg == "-autostream")
+					else if (_arg == "-reset")
+					{
+						startupParams.ResetConfig = true;
+					}
+					else if (_arg == "-autostream")
                     {
                         startupParams.AutoStream = true;
                     }

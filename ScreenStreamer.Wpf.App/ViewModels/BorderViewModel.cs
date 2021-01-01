@@ -2,7 +2,7 @@
 using ScreenStreamer.Wpf.Interfaces;
 using ScreenStreamer.Wpf.ViewModels.Properties;
 using System.Drawing;
-using static ScreenStreamer.Wpf.Helpers.ScreenHelper;
+using static ScreenStreamer.Wpf.Helpers.VideoHelper;
 using ScreenStreamer.Wpf.Models;
 using System.Drawing.Drawing2D;
 using System;

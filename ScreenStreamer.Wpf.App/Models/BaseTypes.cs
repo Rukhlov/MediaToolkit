@@ -11,7 +11,32 @@ using System.Net.NetworkInformation;
 namespace ScreenStreamer.Wpf.Models
 {
 
-    public enum QualityPreset
+	public enum D3DFeatureLevel
+	{
+		None = 0,
+		Level_9_1 = 37120,
+		Level_9_2 = 37376,
+		Level_9_3 = 37632,
+		Level_10_0 = 40960,
+		Level_10_1 = 41216,
+		Level_11_0 = 45056,
+		Level_11_1 = 45312,
+		Level_12_0 = 49152,
+		Level_12_1 = 49408
+	}
+
+	public enum ScreenCaptureFeature
+	{
+		None = 0,
+		Default = 1,
+		Win8 = 2,
+		NvFBC = 4,
+		Datapath = 8,
+
+		All = Default | Win8 | NvFBC | Datapath,
+	}
+
+	public enum QualityPreset
     {
         Low,
         Standard,
@@ -136,10 +161,11 @@ namespace ScreenStreamer.Wpf.Models
 
     public class ScreenCaptureItem
     {
-        public VideoCaptureType CaptType { get; set; }
-        public string Name { get; set; }
+        public VideoCaptureType CaptType { get; internal set; }
+        public string Name { get; internal set; }
+		public ScreenCaptureFeature CaptFeature { get; internal set; }
 
-        public override bool Equals(object obj)
+		public override bool Equals(object obj)
         {
             if (!(obj is ScreenCaptureItem)) return false;
             return (CaptType == ((ScreenCaptureItem)obj).CaptType);

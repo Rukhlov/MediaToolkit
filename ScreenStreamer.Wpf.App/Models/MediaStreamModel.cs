@@ -35,18 +35,14 @@ namespace ScreenStreamer.Wpf.Models
 		//public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
 
 
-		public bool Init(IEnumerable<EncoderItem> videoEncoders = null, 
-            IEnumerable<VideoSourceItem> videoSources = null, 
-            IEnumerable<AudioSourceItem> audioSources = null,
-            IEnumerable<int> appPorts = null)
+		public bool Init(AppModel appModel)
         {
-            AdvancedSettings.Init(videoEncoders);
+			AdvancedSettings.Init(appModel.VideoEncoders);
             
-            PropertyVideo.Init(videoSources);
+            PropertyVideo.Init(appModel.VideoSources, appModel.ScreenCaptures);
 
-
-            PropertyAudio.Init(audioSources);
-            PropertyNetwork.Init(appPorts);
+            PropertyAudio.Init(appModel.AudioSources);
+            PropertyNetwork.Init();
 
             return true;
         }

@@ -17,11 +17,18 @@ namespace ScreenStreamer.Wpf
 
 		private static ResourceDictionary localizationsDict = new ResourceDictionary();
 
-		public static CultureInfo Culture { get; private set; } = new System.Globalization.CultureInfo("en");
+		public static CultureInfo CultureInfo { get; private set; } = new System.Globalization.CultureInfo("en");
 
 		public static void Init(string cultureName)
 		{
             logger.Debug("LocalizationManager::Init(...) " + cultureName);
+
+            if (string.IsNullOrEmpty(cultureName))
+            {// 
+                var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
+                cultureName = currentCulture.TwoLetterISOLanguageName;
+            }
+
             var defaultLang = new ResourceDictionary
 			{
 				Source = new Uri(localizationsPath + "/" + "AppStrings.xaml"),
@@ -33,9 +40,9 @@ namespace ScreenStreamer.Wpf
 			{
 				if (!string.IsNullOrEmpty(cultureName) && cultureName != "en")
 				{
-					Culture = new CultureInfo(cultureName);
+					CultureInfo = new CultureInfo(cultureName);
 
-					var lang = Culture.Name;
+					var lang = CultureInfo.Name;
 					var langFile = "AppStrings." + lang + ".xaml";
 					var customLang = new ResourceDictionary
 					{
@@ -43,7 +50,7 @@ namespace ScreenStreamer.Wpf
 					};
 
 					localizationsDict.MergedDictionaries.Add(customLang);
-					System.Threading.Thread.CurrentThread.CurrentUICulture = Culture;
+					System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo;
 				}
 			}
 			catch(Exception ex)

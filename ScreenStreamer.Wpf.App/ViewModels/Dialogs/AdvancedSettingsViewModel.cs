@@ -25,9 +25,12 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             _model = model;
             videoVeiwModel = ((StreamViewModel)parent).VideoViewModel;
 
-            var encoders = EncoderHelper.GetVideoEncoders();
+			var appModel = ServiceLocator.GetInstance<AppModel>();
+			var encoders = appModel.VideoEncoders;
 
-            VideoEncoders.AddRange(encoders);
+			//var encoders = EncoderHelper.GetVideoEncoders();
+
+			VideoEncoders.AddRange(encoders);
 
             var encoder = encoders.FirstOrDefault(e => e.Id == _model.EncoderId) ?? encoders.FirstOrDefault();
             this.VideoEncoder = encoder;

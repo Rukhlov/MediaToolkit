@@ -44,6 +44,10 @@ namespace MediaToolkit.ScreenCaptures
 
                     Initialized = true;
                 }
+                catch (DllNotFoundException)
+                {
+                    _logger.Info("Datapath capture not found");
+                }
                 catch (Exception ex)
                 {
                     _logger.Error(ex);
@@ -59,7 +63,6 @@ namespace MediaToolkit.ScreenCaptures
 
             try
             {
-
                 if (hLoad != IntPtr.Zero)
                 {
                     DCapt.DCaptFree(hLoad);

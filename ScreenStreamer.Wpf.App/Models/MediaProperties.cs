@@ -145,15 +145,15 @@ namespace ScreenStreamer.Wpf.Models
 
         public bool ShowCaptureBorder { get; set; } = false;
 
-        public void Init(IEnumerable<VideoSourceItem> videoSources = null)
+        public void Init(IEnumerable<VideoSourceItem> videoSources, IEnumerable<ScreenCaptureItem> screenCaptures)
         {
-            // Validate device id...
-            if(videoSources == null)
-            {
-                videoSources = ScreenHelper.GetVideoSources();
-            }
 
-            if (!videoSources.Any(i=>i.DeviceId == DeviceId))
+			if (!screenCaptures.Any(c => c.CaptType == this.CaptType))
+			{
+				Debug.WriteLine("CaptType " + CaptType + " not supported");
+			}
+
+			if (!videoSources.Any(i=>i.DeviceId == DeviceId))
             {// TODO: если девайс больше не доступен, то что то делаем...
                 Debug.WriteLine("Device " + DeviceId + " not found");
 
@@ -178,10 +178,6 @@ namespace ScreenStreamer.Wpf.Models
                 this.ResolutionHeight = rect.Height;
             }
 
-            if (!ScreenHelper.SupportedCaptures.Any(c=>c.CaptType == this.CaptType))
-            {
-                Debug.WriteLine("CaptType " + CaptType + " not supported");
-            }
 
             //if (this.CaptureType == null)
             //{
@@ -198,13 +194,8 @@ namespace ScreenStreamer.Wpf.Models
         public bool IsComputerSoundEnabled { get; set; } = true;
         public string DeviceId { get; set; }
 
-        public void Init(IEnumerable<AudioSourceItem> audioSources = null)
+        public void Init(IEnumerable<AudioSourceItem> audioSources)
         {
-            if(audioSources == null)
-            {
-                audioSources = AudioHelper.GetAudioSources();
-
-            }
 
             //if(!devices.Any(d=>d.DeviceId == DeviceId))
             //{// девайс больше не доступен сбрасываем на дефолтный
@@ -303,13 +294,8 @@ namespace ScreenStreamer.Wpf.Models
             }
         }
 
-        public void Init(IEnumerable<EncoderItem> encoders = null)
-        {
-            if(encoders == null)
-            {
-                encoders = EncoderHelper.GetVideoEncoders();
-            }
-           
+        public void Init(IEnumerable<EncoderItem> encoders)
+        {          
             var encoder = encoders.FirstOrDefault(e => e.Id == EncoderId) ?? encoders.FirstOrDefault();
             if(encoder == null)
             {

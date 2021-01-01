@@ -29,23 +29,27 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
             UpdateVideoSourcesCommand = new Prism.Commands.DelegateCommand(UpdateSources);
 
-            //Displays.AddRange(ScreenHelper.GetDisplayItems());
+			//Displays.AddRange(ScreenHelper.GetDisplayItems());
 
 
-            ScreenCaptures.AddRange(ScreenHelper.SupportedCaptures);
+			//ScreenCaptures.AddRange(ScreenHelper.AllSupportedCaptures);
 
-            var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
+			var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
             
             var streamModel = propVideoViewModel.Parent.MediaStreamer;
 
             var videoModel = streamModel.PropertyVideo;
 
-            var captType = videoModel.CaptType;
+			var appModel = ServiceLocator.GetInstance<Wpf.Models.AppModel>();
+			ScreenCaptures.AddRange(appModel.ScreenCaptures);
 
+			var captType = videoModel.CaptType;
             propVideoViewModel.CaptureType = ScreenCaptures.FirstOrDefault(c => c.CaptType == captType) ?? ScreenCaptures.FirstOrDefault();
 
+			Displays.AddRange(appModel.VideoSources);
+			
 
-            Displays.AddRange(ScreenHelper.GetVideoSources());
+			//Displays.AddRange(ScreenHelper.GetVideoSources());
 
             var deviceId = videoModel.DeviceId;      
 
@@ -67,7 +71,14 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         {
             Displays.Clear();
 
-            Displays.AddRange(ScreenHelper.GetVideoSources(true));
+			var appModel = ServiceLocator.GetInstance<AppModel>();
+			if (appModel != null)
+			{
+				appModel.UpdateVideoSources();
+				Displays.AddRange(appModel.VideoSources);
+			}
+
+			//Displays.AddRange(ScreenHelper.GetVideoSources(true));
 
             var propVideoViewModel = ((PropertyVideoViewModel)this.Property);
 

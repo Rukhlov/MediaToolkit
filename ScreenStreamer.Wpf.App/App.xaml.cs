@@ -31,28 +31,26 @@ namespace ScreenStreamer.Wpf
 
             var args = e.Args;
 
-            var appModel = ConfigManager.LoadConfigurations();
+			var startupParams = Program.StartupParams;
+			bool resetConfig = startupParams.ResetConfig;
 
-            ServiceLocator.RegisterInstance(appModel);
+			var appModel = ConfigManager.GetConfig(resetConfig);
+
+			ServiceLocator.RegisterInstance(appModel);
 
             if (!appModel.Init())
-            {
-                //...
-                // Reset config...
-
-            }
+            {// reset config...
+				//...
+			}
 
             // SystemMan.Initialize();
 
 
-			var dialogService = new Services.DialogService();
+			var dialogService = new DialogService();
             ServiceLocator.RegisterInstance<Interfaces.IDialogService>(dialogService);
 
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
-            Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel)
-            {
-                Title = LocalizationManager.GetString("MainWindowTitle"),//"Polywall Streamer",
-            };
+            Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel);
 
             dialogService.Register(mainViewModel, mainWindow);
 
@@ -61,7 +59,7 @@ namespace ScreenStreamer.Wpf
 
             notifyIcon = new NotifyIcon(mainViewModel);
 
-            bool autoStartStream = Program.StartupParams.AutoStream;
+            bool autoStartStream = startupParams.AutoStream;
             if (!autoStartStream)
             {
                 mainViewModel.IsVisible = true;

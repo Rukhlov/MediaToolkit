@@ -10,38 +10,13 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
-	public class _VideoBuffer
+
+	public class DxVideoBuffer :_VideoBuffer
 	{
-		_VideoBuffer()
-		{ }
-
-		public void InitMemoryBuffer(Size size, PixFormat format, int align = 32)
+		DxVideoBuffer(IntPtr ptr)
 		{
-			if (initialized)
-			{//...
-
-			}
-
-			this.FrameSize = size;
-			this.Format = format;
-			this.DriverType = VideoDriverType.CPU;
-			
-			this.DataLength = FFmpegLib.Utils.AllocImageData(size, format, align, out var frameData);
-			this.FrameData = frameData;
-			this.needCleanup = true;
-			this.initialized = true;
-
-		}
-
-		private bool initialized = false;
-		private bool needCleanup = false;
-		public void InitDXBuffer(IntPtr pTexture)
-		{
-			if (initialized)
-			{//...
-
-			}
-			using (SharpDX.Direct3D11.Texture2D texture = new SharpDX.Direct3D11.Texture2D(pTexture))
+			this.pTexture = ptr;
+			using (SharpDX.Direct3D11.Texture2D texture = new SharpDX.Direct3D11.Texture2D(ptr))
 			{
 				var descr = texture.Description;
 				this.FrameSize = new Size(descr.Width, descr.Height);
@@ -54,24 +29,66 @@ namespace MediaToolkit
 				{
 					this.Format = PixFormat.RGB32;
 				}
-
-				this.DriverType = VideoDriverType.DirectX;
-				this.initialized = true;
 			}
 		}
 
+		private IntPtr pTexture = IntPtr.Zero;
+
+		public override VideoDriverType DriverType => VideoDriverType.DirectX; 
+
+		public override void Dispose()
+		{
+
+		}
+
+	}
+
+	public class MemoryVideoBuffer : _VideoBuffer
+	{
+		MemoryVideoBuffer(Size size, PixFormat format, int align = 32)
+		{
+			this.FrameSize = size;
+			this.Format = format;
+
+			this.DataLength = FFmpegLib.Utils.AllocImageData(size, format, align, out var frameData);
+			this.FrameData = frameData;
+		}
+
+		public override VideoDriverType DriverType => VideoDriverType.CPU;
+		public override void Dispose()
+		{
+			lock (syncRoot)
+			{
+				for (int i = 0; i < FrameData.Length; i++)
+				{
+					var data = FrameData[i];
+
+					if (data.Data != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(data.Data);
+					}
+				}			
+			}
+		}
+
+	}
+
+
+	public abstract class _VideoBuffer
+	{
+
 		public double time = 0;
 
-		public IFrameBuffer[] FrameData { get; private set; }
+		public IFrameBuffer[] FrameData { get; protected set; }
 
-		public Size FrameSize { get; private set; } = Size.Empty;
-		public PixFormat Format { get; private set; } = PixFormat.RGB32;
+		public Size FrameSize { get; protected set; } = Size.Empty;
+		public PixFormat Format { get; protected set; } = PixFormat.RGB32;
 
-		public VideoDriverType DriverType { get; private set; }
+		public abstract VideoDriverType DriverType { get; }
 
-		public long DataLength { get; private set; } = -1;
+		public long DataLength { get; protected set; } = -1;
 
-		private readonly object syncRoot = new object();
+		protected readonly object syncRoot = new object();
 		public bool Lock(int timeout)
 		{
 			bool lockTaken = false;
@@ -83,25 +100,8 @@ namespace MediaToolkit
 		{
 			Monitor.Exit(syncRoot);
 		}
+		public abstract void Dispose();
 
-		public void Dispose()
-		{
-			lock (syncRoot)
-			{
-				if (needCleanup)
-				{
-					for (int i = 0; i < FrameData.Length; i++)
-					{
-						var data = FrameData[i];
-
-						if (data.Data != IntPtr.Zero)
-						{
-							Marshal.FreeHGlobal(data.Data);
-						}
-					}
-				}
-			}
-		}
 	}
 
 

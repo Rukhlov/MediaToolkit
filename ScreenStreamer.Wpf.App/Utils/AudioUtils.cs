@@ -10,21 +10,10 @@ namespace ScreenStreamer.Wpf.Helpers
 {
     public static class AudioHelper
     {
-
-        private static List<AudioSourceItem> audioSourceItems = null;
-
-
-        public static List<AudioSourceItem> GetAudioSources(bool ForceUpdate = false)
+        public static List<AudioSourceItem> GetAudioSources()
         {
-            if(audioSourceItems == null || ForceUpdate)
-            { 
-                audioSourceItems = AudioUtils.GetAudioCaptureDevices().Select(d => new AudioSourceItem(d)).ToList();
-            }
-
-            return new List<AudioSourceItem>(audioSourceItems);
-
-            //return AudioTool.GetAudioCaptureDevices().Select(d => new AudioSourceItem(d)).ToList();
-        }
+            return AudioUtils.GetAudioCaptureDevices().Select(d => new AudioSourceItem(d)).ToList();
+		}
 
         ////public static List<MMDevice> GetMultiMediaDevices()
         ////{

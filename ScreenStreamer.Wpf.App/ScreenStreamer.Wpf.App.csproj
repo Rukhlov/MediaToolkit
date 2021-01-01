@@ -134,18 +134,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Helpers\AudioHelper.cs" />
-    <Compile Include="Helpers\EncoderHelper.cs" />
+    <Compile Include="Utils\AudioUtils.cs" />
     <Compile Include="Managers\LocalizationManager.cs" />
     <Compile Include="Managers\NotifyIconManager.cs" />
     <Compile Include="Managers\SelectAreaManager.cs" />
     <Compile Include="Models\MediaProperties.cs" />
     <Compile Include="Models\MediaStreamModel.cs" />
-    <Compile Include="Models\MediaTypes.cs" />
-    <Compile Include="Services\ServiceLocator.cs" />
-    <Compile Include="Helpers\NetworkHelper.cs" />
-    <Compile Include="Helpers\PropertySupport.cs" />
-    <Compile Include="Helpers\ScreenHelper.cs" />
+    <Compile Include="Models\BaseTypes.cs" />
+    <Compile Include="Managers\ServiceLocator.cs" />
+    <Compile Include="Utils\NetworkUtils.cs" />
+    <Compile Include="Utils\VideoUtils.cs" />
     <Compile Include="Interfaces\IBorderViewModel.cs" />
     <Compile Include="Interfaces\IDialogService.cs" />
     <Compile Include="Interfaces\IDialogViewModel.cs" />
@@ -153,12 +151,13 @@
     <Compile Include="Managers\ConfigurationManager.cs" />
     <Compile Include="Models\AppModel.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Services\WndProcService.cs" />
+    <Compile Include="Managers\WndProcService.cs" />
     <Compile Include="Prism\Extensions.cs" />
     <Compile Include="Prism\Interactivity.cs" />
     <Compile Include="Prism\Mvvm.cs" />
     <Compile Include="Prism\Commands.cs" />
-    <Compile Include="Utils\Utils.cs" />
+    <Compile Include="Utils\CommonTools.cs" />
+    <Compile Include="Utils\WpfHelpers.cs" />
     <Compile Include="ViewModels\Common\MessageBoxViewModel.cs" />
     <Compile Include="Utils\NativeMethods.cs" />
     <Compile Include="ViewModels\Dialogs\AdvancedSettingsViewModel.cs" />
@@ -190,7 +189,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Services\DialogService.cs" />
+    <Compile Include="Managers\DialogService.cs" />
     <Compile Include="ValidationRules\IpAddressRule.cs" />
     <Compile Include="ValidationRules\ResolutionRule.cs" />
     <Compile Include="ViewModels\Common\ViewModelBase.cs" />

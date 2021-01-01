@@ -7,8 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization.Formatters.Binary;
 
-
-namespace ScreenStreamer.Wpf.Helpers
+namespace ScreenStreamer.Wpf
 {
     public static class PropertySupport
     {

@@ -146,7 +146,6 @@ namespace MediaToolkit.Core
 		{
             this.Num = num;
             this.Den = den;
-
 		}
 
         [XmlAttribute]

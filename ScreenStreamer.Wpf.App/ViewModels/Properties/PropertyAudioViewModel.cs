@@ -59,8 +59,11 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
         {
             _model = model;
 
-            var devices = AudioHelper.GetAudioSources();
-            _selectedSource = devices.FirstOrDefault(device => device.DeviceId == model.DeviceId) ?? devices.FirstOrDefault();
+			var appModel = ServiceLocator.GetInstance<AppModel>();
+
+			var devices = appModel.AudioSources;
+
+			_selectedSource = devices.FirstOrDefault(device => device.DeviceId == model.DeviceId) ?? devices.FirstOrDefault();
         }
 
         //public override object Clone()

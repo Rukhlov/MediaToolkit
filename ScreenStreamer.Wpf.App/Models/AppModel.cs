@@ -20,7 +20,7 @@ namespace ScreenStreamer.Wpf.Models
 		public readonly static string AppVersion = AppConsts.AssemblyVersion;//AppConsts.AppVersion;
         public string ConfigVersion { get; set; } = "1.0.0.0";
 
-        public string Culture { get; set; } = "en";
+        public string Culture { get; set; } = "";
         public int Dx11FeatureLevel { get; set; } = (int)D3DFeatureLevel.Level_10_1;
 
         public bool HideOnClose { get; set; } = true;
@@ -47,18 +47,37 @@ namespace ScreenStreamer.Wpf.Models
                 Name = $"{Environment.MachineName} (Stream 1)"
             };
 
-
             @default.StreamList.Add(defaultStream);
             return @default;
         }
 
         public List<MediaStreamModel> StreamList { get; set; } = new List<MediaStreamModel>();
 
-        public bool Init()
+		[JsonIgnore]
+		public List<VideoSourceItem> VideoSources { get; private set; } = new List<VideoSourceItem>();
+
+		[JsonIgnore]
+		public List<EncoderItem> VideoEncoders { get; private set; } = new List<EncoderItem>();
+
+		[JsonIgnore]
+		private ScreenCaptureFeature ScreenCaptFeatures = ScreenCaptureFeature.Default;
+
+		[JsonIgnore]
+		public List<ScreenCaptureItem> ScreenCaptures  { get; private set; } = new List<ScreenCaptureItem>();
+
+		[JsonIgnore]
+		public List<AudioSourceItem> AudioSources { get; private set; } = new List<AudioSourceItem>();
+
+		public bool Init()
         {
             logger.Debug("Init()");
 
-			var winVersion = Environment.OSVersion.Version;
+			LocalizationManager.Init(this.Culture);
+
+            this.Culture = LocalizationManager.CultureInfo.TwoLetterISOLanguageName;
+
+
+            var winVersion = Environment.OSVersion.Version;
 			Version minOsVersion = new Version(MinOSVersion);
 
 			if (winVersion < minOsVersion)
@@ -67,7 +86,7 @@ namespace ScreenStreamer.Wpf.Models
 				throw new NotSupportedException($"This version of the operating system currently is not supported.");
 			}
 
-            var featueLevel = (int)ScreenHelper.GetDefaultAdapterFeatureLevel();
+            var featueLevel = (int)VideoHelper.GetDefaultAdapterFeatureLevel();
             if(featueLevel < this.Dx11FeatureLevel)
             {              
                 //logger.Warn("DX11 feature level 11.0 is required");
@@ -88,10 +107,7 @@ namespace ScreenStreamer.Wpf.Models
 					//Проверяем совместимость версий...
 				}
 
-				//...
 			}
-
-			LocalizationManager.Init(this.Culture);
 
 			if (StreamList.Count == 0)
             {
@@ -115,44 +131,69 @@ namespace ScreenStreamer.Wpf.Models
 				StreamList.RemoveAt(MaxStreamCount-1);
 			}
 
-
-            logger.Debug("Init video encoders...");
-            var videoEncoders = EncoderHelper.GetVideoEncoders();
-
-            if(videoEncoders.Count == 0)
-            {
-                logger.Warn("videoEncoders.Count == 0");
-                //...
-            }
-
-            logger.Debug("Init audio sources...");
-            var audioSources = AudioHelper.GetAudioSources();
-
-            if (audioSources.Count == 0)
+			UpdateAudioSources();
+            if (AudioSources.Count == 0)
             {
                 logger.Warn("audioSources.Count == 0");
                 //...
             }
 
-            logger.Debug("Init video sources...");
-            var videoSources = ScreenHelper.GetVideoSources();
-            if (videoSources.Count == 0)
+			UpdateScreenCaptures();
+			UpdateVideoSources();
+
+			if (VideoSources.Count == 0)
             {
                 logger.Warn("videoSources.Count == 0");
                 //...
             }
 
-            logger.Debug("Init streams...");
+			UpdateVideoEncoders();
+			if (VideoEncoders.Count == 0)
+			{
+				logger.Warn("videoEncoders.Count == 0");
+				//...
+			}
+
+			logger.Debug("Init streams...");
             foreach (var stream in StreamList)
             {
-                stream.Init(videoEncoders, videoSources, audioSources);
+                stream.Init(this);
             }
 
             return true;
         }
-    }
 
-    public class GlobalVideoConfig
+		public void UpdateScreenCaptures()
+		{
+			logger.Debug("UpdateScreenCaptures()");
+
+            ScreenCaptFeatures = VideoHelper.GetCaptureFeatures();
+            var allCaptures = VideoHelper.AllSupportedCaptures;
+
+			ScreenCaptures = allCaptures.Where(c => ScreenCaptFeatures.HasFlag(c.CaptFeature)).ToList();
+
+		}
+
+		public void UpdateVideoSources()
+		{
+			VideoSources = VideoHelper.GetVideoSources();
+		}
+
+		public void UpdateVideoEncoders()
+		{
+			logger.Debug("UpdateVideoEncoders()");
+			VideoEncoders = VideoHelper.GetVideoEncoders();
+		}
+
+		public void UpdateAudioSources()
+		{
+			logger.Debug("UpdateAudioSources()");
+
+			AudioSources = AudioHelper.GetAudioSources();
+		}
+	}
+
+	public class GlobalVideoConfig
     {
         public int MaxEncoderWidth = 4096;
         public int MaxEncoderHeight = 4096;

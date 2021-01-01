@@ -39,7 +39,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             this.StopAllCommand = new DelegateCommand(OnStopAll);
             this.ShowStreamSettingsCommand = new DelegateCommand<StreamViewModel>(OnShowStreamSettings);
 
-            wndProcService = new Services.WndProcService();
+            wndProcService = new WndProcService();
 
             wndProcService.DispatchMessage += WndProcService_DispatchMessage;
             wndProcService.Init();
@@ -66,7 +66,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             //get => "Polywall Streamer " + AppModel.AppVersion;
         }
 
-        private Services.WndProcService wndProcService = null;
+        private WndProcService wndProcService = null;
 
 
         private bool isEdit = false;
@@ -213,7 +213,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private void WndProcService_DispatchMessage(string message)
         {
-            if (message == Services.WndProcServiceCommand.ShowMainWindow)
+            if (message == WndProcServiceCommand.ShowMainWindow)
             {
                 OnShowMainWindow();
 
