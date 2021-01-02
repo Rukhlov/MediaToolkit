@@ -65,54 +65,6 @@ namespace ScreenStreamer.Wpf.Models
 
     }
 
-    public class PropertyBorderModel
-    {
-        [JsonIgnore]
-        public bool IsBorderVisible { get; set; }
-
-        // размеры в пикселях
-        public int Top { get; set; } = 10;
-        public int Left { get; set; } = 10;
-        public int Width { get; set; } = 640;
-        public int Height { get; set; } = 480;
-       
-        [JsonIgnore]
-        public System.Drawing.Rectangle BorderRect => new System.Drawing.Rectangle(Left, Top, Width, Height);
-
-        public void Setup()
-        {
-
-            if(Width <= 0)
-            {
-                Width = 10;
-            }
-            
-            if (Height <= 0)
-            {
-                Height = 10;
-            }
-
-            var decktopRect = System.Windows.Forms.SystemInformation.VirtualScreen;
-            var rect = System.Drawing.Rectangle.Intersect(decktopRect, BorderRect);
-
-            if (rect.Width > 0 && rect.Height > 0)
-            { // внутри экрана все ок...
-
-            }
-            else
-            {// за границей экрана, сбрасываем по дефолту
-
-                Debug.WriteLine("Invalid region: " + BorderRect);
-
-                Left = 10;
-                Top = 10;            
-                Width  = 640;
-                Height = 480;
-            }
-               
-        }
-    }
-
     public class PropertyVideoModel
     {
         //public string Display { get; set; } = ScreenHelper.ALL_DISPLAYS;
@@ -312,9 +264,55 @@ namespace ScreenStreamer.Wpf.Models
 
     }
 
+	public class PropertyBorderModel
+	{
+		[JsonIgnore]
+		public bool IsBorderVisible { get; set; }
 
-    // не нужно
-    public class PropertyQualityModel
+		// размеры в пикселях
+		public int Top { get; set; } = 10;
+		public int Left { get; set; } = 10;
+		public int Width { get; set; } = 640;
+		public int Height { get; set; } = 480;
+
+		[JsonIgnore]
+		public System.Drawing.Rectangle BorderRect => new System.Drawing.Rectangle(Left, Top, Width, Height);
+
+		public void Setup()
+		{
+			if (Width <= 0)
+			{
+				Width = 10;
+			}
+
+			if (Height <= 0)
+			{
+				Height = 10;
+			}
+
+			var decktopRect = System.Windows.Forms.SystemInformation.VirtualScreen;
+			var rect = System.Drawing.Rectangle.Intersect(decktopRect, BorderRect);
+
+			if (rect.Width > 0 && rect.Height > 0)
+			{ // внутри экрана все ок...
+
+			}
+			else
+			{// за границей экрана, сбрасываем по дефолту
+				Debug.WriteLine("Invalid region: " + BorderRect);
+
+				Left = 10;
+				Top = 10;
+				Width = 640;
+				Height = 480;
+			}
+
+		}
+	}
+
+
+	// не нужно
+	public class PropertyQualityModel
     {
         public QualityPreset Preset { get; set; } = QualityPreset.Standard;
     }

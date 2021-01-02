@@ -9,7 +9,7 @@ using ScreenStreamer.Common;
 
 using ScreenStreamer.Wpf.Helpers;
 using System.Linq;
-
+using Microsoft.Win32;
 
 namespace ScreenStreamer.Wpf.Models
 {
@@ -67,6 +67,12 @@ namespace ScreenStreamer.Wpf.Models
 
 		[JsonIgnore]
 		public List<AudioSourceItem> AudioSources { get; private set; } = new List<AudioSourceItem>();
+
+		[JsonIgnore]
+		private static UsbManager UsbManager = new UsbManager();
+
+		[JsonIgnore]
+		private bool initialized = false;
 
 		public bool Init()
         {
@@ -160,8 +166,64 @@ namespace ScreenStreamer.Wpf.Models
                 stream.Init(this);
             }
 
-            return true;
+			SystemEvents.EventsThreadShutdown += SystemEvents_EventsThreadShutdown;
+			SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+			SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
+
+			UsbManager.Initialize();
+			UsbManager.DeviceChanged += UsbManager_DeviceChanged;
+
+			initialized = true;
+
+			return initialized;
         }
+
+		private void UsbManager_DeviceChanged(UsbChangeMessage message)
+		{
+			logger.Debug("SystemEvents_EventsThreadShutdown(...) " + message);
+
+			if(message.DeviceType == UsbDeviceType.Audio)
+			{
+				if (message.DeviceChange == UsbDeviceChange.Arrival)
+				{// audio device arrival...
+
+				}
+				else
+				{// audio device moved...
+
+				}
+			}
+			else if (message.DeviceType == UsbDeviceType.Video)
+			{
+				if (message.DeviceChange == UsbDeviceChange.Arrival)
+				{// video device arrival...
+
+				}
+				else
+				{// video device moved...
+
+				}
+			}
+			else
+			{
+
+			}
+		}
+
+		private void SystemEvents_EventsThreadShutdown(object sender, EventArgs e)
+		{
+			logger.Debug("SystemEvents_EventsThreadShutdown(...)");
+		}
+
+		private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+		{
+			logger.Debug("SystemEvents_SessionSwitch(...) " + e.Reason);
+		}
+
+		private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
+		{
+			logger.Debug("SystemEvents_DisplaySettingsChanged(...)");
+		}
 
 		public void UpdateScreenCaptures()
 		{
@@ -190,6 +252,18 @@ namespace ScreenStreamer.Wpf.Models
 			logger.Debug("UpdateAudioSources()");
 
 			AudioSources = AudioHelper.GetAudioSources();
+		}
+
+		public void Close()
+		{
+			SystemEvents.EventsThreadShutdown -= SystemEvents_EventsThreadShutdown;
+			SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+			SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
+
+			UsbManager.Shutdown();
+			UsbManager.DeviceChanged -= UsbManager_DeviceChanged;
+
+			initialized = false;
 		}
 	}
 

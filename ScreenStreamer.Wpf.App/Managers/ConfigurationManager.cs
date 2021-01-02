@@ -62,8 +62,16 @@ namespace ScreenStreamer.Wpf.Managers
             return config;
         }
 
+		public static void Save()
+		{
+			var appModel = ServiceLocator.GetInstance<Models.AppModel>();
+			if (appModel != null)
+			{
+				Save(appModel);
+			}
+		}
 
-        public static void Save()
+		public static void Save(AppModel config)
         {
             logger.Debug("ConfigurationManager::Save()");
 
@@ -74,23 +82,19 @@ namespace ScreenStreamer.Wpf.Managers
                     Directory.CreateDirectory(ConfigPath);
                 }
 
-                var config = ServiceLocator.GetInstance<AppModel>();
-
-				if(config != null)
+				JsonSerializer serializer = new JsonSerializer
 				{
-					JsonSerializer serializer = new JsonSerializer
-					{
-						Formatting = Formatting.Indented,
-					};
+					Formatting = Formatting.Indented,
+				};
 
-					using (StreamWriter streamWriter = new StreamWriter(configFileFullName))
+				using (StreamWriter streamWriter = new StreamWriter(configFileFullName))
+				{
+					using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
 					{
-						using (JsonWriter jsonWriter = new JsonTextWriter(streamWriter))
-						{
-							serializer.Serialize(jsonWriter, config);
-						}
+						serializer.Serialize(jsonWriter, config);
 					}
-				}         
+				}
+				        
             }
             catch(Exception ex)
             {

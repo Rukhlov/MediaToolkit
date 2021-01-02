@@ -181,13 +181,13 @@ namespace ScreenStreamer.Common
 								if (di.ClassGuid == UsbCategory.Audio || di.ClassGuid == UsbCategory.AudioDevice)
 								{ // update audio sources...
 									logger.Debug("Audio USB " + (deviceArraval ? "arrival: " : "moved: ") + di.FriendlyName + " {" + di.Name + "}");
-									VideoSourcesChanged?.Invoke(di.Name);
+									AudioSourcesChanged?.Invoke(di.Name);
 								}
 								else if (di.ClassGuid == UsbCategory.VideoCamera || di.ClassGuid == UsbCategory.Video)
 								{// update video sources...
 									logger.Debug("Video USB " + (deviceArraval ? "arrival: " : "moved: ") + di.FriendlyName + " {" + di.Name + "}");
 
-									AudioSourcesChanged?.Invoke(di.Name);
+									VideoSourcesChanged?.Invoke(di.Name);
 								}
 								else
 								{

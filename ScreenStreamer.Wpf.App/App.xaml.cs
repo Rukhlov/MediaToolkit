@@ -21,8 +21,6 @@ namespace ScreenStreamer.Wpf
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static SystemManager SystemMan { get; } = new SystemManager();
-
         private NotifyIcon notifyIcon = null;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -42,8 +40,6 @@ namespace ScreenStreamer.Wpf
             {// reset config...
 				//...
 			}
-
-            // SystemMan.Initialize();
 
 
 			var dialogService = new DialogService();
@@ -86,10 +82,14 @@ namespace ScreenStreamer.Wpf
         {
             logger.Debug("OnExit(...) " + e.ApplicationExitCode);
 
-           
-            ConfigManager.Save();
+			var appModel = ServiceLocator.GetInstance<Models.AppModel>();
 
-            //SystemMan.Shutdown();
+			if (appModel != null)
+			{
+				ConfigManager.Save(appModel);
+				appModel.Close();
+			}
+
             notifyIcon?.Dispose();
 
             base.OnExit(e);

@@ -18,11 +18,7 @@ namespace ScreenStreamer.Wpf.Models
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         public MediaStreamModel()
-        {
-            mediaStreamer = new MediaStreamer();
-            mediaStreamer.StateChanged += MediaStreamer_StateChanged;
-
-        }
+        { }
 
         public string Name { get; set; } = "";
         public AdvancedSettingsModel AdvancedSettings { get; set; } = new AdvancedSettingsModel();
@@ -34,9 +30,14 @@ namespace ScreenStreamer.Wpf.Models
 		// public PropertyQualityModel PropertyQuality { get; set; } = new PropertyQualityModel();
 		//public PropertyCursorModel PropertyCursor { get; set; } = new PropertyCursorModel();
 
-
+		private bool initialized = false;
 		public bool Init(AppModel appModel)
         {
+			if (initialized)
+			{
+				return initialized;
+			}
+
 			AdvancedSettings.Init(appModel.VideoEncoders);
             
             PropertyVideo.Init(appModel.VideoSources, appModel.ScreenCaptures);
@@ -44,7 +45,11 @@ namespace ScreenStreamer.Wpf.Models
             PropertyAudio.Init(appModel.AudioSources);
             PropertyNetwork.Init();
 
-            return true;
+			mediaStreamer = new MediaStreamer();
+			mediaStreamer.StateChanged += MediaStreamer_StateChanged;
+			initialized = true;
+
+			return initialized;
         }
 
 
@@ -203,8 +208,6 @@ namespace ScreenStreamer.Wpf.Models
             {
 
             }
-
-
 
             StateChanged?.Invoke();
 
@@ -382,9 +385,9 @@ namespace ScreenStreamer.Wpf.Models
 
 
 
-        public void Dispose()
+        public void Close()
         {
-            logger.Debug("Dispose()");
+            logger.Debug("MediaStreamModel::Close()");
 
             if (mediaStreamer != null)
             {
@@ -397,10 +400,10 @@ namespace ScreenStreamer.Wpf.Models
                 mediaStreamer.StateChanged -= MediaStreamer_StateChanged;
 
                 mediaStreamer.Shutdown();
-
             }
 
-        }
+			initialized = false;
+		}
 
     }
 }

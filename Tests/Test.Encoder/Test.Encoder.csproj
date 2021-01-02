@@ -109,6 +109,7 @@
     <Compile Include="DxTextureTest.cs" />
     <Compile Include="FFmpegJpegEncoderTest.cs" />
     <Compile Include="FFmpegPixConverterTest.cs" />
+    <Compile Include="MftH264Test.cs" />
     <Compile Include="MfTransformTests.cs" />
     <Compile Include="NvApiTest.cs" />
     <Compile Include="NvEncTest.cs" />

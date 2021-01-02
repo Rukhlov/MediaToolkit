@@ -40,8 +40,9 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
+			MftH264Test.Run();
 
-			DxTextureTest.Run();
+			//DxTextureTest.Run();
 
 			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 

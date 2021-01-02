@@ -292,9 +292,12 @@ namespace MediaToolkit.MediaFoundation
 			long pixelAspectRatio = args.AspectRatio;
 
             //var inputFormat = VideoFormatGuids.Argb32;//VideoFormatGuids.NV12;
-            var inputFormat = args.Format; 
+            var inputFormat = args.Format;
 
-            logger.Info("Encoder input params: " + width + "x" + height + " fps=" + frameRate + " {" + inputFormat + "}");
+            var ratio = MfTool.UnPackLongToInts(frameRate);
+            var fps = ratio[0] / (double)ratio[1];
+
+            logger.Info("Encoder input params: " + width + "x" + height + " fps=" + fps + " {" + inputFormat + "}");
             using (var attr = encoder.Attributes)
             {
                 // TODO:
