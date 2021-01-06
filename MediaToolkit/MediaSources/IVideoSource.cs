@@ -19,8 +19,9 @@ namespace MediaToolkit
 
     public interface IVideoSource
     {
-        VideoBuffer SharedBitmap { get; }
-        SharpDX.Direct3D11.Texture2D SharedTexture { get; }
+       // VideoBuffer SharedBitmap { get; }
+
+       // SharpDX.Direct3D11.Texture2D SharedTexture { get; }
         //int AdapterIndex { get; }
         //long AdapterId { get; }
 
@@ -33,8 +34,9 @@ namespace MediaToolkit
         event Action<object> CaptureStopped;
         event Action CaptureStarted;
 
-        System.Drawing.Size SrcSize { get; }
+        //System.Drawing.Size SrcSize { get; }
 
+        VideoBufferBase _VideoBuffer { get; }
         void Setup(object pars);
         void Start();
         void Stop();

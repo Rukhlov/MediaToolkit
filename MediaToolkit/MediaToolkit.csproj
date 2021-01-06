@@ -134,12 +134,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenCaptures\DDACapture\DDAManager.cs" />
     <Compile Include="ScreenCaptures\DDACapture\DDAOutput.cs" />
-    <Compile Include="ScreenCaptures\Direct3D9Capture.cs" />
-    <Compile Include="ScreenCaptures\DatapathDesktopCapture.cs" />
     <Compile Include="ScreenCaptures\DDACapture\DDACapture.cs" />
     <Compile Include="ScreenCaptures\DDACapture\DDAOutputProvider.cs" />
     <Compile Include="ScreenCaptures\GDICapture.cs" />
-    <Compile Include="ScreenCaptures\GDIPlusCapture.cs" />
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />
     <Compile Include="MediaSources\AudioSource.cs" />
     <Compile Include="MediaSources\ScreenSource.cs" />

@@ -29,7 +29,7 @@ namespace FFmpegLib {
 			uint8_t* data[4];
 			int linesize[4];
 
-			int destSize = av_image_fill_arrays(data, linesize, NULL, format, width, height, align);
+			int destSize = av_image_alloc(data, linesize, width, height, format, align);
 
 			destData = gcnew array<IntPtr>(4);
 			destLinesize = gcnew array<int>(4);
@@ -52,7 +52,7 @@ namespace FFmpegLib {
 			uint8_t* data[4];
 			int linesize[4];
 
-			int destSize = av_image_fill_arrays(data, linesize, NULL, format, width, height, align);
+			int destSize = av_image_alloc(data, linesize, width, height, format, align);
 
 			destData = gcnew array<FrameBuffer^>(4);
 			for (int i = 0; i < 4; i++) {
@@ -173,110 +173,110 @@ namespace FFmpegLib {
 
 	};
 
-	public ref class FFmpegVideoFrame : public IVideoFrame
-	{
-	public:
+	//public ref class FFmpegVideoFrame : public IVideoFrame
+	//{
+	//public:
 
-		FFmpegVideoFrame() {
+	//	FFmpegVideoFrame() {
 
-		}
-		~FFmpegVideoFrame() {
+	//	}
+	//	~FFmpegVideoFrame() {
 
-		}
+	//	}
 
-		property array<IFrameBuffer^>^ Buffer{
-			virtual array<IFrameBuffer^>^ get() {
-				return buffer;
-			}
-		}
+	//	property array<IFrameBuffer^>^ Buffer{
+	//		virtual array<IFrameBuffer^>^ get() {
+	//			return buffer;
+	//		}
+	//	}
 
-		property double Time {
-			virtual double get() { return time; }
-			void set(double value) { time = value; }
-		}
+	//	property double Time {
+	//		virtual double get() { return time; }
+	//		void set(double value) { time = value; }
+	//	}
 
-		property double Duration { 
-			virtual double get() { return time; }
-			void set(double value) { duration = value; }
-		}
+	//	property double Duration { 
+	//		virtual double get() { return time; }
+	//		void set(double value) { duration = value; }
+	//	}
 
-		property int Width {
-			virtual int get() { return width; }
-			void set(int value) { width = value; }
-		}
+	//	property int Width {
+	//		virtual int get() { return width; }
+	//		void set(int value) { width = value; }
+	//	}
 
-		property int Height {
-			virtual int get() { return height; }
-			void set(int value) { height = value; }
-		}
+	//	property int Height {
+	//		virtual int get() { return height; }
+	//		void set(int value) { height = value; }
+	//	}
 
-		property PixFormat Format {
-			virtual PixFormat get() { return format; }
-			void set(PixFormat value) { format = value; }
-		}
+	//	property PixFormat Format {
+	//		virtual PixFormat get() { return format; }
+	//		void set(PixFormat value) { format = value; }
+	//	}
 
-		property int Align {
-			virtual int get() { return align; }
-			void set(int value) { align = value; }
-		}
+	//	property int Align {
+	//		virtual int get() { return align; }
+	//		void set(int value) { align = value; }
+	//	}
 
-		property MediaToolkit::Core::ColorSpace ColorSpace {
-			virtual  MediaToolkit::Core::ColorSpace get() { return colorSpace; }
-			void set(MediaToolkit::Core::ColorSpace value) { colorSpace = value; }
-		}
+	//	property MediaToolkit::Core::ColorSpace ColorSpace {
+	//		virtual  MediaToolkit::Core::ColorSpace get() { return colorSpace; }
+	//		void set(MediaToolkit::Core::ColorSpace value) { colorSpace = value; }
+	//	}
 
-		property MediaToolkit::Core::ColorRange ColorRange {
-			virtual  MediaToolkit::Core::ColorRange get() { return colorRange; }
-			void set(MediaToolkit::Core::ColorRange value) { colorRange = value; }
-		}
+	//	property MediaToolkit::Core::ColorRange ColorRange {
+	//		virtual  MediaToolkit::Core::ColorRange get() { return colorRange; }
+	//		void set(MediaToolkit::Core::ColorRange value) { colorRange = value; }
+	//	}
 
-		property int Size {
-			virtual int get() { return size; }
-			void set(int value) { size = value; }
-		}
+	//	property int Size {
+	//		virtual int get() { return size; }
+	//		void set(int value) { size = value; }
+	//	}
 
-		property MediaToolkit::Core::VideoDriverType DriverType {
-			virtual  MediaToolkit::Core::VideoDriverType get() { return driverType; }
-			void set(MediaToolkit::Core::VideoDriverType value) { driverType = value; }
-		}
+	//	property MediaToolkit::Core::VideoDriverType DriverType {
+	//		virtual  MediaToolkit::Core::VideoDriverType get() { return driverType; }
+	//		void set(MediaToolkit::Core::VideoDriverType value) { driverType = value; }
+	//	}
 
-	private:
+	//private:
 
-		array<FrameBuffer^>^ buffer = gcnew array<FrameBuffer^>(4);
+	//	array<FrameBuffer^>^ buffer = gcnew array<FrameBuffer^>(4);
 
-		double time = 0;
-		double duration = 0;
-		int width = 0;
-		int height = 0;
-		PixFormat format = PixFormat::Unknown;
-		int align = 0;
-		MediaToolkit::Core::ColorSpace colorSpace = MediaToolkit::Core::ColorSpace::BT601;
-		MediaToolkit::Core::ColorRange colorRange = MediaToolkit::Core::ColorRange::Partial;
-		MediaToolkit::Core::VideoDriverType driverType = MediaToolkit::Core::VideoDriverType::CPU;
+	//	double time = 0;
+	//	double duration = 0;
+	//	int width = 0;
+	//	int height = 0;
+	//	PixFormat format = PixFormat::Unknown;
+	//	int align = 0;
+	//	MediaToolkit::Core::ColorSpace colorSpace = MediaToolkit::Core::ColorSpace::BT601;
+	//	MediaToolkit::Core::ColorRange colorRange = MediaToolkit::Core::ColorRange::Partial;
+	//	MediaToolkit::Core::VideoDriverType driverType = MediaToolkit::Core::VideoDriverType::CPU;
 
-		int size = 0;
-	};
+	//	int size = 0;
+	//};
 
-	public ref class FFmpegFrameBuffer : public IFrameBuffer
-	{
-	public:
-		FFmpegFrameBuffer(IntPtr _data, int _stride) {
-			data = _data;
-			stride = _stride;
-		}
+	//public ref class FFmpegFrameBuffer : public IFrameBuffer
+	//{
+	//public:
+	//	FFmpegFrameBuffer(IntPtr _data, int _stride) {
+	//		data = _data;
+	//		stride = _stride;
+	//	}
 
-		property IntPtr Data {
-			virtual IntPtr get() { return data; }
-			void set(IntPtr value) { data = value; }
-		}
+	//	property IntPtr Data {
+	//		virtual IntPtr get() { return data; }
+	//		void set(IntPtr value) { data = value; }
+	//	}
 
-		property int Stride {
-			virtual int get() { return stride; }
-			void set(int value) { stride = value; }
-		}
+	//	property int Stride {
+	//		virtual int get() { return stride; }
+	//		void set(int value) { stride = value; }
+	//	}
 
-	private:
-		IntPtr data;
-		int stride = 0;
-	};
+	//private:
+	//	IntPtr data;
+	//	int stride = 0;
+	//};
 }

@@ -1,4 +1,6 @@
-﻿using MediaToolkit.DirectX;
+﻿using MediaToolkit;
+using MediaToolkit.DirectX;
+using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using System;
@@ -12,6 +14,66 @@ namespace Test.Encoder
 {
 	class DxTextureTest
 	{
+		public static void Run2()
+		{
+			Console.WriteLine("DxTextureTest::Run2()");
+			SharpDX.DXGI.Factory1 factory1 = new SharpDX.DXGI.Factory1();
+
+			var index = 1;
+
+			var adapter0 = factory1.GetAdapter(index);
+
+			var _flags = DeviceCreationFlags.BgraSupport | DeviceCreationFlags.Debug;
+			var device0 = new SharpDX.Direct3D11.Device(adapter0, _flags);
+			using (var multiThread = device0.QueryInterface<SharpDX.Direct3D11.Multithread>())
+			{
+				multiThread.SetMultithreadProtected(true);
+			}
+			var resoulution = new System.Drawing.Size(1920, 1080);
+			var format = MediaToolkit.Core.PixFormat.RGB32;
+
+			D3D11VideoBuffer videoBuffer = new D3D11VideoBuffer(device0, resoulution, format, 1);
+
+			var frame = videoBuffer.GetFrame();
+
+            var buffer = frame.Buffer;
+
+           
+            Texture2D texture = null;
+            try
+            {
+                var pTexture = buffer[0].Data;
+                texture = new Texture2D(pTexture);
+                int refCount = ((SharpDX.IUnknown)texture).AddReference();
+
+
+                var descr = texture.Description;
+                Console.WriteLine(descr.Width + "x" + descr.Height + " " + descr.Format);
+
+                
+            }
+            finally
+            {
+                if (texture != null)
+                {
+                    texture.Dispose();
+                    texture = null;
+                }
+               
+            }
+
+
+
+
+            videoBuffer.Dispose();
+
+			device0.Dispose();
+			adapter0.Dispose();
+			factory1.Dispose();
+		}
+
+
+
 		public static void Run()
 		{
 

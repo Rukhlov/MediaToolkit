@@ -40,64 +40,70 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-			MftH264Test.Run();
-
-			//DxTextureTest.Run();
-
-			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
-
-			//FFmpegPixConverterTest.Run();
-
-			//DisplaySettingChanged.Run();
-			//SimpleSwapChain.Run();
-
-			//RgbToNv12Converter.Run();
-
-			//FFmpegJpegEncoderTest.Run();
-
-			//D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
-			//videoProcessor.Test();
+            ////MftH264Test.Run();
+            //int count = 10;
+            //while (count-->0)
+            //{
+               
+            //    DxTextureTest.Run2();
+            //    Thread.Sleep(100);
+            //}
 			
 
+            //var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-			//var adapterMode = DisplayUtil.CheckGraphicsMode();
+            FFmpegPixConverterTest.Run();
 
-   //         Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
-   //         Console.WriteLine("-----------------------------\r\n");
-   //         //NvApiTest.Run4();
+            //DisplaySettingChanged.Run();
+            //SimpleSwapChain.Run();
 
-   //         var dxDevices = DisplayUtil.GetDxDisplayDevices();
-   //         foreach(var d in dxDevices)
-   //         {
-   //             Console.WriteLine(d.ToString());
-   //         }
+            //RgbToNv12Converter.Run();
 
+            //FFmpegJpegEncoderTest.Run();
 
-   //         var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
-
-   //         foreach (var adapter in gdiDevices.Keys)
-   //         {
-			//	Console.WriteLine("Adapter: ");
-
-			//	Console.WriteLine(adapter.ToString());
-
-   //             var monitors = gdiDevices[adapter];
-
-			//	Console.WriteLine("Monitors: ");
-			//	foreach (var m in monitors)
-   //             {
-   //                 Console.WriteLine(m.ToString());
-   //             }
-			//	Console.WriteLine("---------------------");
-			//}
+            //D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
+            //videoProcessor.Test();
 
 
-   //         string path = AppDomain.CurrentDomain.BaseDirectory;
-   //         string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
-   //         //fileFullName = @"d:\Test.Encoder.exe";
-   //         //fileFullName = @"vlc.exe";
 
-           
+            //var adapterMode = DisplayUtil.CheckGraphicsMode();
+
+            //         Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
+            //         Console.WriteLine("-----------------------------\r\n");
+            //         //NvApiTest.Run4();
+
+            //         var dxDevices = DisplayUtil.GetDxDisplayDevices();
+            //         foreach(var d in dxDevices)
+            //         {
+            //             Console.WriteLine(d.ToString());
+            //         }
+
+
+            //         var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
+
+            //         foreach (var adapter in gdiDevices.Keys)
+            //         {
+            //	Console.WriteLine("Adapter: ");
+
+            //	Console.WriteLine(adapter.ToString());
+
+            //             var monitors = gdiDevices[adapter];
+
+            //	Console.WriteLine("Monitors: ");
+            //	foreach (var m in monitors)
+            //             {
+            //                 Console.WriteLine(m.ToString());
+            //             }
+            //	Console.WriteLine("---------------------");
+            //}
+
+
+            //         string path = AppDomain.CurrentDomain.BaseDirectory;
+            //         string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
+            //         //fileFullName = @"d:\Test.Encoder.exe";
+            //         //fileFullName = @"vlc.exe";
+
+
 
             //string fileName = Path.GetFileName(fileFullName);
             //string name = Path.GetFileNameWithoutExtension(fileName);

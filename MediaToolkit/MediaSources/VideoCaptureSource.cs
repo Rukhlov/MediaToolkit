@@ -31,10 +31,15 @@ namespace MediaToolkit
         }
 
         private SharpDX.Direct3D11.Device device = null;
-        public Texture2D SharedTexture { get; private set; }
+
+        //public Texture2D SharedTexture { get; private set; }
+        private Texture2D videoBufferTexture = null;
+
         //public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
-        public VideoBuffer SharedBitmap { get; private set; }
+
+
+        //public VideoBuffer SharedBitmap { get; private set; }
 
         public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -43,13 +48,16 @@ namespace MediaToolkit
         }
 
         private GDI.Size srcSize = GDI.Size.Empty;
-        public GDI.Size SrcSize
-        {
-            get
-            {
-                return srcSize;
-            }
-        }
+        //public GDI.Size SrcSize
+        //{
+        //    get
+        //    {
+        //        return srcSize;
+        //    }
+        //}
+
+
+        public VideoBufferBase _VideoBuffer { get; private set; }
 
         private volatile CaptureState state = CaptureState.Closed;
         public CaptureState State => state;
@@ -124,24 +132,32 @@ namespace MediaToolkit
 
 
                 mediaType?.Dispose();
-               
 
-                SharedTexture = new Texture2D(device,
-                     new Texture2DDescription
-                     {
 
-                         CpuAccessFlags = CpuAccessFlags.None,
-                         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                         Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                         Width = destSize.Width,
-                         Height = destSize.Height,
-                         MipLevels = 1,
-                         ArraySize = 1,
-                         SampleDescription = { Count = 1, Quality = 0 },
-                         Usage = ResourceUsage.Default,
-                         OptionFlags = ResourceOptionFlags.Shared,
+                _VideoBuffer = new D3D11VideoBuffer(device, destSize, Core.PixFormat.RGB32);
+                var frame = _VideoBuffer.GetFrame();
+                var buffer = frame.Buffer;
+                var pTexture = buffer[0].Data;
 
-                     });
+                this.videoBufferTexture = new Texture2D(pTexture);
+                ((SharpDX.IUnknown)videoBufferTexture).AddReference();
+
+                //SharedTexture = new Texture2D(device,
+                //     new Texture2DDescription
+                //     {
+
+                //         CpuAccessFlags = CpuAccessFlags.None,
+                //         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                //         Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                //         Width = destSize.Width,
+                //         Height = destSize.Height,
+                //         MipLevels = 1,
+                //         ArraySize = 1,
+                //         SampleDescription = { Count = 1, Quality = 0 },
+                //         Usage = ResourceUsage.Default,
+                //         OptionFlags = ResourceOptionFlags.Shared,
+
+                //     });
 
                 stagingTexture = new Texture2D(device,
                         new Texture2DDescription
@@ -598,7 +614,7 @@ namespace MediaToolkit
 
                         immediateContext.UnmapSubresource(stagingTexture, 0);
 
-                        immediateContext.CopyResource(stagingTexture, SharedTexture);
+                        immediateContext.CopyResource(stagingTexture, videoBufferTexture);
                         immediateContext.Flush();
                         
 
@@ -712,10 +728,10 @@ namespace MediaToolkit
                 device = null;
             }
 
-            if (SharedTexture != null)
+            if (videoBufferTexture != null)
             {
-                SharedTexture.Dispose();
-                SharedTexture = null;
+                videoBufferTexture.Dispose();
+                videoBufferTexture = null;
             }
 
             if (stagingTexture != null)

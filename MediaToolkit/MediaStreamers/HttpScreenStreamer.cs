@@ -21,8 +21,9 @@ namespace MediaToolkit.MediaStreamers
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
         private VideoHttpStreamer httpStreamer = null;
-        private IVideoSource httpScreenSource = null;
+        //private IVideoSource httpScreenSource = null;
 
+        private ScreenSource httpScreenSource = null;
 
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;

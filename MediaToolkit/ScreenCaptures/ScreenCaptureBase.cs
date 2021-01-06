@@ -44,6 +44,8 @@ namespace MediaToolkit.ScreenCaptures
 
             this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
+            //this._VideoBuffer = new 
+
             this.DestSize = new Size(destSize.Width, destSize.Height);
 
         }
@@ -63,18 +65,18 @@ namespace MediaToolkit.ScreenCaptures
             {
                 capture = new DDACapture(args);
             }
-            else if (type == VideoCaptureType.GDIPlus)
-            {
-                capture = new GDIPlusCapture();
-            }
-            else if (type == VideoCaptureType.Direct3D9)
-            {
-                capture = new Direct3D9Capture(args);
-            }
-            else if (type == VideoCaptureType.Datapath)
-            {
-                capture = new DatapathDesktopCapture();
-            }
+            //else if (type == VideoCaptureType.GDIPlus)
+            //{
+            //    capture = new GDIPlusCapture();
+            //}
+            //else if (type == VideoCaptureType.Direct3D9)
+            //{
+            //    capture = new Direct3D9Capture(args);
+            //}
+            //else if (type == VideoCaptureType.Datapath)
+            //{
+            //    capture = new DatapathDesktopCapture();
+            //}
 
             return capture;
         }
@@ -86,7 +88,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public VideoBuffer VideoBuffer { get => videoBuffer; }
 
-        public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
+        public VideoBufferBase _VideoBuffer { get; protected set; }
 
         public abstract ErrorCode UpdateBuffer(int timeout = 10);
 
@@ -103,6 +105,12 @@ namespace MediaToolkit.ScreenCaptures
             {
                 videoBuffer.Dispose();
                 videoBuffer = null;
+            }
+
+            if (_VideoBuffer != null)
+            {
+                _VideoBuffer.Dispose();
+                _VideoBuffer = null;
             }
         }
 

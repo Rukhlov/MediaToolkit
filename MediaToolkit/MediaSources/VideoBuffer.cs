@@ -1,4 +1,6 @@
 ﻿using MediaToolkit.Core;
+using SharpDX;
+using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,59 +12,136 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit
 {
+    public abstract class VideoBufferBase
+    {
+        protected VideoFrameBase[] frameBuffer = null;
 
-	public class DxVideoBuffer :_VideoBuffer
-	{
-		DxVideoBuffer(IntPtr ptr)
+        public VideoBufferBase() { }
+
+        public abstract VideoDriverType DriverType { get; }
+
+        public virtual VideoFrameBase GetFrame()
+        {
+            VideoFrameBase frame = null;
+
+            if (frameBuffer != null && frameBuffer.Length > 0)
+            {
+                frame = frameBuffer[0];
+            }
+            return frame;
+        }
+
+		public event Action<VideoFrameBase> BufferUpdated;
+
+		public void OnBufferUpdated(VideoFrameBase frame)
 		{
-			this.pTexture = ptr;
-			using (SharpDX.Direct3D11.Texture2D texture = new SharpDX.Direct3D11.Texture2D(ptr))
-			{
-				var descr = texture.Description;
-				this.FrameSize = new Size(descr.Width, descr.Height);
+			BufferUpdated?.Invoke(frame);
+		}
 
-				if (descr.Format == SharpDX.DXGI.Format.NV12)
+		public abstract void Dispose();
+
+    }
+
+    public class D3D11VideoBuffer : VideoBufferBase
+    {
+
+		public D3D11VideoBuffer(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format, int framesCount = 1)
+		{
+
+            SharpDX.DXGI.Format dxFormat = SharpDX.DXGI.Format.Unknown;
+            if (format == PixFormat.RGB32)
+            {
+                dxFormat = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
+            }
+            else if (format == PixFormat.NV12)
+            {
+                dxFormat = SharpDX.DXGI.Format.NV12;
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            frameBuffer = new VideoFrameBase[framesCount];
+			var width = resolution.Width;
+			var height = resolution.Height;
+            var pitch = width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
+            var dataSize = pitch * height;// 
+
+            var descr = new Texture2DDescription
+			{
+				Width = width,
+				Height = height,
+				Format = dxFormat,
+
+				MipLevels = 1,
+				ArraySize = 1,
+				SampleDescription = { Count = 1, Quality = 0 },
+				Usage = ResourceUsage.Default,
+				OptionFlags = ResourceOptionFlags.Shared,
+				CpuAccessFlags = CpuAccessFlags.None,
+				BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+			};
+
+            
+
+            for (int i = 0; i < framesCount; i++)
+			{
+				var texture = new Texture2D(device, descr);
+				
+				textures.Add(texture);
+				IFrameBuffer[] frameData =
 				{
-					this.Format = PixFormat.NV12;
-				}
-				else if (descr.Format == SharpDX.DXGI.Format.R8G8B8A8_UNorm)
-				{
-					this.Format = PixFormat.RGB32;
-				}
+					new FrameBuffer(texture.NativePointer, 0),
+				};
+
+				frameBuffer[i] = new D3D11VideoFrame(frameData, dataSize, width, height, format);
+
 			}
 		}
 
-		private IntPtr pTexture = IntPtr.Zero;
+		private List<Texture2D> textures = new List<Texture2D>();
+        public override VideoDriverType DriverType => VideoDriverType.D3D11;
 
-		public override VideoDriverType DriverType => VideoDriverType.DirectX; 
+        public override void Dispose()
+        {
+            foreach (var t in textures)
+            {
+                if (!t.IsDisposed)
+                {
+                    t.Dispose();
+                }
+            }
 
-		public override void Dispose()
-		{
-
+			frameBuffer = null;
 		}
+    }
 
-	}
 
-	public class MemoryVideoBuffer : _VideoBuffer
-	{
-		MemoryVideoBuffer(Size size, PixFormat format, int align = 32)
-		{
-			this.FrameSize = size;
-			this.Format = format;
+    public class MemoryVideoBuffer : VideoBufferBase
+    { 
 
-			this.DataLength = FFmpegLib.Utils.AllocImageData(size, format, align, out var frameData);
-			this.FrameData = frameData;
-		}
+        public MemoryVideoBuffer(Size resolution, PixFormat format, int align, int framesCount = 1)
+        {
+            frameBuffer = new VideoFrameBase[framesCount];
+            for (int i= 0; i<framesCount; i++)
+            {
+                var dataSize = FFmpegLib.Utils.AllocImageData(resolution, format, align, out var frameData);
 
-		public override VideoDriverType DriverType => VideoDriverType.CPU;
-		public override void Dispose()
-		{
-			lock (syncRoot)
-			{
-				for (int i = 0; i < FrameData.Length; i++)
+                frameBuffer[i] = new VideoFrame(frameData, dataSize, resolution.Width, resolution.Height, format, align);
+            }
+        }
+
+
+        public override VideoDriverType DriverType => VideoDriverType.CPU;
+        public override void Dispose()
+        {
+            foreach(var f in frameBuffer)
+            {
+				var buffer = f.Buffer;
+				for (int i = 0; i < buffer.Length; i++)
 				{
-					var data = FrameData[i];
-
+					var data = buffer[i];
 					if (data.Data != IntPtr.Zero)
 					{
 						Marshal.FreeHGlobal(data.Data);
@@ -70,39 +149,88 @@ namespace MediaToolkit
 				}			
 			}
 		}
+    }
 
-	}
+    public abstract class VideoFrameBase : IVideoFrame
+    {
+
+        //public VideoFrameBase(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
+        //{
+        //    this.Width = width;
+        //    this.Height = height;
+
+        //    this.Format = format;
+        //    this.Align = align;
+
+        //    this.Buffer = buffer;
+        //}
+
+        public IFrameBuffer[] Buffer { get; protected set; }
+
+        public double Time { get; set; }
+        public double Duration { get; set; }
+
+        public int Width { get; protected set; }
+        public int Height { get; protected set; }
+        public PixFormat Format { get; protected set; } = PixFormat.RGB32;
+        public int Align { get; protected set; }
+
+        public abstract VideoDriverType DriverType  { get; }
+
+        public ColorSpace ColorSpace { get; set; }
+        public ColorRange ColorRange { get; set; }
+
+        public int DataLength { get; protected set; }
 
 
-	public abstract class _VideoBuffer
-	{
+        protected readonly object syncRoot = new object();
+        public virtual bool Lock(int timeout = 10)
+        {
+            bool lockTaken = false;
+            Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
+            return lockTaken;
+        }
 
-		public double time = 0;
+        public virtual void Unlock()
+        {
+            Monitor.Exit(syncRoot);
+        }
 
-		public IFrameBuffer[] FrameData { get; protected set; }
+        public virtual void Dispose()
+        {
 
-		public Size FrameSize { get; protected set; } = Size.Empty;
-		public PixFormat Format { get; protected set; } = PixFormat.RGB32;
+        }
+    }
 
-		public abstract VideoDriverType DriverType { get; }
+    public class D3D11VideoFrame : VideoFrameBase
+    {
+        public D3D11VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format)
+            //: base(buffer, size, width, height, format, 0)
+        {
+            this.Width = width;
+            this.Height = height;
+            this.Format = format;
+            this.Buffer = buffer;
+            this.DataLength = size;
+        }
 
-		public long DataLength { get; protected set; } = -1;
+        public override VideoDriverType DriverType => VideoDriverType.D3D11;
+    }
 
-		protected readonly object syncRoot = new object();
-		public bool Lock(int timeout)
-		{
-			bool lockTaken = false;
-			Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-			return lockTaken;
-		}
+    public class VideoFrame : VideoFrameBase
+    {
+        public VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
+            //: base(buffer, size, width, height, format, align)
+        {
+            this.Width = width;
+            this.Height = height;
+            this.Format = format;
+            this.Align = align;
+            this.Buffer = buffer;
+            this.DataLength = size;
+        }
 
-		public void Unlock()
-		{
-			Monitor.Exit(syncRoot);
-		}
-		public abstract void Dispose();
-
-	}
-
+        public override VideoDriverType DriverType => VideoDriverType.CPU;
+    }
 
 }

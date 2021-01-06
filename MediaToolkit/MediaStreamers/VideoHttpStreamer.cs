@@ -169,10 +169,12 @@ namespace MediaToolkit.MediaStreamers
                     {
                         break;
                     }
+                    var buffer = screenSource._VideoBuffer;
+                    var frame = buffer.GetFrame();
+                    encoder._Encode(frame);
 
-                    var buffer = screenSource.SharedBitmap;
-
-                    encoder.Encode(buffer);
+                    //var buffer = screenSource.SharedBitmap;
+                    //encoder.Encode(buffer);
                 }
                 catch (Exception ex)
                 {

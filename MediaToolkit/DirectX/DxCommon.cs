@@ -224,7 +224,7 @@ namespace MediaToolkit.DirectX
                     var destRowNumber = height;
                     var destBufferSize = destPitch * destRowNumber;
 
-                    if (stagingDescr.Format == Format.R8G8B8A8_SNorm)
+                    if (stagingDescr.Format == Format.R8G8B8A8_SNorm || stagingDescr.Format == Format.B8G8R8A8_UNorm)
                     {
 
                     }

@@ -39,6 +39,7 @@ namespace MediaToolkit.MediaFoundation
 
         private MfVideoProcessor processor = null;
 
+        private Texture2D videoSourceTexture = null;
         private Texture2D bufTexture = null;
 		private Device device = null;
 
@@ -56,11 +57,31 @@ namespace MediaToolkit.MediaFoundation
             var destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
             var aspectRatio = encoderSettings.AspectRatio;
 
-            var hwBuffer = videoSource.SharedTexture;
-            if (hwBuffer != null)
+            var videoBuffer = videoSource._VideoBuffer;
+            
+            if (videoBuffer.DriverType == VideoDriverType.D3D11)
+            {
+                var frame = videoBuffer.GetFrame();
+                var frameBuffer = frame.Buffer;
+                var pTexture = frameBuffer[0].Data;
+                videoSourceTexture = new Texture2D(pTexture);
+                ((IUnknown)videoSourceTexture).AddReference();
+            }
+            else if(videoBuffer.DriverType == VideoDriverType.CPU)
+            {
+                throw new NotImplementedException("videoBuffer.DriverType == VideoDriverType.CPU");
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+
+            //var videoSourceTexture = videoSource.SharedTexture;
+            if (videoSourceTexture != null)
             {
                 SoftwareMode = false;
-                var hwDescr = hwBuffer.Description;
+                var hwDescr = videoSourceTexture.Description;
 
                 var srcSize = new Size(hwDescr.Width, hwDescr.Height);
                 var srcFormat = MfTool.GetVideoFormatGuidFromDXGIFormat(hwDescr.Format);
@@ -92,7 +113,7 @@ namespace MediaToolkit.MediaFoundation
                 //}
 
                 //hwBuffer.Device <-- memory leak SharpDX bug...
-                using (var surf = hwBuffer.QueryInterface<SharpDX.DXGI.Surface>())
+                using (var surf = videoSourceTexture.QueryInterface<SharpDX.DXGI.Surface>())
                 {
                     using (var dxgiDevice = surf.GetDevice<SharpDX.DXGI.Device>())
                     {                   
@@ -221,14 +242,17 @@ namespace MediaToolkit.MediaFoundation
         {
             if (!SoftwareMode)
             {
-                var texture = videoSource?.SharedTexture;
 
+                //var texture = videoSource?.SharedTexture;
+                var texture = videoSourceTexture;
                 Encode(texture);
             }
             else
             {
-                var videoBuffer = videoSource.SharedBitmap;
-                ffmpegEncoder.Encode(videoBuffer);
+                throw new NotImplementedException();
+
+                //var videoBuffer = videoSource.SharedBitmap;
+                //ffmpegEncoder.Encode(videoBuffer);
 
             }
 
@@ -347,6 +371,12 @@ namespace MediaToolkit.MediaFoundation
                 ffmpegEncoder.DataEncoded -= FFmpegEncoder_DataEncoded;
                 ffmpegEncoder.Close();
                 ffmpegEncoder = null;
+            }
+
+            if (videoSourceTexture != null)
+            {
+                videoSourceTexture.Dispose();
+                videoSourceTexture = null;
             }
 
         }

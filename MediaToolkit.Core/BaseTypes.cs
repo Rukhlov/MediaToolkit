@@ -225,9 +225,9 @@ namespace MediaToolkit.Core
 	public enum VideoDriverType
 	{
 		CPU,
-		DirectX,
+		D3D9,
+		D3D11,
 
-		//not supported...
 		Cuda,
 		OpenGL,
 	}
@@ -247,9 +247,13 @@ namespace MediaToolkit.Core
         ColorSpace ColorSpace { get; }
         ColorRange ColorRange { get; }
 
-        int Size { get; }
+        int DataLength { get; }
 
         VideoDriverType DriverType { get; }
+
+
+        bool Lock(int timeout);
+        void Unlock();
     }
 
     public interface IFrameBuffer

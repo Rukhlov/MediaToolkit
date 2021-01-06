@@ -131,7 +131,7 @@ namespace MediaToolkit.MediaFoundation
 
 
 		private SharpDX.Direct3D11.Device device = null;
-		private Texture2DDescription sharedTextureDecription;
+		private Texture2DDescription sourceDescription;
 
 		private VertexShader defaultVS = null;
 		private PixelShader defaultPS = null;
@@ -150,11 +150,32 @@ namespace MediaToolkit.MediaFoundation
 
 		private SamplerState textureSampler = null;
 
-		private void InitDx(VideoEncoderSettings encoderSettings)
+        private Texture2D videoSourceTexture = null;
+
+        private void InitDx(VideoEncoderSettings encoderSettings)
 		{
-			var hwBuffer = videoSource.SharedTexture;
-			sharedTextureDecription = hwBuffer.Description;
-			srcSize = new Size(sharedTextureDecription.Width, sharedTextureDecription.Height);
+            var videoBuffer = videoSource._VideoBuffer;
+          
+            if (videoBuffer.DriverType == VideoDriverType.D3D11)
+            {
+                var frame = videoBuffer.GetFrame();
+                var frameBuffer = frame.Buffer;
+                var pTexture = frameBuffer[0].Data;
+                videoSourceTexture = new Texture2D(pTexture);
+                ((IUnknown)videoSourceTexture).AddReference();
+            }
+            else if (videoBuffer.DriverType == VideoDriverType.CPU)
+            {
+                throw new NotImplementedException("videoBuffer.DriverType == VideoDriverType.CPU");
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            //var videoSourceTexture = videoSource.SharedTexture;
+			sourceDescription = videoSourceTexture.Description;
+			srcSize = new Size(sourceDescription.Width, sourceDescription.Height);
 
 			destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
 
@@ -242,7 +263,7 @@ namespace MediaToolkit.MediaFoundation
 			{
 				Width = destSize.Width,
 				Height = destSize.Height,
-				Format = sharedTextureDecription.Format,
+				Format = sourceDescription.Format,
 
 				SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
 				BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
@@ -259,7 +280,7 @@ namespace MediaToolkit.MediaFoundation
 			rgbSRV = new ShaderResourceView(device, rgbTexture,
 				new ShaderResourceViewDescription
 				{
-					Format = sharedTextureDecription.Format,
+					Format = sourceDescription.Format,
 					Dimension = ShaderResourceViewDimension.Texture2D,
 					Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
 				});
@@ -267,7 +288,7 @@ namespace MediaToolkit.MediaFoundation
 			rgbRTV = new RenderTargetView(device, rgbTexture,
 				new RenderTargetViewDescription
 				{
-					Format = sharedTextureDecription.Format,//Format.R8G8B8A8_UNorm,
+					Format = sourceDescription.Format,//Format.R8G8B8A8_UNorm,
 					Dimension = RenderTargetViewDimension.Texture2D,
 					Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
 				});
@@ -369,8 +390,9 @@ namespace MediaToolkit.MediaFoundation
 
 		private void PrepareTexture()
 		{
-			var sharedTexture = videoSource.SharedTexture;
-			if (sharedTexture == null)
+            var sharedTexture = videoSourceTexture;//videoSource.SharedTexture;
+
+            if (sharedTexture == null)
 			{
 				logger.Debug("sharedTexture == null");
 				return;
@@ -653,6 +675,7 @@ namespace MediaToolkit.MediaFoundation
 			SafeDispose(defaultVS);
 			SafeDispose(device);
 
+            SafeDispose(videoSourceTexture);
 		}
 
 

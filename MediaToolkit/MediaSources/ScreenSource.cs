@@ -20,23 +20,27 @@ namespace MediaToolkit
 
         public ScreenSource() { }
 
-        public VideoBuffer SharedBitmap { get; private set; }
+       // public VideoBuffer SharedBitmap { get; private set; }
 
-        public SharpDX.Direct3D11.Texture2D SharedTexture
-        {
-            get { return hwContext?.SharedTexture; }
-        }
+        //public SharpDX.Direct3D11.Texture2D SharedTexture
+        //{
+        //    get { return hwContext?.SharedTexture; }
+        //}
+
+        public VideoBufferBase _VideoBuffer => screenCapture?._VideoBuffer;
 
         // public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
 
-        public Size SrcSize
-        {
-            get
-            {
-                return new Size(SharedBitmap.bitmap.Width, SharedBitmap.bitmap.Height);
-            }
-        }
+        //public Size SrcSize
+        //{
+        //    get
+        //    {
+        //        return SharedBitmap.FrameSize;
+
+        //       // return new Size(SharedBitmap.bitmap.Width, SharedBitmap.bitmap.Height);
+        //    }
+        //}
 
         private volatile CaptureState state = CaptureState.Closed;
         public CaptureState State => state;
@@ -174,7 +178,7 @@ namespace MediaToolkit
 				//screenCapture.Init(srcRect);
 
 
-				this.SharedBitmap = screenCapture.VideoBuffer;
+				//this.SharedBitmap = screenCapture.VideoBuffer;
 
                 deviceReady = true;
 
@@ -273,15 +277,22 @@ namespace MediaToolkit
                         {
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
-                            SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
+                            var frame = _VideoBuffer.GetFrame();
+                            frame.Time = time;
+                            lastTime = frame.Time;
+                            _VideoBuffer.OnBufferUpdated(frame);
 
-                            //var diff = time - lastTime;
+                            //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
 
-                            lastTime = SharedBitmap.time;
+                            ////var diff = time - lastTime;
+
+                            //lastTime = SharedBitmap.time;
 
                             OnBufferUpdated();
 
-                            captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
+                            captureStats.UpdateFrameStats(frame.Time, frame.DataLength);
+
+                            // captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
 
                         }
                         else if (res == SharedTypes.ErrorCode.WaitTimeout)

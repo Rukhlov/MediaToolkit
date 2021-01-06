@@ -151,6 +151,7 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
                 Name = $"{Environment.MachineName} (Stream {this.StreamList.Count + 1})",
             };
 
+            model.Init(appModel);
             model.PropertyNetwork.Port = NetworkHelper.FindAvailableTcpPort(); 
 
             var streamViewModel = new StreamViewModel(this, true, model);

@@ -242,8 +242,8 @@ namespace TestStreamer.Controls
 
                 };
 
-                args.Attributes["ResizeOnCapture"] = checkBoxResizeOnCapture.Checked;
-                args.Attributes["GdiStretchingMode"] = (int)numericGdiStretchingMode.Value;
+                //args.Attributes["ResizeOnCapture"] = checkBoxResizeOnCapture.Checked;
+                //args.Attributes["GdiStretchingMode"] = (int)numericGdiStretchingMode.Value;
 
                 httpScreenStreamer.Setup(args);
 

@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaToolkit.Logging;
+using MediaToolkit.Core;
 
 namespace MediaToolkit.UI
 {
@@ -38,6 +39,7 @@ namespace MediaToolkit.UI
         private D3DImageRenderer d3dRenderer = null;
 
         private IVideoSource videoSource = null;
+        SharpDX.Direct3D11.Texture2D videoSourceTexture = null;
 
         public bool Setup(IVideoSource source)
         {
@@ -58,9 +60,30 @@ namespace MediaToolkit.UI
             {
                 d3dProvider = new D3D11RendererProvider();
 
+                var videoBuffer = videoSource._VideoBuffer;
+                
+                if (videoBuffer.DriverType == VideoDriverType.D3D11)
+                {
+                    var frame = videoBuffer.GetFrame();
+                    var frameBuffer = frame.Buffer;
+                    var pTexture = frameBuffer[0].Data;
+                    videoSourceTexture = new SharpDX.Direct3D11.Texture2D(pTexture);
+                    ((SharpDX.IUnknown)videoSourceTexture).AddReference();
+                }
+                else if (videoBuffer.DriverType == VideoDriverType.CPU)
+                {
+                    throw new NotImplementedException("videoBuffer.DriverType == VideoDriverType.CPU");
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+
+
+
                 //renderer = new D3DImageRenderer();
 
-                var texture = videoSource.SharedTexture;
+                var texture = videoSourceTexture;//videoSource.SharedTexture;
                 if (texture != null)
                 {
                     d3dProvider.Init(texture);
@@ -72,10 +95,14 @@ namespace MediaToolkit.UI
 
                     result = true;
                 }
+
+                
             }
 
             return result;
         }
+
+
 
         public void Start()
         {
@@ -104,8 +131,8 @@ namespace MediaToolkit.UI
                     else
                     {
                         tracer.Debug("TestDevice() == false");
-
-                        d3dProvider.ReInit(videoSource.SharedTexture);
+                        d3dProvider.ReInit(videoSourceTexture);
+                        //d3dProvider.ReInit(videoSource.SharedTexture);
 
                     }
 
@@ -140,6 +167,12 @@ namespace MediaToolkit.UI
             tracer.Debug("D3DImageControl::Close()");
 
             Stop();
+
+            if(videoSourceTexture != null)
+            {
+                videoSourceTexture.Dispose();
+                videoSourceTexture = null;
+            }
 
             DataContext = null;
         }

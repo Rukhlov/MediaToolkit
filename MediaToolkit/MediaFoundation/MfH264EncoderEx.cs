@@ -221,6 +221,10 @@ namespace MediaToolkit.MediaFoundation
                     {
                         string venIdStr = activate.Get(TransformAttributeKeys.MftEnumHardwareVendorIdAttribute);
 
+                        // FIXME: может быть несколько видео карт с одинаковым vendorId
+                        // единственный способ определить определить какой видео карте принадлежит найденый энкодер
+                        // это задать ID3D11Device с помощью TMessageType.SetD3DManager и попытаться его настроить для работы 
+                        // если энкодеру передан неправльный девайс, то на каком то этапе настройки он вернет ошибку
                         if (MfTool.TryGetVendorId(venIdStr, out int activatorVendId))
                         {
                             if (activatorVendId == adapterVenId)
@@ -341,7 +345,6 @@ namespace MediaToolkit.MediaFoundation
 
                 // отключаем B-фреймы
                 attr.Set(CodecApiPropertyKeys.AVEncMPVDefaultBPictureCount, 0);
-
 
                 //attr.Set(CodecApiPropertyKeys.AVEncNumWorkerThreads, 4);
 

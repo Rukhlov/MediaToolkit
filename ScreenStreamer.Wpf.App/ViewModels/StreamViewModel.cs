@@ -515,9 +515,15 @@ namespace ScreenStreamer.Wpf.ViewModels
 
         public void Close()
         {
-            //if (VideoViewModel != null)
+
+            if (MediaStreamer != null)
+            {
+                MediaStreamer.Close();           
+            }
+
+            //if (borderForm != null)
             //{
-            //    VideoViewModel.Close();
+            //    borderForm.Close();
             //}
 
         }

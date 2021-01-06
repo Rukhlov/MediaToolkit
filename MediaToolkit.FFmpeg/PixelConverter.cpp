@@ -134,7 +134,7 @@ namespace FFmpegLib {
 				destData = gcnew array<IFrameBuffer^>(4);
 
 				for (int i = 0; i < 4; i++) {
-					destData[i] = gcnew FFmpegFrameBuffer((IntPtr)destFrame->data[i], destFrame->linesize[i]);
+					destData[i] = gcnew FrameBuffer((IntPtr)destFrame->data[i], destFrame->linesize[i]);
 				}			
 
 			}

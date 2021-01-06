@@ -15,6 +15,7 @@ extern "C" {
 #include <libavutil/hwcontext_dxva2.h>
 
 }
+#include "Utils.cpp"
 
 //#include <vcclr.h>
 
@@ -223,6 +224,138 @@ namespace FFmpegLib {
 				throw;
 			}
 		}
+
+
+		void _Encode(IVideoFrame^ videoFrame) {
+
+			if (cleanedup) {
+
+				return;
+			}
+
+			double sec = videoFrame->Time;
+
+			//if (sec <= last_sec) {
+
+			//	logger->TraceEvent(TraceEventType::Warning, 0, "Non monotone time: " + sec + " <= " + last_sec);
+
+			//}
+
+			bool lockTaken = false;
+			try {
+
+				lockTaken = videoFrame->Lock(Int32::MaxValue);
+
+				int width = videoFrame->Width;
+				int height = videoFrame->Height;
+				PixFormat pixFormat = videoFrame->Format;
+				AVPixelFormat pix_fmt = Utils::GetAVPixelFormat(pixFormat);
+
+				if(pix_fmt == AV_PIX_FMT_NONE) {
+					throw gcnew Exception("Unsupported pixel format " + pixFormat.ToString());
+				}
+
+				if (sws_ctx == NULL) {
+
+					sws_ctx = sws_getCachedContext(sws_ctx,
+						width, height, pix_fmt, // input
+						frame->width, frame->height, (AVPixelFormat)frame->format,  // output
+						//SWS_POINT,
+						//SWS_FAST_BILINEAR,
+						//SWS_BILINEAR,
+						//SWS_AREA,
+						SWS_BICUBIC,
+						//SWS_LANCZOS,
+						//SWS_SPLINE,
+
+						NULL, NULL, NULL);
+
+					if (sws_ctx == NULL) {
+
+						throw gcnew Exception("Could not allocate convert context");
+					}
+
+					if (encoder_ctx->codec_id == AV_CODEC_ID_MJPEG) {
+						// для jpeg-а нужен color full range
+						int table[4];
+						int inv_table[4];
+						int srcRange, dstRange;
+						int brightness, contrast, saturation;
+						int res = sws_getColorspaceDetails(sws_ctx, (int**)&inv_table, &srcRange, (int**)&table, &dstRange, &brightness, &contrast, &saturation);
+						if (res < 0) {
+							throw gcnew Exception("getColorspaceDetails not supported");
+						}
+
+						const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+						//srcRange = 1;
+						dstRange = 1;
+						res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+						if (res < 0) {
+							throw gcnew Exception("Invalid color space");
+						}
+					}
+				}
+
+				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
+				IFrameBuffer^ frameBuffer0 = frameBuffer[0];
+
+				const uint8_t* src_data[1] =
+				{
+					reinterpret_cast<uint8_t*>(frameBuffer0->Data.ToPointer()),
+				};
+
+				//int bmpStride = 4 * ((width * 3 + 3) / 4);
+				const int scr_size[1] =
+				{
+					frameBuffer0->Stride,
+					//bmpStride
+				};
+
+				//  конвертируем в новый формат
+				sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
+			}
+			finally{
+
+				if (lockTaken) {
+					videoFrame->Unlock();
+				}
+			}
+
+
+			try {
+
+				__int64 pts = sec * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
+
+				AVRational av_time_base_q = { 1, AV_TIME_BASE };
+
+				AVRational codec_time = encoder_ctx->time_base; //
+
+
+				//__int64 framePts = frame->pts;
+
+				//Console::WriteLine("framePts " + framePts + "");
+
+				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				frame->pts++;
+
+				//if (framePts == frame->pts) {
+				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				//}
+				EncodeFrame(frame);
+
+				last_sec = sec;
+				//framePts = frame->pts;
+
+				//Console::WriteLine("last_sec " + last_sec);
+
+			}
+			catch (Exception^ ex) {
+				CleanUp();
+				throw;
+			}
+
+		}
+
 
 		void Encode(VideoBuffer^ videoBuffer) {
 

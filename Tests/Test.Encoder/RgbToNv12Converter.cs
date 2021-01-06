@@ -467,6 +467,7 @@ namespace Test.Encoder
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                 CpuAccessFlags = CpuAccessFlags.None,
                 OptionFlags = ResourceOptionFlags.None,
+               // OptionFlags = ResourceOptionFlags.Shared,
             };
 
             using (var tex = new Texture2D(device, descr))
@@ -507,6 +508,7 @@ namespace Test.Encoder
                 Format = Format.R8G8_UNorm,
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                 CpuAccessFlags = CpuAccessFlags.None,
+                //OptionFlags = ResourceOptionFlags.Shared,
                 OptionFlags = ResourceOptionFlags.None,
             };
 

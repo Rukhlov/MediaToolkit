@@ -18,7 +18,7 @@ namespace Test.Encoder
 			var index = 1;
 
 			var adapter = factory1.GetAdapter(index);
-			var _flags = DeviceCreationFlags.None;
+			var _flags = DeviceCreationFlags.Debug;
 
 			var device = new SharpDX.Direct3D11.Device(adapter, _flags);
 
@@ -41,24 +41,39 @@ namespace Test.Encoder
 			Transform encoder = null;
 
 			var activates = MediaFactory.FindTransform(TransformCategoryGuids.VideoEncoder, transformFlags, null, outputType);
-			foreach (var activate in activates)
-			{
-				string name = activate.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
-				Guid clsid = activate.Get(TransformAttributeKeys.MftTransformClsidAttribute);
-				TransformEnumFlag flags = (TransformEnumFlag)activate.Get(TransformAttributeKeys.TransformFlagsAttribute);
 
-				bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
-				isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
-				bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
 
-				if (isHardware)
-				{
-					encoder = activate.ActivateObject<Transform>();
-					break;
-				}
-			}
+            //foreach (var activate in activates)
+            //{
+            //	string name = activate.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
+            //	Guid clsid = activate.Get(TransformAttributeKeys.MftTransformClsidAttribute);
+            //	TransformEnumFlag flags = (TransformEnumFlag)activate.Get(TransformAttributeKeys.TransformFlagsAttribute);
 
-			foreach (var activator in activates)
+            //	bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
+            //	isAsync |= (flags.HasFlag(TransformEnumFlag.Asyncmft));
+            //	bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
+
+            //	if (isHardware)
+            //	{
+
+
+            //                 string venIdStr = activate.Get(TransformAttributeKeys.MftEnumHardwareVendorIdAttribute);
+            //                 var adapterVenId = adapter.Description.VendorId;
+
+            //                 if (MfTool.TryGetVendorId(venIdStr, out int activatorVendId))
+            //                 {
+            //                     if (activatorVendId == adapterVenId)
+            //                     {
+            //                         encoder = activate.ActivateObject<Transform>();
+            //                         break;
+            //                     }
+            //                 }    
+            //	}
+            //}
+
+            encoder = activates[0].ActivateObject<Transform>();
+
+            foreach (var activator in activates)
 			{
 				activator.Dispose();
 			}
@@ -78,21 +93,19 @@ namespace Test.Encoder
 				if (transformAsync)
 				{
 					attr.Set(TransformAttributeKeys.TransformAsyncUnlock, 1);
-					//using (var devMan = new DXGIDeviceManager())
-					//{
-					//	devMan.ResetDevice(device);
-					//	encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
-					//}
-					//bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
-					//if (d3d11Aware)
-					//{
-					//	using (var devMan = new DXGIDeviceManager())
-					//	{
-					//		devMan.ResetDevice(device);
-					//		encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
-					//	}
-					//}
-				}
+
+                    bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
+                    if (d3d11Aware)
+                    {
+                        using (var devMan = new DXGIDeviceManager())
+                        {
+                            devMan.ResetDevice(device);
+                            //attr.Set(SinkWriterAttributeKeys.D3DManager, devMan);
+
+                            encoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                        }
+                    }
+                }
 
 				attr.Set(CodecApiPropertyKeys.AVLowLatencyMode, true);
 			}

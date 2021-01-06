@@ -20,46 +20,47 @@ namespace Test.Encoder
             Console.WriteLine("FFmpegPixConverterTest::Run()");
 
 			var srcLinesize = 0;
-			//var inputFileName = @"Files\1920x1080.bmp";
-			//Bitmap bmp = new Bitmap(inputFileName);
+            //var inputFileName = @"Files\1920x1080.bmp";
+            //Bitmap bmp = new Bitmap(inputFileName);
 
-			//var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
-			//	System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+            //var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+            //	System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-			//var _size = new Size(bmpData.Width, bmpData.Height);
-			//var src = bmpData.Scan0;
-			//	var _totalSize = FFmpegLib.Utils.FillImageData(src, _size, MediaToolkit.Core.PixFormat.RGB24, 32,
-			//	out var _destData, out var _destLinesize);
+            //var _size = new Size(bmpData.Width, bmpData.Height);
+            //var src = bmpData.Scan0;
+            //	var _totalSize = FFmpegLib.Utils.FillImageData(src, _size, MediaToolkit.Core.PixFormat.RGB24, 32,
+            //	out var _destData, out var _destLinesize);
 
-			//byte[] srcBytes = new byte[_totalSize];
-			//Marshal.Copy(_destData[0], srcBytes, 0, _totalSize);
-			//var srcLinesize = _destLinesize[0];
+            //byte[] srcBytes = new byte[_totalSize];
+            //Marshal.Copy(_destData[0], srcBytes, 0, _totalSize);
+            //var srcLinesize = _destLinesize[0];
 
-			//bmp.UnlockBits(bmpData);
+            //bmp.UnlockBits(bmpData);
 
-			//var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-			//var g = Graphics.FromImage(b);
-			//g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
-			//g.Dispose();
-			//bmp.Dispose();
+            //var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            //var g = Graphics.FromImage(b);
+            //g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
+            //g.Dispose();
+            //bmp.Dispose();
 
-			//bmp = b;
-			//bmp.Save("TEST.bmp");
-
-
-
-			//var totalSize = FFmpegLib.Utils.AllocImageData(new Size(1920, 1080), MediaToolkit.Core.PixFormat.RGB24, 32, 
-			//	out var _destData, out var _destLinesize);
+            //bmp = b;
+            //bmp.Save("TEST.bmp");
 
 
 
+            //var totalSize = FFmpegLib.Utils.AllocImageData(new Size(1920, 1080), MediaToolkit.Core.PixFormat.RGB32, 32,
+            //    out var _destData, out var _destLinesize);
 
-			//var inputFileName = @"Files\NV12_352x288.yuv";
-			//var inputFileName = @"Files\rgba_352x288.raw";
-			//Size srcSize = new Size(352, 288);
+            //byte[] _test = {0x00, 0x01,0x01, 0x01 };
+            //Marshal.Copy(_test, 0, _destData[0], _test.Length);
 
 
-			var inputFileName = @"Files\rgba_1920x1080.raw";
+            //var inputFileName = @"Files\NV12_352x288.yuv";
+            //var inputFileName = @"Files\rgba_352x288.raw";
+            //Size srcSize = new Size(352, 288);
+
+
+            var inputFileName = @"Files\rgba_1920x1080.raw";
 
 			//var inputFileName = @"Files\NV12_1920x1080.yuv";
 
@@ -75,21 +76,41 @@ namespace Test.Encoder
             //Size srcSize = new Size(351, 280);
             MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB32;
 
-			//var a = MediaToolkit.Utils.GraphicTools.Align(176, 32);
-			//Console.WriteLine(a); 
-			//var inputFileName = @"Files\RGB24_1280x720.raw";
-			//Size srcSize = new Size(1280, 720);
-			//MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB24;
+            //var a = MediaToolkit.Utils.GraphicTools.Align(176, 32);
+            //Console.WriteLine(a); 
+            //var inputFileName = @"Files\RGB24_1280x720.raw";
+            //Size srcSize = new Size(1280, 720);
+            //MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB24;
 
 
-			//var inputFileName = @"Files\RGB565_1280x720.raw";
-			//Size srcSize = new Size(1280, 720);
-			//MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB565;
+            //var inputFileName = @"Files\RGB565_1280x720.raw";
+            //Size srcSize = new Size(1280, 720);
+            //MediaToolkit.Core.PixFormat srcFormat = MediaToolkit.Core.PixFormat.RGB565;
 
-
+            
 			var srcBytes = File.ReadAllBytes(inputFileName);
 
-			Size destSize = new Size(1920, 1080);
+
+            //int offset = 0;
+            //var destPtr = _destData[0];
+            //var destPitch = _destLinesize[0];//4 * 1920;
+            //var destRowNumber = 1080;
+            //var destBufferSize = destPitch * destRowNumber;
+
+            ////var destPitch = frameBuffer[0].Stride;
+            //int bufOffset = 0;
+            //for (int i = 0; i < destRowNumber; i++)
+            //{
+            //     System.Runtime.InteropServices.Marshal.Copy(srcBytes, offset, destPtr, destPitch);
+
+            //    bufOffset += destPitch;
+            //    destPtr += destPitch;
+            //}
+
+
+
+
+            Size destSize = new Size(1920, 1080);
 			// Size destSize = new Size(3840, 2160);
 			//Size destSize = new Size(2560, 1440);
 			// Size destSize = new Size(1900, 1000);
