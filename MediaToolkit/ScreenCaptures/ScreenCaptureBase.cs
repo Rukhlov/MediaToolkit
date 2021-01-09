@@ -42,7 +42,7 @@ namespace MediaToolkit.ScreenCaptures
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format24bppRgb);
             //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppRgb);
 
-            this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
+            //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
 
             //this._VideoBuffer = new 
 
@@ -86,7 +86,7 @@ namespace MediaToolkit.ScreenCaptures
 
         protected VideoBuffer videoBuffer = null;
 
-        public VideoBuffer VideoBuffer { get => videoBuffer; }
+        //public VideoBuffer VideoBuffer { get => videoBuffer; }
 
         public VideoBufferBase _VideoBuffer { get; protected set; }
 
@@ -101,11 +101,11 @@ namespace MediaToolkit.ScreenCaptures
         {
             logger.Debug("ScreenCapture::Close()");
 
-            if (videoBuffer != null)
-            {
-                videoBuffer.Dispose();
-                videoBuffer = null;
-            }
+            //if (videoBuffer != null)
+            //{
+            //    videoBuffer.Dispose();
+            //    videoBuffer = null;
+            //}
 
             if (_VideoBuffer != null)
             {

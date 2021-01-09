@@ -156,22 +156,24 @@ namespace MediaToolkit.MediaFoundation
 
                     AspectRatio = MfTool.PackToLong(aspectRatio)
                 };
-                processor = new MfVideoProcessor(device);
-                var inProcArgs = new MfVideoArgs
-                {
-                    Width = srcSize.Width,
-                    Height = srcSize.Height,
-                    Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
-                };
 
-                var outProcArgs = new MfVideoArgs
-                {
-                    Width = encArgs.Width,
-                    Height = encArgs.Height,
-                    Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
-                };
+                //processor = new MfVideoProcessor(device);
+                //var inProcArgs = new MfVideoArgs
+                //{
+                //    Width = srcSize.Width,
+                //    Height = srcSize.Height,
+                //    Format = srcFormat, //SharpDX.MediaFoundation.VideoFormatGuids.Argb32,
+                //};
 
-                processor.Setup(inProcArgs, outProcArgs);
+                //var outProcArgs = new MfVideoArgs
+                //{
+                //    Width = encArgs.Width,
+                //    Height = encArgs.Height,
+                //    Format = encArgs.Format, //VideoFormatGuids.NV12,//.Argb32,
+                //};
+
+                //processor.Setup(inProcArgs, outProcArgs);
+                //processor.Start();
 
 
                 bufTexture = new Texture2D(device,
@@ -186,7 +188,6 @@ namespace MediaToolkit.MediaFoundation
                         SampleDescription = { Count = 1 },
                     });
 
-                processor?.Start();
 
                 var encoderName = encoderSettings.EncoderId;
 

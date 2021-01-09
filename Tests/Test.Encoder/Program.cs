@@ -52,12 +52,12 @@ namespace Test.Encoder
 
             //var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-            FFmpegPixConverterTest.Run();
+            //FFmpegPixConverterTest.Run();
 
             //DisplaySettingChanged.Run();
             //SimpleSwapChain.Run();
 
-            //RgbToNv12Converter.Run();
+            RgbToNv12Converter.Run();
 
             //FFmpegJpegEncoderTest.Run();
 

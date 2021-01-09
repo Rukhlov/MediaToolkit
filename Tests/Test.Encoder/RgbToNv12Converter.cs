@@ -97,12 +97,31 @@ namespace Test.Encoder
 
             //var fileName = @"Files\2560x1440.bmp";
             //var fileName = @"Files\1920x1080.bmp";          
-            var fileName = @"Files\rgba_640x480.bmp";
+            //var fileName = @"Files\rgba_640x480.bmp";
             //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
-            rgbTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+           // rgbTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
-            //var fileName = @"Files\rgba_352x288.raw";
-            //var sourceTexture0 = MediaToolkit.DirectX.DxTool.TextureFromDump(device, );
+            var fileName = @"Files\rgba_352x288.raw";
+			var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+			{
+				Width = 352,
+				Height = 288,
+				MipLevels = 1,
+				ArraySize = 1,
+				SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+				BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+				Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+				CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+				Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+
+				OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+			};
+			var _bytes = File.ReadAllBytes(fileName);
+			rgbTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, _bytes);
+
+			
+
             var srcDescr = rgbTexture.Description;
             int width = srcDescr.Width;
             int height = srcDescr.Height;
@@ -126,7 +145,7 @@ namespace Test.Encoder
 
             InitChromaRenderResources(width, height);
 
-            //InitNv12RenderResources(width, height);
+            InitNv12RenderResources(width, height);
 
             var deviceContext = device.ImmediateContext;
             var size = new GDI.Size(width, height);
@@ -293,13 +312,21 @@ namespace Test.Encoder
                     var descr = rgbDestTexture.Description;
                     var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, rgbDestTexture);
 
-                    var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+                    var _fileName = "Dest_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
                     File.WriteAllBytes(_fileName, bytes);
 
-                    Console.WriteLine("OutputFile: " + _fileName);
+                    Console.WriteLine("DestFile: " + _fileName);
                 }
 
+				//{
+				//	var descr = rgbTexture.Description;
+				//	var _fileName = "Src_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+				//	var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, rgbTexture);
 
+				//	File.WriteAllBytes(_fileName, bytes);
+
+				//	Console.WriteLine("SrcFile: " + _fileName);
+				//}
 
             }
 

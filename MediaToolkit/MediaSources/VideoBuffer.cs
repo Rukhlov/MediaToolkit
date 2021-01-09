@@ -18,6 +18,10 @@ namespace MediaToolkit
 
         public VideoBufferBase() { }
 
+        public int Width { get; protected set; }
+        public int Height { get; protected set; }
+        public PixFormat Format { get; protected set; }
+
         public abstract VideoDriverType DriverType { get; }
 
         public virtual VideoFrameBase GetFrame()
@@ -47,13 +51,16 @@ namespace MediaToolkit
 
 		public D3D11VideoBuffer(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format, int framesCount = 1)
 		{
+            this.Width = resolution.Width;
+            this.Height = resolution.Height;
+            this.Format = format;
 
             SharpDX.DXGI.Format dxFormat = SharpDX.DXGI.Format.Unknown;
-            if (format == PixFormat.RGB32)
+            if (Format == PixFormat.RGB32)
             {
                 dxFormat = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
             }
-            else if (format == PixFormat.NV12)
+            else if (Format == PixFormat.NV12)
             {
                 dxFormat = SharpDX.DXGI.Format.NV12;
             }
@@ -63,15 +70,14 @@ namespace MediaToolkit
             }
 
             frameBuffer = new VideoFrameBase[framesCount];
-			var width = resolution.Width;
-			var height = resolution.Height;
-            var pitch = width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
-            var dataSize = pitch * height;// 
+
+            var pitch = Width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
+            var dataSize = pitch * Height;// 
 
             var descr = new Texture2DDescription
 			{
-				Width = width,
-				Height = height,
+				Width = this.Width,
+				Height = this.Height,
 				Format = dxFormat,
 
 				MipLevels = 1,
@@ -95,12 +101,13 @@ namespace MediaToolkit
 					new FrameBuffer(texture.NativePointer, 0),
 				};
 
-				frameBuffer[i] = new D3D11VideoFrame(frameData, dataSize, width, height, format);
+				frameBuffer[i] = new D3D11VideoFrame(frameData, dataSize, Width, Height, Format);
 
 			}
 		}
 
-		private List<Texture2D> textures = new List<Texture2D>();
+        private List<Texture2D> textures = new List<Texture2D>();
+		
         public override VideoDriverType DriverType => VideoDriverType.D3D11;
 
         public override void Dispose()
@@ -123,6 +130,10 @@ namespace MediaToolkit
 
         public MemoryVideoBuffer(Size resolution, PixFormat format, int align, int framesCount = 1)
         {
+            this.Width = resolution.Width;
+            this.Height = resolution.Height;
+            this.Format = format;
+
             frameBuffer = new VideoFrameBase[framesCount];
             for (int i= 0; i<framesCount; i++)
             {
@@ -215,6 +226,24 @@ namespace MediaToolkit
         }
 
         public override VideoDriverType DriverType => VideoDriverType.D3D11;
+
+        public IReadOnlyList<Texture2D> GetTextures()
+        {
+            List<Texture2D> textures = new List<Texture2D>();
+            if (Buffer != null && Buffer.Length > 0)
+            {
+                foreach(var buf in Buffer)
+                {
+                    var pTexture = buf.Data;
+                    var texture = new Texture2D(pTexture);
+                    ((IUnknown)texture).AddReference();
+                    textures.Add(texture);
+                }
+            }
+
+            return textures;
+        }
+
     }
 
     public class VideoFrame : VideoFrameBase
