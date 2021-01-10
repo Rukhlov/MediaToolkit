@@ -69,10 +69,6 @@ namespace MediaToolkit
                 throw new NotSupportedException();
             }
 
-            frameBuffer = new VideoFrameBase[framesCount];
-
-            var pitch = Width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
-            var dataSize = pitch * Height;// 
 
             var descr = new Texture2DDescription
 			{
@@ -89,17 +85,50 @@ namespace MediaToolkit
 				BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
 			};
 
-            
+			frameBuffer = new VideoFrameBase[framesCount];
 
-            for (int i = 0; i < framesCount; i++)
+			var pitch = Width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
+			var dataSize = pitch * Height;// 
+
+			bool videoFormatsSupporded = false;
+
+			for (int i = 0; i < framesCount; i++)
 			{
-				var texture = new Texture2D(device, descr);
-				
-				textures.Add(texture);
-				IFrameBuffer[] frameData =
+				IFrameBuffer[] frameData = null;
+				if (videoFormatsSupporded)
 				{
-					new FrameBuffer(texture.NativePointer, 0),
-				};
+					var texture = new Texture2D(device, descr);
+
+					textures.Add(texture);
+					frameData = new FrameBuffer[]
+					{
+						new FrameBuffer(texture.NativePointer, 0),
+					};
+				}
+				else
+				{
+					if(dxFormat == SharpDX.DXGI.Format.NV12)
+					{
+						descr.Format = SharpDX.DXGI.Format.R8_UNorm;
+						var lumaTex = new Texture2D(device, descr);
+						textures.Add(lumaTex);
+
+						descr.Format = SharpDX.DXGI.Format.R8G8_UNorm;
+						descr.Width = Width / 2;
+						descr.Height = Height / 2;
+
+						var chromaTex = new Texture2D(device, descr);
+
+						textures.Add(chromaTex);
+
+						frameData = new FrameBuffer[]
+						{
+							new FrameBuffer(lumaTex.NativePointer, 0),
+							new FrameBuffer(chromaTex.NativePointer, 0),
+						};
+					}
+				}
+
 
 				frameBuffer[i] = new D3D11VideoFrame(frameData, dataSize, Width, Height, Format);
 
@@ -149,18 +178,22 @@ namespace MediaToolkit
         {
             foreach(var f in frameBuffer)
             {
-				var buffer = f.Buffer;
-				for (int i = 0; i < buffer.Length; i++)
-				{
-					var data = buffer[i];
-					if (data.Data != IntPtr.Zero)
-					{
-						Marshal.FreeHGlobal(data.Data);
-					}
-				}			
+				f.Dispose();
+
+				//for (int i = 0; i < buffer.Length; i++)
+				//{
+				//	var data = buffer[i];
+				//	if (data.Data != IntPtr.Zero)
+				//	{
+				//		Marshal.FreeHGlobal(data.Data);
+				//	}
+				//}			
 			}
+
+			frameBuffer = null;
 		}
-    }
+
+	}
 
     public abstract class VideoFrameBase : IVideoFrame
     {
@@ -260,6 +293,14 @@ namespace MediaToolkit
         }
 
         public override VideoDriverType DriverType => VideoDriverType.CPU;
-    }
+		public override void Dispose()
+		{
+			lock (syncRoot)
+			{
+				var b = Buffer;
+				FFmpegLib.Utils.FreeImageData(ref b);
+			}
+		}
+	}
 
 }

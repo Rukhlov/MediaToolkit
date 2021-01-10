@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using MediaToolkit.SharedTypes;
 using System.ComponentModel;
 using SharpDX.Direct3D;
+using MediaToolkit.DirectX;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -56,24 +57,29 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        public int GdiStretchingMode { get; set; } = 3;
+		private D3D11RgbToNv12Converter pixConverter = null;
+
+		public int GdiStretchingMode { get; set; } = 3;
         private StretchingMode stretchingMode = StretchingMode.COLORONCOLOR;
 
 
         public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
-        public override void Init(Rectangle srcRect, Size destSize = default(Size))
+		//private D3D11VideoBuffer videoBuffer = null;
+		public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
             base.Init(srcRect, destSize);
 
             if (UseHwContext)
             {
                 InitDx();
-            }
+
+
+			}
             else
             {
 
-                _VideoBuffer = new MemoryVideoBuffer(destSize, PixFormat.RGB32, 16);
+                VideoBuffer = new MemoryVideoBuffer(destSize, PixFormat.RGB32, 16);
 
                 if (GdiStretchingMode >= 1 && GdiStretchingMode <= 4)
                 {
@@ -137,33 +143,63 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            _VideoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.RGB32);
 
-            var frame = _VideoBuffer.GetFrame();
-            var buffer = frame.Buffer;
-            var pTexture = buffer[0].Data;
+			sharedTexture = new Texture2D(device,
+				new Texture2DDescription
+				{
+					CpuAccessFlags = CpuAccessFlags.None,
+					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+					Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+					Width = SrcRect.Width,
+					Height = SrcRect.Height,
+										//Width = DestSize.Width,
+										//Height = DestSize.Height,
 
-            this.sharedTexture = new Texture2D(pTexture);
-            ((SharpDX.IUnknown)sharedTexture).AddReference();
+										MipLevels = 1,
+					ArraySize = 1,
+					SampleDescription = { Count = 1, Quality = 0 },
+					Usage = ResourceUsage.Default,
+					OptionFlags = ResourceOptionFlags.None,
 
-            //        SharedTexture = new Texture2D(device,
-            //new Texture2DDescription
-            //{
-            //	CpuAccessFlags = CpuAccessFlags.None,
-            //	BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-            //	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-            //	Width = DestSize.Width,
-            //	Height = DestSize.Height,
+				});
 
-            //	MipLevels = 1,
-            //	ArraySize = 1,
-            //	SampleDescription = { Count = 1, Quality = 0 },
-            //	Usage = ResourceUsage.Default,
-            //	OptionFlags = ResourceOptionFlags.Shared,
+			//var videoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.NV12);
 
-            //});
+			var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.NV12, 32);
 
-            gdiTexture = new Texture2D(device,
+			//var videoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.RGB32);
+
+			//var frame = VideoBuffer.GetFrame();
+			//var buffer = frame.Buffer;
+			//var pTexture = buffer[0].Data;
+
+			//this.sharedTexture = new Texture2D(pTexture);
+			//((SharpDX.IUnknown)sharedTexture).AddReference();
+
+			pixConverter = new D3D11RgbToNv12Converter();
+
+			pixConverter.Init(device, videoBuffer);
+
+			base.VideoBuffer = videoBuffer;
+
+			//        SharedTexture = new Texture2D(device,
+			//new Texture2DDescription
+			//{
+			//	CpuAccessFlags = CpuAccessFlags.None,
+			//	BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+			//	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+			//	Width = DestSize.Width,
+			//	Height = DestSize.Height,
+
+			//	MipLevels = 1,
+			//	ArraySize = 1,
+			//	SampleDescription = { Count = 1, Quality = 0 },
+			//	Usage = ResourceUsage.Default,
+			//	OptionFlags = ResourceOptionFlags.Shared,
+
+			//});
+
+			gdiTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     CpuAccessFlags = CpuAccessFlags.None,
@@ -229,14 +265,21 @@ namespace MediaToolkit.ScreenCaptures
             if (UseHwContext)
             {
                 result = CopyGdiScreenToDxSurf();
-            }
+
+				if(result == ErrorCode.Ok)
+				{
+					var frame = VideoBuffer.GetFrame();
+					pixConverter.Process(sharedTexture, frame);
+				}
+
+			}
             else
             {
                 // result = TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout, stretchingMode);
                 var captFlags = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
                 result = TryGetScreen(base.SrcRect, ref screenBits, captFlags, stretchingMode, this.CaptureMouse);
 
-                var frame = _VideoBuffer.GetFrame();
+                var frame = VideoBuffer.GetFrame();
 
                 bool lockTaken = false;
                 try
@@ -459,22 +502,24 @@ namespace MediaToolkit.ScreenCaptures
                 if (errorCode == ErrorCode.Ok)
                 {
                     Texture2D finalTexture = gdiTexture;
-                    if (renderTarget != null)
-                    {// масштабируем текстуру если нужно
-                        renderTarget.BeginDraw();
-                        renderTarget.Clear(SharpDX.Color.Black);
+                    //if (renderTarget != null)
+                    //{// масштабируем текстуру если нужно
+                    //    renderTarget.BeginDraw();
+                    //    renderTarget.Clear(SharpDX.Color.Black);
 
-                        DrawTexture(renderTarget, gdiTexture);
+                    //    DrawTexture(renderTarget, gdiTexture);
 
-                        renderTarget.EndDraw();
-                        finalTexture = renderTexture;
-                    }
+                    //    renderTarget.EndDraw();
+                    //    finalTexture = renderTexture;
+                    //}
 
                     //device.ImmediateContext.CopySubresourceRegion(finalTexture, SharedTexture);
 
                     device.ImmediateContext.CopyResource(finalTexture, sharedTexture);
                     device.ImmediateContext.Flush();
-                }
+
+
+				}
 
             }
             catch (Exception ex)

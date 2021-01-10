@@ -50,8 +50,9 @@ namespace MediaToolkit.DirectX
         private GDI.Size destSize;
         private SharpDX.DXGI.Format SrcFormat = Format.B8G8R8A8_UNorm;
 
-        private D3D11VideoBuffer videoBuffer = null;
-        public void Init(SharpDX.Direct3D11.Device device, D3D11VideoBuffer videoBuffer)
+		private VideoBufferBase videoBuffer = null;
+		//private D3D11VideoBuffer videoBuffer = null;
+		public void Init(SharpDX.Direct3D11.Device device, VideoBufferBase videoBuffer)
         {
             try
             {
@@ -70,7 +71,7 @@ namespace MediaToolkit.DirectX
                 }
                 else if (videoBuffer.DriverType == VideoDriverType.CPU)
                 {
-                    throw new NotImplementedException("VideoDriverType.CPU");
+                    //throw new NotImplementedException("VideoDriverType.CPU");
                 }
                 else
                 {
@@ -242,7 +243,8 @@ namespace MediaToolkit.DirectX
                 if (destFrame.DriverType == VideoDriverType.CPU)
                 {// gpu->cpu
 
-                }
+					CopyNv12TextureToMemory(nv12LumaRT, nv12ChromaRT, destFrame);				
+				}
             }
             finally
             {
@@ -501,101 +503,116 @@ namespace MediaToolkit.DirectX
 
 
 
-        //private void CopyNv12TextureToMemory(RenderTargetView lumaRT, RenderTargetView chromaRT, 
-        //    out IntPtr destPtr, out int destBufferSize)
-        //{
-        //    var width = destSize.Width;
-        //    var height = destSize.Height;
-        //    var destPitch = width;
-        //    var destRowNumber = height + height / 2;
-        //    destBufferSize = destPitch * destRowNumber;
-        //    destPtr = Marshal.AllocHGlobal(destBufferSize);
+		private void CopyNv12TextureToMemory(RenderTargetView lumaRT, RenderTargetView chromaRT, IVideoFrame destFrame)
+		{
+			var width = destSize.Width;
+			var height = destSize.Height;
+			var destPitch = width;
+			var destRowNumber = height + height / 2;
 
-        //    IntPtr _destPtr = destPtr;
-        //    using (var tex = lumaRT.ResourceAs<Texture2D>())
-        //    {
-        //        var stagingDescr = tex.Description;
-        //        stagingDescr.BindFlags = BindFlags.None;
-        //        stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
-        //        stagingDescr.Usage = ResourceUsage.Staging;
-        //        stagingDescr.OptionFlags = ResourceOptionFlags.None;
+			var dataBuffer = destFrame.Buffer;
 
-        //        using (var stagingTexture = new Texture2D(device, stagingDescr))
-        //        {
-        //            device.ImmediateContext.CopyResource(tex, stagingTexture);
-        //            var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-        //            try
-        //            {
-        //                var srcPitch = dataBox.RowPitch;
-        //                var srcDataSize = dataBox.SlicePitch;
-        //                var srcPtr = dataBox.DataPointer;
+			IntPtr lumaPtr = dataBuffer[0].Data;
+			destPitch = dataBuffer[0].Stride;
 
-        //                destPitch = width;
-        //                destRowNumber = height;
+			bool lockTaken = false;
+			try
+			{
+				lockTaken = destFrame.Lock(int.MaxValue);
+				if (lockTaken)
+				{
+					using (var tex = lumaRT.ResourceAs<Texture2D>())
+					{
+						var stagingDescr = tex.Description;
+						stagingDescr.BindFlags = BindFlags.None;
+						stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
+						stagingDescr.Usage = ResourceUsage.Staging;
+						stagingDescr.OptionFlags = ResourceOptionFlags.None;
 
-        //                for (int i = 0; i < destRowNumber; i++)
-        //                {
-        //                    Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
-        //                    _destPtr += destPitch;
-        //                    srcPtr += srcPitch;
-        //                }
-        //            }
-        //            finally
-        //            {
-        //                device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
-        //            }
-        //        }
-        //    }
+						using (var stagingTexture = new Texture2D(device, stagingDescr))
+						{
+							device.ImmediateContext.CopyResource(tex, stagingTexture);
+							var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+							try
+							{
+								var srcPitch = dataBox.RowPitch;
+								var srcDataSize = dataBox.SlicePitch;
+								var srcPtr = dataBox.DataPointer;
 
-        //    using (var tex = nv12ChromaRT.ResourceAs<Texture2D>())
-        //    {
-        //        //var descr = tex.Description;
-        //        //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, tex);
-        //        //var _fileName = "!!!!TEST_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
-        //        //File.WriteAllBytes(_fileName, bytes);
-        //        //Console.WriteLine("OutputFile: " + _fileName);
+								destPitch = width;
+								destRowNumber = height;
 
-        //        var stagingDescr = tex.Description;
-        //        stagingDescr.BindFlags = BindFlags.None;
-        //        stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
-        //        stagingDescr.Usage = ResourceUsage.Staging;
-        //        stagingDescr.OptionFlags = ResourceOptionFlags.None;
-        //        using (var stagingTexture = new Texture2D(device, stagingDescr))
-        //        {
-        //            device.ImmediateContext.CopyResource(tex, stagingTexture);
+								for (int i = 0; i < destRowNumber; i++)
+								{
+									Kernel32.CopyMemory(lumaPtr, srcPtr, (uint)destPitch);
+									lumaPtr += destPitch;
+									srcPtr += srcPitch;
+								}
+							}
+							finally
+							{
+								device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+							}
+						}
+					}
 
-        //            var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-        //            try
-        //            {
-        //                width = stagingDescr.Width;
-        //                height = stagingDescr.Height;
+					var chromaPtr = dataBuffer[1].Data;
+					destPitch = dataBuffer[1].Stride;
 
-        //                var srcPitch = dataBox.RowPitch;
-        //                var srcDataSize = dataBox.SlicePitch;
-        //                var srcPtr = dataBox.DataPointer;
+					using (var tex = chromaRT.ResourceAs<Texture2D>())
+					{
+						var stagingDescr = tex.Description;
+						stagingDescr.BindFlags = BindFlags.None;
+						stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
+						stagingDescr.Usage = ResourceUsage.Staging;
+						stagingDescr.OptionFlags = ResourceOptionFlags.None;
+						using (var stagingTexture = new Texture2D(device, stagingDescr))
+						{
+							device.ImmediateContext.CopyResource(tex, stagingTexture);
 
-        //                destPitch = 2 * width;
-        //                destRowNumber = height;
+							var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+							try
+							{
+								width = stagingDescr.Width;
+								height = stagingDescr.Height;
 
-        //                for (int i = 0; i < destRowNumber; i++)
-        //                {
-        //                    Kernel32.CopyMemory(_destPtr, srcPtr, (uint)destPitch);
-        //                    _destPtr += destPitch;
-        //                    srcPtr += srcPitch;
-        //                }
-        //            }
-        //            finally
-        //            {
-        //                device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
-        //            }
-        //        }
-        //    }
-        //    //Utils.TestTools.WriteFile((destPtr), destBufferSize, "TEST_NV12.raw");
-        //}
+								var srcPitch = dataBox.RowPitch;
+								var srcDataSize = dataBox.SlicePitch;
+								var srcPtr = dataBox.DataPointer;
+
+								destRowNumber = height;
+
+								for (int i = 0; i < destRowNumber; i++)
+								{
+									Kernel32.CopyMemory(chromaPtr, srcPtr, (uint)destPitch);
+									chromaPtr += destPitch;
+									srcPtr += srcPitch;
+								}
+							}
+							finally
+							{
+								device.ImmediateContext.UnmapSubresource(stagingTexture, 0);
+							}
+						}
+					}
+
+					//Utils.TestTools.WriteFile((destPtr), destBufferSize, "TEST_NV12.raw");
+				}
+			}
+			finally
+			{
+				if (lockTaken)
+				{
+					destFrame.Unlock();
+				}
+			}
+
+
+		}
 
 
 
-        public void Close()
+		public void Close()
         {
             SafeDispose(nv12ChromaRT);
             SafeDispose(chromaRT);

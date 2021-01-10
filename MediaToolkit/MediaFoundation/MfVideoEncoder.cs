@@ -43,10 +43,11 @@ namespace MediaToolkit.MediaFoundation
         private Texture2D bufTexture = null;
 		private Device device = null;
 
-        private FFmpegVideoEncoder ffmpegEncoder = null;
+		//private FFmpegVideoEncoder ffmpegEncoder = null;
 
+		private H264Encoder ffmpegEncoder = null;
 
-        private bool SoftwareMode = false;
+		private bool SoftwareMode = false;
         public void Open(VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Setup(...)");
@@ -69,7 +70,7 @@ namespace MediaToolkit.MediaFoundation
             }
             else if(videoBuffer.DriverType == VideoDriverType.CPU)
             {
-                throw new NotImplementedException("videoBuffer.DriverType == VideoDriverType.CPU");
+                //throw new NotImplementedException("videoBuffer.DriverType == VideoDriverType.CPU");
             }
             else
             {
@@ -217,13 +218,13 @@ namespace MediaToolkit.MediaFoundation
                 if (encoderName == "libx264" || encoderName == "h264_nvenc")
                 {
                     //ffmpegEncoder = new FFmpegVideoEncoder();
-                    ffmpegEncoder = new FFmpegVideoEncoder();
+                    ffmpegEncoder = new H264Encoder();
                 }
                 else
                 {
                     throw new NotSupportedException("Invalid encoder name: " + encoderName);
                 }
-                ffmpegEncoder.Open(encoderSettings);
+                ffmpegEncoder.Setup(encoderSettings);
                 //ffmpegEncoder.Setup(encoderSettings);
                 ffmpegEncoder.DataEncoded += FFmpegEncoder_DataEncoded;
 
@@ -250,10 +251,32 @@ namespace MediaToolkit.MediaFoundation
             }
             else
             {
-                throw new NotImplementedException();
+				//throw new NotImplementedException();
 
-                //var videoBuffer = videoSource.SharedBitmap;
-                //ffmpegEncoder.Encode(videoBuffer);
+				//var videoBuffer = videoSource.SharedBitmap;
+				var frame = videoSource._VideoBuffer.GetFrame();
+				if (frame != null)
+				{
+					bool lockTaken = false;
+					try
+					{
+						lockTaken = frame.Lock(10);
+						if (lockTaken)
+						{
+							ffmpegEncoder._Encode(frame);
+						}
+					}
+					finally
+					{
+						if (lockTaken)
+						{
+							frame.Unlock();
+						}
+					}
+
+					
+				}
+               
 
             }
 

@@ -84,11 +84,11 @@ namespace MediaToolkit.ScreenCaptures
         public Rectangle SrcRect { get; protected set; }
         public Size DestSize { get; protected set; }
 
-        protected VideoBuffer videoBuffer = null;
+        //protected VideoBuffer videoBuffer = null;
 
         //public VideoBuffer VideoBuffer { get => videoBuffer; }
 
-        public VideoBufferBase _VideoBuffer { get; protected set; }
+        public VideoBufferBase VideoBuffer { get; protected set; }
 
         public abstract ErrorCode UpdateBuffer(int timeout = 10);
 
@@ -101,16 +101,10 @@ namespace MediaToolkit.ScreenCaptures
         {
             logger.Debug("ScreenCapture::Close()");
 
-            //if (videoBuffer != null)
-            //{
-            //    videoBuffer.Dispose();
-            //    videoBuffer = null;
-            //}
-
-            if (_VideoBuffer != null)
+            if (VideoBuffer != null)
             {
-                _VideoBuffer.Dispose();
-                _VideoBuffer = null;
+                VideoBuffer.Dispose();
+                VideoBuffer = null;
             }
         }
 

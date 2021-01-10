@@ -27,7 +27,7 @@ namespace MediaToolkit
         //    get { return hwContext?.SharedTexture; }
         //}
 
-        public VideoBufferBase _VideoBuffer => screenCapture?._VideoBuffer;
+        public VideoBufferBase _VideoBuffer => screenCapture?.VideoBuffer;
 
         // public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;

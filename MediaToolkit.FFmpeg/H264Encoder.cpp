@@ -12,8 +12,9 @@ extern "C" {
 #include <libswresample/swresample.h>
 
 
-#include <libavutil/hwcontext_dxva2.h>
+//#include <libavutil/hwcontext_dxva2.h>
 
+#include <libavutil/imgutils.h>
 }
 
 //#include <vcclr.h>
@@ -162,6 +163,182 @@ namespace FFmpegLib {
 				throw;
 			}
 		}
+
+		void Encode(IVideoFrame^ videoFrame) {
+
+			if (cleanedup) {
+
+				return;
+			}
+
+			try {
+
+				//avpicture_fill((AVPicture*)frame, reinterpret_cast<uint8_t*>(srcPtr.ToPointer()), AV_PIX_FMT_NV12, frame->width, frame->height);
+
+				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
+
+				frame->data[0] = reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer());
+				frame->data[1] = reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer());
+
+				frame->linesize[0] = frameBuffer[0]->Stride;
+				frame->linesize[1] = frameBuffer[1]->Stride;
+
+				__int64 pts = videoFrame->Time * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
+
+				AVRational av_time_base_q = { 1, AV_TIME_BASE };
+
+				AVRational codec_time = encoder_ctx->time_base; //
+
+				//__int64 framePts = frame->pts;
+
+				//Console::WriteLine("framePts " + framePts + "");
+
+				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				frame->pts++;
+
+				//if (framePts == frame->pts) {
+				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				//}
+				EncodeFrame(frame);
+
+				last_sec = videoFrame->Time;
+
+
+				//framePts = frame->pts;
+
+				//Console::WriteLine("last_sec " + last_sec);
+
+				////__int64 framePts = frame->pts;
+
+				////Console::WriteLine("framePts " + framePts + "");
+
+				////frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				//frame->pts++;
+
+				////if (framePts == frame->pts) {
+				////	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				////}
+				//EncodeFrame(frame);
+
+				////frame->data[0] = NULL;
+				////frame->data[1] = NULL;
+
+				//last_sec = videoFrame->Time;
+				////framePts = frame->pts;
+
+				////Console::WriteLine("last_sec " + last_sec);
+
+			}
+			catch (Exception^ ex) {
+
+				logger->TraceEvent(TraceEventType::Error, 0, ex->Message);
+				throw;
+			}
+
+
+		}
+
+		void _Encode(IVideoFrame^ videoFrame) {
+
+			if (cleanedup) {
+
+				return;
+			}
+
+			AVFrame* srcFrame = NULL;
+			try {
+
+				//avpicture_fill((AVPicture*)frame, reinterpret_cast<uint8_t*>(srcPtr.ToPointer()), AV_PIX_FMT_NV12, frame->width, frame->height);
+
+				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
+				AVPixelFormat srcFormat = encoder_ctx->pix_fmt;
+				int srcWidth = videoFrame->Width;
+				int srcHeight = videoFrame->Height;
+				int srcAlign = videoFrame->Align;
+				srcFrame = av_frame_alloc();
+				srcFrame->width = srcWidth;
+				srcFrame->height = srcHeight;
+				srcFrame->format = srcFormat;
+
+				IntPtr srcPtr = frameBuffer[0]->Data;
+
+				int srcSize = av_image_fill_arrays(srcFrame->data, srcFrame->linesize,
+					reinterpret_cast<uint8_t*>(srcPtr.ToPointer()), srcFormat, srcWidth, srcHeight, srcAlign);
+
+				if (srcSize < 0) {
+					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
+				}
+
+				//frame->data[0] = reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer());
+				//frame->data[1] = reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer());
+
+				//frame->linesize[0] = frameBuffer[0]->Stride;
+				//frame->linesize[1] = frameBuffer[1]->Stride;
+
+				__int64 pts = videoFrame->Time * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
+
+				AVRational av_time_base_q = { 1, AV_TIME_BASE };
+
+				AVRational codec_time = encoder_ctx->time_base; //
+
+				//__int64 framePts = frame->pts;
+
+				//Console::WriteLine("framePts " + framePts + "");
+
+				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				srcFrame->pts++;
+
+				//if (framePts == frame->pts) {
+				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				//}
+				EncodeFrame(srcFrame);
+
+				last_sec = videoFrame->Time;
+
+
+				//framePts = frame->pts;
+
+				//Console::WriteLine("last_sec " + last_sec);
+
+				////__int64 framePts = frame->pts;
+
+				////Console::WriteLine("framePts " + framePts + "");
+
+				////frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				//frame->pts++;
+
+				////if (framePts == frame->pts) {
+				////	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
+				////}
+				//EncodeFrame(frame);
+
+				////frame->data[0] = NULL;
+				////frame->data[1] = NULL;
+
+				//last_sec = videoFrame->Time;
+				////framePts = frame->pts;
+
+				////Console::WriteLine("last_sec " + last_sec);
+
+			}
+			catch (Exception^ ex) {
+
+				logger->TraceEvent(TraceEventType::Error, 0, ex->Message);
+				throw;
+			}
+			finally{
+
+				if (srcFrame != NULL) {
+					if (srcFrame) {
+						pin_ptr<AVFrame*> pSrcFrame = &srcFrame;
+						av_frame_free(pSrcFrame);
+						srcFrame = NULL;
+					}
+				}
+			}
+
+		}
+
 
 		void Encode(IntPtr srcPtr, int srcSize, double sec) {
 

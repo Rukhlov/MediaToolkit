@@ -150,12 +150,12 @@ namespace MediaToolkit.ScreenCaptures
                     pixConverter = new D3D11RgbToNv12Converter();
                     pixConverter.Init(mainDevice, videoBuffer);
 
-                    this._VideoBuffer = videoBuffer;
+                    this.VideoBuffer = videoBuffer;
 
                 }
                 else
                 {
-                    _VideoBuffer = new MemoryVideoBuffer(DestSize, Core.PixFormat.RGB32, 16);
+                    VideoBuffer = new MemoryVideoBuffer(DestSize, Core.PixFormat.RGB32, 16);
                 }
 
             }
@@ -578,7 +578,7 @@ namespace MediaToolkit.ScreenCaptures
 
                 deviceContext.CopyResource(texture, sharedTexture);
                 // deviceContext.Flush();
-                var frame = _VideoBuffer.GetFrame();
+                var frame = VideoBuffer.GetFrame();
 
                 pixConverter.Process(sharedTexture, frame);
 
@@ -682,7 +682,7 @@ namespace MediaToolkit.ScreenCaptures
 
             ErrorCode Result = ErrorCode.Unexpected;
 
-            var frame = _VideoBuffer.GetFrame();
+            var frame = VideoBuffer.GetFrame();
 
             bool lockTaken = false;
             try

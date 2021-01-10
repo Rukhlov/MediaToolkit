@@ -20,47 +20,54 @@ namespace Test.Encoder
             Console.WriteLine("FFmpegPixConverterTest::Run()");
 
 			var srcLinesize = 0;
-            //var inputFileName = @"Files\1920x1080.bmp";
-            //Bitmap bmp = new Bitmap(inputFileName);
+			//var inputFileName = @"Files\1920x1080.bmp";
+			//Bitmap bmp = new Bitmap(inputFileName);
 
-            //var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
-            //	System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+			//var bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+			//	System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
 
-            //var _size = new Size(bmpData.Width, bmpData.Height);
-            //var src = bmpData.Scan0;
-            //	var _totalSize = FFmpegLib.Utils.FillImageData(src, _size, MediaToolkit.Core.PixFormat.RGB24, 32,
-            //	out var _destData, out var _destLinesize);
+			//var _size = new Size(bmpData.Width, bmpData.Height);
+			//var src = bmpData.Scan0;
+			//	var _totalSize = FFmpegLib.Utils.FillImageData(src, _size, MediaToolkit.Core.PixFormat.RGB24, 32,
+			//	out var _destData, out var _destLinesize);
 
-            //byte[] srcBytes = new byte[_totalSize];
-            //Marshal.Copy(_destData[0], srcBytes, 0, _totalSize);
-            //var srcLinesize = _destLinesize[0];
+			//byte[] srcBytes = new byte[_totalSize];
+			//Marshal.Copy(_destData[0], srcBytes, 0, _totalSize);
+			//var srcLinesize = _destLinesize[0];
 
-            //bmp.UnlockBits(bmpData);
+			//bmp.UnlockBits(bmpData);
 
-            //var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            //var g = Graphics.FromImage(b);
-            //g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
-            //g.Dispose();
-            //bmp.Dispose();
+			//var b = new Bitmap(bmp.Width, bmp.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			//var g = Graphics.FromImage(b);
+			//g.DrawImage(bmp, 0, 0, bmp.Width, bmp.Height);
+			//g.Dispose();
+			//bmp.Dispose();
 
-            //bmp = b;
-            //bmp.Save("TEST.bmp");
+			//bmp = b;
+			//bmp.Save("TEST.bmp");
+
+			//int _count = 10000;
+			//while (_count-- > 0)
+			//{
+			//	var totalSize = FFmpegLib.Utils.AllocImageData(new Size(1920, 1080), MediaToolkit.Core.PixFormat.NV12, 16, out var frameBuffer);
+			//	byte[] _test = { 0x00, 0x01, 0x01, 0x01 };
+			//	Marshal.Copy(_test, 0, frameBuffer[0].Data, _test.Length);
+
+			//	Marshal.Copy(_test, 0, frameBuffer[1].Data, _test.Length);
+
+			//	FFmpegLib.Utils.FreeImageData(ref frameBuffer);
+
+			//	Thread.Sleep(10);
+			//}
 
 
 
-            //var totalSize = FFmpegLib.Utils.AllocImageData(new Size(1920, 1080), MediaToolkit.Core.PixFormat.RGB32, 32,
-            //    out var _destData, out var _destLinesize);
-
-            //byte[] _test = {0x00, 0x01,0x01, 0x01 };
-            //Marshal.Copy(_test, 0, _destData[0], _test.Length);
+			//var inputFileName = @"Files\NV12_352x288.yuv";
+			//var inputFileName = @"Files\rgba_352x288.raw";
+			//Size srcSize = new Size(352, 288);
 
 
-            //var inputFileName = @"Files\NV12_352x288.yuv";
-            //var inputFileName = @"Files\rgba_352x288.raw";
-            //Size srcSize = new Size(352, 288);
-
-
-            var inputFileName = @"Files\rgba_1920x1080.raw";
+			var inputFileName = @"Files\rgba_1920x1080.raw";
 
 			//var inputFileName = @"Files\NV12_1920x1080.yuv";
 
