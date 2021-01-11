@@ -33,22 +33,22 @@ namespace ScreenStreamer.Wpf.Helpers
                 features |= ScreenCaptureFeature.Win8;
             }
 
-            //try
-            //{
-            //    if (MediaToolkit.ScreenCaptures.DatapathDesktopCapture.Load())
-            //    {
-            //        features |= ScreenCaptureFeature.Datapath;
-            //    }
-            //}
-            //finally
-            //{// 
-            //   // MediaToolkit.ScreenCaptures.DatapathDesktopCapture.Unload();
-            //}
+			try
+			{
+				if (MediaToolkit.ScreenCaptures.DatapathDesktopCapture.Load())
+				{
+					features |= ScreenCaptureFeature.Datapath;
+				}
+			}
+			finally
+			{// 
+			 // MediaToolkit.ScreenCaptures.DatapathDesktopCapture.Unload();
+			}
 
-            //TODO:
-            // Nvidia capture...
+			//TODO:
+			// Nvidia capture...
 
-            return features;
+			return features;
 
         }
 

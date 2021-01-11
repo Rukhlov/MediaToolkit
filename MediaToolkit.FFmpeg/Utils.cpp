@@ -71,42 +71,31 @@ namespace FFmpegLib {
 				av_freep(p_ptr);
 				//av_free(ptr.ToPointer());
 			}
-			
-
-			//for (int i = 0; i < data->Length; i++) {
-			//	IntPtr ptr = data[i]->Data;
-			//	if (ptr != IntPtr::Zero) {
-			//		void* _ptr = ptr.ToPointer();
-			//		pin_ptr<void*> p_ptr = &_ptr;
-			//		av_freep(p_ptr);
-			//		//av_free(ptr.ToPointer());
-			//	}			
-			//}
 		}
 
-		//static int FillImageData(IntPtr srcData, System::Drawing::Size size, MediaToolkit::Core::PixFormat pixFormat, int align,
-		//	[Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+		static int FillImageData(IntPtr srcData, System::Drawing::Size size, MediaToolkit::Core::PixFormat pixFormat, int align,
+			[Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
 
-		//	AVPixelFormat format = GetAVPixelFormat(pixFormat);
-		//	const uint8_t* src = reinterpret_cast<uint8_t*>(srcData.ToPointer());
-		//	int width = size.Width;
-		//	int height = size.Height;
+			AVPixelFormat format = GetAVPixelFormat(pixFormat);
+			const uint8_t* src = reinterpret_cast<uint8_t*>(srcData.ToPointer());
+			int width = size.Width;
+			int height = size.Height;
 
-		//	uint8_t* data[4];
-		//	int linesize[4];
+			uint8_t* data[4];
+			int linesize[4];
 
-		//	int destSize = av_image_fill_arrays(data, linesize, src, format, width, height, align);
+			int destSize = av_image_fill_arrays(data, linesize, src, format, width, height, align);
 
-		//	destData = gcnew array<IntPtr>(4);
-		//	destLinesize = gcnew array<int>(4);
+			destData = gcnew array<IntPtr>(4);
+			destLinesize = gcnew array<int>(4);
 
-		//	for (int i = 0; i < 4; i++) {
-		//		destData[i] = (IntPtr)data[i];
-		//		destLinesize[i] = linesize[i];
-		//	}
+			for (int i = 0; i < 4; i++) {
+				destData[i] = (IntPtr)data[i];
+				destLinesize[i] = linesize[i];
+			}
 
-		//	return destSize;
-		//}
+			return destSize;
+		}
 
 	internal:
 		static AVPixelFormat GetAVPixelFormat(MediaToolkit::Core::PixFormat pixFormat)

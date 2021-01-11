@@ -82,8 +82,7 @@ namespace MediaToolkit.ScreenCaptures
         private BITMAPINFO bmi = default(BITMAPINFO);
         private IntPtr pBuffer = IntPtr.Zero;
 
-
-        public override void Init(Rectangle captArea, Size destSize)
+		public override void Init(Rectangle captArea, Size destSize)
         {
             logger.Debug("Init(...) " + captArea.ToString() + " " + destSize.ToString());
 
@@ -95,184 +94,360 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format16bppRgb565);
-            var bmp = videoBuffer.bitmap;
+			this.SrcRect = captArea;
+			this.DestSize = destSize;
 
-            Init(captArea, bmp);
+			var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.RGB565, 16);
+			this.VideoBuffer = videoBuffer;
 
-        }
-
-        private void Init(Rectangle captArea, Bitmap bmp)
-        {
-            if (!(bmp.PixelFormat == PixelFormat.Format16bppRgb565 || bmp.PixelFormat == PixelFormat.Format16bppRgb565))
-            {
-                throw new FormatException("Unsuppoted pix format " + bmp.PixelFormat);
-            }
-
-            try
-            {
-                var result = DCapt.DCaptCreateCapture(hLoad, out hCapt);
-                DCapt.ThrowIfError(result, "DCaptCreateCapture");
-
-                logger.Debug("DCaptCreateCapture() " + result);
-
-                int biWidth = bmp.Width;
-                int biHeight = bmp.Height;
-                // 
-                int biBitCount = Image.GetPixelFormatSize(bmp.PixelFormat);
-                uint biSizeImage = (uint)(biWidth * biHeight * biBitCount / 8);
-
-                const int BI_BITFIELDS = 3;
-
-                var bmiHeader = new BITMAPINFOHEADER
-                {
-                    biWidth = biWidth,
-                    biHeight = -biHeight,
-                    biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER)),
-
-                    biBitCount = (ushort)biBitCount,
-                    biPlanes = 1,
-
-                    biClrUsed = 0,
-                    biClrImportant = 0,
-                    biSizeImage = biSizeImage,
-                    biCompression = BI_BITFIELDS,
-
-                };
-
-                var bmiColors = GetColourMask(bmp.PixelFormat);
-
-                //var bmiColors = new RGBQUAD[]
-                //{
-                //     new RGBQUAD
-                //     {
-                //         rgbRed = 0,
-                //         rgbBlue = 248,
-                //         rgbGreen = 0
-                //     }
-                //};
-
-                BITMAPINFO bmi = new BITMAPINFO
-                {
-                    bmiHeader = bmiHeader,
-                   // bmiColors = bmiColors,
-                };
-
-
-                var dstSize = bmp.Size;
-
-                RECT srcRect = new RECT
-                {
-                    Left = captArea.Left,
-                    Right = captArea.Right,
-                    Bottom = captArea.Bottom,
-                    Top = captArea.Top,
-                };
-
-                IntPtr _hBmi = IntPtr.Zero;
-                try
-                {
-                    _hBmi = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(BITMAPINFO)));
-                    Marshal.StructureToPtr(bmi, _hBmi, false);
-
-                    IntPtr hBmi = _hBmi;
-
-                    // The bits per pixel of the saved data. Must be 2 
-                    int bitsPerPixel = 2;//biBitCount / 8; 
-                    result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref dstSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY, ref pBuffer, ref hBmi);
-                    DCapt.ThrowIfError(result, "DCaptConfigureCapture");
-
-                    this.bmi = (BITMAPINFO)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFO));
-                    var _bmiHeader = bmi.bmiHeader;
-
-                    logger.Debug("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
-                        + _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage);
-
-                }
-                finally
-                {
-                    if (_hBmi != IntPtr.Zero)
-                    {
-                        Marshal.FreeHGlobal(_hBmi);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-
-                Close();
-                throw;
-            }
-        }
-
-        public override ErrorCode UpdateBuffer(int timeout = 10)
-        {
-            //logger.Verb("Update(...) " + timeout);
-
-            ErrorCode errorCode = ErrorCode.Unexpected;
-
-            if (!Initialized)
-            {
-                return ErrorCode.NotInitialized;
-            }
-
-            var bufSize = bmi.bmiHeader.biSizeImage;
-            if (bufSize > 0)
-            {
-                Kernel32.ZeroMemory(pBuffer, (int)bufSize);
-
-                var result = DCapt.DCaptUpdate(hCapt);
-                DCapt.ThrowIfError(result, "DCaptCreateCapture");
-
-                var syncRoot = videoBuffer.syncRoot;
-
-                bool lockTaken = false;
-                try
-                {
-                    Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-
-                    if (lockTaken)
-                    {
-                        var sharedBits = videoBuffer.bitmap;
-                        var rect = new Rectangle(0, 0, sharedBits.Width, sharedBits.Height);
-                        var data = sharedBits.LockBits(rect, ImageLockMode.ReadWrite, sharedBits.PixelFormat);
-                        try
-                        {
-                            IntPtr scan0 = data.Scan0;
-
-                            Kernel32.CopyMemory(scan0, this.pBuffer, (uint)bufSize);
-
-                            errorCode = ErrorCode.Ok;
-
-                        }
-                        finally
-                        {
-                            sharedBits.UnlockBits(data);
-                        }
-                    }
-                    else
-                    {
-                        logger.Warn("Drop bits...");
-                    }
-
-                }
-                finally
-                {
-                    if (lockTaken)
-                    {
-                        Monitor.Exit(syncRoot);
-                    }
-                }
-            }
-
-            return errorCode;
-
-            // Console.WriteLine("DCaptCreateCapture() " + result);
+            InitCapture(captArea, DestSize, PixelFormat.Format16bppRgb565);
         }
 
 
-        public override void Close()
+		private void InitCapture(Rectangle captArea, Size resolution, PixelFormat pixelFormat)
+		{
+			if (pixelFormat != PixelFormat.Format16bppRgb565)
+			{
+				throw new FormatException("Unsuppoted pix format " + pixelFormat);
+			}
+
+			try
+			{
+				var result = DCapt.DCaptCreateCapture(hLoad, out hCapt);
+				DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+				logger.Debug("DCaptCreateCapture() " + result);
+
+				int biWidth = resolution.Width;
+				int biHeight = resolution.Height;
+				// 
+				int biBitCount = Image.GetPixelFormatSize(pixelFormat);
+				uint biSizeImage = (uint)(biWidth * biHeight * biBitCount / 8);
+
+				const int BI_BITFIELDS = 3;
+
+				var bmiHeader = new BITMAPINFOHEADER
+				{
+					biWidth = biWidth,
+					biHeight = -biHeight,
+					biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER)),
+
+					biBitCount = (ushort)biBitCount,
+					biPlanes = 1,
+
+					biClrUsed = 0,
+					biClrImportant = 0,
+					biSizeImage = biSizeImage,
+					biCompression = BI_BITFIELDS,
+
+				};
+
+				var bmiColors = GetColourMask(pixelFormat);
+
+				//var bmiColors = new RGBQUAD[]
+				//{
+				//     new RGBQUAD
+				//     {
+				//         rgbRed = 0,
+				//         rgbBlue = 248,
+				//         rgbGreen = 0
+				//     }
+				//};
+
+				BITMAPINFO bmi = new BITMAPINFO
+				{
+					bmiHeader = bmiHeader,
+					// bmiColors = bmiColors,
+				};
+
+
+				IntPtr _hBmi = IntPtr.Zero;
+				try
+				{
+					_hBmi = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(BITMAPINFO)));
+					Marshal.StructureToPtr(bmi, _hBmi, false);
+
+					var dstSize = resolution;
+					RECT srcRect = new RECT
+					{
+						Left = captArea.Left,
+						Right = captArea.Right,
+						Bottom = captArea.Bottom,
+						Top = captArea.Top,
+					};
+
+					// The bits per pixel of the saved data. Must be 2 
+					int bitsPerPixel = 2;
+
+					IntPtr hBmi = _hBmi;
+					result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref dstSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY, ref pBuffer, ref hBmi);
+					DCapt.ThrowIfError(result, "DCaptConfigureCapture");
+
+					this.bmi = (BITMAPINFO)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFO));
+					var _bmiHeader = bmi.bmiHeader;
+
+					logger.Debug("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
+						+ _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage);
+
+				}
+				finally
+				{
+					if (_hBmi != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(_hBmi);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+
+				Close();
+				throw;
+			}
+		}
+
+
+		//private void Init(Rectangle captArea, Bitmap bmp)
+		//{
+		//    if (!(bmp.PixelFormat == PixelFormat.Format16bppRgb565 || bmp.PixelFormat == PixelFormat.Format16bppRgb565))
+		//    {
+		//        throw new FormatException("Unsuppoted pix format " + bmp.PixelFormat);
+		//    }
+
+		//    try
+		//    {
+		//        var result = DCapt.DCaptCreateCapture(hLoad, out hCapt);
+		//        DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+		//        logger.Debug("DCaptCreateCapture() " + result);
+
+		//        int biWidth = bmp.Width;
+		//        int biHeight = bmp.Height;
+		//        // 
+		//        int biBitCount = Image.GetPixelFormatSize(bmp.PixelFormat);
+		//        uint biSizeImage = (uint)(biWidth * biHeight * biBitCount / 8);
+
+		//        const int BI_BITFIELDS = 3;
+
+		//        var bmiHeader = new BITMAPINFOHEADER
+		//        {
+		//            biWidth = biWidth,
+		//            biHeight = -biHeight,
+		//            biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER)),
+
+		//            biBitCount = (ushort)biBitCount,
+		//            biPlanes = 1,
+
+		//            biClrUsed = 0,
+		//            biClrImportant = 0,
+		//            biSizeImage = biSizeImage,
+		//            biCompression = BI_BITFIELDS,
+
+		//        };
+
+		//        var bmiColors = GetColourMask(bmp.PixelFormat);
+
+		//        //var bmiColors = new RGBQUAD[]
+		//        //{
+		//        //     new RGBQUAD
+		//        //     {
+		//        //         rgbRed = 0,
+		//        //         rgbBlue = 248,
+		//        //         rgbGreen = 0
+		//        //     }
+		//        //};
+
+		//        BITMAPINFO bmi = new BITMAPINFO
+		//        {
+		//            bmiHeader = bmiHeader,
+		//           // bmiColors = bmiColors,
+		//        };
+
+
+		//        var dstSize = bmp.Size;
+
+		//        RECT srcRect = new RECT
+		//        {
+		//            Left = captArea.Left,
+		//            Right = captArea.Right,
+		//            Bottom = captArea.Bottom,
+		//            Top = captArea.Top,
+		//        };
+
+		//        IntPtr _hBmi = IntPtr.Zero;
+		//        try
+		//        {
+		//            _hBmi = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(BITMAPINFO)));
+		//            Marshal.StructureToPtr(bmi, _hBmi, false);
+
+		//            IntPtr hBmi = _hBmi;
+
+		//            // The bits per pixel of the saved data. Must be 2 
+		//            int bitsPerPixel = 2;//biBitCount / 8; 
+		//            result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref dstSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY, ref pBuffer, ref hBmi);
+		//            DCapt.ThrowIfError(result, "DCaptConfigureCapture");
+
+		//            this.bmi = (BITMAPINFO)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFO));
+		//            var _bmiHeader = bmi.bmiHeader;
+
+		//            logger.Debug("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
+		//                + _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage);
+
+		//        }
+		//        finally
+		//        {
+		//            if (_hBmi != IntPtr.Zero)
+		//            {
+		//                Marshal.FreeHGlobal(_hBmi);
+		//            }
+		//        }
+		//    }
+		//    catch (Exception ex)
+		//    {
+		//        logger.Error(ex);
+
+		//        Close();
+		//        throw;
+		//    }
+		//}
+
+
+		public override ErrorCode UpdateBuffer(int timeout = 10)
+		{
+			//logger.Verb("Update(...) " + timeout);
+
+			ErrorCode errorCode = ErrorCode.Unexpected;
+
+			if (!Initialized)
+			{
+				return ErrorCode.NotInitialized;
+			}
+
+			var bmiHeader = bmi.bmiHeader;
+			var bufSize = bmiHeader.biSizeImage;
+			if (bufSize > 0)
+			{
+				Kernel32.ZeroMemory(pBuffer, (int)bufSize);
+
+				var result = DCapt.DCaptUpdate(hCapt);
+				DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+				var frame = VideoBuffer.GetFrame();
+
+				bool lockTaken = false;
+				try
+				{
+					lockTaken = frame.Lock(timeout);
+
+					if (lockTaken)
+					{
+						var width = DestSize.Width;
+						var height = DestSize.Height;
+
+						var destPtr = frame.Buffer[0].Data;
+						var destStride = frame.Buffer[0].Stride;
+				
+						//https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
+						// Calculating Surface Stride
+						var srcStride = ((((bmiHeader.biWidth * bmiHeader.biBitCount) + 31) & ~31) >> 3);
+						var srcPtr = this.pBuffer;
+
+						for (int i = 0; i < height; i++)
+						{
+							Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
+							destPtr += destStride;
+							srcPtr += srcStride;
+						}
+
+					}
+					else
+					{
+						logger.Warn("Drop bits...");
+					}
+
+				}
+				finally
+				{
+					if (lockTaken)
+					{
+						frame.Unlock();
+					}
+				}
+			}
+
+			return errorCode;
+
+			// Console.WriteLine("DCaptCreateCapture() " + result);
+		}
+
+		//public override ErrorCode UpdateBuffer(int timeout = 10)
+		//{
+		//    //logger.Verb("Update(...) " + timeout);
+
+		//    ErrorCode errorCode = ErrorCode.Unexpected;
+
+		//    if (!Initialized)
+		//    {
+		//        return ErrorCode.NotInitialized;
+		//    }
+
+		//    var bufSize = bmi.bmiHeader.biSizeImage;
+		//    if (bufSize > 0)
+		//    {
+		//        Kernel32.ZeroMemory(pBuffer, (int)bufSize);
+
+		//        var result = DCapt.DCaptUpdate(hCapt);
+		//        DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+		//        var syncRoot = videoBuffer.syncRoot;
+
+		//        bool lockTaken = false;
+		//        try
+		//        {
+		//            Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
+
+		//            if (lockTaken)
+		//            {
+		//                var sharedBits = videoBuffer.bitmap;
+		//                var rect = new Rectangle(0, 0, sharedBits.Width, sharedBits.Height);
+		//                var data = sharedBits.LockBits(rect, ImageLockMode.ReadWrite, sharedBits.PixelFormat);
+		//                try
+		//                {
+		//                    IntPtr scan0 = data.Scan0;
+
+		//                    Kernel32.CopyMemory(scan0, this.pBuffer, (uint)bufSize);
+
+		//                    errorCode = ErrorCode.Ok;
+
+		//                }
+		//                finally
+		//                {
+		//                    sharedBits.UnlockBits(data);
+		//                }
+		//            }
+		//            else
+		//            {
+		//                logger.Warn("Drop bits...");
+		//            }
+
+		//        }
+		//        finally
+		//        {
+		//            if (lockTaken)
+		//            {
+		//                Monitor.Exit(syncRoot);
+		//            }
+		//        }
+		//    }
+
+		//    return errorCode;
+
+		//    // Console.WriteLine("DCaptCreateCapture() " + result);
+		//}
+
+
+		public override void Close()
         {
 
             logger.Debug("DatapathDesktopCapture::Close()");

@@ -11,6 +11,7 @@ using GDI = System.Drawing;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -18,20 +19,9 @@ namespace MediaToolkit.ScreenCaptures
     /// <summary>
     /// с включенной композитной отрисовкой работает лучше чем GDI
     /// </summary>
-    public class Direct3D9Capture : ScreenCapture
+    public class Direct3D9Capture
     {
-       
-        public Direct3D9Capture(Dictionary<string, object> args = null) : base()
-        {
-            if (args != null)
-            {
-                if (args.ContainsKey("WindowHandle"))
-                {
-                    this.hWnd = (IntPtr)args["WindowHandle"];
-                }
-            }
-
-        }
+		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 
         private Direct3D direct3D9 = new Direct3D();
         private Device device = null;
@@ -42,24 +32,44 @@ namespace MediaToolkit.ScreenCaptures
         private Surface destSurface = null;
         private Surface tmpSurface = null;
 
-        private IntPtr hWnd = IntPtr.Zero;
+		public IntPtr hWnd { get; set; } = IntPtr.Zero;
+		public bool CaptureMouse { get; set; }
+		public bool AspectRatio { get; set; }
 
+		public GDI.Rectangle SrcRect { get; protected set; }
+		public Size DestSize { get; protected set; }
 
-
-        public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
+		public void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
             logger.Debug("Direct3DCapture::Init(...)");
 
-            base.Init(srcRect, destSize);
+			if (srcRect.Width == 0 || srcRect.Height == 0)
+			{
+				new ArgumentException(srcRect.ToString());
+			}
 
-            //this.videoBuffer = new VideoBuffer(destSize.Width, destSize.Height, PixelFormat.Format32bppArgb);
+			if (destSize.IsEmpty)
+			{
+				destSize.Width = srcRect.Width;
+				destSize.Height = srcRect.Height;
+			}
 
-            adapterInfo = direct3D9.Adapters.FirstOrDefault(); //  DefaultAdapter;//direct3D9.Adapters[1];
+			if (destSize.Width == 0 || destSize.Height == 0)
+			{
+				new ArgumentException(destSize.ToString());
+			}
+
+			this.SrcRect = srcRect;
+			this.DestSize = destSize;
+
+			var adapters = direct3D9.Adapters;
+
+			adapterInfo = adapters.FirstOrDefault(); //  DefaultAdapter;//direct3D9.Adapters[1];
 
             var hMonitor = User32.GetMonitorFromRect(srcRect);
             if (hMonitor != IntPtr.Zero)
             {
-                adapterInfo = direct3D9.Adapters.FirstOrDefault(a => a.Monitor == hMonitor);
+                adapterInfo = adapters.FirstOrDefault(a => a.Monitor == hMonitor);
             }
          
             if (hWnd == IntPtr.Zero)
@@ -104,7 +114,6 @@ namespace MediaToolkit.ScreenCaptures
             
             InitSurfaces();
 
-
         }
 
         private void InitSurfaces()
@@ -128,13 +137,12 @@ namespace MediaToolkit.ScreenCaptures
 
         private Stopwatch sw = new Stopwatch();
 
-        public override ErrorCode UpdateBuffer(int timeout = 10)
+        public ErrorCode UpdateBuffer(ref GDI.Bitmap bitmap)
         {
             sw.Restart();
 
             ErrorCode errorCode = ErrorCode.Unexpected;
             
-
             Result result = device.TestCooperativeLevel();
             if (result != ResultCode.Success)
             {
@@ -183,33 +191,7 @@ namespace MediaToolkit.ScreenCaptures
                 return errorCode;
             }
 
-            var syncRoot = videoBuffer.syncRoot;
-            bool lockTaken = false;
-
-            try
-            {
-                Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-                if (lockTaken)
-                {
-                    //success = BitBlt(srcSurface, videoBuffer.bitmap);
-
-                    bool success = SurfaceToBitmap(destSurface, videoBuffer.bitmap );
-                    if (success)
-                    {
-                        errorCode = ErrorCode.Ok;
-                    }
-                }
-
-            }
-            finally
-            {
-                if (lockTaken)
-                {
-                    Monitor.Exit(syncRoot);
-                }
-            }
-
-            //logger.Debug("CopyToBitmap(...) " + sw.ElapsedMilliseconds);
+			bool success = SurfaceToBitmap(destSurface, bitmap);
 
             return errorCode;
         }
@@ -256,7 +238,7 @@ namespace MediaToolkit.ScreenCaptures
             return success;
         }
 
-        private bool SurfaceToBitmap( Surface surface, GDI.Bitmap bmp)
+        private bool SurfaceToBitmap(Surface surface, GDI.Bitmap bmp)
         {
             bool result = false;
 
@@ -291,7 +273,6 @@ namespace MediaToolkit.ScreenCaptures
                     for (int line = 0; line < height; line++)
                     {
                         Utilities.CopyMemory(destPtr, sourcePtr, pictWidth);
-
                         sourcePtr = IntPtr.Add(sourcePtr, dataRect.Pitch);
                         destPtr = IntPtr.Add(destPtr, bitmapData.Stride);
                     }
@@ -354,8 +335,6 @@ namespace MediaToolkit.ScreenCaptures
                 }
                 */
 
-
-
             }
             catch (SharpDXException ex)
             {
@@ -416,7 +395,7 @@ namespace MediaToolkit.ScreenCaptures
         }
 
 
-        public override void Close()
+        public void Close()
         {
             if (direct3D9 != null && !direct3D9.IsDisposed)
             {
@@ -431,8 +410,6 @@ namespace MediaToolkit.ScreenCaptures
             }
 
             DisposeSurfaces();
-
-            base.Close();
         }
 
     }

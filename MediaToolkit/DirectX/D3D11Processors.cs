@@ -504,23 +504,14 @@ namespace MediaToolkit.DirectX
 
 
 		private void CopyNv12TextureToMemory(RenderTargetView lumaRT, RenderTargetView chromaRT, IVideoFrame destFrame)
-		{
-			var width = destSize.Width;
-			var height = destSize.Height;
-			var destPitch = width;
-			var destRowNumber = height + height / 2;
-
-			var dataBuffer = destFrame.Buffer;
-
-			IntPtr lumaPtr = dataBuffer[0].Data;
-			destPitch = dataBuffer[0].Stride;
-
+		{		
 			bool lockTaken = false;
 			try
 			{
 				lockTaken = destFrame.Lock(int.MaxValue);
 				if (lockTaken)
 				{
+					var dataBuffer = destFrame.Buffer;
 					using (var tex = lumaRT.ResourceAs<Texture2D>())
 					{
 						var stagingDescr = tex.Description;
@@ -535,17 +526,20 @@ namespace MediaToolkit.DirectX
 							var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
 							try
 							{
+								var width = destSize.Width;
+								var height = destSize.Height;
+
 								var srcPitch = dataBox.RowPitch;
 								var srcDataSize = dataBox.SlicePitch;
 								var srcPtr = dataBox.DataPointer;
 
-								destPitch = width;
-								destRowNumber = height;
+								IntPtr destPtr = dataBuffer[0].Data;
+								var destPitch = dataBuffer[0].Stride;
 
-								for (int i = 0; i < destRowNumber; i++)
+								for (int i = 0; i < height; i++)
 								{
-									Kernel32.CopyMemory(lumaPtr, srcPtr, (uint)destPitch);
-									lumaPtr += destPitch;
+									Kernel32.CopyMemory(destPtr, srcPtr, (uint)destPitch);
+									destPtr += destPitch;
 									srcPtr += srcPitch;
 								}
 							}
@@ -556,8 +550,6 @@ namespace MediaToolkit.DirectX
 						}
 					}
 
-					var chromaPtr = dataBuffer[1].Data;
-					destPitch = dataBuffer[1].Stride;
 
 					using (var tex = chromaRT.ResourceAs<Texture2D>())
 					{
@@ -573,19 +565,20 @@ namespace MediaToolkit.DirectX
 							var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
 							try
 							{
-								width = stagingDescr.Width;
-								height = stagingDescr.Height;
+								var width = stagingDescr.Width;
+								var height = stagingDescr.Height;
 
 								var srcPitch = dataBox.RowPitch;
 								var srcDataSize = dataBox.SlicePitch;
 								var srcPtr = dataBox.DataPointer;
 
-								destRowNumber = height;
+								var destPtr = dataBuffer[1].Data;
+								var destPitch = dataBuffer[1].Stride;
 
-								for (int i = 0; i < destRowNumber; i++)
+								for (int i = 0; i < height; i++)
 								{
-									Kernel32.CopyMemory(chromaPtr, srcPtr, (uint)destPitch);
-									chromaPtr += destPitch;
+									Kernel32.CopyMemory(destPtr, srcPtr, (uint)destPitch);
+									destPtr += destPitch;
 									srcPtr += srcPitch;
 								}
 							}

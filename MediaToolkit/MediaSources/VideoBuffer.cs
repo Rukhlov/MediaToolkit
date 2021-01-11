@@ -55,14 +55,14 @@ namespace MediaToolkit
             this.Height = resolution.Height;
             this.Format = format;
 
-            SharpDX.DXGI.Format dxFormat = SharpDX.DXGI.Format.Unknown;
+            SharpDX.DXGI.Format dxgiFormat = SharpDX.DXGI.Format.Unknown;
             if (Format == PixFormat.RGB32)
             {
-                dxFormat = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
+                dxgiFormat = SharpDX.DXGI.Format.B8G8R8A8_UNorm;
             }
             else if (Format == PixFormat.NV12)
             {
-                dxFormat = SharpDX.DXGI.Format.NV12;
+                dxgiFormat = SharpDX.DXGI.Format.NV12;
             }
             else
             {
@@ -74,7 +74,7 @@ namespace MediaToolkit
 			{
 				Width = this.Width,
 				Height = this.Height,
-				Format = dxFormat,
+				Format = dxgiFormat,
 
 				MipLevels = 1,
 				ArraySize = 1,
@@ -87,10 +87,11 @@ namespace MediaToolkit
 
 			frameBuffer = new VideoFrameBase[framesCount];
 
-			var pitch = Width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxFormat);
+			var pitch = Width * SharpDX.DXGI.FormatHelper.SizeOfInBytes(dxgiFormat);
 			var dataSize = pitch * Height;// 
-
-			bool videoFormatsSupporded = false;
+			
+			var formatSupport = device.CheckFormatSupport(dxgiFormat);
+			bool videoFormatsSupporded = formatSupport.HasFlag(FormatSupport.Texture2D);
 
 			for (int i = 0; i < framesCount; i++)
 			{
@@ -107,7 +108,7 @@ namespace MediaToolkit
 				}
 				else
 				{
-					if(dxFormat == SharpDX.DXGI.Format.NV12)
+					if(dxgiFormat == SharpDX.DXGI.Format.NV12)
 					{
 						descr.Format = SharpDX.DXGI.Format.R8_UNorm;
 						var lumaTex = new Texture2D(device, descr);
@@ -172,22 +173,12 @@ namespace MediaToolkit
             }
         }
 
-
         public override VideoDriverType DriverType => VideoDriverType.CPU;
         public override void Dispose()
         {
-            foreach(var f in frameBuffer)
+            foreach(var buf in frameBuffer)
             {
-				f.Dispose();
-
-				//for (int i = 0; i < buffer.Length; i++)
-				//{
-				//	var data = buffer[i];
-				//	if (data.Data != IntPtr.Zero)
-				//	{
-				//		Marshal.FreeHGlobal(data.Data);
-				//	}
-				//}			
+				buf.Dispose();		
 			}
 
 			frameBuffer = null;
@@ -197,18 +188,6 @@ namespace MediaToolkit
 
     public abstract class VideoFrameBase : IVideoFrame
     {
-
-        //public VideoFrameBase(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
-        //{
-        //    this.Width = width;
-        //    this.Height = height;
-
-        //    this.Format = format;
-        //    this.Align = align;
-
-        //    this.Buffer = buffer;
-        //}
-
         public IFrameBuffer[] Buffer { get; protected set; }
 
         public double Time { get; set; }
@@ -241,9 +220,7 @@ namespace MediaToolkit
         }
 
         public virtual void Dispose()
-        {
-
-        }
+        { }
     }
 
     public class D3D11VideoFrame : VideoFrameBase
@@ -281,16 +258,26 @@ namespace MediaToolkit
 
     public class VideoFrame : VideoFrameBase
     {
-        public VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
-            //: base(buffer, size, width, height, format, align)
+		public VideoFrame(int width, int height, PixFormat format, int align)
+		{
+			var size = FFmpegLib.Utils.AllocImageData(new Size(width, height),  format, align, out var buffer);
+			Init(buffer, size, width, height, format, align);
+		}
+
+		public VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
         {
-            this.Width = width;
-            this.Height = height;
-            this.Format = format;
-            this.Align = align;
-            this.Buffer = buffer;
-            this.DataLength = size;
-        }
+			Init(buffer, size, width, height, format, align);
+		}
+
+		private void Init(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
+		{
+			this.Width = width;
+			this.Height = height;
+			this.Format = format;
+			this.Align = align;
+			this.Buffer = buffer;
+			this.DataLength = size;
+		}
 
         public override VideoDriverType DriverType => VideoDriverType.CPU;
 		public override void Dispose()

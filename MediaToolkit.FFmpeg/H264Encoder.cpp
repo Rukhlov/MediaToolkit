@@ -248,8 +248,6 @@ namespace FFmpegLib {
 			AVFrame* srcFrame = NULL;
 			try {
 
-				//avpicture_fill((AVPicture*)frame, reinterpret_cast<uint8_t*>(srcPtr.ToPointer()), AV_PIX_FMT_NV12, frame->width, frame->height);
-
 				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
 				AVPixelFormat srcFormat = encoder_ctx->pix_fmt;
 				int srcWidth = videoFrame->Width;
@@ -269,24 +267,13 @@ namespace FFmpegLib {
 					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
 				}
 
-				//frame->data[0] = reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer());
-				//frame->data[1] = reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer());
-
-				//frame->linesize[0] = frameBuffer[0]->Stride;
-				//frame->linesize[1] = frameBuffer[1]->Stride;
-
 				__int64 pts = videoFrame->Time * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
 
 				AVRational av_time_base_q = { 1, AV_TIME_BASE };
-
 				AVRational codec_time = encoder_ctx->time_base; //
 
-				//__int64 framePts = frame->pts;
-
-				//Console::WriteLine("framePts " + framePts + "");
-
-				//frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
-				srcFrame->pts++;
+				srcFrame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
+				//srcFrame->pts++;
 
 				//if (framePts == frame->pts) {
 				//	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
@@ -294,32 +281,6 @@ namespace FFmpegLib {
 				EncodeFrame(srcFrame);
 
 				last_sec = videoFrame->Time;
-
-
-				//framePts = frame->pts;
-
-				//Console::WriteLine("last_sec " + last_sec);
-
-				////__int64 framePts = frame->pts;
-
-				////Console::WriteLine("framePts " + framePts + "");
-
-				////frame->pts = av_rescale_q(pts, av_time_base_q, codec_time); // пересчитываем в формат кодека
-				//frame->pts++;
-
-				////if (framePts == frame->pts) {
-				////	Console::WriteLine("framePts " + framePts + " frame->pts " + frame->pts);
-				////}
-				//EncodeFrame(frame);
-
-				////frame->data[0] = NULL;
-				////frame->data[1] = NULL;
-
-				//last_sec = videoFrame->Time;
-				////framePts = frame->pts;
-
-				////Console::WriteLine("last_sec " + last_sec);
-
 			}
 			catch (Exception^ ex) {
 
