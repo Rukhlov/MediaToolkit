@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Diagnostics;
 using MediaToolkit.Core;
+using MediaToolkit;
 
 namespace Test.Encoder
 {
@@ -117,18 +118,18 @@ namespace Test.Encoder
 
 
 
-            Size destSize = new Size(1920, 1080);
+           // Size destSize = new Size(1920, 1080);
 			// Size destSize = new Size(3840, 2160);
 			//Size destSize = new Size(2560, 1440);
 			// Size destSize = new Size(1900, 1000);
 			//Size destSize = new Size(1280, 720);
-			// Size destSize = new Size(640, 480);
-			//Size destSize = new Size(352, 288);
+			//Size destSize = new Size(640, 480);
+			Size destSize = new Size(352, 288);
 			//Size destSize = new Size(393, 211);
 			//Size destSize = new Size(555, 333);
 			destSize = MediaToolkit.Utils.GraphicTools.DecreaseToEven(destSize);
 
-            MediaToolkit.Core.PixFormat destFormat = MediaToolkit.Core.PixFormat.I420;
+            MediaToolkit.Core.PixFormat destFormat = MediaToolkit.Core.PixFormat.I444;
 
 
             FFmpegLib.FFmpegPixelConverter converter = new FFmpegLib.FFmpegPixelConverter();
@@ -137,28 +138,48 @@ namespace Test.Encoder
 
 			converter.Init(srcSize, srcFormat, destSize, destFormat, MediaToolkit.Core.ScalingFilter.Bicubic);
 
-            byte[] destBuffer = null;
+			IVideoFrame destFrame = new VideoFrame(destSize.Width, destSize.Height, destFormat, 16);
+
+
+			byte[] destBuffer = null;
             Stopwatch sw = new Stopwatch();
             const int count = 1;
             int num = count;
             sw.Start();
             while (num-- > 0)
             {
+				fixed (byte* ptr = srcBytes)
+				{
+					var destTotalSize = FFmpegLib.Utils.FillImageData((IntPtr)ptr, srcSize, srcFormat, 16, out var srcData, out var _srcLinesize);
+					IFrameBuffer[] srcBuffer = new FrameBuffer[srcData.Length];
+					for (int i = 0; i < srcBuffer.Length; i++)
+					{
+						srcBuffer[i] = new FrameBuffer(srcData[i], _srcLinesize[i]);
+					}
 
-                fixed (byte* ptr = srcBytes)
-                {
-                    converter.Convert((IntPtr)ptr, srcLinesize, 32, out var destData);
+					IVideoFrame srcFrame = new VideoFrame(srcBuffer, destTotalSize, srcSize.Width, srcSize.Height, srcFormat, 16);
 
-                    //converter.Convert((IntPtr)ptr, srcLinesize, out var destData, out var destLinesize);
-                    // converter.Convert((IntPtr)ptr, 1280, out var destData, out var destLinesize);
+					converter.Convert(srcFrame, destFrame);
 
-                    destBuffer = ConvertToContiguousBuffer(destData, destSize, destFormat);
+					destBuffer = ConvertToContiguousBuffer(destFrame.Buffer, destSize, destFormat);
+				}
 
-                    //converter.Convert2((IntPtr)ptr, 0, out destData);
-                }
-                //Thread.Sleep(33);
+				
 
-            }
+				//fixed (byte* ptr = srcBytes)
+				//{
+				//    converter.Convert((IntPtr)ptr, srcLinesize, 32, out var destData);
+
+				//    //converter.Convert((IntPtr)ptr, srcLinesize, out var destData, out var destLinesize);
+				//    // converter.Convert((IntPtr)ptr, 1280, out var destData, out var destLinesize);
+
+				//    destBuffer = ConvertToContiguousBuffer(destData, destSize, destFormat);
+
+				//    //converter.Convert2((IntPtr)ptr, 0, out destData);
+				//}
+				//Thread.Sleep(33);
+
+			}
             var time = sw.Elapsed;
             var frameInterval = time.TotalSeconds / count ;
 

@@ -228,7 +228,8 @@ namespace MediaToolkit.DirectX
             }
             else
             {
-                ResizeTexutre(srcTexture, rgbTexture, false);
+				bool keepAspectRatio = true;
+                ResizeTexutre(srcTexture, rgbTexture, keepAspectRatio);
             }
 
             // draw rgb to nv12
@@ -455,7 +456,7 @@ namespace MediaToolkit.DirectX
                     Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
                 });
 
-                var vertices = CreateVertices(srcSize, destSize, aspectRatio);
+                var vertices = CreateVertices(destSize, srcSize, aspectRatio);
                 using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                 {
                     VertexBufferBinding vertexBuffer = new VertexBufferBinding
@@ -639,7 +640,7 @@ namespace MediaToolkit.DirectX
         }
 
 
-        private static _Vertex[] CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
+        private static _Vertex[] CreateVertices(GDI.Size viewSize, GDI.Size targetSize, bool aspectRatio = true)
         {
             float x1 = -1f;
             float y1 = -1f;
@@ -654,8 +655,8 @@ namespace MediaToolkit.DirectX
             {
                 double targetWidth = targetSize.Width;
                 double targetHeight = targetSize.Height;
-                double srcWidth = srcSize.Width;
-                double srcHeight = srcSize.Height;
+                double srcWidth = viewSize.Width;
+                double srcHeight = viewSize.Height;
 
                 double targetRatio = targetWidth / targetHeight;
                 double containerRatio = srcWidth / srcHeight;

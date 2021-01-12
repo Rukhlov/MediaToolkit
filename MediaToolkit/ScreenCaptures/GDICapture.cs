@@ -143,23 +143,20 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-
 			sharedTexture = new Texture2D(device,
 				new Texture2DDescription
 				{
-					CpuAccessFlags = CpuAccessFlags.None,
-					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
 					Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
 					Width = SrcRect.Width,
 					Height = SrcRect.Height,
-										//Width = DestSize.Width,
-										//Height = DestSize.Height,
 
-										MipLevels = 1,
+					MipLevels = 1,
 					ArraySize = 1,
 					SampleDescription = { Count = 1, Quality = 0 },
 					Usage = ResourceUsage.Default,
 					OptionFlags = ResourceOptionFlags.None,
+					CpuAccessFlags = CpuAccessFlags.None,
+					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
 
 				});
 

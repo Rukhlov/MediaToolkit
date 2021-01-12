@@ -88,12 +88,142 @@ namespace FFmpegLib {
 			}
 		}
 
-		//void Convert(IntPtr srcData, int srcDataSize, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
 
-		//	Convert(srcData, srcDataSize, 16, destData, destLinesize);
-		//}
+		int Convert(IVideoFrame^ srcFrame, IVideoFrame^ destFrame) {
 
-		//void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {
+			int res = 0;
+			if (!initialized) {
+
+				throw gcnew InvalidOperationException("Not initialized");
+			}
+
+			try {
+
+				array<IFrameBuffer^>^ srcBuffer = srcFrame->Buffer;
+				const uint8_t* src_data[4] =
+				{
+					reinterpret_cast<uint8_t*>(srcBuffer[0]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(srcBuffer[1]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(srcBuffer[2]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(srcBuffer[3]->Data.ToPointer())
+				};
+
+				const int scr_linesize[4] =
+				{
+					srcBuffer[0]->Stride,
+					srcBuffer[1]->Stride,
+					srcBuffer[2]->Stride,
+					srcBuffer[3]->Stride,
+				};
+
+				array<IFrameBuffer^>^ destBuffer = destFrame->Buffer;
+				uint8_t* dest_data[4] =
+				{
+					reinterpret_cast<uint8_t*>(destBuffer[0]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(destBuffer[1]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(destBuffer[2]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(destBuffer[3]->Data.ToPointer())
+				};
+
+				int dest_linesize[4] =
+				{
+					destBuffer[0]->Stride,
+					destBuffer[1]->Stride,
+					destBuffer[2]->Stride,
+					destBuffer[3]->Stride,
+				};
+
+				res = sws_scale(sws_ctx, src_data, scr_linesize, 0, srcFrame->Height, dest_data, dest_linesize);
+
+			}
+			catch (Exception^ ex) {
+
+				logger->TraceEvent(TraceEventType::Error, 0, ex->Message);
+				throw;
+			}
+
+			return res;
+		}
+
+		void _Convert(IVideoFrame^ srcFrame, IVideoFrame^ destFrame) {
+
+			if (!initialized) {
+
+				throw gcnew InvalidOperationException("Not initialized");
+			}
+
+			AVFrame* src_frame = NULL;
+			AVFrame* dest_frame = NULL;
+
+			try {
+
+				array<IFrameBuffer^>^ srcBuffer = srcFrame->Buffer;
+				IntPtr srcPtr = srcBuffer[0]->Data;
+				int srcWidth = srcFrame->Width;
+				int srcHeight = srcFrame->Height;
+				int srcAlign = srcFrame->Align;
+				AVPixelFormat srcFormat = Utils::GetAVPixelFormat(srcFrame->Format);
+
+				src_frame = av_frame_alloc();
+				src_frame->width = srcWidth;
+				src_frame->height = srcHeight;
+				src_frame->format = srcFormat;
+				
+				int srcSize = av_image_fill_arrays(src_frame->data, src_frame->linesize,
+					reinterpret_cast<uint8_t*>(srcPtr.ToPointer()), srcFormat, srcWidth, srcHeight, srcAlign);
+
+				if (srcSize < 0) {
+					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
+				}
+
+				array<IFrameBuffer^>^ destBuffer = destFrame->Buffer;				
+				IntPtr destPtr = destBuffer[0]->Data;
+				int destWidth = destFrame->Width;
+				int destHeight = destFrame->Height;
+				int destAlign = destFrame->Align;
+				AVPixelFormat destFormat = Utils::GetAVPixelFormat(destFrame->Format);
+
+				dest_frame = av_frame_alloc();
+				dest_frame->width = destWidth;
+				dest_frame->height = destHeight;				
+				dest_frame->format = destFormat;
+				
+				int destSize = av_image_fill_arrays(dest_frame->data, dest_frame->linesize,
+					reinterpret_cast<uint8_t*>(destPtr.ToPointer()), destFormat, destWidth, destHeight, destAlign);
+
+				if (destSize < 0) {
+					throw gcnew InvalidOperationException("Could not fill source frame " + destSize);
+				}
+
+				//  конвертируем в новый формат
+				int res = sws_scale(sws_ctx, src_frame->data, src_frame->linesize, 0, srcHeight, dest_frame->data, dest_frame->linesize);
+			}
+			catch (Exception^ ex) {
+
+				logger->TraceEvent(TraceEventType::Error, 0, ex->Message);
+				throw;
+			}
+			finally{
+
+				if (dest_frame != NULL) {
+					if (dest_frame) {
+						pin_ptr<AVFrame*> pDestFrame = &dest_frame;
+						av_frame_free(pDestFrame);
+						dest_frame = NULL;
+					}
+				}
+
+				if (src_frame != NULL) {
+					if (src_frame) {
+						pin_ptr<AVFrame*> pSrcFrame = &src_frame;
+						av_frame_free(pSrcFrame);
+						src_frame = NULL;
+					}
+				}
+			}
+
+		}
+
 		void Convert(IntPtr srcData, int srcLinesize, int srcAlign, [Out] array<IFrameBuffer^>^% destData) {
 
 			if (!initialized) {
@@ -135,7 +265,7 @@ namespace FFmpegLib {
 
 				for (int i = 0; i < 4; i++) {
 					destData[i] = gcnew FrameBuffer((IntPtr)destFrame->data[i], destFrame->linesize[i]);
-				}			
+				}
 
 			}
 			catch (Exception^ ex) {
