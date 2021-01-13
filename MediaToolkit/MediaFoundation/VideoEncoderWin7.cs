@@ -243,7 +243,7 @@ namespace MediaToolkit.MediaFoundation
 				defaultPS = new PixelShader(device, compResult.Bytecode);
 			}
 
-			using (var compResult = HlslCompiler.CompileShaderFromResources("RgbToNv12.hlsl", "PS", psProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("_RgbToNv12.hlsl", "PS", psProvile))
 			{
 				rgbToYuvPS = new PixelShader(device, compResult.Bytecode);
 			}

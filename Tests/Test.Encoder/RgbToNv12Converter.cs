@@ -23,7 +23,7 @@ namespace Test.Encoder
             Console.WriteLine("RgbToNv12Converter::Run()");
             try
             {
-                RgbToNv12Converter converter = new RgbToNv12Converter();
+				RgbToNv12Converter converter = new RgbToNv12Converter();
                 converter.Start();
 
 

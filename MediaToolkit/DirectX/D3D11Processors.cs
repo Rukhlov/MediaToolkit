@@ -34,7 +34,7 @@ namespace MediaToolkit.DirectX
 
         private VertexShader defaultVS = null;
         private PixelShader defaultPS = null;
-        private PixelShader rgbToYuvPS = null;
+        private PixelShader rgbToNv12PS = null;
         private PixelShader downscalePS = null;
 
         private Texture2D rgbTexture = null;
@@ -120,9 +120,10 @@ namespace MediaToolkit.DirectX
                 defaultPS = new PixelShader(device, compResult.Bytecode);
             }
 
-            using (var compResult = HlslCompiler.CompileShaderFromResources("RgbToNv12.hlsl", "PS", psProvile))
+			using (var compResult = HlslCompiler.CompileShaderFromResources("RgbToNv12.hlsl", "PS", psProvile))
+			//using (var compResult = HlslCompiler.CompileShaderFromResources("_RgbToNv12.hlsl", "PS", psProvile))
             {
-                rgbToYuvPS = new PixelShader(device, compResult.Bytecode);
+                rgbToNv12PS = new PixelShader(device, compResult.Bytecode);
             }
 
             using (var compResult = HlslCompiler.CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
@@ -232,14 +233,18 @@ namespace MediaToolkit.DirectX
                 ResizeTexutre(srcTexture, rgbTexture, keepAspectRatio);
             }
 
-            // draw rgb to nv12
-            RenderTargetView nv12LumaRT = null;
+			rgbToNv12YuvColorMatrix = ColorSpaceHelper.GetRgbToYuvMatrix(destFrame.ColorSpace, destFrame.ColorRange);
+
+			// draw rgb to nv12
+			RenderTargetView nv12LumaRT = null;
             RenderTargetView nv12ChromaRT = null;
             try
             {
-                SetRenderTargets(destFrame, out nv12LumaRT, out nv12ChromaRT);
+                var renderTargets = SetRenderTargets(destFrame).ToArray();
+				nv12LumaRT = renderTargets[0];
+				nv12ChromaRT = renderTargets[1];
 
-                DrawRgbToNv12(rgbTexture, nv12LumaRT, nv12ChromaRT);
+				DrawRgbToNv12(rgbTexture, nv12LumaRT, nv12ChromaRT);
 
                 if (destFrame.DriverType == VideoDriverType.CPU)
                 {// gpu->cpu
@@ -254,10 +259,9 @@ namespace MediaToolkit.DirectX
             }
         }
 
-        private void SetRenderTargets(IVideoFrame frame, out RenderTargetView lumaRTV, out RenderTargetView chromaRTV)
+        private IEnumerable<RenderTargetView> SetRenderTargets(IVideoFrame frame)
         {
-            lumaRTV = null;
-            chromaRTV = null;
+			List<RenderTargetView> renderTargets = new List<RenderTargetView>();
 
             IReadOnlyList<Texture2D> textures = null;
 
@@ -307,7 +311,7 @@ namespace MediaToolkit.DirectX
                 if (textures.Count == 2)
                 {   // DXGI_FORMAT_R8_UNORM
                     var lumaTex = textures[0];
-                    lumaRTV = new RenderTargetView(device, lumaTex, new RenderTargetViewDescription
+                    var lumaRTV = new RenderTargetView(device, lumaTex, new RenderTargetViewDescription
                     {
                         Format = lumaTex.Description.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
@@ -316,13 +320,16 @@ namespace MediaToolkit.DirectX
 
                     // DXGI_FORMAT_R8G8_UNORM
                     var chromaTex = textures[1];
-                    chromaRTV = new RenderTargetView(device, chromaTex, new RenderTargetViewDescription
+                    var chromaRTV = new RenderTargetView(device, chromaTex, new RenderTargetViewDescription
                     {
                         Format = chromaTex.Description.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
                         Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
                     });
-                }
+
+					renderTargets.Add(lumaRTV);
+					renderTargets.Add(chromaRTV);
+				}
                 else if (textures.Count == 1)
                 {// DXGI_FORMAT_NV12
                     var nv12Texture = textures[0];
@@ -339,11 +346,15 @@ namespace MediaToolkit.DirectX
                         Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
                     };
 
-                    lumaRTV = new RenderTargetView(device, nv12Texture, rtvDescr);
+                    var lumaRTV = new RenderTargetView(device, nv12Texture, rtvDescr);
 
                     rtvDescr.Format = Format.R8G8_UNorm;
-                    chromaRTV = new RenderTargetView(device, nv12Texture, rtvDescr);
-                }
+                    var chromaRTV = new RenderTargetView(device, nv12Texture, rtvDescr);
+
+					renderTargets.Add(lumaRTV);
+					renderTargets.Add(chromaRTV);
+					
+				}
                 else
                 {
                     throw new InvalidOperationException("Invalid video frame format");
@@ -359,9 +370,14 @@ namespace MediaToolkit.DirectX
                     }
                 }
             }
-        }
 
-        private void DrawRgbToNv12(Texture2D rgbTexture, RenderTargetView nv12LumaRT, RenderTargetView nv12ChromaRT)
+			return renderTargets;
+
+		}
+
+		private Matrix rgbToNv12YuvColorMatrix;
+
+		private void DrawRgbToNv12(Texture2D rgbTexture, RenderTargetView nv12LumaRT, RenderTargetView nv12ChromaRT)
         {         
             var rgbDescr = rgbTexture.Description;
             int destWidth = rgbDescr.Width;
@@ -376,7 +392,8 @@ namespace MediaToolkit.DirectX
                 new _Vertex(new Vector3(1f, 1f, 0f), new Vector2(1f, 0f)),
             };
 
-            using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+			
+			using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
             {
                 VertexBufferBinding vertexBuffer = new VertexBufferBinding
                 {
@@ -404,9 +421,14 @@ namespace MediaToolkit.DirectX
                 // convert rgb to YCbCr
                 deviceContext.OutputMerger.SetTargets(nv12LumaRT, chromaRT);
                 deviceContext.ClearRenderTargetView(nv12LumaRT, SharpDX.Color.Black);
+				deviceContext.ClearRenderTargetView(chromaRT, SharpDX.Color.Black);
 
-                deviceContext.ClearRenderTargetView(chromaRT, SharpDX.Color.Black);
-                deviceContext.PixelShader.SetShader(rgbToYuvPS, null, 0);
+				using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref rgbToNv12YuvColorMatrix))
+				{
+					deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+				}
+
+				deviceContext.PixelShader.SetShader(rgbToNv12PS, null, 0);
                 deviceContext.PixelShader.SetShaderResources(0, rgbSRV);
                 deviceContext.Draw(vertices.Length, 0);
             }
@@ -616,7 +638,7 @@ namespace MediaToolkit.DirectX
             //SafeDispose(lumaSRV);
 
             SafeDispose(rgbTexture);
-            SafeDispose(rgbToYuvPS);
+            SafeDispose(rgbToNv12PS);
             SafeDispose(textureSampler);
             SafeDispose(downscalePS);
             SafeDispose(defaultPS);

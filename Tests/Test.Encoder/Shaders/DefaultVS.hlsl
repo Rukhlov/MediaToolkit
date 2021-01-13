@@ -1,4 +1,12 @@
-﻿struct VS_INPUT
+﻿
+//uniform float4x4 ViewProj;
+
+cbuffer dataBuffer : register(b0)
+{
+	float4x4 ViewProj;
+};
+
+struct VS_INPUT
 {
 	float4 Pos : POSITION;
 	float2 Tex : TEXCOORD;
@@ -14,6 +22,11 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 VS_OUTPUT VS(VS_INPUT input)
 {
+	//VS_OUTPUT output;
+	//output.Pos = mul(float4(input.Pos.xyz, 1.0), ViewProj);
+	//output.Tex = input.Tex;
+	//return output;
+
 	return input;
 }
 

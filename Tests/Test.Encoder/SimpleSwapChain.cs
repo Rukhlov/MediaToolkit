@@ -16,6 +16,7 @@ using SharpDX.WIC;
 using System.Runtime.InteropServices;
 using Direct2D = SharpDX.Direct2D1;
 using MediaToolkit.NativeAPIs;
+using MediaToolkit.DirectX;
 
 namespace Test.Encoder
 {
@@ -290,7 +291,7 @@ namespace Test.Encoder
                 Stopwatch sw = Stopwatch.StartNew();
                 int interval = (int)(1000.0 / FramePerSec);
                 AutoResetEvent syncEvent = new AutoResetEvent(false);
-                bool aspectRatio = false;
+                bool aspectRatio = true;
 
                 /*
 				 * Для варианта Точечная фильтрация текстур определенный приложением режим фильтрации заменяется на D3D11_FILTER_MIN_MAG_MIP_POINT,
@@ -342,15 +343,18 @@ namespace Test.Encoder
                 }
                 //deviceContext.PixelShader.SetShader(downscalePixelShader, null, 0);
                 //deviceContext.VertexShader.SetShader(defaultVertexShader, null, 0);
-                int count = 1;
+                 int count = 1;
                 while (running)
                 {
                     try
                     {
+						var targetSize = new GDI.Size(ImageWidth, ImageHeight);
+						var viewSize = f.ClientSize;
+						aspectRatio = true;
+						Transform transform = Transform.R0;
+						_Vertex[] vertices = VertexHelper.GetQuadVertices(viewSize, targetSize, aspectRatio, transform);
 
-
-
-						_Vertex[] vertices = CreateVertices(f.ClientSize, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
+						//_Vertex[] vertices = CreateVertices(f.ClientSize, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
 
                         using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                         {
@@ -391,7 +395,17 @@ namespace Test.Encoder
                             deviceContext.OutputMerger.SetTargets(renderTargetView);
                             deviceContext.ClearRenderTargetView(renderTargetView, Color.Blue);
 
-                            deviceContext.VertexShader.SetShader(defaultVertexShader, null, 0);
+							//float degrees = -90;
+							//float angle = (float)(Math.PI * degrees / 180.0);
+
+							////var viewProj = Matrix.Identity;
+							//var viewProj = Matrix.RotationZ(angle);
+							//using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref viewProj))
+							//{
+							//	deviceContext.VertexShader.SetConstantBuffer(0, buffer);
+							//}
+
+							deviceContext.VertexShader.SetShader(defaultVertexShader, null, 0);
                             //deviceContext.PixelShader.SetShader(defaultPixelShader, null, 0);
 
                             deviceContext.PixelShader.SetShader(downscalePixelShader, null, 0);
@@ -491,11 +505,46 @@ namespace Test.Encoder
 
         }
 
-
-
-
-        private static _Vertex[] CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
+		private static _Vertex[] _CreateVertices(GDI.Size srcSize, GDI.Size targetSize, bool aspectRatio = true)
         {
+
+			/*
+			 * 1--3
+			 * |  |
+			 * 0--2
+			 */
+
+			/* TEXCOORD
+			 * 0,0--1,0
+			 * |	 |
+			 * 0,1--1,1
+			 */
+
+			//float u1 = 0;
+			//float v1 = 1f;
+			//float u2 = 0;
+			//float v2 = 0;
+			//float u3 = 1;
+			//float v3 = 1;
+			//float u4 = 1;
+			//float v4 = 0;
+
+			float u1 = -1f;
+			float v1 = -1f;
+			float u2 = -1f;
+			float v2 = 1f;
+			float u3 = 1f;
+			float v3 = -1f;
+			float u4 = 1f;
+			float v4 = 1f;
+
+
+			/* POSITION
+			 * -1, 1 -- 1, 1
+			 *  |	    |
+			 * -1,-1 -- 1,-1
+			 */
+			//0
 			float x1 = -1f;
 			float y1 = -1f;
 			float x2 = -1f;
@@ -505,6 +554,18 @@ namespace Test.Encoder
 			float x4 = 1f;
 			float y4 = 1f;
 
+
+			//float x4 = -1f;
+			//float y4 = -1f;
+			//float x3 = -1f;
+			//float y3 = 1f;
+			//float x2 = 1f;
+			//float y2 = -1f;
+			//float x1 = 1f;
+			//float y1 = 1f;
+
+
+			//90
 			//float x1 = -1f;
 			//float y1 = 1f;
 			//float x2 = 1f;
@@ -514,11 +575,51 @@ namespace Test.Encoder
 			//float x4 = 1f;
 			//float y4 = -1f;
 
+			////180
+			//float x1 = 1f;
+			//float y1 = 1f;
+			//float x2 = 1f;
+			//float y2 = -1f;
+			//float x3 = -1f;
+			//float y3 = 1f;
+			//float x4 = -1f;
+			//float y4 = -1f;
+
+			////270
+			//float x1 = 1f;
+			//float y1 = -1f;
+			//float x2 = -1f;
+			//float y2 = -1f;
+			//float x3 = 1f;
+			//float y3 = 1f;
+			//float x4 = -1f;
+			//float y4 = 1f;
+
+
+			//
+			//float x1 = -1f;
+			//float y1 = 1f;
+			//float x2 = -1f;
+			//float y2 = -1f;
+			//float x3 = 1f;
+			//float y3 = 1f;
+			//float x4 = 1f;
+			//float y4 = -1f;
+
+			float rotateDegrees = 180;
+
 			if (aspectRatio)
             {
                 double targetWidth = targetSize.Width;
                 double targetHeight = targetSize.Height;
-                double srcWidth = srcSize.Width;
+
+				if (rotateDegrees == 90 || rotateDegrees == 270)
+				{
+					targetWidth = targetSize.Height;
+					targetHeight = targetSize.Width;
+				}
+
+				double srcWidth = srcSize.Width;
                 double srcHeight = srcSize.Height;
 
                 double targetRatio = targetWidth / targetHeight;
@@ -565,27 +666,172 @@ namespace Test.Encoder
                 y4 = (float)(-(top - 1));
             }
 
-            return new _Vertex[]
-            {
-                new _Vertex(new Vector3(x1, y1, 0f), new Vector2(0f, 1f)),
-                new _Vertex(new Vector3(x2, y2, 0f), new Vector2(0f, 0f)),
-                new _Vertex(new Vector3(x3, y3, 0f), new Vector2(1f, 1f)),
-                new _Vertex(new Vector3(x4, y4, 0f), new Vector2(1f, 0f)),
-            };
+			float angle = (float)(Math.PI * rotateDegrees / 180.0);
+
+			//Matrix.LookAtLH()
+			var viewProj = Matrix.Identity;
+			//var viewProj = Matrix.RotationZ(angle);
+			//var viewProj = Matrix.RotationX(angle);
+
+			//var viewProj = Matrix.Scaling(-1, -1, -1);
+			//var viewProj = Matrix.Transformation(new Vector3(0.5f, 0.5f, 0), new Quaternion(0), new Vector3(0.1f, -0.1f, 0), new Vector3(0, 0, 0), new Quaternion(0), new Vector3(0,0, 0));
+			var vertex = new Matrix(x1, y1, 0f, 1f, x2, y2, 0f, 1f, x3, y3, 0f, 1f, x4, y4, 0f, 1f);
+
+			var result = Matrix.Multiply(vertex, viewProj);
+			
+			x1 = result.M11;
+			y1 = result.M12;
+			x2 = result.M21;
+			y2 = result.M22;
+			x3 = result.M31;
+			y3 = result.M32;
+			x4 = result.M41;
+			y4 = result.M42;
 
 
-        }
+			var coordMatrix = new Matrix(u1, v1, 0f, 0f, u2, v2, 0f, 0f, u3, v3, 0f, 0f, u4, v4, 0f, 0f);
+			var _degrees = rotateDegrees;
+			float _angle = (float)(Math.PI * _degrees / 180.0);
 
-        public struct _Vertex
-        {
-            public _Vertex(Vector3 pos, Vector2 tex)
-            {
-                this.Position = pos;
-                this.TextureCoord = tex;
-            }
-            public Vector3 Position;
-            public Vector2 TextureCoord;
-        }
+			//var proj = Matrix.Transformation2D(new Vector2(0, 0), 1, new Vector2(1, 1), new Vector2(0.5f, 0.5f), 0f, new Vector2(0, 0));
+			////Matrix.LookAtLH()
+			var proj = Matrix.RotationZ(_angle);
+
+			var _result = Matrix.Multiply(coordMatrix, proj);
+			//_result = Matrix.Multiply(_result, trans);
+
+			u1 = _result.M11 /2.0f + 0.5f;
+			v1 = -(_result.M12 / 2.0f - 0.5f);
+			u2 = _result.M21 / 2.0f + 0.5f;
+			v2 = -(_result.M22 / 2.0f - 0.5f);
+			u3 = _result.M31 / 2.0f + 0.5f;
+			v3 = -(_result.M32 / 2.0f - 0.5f);
+			u4 = _result.M41 / 2.0f + 0.5f;
+			v4 = -(_result.M42 / 2.0f - 0.5f);
+
+			//u1 = _result.M11 + 1;
+			//v1 = _result.M12 + 1;
+			//u2 = _result.M21 + 1;
+			//v2 = _result.M22 + 1;
+			//u3 = _result.M31 + 1;
+			//v3 = _result.M32 + 1;
+			//u4 = _result.M41 + 1;
+			//v4 = _result.M42 + 1;
+			//// 180
+			//u1 = 1;
+			//v1 = 0;
+			//u2 = 1;
+			//v2 = 1;
+			//u3 = 0;
+			//v3 = 0;
+			//u4 = 0;
+			//v4 = 1;
+
+			//u1 = _result.M11;
+			//v1 = _result.M12+1;
+			//u2 = _result.M21;
+			//v2 = _result.M22+1;
+			//u3 = _result.M31;
+			//v3 = _result.M32 + 1;
+			//u4 = _result.M41;
+			//v4 = _result.M42 + 1;
+			//// 270
+			//u1 = 1;
+			//v1 = 1;
+			//u2 = 0;
+			//v2 = 1;
+			//u3 = 1;
+			//v3 = 0;
+			//u4 = 0;
+			//v4 = 0;
+
+			//u1 = _result.M11 + 1;
+			//v1 = _result.M12;
+			//u2 = _result.M21 + 1;
+			//v2 = _result.M22;
+			//u3 = _result.M31 + 1;
+			//v3 = _result.M32;
+			//u4 = _result.M41 + 1;
+			//v4 = _result.M42;
+
+			//// 90
+			//u1 = 0;
+			//v1 = 0;
+			//u2 = 1;
+			//v2 = 0;
+			//u3 = 0;
+			//v3 = 1;
+			//u4 = 1;
+			//v4 = 1;
+
+			//// flipX
+			//u1 = 0;
+			//v1 = 0;
+			//u2 = 0;
+			//v2 = 1f;
+			//u3 = 1f;
+			//v3 = 0;
+			//u4 = 1f;
+			//v4 = 1f;
+
+			//// flipY
+			//u1 = 1;
+			//v1 = 1;
+			//u2 = 1;
+			//v2 = 0;
+			//u3 = 0;
+			//v3 = 1;
+			//u4 = 0;
+			//v4 = 0;
+
+
+
+			//// 180
+			//u1 = 1;
+			//v1 = 0;
+			//u2 = 1;
+			//v2 = 1;
+			//u3 = 0;
+			//v3 = 0;
+			//u4 = 0;
+			//v4 = 1;
+
+
+
+			return new _Vertex[]
+			{
+
+				//new _Vertex(new Vector3(x1, y1, 0f), new Vector2(0f, 1f)),
+				//new _Vertex(new Vector3(x2, y2, 0f), new Vector2(1f, 1f)),
+				//new _Vertex(new Vector3(x3, y3, 0f), new Vector2(0f, 0f)),
+				//new _Vertex(new Vector3(x4, y4, 0f), new Vector2(1f, 0f)),
+
+				new _Vertex(new Vector3(x1, y1, 0f), new Vector2(u1, v1)),
+				new _Vertex(new Vector3(x2, y2, 0f), new Vector2(u2, v2)),
+				new _Vertex(new Vector3(x3, y3, 0f), new Vector2(u3, v3)),
+				new _Vertex(new Vector3(x4, y4, 0f), new Vector2(u4, v4)),
+
+
+				//flipX
+				//new _Vertex(new Vector3(x1, y1, 0f), new Vector2(1f, 1f)),
+				//new _Vertex(new Vector3(x2, y2, 0f), new Vector2(1f, 0f)),
+				//new _Vertex(new Vector3(x3, y3, 0f), new Vector2(0f, 1f)),
+				//new _Vertex(new Vector3(x4, y4, 0f), new Vector2(0f, 0f)),
+
+
+				//flipY
+				//new _Vertex(new Vector3(x1, y1, 0f), new Vector2(0f, 0f)),
+				//new _Vertex(new Vector3(x2, y2, 0f), new Vector2(0f, 1f)),
+				//new _Vertex(new Vector3(x3, y3, 0f), new Vector2(1f, 0f)),
+				//new _Vertex(new Vector3(x4, y4, 0f), new Vector2(1f, 1f)),
+
+			};
+
+
+
+
+		}
+
 
 
         private void InitShaders()

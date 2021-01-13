@@ -112,7 +112,205 @@ namespace MediaToolkit.DirectX
         }
 
     }
-    public class HlslCompiler
+
+	public enum Transform
+	{
+		R0,
+		R90,
+		R180,
+		R270,
+
+		FlipX,
+		FlipY,
+	}
+
+	public class VertexHelper
+	{	
+		public static _Vertex[] GetQuadVertices(GDI.Size viewSize, GDI.Size targetSize, 
+			bool aspectRatio = true, Transform transform = Transform.R0)
+		{			
+			/* порядок задания вершин
+			 * 1--3
+			 * |  |
+			 * 0--2
+			 */
+
+			//POSITION
+			/* координаты вершин (XYZ) 
+			 * -1, 1 -- 1, 1
+			 *  |	    |
+			 * -1,-1 -- 1,-1
+			 */
+
+			float x1 = -1f;
+			float y1 = -1f;
+			float x2 = -1f;
+			float y2 = 1f;
+			float x3 = 1f;
+			float y3 = -1f;
+			float x4 = 1f;
+			float y4 = 1f;
+			float z = 0f;
+
+			//TEXCOORD
+			/* координаты текстуры (UV) 
+			 * 0,0--1,0
+			 * |	 |
+			 * 0,1--1,1
+			 */
+
+			float u1 = 0;
+			float v1 = 1f;
+			float u2 = 0;
+			float v2 = 0;
+			float u3 = 1;
+			float v3 = 1;
+			float u4 = 1;
+			float v4 = 0;
+
+			if (transform != Transform.R0)
+			{
+				var rotateDegrees = 0;
+				var axisVector = new Vector3(0, 0, 0);
+				var transformMatrix = Matrix.Identity;
+
+				if (transform == Transform.R90)
+				{
+					rotateDegrees = 90;
+				}
+				else if (transform == Transform.R180)
+				{
+					rotateDegrees = 180;
+				}
+				else if (transform == Transform.R270)
+				{
+					rotateDegrees = 270;
+				}
+				else if (transform == Transform.FlipX)
+				{
+					axisVector = new Vector3(1f, 0, 0);
+				}
+				else if (transform == Transform.FlipY)
+				{
+					axisVector = new Vector3(0, 1f, 0);
+				}
+
+				// выполняем преобразование в обычных координатах
+				// и потом пересчитываетм в координаты текстуры
+				var coords = new Matrix(x1, y1, z, 0f, x2, y2, z, 0f, x3, y3, z, 0f, x4, y4, z, 0f);
+				if (rotateDegrees > 0)
+				{
+					float angle = DegreesToRads(rotateDegrees);
+					var rotationMatrix = Matrix.RotationZ(angle);
+					coords = Matrix.Multiply(coords, rotationMatrix);
+				}
+
+				if (!axisVector.IsZero)
+				{
+					var flipMatrix = Matrix.RotationAxis(axisVector, (float)Math.PI);
+					coords = Matrix.Multiply(coords, flipMatrix);
+				}
+
+				u1 = coords.M11 / 2.0f + 0.5f;
+				v1 = -(coords.M12 / 2.0f - 0.5f);
+				u2 = coords.M21 / 2.0f + 0.5f;
+				v2 = -(coords.M22 / 2.0f - 0.5f);
+				u3 = coords.M31 / 2.0f + 0.5f;
+				v3 = -(coords.M32 / 2.0f - 0.5f);
+				u4 = coords.M41 / 2.0f + 0.5f;
+				v4 = -(coords.M42 / 2.0f - 0.5f);
+			}
+
+			if (aspectRatio)
+			{
+				double targetWidth = targetSize.Width;
+				double targetHeight = targetSize.Height;
+
+				if (transform == Transform.R90 || transform == Transform.R270)
+				{
+					targetWidth = targetSize.Height;
+					targetHeight = targetSize.Width;
+				}
+
+				double srcWidth = viewSize.Width;
+				double srcHeight = viewSize.Height;
+
+				double targetRatio = targetWidth / targetHeight;
+				double containerRatio = srcWidth / srcHeight;
+
+				double viewTop = 0;
+				double viewLeft = 0;
+				double viewWidth = srcWidth;
+				double viewHeight = srcHeight;
+
+				if (containerRatio < targetRatio)
+				{
+					viewWidth = srcWidth;
+					viewHeight = (viewWidth / targetRatio);
+					viewTop = (srcHeight - viewHeight) / 2;
+					viewLeft = 0;
+				}
+				else
+				{
+					viewHeight = srcHeight;
+					viewWidth = viewHeight * targetRatio;
+					viewTop = 0;
+					viewLeft = (srcWidth - viewWidth) / 2;
+				}
+
+				// в левых координатах 0f, 2f
+				var normX = 2.0 / srcWidth;
+				var normY = 2.0 / srcHeight;
+				var left = viewLeft * normX;
+				var top = viewTop * normY;
+				var width = viewWidth * normX;
+				var height = viewHeight * normY;
+
+				// в правых координатах -1f, 1f 
+				// сдвигаем на -1,-1 и инвертируем Y 
+				x1 = (float)(left - 1);
+				y1 = (float)(-((height + top) - 1));
+				x2 = x1;
+				y2 = (float)(-(top - 1));
+				x3 = (float)((width + left) - 1);
+				y3 = y1;
+				x4 = x3;
+				y4 = (float)(-(top - 1));
+			}
+
+			return new _Vertex[]
+			{
+				new _Vertex(new Vector3(x1, y1, z), new Vector2(u1, v1)),
+				new _Vertex(new Vector3(x2, y2, z), new Vector2(u2, v2)),
+				new _Vertex(new Vector3(x3, y3, z), new Vector2(u3, v3)),
+				new _Vertex(new Vector3(x4, y4, z), new Vector2(u4, v4)),
+			};
+		}
+
+
+		public static float DegreesToRads(int rotateDegrees)
+		{
+			return (float)(Math.PI * rotateDegrees / 180.0);
+		}
+
+	}
+
+
+	public struct _Vertex
+	{
+		public _Vertex(Vector3 pos, Vector2 tex)
+		{
+			this.Position = pos;
+			this.TextureCoord = tex;
+		}
+		public Vector3 Position;
+		public Vector2 TextureCoord;
+
+	}
+
+
+
+	public class HlslCompiler
     {
 
         public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
