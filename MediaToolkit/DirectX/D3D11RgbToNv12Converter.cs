@@ -23,7 +23,7 @@ using GDI = System.Drawing;
 
 namespace MediaToolkit.DirectX
 {
-    class D3D11RgbToNv12Converter
+    public class D3D11RgbToNv12Converter
     {
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.DirectX");
 
@@ -39,9 +39,8 @@ namespace MediaToolkit.DirectX
 
         private Texture2D rgbTexture = null;
 
-        private ShaderResourceView chromaSRV = null;
-        private RenderTargetView chromaRT = null;
-        private RenderTargetView nv12ChromaRT = null;
+        private ShaderResourceView CbCrSRV = null;
+        private RenderTargetView CbCrRT = null;
 
         private SamplerState textureSampler = null;
 
@@ -169,7 +168,7 @@ namespace MediaToolkit.DirectX
 
             using (var tex = new Texture2D(device, textureDescr))
             {
-                chromaSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
+                CbCrSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
                 {
                     Format = textureDescr.Format,
                     Dimension = ShaderResourceViewDimension.Texture2D,
@@ -180,7 +179,7 @@ namespace MediaToolkit.DirectX
                     },
                 });
 
-                chromaRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                CbCrRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
                 {
                     Format = textureDescr.Format,
                     Dimension = RenderTargetViewDimension.Texture2D,
@@ -217,10 +216,10 @@ namespace MediaToolkit.DirectX
             var srcDescr = srcTexture.Description;
             var rgbDesct = rgbTexture.Description;
 
-            if (srcDescr.Format != rgbDesct.Format)
-            {
-                throw new InvalidOperationException("Invalid texture format: " + srcDescr.Format);
-            }
+            //if (srcDescr.Format != rgbDesct.Format)
+            //{
+            //    throw new InvalidOperationException("Invalid texture format: " + srcDescr.Format);
+            //}
             // resize source texture...
             var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
             if (destSize == srcSize)
@@ -419,9 +418,9 @@ namespace MediaToolkit.DirectX
                         Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
                     });
                 // convert rgb to YCbCr
-                deviceContext.OutputMerger.SetTargets(nv12LumaRT, chromaRT);
+                deviceContext.OutputMerger.SetTargets(nv12LumaRT, CbCrRT);
                 deviceContext.ClearRenderTargetView(nv12LumaRT, SharpDX.Color.Black);
-				deviceContext.ClearRenderTargetView(chromaRT, SharpDX.Color.Black);
+				deviceContext.ClearRenderTargetView(CbCrRT, SharpDX.Color.Black);
 
 				using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref rgbToNv12YuvColorMatrix))
 				{
@@ -442,7 +441,7 @@ namespace MediaToolkit.DirectX
             SetViewPort(0, 0, destWidth / 2, destHeight / 2);
             deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
             deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
-            deviceContext.PixelShader.SetShaderResources(0, chromaSRV);
+            deviceContext.PixelShader.SetShaderResources(0, CbCrSRV);
             deviceContext.Draw(vertices.Length, 0);
 
         }
@@ -478,7 +477,7 @@ namespace MediaToolkit.DirectX
                     Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
                 });
 
-                var vertices = CreateVertices(destSize, srcSize, aspectRatio);
+                var vertices = VertexHelper.GetQuadVertices(destSize, srcSize, aspectRatio);
                 using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                 {
                     VertexBufferBinding vertexBuffer = new VertexBufferBinding
@@ -630,9 +629,8 @@ namespace MediaToolkit.DirectX
 
 		public void Close()
         {
-            SafeDispose(nv12ChromaRT);
-            SafeDispose(chromaRT);
-            SafeDispose(chromaSRV);
+            SafeDispose(CbCrRT);
+            SafeDispose(CbCrSRV);
 
             //SafeDispose(lumaRT);
             //SafeDispose(lumaSRV);
@@ -661,90 +659,6 @@ namespace MediaToolkit.DirectX
             });
         }
 
-
-        private static _Vertex[] CreateVertices(GDI.Size viewSize, GDI.Size targetSize, bool aspectRatio = true)
-        {
-            float x1 = -1f;
-            float y1 = -1f;
-            float x2 = -1f;
-            float y2 = 1f;
-            float x3 = 1f;
-            float y3 = -1f;
-            float x4 = 1f;
-            float y4 = 1f;
-
-            if (aspectRatio)
-            {
-                double targetWidth = targetSize.Width;
-                double targetHeight = targetSize.Height;
-                double srcWidth = viewSize.Width;
-                double srcHeight = viewSize.Height;
-
-                double targetRatio = targetWidth / targetHeight;
-                double containerRatio = srcWidth / srcHeight;
-
-                // в координатах формы
-                double viewTop = 0;
-                double viewLeft = 0;
-                double viewWidth = srcWidth;
-                double viewHeight = srcHeight;
-
-                if (containerRatio < targetRatio)
-                {
-                    viewWidth = srcWidth;
-                    viewHeight = (viewWidth / targetRatio);
-                    viewTop = (srcHeight - viewHeight) / 2;
-                    viewLeft = 0;
-                }
-                else
-                {
-                    viewHeight = srcHeight;
-                    viewWidth = viewHeight * targetRatio;
-                    viewTop = 0;
-                    viewLeft = (srcWidth - viewWidth) / 2;
-                }
-
-                // в левых координатах 0f, 2f
-                var normX = 2.0 / srcWidth;
-                var normY = 2.0 / srcHeight;
-                var left = viewLeft * normX;
-                var top = viewTop * normY;
-                var width = viewWidth * normX;
-                var height = viewHeight * normY;
-
-                // в правых координатах -1f, 1f 
-                // сдвигаем на -1,-1 и инвертируем Y 
-                x1 = (float)(left - 1);
-                y1 = (float)(-((height + top) - 1));
-                x2 = x1;
-                y2 = (float)(-(top - 1));
-                x3 = (float)((width + left) - 1);
-                y3 = y1;
-                x4 = x3;
-                y4 = (float)(-(top - 1));
-            }
-
-            return new _Vertex[]
-            {
-                new _Vertex(new Vector3(x1, y1, 0f), new Vector2(0f, 1f)),
-                new _Vertex(new Vector3(x2, y2, 0f), new Vector2(0f, 0f)),
-                new _Vertex(new Vector3(x3, y3, 0f), new Vector2(1f, 1f)),
-                new _Vertex(new Vector3(x4, y4, 0f), new Vector2(1f, 0f)),
-            };
-
-
-        }
-
-        struct _Vertex
-        {
-            public _Vertex(Vector3 pos, Vector2 tex)
-            {
-                this.Position = pos;
-                this.TextureCoord = tex;
-            }
-            public Vector3 Position;
-            public Vector2 TextureCoord;
-        }
 
         private static void SafeDispose(SharpDX.DisposeBase dispose)
         {

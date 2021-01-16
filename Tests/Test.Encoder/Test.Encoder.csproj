@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CopyAcrossGPUTest.cs" />
+    <Compile Include="D3D11ConvertersTest.cs" />
     <Compile Include="D3D11VideoProcessor.cs" />
     <Compile Include="DDATest\DDACapture.cs" />
     <Compile Include="DDATest\DDAOutput.cs" />
