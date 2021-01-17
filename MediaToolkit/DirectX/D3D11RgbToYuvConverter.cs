@@ -33,50 +33,71 @@ namespace MediaToolkit.DirectX
         private VertexShader defaultVS = null;
         private PixelShader defaultPS = null;
         private PixelShader rgbToYuvPS = null;
-        private PixelShader downscalePS = null;
+        private PixelShader downscaleBilinearPS = null;
 
         private Texture2D rgbTexture = null;
 
-        private ShaderResourceView fullCbSRV = null;
-        private RenderTargetView fullCbRT = null;
+        private ShaderResourceView CbSRV = null;
+        private RenderTargetView CbRT = null;
 
-        private ShaderResourceView fullCrSRV = null;
-        private RenderTargetView fullCrRT = null;
+        private ShaderResourceView CrSRV = null;
+        private RenderTargetView CrRT = null;
 
-        private ShaderResourceView fullCbCrSRV = null;
-        private RenderTargetView fullCbCrRT = null;
+        private ShaderResourceView CrCbSRV = null;
+        private RenderTargetView CrCbRT = null;
 
         private SamplerState textureSampler = null;
         private SharpDX.Direct3D11.Buffer constBuffer = null;
 
         private Matrix colorMatrix;
 
-        //private GDI.Size srcSize;
-        private GDI.Size destSize;
-        private PixFormat destFormat = PixFormat.NV12;
-        private SharpDX.DXGI.Format SrcFormat = Format.B8G8R8A8_UNorm;
+		private ScalingFilter scalingFilter = ScalingFilter.Linear;
 
-       // private VideoBufferBase videoBuffer = null;
-        //private D3D11VideoBuffer videoBuffer = null;
-        public void Init(SharpDX.Direct3D11.Device device, GDI.Size destSize, PixFormat destFormat, 
-            ColorSpace colorSpace = ColorSpace.BT709, ColorRange colorRange =  ColorRange.Partial)
-        {           
+		private GDI.Size srcSize;
+		private PixFormat srcFormat = PixFormat.RGB32;
+
+		private GDI.Size destSize;
+        private PixFormat destFormat = PixFormat.NV12;
+        private SharpDX.DXGI.Format SrcDxgiFormat = Format.B8G8R8A8_UNorm;
+
+        public void Init(SharpDX.Direct3D11.Device device,
+			GDI.Size srcSize, PixFormat srcFormat,
+			GDI.Size destSize, PixFormat destFormat, 
+			ScalingFilter scalingFilter = ScalingFilter.Linear,
+            ColorSpace colorSpace = ColorSpace.BT709,
+			ColorRange colorRange =  ColorRange.Partial)
+        {        
+		
+			if(srcFormat!= PixFormat.RGB32 && srcFormat != PixFormat.RGB24)
+			{
+				throw new InvalidOperationException("Invalid source format: " + srcFormat);
+			}
+
             if (destFormat != PixFormat.I444
                 && destFormat != PixFormat.I422
                 && destFormat != PixFormat.I420 
                 && destFormat != PixFormat.NV12)
             {
-                throw new InvalidOperationException("Invalid buffer format: " + destFormat);
+                throw new InvalidOperationException("Invalid dest format: " + destFormat);
             }
 
+
+			if(scalingFilter != ScalingFilter.Point 
+				&& scalingFilter != ScalingFilter.FastLinear 
+				&& scalingFilter != ScalingFilter.Linear)
+			{
+				throw new NotSupportedException("Invalid scaling filter: " + scalingFilter);
+			}
             try
             {
                 this.device = device;
+				this.srcSize = srcSize;
+				this.srcFormat = srcFormat;
                 this.destFormat = destFormat;
                 this.destSize = destSize;
-
-                this.colorMatrix = ColorSpaceHelper.GetRgbToYuvMatrix(colorSpace, colorRange);
-
+				this.scalingFilter = scalingFilter;
+				this.colorMatrix = ColorSpaceHelper.GetRgbToYuvMatrix(colorSpace, colorRange);
+				
                 InitShaders();
 
                 InitResources();
@@ -130,14 +151,19 @@ namespace MediaToolkit.DirectX
                 rgbToYuvPS = new PixelShader(device, compResult.Bytecode);
             }
 
-            using (var compResult = HlslCompiler.CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
-            //using (var compResult = CompileShader("DownscaleBilinear9.hlsl", "PS", psProvile))
-            {
-                downscalePS = new PixelShader(device, compResult.Bytecode);
-            }
-        }
+			if(scalingFilter == ScalingFilter.Linear)
+			{
+				using (var compResult = HlslCompiler.CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
+				//using (var compResult = CompileShader("DownscaleBilinear9.hlsl", "PS", psProvile))
+				{
+					downscaleBilinearPS = new PixelShader(device, compResult.Bytecode);
+				}
+			}
 
-        private void InitResources()
+        }
+		private PixelShader scalingShader = null;
+
+		private void InitResources()
         {
             logger.Debug("InitRenderResources(...) " + destSize);
 
@@ -145,7 +171,7 @@ namespace MediaToolkit.DirectX
             {
                 Width = destSize.Width,
                 Height = destSize.Height,
-                Format = SrcFormat,//sourceDescription.Format,
+                Format = SrcDxgiFormat,//sourceDescription.Format,
 
                 SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
                 BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
@@ -176,7 +202,7 @@ namespace MediaToolkit.DirectX
             {
                 using (var tex = new Texture2D(device, textureDescr))
                 {
-                    fullCbSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
+                    CbSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = ShaderResourceViewDimension.Texture2D,
@@ -187,7 +213,7 @@ namespace MediaToolkit.DirectX
                         },
                     });
 
-                    fullCbRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                    CbRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
@@ -197,7 +223,7 @@ namespace MediaToolkit.DirectX
 
                 using (var tex = new Texture2D(device, textureDescr))
                 {
-                    fullCrSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
+                    CrSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = ShaderResourceViewDimension.Texture2D,
@@ -208,7 +234,7 @@ namespace MediaToolkit.DirectX
                         },
                     });
 
-                    fullCrRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                    CrRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
@@ -221,7 +247,7 @@ namespace MediaToolkit.DirectX
                 textureDescr.Format = Format.R8G8_UNorm;
                 using (var tex = new Texture2D(device, textureDescr))
                 {
-                    fullCbCrSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
+                    CrCbSRV = new ShaderResourceView(device, tex, new ShaderResourceViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = ShaderResourceViewDimension.Texture2D,
@@ -232,7 +258,7 @@ namespace MediaToolkit.DirectX
                         },
                     });
 
-                    fullCbCrRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
+                    CrCbRT = new RenderTargetView(device, tex, new RenderTargetViewDescription
                     {
                         Format = textureDescr.Format,
                         Dimension = RenderTargetViewDimension.Texture2D,
@@ -247,27 +273,41 @@ namespace MediaToolkit.DirectX
 
             constBuffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref colorMatrix);
 
+			var samplerDescr = new SamplerStateDescription
+			{
+				//Filter = Filter.MinMagMipPoint,
+				//Filter = Filter.MinMagLinearMipPoint,
+				Filter = Filter.MinMagMipLinear,
+				//Filter = Filter.Anisotropic,
+				MaximumAnisotropy = 16,
 
-            textureSampler = new SamplerState(device, new SamplerStateDescription
-            {
-                //Filter = Filter.MinMagMipPoint,
-                //Filter = Filter.MinMagLinearMipPoint,
-                Filter = Filter.MinMagMipLinear,
-                //Filter = Filter.Anisotropic,
-                MaximumAnisotropy = 16,
+				//AddressU = TextureAddressMode.Wrap,
+				//AddressV = TextureAddressMode.Wrap,
+				//AddressW = TextureAddressMode.Wrap,
 
-                //AddressU = TextureAddressMode.Wrap,
-                //AddressV = TextureAddressMode.Wrap,
-                //AddressW = TextureAddressMode.Wrap,
+				AddressU = TextureAddressMode.Clamp,
+				AddressV = TextureAddressMode.Clamp,
+				AddressW = TextureAddressMode.Clamp,
+				//ComparisonFunction = Comparison.Never,
+				//BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
+				//MinimumLod = 0,
+				//MaximumLod = float.MaxValue,
+			};
 
-                AddressU = TextureAddressMode.Clamp,
-                AddressV = TextureAddressMode.Clamp,
-                AddressW = TextureAddressMode.Clamp,
-                //ComparisonFunction = Comparison.Never,
-                //BorderColor = new SharpDX.Mathematics.Interop.RawColor4(1.0f, 1.0f, 1.0f, 1.0f),
-                //MinimumLod = 0,
-                //MaximumLod = float.MaxValue,
-            });
+			scalingShader = defaultPS;
+			if (scalingFilter == ScalingFilter.Linear)
+			{
+				if(srcSize.Width > destSize.Width || srcSize.Height > destSize.Height)
+				{
+					scalingShader = downscaleBilinearPS;
+				}
+			}
+			else if (scalingFilter == ScalingFilter.Point)
+			{
+				samplerDescr.Filter = Filter.MinMagMipPoint;
+			}
+
+			textureSampler = new SamplerState(device, samplerDescr);
         }
 
 
@@ -467,11 +507,11 @@ namespace MediaToolkit.DirectX
                 RenderTargetView[] targers = null;
                 if (destFormat == PixFormat.NV12)
                 {
-                    targers = new RenderTargetView[] { lumaRT, fullCbCrRT};
+                    targers = new RenderTargetView[] { lumaRT, CrCbRT};
                 }
                 else
                 {
-                    targers = new RenderTargetView[] { lumaRT, fullCbRT, fullCrRT };
+                    targers = new RenderTargetView[] { lumaRT, CbRT, CrRT };
                 }
                 
                 deviceContext.OutputMerger.SetTargets(targers);
@@ -503,7 +543,7 @@ namespace MediaToolkit.DirectX
                 deviceContext.PixelShader.SetShader(defaultPS, null, 0);
                 deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
                 deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
-                deviceContext.PixelShader.SetShaderResources(0, fullCbCrSRV);
+                deviceContext.PixelShader.SetShaderResources(0, CrCbSRV);
                 deviceContext.Draw(vertices.Length, 0);
             }
             else
@@ -528,12 +568,12 @@ namespace MediaToolkit.DirectX
 
                 deviceContext.OutputMerger.SetTargets(destCbRT);
                 deviceContext.ClearRenderTargetView(destCbRT, SharpDX.Color.Black);
-                deviceContext.PixelShader.SetShaderResources(0, fullCbSRV);
+                deviceContext.PixelShader.SetShaderResources(0, CbSRV);
                 deviceContext.Draw(vertices.Length, 0);
 
                 deviceContext.OutputMerger.SetTargets(destCrRT);
                 deviceContext.ClearRenderTargetView(destCrRT, SharpDX.Color.Black);
-                deviceContext.PixelShader.SetShaderResources(0, fullCrSRV);
+                deviceContext.PixelShader.SetShaderResources(0, CrSRV);
                 deviceContext.Draw(vertices.Length, 0);
             }
 
@@ -585,17 +625,19 @@ namespace MediaToolkit.DirectX
 
                 deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
 
-                ////var baseDimensionI = new Vector2(1f / (1f * destSize.Width), 1f / (1f * destSize.Height));
-                //var baseDimensionI = new Vector2(1f / (3f * destSize.Width), 1f / (3f * destSize.Height));
-                ////var baseDimensionI = new Vector2(1f / (3f * srcDescr.Width), 1f / (3f * srcDescr.Height ));
-                //using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref baseDimensionI, 16))
-                //{
-                //    deviceContext.PixelShader.SetConstantBuffer(0, buffer);
-                //}
+				
+				if(scalingFilter == ScalingFilter.Linear)
+				{
+					//var baseDimensionI = new Vector2(1f / (1f * destSize.Width), 1f / (1f * destSize.Height));
+					var baseDimensionI = new Vector2(1f / (3f * destSize.Width), 1f / (3f * destSize.Height));
+					using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref baseDimensionI, 16))
+					{
+						deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+					}
+				}
 
-                device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
-                deviceContext.PixelShader.SetShader(downscalePS, null, 0);
-                //deviceContext.PixelShader.SetShader(defaultPS, null, 0);
+				device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
+                deviceContext.PixelShader.SetShader(scalingShader, null, 0);
 
                 SetViewPort(0, 0, destWidth, destHeight);
                 deviceContext.VertexShader.SetShader(defaultVS, null, 0);
@@ -696,19 +738,19 @@ namespace MediaToolkit.DirectX
         {
             SafeDispose(constBuffer);
             
-            SafeDispose(fullCbCrRT);
-            SafeDispose(fullCbCrSRV);
+            SafeDispose(CrCbRT);
+            SafeDispose(CrCbSRV);
 
-            SafeDispose(fullCbRT);
-            SafeDispose(fullCbSRV);
+            SafeDispose(CbRT);
+            SafeDispose(CbSRV);
 
-            SafeDispose(fullCrRT);
-            SafeDispose(fullCrSRV);
+            SafeDispose(CrRT);
+            SafeDispose(CrSRV);
 
             SafeDispose(rgbTexture);
             SafeDispose(rgbToYuvPS);
             SafeDispose(textureSampler);
-            SafeDispose(downscalePS);
+            SafeDispose(downscaleBilinearPS);
             SafeDispose(defaultPS);
             SafeDispose(defaultVS);
             SafeDispose(device);
