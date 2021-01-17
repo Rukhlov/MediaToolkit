@@ -85,8 +85,8 @@ namespace Test.Encoder
 				var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
 
-				var DestSize = new Size(352, 288);
-				var destFormat = PixFormat.NV12;
+				var DestSize = new Size(1920, 1080);
+				var destFormat = PixFormat.I420;
 				//var DestSize = new Size(2560, 1440);
 
 				var videoBuffer = new MemoryVideoBuffer(DestSize, destFormat, 32);
@@ -94,15 +94,19 @@ namespace Test.Encoder
 				var scalingFilter = ScalingFilter.Linear;
 
 				D3D11RgbToYuvConverter converter = new D3D11RgbToYuvConverter();
-
+				converter.KeepAspectRatio = true;
 				converter.Init(device, srcSize, srcFormat, DestSize, destFormat, scalingFilter);
 
-				var frame = videoBuffer.GetFrame();
-				converter.Process(texture, frame);
+				var srcFrame = new D3D11VideoFrame(PixFormat.RGB32, texture);
 
-				var destSize = new Size(frame.Width, frame.Height);
+				var destFrame = videoBuffer.GetFrame();
 
-				var destBuffer = ((VideoFrame)frame).ConvertToContiguousBuffer();
+				converter.Process(srcFrame, destFrame);
+
+				var destSize = new Size(destFrame.Width, destFrame.Height);
+
+
+				var destBuffer = ((VideoFrame)destFrame).ConvertToContiguousBuffer();
 
 				if (destBuffer != null)
 				{
@@ -124,6 +128,8 @@ namespace Test.Encoder
 					Console.WriteLine("!!!!!!!!!destData == null");
 				}
 
+				destFrame.Dispose();
+				srcFrame.Dispose();
 				converter.Close();
 				videoBuffer.Dispose();
 				texture?.Dispose();

@@ -149,10 +149,117 @@ namespace MediaToolkit
 
     public class D3D11VideoFrame : VideoFrameBase
     {
+		public D3D11VideoFrame(PixFormat format, params Texture2D[] srcTextures)
+		{
+			int width = 0;
+			int height = 0;
+			int dataSize = 0;
+			IFrameBuffer[] frameData = null;
+
+			if (format == PixFormat.RGB32 || format == PixFormat.RGB24 || format == PixFormat.RGB565)
+			{
+				if(srcTextures.Length == 1)
+				{
+					var rgbTexture = srcTextures[0];
+
+					var descr = rgbTexture.Description;
+					//if (descr.Format == SharpDX.DXGI.Format.R8G8B8A8_UNorm )
+					{
+						width = descr.Width;
+						height = descr.Height;
+						dataSize = 0;
+					}
+				}
+				else
+				{
+					throw new InvalidOperationException("Invalid format");
+				}
+			}
+			else if (format == PixFormat.NV12)
+			{
+				if (srcTextures.Length == 2)
+				{
+					var lumaTexture = srcTextures[0];
+					var chromaTexture = srcTextures[1];
+
+					var descr = lumaTexture.Description;
+					if (descr.Format == SharpDX.DXGI.Format.R8_UNorm)
+					{
+						width = descr.Width;
+						height = descr.Height;
+					}
+					else
+					{
+						throw new InvalidOperationException("Invalid luma texture format: "+ descr.Format);
+					}
+				}
+				else if (srcTextures.Length == 1)
+				{
+					var nv12Texture = srcTextures[0];
+					var descr = nv12Texture.Description;
+					if (descr.Format == SharpDX.DXGI.Format.NV12)
+					{
+						width = descr.Width;
+						height = descr.Height;
+					}
+					else
+					{
+						throw new InvalidOperationException("Invalid texture format: " + descr.Format);
+					}
+				}
+				else
+				{
+					throw new InvalidOperationException("Invalid format");
+				}
+			}
+			else if(format == PixFormat.I444 || format == PixFormat.I422 || format == PixFormat.I420)
+			{
+				if(srcTextures.Length == 3)
+				{
+					var lumaTexture = srcTextures[0];
+					var CbTexture = srcTextures[1];
+					var CrTexture = srcTextures[2];
+
+					var descr = lumaTexture.Description;
+					if (descr.Format == SharpDX.DXGI.Format.R8_UNorm)
+					{
+						width = descr.Width;
+						height = descr.Height;
+					}
+					else
+					{
+						throw new InvalidOperationException("Invalid luma texture format: " + descr.Format);
+					}
+				}
+				else
+				{
+					throw new InvalidOperationException("Invalid format");
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException("Invalid format: " + format);
+			}
+
+			frameData = new FrameBuffer[srcTextures.Length];
+			for (int i = 0; i < srcTextures.Length; i++)
+			{
+				var srcTex = srcTextures[i];
+				var tex = new Texture2D(srcTex.NativePointer);
+				((IUnknown)tex).AddReference();
+				textures.Add(tex);
+				frameData[i] = new FrameBuffer(tex.NativePointer, 0);
+			}
+
+			_D3D11VideoFrame(frameData, dataSize, width, height, format);
+
+		}
+
 		public D3D11VideoFrame(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format)
 		{
 			var width = resolution.Width;
 			var	height = resolution.Height;
+			
 
 			SharpDX.DXGI.Format dxgiFormat = SharpDX.DXGI.Format.Unknown;
 			if (format == PixFormat.RGB32)
@@ -227,7 +334,7 @@ namespace MediaToolkit
 				}
 			}
 
-			_D3D11VideoFrame(frameData, dataSize, Width, Height, Format);
+			_D3D11VideoFrame(frameData, dataSize, width, height, format);
 		
 		}
 
@@ -268,6 +375,7 @@ namespace MediaToolkit
             return textures;
         }
 
+		private bool disposed = false;
 		public override void Dispose()
 		{
 			foreach (var t in textures)
@@ -275,6 +383,7 @@ namespace MediaToolkit
 				if (!t.IsDisposed)
 				{
 					t.Dispose();
+					disposed = true;
 				}
 			}
 		}
@@ -305,12 +414,18 @@ namespace MediaToolkit
 		}
 
         public override VideoDriverType DriverType => VideoDriverType.CPU;
+		private bool disposed = false;
 		public override void Dispose()
 		{
 			lock (syncRoot)
 			{
-				var b = Buffer;
-				FFmpegLib.Utils.FreeImageData(ref b);
+				if (!disposed)
+				{
+					var b = Buffer;
+					FFmpegLib.Utils.FreeImageData(ref b);
+					disposed = true;
+				}
+
 			}
 		}
 

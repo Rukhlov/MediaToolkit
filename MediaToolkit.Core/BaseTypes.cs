@@ -236,8 +236,8 @@ namespace MediaToolkit.Core
     {
         IFrameBuffer[] Buffer {get;}
 
-        double Time { get; }
-        double Duration { get; }
+        double Time { get; set; }
+        double Duration { get; set; }
 
         int Width { get; }
         int Height { get; }
