@@ -377,9 +377,20 @@ namespace MediaToolkit.DirectX
                 rowPitch = width;
                 slicePitch = rowPitch * (height + height / 2);
             }
-            else
+			//else if (format == Format.R16_UNorm || format == Format.R16_UInt)
+			//{
+			//    rowPitch = width;
+			//}
+			else if (format == Format.R8G8_UNorm 
+				|| format == Format.R16_UNorm 
+				|| format == Format.R16_SInt 
+				|| format == Format.R16_UInt || format == Format.B5G6R5_UNorm)
+			{
+				rowPitch = 2*width;
+			}
+			else
             {// not supported...
-
+                rowPitch = width;
             }
 
             fixed (byte* ptr = srcBuffer)

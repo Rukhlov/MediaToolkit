@@ -59,9 +59,11 @@ namespace MediaToolkit.DirectX
 		private GDI.Size destSize;
 		private PixFormat destFormat = PixFormat.NV12;
 		private SharpDX.DXGI.Format SrcDxgiFormat = Format.B8G8R8A8_UNorm;
-		public bool KeepAspectRatio { get; set; } = true;
 
-		public void Init(SharpDX.Direct3D11.Device device,
+		public bool KeepAspectRatio { get; set; } = true;
+        public SharpDX.Color BackColor { get; set; } = SharpDX.Color.Blue;
+
+        public void Init(SharpDX.Direct3D11.Device device,
 			GDI.Size srcSize, PixFormat srcFormat,
 			GDI.Size destSize, PixFormat destFormat,
 			ScalingFilter scalingFilter = ScalingFilter.Linear,
@@ -678,7 +680,7 @@ namespace MediaToolkit.DirectX
 				deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
 				deviceContext.OutputMerger.SetTargets(destRTV);
-				deviceContext.ClearRenderTargetView(destRTV, SharpDX.Color.Blue);
+				deviceContext.ClearRenderTargetView(destRTV, BackColor);
 				//deviceContext.PixelShader.SetShader(pixelShader, null, 0);
 
 				deviceContext.PixelShader.SetShaderResource(0, srcSRV);
@@ -782,7 +784,7 @@ namespace MediaToolkit.DirectX
 		}
 
 
-		private static IReadOnlyList<Texture2D> CreateYuvTextures(SharpDX.Direct3D11.Device device, int width, int height, PixFormat format)
+		public static IReadOnlyList<Texture2D> CreateYuvTextures(SharpDX.Direct3D11.Device device, int width, int height, PixFormat format)
 		{
 			List<Texture2D> textures = new List<Texture2D>();
 

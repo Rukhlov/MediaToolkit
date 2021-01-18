@@ -29,6 +29,7 @@ using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.DirectX;
+using MediaToolkit.Core;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -83,8 +84,10 @@ namespace MediaToolkit.ScreenCaptures
 
         private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
 
-        private D3D11RgbToNv12Converter pixConverter = null;
+        // private D3D11RgbToNv12Converter pixConverter = null;
+        private D3D11RgbToYuvConverter pixConverter = null;
 
+        
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
             logger.Debug("DXGIDesktopDuplicationCapture::Init() " + srcRect.ToString() + " " + destSize.ToString());
@@ -147,8 +150,14 @@ namespace MediaToolkit.ScreenCaptures
                     ////this.sharedTexture = new Texture2D(pTexture);
                     ////((IUnknown)sharedTexture).AddReference();
 
-                    pixConverter = new D3D11RgbToNv12Converter();
-                    pixConverter.Init(mainDevice, videoBuffer);
+                    //pixConverter = new D3D11RgbToNv12Converter();
+                    //pixConverter.Init(mainDevice, videoBuffer);
+
+                    pixConverter = new D3D11RgbToYuvConverter();
+                    pixConverter.KeepAspectRatio = true;
+                    pixConverter.Init(mainDevice, SrcRect.Size, Core.PixFormat.RGB32, DestSize, Core.PixFormat.NV12);
+
+
 
                     this.VideoBuffer = videoBuffer;
 
@@ -578,9 +587,44 @@ namespace MediaToolkit.ScreenCaptures
 
                 deviceContext.CopyResource(texture, sharedTexture);
                 // deviceContext.Flush();
-                var frame = VideoBuffer.GetFrame();
 
-                pixConverter.Process(sharedTexture, frame);
+                var frame = VideoBuffer.GetFrame();
+                IReadOnlyList<Texture2D> yuvTextures = null;
+                try
+                {
+                    if (frame.DriverType == VideoDriverType.D3D11)
+                    {
+                        yuvTextures = ((D3D11VideoFrame)frame).GetTextures();
+                    }
+                    else if (frame.DriverType == VideoDriverType.CPU)
+                    {
+                        yuvTextures = D3D11RgbToYuvConverter.CreateYuvTextures(mainDevice, frame.Width, frame.Height, frame.Format);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid frame driver type: " + frame.DriverType);
+                    }
+
+                    pixConverter.Process(sharedTexture, yuvTextures.ToArray());
+
+                }
+                finally
+                {
+                    if(yuvTextures!=null && yuvTextures.Count > 0)
+                    {
+                        foreach (var tex in yuvTextures)
+                        {
+                            if(tex!=null && !tex.IsDisposed)
+                            {
+                                tex.Dispose();
+                            }
+                        }
+                    }
+                }
+
+
+
+                //pixConverter.Process(sharedTexture, frame);
 
                 errorCode = ErrorCode.Ok;
             }
