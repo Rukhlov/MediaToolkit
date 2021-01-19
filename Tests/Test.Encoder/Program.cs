@@ -40,9 +40,9 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-            RgbHelperTest.Run();
+            //RgbHelperTest.Run();
 
-			//D3D11ConvertersTest.Run();
+			D3D11ConvertersTest.Run();
 
 			////MftH264Test.Run();
 			//int count = 10;

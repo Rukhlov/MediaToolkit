@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.Core;
 using SharpDX;
+using SharpDX.D3DCompiler;
 using SharpDX.Direct3D11;
 
 using SharpDX.DXGI;
@@ -312,8 +313,75 @@ namespace MediaToolkit.DirectX
 
 	public class HlslCompiler
     {
+		private static Dictionary<string, CompilationResult> compilationResultDict = new Dictionary<string, CompilationResult>();
 
-        public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
+		private readonly static string resourceNamespace = "MediaToolkit.DirectX.Shaders";
+		private readonly static string profileLevel = "4_0";
+
+		public readonly static string vsProfile = "vs_" + profileLevel;
+		public readonly static string psProfile = "ps_" + profileLevel;
+		
+		public static byte[] GetShaderBytes(string name, string entryPoint, string profile)
+		{
+			ShaderBytecode bytes = null;
+			string key = name + "_" + entryPoint + "_" + profile;
+
+			if (compilationResultDict.ContainsKey(key))
+			{
+				var compResult = compilationResultDict[key];
+				if (compResult.HasErrors)
+				{//...
+				}
+
+				bytes = compResult.Bytecode;
+			}
+			else
+			{
+				var resourceName = name + ".hlsl";
+				var compResult = CompileShaderFromResources(resourceName, entryPoint, profile, null);
+				bytes = compResult.Bytecode;
+
+				compilationResultDict.Add(key, compResult);
+			}
+
+			return bytes;
+		}
+
+		public static byte[] GetPixelShaderBytes(string name, string entryPoint)
+		{
+			return GetShaderBytes(name, entryPoint, psProfile);
+		}
+
+		public static PixelShader GetPixelShader(SharpDX.Direct3D11.Device device, string name, string entryPoint)
+		{
+			var bytes = GetPixelShaderBytes(name, entryPoint);
+			return new PixelShader(device, bytes);
+		}
+
+		public static byte[] GetVertexShaderBytes(string name, string entryPoint)
+		{
+			return GetShaderBytes(name, entryPoint, vsProfile);
+		}
+
+		public static VertexShader GetVertexShader(SharpDX.Direct3D11.Device device, string name, string entryPoint)
+		{
+			var bytes = GetVertexShaderBytes(name, entryPoint);
+			return new VertexShader(device, bytes);
+		}
+
+		public static void Shutdown()
+		{
+			foreach(var key in compilationResultDict.Keys)
+			{
+				var shader = compilationResultDict[key];
+				if (!shader.IsDisposed)
+				{
+					shader.Dispose();
+				}
+			}
+		}
+
+		public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
             SharpDX.Direct3D.ShaderMacro[] defines = null)
         {
 
@@ -334,7 +402,7 @@ namespace MediaToolkit.DirectX
         {
 
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "MediaToolkit.DirectX.Shaders." + file;
+            var resourceName = resourceNamespace + "." + file;
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             {

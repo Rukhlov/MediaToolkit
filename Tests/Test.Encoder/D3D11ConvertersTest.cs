@@ -86,7 +86,7 @@ namespace Test.Encoder
 
 
 				var DestSize = new Size(1920, 1080);
-				var destFormat = PixFormat.I420;
+				var destFormat = PixFormat.NV12;
 				//var DestSize = new Size(2560, 1440);
 
 				var videoBuffer = new MemoryVideoBuffer(DestSize, destFormat, 32);

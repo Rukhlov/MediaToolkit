@@ -24,8 +24,8 @@ float3 Rgb565ToRgb888(float rgb565) {
 		BYTE blue  = blue_value << 3;
 	*/
 
-	//uint i = asuint(y);
-	uint i = rgb565 * 65535;
+	//uint i = asuint(rgb565);
+	uint i = rgb565 * 0xFFFF;
 	uint r = (i & 0xF800) >> 11;
 	uint g = (i & 0x7E0) >> 5;
 	uint b = (i & 0x1F);
@@ -54,8 +54,8 @@ float3 Rgb555ToRgb888(float rgb555) {
 		BYTE blue  = blue_value << 3;
 	*/
 
-	uint i = rgb555 * 65535;
-	uint r = (i & 0x7C00) >> 11;
+	uint i = rgb555 * 0xFFFF;
+	uint r = (i & 0x7C00) >> 10;
 	uint g = (i & 0x3E0) >> 5;
 	uint b = (i & 0x1F);
 
@@ -67,6 +67,6 @@ float4 PS(VertData input) : SV_Target
 {
 	float rgb16 = rgb16Texture.Sample(defaultSampler, input.texCoord);
 
-	return float4(Rgb565ToRgb888(rgb16), 1.0);
+	return float4(saturate(Rgb565ToRgb888(rgb16)), 1.0);
 
 }
