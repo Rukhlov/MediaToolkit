@@ -42,6 +42,10 @@ namespace Test.Encoder
                 capt.Close();
 
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
             finally
             {
                 DatapathDesktopCapture.Unload();
@@ -54,7 +58,7 @@ namespace Test.Encoder
 
     }
 
-    public class DatapathDesktopCapture 
+    public class DatapathDesktopCapture
     {
         public Rectangle SrcRect { get; protected set; }
         public Size DestSize { get; protected set; }
@@ -117,7 +121,7 @@ namespace Test.Encoder
         private static IntPtr hLoad = IntPtr.Zero;
         private IntPtr hCapt = IntPtr.Zero;
 
-        private BITMAPINFO bmi = default(BITMAPINFO);
+        private BITMAPINFO bitmapInfo = default(BITMAPINFO);
         private IntPtr pBuffer = IntPtr.Zero;
 
         public void Init(Rectangle captArea, Size destSize)
@@ -216,92 +220,91 @@ namespace Test.Encoder
         private void InitCapture(Rectangle captArea, Size resolution)
         {
             try
-            {              
+            {
                 var result = DCapt.DCaptCreateCapture(hLoad, out hCapt);
                 DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
                 //Console.WriteLine("DCaptCreateCapture() " + result);
-                try
+
+                RECT srcRect = new RECT
                 {
-                    RECT srcRect = new RECT
-                    {
-                        Left = captArea.Left,
-                        Right = captArea.Right,
-                        Bottom = captArea.Bottom,
-                        Top = captArea.Top,
-                    };
+                    Left = captArea.Left,
+                    Right = captArea.Right,
+                    Bottom = captArea.Bottom,
+                    Top = captArea.Top,
+                };
 
-                    SIZE destSize = new SIZE
-                    {
-                        cx = resolution.Width,
-                        cy = resolution.Height,
-                    };
+                SIZE destSize = new SIZE
+                {
+                    cx = resolution.Width,
+                    cy = resolution.Height,
+                };
 
-                    // The bits per pixel of the saved data. Must be 2 
-                    int bitsPerPixel = 2;
+                // The bits per pixel of the saved data. Must be 2 
+                int bitsPerPixel = 2;
 
-                    result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref destSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY,
-                       out var pBuffer, out var hBmi);
+                result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref destSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY,
+                   out var pBuffer, out var hBmi);
 
-                    DCapt.ThrowIfError(result, "DCaptConfigureCapture");
+                DCapt.ThrowIfError(result, "DCaptConfigureCapture");
 
-                    var _bmiHeader = (BITMAPINFOHEADER)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFOHEADER));
+                var bmiHeader = (BITMAPINFOHEADER)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFOHEADER));
 
-                    Console.WriteLine("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
-                        + _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage);
+                Console.WriteLine(bmiHeader.ToString());
 
-                    PixFormat pixFormat = PixFormat.Unknown;
-                    if (_bmiHeader.biBitCount == 16)
-                    { //rgb 16 bit
-                        if (_bmiHeader.biCompression == (uint)BI.BITFIELDS)
-                        {// может быть rgb555 или rgb565
-                            // читаем маску цветов что бы определить формат
-                            var hColor = IntPtr.Add(hBmi, (int)_bmiHeader.biSize);
-                            uint[] bmiColors = MediaToolkit.NativeAPIs.Utils.MarshalHelper.GetArrayData<uint>(hColor, 3);
+                this.bitmapInfo.bmiHeader = bmiHeader;
+                this.pBuffer = pBuffer;
 
-                            var red = bmiColors[0];
-                            var green = bmiColors[1];
-                            var blue = bmiColors[2];
-                            if (red == 0xF800 && green == 0x7E0 && blue == 0x1F)
-                            {// rgb 565
-                                pixFormat = PixFormat.RGB16;
-                            }
-                            else if (red == 0x7C00 && green == 0x3E0 && blue == 0x1F)
-                            {// rgb 555
-                                pixFormat = PixFormat.RGB15;
-                            }
-                            else
-                            {
-                                throw new InvalidOperationException("Invalid color mask: " + string.Join(",", red, green, blue));
-                            }
+                var dataSize = this.bitmapInfo.bmiHeader;
+                var width = this.bitmapInfo.bmiHeader.biWidth;
+                var height = this.bitmapInfo.bmiHeader.biHeight;
+                if (height < 0)
+                {
+                    height = -height;
+                }
+
+                PixFormat pixFormat = PixFormat.Unknown;
+                if (bmiHeader.biBitCount == 16)
+                { //rgb 16 bit
+                    if (bmiHeader.biCompression == (uint)BI.BITFIELDS)
+                    {// может быть rgb555 или rgb565
+                     // читаем маску цветов что бы определить формат
+                        var hColor = IntPtr.Add(hBmi, (int)bmiHeader.biSize);
+                        uint[] bmiColors = MediaToolkit.NativeAPIs.Utils.MarshalHelper.GetArrayData<uint>(hColor, 3);
+
+                        var red = bmiColors[0];
+                        var green = bmiColors[1];
+                        var blue = bmiColors[2];
+                        if (red == 0xF800 && green == 0x7E0 && blue == 0x1F)
+                        {// rgb 565
+                            pixFormat = PixFormat.RGB16;
                         }
-                        else if (_bmiHeader.biCompression == (uint)BI.RGB)
-                        {// только rgb555
+                        else if (red == 0x7C00 && green == 0x3E0 && blue == 0x1F)
+                        {// rgb 555
                             pixFormat = PixFormat.RGB15;
                         }
                         else
                         {
-                            throw new InvalidOperationException("Invalid compression field: " + _bmiHeader.biCompression);
+                            throw new InvalidOperationException("Invalid color mask: " + string.Join(",", red, green, blue));
                         }
+                    }
+                    else if (bmiHeader.biCompression == (uint)BI.RGB)
+                    {// только rgb555
+                        pixFormat = PixFormat.RGB15;
                     }
                     else
                     {
-                        throw new NotSupportedException("_bmiHeader.biBitCount == " + _bmiHeader.biBitCount);
+                        throw new InvalidOperationException("Invalid compression field: " + bmiHeader.biCompression);
                     }
-
-                    this.bmi.bmiHeader = _bmiHeader;
-                    this.pBuffer = pBuffer;
-
-
-
                 }
-                finally
+                else
                 {
-                    //if (_hBmi != IntPtr.Zero)
-                    //{
-                    //    Marshal.FreeHGlobal(_hBmi);
-                    //}
+                    throw new NotSupportedException("_bmiHeader.biBitCount == " + bmiHeader.biBitCount);
                 }
+
+                var videoBuffer = new MemoryVideoBuffer(new Size(width, height), pixFormat, 16);
+
+
             }
             catch (Exception ex)
             {
@@ -314,17 +317,14 @@ namespace Test.Encoder
 
         internal void RunTest()
         {
-            uint bufSize = this.bmi.bmiHeader.biSizeImage;
+            uint bufSize = this.bitmapInfo.bmiHeader.biSizeImage;
 
-            var width = this.bmi.bmiHeader.biWidth;
-            var height = this.bmi.bmiHeader.biHeight;
+            var width = this.bitmapInfo.bmiHeader.biWidth;
+            var height = this.bitmapInfo.bmiHeader.biHeight;
             if (height < 0)
             {
                 height = -height;
             }
-
-            //var videoBuffer = new MemoryVideoBuffer(new Size(width, height), pixFormat, 16);
-
 
 
             Stopwatch sw = new Stopwatch();
@@ -338,7 +338,7 @@ namespace Test.Encoder
                 while (count-- > 0)
                 {
                     Kernel32.ZeroMemory(pBuffer, (int)bufSize);
-                   var result = DCapt.DCaptUpdate(hCapt);
+                    var result = DCapt.DCaptUpdate(hCapt);
                     DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
                     var msec = sw.ElapsedMilliseconds;
@@ -540,7 +540,7 @@ namespace Test.Encoder
                 return ErrorCode.NotInitialized;
             }
 
-            var bmiHeader = bmi.bmiHeader;
+            var bmiHeader = bitmapInfo.bmiHeader;
             var bufSize = bmiHeader.biSizeImage;
             if (bufSize > 0)
             {
@@ -684,7 +684,7 @@ namespace Test.Encoder
                     pBuffer = IntPtr.Zero;
                 }
 
-                this.bmi = default(BITMAPINFO);
+                this.bitmapInfo = default(BITMAPINFO);
 
             }
 

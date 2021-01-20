@@ -40,7 +40,7 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-            Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
+            //Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
 
             DatapathCaptTest.Run();
 			//RgbHelperTest.Run();

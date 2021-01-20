@@ -811,6 +811,21 @@ namespace MediaToolkit.NativeAPIs
             return result;
         }
 
+        public override string ToString()
+        {
+            return  "biSize " + biSize + "\r\n" +
+                    "biWidth " + biWidth + "\r\n" +
+                    "biHeight " + biHeight + "\r\n" +
+                    "biPlanes " + biPlanes + "\r\n" +
+                    "biBitCount " + biBitCount + "\r\n" +
+                    "biCompression " + biCompression + "\r\n" +
+                    "biSizeImage " + biSizeImage + "\r\n" +
+                    "biXPelsPerMeter " + biXPelsPerMeter + "\r\n" +
+                    "biYPelsPerMeter " + biYPelsPerMeter + "\r\n" +
+                    "biClrUsed " + biClrUsed + "\r\n" +
+                    "biClrImportant " + biClrImportant;
+        }
+
     }
 
 

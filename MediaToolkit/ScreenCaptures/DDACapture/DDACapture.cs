@@ -157,8 +157,6 @@ namespace MediaToolkit.ScreenCaptures
                     pixConverter.KeepAspectRatio = true;
                     pixConverter.Init(mainDevice, SrcRect.Size, Core.PixFormat.RGB32, DestSize, Core.PixFormat.NV12);
 
-
-
                     this.VideoBuffer = videoBuffer;
 
                 }
