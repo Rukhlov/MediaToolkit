@@ -315,6 +315,11 @@ namespace MediaToolkit.Utils
 				throw new Win32Exception(result);
 			}
 
+            if(pathCount == 0 || modeCount == 0)
+            {
+                return displayInfos;
+            }
+
 			var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
 			var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 

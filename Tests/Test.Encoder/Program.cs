@@ -42,7 +42,9 @@ namespace Test.Encoder
 
             //RgbHelperTest.Run();
 
-			D3D11ConvertersTest.Run();
+            DatapathCaptTest.Run();
+
+            //D3D11ConvertersTest.Run();
 
 			////MftH264Test.Run();
 			//int count = 10;

@@ -117,7 +117,7 @@ namespace MediaToolkit.ScreenCaptures
 
                     var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
 #if DEBUG
-                    deviceCreationFlags |= DeviceCreationFlags.Debug;
+                    //deviceCreationFlags |= DeviceCreationFlags.Debug;
 #endif
                     device = new Device(adapter, deviceCreationFlags);
                     using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())

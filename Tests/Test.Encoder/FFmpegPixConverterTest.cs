@@ -249,14 +249,14 @@ namespace Test.Encoder
 			}
             else if (format == MediaToolkit.Core.PixFormat.RGB32
                || format == MediaToolkit.Core.PixFormat.RGB24
-               || format == MediaToolkit.Core.PixFormat.RGB565)
+               || format == MediaToolkit.Core.PixFormat.RGB16)
             {
 				int bytesPerPixel = 4;		
 				if(format == MediaToolkit.Core.PixFormat.RGB24)
 				{
 					bytesPerPixel = 3;
 				}
-				else if (format == MediaToolkit.Core.PixFormat.RGB565)
+				else if (format == MediaToolkit.Core.PixFormat.RGB16)
 				{
 					bytesPerPixel = 2;
 				}

@@ -90,7 +90,7 @@ namespace Test.Encoder
                 var srcSize = new Size(1920, 1080);
                 //var fileName = @"Files\1920x1080.bmp";
                 //var srcSize = new Size(1920, 1080);
-                var srcFormat = PixFormat.RGB565;
+                var srcFormat = PixFormat.RGB16;
 
                 var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
                 {

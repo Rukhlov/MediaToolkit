@@ -97,7 +97,7 @@ namespace MediaToolkit.ScreenCaptures
 			this.SrcRect = captArea;
 			this.DestSize = destSize;
 
-			var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.RGB565, 16);
+			var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.RGB16, 16);
 			this.VideoBuffer = videoBuffer;
 
             InitCapture(captArea, DestSize, PixelFormat.Format16bppRgb565);
@@ -359,8 +359,8 @@ namespace MediaToolkit.ScreenCaptures
 							destPtr += destStride;
 							srcPtr += srcStride;
 						}
-
-					}
+                        errorCode = ErrorCode.Ok;
+                    }
 					else
 					{
 						logger.Warn("Drop bits...");
@@ -545,6 +545,9 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
         }
+
+
+
 
         // Таблица цветов из WallControll-a
         private static RGBQUAD[] GetColourMask(PixelFormat format)

@@ -196,7 +196,8 @@ namespace MediaToolkit.Core
     {
         Unknown,
 
-        RGB565,
+        RGB15, //Rgb555
+        RGB16, //Rgb565
         RGB24,
         RGB32,
 
