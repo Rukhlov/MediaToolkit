@@ -19,8 +19,12 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("gdi32.dll")]
         public static extern int SetStretchBltMode(IntPtr hdc, StretchingMode iStretchMode);
 
+		[DllImport("gdi32.dll", ExactSpelling = true)]
+		public static extern int SetDIBitsToDevice(IntPtr hdc, int xdst, int ydst,
+			int width, int height, int xsrc, int ysrc, int start, int lines,
+			IntPtr bitsptr, IntPtr bmiptr, int color);
 
-        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+		[DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
 
         [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]

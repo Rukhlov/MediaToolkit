@@ -777,14 +777,16 @@ namespace MediaToolkit.NativeAPIs
     }
 
 
-    [StructLayoutAttribute(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential)]
     public struct BITMAPINFO
     {
         public BITMAPINFOHEADER bmiHeader;
 
-        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 1, ArraySubType = UnmanagedType.Struct)]
+        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct)]
+        //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1, ArraySubType = UnmanagedType.Struct)]
         public RGBQUAD[] bmiColors;
     }
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct RGBQUAD
