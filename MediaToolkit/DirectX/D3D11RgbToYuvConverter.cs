@@ -195,6 +195,8 @@ namespace MediaToolkit.DirectX
 		//	}
 
 		//}
+
+
 		private PixelShader scalingShader = null;
 
 		private void InitResources()

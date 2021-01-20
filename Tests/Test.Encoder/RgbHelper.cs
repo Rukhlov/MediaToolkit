@@ -86,11 +86,11 @@ namespace Test.Encoder
                 }
 
                 //var fileName = @"Files\rgba_1920x1080.raw";
-                var fileName = @"Files\rgb565_1920x1080.raw";
-                var srcSize = new Size(1920, 1080);
+                var fileName = @"Files\rgb555_640x480.raw";
+                var srcSize = new Size(640, 480);
                 //var fileName = @"Files\1920x1080.bmp";
                 //var srcSize = new Size(1920, 1080);
-                var srcFormat = PixFormat.RGB16;
+                var srcFormat = PixFormat.RGB15;
 
                 var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
                 {

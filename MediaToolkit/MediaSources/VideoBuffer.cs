@@ -395,7 +395,7 @@ namespace MediaToolkit
 		public VideoFrame(int width, int height, PixFormat format, int align)
 		{
 			var size = FFmpegLib.Utils.AllocImageData(new Size(width, height),  format, align, out var buffer);
-			Init(buffer, size, width, height, format, align);
+			Init(buffer, size, width, height, format, align, true);
 		}
 
 		public VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
@@ -403,7 +403,7 @@ namespace MediaToolkit
 			Init(buffer, size, width, height, format, align);
 		}
 
-		private void Init(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
+        private void Init(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align, bool ffmpegAllocated = false)
 		{
 			this.Width = width;
 			this.Height = height;
@@ -411,9 +411,12 @@ namespace MediaToolkit
 			this.Align = align;
 			this.Buffer = buffer;
 			this.DataLength = size;
-		}
+            this.ffmpegAllocated = ffmpegAllocated;
+        }
 
         public override VideoDriverType DriverType => VideoDriverType.CPU;
+
+        private bool ffmpegAllocated = false;
 		private bool disposed = false;
 		public override void Dispose()
 		{
@@ -421,8 +424,12 @@ namespace MediaToolkit
 			{
 				if (!disposed)
 				{
-					var b = Buffer;
-					FFmpegLib.Utils.FreeImageData(ref b);
+                    if (ffmpegAllocated)
+                    {
+                        var b = Buffer;
+                        FFmpegLib.Utils.FreeImageData(ref b);
+                    }
+
 					disposed = true;
 				}
 

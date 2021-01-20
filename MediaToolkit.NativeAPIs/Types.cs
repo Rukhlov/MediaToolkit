@@ -759,7 +759,8 @@ namespace MediaToolkit.NativeAPIs
 	}
 
 
-
+    //https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader
+    //https://docs.microsoft.com/en-us/windows/win32/wmdm/-bitmapinfoheader
     [StructLayout(LayoutKind.Sequential)]
     public struct BITMAPINFOHEADER
     {
@@ -834,9 +835,12 @@ namespace MediaToolkit.NativeAPIs
     {
         public BITMAPINFOHEADER bmiHeader;
 
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct)]
+        public IntPtr bmiColors;
+
+        // Массив bmiColors в зависимости от параметров BITMAPINFOHEADER, может быть разного размера!!!
+        // т.е что бы получить таблицу цветов нужно, прочитать заголовок и из него найти количесво элементов RGBQUAD
         //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1, ArraySubType = UnmanagedType.Struct)]
-        public RGBQUAD[] bmiColors;
+        //public RGBQUAD[] bmiColors;
     }
 
 
