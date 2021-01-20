@@ -121,9 +121,18 @@ namespace ScreenStreamer.Wpf.Helpers
 			var videoSources = new List<VideoSourceItem>();
 
 			var deviceInfos = DisplayUtil.GetDisplayDeviceInfos();
-			var configInfos = DisplayUtil.GetDisplayConfigInfos().ToDictionary(d => d.GdiDeviceName);
 
-			int monitorIndex = 1;
+            var configInfos = new Dictionary<string, DisplayConfigInfo>();
+            try
+            {
+                configInfos = DisplayUtil.GetDisplayConfigInfos().ToDictionary(d => d.GdiDeviceName);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            int monitorIndex = 1;
 			foreach (var screen in Screen.AllScreens)
 			{
 				var deviceName = screen.DeviceName;

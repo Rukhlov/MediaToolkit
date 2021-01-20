@@ -774,6 +774,43 @@ namespace MediaToolkit.NativeAPIs
         public int biYPelsPerMeter;
         public uint biClrUsed;
         public uint biClrImportant;
+
+        public uint GetColorTableLength()
+        {
+            uint result = 0;
+
+            switch (biBitCount)
+            {
+                case 24:
+                    result = biClrUsed;
+                    break;
+                case 16:
+                case 32:
+                    if (biCompression == (uint)BI.RGB)
+                    {
+                        result = biClrUsed;
+                    }
+                    else if (biCompression == (uint)BI.BITFIELDS)
+                    {
+                        result = 3;
+                    }
+                    break;
+                default: // for 0, 1, 2, 4, and 8
+                    if (biClrUsed == 0)
+                    {// 2^biBitCount
+                        result = (uint)(1 << biBitCount);
+                    }
+                    else
+                    {
+                        result = biClrUsed;
+                    }
+
+                    break;
+            }
+
+            return result;
+        }
+
     }
 
 
@@ -795,6 +832,22 @@ namespace MediaToolkit.NativeAPIs
         public byte rgbGreen;
         public byte rgbRed;
         public byte rgbReserved;
+    }
+
+    public enum BI
+    {
+        /// <summary>
+        /// BI_RGB: The bitmap is in uncompressed red green blue (RGB) format that is not compressed and does not use color masks.
+        /// </summary>
+        RGB = 0,
+
+        /// <summary>
+        /// BI_BITFIELDS: The bitmap is not compressed, 
+        /// and the color table consists of three DWORD (defined in [MS-DTYP] section 2.2.9) color masks that specify the red, green, and blue components,
+        /// respectively, of each pixel. 
+        /// This is valid when used with 16 and 32-bits per pixel bitmaps.
+        /// </summary>
+        BITFIELDS = 3,
     }
 
     [StructLayout(LayoutKind.Sequential)]

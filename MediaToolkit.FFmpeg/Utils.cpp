@@ -115,7 +115,7 @@ namespace FFmpegLib {
 			case PixFormat::RGB24:
 				pix_fmt = AV_PIX_FMT_BGR24;
 				break;
-			case PixFormat::RGB565:
+			case PixFormat::RGB16:
 				pix_fmt = AV_PIX_FMT_RGB565LE;
 				break;
 			case PixFormat::I444:

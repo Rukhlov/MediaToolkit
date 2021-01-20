@@ -156,7 +156,7 @@ namespace MediaToolkit
 			int dataSize = 0;
 			IFrameBuffer[] frameData = null;
 
-			if (format == PixFormat.RGB32 || format == PixFormat.RGB24 || format == PixFormat.RGB565)
+			if (format == PixFormat.RGB32 || format == PixFormat.RGB24 || format == PixFormat.RGB16)
 			{
 				if(srcTextures.Length == 1)
 				{
@@ -486,14 +486,14 @@ namespace MediaToolkit
 			}
 			else if (format == MediaToolkit.Core.PixFormat.RGB32
 			   || format == MediaToolkit.Core.PixFormat.RGB24
-			   || format == MediaToolkit.Core.PixFormat.RGB565)
+			   || format == MediaToolkit.Core.PixFormat.RGB16)
 			{
 				int bytesPerPixel = 4;
 				if (format == MediaToolkit.Core.PixFormat.RGB24)
 				{
 					bytesPerPixel = 3;
 				}
-				else if (format == MediaToolkit.Core.PixFormat.RGB565)
+				else if (format == MediaToolkit.Core.PixFormat.RGB16)
 				{
 					bytesPerPixel = 2;
 				}

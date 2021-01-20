@@ -65,6 +65,10 @@ namespace MediaToolkit.ScreenCaptures
             {
                 capture = new DDACapture(args);
             }
+            else if (type == VideoCaptureType.Datapath)
+            {
+                capture = new DatapathDesktopCapture();
+            }
             //else if (type == VideoCaptureType.GDIPlus)
             //{
             //    capture = new GDIPlusCapture();
@@ -73,10 +77,7 @@ namespace MediaToolkit.ScreenCaptures
             //{
             //    capture = new Direct3D9Capture(args);
             //}
-            //else if (type == VideoCaptureType.Datapath)
-            //{
-            //    capture = new DatapathDesktopCapture();
-            //}
+
 
             return capture;
         }

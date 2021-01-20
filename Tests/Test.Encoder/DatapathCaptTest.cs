@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,14 +22,6 @@ namespace Test.Encoder
     {
         public static void Run()
         {
-            
-            //byte[] red_mask = {0, 0xF8, 0, 0};
-            //byte[] blue_mask = { 0, 0x07, 0xE0, 0 };
-            //byte[] green_mask = { 0, 0, 0x1F, 0 };
-
-            //var red = BitConverter.ToInt32(red_mask, 0);
-            //var blue = BitConverter.ToInt32(blue_mask, 0);
-            //var green = BitConverter.ToInt32(green_mask, 0);
 
             Console.WriteLine("DatapathCaptTest::Run()");
             try
@@ -40,17 +33,15 @@ namespace Test.Encoder
                 var allScreenRect = SystemInformation.VirtualScreen;
                 //var rect = new Rectangle(0, 0, 1920, 1080);
                 var srcRect = allScreenRect;
-                var destSize = new Size(1920, 1080);
+                var destSize = allScreenRect.Size;
+                //var destSize = new Size(1920, 1080);
 
                 capt.Init(srcRect, destSize);
+                capt.RunTest();
 
                 capt.Close();
 
             }
-			catch(Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
             finally
             {
                 DatapathDesktopCapture.Unload();
@@ -71,16 +62,9 @@ namespace Test.Encoder
         public VideoBufferBase VideoBuffer { get; protected set; }
 
         public static bool Initialized { get; private set; }
+
         public static bool Load()
         {
-
-            _BITMAPINFO bi = default(_BITMAPINFO);
-            bi.bmiColors = new _RGBQUAD[3];
-
-             var size = Marshal.SizeOf(bi);
-            var headersize = Marshal.SizeOf(bi.bmiHeader);
-            var colorsize = Marshal.SizeOf(bi.bmiColors[0]);
-
             Console.WriteLine("Load()");
             if (!Initialized)
             {
@@ -133,7 +117,7 @@ namespace Test.Encoder
         private static IntPtr hLoad = IntPtr.Zero;
         private IntPtr hCapt = IntPtr.Zero;
 
-        private _BITMAPINFO bmi = default(_BITMAPINFO);
+        private BITMAPINFO bmi = default(BITMAPINFO);
         private IntPtr pBuffer = IntPtr.Zero;
 
         public void Init(Rectangle captArea, Size destSize)
@@ -151,10 +135,13 @@ namespace Test.Encoder
             this.SrcRect = captArea;
             this.DestSize = destSize;
 
-            //var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.RGB565, 16);
-            //this.VideoBuffer = videoBuffer;
+            var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.RGB16, 16);
+            this.VideoBuffer = videoBuffer;
 
-            InitCapture(captArea, DestSize, PixelFormat.Format16bppRgb565);
+            InitCapture(captArea, DestSize);
+
+            InitDx();
+
         }
 
         private Device device = null;
@@ -206,73 +193,36 @@ namespace Test.Encoder
                 }
             }
 
+
+            //var gdiTexture = new Texture2D(device,
+            // new Texture2DDescription
+            // {
+            //     CpuAccessFlags = CpuAccessFlags.None,
+            //     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+            //     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+            //     Width = width, //DestSize.Width,
+            //     Height = height, //DestSize.Height,
+
+            //     MipLevels = 1,
+            //     ArraySize = 1,
+            //     SampleDescription = { Count = 1, Quality = 0 },
+            //     Usage = ResourceUsage.Default,
+            //     OptionFlags = ResourceOptionFlags.GdiCompatible,
+
+            // });
+
         }
 
-        private void InitCapture(Rectangle captArea, Size resolution, PixelFormat pixelFormat)
+        private void InitCapture(Rectangle captArea, Size resolution)
         {
-            if (pixelFormat != PixelFormat.Format16bppRgb565)
-            {
-                throw new FormatException("Unsuppoted pix format " + pixelFormat);
-            }
-
             try
-            {
-                InitDx();
+            {              
                 var result = DCapt.DCaptCreateCapture(hLoad, out hCapt);
                 DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
-                Console.WriteLine("DCaptCreateCapture() " + result);
-
-                //int biWidth = resolution.Width;
-                //int biHeight = resolution.Height;
-                //// 
-                //int biBitCount = Image.GetPixelFormatSize(pixelFormat);
-                //uint biSizeImage = (uint)(biWidth * biHeight * biBitCount / 8);
-
-                //const int BI_BITFIELDS = 3;
-
-                //var bmiHeader = new BITMAPINFOHEADER
-                //{
-                //    biWidth = biWidth,
-                //    biHeight = -biHeight,
-                //    biSize = (uint)Marshal.SizeOf(typeof(BITMAPINFOHEADER)),
-
-                //    biBitCount = (ushort)biBitCount,
-                //    biPlanes = 1,
-
-                //    biClrUsed = 0,
-                //    biClrImportant = 0,
-                //    biSizeImage = biSizeImage,
-                //    biCompression = BI_BITFIELDS,
-
-                //};
-
-                //var bmiColors = GetColourMask(pixelFormat);
-
-                //var bmiColors = new RGBQUAD[]
-                //{
-                //     new RGBQUAD
-                //     {
-                //         rgbRed = 0,
-                //         rgbBlue = 248,
-                //         rgbGreen = 0
-                //     }
-                //};
-
-                //BITMAPINFO bmi = new BITMAPINFO
-                //{
-                //   //bmiHeader = bmiHeader,
-                //    // bmiColors = bmiColors,
-                //};
-
-
-               //IntPtr _hBmi = IntPtr.Zero;
+                //Console.WriteLine("DCaptCreateCapture() " + result);
                 try
                 {
-                    //_hBmi = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(BITMAPINFO)));
-                    //Marshal.StructureToPtr(bmi, _hBmi, false);
-
-                    var dstSize = resolution;
                     RECT srcRect = new RECT
                     {
                         Left = captArea.Left,
@@ -283,181 +233,65 @@ namespace Test.Encoder
 
                     SIZE destSize = new SIZE
                     {
-                        cx = dstSize.Width,
-                        cy = dstSize.Height,
+                        cx = resolution.Width,
+                        cy = resolution.Height,
                     };
 
                     // The bits per pixel of the saved data. Must be 2 
                     int bitsPerPixel = 2;
 
-                    //IntPtr hBmi = _hBmi;
                     result = DCapt.DCaptConfigureCapture(hCapt, ref srcRect, ref destSize, bitsPerPixel, DCapt.CaptFlags.CAPTURE_FLAG_OVERLAY,
-                        out var pBuffer, out IntPtr hBmi);
+                       out var pBuffer, out var hBmi);
 
                     DCapt.ThrowIfError(result, "DCaptConfigureCapture");
 
-                    this.bmi = (_BITMAPINFO)Marshal.PtrToStructure(hBmi, typeof(_BITMAPINFO));
-                    var _bmiHeader = bmi.bmiHeader;
+                    var _bmiHeader = (BITMAPINFOHEADER)Marshal.PtrToStructure(hBmi, typeof(BITMAPINFOHEADER));
 
-					//Console.WriteLine("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
-					//    + _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage + "");
+                    Console.WriteLine("_bmiHeader " + _bmiHeader.biWidth + "x" + _bmiHeader.biHeight + " "
+                        + _bmiHeader.biBitCount + " " + _bmiHeader.biCompression + " " + _bmiHeader.biSizeImage);
 
-					Console.WriteLine("biSize " + _bmiHeader.biSize + "\r\n" +
-									"biWidth " + _bmiHeader.biWidth + "\r\n" +
-									"biHeight " + _bmiHeader.biHeight + "\r\n" +
-									"biPlanes " + _bmiHeader.biPlanes + "\r\n" +
-									"biBitCount " + _bmiHeader.biBitCount + "\r\n" +
-									"biCompression " + _bmiHeader.biCompression + "\r\n" +
-									"biSizeImage " + _bmiHeader.biSizeImage + "\r\n" +
-									"biXPelsPerMeter " + _bmiHeader.biXPelsPerMeter + "\r\n" +
-									"biYPelsPerMeter " + _bmiHeader.biYPelsPerMeter + "\r\n" +
-									"biClrUsed " + _bmiHeader.biClrUsed + "\r\n" +
-									"biClrImportant " + _bmiHeader.biClrImportant + "\r\n");
+                    PixFormat pixFormat = PixFormat.Unknown;
+                    if (_bmiHeader.biBitCount == 16)
+                    { //rgb 16 bit
+                        if (_bmiHeader.biCompression == (uint)BI.BITFIELDS)
+                        {// может быть rgb555 или rgb565
+                            // читаем маску цветов что бы определить формат
+                            var hColor = IntPtr.Add(hBmi, (int)_bmiHeader.biSize);
+                            uint[] bmiColors = MediaToolkit.NativeAPIs.Utils.MarshalHelper.GetArrayData<uint>(hColor, 3);
 
-                    //var bmiColors = bmi.bmiColors;
-                    ////var bmiColors = MediaToolkit.NativeAPIs.Utils.MarshalHelper.GetArrayData<RGBQUAD>(bmi.bmiColors, 1);
-                    //if (bmiColors != null && bmiColors.Length > 0)
-                    //{
-                    //    foreach (var colors in bmiColors)
-                    //    {
-                    //        Console.WriteLine(colors);
-                    //        //Console.WriteLine("rgbRed " + colors.rgbRed + "\r\n" +
-                    //        //                 "rgbGreen " + colors.rgbGreen + "\r\n" +
-                    //        //                 "rgbBlue " + colors.rgbBlue + "\r\n");
-                    //        Console.WriteLine("------------------------------");
-
-                    //    }
-
-                    //}
-
-                    //SharpDX.Win32.
-                    //SharpDX.MediaFoundation.MediaFactory.CreateVideoMediaTypeFromBitMapInfoHeaderEx()
-
-
-
-                    int DIB_PAL_COLORS = 0x01;
-                    //var hDc = User32.GetDC(IntPtr.Zero);
-                    //var section = CreateDIBSection(hDc, ref bmi, DIB_PAL_COLORS, pBuffer, IntPtr.Zero, 0);
-                    var width = _bmiHeader.biWidth;
-                    var height = _bmiHeader.biHeight;
-                    if (height < 0)
-                    {
-                        height = -height;
-                    }
-
-                    result = DCapt.DCaptUpdate(hCapt);
-
-                    var destStride = ((((width * _bmiHeader.biBitCount) + 31) & ~31) >> 3);
-
-                    var srcStride = ((((width * _bmiHeader.biBitCount) + 31) & ~31) >> 3);
-                    var srcPtr = pBuffer;
-
-                    int offset = 0;
-                    var bytes = new byte[destStride * height];
-                    for (int i = 0; i < height; i++)
-                    {
-                        Marshal.Copy(srcPtr, bytes, offset, destStride);
-                        offset += destStride;
-                        srcPtr += srcStride;
-                    }
-                    File.WriteAllBytes("RawBitmap.raw", bytes);
-
-                    var gdiTexture = new Texture2D(device,
-                        new Texture2DDescription
+                            var red = bmiColors[0];
+                            var green = bmiColors[1];
+                            var blue = bmiColors[2];
+                            if (red == 0xF800 && green == 0x7E0 && blue == 0x1F)
+                            {// rgb 565
+                                pixFormat = PixFormat.RGB16;
+                            }
+                            else if (red == 0x7C00 && green == 0x3E0 && blue == 0x1F)
+                            {// rgb 555
+                                pixFormat = PixFormat.RGB15;
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException("Invalid color mask: " + string.Join(",", red, green, blue));
+                            }
+                        }
+                        else if (_bmiHeader.biCompression == (uint)BI.RGB)
+                        {// только rgb555
+                            pixFormat = PixFormat.RGB15;
+                        }
+                        else
                         {
-                            CpuAccessFlags = CpuAccessFlags.None,
-                            BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                            Width = width, //DestSize.Width,
-                            Height = height, //DestSize.Height,
-
-                            MipLevels = 1,
-                            ArraySize = 1,
-                            SampleDescription = { Count = 1, Quality = 0 },
-                            Usage = ResourceUsage.Default,
-                            OptionFlags = ResourceOptionFlags.GdiCompatible,
-
-                        });
-
-                    Stopwatch sw = new Stopwatch();
-                    int num = 100;
-                    int count = num;
-                    sw.Start();
-                    while (count--> 0)
+                            throw new InvalidOperationException("Invalid compression field: " + _bmiHeader.biCompression);
+                        }
+                    }
+                    else
                     {
-                        result = DCapt.DCaptUpdate(hCapt);
-                        DCapt.ThrowIfError(result, "DCaptCreateCapture");
-
-
-						//using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
-						//{
-						//	var hdc = surf.GetDC(true);
-						//	try
-						//	{
-						//		var res = Gdi32.SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, pBuffer, hBmi, DIB_PAL_COLORS);
-						//	}
-						//	finally
-						//	{
-						//		surf.ReleaseDC();
-						//	}
-
-						//}
-					}
-
-                    var totalMsec = sw.ElapsedMilliseconds;
-
-                    var timePerFrame = totalMsec / num;
-                    Console.WriteLine("--------------------Dirctx----------------------");
-                    Console.WriteLine("TotalTime: " + totalMsec);
-                    Console.WriteLine("TimePerFrame: " + timePerFrame);
-                    Console.WriteLine("FramePerSec: " + 1000.0 / timePerFrame);
-
-
-                    Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-                    ////Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format16bppRgb565);
-                    count = num;
-                    sw.Restart();
-                    while (count-- > 0)
-                    {
-                        //result = DCapt.DCaptUpdate(hCapt);
-                        //DCapt.ThrowIfError(result, "DCaptCreateCapture");
-
-                        //var g = Graphics.FromImage(bitmap);
-                        //var hdc = g.GetHdc();
-                        //var res = Gdi32.SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, pBuffer, hBmi, DIB_PAL_COLORS);
-
-
-                        //if (g != null)
-                        //{
-                        //    g.ReleaseHdc(hdc);
-                        //    g.Dispose();
-                        //}
+                        throw new NotSupportedException("_bmiHeader.biBitCount == " + _bmiHeader.biBitCount);
                     }
 
-                    Console.WriteLine("--------------------GDI----------------------");
-                    Console.WriteLine("TotalTime: " + totalMsec);
-                    Console.WriteLine("TimePerFrame: " + timePerFrame);
-                    Console.WriteLine("FramePerSec: " + 1000.0 / timePerFrame);
+                    this.bmi.bmiHeader = _bmiHeader;
+                    this.pBuffer = pBuffer;
 
-
-                    //var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, gdiTexture);
-                    //File.WriteAllBytes("Texture.raw", bytes);
-
-                    //Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-                    ////Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format16bppRgb565);
-                    //var g = Graphics.FromImage(bitmap);
-                    //var hdc = g.GetHdc();
-                    //var res = Gdi32.SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, pBuffer, hBmi, DIB_PAL_COLORS);
-
-
-                    //if (g != null)
-                    //{
-                    //    g.ReleaseHdc(hdc);
-                    //    g.Dispose();
-                    //}
-
-                    //bitmap.Save("SetDIBitsToDevice.bmp", ImageFormat.Bmp);
-                    //bitmap.Dispose();
 
 
                 }
@@ -476,6 +310,117 @@ namespace Test.Encoder
                 Close();
                 throw;
             }
+        }
+
+        internal void RunTest()
+        {
+            uint bufSize = this.bmi.bmiHeader.biSizeImage;
+
+            var width = this.bmi.bmiHeader.biWidth;
+            var height = this.bmi.bmiHeader.biHeight;
+            if (height < 0)
+            {
+                height = -height;
+            }
+
+            //var videoBuffer = new MemoryVideoBuffer(new Size(width, height), pixFormat, 16);
+
+
+
+            Stopwatch sw = new Stopwatch();
+            var num = 10;
+            int count = num;
+            sw.Restart();
+            long totalMsec = 0;
+
+            Task.Run(() =>
+            {
+                while (count-- > 0)
+                {
+                    Kernel32.ZeroMemory(pBuffer, (int)bufSize);
+                   var result = DCapt.DCaptUpdate(hCapt);
+                    DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+                    var msec = sw.ElapsedMilliseconds;
+                    totalMsec += msec;
+                    Console.WriteLine(msec);
+                    sw.Restart();
+                    Thread.Sleep(1);
+                }
+            }).Wait();
+
+
+            //var totalMsec = sw.ElapsedMilliseconds;
+            var timePerFrame = totalMsec / num;
+            Console.WriteLine("--------------------DCaptUpdate----------------------");
+            Console.WriteLine("TotalTime: " + totalMsec);
+            Console.WriteLine("TimePerFrame: " + timePerFrame);
+            Console.WriteLine("FramePerSec: " + 1000.0 / timePerFrame);
+
+            sw.Restart();
+            count = num;
+            while (count-- > 0)
+            {
+
+                Kernel32.ZeroMemory(pBuffer, (int)bufSize);
+
+                var result = DCapt.DCaptUpdate(hCapt);
+                DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+
+                //using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
+                //{
+                //    var hdc = surf.GetDC(true);
+                //    try
+                //    {
+                //        var res = Gdi32.SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, pBuffer, hBmi, DIB_PAL_COLORS);
+                //    }
+                //    finally
+                //    {
+                //        surf.ReleaseDC();
+                //    }
+
+                //}
+            }
+
+            totalMsec = sw.ElapsedMilliseconds;
+
+            timePerFrame = totalMsec / num;
+            Console.WriteLine("--------------------Dirctx----------------------");
+            Console.WriteLine("TotalTime: " + totalMsec);
+            Console.WriteLine("TimePerFrame: " + timePerFrame);
+            Console.WriteLine("FramePerSec: " + 1000.0 / timePerFrame);
+
+
+            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+            ////Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format16bppRgb565);
+            count = num;
+            sw.Restart();
+            while (count-- > 0)
+            {
+                Kernel32.ZeroMemory(pBuffer, (int)bufSize);
+
+                var result = DCapt.DCaptUpdate(hCapt);
+                DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+                //var g = Graphics.FromImage(bitmap);
+                //var hdc = g.GetHdc();
+                //var res = Gdi32.SetDIBitsToDevice(hdc, 0, 0, width, height, 0, 0, 0, height, pBuffer, hBmi, DIB_PAL_COLORS);
+
+
+                //if (g != null)
+                //{
+                //    g.ReleaseHdc(hdc);
+                //    g.Dispose();
+                //}
+            }
+            totalMsec = sw.ElapsedMilliseconds;
+            timePerFrame = totalMsec / num;
+            Console.WriteLine("--------------------GDI----------------------");
+            Console.WriteLine("TotalTime: " + totalMsec);
+            Console.WriteLine("TimePerFrame: " + timePerFrame);
+            Console.WriteLine("FramePerSec: " + 1000.0 / timePerFrame);
+
         }
 
 
@@ -652,45 +597,6 @@ namespace Test.Encoder
             // Console.WriteLine("DCaptCreateCapture() " + result);
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct _BITMAPINFO
-        {
-            public _BITMAPINFOHEADER bmiHeader;
-
-            //public IntPtr bmiColors;
-            //[MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Struct)]
-            ////[MarshalAs(UnmanagedType.ByValArray, SizeConst = 1, ArraySubType = UnmanagedType.Struct)]
-
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
-            //[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3, ArraySubType = UnmanagedType.Struct)]
-            public _RGBQUAD[] bmiColors;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct _BITMAPINFOHEADER
-        {
-            public uint biSize;
-            public int biWidth;
-            public int biHeight;
-            public ushort biPlanes;
-            public ushort biBitCount;
-            public uint biCompression;
-            public uint biSizeImage;
-            public int biXPelsPerMeter;
-            public int biYPelsPerMeter;
-            public uint biClrUsed;
-            public uint biClrImportant;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct _RGBQUAD
-        {
-            public byte rgbBlue;
-            public byte rgbGreen;
-            public byte rgbRed;
-            public byte rgbReserved;
-        }
-
         //public override ErrorCode UpdateBuffer(int timeout = 10)
         //{
         //    //logger.Verb("Update(...) " + timeout);
@@ -778,7 +684,7 @@ namespace Test.Encoder
                     pBuffer = IntPtr.Zero;
                 }
 
-                this.bmi = default(_BITMAPINFO);
+                this.bmi = default(BITMAPINFO);
 
             }
 
@@ -851,10 +757,7 @@ namespace Test.Encoder
             [DllImport("capt.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto, EntryPoint = "DCaptConfigureCapture")]
             internal static extern CaptError DCaptConfigureCapture(IntPtr hCapt, ref RECT srcRect, ref SIZE dstSize, int bitsPerPixel, CaptFlags flags, out IntPtr hBuf, out IntPtr hInfo);
 
-            [DllImport("capt.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto, EntryPoint = "DCaptConfigureCapture")]
-            internal static extern CaptError DCaptConfigureCapture(IntPtr hCapt, ref RECT srcRect, ref SIZE dstSize, int bitsPerPixel, CaptFlags flags, out IntPtr hBuf, out _BITMAPINFO hInfo);
 
-            
 
             [DllImport("capt.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto, EntryPoint = "DCaptUpdate")]
             internal static extern CaptError DCaptUpdate(IntPtr hCapt);
