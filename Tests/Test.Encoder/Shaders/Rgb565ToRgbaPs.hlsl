@@ -67,6 +67,6 @@ float4 PS(VertData input) : SV_Target
 {
 	float rgb16 = rgb16Texture.Sample(defaultSampler, input.texCoord);
 
-	return float4(saturate(Rgb555ToRgb888(rgb16)), 1.0);
+	return float4(saturate(Rgb565ToRgb888(rgb16)), 1.0);
 
 }

@@ -143,60 +143,6 @@ namespace MediaToolkit.DirectX
 
 		}
 
-		//private void InitShaders()
-		//{
-		//	logger.Debug("InitShaders()");
-
-		//	var profileLevel = "4_0";
-		//	//var profileLevel = "5_0";
-		//	var vsProvile = "vs_" + profileLevel;
-		//	var psProvile = "ps_" + profileLevel;
-
-		//	var vertexShaderBytes = HlslCompiler.GetVertexShaderBytes("DefaultVS", "VS");
-
-		//	using (var compResult = HlslCompiler.CompileShaderFromResources("DefaultVS.hlsl", "VS", vsProvile))
-		//	{
-		//		defaultVS = new VertexShader(device, compResult.Bytecode);
-		//		var elements = new[]
-		//		{
-		//			new InputElement("POSITION",0,Format.R32G32B32_Float,0,0),
-		//			new InputElement("TEXCOORD",0,Format.R32G32_Float,12,0)
-		//		};
-
-		//		using (var inputLayout = new InputLayout(device, compResult.Bytecode, elements))
-		//		{
-		//			device.ImmediateContext.InputAssembler.InputLayout = inputLayout;
-		//		}
-		//	}
-
-		//	using (var compResult = HlslCompiler.CompileShaderFromResources("DefaultPS.hlsl", "PS", psProvile))
-		//	{
-		//		defaultPS = new PixelShader(device, compResult.Bytecode);
-		//	}
-
-		//	var rgbToYuvShaderName = "RgbToYuv.hlsl";
-		//	if (destFormat == PixFormat.NV12)
-		//	{
-		//		rgbToYuvShaderName = "RgbToNv12.hlsl";
-		//	}
-
-		//	using (var compResult = HlslCompiler.CompileShaderFromResources(rgbToYuvShaderName, "PS", psProvile))
-		//	{
-		//		rgbToYuvPS = new PixelShader(device, compResult.Bytecode);
-		//	}
-
-		//	if (scalingFilter == ScalingFilter.Linear)
-		//	{
-		//		using (var compResult = HlslCompiler.CompileShaderFromResources("DownscaleBilinear8.hlsl", "PS", psProvile))
-		//		//using (var compResult = CompileShader("DownscaleBilinear9.hlsl", "PS", psProvile))
-		//		{
-		//			downscaleBilinearPS = new PixelShader(device, compResult.Bytecode);
-		//		}
-		//	}
-
-		//}
-
-
 		private PixelShader scalingShader = null;
 
 		private void InitResources()
@@ -905,4 +851,6 @@ namespace MediaToolkit.DirectX
 
 
 	}
+
+
 }

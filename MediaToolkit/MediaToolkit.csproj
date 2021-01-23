@@ -100,6 +100,7 @@
     <Compile Include="DirectX\D3D11Presenter.cs" />
     <Compile Include="DirectX\D3D11RgbToYuvConverter.cs" />
     <Compile Include="DirectX\DxCommon.cs" />
+    <Compile Include="DirectX\RgbProcessor.cs" />
     <Compile Include="Managers\WTSSessionManager.cs" />
     <Compile Include="DirectX\D3D11Provider.cs" />
     <Compile Include="MediaFoundation\MediaRenderSession.cs" />
@@ -201,12 +202,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="DirectX\Shaders\Rgb15To32.hlsl">
+    <EmbeddedResource Include="DirectX\Shaders\Rgb15To32.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="DirectX\Shaders\Rgb16To32.hlsl">
+    </EmbeddedResource>
+    <EmbeddedResource Include="DirectX\Shaders\Rgb16To32.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
