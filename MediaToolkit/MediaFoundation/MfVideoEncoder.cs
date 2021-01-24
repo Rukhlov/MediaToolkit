@@ -24,11 +24,10 @@ namespace MediaToolkit.MediaFoundation
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
-        private readonly IVideoSource videoSource = null;
-
-        public MfVideoEncoder(IVideoSource source)
+		private readonly VideoBufferBase videoBuffer = null;
+		public MfVideoEncoder(VideoBufferBase buffer)
         {
-            this.videoSource = source;
+            this.videoBuffer = buffer;
         }
 
         private IMfVideoTransform encoder = null;
@@ -58,8 +57,6 @@ namespace MediaToolkit.MediaFoundation
             var destSize = encoderSettings.Resolution;//new Size(destParams.Width, destParams.Height);
             var aspectRatio = encoderSettings.AspectRatio;
 
-            var videoBuffer = videoSource._VideoBuffer;
-            
             if (videoBuffer.DriverType == VideoDriverType.D3D11)
             {
                 var frame = videoBuffer.GetFrame();
@@ -212,7 +209,6 @@ namespace MediaToolkit.MediaFoundation
             {// software mode...
                 SoftwareMode = true;
 
- 
                 var encoderName = encoderSettings.EncoderId;
 
                 if (encoderName == "libx264" || encoderName == "h264_nvenc")
@@ -254,7 +250,7 @@ namespace MediaToolkit.MediaFoundation
 				//throw new NotImplementedException();
 
 				//var videoBuffer = videoSource.SharedBitmap;
-				var frame = videoSource._VideoBuffer.GetFrame();
+				var frame = videoBuffer.GetFrame();
 				if (frame != null)
 				{
 					bool lockTaken = false;

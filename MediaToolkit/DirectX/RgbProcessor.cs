@@ -44,6 +44,7 @@ namespace MediaToolkit.DirectX
 		private SamplerState textureSampler = null;
 
 		private ScalingFilter scalingFilter = ScalingFilter.Linear;
+		private Vector2 scalingNorm;
 
 		private GDI.Size srcSize;
 		private PixFormat srcFormat = PixFormat.Unknown;
@@ -215,9 +216,34 @@ namespace MediaToolkit.DirectX
 			scalingShader = defaultPS;
 			if (scalingFilter == ScalingFilter.Linear)
 			{
-				if (srcSize.Width > destSize.Width || srcSize.Height > destSize.Height)
+				var downscaleX = srcSize.Width / (float)destSize.Width;
+				var downscaleY = srcSize.Height / (float)destSize.Height;
+
+				var normX = 1f / destSize.Width;
+				if (downscaleX > 3.0)
+				{
+					normX = 1f / (3f * destSize.Width);
+				}
+				else if (downscaleX > 2.0)
+				{
+					normX = 1f / (2f * destSize.Width);
+				}
+
+
+				var normY = 1f / destSize.Height;
+				if (downscaleY > 3.0)
+				{
+					normY = 1f / (3f * destSize.Height);
+				}
+				else if (downscaleY > 2.0)
+				{
+					normY = 1f / (2f * destSize.Height);
+				}
+
+				if (downscaleX > 1.0 || downscaleY > 1.0)
 				{
 					scalingShader = downscaleBilinearPS;
+					scalingNorm = new Vector2(normX, normY);
 				}
 			}
 			else if (scalingFilter == ScalingFilter.Point)
@@ -305,9 +331,7 @@ namespace MediaToolkit.DirectX
 
 					if (scalingFilter == ScalingFilter.Linear)
 					{
-						//var baseDimensionI = new Vector2(1f / (1f * destSize.Width), 1f / (1f * destSize.Height));
-						var baseDimensionI = new Vector2(1f / (3f * destSize.Width), 1f / (3f * destSize.Height));
-						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref baseDimensionI, 16))
+						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref scalingNorm, 16))
 						{
 							deviceContext.PixelShader.SetConstantBuffer(0, buffer);
 						}

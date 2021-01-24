@@ -70,9 +70,107 @@ namespace WebCamTest
 
         }
 
+		[STAThread]
+		static void Main(string[] args)
+		{
 
-        [STAThread]
-        static void Main(string[] args)
+			Console.WriteLine("==============START=============");
+			try
+			{
+				MediaManager.Startup();
+
+				Activate[] activates = null;
+				using (var attributes = new MediaAttributes())
+				{
+					MediaFactory.CreateAttributes(attributes, 1);
+					attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+
+					activates = MediaFactory.EnumDeviceSources(attributes);
+
+				}
+
+				if (activates == null || activates.Length == 0)
+				{
+					Console.WriteLine("SourceTypeVideoCapture not found");
+					Console.ReadKey();
+				}
+
+				foreach (var activate in activates)
+				{
+					Console.WriteLine("---------------------------------------------");
+					var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+					var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+					//var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+					var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+
+					Console.WriteLine("FriendlyName " + friendlyName + "\r\n" +
+						"isHwSource " + isHwSource + "\r\n" +
+						//"maxBuffers " + maxBuffers + 
+						"symbolicLink " + symbolicLink);
+				}
+
+
+				var currentActivator = activates[0];
+
+				var mediaSource = currentActivator.ActivateObject<MediaSource>();
+
+				foreach (var a in activates)
+				{
+					a.Dispose();
+				}
+
+				mediaSource.CreatePresentationDescriptor(out PresentationDescriptor presentationDescriptor);
+
+				for (int i = 0; i < presentationDescriptor.Count; i++)
+				{
+					var obj = presentationDescriptor.GetByIndex(i, out Guid guid);
+					Console.WriteLine(guid + " " + obj.ToString());
+
+				}
+
+				for (int i = 0; i < presentationDescriptor.StreamDescriptorCount; i++)
+				{
+					var streamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(i, out SharpDX.Mathematics.Interop.RawBool selected);
+					Console.WriteLine(i + " " + streamDescriptor.ToString() + " " + selected);
+
+					//if (selected)
+					{
+						using (var mediaHandler = streamDescriptor.MediaTypeHandler)
+						{
+							for (int j = 0; j < mediaHandler.MediaTypeCount; j++)
+							{
+								var mediaType = mediaHandler.GetMediaTypeByIndex(j);
+								Console.WriteLine(MfTool.LogMediaType(mediaType));
+							}
+						}
+					}
+
+
+					for (int j = 0; j < streamDescriptor.Count; j++)
+					{
+						var obj = streamDescriptor.GetByIndex(j, out Guid guid);
+						Console.WriteLine(guid + " " + obj.ToString());
+					}
+
+					Console.WriteLine("------------------------------------");
+
+				}
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+
+			Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+			MediaToolkitManager.Shutdown();
+
+			Console.WriteLine("==============THE END=============");
+			Console.WriteLine("Any key to quit...");
+			Console.ReadKey();
+		}
+
+		[STAThread]
+        static void __Main2(string[] args)
         {
 
             Console.WriteLine("==============START=============");
@@ -97,43 +195,43 @@ namespace WebCamTest
 
                 };
 
-                videoCaptureSource.Setup(captureParams);
+                //videoCaptureSource.Setup(captureParams);
 
 
-                PreviewForm previewForm = null;
-                D3DImageRenderer provider = null;
-                var uiThread = new Thread(() =>
-                {
+                //PreviewForm previewForm = null;
+                //D3DImageRenderer provider = null;
+                //var uiThread = new Thread(() =>
+                //{
 
-                    provider = new D3DImageRenderer();
-                    provider.Setup(videoCaptureSource.SharedTexture);
+                //    provider = new D3DImageRenderer();
+                //    provider.Setup(videoCaptureSource.SharedTexture);
 
-                    previewForm = new PreviewForm();
+                //    previewForm = new PreviewForm();
 
-                    previewForm.d3DImageControl1.DataContext = provider;
+                //    previewForm.d3DImageControl1.DataContext = provider;
 
-                    previewForm.Show();
+                //    previewForm.Show();
    
-                    provider.Start();
+                //    provider.Start();
 
-                    Application.Run();
-                });
+                //    Application.Run();
+                //});
 
-                uiThread.IsBackground = true;
-                uiThread.SetApartmentState(ApartmentState.STA);
+                //uiThread.IsBackground = true;
+                //uiThread.SetApartmentState(ApartmentState.STA);
 
 
-                Console.WriteLine("Any key to start...");
-                Console.ReadKey();
+                //Console.WriteLine("Any key to start...");
+                //Console.ReadKey();
 
-                uiThread.Start();
+                //uiThread.Start();
 
-                videoCaptureSource.BufferUpdated += () =>
-                {
-                    provider?.Update();
-                };
+                //videoCaptureSource.BufferUpdated += () =>
+                //{
+                //    provider?.Update();
+                //};
 
-                videoCaptureSource.Start();
+                //videoCaptureSource.Start();
 
                 Console.ReadKey();
                 Console.WriteLine("Any key to stop...");

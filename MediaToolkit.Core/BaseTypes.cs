@@ -252,7 +252,6 @@ namespace MediaToolkit.Core
 
         VideoDriverType DriverType { get; }
 
-
         bool Lock(int timeout);
         void Unlock();
     }

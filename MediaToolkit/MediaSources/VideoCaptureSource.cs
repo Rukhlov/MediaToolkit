@@ -57,7 +57,7 @@ namespace MediaToolkit
         //}
 
 
-        public VideoBufferBase _VideoBuffer { get; private set; }
+        public VideoBufferBase VideoBuffer { get; private set; }
 
         private volatile CaptureState state = CaptureState.Closed;
         public CaptureState State => state;
@@ -134,8 +134,8 @@ namespace MediaToolkit
                 mediaType?.Dispose();
 
 
-                _VideoBuffer = new D3D11VideoBuffer(device, destSize, Core.PixFormat.RGB32);
-                var frame = _VideoBuffer.GetFrame();
+                VideoBuffer = new D3D11VideoBuffer(device, destSize, Core.PixFormat.RGB32);
+                var frame = VideoBuffer.GetFrame();
                 var buffer = frame.Buffer;
                 var pTexture = buffer[0].Data;
 

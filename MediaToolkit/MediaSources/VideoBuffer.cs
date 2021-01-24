@@ -35,9 +35,9 @@ namespace MediaToolkit
             return frame;
         }
 
-		public event Action<VideoFrameBase> BufferUpdated;
+		public event Action<IVideoFrame> BufferUpdated;
 
-		public void OnBufferUpdated(VideoFrameBase frame)
+		public void OnBufferUpdated(IVideoFrame frame)
 		{
 			BufferUpdated?.Invoke(frame);
 		}

@@ -19,8 +19,6 @@ using MediaToolkit.DirectX;
 
 namespace MediaToolkit.ScreenCaptures
 {
-
-
     /// <summary>
     /// Быстрее всего работает с выключенной композитной отрисовкой
     /// и с PixelFormat.Format32bppArgb 
@@ -303,16 +301,9 @@ namespace MediaToolkit.ScreenCaptures
 								throw new InvalidOperationException("srcStride < 0");
 							}
 
-
 							var destBuffer = frame.Buffer[0];
                             var destStride = destBuffer.Stride;
                             var destPtr = destBuffer.Data;
-
-
-							if (srcStride < destStride)
-							{
-
-							}
 
 						    for (int row = 0; row < srcHeight; row++)
                             {
@@ -406,7 +397,6 @@ namespace MediaToolkit.ScreenCaptures
                          });
                     }
                 }
-
 
 
                 using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())

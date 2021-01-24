@@ -27,7 +27,7 @@ namespace MediaToolkit
         //    get { return hwContext?.SharedTexture; }
         //}
 
-        public VideoBufferBase _VideoBuffer => screenCapture?.VideoBuffer;
+        public VideoBufferBase VideoBuffer => screenCapture?.VideoBuffer;
 
         // public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
@@ -275,10 +275,10 @@ namespace MediaToolkit
                         {
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
-                            var frame = _VideoBuffer.GetFrame();
+                            var frame = VideoBuffer.GetFrame();
                             frame.Time = time;
                             lastTime = frame.Time;
-                            _VideoBuffer.OnBufferUpdated(frame);
+                            VideoBuffer.OnBufferUpdated(frame);
 
                             //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
 

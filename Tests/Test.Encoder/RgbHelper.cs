@@ -85,20 +85,31 @@ namespace Test.Encoder
 					}
 				}
 
+				var fileName = @"Files\2560x1440.bmp";
+				var srcSize = new Size(2560, 1440);
+				var srcFormat = PixFormat.RGB24;
 
-				var fileName = @"Files\rgb565_640x480.raw";
-				var srcSize = new Size(640, 480);
-				var srcFormat = PixFormat.RGB16;
+				//var fileName = @"Files\rgb565_1920x1080.raw";
+				//var srcSize = new Size(1920, 1080);
+				//var srcFormat = PixFormat.RGB16;
+
+				//var fileName = @"Files\rgb565_640x480.raw";
+				//var srcSize = new Size(640, 480);
+				//var srcFormat = PixFormat.RGB16;
 
 				//var fileName = @"Files\rgba_1920x1080.raw";
 				//var srcSize = new Size(1920, 1080);
 				//var srcFormat = PixFormat.RGB32;
 
-				var destSize = new Size(800, 600);
+				//var destSize = new Size(800, 600);
+				//var destSize = new Size(352, 288);
+				//var destSize = new Size(1280, 720);
+				var destSize = new Size(640, 480);
 				var destFormat = PixFormat.RGB32;
 
+				var scalingFilter = ScalingFilter.Linear;
 				RgbProcessor rgbProcessor = new RgbProcessor();
-				rgbProcessor.Init(device, srcSize, srcFormat, destSize, destFormat);
+				rgbProcessor.Init(device, srcSize, srcFormat, destSize, destFormat, scalingFilter);
 
 				var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
 				{
@@ -119,9 +130,11 @@ namespace Test.Encoder
 					OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
 
 				};
-				var srcBytes = File.ReadAllBytes(fileName);
 
-				srcTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
+				//var srcBytes = File.ReadAllBytes(fileName);
+				//srcTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
+
+				srcTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
 				destTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
 				{
@@ -151,7 +164,7 @@ namespace Test.Encoder
 					var descr = destTexture.Description;
 					var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, destTexture);
 
-					var _fileName = "Dest_" + descr.Format + "_" + descr.Width + "x" + descr.Height + ".raw";
+					var _fileName = "Dest_" + descr.Format + "_" + descr.Width + "x" + descr.Height + "_" + scalingFilter + ".raw";
 					File.WriteAllBytes(_fileName, bytes);
 
 					Console.WriteLine("DestFile: " + _fileName);

@@ -60,7 +60,7 @@ namespace MediaToolkit.UI
             {
                 d3dProvider = new D3D11RendererProvider();
 
-                var videoBuffer = videoSource._VideoBuffer;
+                var videoBuffer = videoSource.VideoBuffer;
                 
                 if (videoBuffer.DriverType == VideoDriverType.D3D11)
                 {
