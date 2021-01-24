@@ -149,6 +149,38 @@ namespace MediaToolkit
 
     public class D3D11VideoFrame : VideoFrameBase
     {
+		public D3D11VideoFrame(Texture2D srcTexture)
+		{
+			int dataSize = 0;
+			IFrameBuffer[] frameData = null;
+			PixFormat format = PixFormat.Unknown;
+
+			var descr = srcTexture.Description;
+			var width = descr.Width;
+			var height = descr.Height;
+
+			if (descr.Format == SharpDX.DXGI.Format.B8G8R8A8_UNorm)
+			{
+				format = PixFormat.RGB32;
+			}
+			else if(descr.Format == SharpDX.DXGI.Format.NV12)
+			{
+				format = PixFormat.NV12;
+			}
+			else
+			{
+				throw new InvalidOperationException("Unsupported texture format: " + descr.Format);
+			}
+
+			frameData = new FrameBuffer[1];
+			var tex = new Texture2D(srcTexture.NativePointer);
+			((IUnknown)tex).AddReference();
+			textures.Add(tex);
+			frameData[0] = new FrameBuffer(tex.NativePointer, 0);
+
+			_D3D11VideoFrame(frameData, dataSize, width, height, format);
+		}
+
 		public D3D11VideoFrame(PixFormat format, params Texture2D[] srcTextures)
 		{
 			int width = 0;
@@ -174,6 +206,7 @@ namespace MediaToolkit
 				{
 					throw new InvalidOperationException("Invalid format");
 				}
+
 			}
 			else if (format == PixFormat.NV12)
 			{
@@ -374,6 +407,27 @@ namespace MediaToolkit
 
             return textures;
         }
+
+		public byte[] ConvertToContiguousBuffer()
+		{
+			byte[] bytes = null;
+
+			if(Format == PixFormat.NV12)
+			{
+				if(textures.Count == 2)
+				{
+					
+				}
+				else if(textures.Count == 1)
+				{
+					var nv12Texture = textures[0];
+					//...
+				}
+			}
+
+			return bytes;
+
+		}
 
 		private bool disposed = false;
 		public override void Dispose()

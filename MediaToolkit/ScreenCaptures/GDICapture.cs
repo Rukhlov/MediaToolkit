@@ -28,17 +28,17 @@ namespace MediaToolkit.ScreenCaptures
         private Device device = null;
         private Texture2D gdiTexture = null;
 
-        private Texture2D renderTexture = null;
-        SharpDX.Direct2D1.RenderTarget renderTarget = null;
-
-        private Texture2D sharedTexture = null;
+ 
         // public long AdapterId { get; private set; }
         public int AdapterIndex { get; private set; }
         public bool UseHwContext { get; set; } = false;
 
         public bool CaptureAllLayers { get; set; } = false;
 
-        public GDICapture(Dictionary<string, object> args = null) : base()
+		private VideoFrameBase srcFrame = null;
+		private Bitmap screenBits = null;
+
+		public GDICapture(Dictionary<string, object> args = null) : base()
         {
             if (args != null)
             {
@@ -55,7 +55,8 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-		private D3D11RgbToNv12Converter pixConverter = null;
+		//private D3D11RgbToNv12Converter pixConverter = null;
+		private D3D11RgbToYuvConverter pixConverter = null;
 
 		public int GdiStretchingMode { get; set; } = 3;
         private StretchingMode stretchingMode = StretchingMode.COLORONCOLOR;
@@ -63,7 +64,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
-		//private D3D11VideoBuffer videoBuffer = null;
+
 		public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
             base.Init(srcRect, destSize);
@@ -141,58 +142,16 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-			sharedTexture = new Texture2D(device,
-				new Texture2DDescription
-				{
-					Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-					Width = SrcRect.Width,
-					Height = SrcRect.Height,
-
-					MipLevels = 1,
-					ArraySize = 1,
-					SampleDescription = { Count = 1, Quality = 0 },
-					Usage = ResourceUsage.Default,
-					OptionFlags = ResourceOptionFlags.None,
-					CpuAccessFlags = CpuAccessFlags.None,
-					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-
-				});
-
 			//var videoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.NV12);
 
-			var videoBuffer = new MemoryVideoBuffer(DestSize, PixFormat.NV12, 32);
-
-			//var videoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.RGB32);
-
-			//var frame = VideoBuffer.GetFrame();
-			//var buffer = frame.Buffer;
-			//var pTexture = buffer[0].Data;
-
-			//this.sharedTexture = new Texture2D(pTexture);
-			//((SharpDX.IUnknown)sharedTexture).AddReference();
-
-			pixConverter = new D3D11RgbToNv12Converter();
-
-			pixConverter.Init(device, videoBuffer);
-
+			var videoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 32);
 			base.VideoBuffer = videoBuffer;
 
-			//        SharedTexture = new Texture2D(device,
-			//new Texture2DDescription
-			//{
-			//	CpuAccessFlags = CpuAccessFlags.None,
-			//	BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-			//	Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-			//	Width = DestSize.Width,
-			//	Height = DestSize.Height,
+			pixConverter = new D3D11RgbToYuvConverter();
+			//pixConverter = new D3D11RgbToNv12Converter();
 
-			//	MipLevels = 1,
-			//	ArraySize = 1,
-			//	SampleDescription = { Count = 1, Quality = 0 },
-			//	Usage = ResourceUsage.Default,
-			//	OptionFlags = ResourceOptionFlags.Shared,
 
-			//});
+			pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
 
 			gdiTexture = new Texture2D(device,
                 new Texture2DDescription
@@ -200,8 +159,8 @@ namespace MediaToolkit.ScreenCaptures
                     CpuAccessFlags = CpuAccessFlags.None,
                     BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
                     Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                    Width = SrcRect.Width, //DestSize.Width,
-                    Height = SrcRect.Height, //DestSize.Height,
+                    Width = SrcRect.Width,
+                    Height = SrcRect.Height,
 
                     MipLevels = 1,
                     ArraySize = 1,
@@ -211,50 +170,29 @@ namespace MediaToolkit.ScreenCaptures
 
                 });
 
+			sharedTexture = new Texture2D(device,
+				 new Texture2DDescription
+				 {
+					 CpuAccessFlags = CpuAccessFlags.None,
+					 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+					 Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+					 Width = SrcRect.Width,
+					 Height = SrcRect.Height,
 
-            renderTexture = new Texture2D(device,
-                new Texture2DDescription
-                {
+					 MipLevels = 1,
+					 ArraySize = 1,
+					 SampleDescription = { Count = 1, Quality = 0 },
+					 Usage = ResourceUsage.Default,
+					 OptionFlags = ResourceOptionFlags.Shared,
 
-                    CpuAccessFlags = CpuAccessFlags.None,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+				 });
 
-                    Width = DestSize.Width,
-                    Height = DestSize.Height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Default,
-                    //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                    OptionFlags = ResourceOptionFlags.Shared,
+			srcFrame = new D3D11VideoFrame(sharedTexture);
 
-                });
+		}
+		private Texture2D sharedTexture = null;
 
-            if (DestSize.Width != SrcRect.Width || DestSize.Height != SrcRect.Height)
-            {
-                using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
-                {
-                    using (var surf = renderTexture.QueryInterface<SharpDX.DXGI.Surface>())
-                    {
-                        //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
-
-                        var pixelFormat = new SharpDX.Direct2D1.PixelFormat(SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied);
-                        var renderTargetProps = new SharpDX.Direct2D1.RenderTargetProperties(pixelFormat);
-
-                        renderTarget = new SharpDX.Direct2D1.RenderTarget(factory2D1, surf, renderTargetProps);
-
-                        //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
-                    }
-
-                }
-            }
-
-        }
-
-        private Bitmap screenBits = null;
-
-        public override ErrorCode UpdateBuffer(int timeout = 10)
+		public override ErrorCode UpdateBuffer(int timeout = 10)
         {
             ErrorCode result = ErrorCode.Ok;
             if (UseHwContext)
@@ -263,15 +201,18 @@ namespace MediaToolkit.ScreenCaptures
 
 				if(result == ErrorCode.Ok)
 				{
-					var frame = VideoBuffer.GetFrame();
-					pixConverter.Process(sharedTexture, frame);
+					device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+					device.ImmediateContext.Flush();
+
+					var destFrame = VideoBuffer.GetFrame();
+					pixConverter.Process(srcFrame, destFrame);
 				}
 
 			}
             else
             {
-                // result = TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout, stretchingMode);
                 var captFlags = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
+
                 result = TryGetScreen(base.SrcRect, ref screenBits, captFlags, stretchingMode, this.CaptureMouse);
 
                 var frame = VideoBuffer.GetFrame();
@@ -330,8 +271,6 @@ namespace MediaToolkit.ScreenCaptures
             }
 
             return result;
-
-            //return TryGetScreen(base.SrcRect, ref base.videoBuffer, this.CaptureMouse, timeout);
         }
 
 
@@ -395,6 +334,8 @@ namespace MediaToolkit.ScreenCaptures
                              OptionFlags = ResourceOptionFlags.GdiCompatible,
 
                          });
+
+						srcFrame = new D3D11VideoFrame(gdiTexture);
                     }
                 }
 
@@ -484,30 +425,7 @@ namespace MediaToolkit.ScreenCaptures
                     {
                         surf.ReleaseDC();
                     }
-                }
-
-                if (errorCode == ErrorCode.Ok)
-                {
-                    Texture2D finalTexture = gdiTexture;
-                    //if (renderTarget != null)
-                    //{// масштабируем текстуру если нужно
-                    //    renderTarget.BeginDraw();
-                    //    renderTarget.Clear(SharpDX.Color.Black);
-
-                    //    DrawTexture(renderTarget, gdiTexture);
-
-                    //    renderTarget.EndDraw();
-                    //    finalTexture = renderTexture;
-                    //}
-
-                    //device.ImmediateContext.CopySubresourceRegion(finalTexture, SharedTexture);
-
-                    device.ImmediateContext.CopyResource(finalTexture, sharedTexture);
-                    device.ImmediateContext.Flush();
-
-
 				}
-
             }
             catch (Exception ex)
             {
@@ -515,63 +433,6 @@ namespace MediaToolkit.ScreenCaptures
             }
 
             return errorCode;
-        }
-
-
-
-        private void DrawTexture(SharpDX.Direct2D1.RenderTarget renderTarget, Texture2D texture)
-        {
-            using (var surf = texture.QueryInterface<SharpDX.DXGI.Surface1>())
-            {
-                var prop = new SharpDX.Direct2D1.BitmapProperties(new SharpDX.Direct2D1.PixelFormat(SharpDX.DXGI.Format.B8G8R8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied));
-                SharpDX.Direct2D1.Bitmap screenBits = new SharpDX.Direct2D1.Bitmap(renderTarget, surf, prop);
-                try
-                {
-                    var srcDecr = surf.Description;
-                    float srcWidth = srcDecr.Width;
-                    float srcHeight = srcDecr.Height;
-
-                    float destX = 0;
-                    float destY = 0;
-                    float destWidth = DestSize.Width;
-                    float destHeight = DestSize.Height;
-
-                    float scaleX = destWidth / srcWidth;
-                    float scaleY = destHeight / srcHeight;
-
-                    if (AspectRatio)
-                    {
-                        if (scaleY < scaleX)
-                        {
-                            scaleX = scaleY;
-                            destX = ((destWidth - srcWidth * scaleX) / 2);
-                        }
-                        else
-                        {
-                            scaleY = scaleX;
-                            destY = ((destHeight - srcHeight * scaleY) / 2);
-                        }
-                    }
-
-                    destWidth = srcWidth * scaleX;
-                    destHeight = srcHeight * scaleY;
-
-                    var destRect = new SharpDX.Mathematics.Interop.RawRectangleF
-                    {
-                        Left = destX,
-                        Right = destX + destWidth,
-                        Top = destY,
-                        Bottom = destY + destHeight,
-                    };
-
-                    renderTarget.DrawBitmap(screenBits, destRect, 1.0f, SharpDX.Direct2D1.BitmapInterpolationMode.Linear);
-
-                }
-                finally
-                {
-                    screenBits?.Dispose();
-                }
-            }
         }
 
         public override void Close()
@@ -585,33 +446,24 @@ namespace MediaToolkit.ScreenCaptures
         {
             logger.Debug("GDICapture::CloseDx()");
 
-            if (renderTarget != null)
-            {
-                renderTarget.Dispose();
-                renderTarget = null;
-
-            }
-
-            if (renderTexture != null)
-            {
-                renderTexture.Dispose();
-                renderTexture = null;
-
-            }
-
-            if (sharedTexture != null)
-            {
-                sharedTexture.Dispose();
-                sharedTexture = null;
-
-            }
-
             if (gdiTexture != null)
             {
                 gdiTexture.Dispose();
                 gdiTexture = null;
 
             }
+
+			if (sharedTexture != null)
+			{
+				sharedTexture.Dispose();
+				sharedTexture = null;
+			}
+
+			if (srcFrame != null)
+			{
+				srcFrame.Dispose();
+				srcFrame = null;
+			}
 
             if (device != null)
             {

@@ -59,11 +59,11 @@ namespace MediaToolkit.MediaFoundation
 
             if (videoBuffer.DriverType == VideoDriverType.D3D11)
             {
-                var frame = videoBuffer.GetFrame();
-                var frameBuffer = frame.Buffer;
-                var pTexture = frameBuffer[0].Data;
-                videoSourceTexture = new Texture2D(pTexture);
-                ((IUnknown)videoSourceTexture).AddReference();
+                //var frame = videoBuffer.GetFrame();
+                //var frameBuffer = frame.Buffer;
+                //var pTexture = frameBuffer[0].Data;
+                //videoSourceTexture = new Texture2D(pTexture);
+                //((IUnknown)videoSourceTexture).AddReference();
             }
             else if(videoBuffer.DriverType == VideoDriverType.CPU)
             {
@@ -259,6 +259,7 @@ namespace MediaToolkit.MediaFoundation
 						lockTaken = frame.Lock(10);
 						if (lockTaken)
 						{
+							
 							ffmpegEncoder._Encode(frame);
 						}
 					}

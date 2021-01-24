@@ -83,16 +83,18 @@ namespace MediaToolkit.ScreenCaptures
         }
 
         public Rectangle SrcRect { get; protected set; }
-        public Size DestSize { get; protected set; }
+		public PixFormat SrcFormat { get; protected set; } = PixFormat.RGB32;
 
-        //protected VideoBuffer videoBuffer = null;
+		public Size DestSize { get; protected set; }
+		public PixFormat DestFormat { get; set; } = PixFormat.NV12;
 
-        //public VideoBuffer VideoBuffer { get => videoBuffer; }
+		public ScalingFilter DownscaleFilter { get; set; } = ScalingFilter.Linear;
 
-        public VideoBufferBase VideoBuffer { get; protected set; }
+		public ColorSpace ColorSpace { get; set; } = ColorSpace.BT709;
+		public ColorRange ColorRange { get; set; } = ColorRange.Partial;
 
+		public VideoBufferBase VideoBuffer { get; protected set; }
         public abstract ErrorCode UpdateBuffer(int timeout = 10);
-
 
         public bool CaptureMouse { get; set; }
 
