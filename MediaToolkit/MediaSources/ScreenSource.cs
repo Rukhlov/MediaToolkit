@@ -51,7 +51,7 @@ namespace MediaToolkit
         private CaptureStats captureStats = new CaptureStats();
         public StatCounter Stats => captureStats;
 
-        private ITexture2DSource hwContext = null;
+       // private ITexture2DSource hwContext = null;
 
 		public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -157,32 +157,26 @@ namespace MediaToolkit
                 screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
                 screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
                 screenCapture.AspectRatio = CaptureProps.AspectRatio;
-                
-                var d3d11Capture = screenCapture as ITexture2DSource;
-				if (d3d11Capture != null)
-				{
-                    d3d11Capture.UseHwContext = CaptureProps.UseHardware;
-					this.hwContext = d3d11Capture;
-                    //this.AdapterId = d3d11Capture.AdapterId;
-                    this.AdapterIndex = d3d11Capture.AdapterIndex;
 
-                    if(screenCapture is DDACapture)
-                    {
-                        ((DDACapture)screenCapture).OutputManager = outputManager;
-                    }
+				VideoDriverType driverType = VideoDriverType.CPU;
+				if (CaptureProps.UseHardware)
+				{
+					driverType = VideoDriverType.D3D11;
 				}
 
-				screenCapture.Init(srcRect, destSize);
+				if (screenCapture is DDACapture)
+				{
+					((DDACapture)screenCapture).OutputManager = outputManager;
+				}
+
+                screenCapture.DriverType = driverType;
+
+                screenCapture.Init(srcRect, destSize);
 				//screenCapture.Init(srcRect);
-
-
-				//this.SharedBitmap = screenCapture.VideoBuffer;
 
                 deviceReady = true;
 
                 state = CaptureState.Initialized;
-
-
             }
             catch (Exception ex)
             { 

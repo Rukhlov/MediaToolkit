@@ -14,10 +14,42 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
-
+using namespace System::Collections::Generic;
 namespace FFmpegLib {
 	public ref class Utils {
 	public:
+
+		static array<VideoEncoderDescription^>^GetH264Encoders() {
+
+			List<VideoEncoderDescription^>^ descriptions = gcnew List<VideoEncoderDescription^>(16);
+
+			const AVCodec *current_codec = nullptr;
+			void *i = 0;
+			while ((current_codec = av_codec_iterate(&i))) {
+				if (av_codec_is_encoder(current_codec)) {
+
+					if (current_codec->type == AVMediaType::AVMEDIA_TYPE_VIDEO && 
+						current_codec->id == AVCodecID::AV_CODEC_ID_H264) {
+
+						bool hardware = current_codec->capabilities & AV_CODEC_CAP_HARDWARE;
+						String^ wrapperName = gcnew String(current_codec->wrapper_name);
+						String^ name = gcnew String(current_codec->name);
+
+						VideoEncoderDescription^ descr = gcnew VideoEncoderDescription();
+						descr->Id = name;
+						descr->Name = name;
+						descr->Description = gcnew String(current_codec->long_name);
+						descr->Format = VideoCodingFormat::H264;
+						descr->IsHardware = false;
+
+						descriptions->Add(descr);
+
+					}
+				}
+			}
+
+			return descriptions->ToArray();
+		}
 
 		static int AllocImageData(System::Drawing::Size size, MediaToolkit::Core::PixFormat pixFormat, int align,
 			[Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {

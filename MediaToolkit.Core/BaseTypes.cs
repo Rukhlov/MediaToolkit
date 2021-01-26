@@ -73,7 +73,13 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public int Height { get; set; } = 1080;
 
-        [XmlElement]
+		[XmlAttribute]
+		public PixFormat PixFormat { get; set; } = PixFormat.NV12;
+
+		[XmlAttribute]
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
+
+		[XmlElement]
         public MediaRatio FrameRate { get; set; } = new MediaRatio(30, 1);
 
         [XmlIgnore]
@@ -431,7 +437,7 @@ namespace MediaToolkit.Core
 
         public override string ToString()
         {
-            return string.Join("; ", Name, Format, IsHardware, Activatable);
+            return string.Join("; ", Id, Name, Format, IsHardware, Activatable);
             //return base.ToString();
         }
     }

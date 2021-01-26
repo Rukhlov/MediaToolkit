@@ -40,10 +40,19 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
+
+            var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
+
+            foreach(var d in encoderDescrs)
+            {
+                Console.WriteLine(d.ToString() + " (" + d.Description + ")");
+            }
+
+
             //Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
 
             //DatapathCaptTest.Run();
-			RgbHelperTest.Run();
+			//RgbHelperTest.Run();
 
 			//D3D11ConvertersTest.Run();
 

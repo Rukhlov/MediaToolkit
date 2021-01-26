@@ -48,9 +48,10 @@ namespace MediaToolkit
 
 	public class D3D11VideoBuffer : VideoBufferBase
     {
-
+		public readonly SharpDX.Direct3D11.Device D3D11Device = null;
 		public D3D11VideoBuffer(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format, int framesCount = 1)
 		{
+			this.D3D11Device = device;
             this.Width = resolution.Width;
             this.Height = resolution.Height;
             this.Format = format;
@@ -166,6 +167,7 @@ namespace MediaToolkit
 			else if(descr.Format == SharpDX.DXGI.Format.NV12)
 			{
 				format = PixFormat.NV12;
+				IsVideoFormat = true;
 			}
 			else
 			{
@@ -234,6 +236,7 @@ namespace MediaToolkit
 					{
 						width = descr.Width;
 						height = descr.Height;
+						IsVideoFormat = true;
 					}
 					else
 					{
@@ -340,6 +343,7 @@ namespace MediaToolkit
 				{
 					new FrameBuffer(texture.NativePointer, 0),
 				};
+				IsVideoFormat = true;
 			}
 			else
 			{
@@ -387,6 +391,7 @@ namespace MediaToolkit
 			this.DataLength = size;
 		}
 
+		public bool IsVideoFormat = false;
 		private List<Texture2D> textures = new List<Texture2D>();
 
 		public override VideoDriverType DriverType => VideoDriverType.D3D11;

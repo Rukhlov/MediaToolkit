@@ -23,78 +23,62 @@ namespace MediaToolkit.ScreenCaptures
     /// Быстрее всего работает с выключенной композитной отрисовкой
     /// и с PixelFormat.Format32bppArgb 
     /// </summary>
-    public class GDICapture : ScreenCapture, ITexture2DSource
-    {
-        private Device device = null;
+    public class GDICapture : ScreenCapture//, ITexture2DSource
+	{
+		public GDICapture(Dictionary<string, object> args = null) : base()
+		{
+			if (args != null)
+			{
+				if (args.ContainsKey("WindowHandle"))
+				{
+					this.hWnd = (IntPtr)args["WindowHandle"];
+				}
+			}
+		}
+
+		private Device device = null;
         private Texture2D gdiTexture = null;
+		private Texture2D sharedTexture = null;
 
- 
-        // public long AdapterId { get; private set; }
-        public int AdapterIndex { get; private set; }
-        public bool UseHwContext { get; set; } = false;
-
+		// public long AdapterId { get; private set; }
+		public int AdapterIndex { get; private set; } = 0;
         public bool CaptureAllLayers { get; set; } = false;
+		public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
 		private VideoFrameBase srcFrame = null;
-		private Bitmap screenBits = null;
-
-		public GDICapture(Dictionary<string, object> args = null) : base()
-        {
-            if (args != null)
-            {
-                if (args.ContainsKey("WindowHandle"))
-                {
-                    this.hWnd = (IntPtr)args["WindowHandle"];
-                }
-
-                if (args.ContainsKey("GdiStretchingMode"))
-                {
-                    this.GdiStretchingMode = (int)args["GdiStretchingMode"];
-                }
-            }
-
-        }
-
-		//private D3D11RgbToNv12Converter pixConverter = null;
 		private D3D11RgbToYuvConverter pixConverter = null;
-
-		public int GdiStretchingMode { get; set; } = 3;
-        private StretchingMode stretchingMode = StretchingMode.COLORONCOLOR;
-
-
-        public IntPtr hWnd { get; set; } = IntPtr.Zero;
-
 
 		public override void Init(Rectangle srcRect, Size destSize = default(Size))
         {
             base.Init(srcRect, destSize);
 
-            if (UseHwContext)
-            {
-                InitDx();
+			InitDx();
 
+			VideoBufferBase videoBuffer = null;
+
+			if(DriverType == VideoDriverType.CPU)
+			{
+				videoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 32);
 
 			}
-            else
-            {
+			else if(DriverType == VideoDriverType.D3D11)
+			{
+				videoBuffer = new D3D11VideoBuffer(device, DestSize, DestFormat);
+			}
+			else
+			{
+				throw new InvalidOperationException("Invalid driver type: "+ DriverType);
+			}
 
-                VideoBuffer = new MemoryVideoBuffer(destSize, PixFormat.RGB32, 16);
+			base.VideoBuffer = videoBuffer;
 
-                if (GdiStretchingMode >= 1 && GdiStretchingMode <= 4)
-                {
-                    // COLORONCOLOR = 3 <-самый быстрый 
-                    // HALFTONE = 4 <-cамый качественный
-                    // остальное не нужно...
-                    stretchingMode = (StretchingMode)GdiStretchingMode;
-                }
+			pixConverter = new D3D11RgbToYuvConverter();
+			pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
 
-                screenBits = new Bitmap(destSize.Width, destSize.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+			srcFrame = new D3D11VideoFrame(sharedTexture);
+		}
 
-            }
-
-        }
-
-        private void InitDx()
+		private void InitDx()
         {
             logger.Debug("GDICapture::InitDx()");
 
@@ -103,13 +87,9 @@ namespace MediaToolkit.ScreenCaptures
             try
             {
                 dxgiFactory = new SharpDX.DXGI.Factory1();
-
-                //logger.Info(DirectX.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
-
                 SharpDX.DXGI.Adapter1 adapter = null;
                 try
                 {
-                    AdapterIndex = 0;
                     adapter = dxgiFactory.GetAdapter1(AdapterIndex);
                     //AdapterId = adapter.Description.Luid;
                     //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
@@ -141,17 +121,6 @@ namespace MediaToolkit.ScreenCaptures
                     dxgiFactory = null;
                 }
             }
-
-			//var videoBuffer = new D3D11VideoBuffer(device, DestSize, PixFormat.NV12);
-
-			var videoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 32);
-			base.VideoBuffer = videoBuffer;
-
-			pixConverter = new D3D11RgbToYuvConverter();
-			//pixConverter = new D3D11RgbToNv12Converter();
-
-
-			pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
 
 			gdiTexture = new Texture2D(device,
                 new Texture2DDescription
@@ -187,99 +156,30 @@ namespace MediaToolkit.ScreenCaptures
 
 				 });
 
-			srcFrame = new D3D11VideoFrame(sharedTexture);
-
 		}
-		private Texture2D sharedTexture = null;
+
 
 		public override ErrorCode UpdateBuffer(int timeout = 10)
         {
-            ErrorCode result = ErrorCode.Ok;
-            if (UseHwContext)
-            {
-                result = CopyGdiScreenToDxSurf();
+			ErrorCode result = GrabScreen();
 
-				if(result == ErrorCode.Ok)
-				{
-					device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
-					device.ImmediateContext.Flush();
+			if (result == ErrorCode.Ok)
+			{
+				device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+				device.ImmediateContext.Flush();
 
-					var destFrame = VideoBuffer.GetFrame();
-					pixConverter.Process(srcFrame, destFrame);
-				}
-
+				var destFrame = VideoBuffer.GetFrame();
+				pixConverter.Process(srcFrame, destFrame);
 			}
-            else
-            {
-                var captFlags = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
 
-                result = TryGetScreen(base.SrcRect, ref screenBits, captFlags, stretchingMode, this.CaptureMouse);
-
-                var frame = VideoBuffer.GetFrame();
-
-                bool lockTaken = false;
-                try
-                {
-                    lockTaken = frame.Lock(timeout);
-                    if (lockTaken)
-                    {
-                        var rect = new Rectangle(0, 0, screenBits.Width, screenBits.Height);
-                        var srcData = screenBits.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, screenBits.PixelFormat);
-                        try
-                        {
-                            var srcWidth = srcData.Width;
-                            var srcHeight = srcData.Height;
-
-                            if(srcWidth != screenBits.Width || srcHeight != screenBits.Height)
-                            {
-                                throw new InvalidOperationException("srcWidth != screenBits.Width || srcHeight != screenBits.Height");
-                            }
-
-                            var srcStride = srcData.Stride;
-                            var srcPtr = srcData.Scan0;
-							if (srcStride < 0)
-							{// Bottom-Up
-								throw new InvalidOperationException("srcStride < 0");
-							}
-
-							var destBuffer = frame.Buffer[0];
-                            var destStride = destBuffer.Stride;
-                            var destPtr = destBuffer.Data;
-
-						    for (int row = 0; row < srcHeight; row++)
-                            {
-                                Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
-                                destPtr += destStride;
-                                srcPtr += srcStride;
-                            }
-                        }
-                        finally
-                        {
-                            screenBits.UnlockBits(srcData);
-                        }
-                        
-                    }
-                }
-                finally
-                {
-                    if (lockTaken)
-                    {
-                        frame.Unlock();
-                    }
-                }
-
-            }
-
-            return result;
+			return result;
         }
 
 
-
-        private ErrorCode CopyGdiScreenToDxSurf()
+        private ErrorCode GrabScreen()
         {
 
             ErrorCode errorCode = ErrorCode.Unexpected;
-
             try
             {
                 if (hWnd != IntPtr.Zero)
@@ -354,9 +254,10 @@ namespace MediaToolkit.ScreenCaptures
                     int nWidth = descr.Width;
                     int nHeight = descr.Height;
 
-                    try
+					IntPtr hdcDest = IntPtr.Zero;
+					try
                     {
-                        var hdcDest = surf.GetDC(true);
+                        hdcDest = surf.GetDC(true);
                         IntPtr hdcSrc = IntPtr.Zero;
                         try
                         {
@@ -369,11 +270,6 @@ namespace MediaToolkit.ScreenCaptures
                             {
                                 dwRop |= TernaryRasterOperations.CAPTUREBLT;
                             }
-
-                            //var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
-                            //var dwRop = TernaryRasterOperations.SRCCOPY;
-
-                            //bool success = User32.PrintWindow(hWnd, hdcDest, 0);
 
                             bool success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
                             if (!success)
@@ -423,7 +319,11 @@ namespace MediaToolkit.ScreenCaptures
                     }
                     finally
                     {
-                        surf.ReleaseDC();
+						if(hdcDest!= IntPtr.Zero)
+						{
+							surf.ReleaseDC();
+						}
+
                     }
 				}
             }

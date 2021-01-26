@@ -20,8 +20,8 @@ using MediaToolkit.Logging;
 namespace MediaToolkit.MediaFoundation
 {
 
-    public class MfH264EncoderEx : IMfVideoTransform
-    {
+    public class MfH264EncoderEx : IVideoFrameEncoder//: IMfVideoTransform
+	{
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
@@ -53,12 +53,46 @@ namespace MediaToolkit.MediaFoundation
 
         private bool syncMode = false;
 
-        public MfH264EncoderEx(SharpDX.Direct3D11.Device d)
+		public event Action<IntPtr, int, double> DataEncoded;
+
+		public MfH264EncoderEx(SharpDX.Direct3D11.Device d)
         {
             this.device = d;
 
         }
 
+		public void Setup(Core.VideoEncoderSettings encoderSettings)
+		{
+			var destSize = encoderSettings.Resolution;
+			var aspectRatio = encoderSettings.AspectRatio;
+			var profile = encoderSettings.Profile;
+			var bitrateMode = encoderSettings.BitrateMode;
+
+			Guid.TryParse(encoderSettings.EncoderId, out var encoderId);
+			var encArgs = new MfVideoArgs
+			{
+				Id = encoderId,
+
+				Width = destSize.Width, //srcSize.Width,
+				Height = destSize.Height, //srcSize.Height,
+				Format = VideoFormatGuids.NV12,//VideoFormatGuids.Argb32,
+
+				FrameRate = MfTool.PackToLong(encoderSettings.FrameRate),
+
+				MaxBitrate = encoderSettings.MaxBitrate * 1000, //kbps->bps
+				AvgBitrate = encoderSettings.Bitrate * 1000,
+				LowLatency = encoderSettings.LowLatency,
+				//AdapterIndex = videoSource.AdapterIndex,
+				Profile = MfTool.GetMfH264Profile(profile),
+				BitrateMode = MfTool.GetMfBitrateMode(bitrateMode),
+				GopSize = encoderSettings.GOPSize,
+				Quality = encoderSettings.Quality,
+
+				AspectRatio = MfTool.PackToLong(aspectRatio)
+			};
+
+			Setup(encArgs);
+		}
 
         public void Setup(MfVideoArgs args)
         {
@@ -72,7 +106,6 @@ namespace MediaToolkit.MediaFoundation
             {
                 throw new NotSupportedException("Windows versions earlier than 8 are not supported.");
             }
-
 
 
             try
@@ -89,11 +122,10 @@ namespace MediaToolkit.MediaFoundation
                 //encoder = new Transform(ClsId.MSH264EncoderMFT);
                 //syncMode = true;
 
-                var encoderId = args.EncoderId;
-                Guid.TryParse(encoderId, out var clsId);
-                if(clsId != Guid.Empty)
+                var encoderId = args.Id;
+                if(encoderId != Guid.Empty)
                 {
-                    encoder = new Transform(clsId);
+                    encoder = new Transform(encoderId);
 
                 }
                 else
@@ -738,7 +770,7 @@ namespace MediaToolkit.MediaFoundation
 
         }
 
-        public event Action<IntPtr, int, double> DataEncoded;
+
         private void FinalizeSample(Sample encodedSample)
         {
             using (var buffer = encodedSample.ConvertToContiguousBuffer())
@@ -765,8 +797,31 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
+		public bool ProcessFrame(Core.IVideoFrame frame)
+		{
+			bool Result = false;
 
-        public bool ProcessSample(Sample sample)
+			if(frame.DriverType == Core.VideoDriverType.D3D11)
+			{
+				lock (syncRoot)
+				{
+					bufSample.SampleTime = MfTool.SecToMfTicks(frame.Time);
+					bufSample.SampleDuration = MfTool.SecToMfTicks(frame.Duration);
+
+					var videoTexture = ((D3D11VideoFrame)frame).GetTextures()[0];
+
+					device.ImmediateContext.CopyResource(videoTexture, bufTexture);
+					needUpdate = true;
+					// ProcessInput();
+				}
+
+				syncEvent.Set();
+			}
+
+			return Result;
+		}
+
+		public bool ProcessSample(Sample sample)
         {
 
 			bool Result = false;
@@ -792,14 +847,14 @@ namespace MediaToolkit.MediaFoundation
 				Result = false;
 				logger.Error(ex);
 			}
-            
-
+           
             return Result;
         }
 
+
+
         private void EncodeSampleAsync(Sample sample)
         {
-
             using (var buffer = sample.ConvertToContiguousBuffer())
             {
                 using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())

@@ -34,15 +34,15 @@ using MediaToolkit.Core;
 namespace MediaToolkit.ScreenCaptures
 {
 
-    public interface ITexture2DSource
-    {
-        //Texture2D SharedTexture { get; }
-        // long AdapterId { get; }
-        int AdapterIndex { get; }
-        bool UseHwContext { get; set; }
-    }
+    //public interface ITexture2DSource
+    //{
+    //    //Texture2D SharedTexture { get; }
+    //    // long AdapterId { get; }
+    //    int AdapterIndex { get; }
+    //    bool UseHwContext { get; set; }
+    //}
 
-    public class DDACapture : ScreenCapture, ITexture2DSource
+    public class DDACapture : ScreenCapture//, ITexture2DSource
     {
         public DDACapture(Dictionary<string, object> args = null) : base()
         { }

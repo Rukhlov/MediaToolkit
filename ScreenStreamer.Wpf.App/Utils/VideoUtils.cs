@@ -305,6 +305,7 @@ namespace ScreenStreamer.Wpf.Helpers
 				Format = VideoCodingFormat.H264,
 				IsHardware = false,
 				Activatable = true,
+                
 
 			};
 

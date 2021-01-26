@@ -177,11 +177,16 @@ namespace FFmpegLib {
 
 				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
 
-				frame->data[0] = reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer());
-				frame->data[1] = reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer());
+				for (int i = 0; i < frameBuffer->Length; i++) {
+					frame->data[i] = reinterpret_cast<uint8_t*>(frameBuffer[i]->Data.ToPointer());
+					frame->linesize[i] = frameBuffer[i]->Stride;
+				}
 
-				frame->linesize[0] = frameBuffer[0]->Stride;
-				frame->linesize[1] = frameBuffer[1]->Stride;
+				//frame->data[0] = reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer());
+				//frame->data[1] = reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer());
+
+				//frame->linesize[0] = frameBuffer[0]->Stride;
+				//frame->linesize[1] = frameBuffer[1]->Stride;
 
 				__int64 pts = videoFrame->Time * AV_TIME_BASE; // переводим секунды в отсчеты ffmpeg-а
 
