@@ -202,6 +202,8 @@ namespace ScreenStreamer.Wpf.Models
                 }
 
                 mediaStreamer.Shutdown();
+                
+                
 
             }
             else if (state == MediaStreamerState.Shutdown)

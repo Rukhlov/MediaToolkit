@@ -73,7 +73,8 @@ namespace MediaToolkit.ScreenCaptures
 			base.VideoBuffer = videoBuffer;
 
 			pixConverter = new D3D11RgbToYuvConverter();
-			pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
+            pixConverter.KeepAspectRatio = AspectRatio;
+            pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
 
 			srcFrame = new D3D11VideoFrame(sharedTexture);
 		}
@@ -162,12 +163,11 @@ namespace MediaToolkit.ScreenCaptures
 		public override ErrorCode UpdateBuffer(int timeout = 10)
         {
 			ErrorCode result = BitBltToGdiSurface();
+            device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+            device.ImmediateContext.Flush();
 
-			if (result == ErrorCode.Ok)
+            if (result == ErrorCode.Ok)
 			{
-				device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
-				device.ImmediateContext.Flush();
-
 				var destFrame = VideoBuffer.GetFrame();
 				pixConverter.Process(srcFrame, destFrame);
 			}
@@ -350,7 +350,6 @@ namespace MediaToolkit.ScreenCaptures
             {
                 gdiTexture.Dispose();
                 gdiTexture = null;
-
             }
 
 			if (sharedTexture != null)
@@ -364,6 +363,12 @@ namespace MediaToolkit.ScreenCaptures
 				srcFrame.Dispose();
 				srcFrame = null;
 			}
+
+            if (pixConverter != null)
+            {
+                pixConverter.Close();
+                pixConverter = null;
+            }
 
             if (device != null)
             {
