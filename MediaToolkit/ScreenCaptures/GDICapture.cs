@@ -161,7 +161,7 @@ namespace MediaToolkit.ScreenCaptures
 
 		public override ErrorCode UpdateBuffer(int timeout = 10)
         {
-			ErrorCode result = GrabScreen();
+			ErrorCode result = BitBltToGdiSurface();
 
 			if (result == ErrorCode.Ok)
 			{
@@ -176,7 +176,7 @@ namespace MediaToolkit.ScreenCaptures
         }
 
 
-        private ErrorCode GrabScreen()
+        private ErrorCode BitBltToGdiSurface()
         {
 
             ErrorCode errorCode = ErrorCode.Unexpected;

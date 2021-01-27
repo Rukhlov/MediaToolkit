@@ -52,6 +52,11 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
                 if (_model != null)
                 {
                     _model.EncoderId = videoEncoder.Id;
+					_model.DriverType = videoEncoder.DriverType;
+					_model.ColorSpace = videoEncoder.ColorSpace;
+					_model.ColorRange = videoEncoder.ColorRange;
+					_model.PixelFormat = videoEncoder.PixelFormat;
+
                     RaisePropertyChanged(nameof(VideoEncoder));
                 }
             }

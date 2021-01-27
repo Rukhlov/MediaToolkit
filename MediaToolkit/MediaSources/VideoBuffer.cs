@@ -447,9 +447,52 @@ namespace MediaToolkit
 			}
 		}
 
+		public static VideoFrame ToVideoFrame(Device device, D3D11VideoFrame d3d11Frame)
+		{
+			var textures = d3d11Frame.GetTextures();
+			try
+			{
+				var format = d3d11Frame.Format;
+				if (format == PixFormat.NV12)
+				{
+					if (textures.Count == 2)
+					{
+
+					}
+					else if (textures.Count == 1)
+					{
+						var nv12Texture = textures[0];
+						//...
+					}
+				}
+				else if (format == PixFormat.I444 || format == PixFormat.I422 || format == PixFormat.I420)
+				{
+
+				}
+				else if (format == PixFormat.RGB32
+					|| format == PixFormat.RGB24 
+					|| format == PixFormat.RGB16
+					|| format == PixFormat.RGB15)
+				{
+
+				}
+			}
+			finally
+			{
+				foreach(var t in textures)
+				{
+					t.Dispose();
+				}
+			}
+
+
+
+			return null;
+		}
+
 	}
 
-    public class VideoFrame : VideoFrameBase
+	public class VideoFrame : VideoFrameBase
     {
 		public VideoFrame(int width, int height, PixFormat format, int align)
 		{
@@ -494,6 +537,8 @@ namespace MediaToolkit
 
 			}
 		}
+
+
 
 		public byte[] ConvertToContiguousBuffer()
 		{

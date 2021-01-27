@@ -41,12 +41,12 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
 
 
-            var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
+            //var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 
-            foreach(var d in encoderDescrs)
-            {
-                Console.WriteLine(d.ToString() + " (" + d.Description + ")");
-            }
+            //foreach(var d in encoderDescrs)
+            //{
+            //    Console.WriteLine(d.ToString() + " (" + d.Description + ")");
+            //}
 
 
             //Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());

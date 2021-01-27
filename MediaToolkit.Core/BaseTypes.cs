@@ -378,8 +378,20 @@ namespace MediaToolkit.Core
         [XmlElement(typeof(XmlSize))]
         public Size Resolution  { get; set; } = new Size(640, 480);
 
-        //[XmlIgnore]
-        public abstract CaptureMode CaptureMode { get; }
+		[XmlAttribute]
+		public PixFormat Format { get; set; } = PixFormat.NV12;
+
+		[XmlAttribute]
+		public ColorSpace ColorSpace { get; set; } = ColorSpace.BT709;
+
+		[XmlAttribute]
+		public ColorRange ColorRange { get; set; } = ColorRange.Partial;
+
+		[XmlAttribute]
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
+
+		//[XmlIgnore]
+		public abstract CaptureMode CaptureMode { get; }
 
         public object Clone()
         {
@@ -510,11 +522,11 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public bool ShowDebugInfo { get; set; } = true;
 
-        [XmlIgnore]
+
+		[XmlIgnore]
         public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
 
     }
-
 
     public enum VideoCaptureType:int
     {

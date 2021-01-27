@@ -155,23 +155,27 @@ namespace MediaToolkit
                 captArgs["WindowHandle"] = hwnd;
 
                 screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
-                screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
+
+				screenCapture.DriverType = captureParams.DriverType;
+				screenCapture.DestFormat = captureParams.Format;
+				screenCapture.ColorSpace = captureParams.ColorSpace;
+				screenCapture.ColorRange = captureParams.ColorRange;
+
+				screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
                 screenCapture.AspectRatio = CaptureProps.AspectRatio;
 
-				VideoDriverType driverType = VideoDriverType.CPU;
-				if (CaptureProps.UseHardware)
-				{
-					driverType = VideoDriverType.D3D11;
-				}
+				//VideoDriverType driverType = VideoDriverType.CPU;
+				//if (CaptureProps.UseHardware)
+				//{
+				//	driverType = VideoDriverType.D3D11;
+				//}
 
 				if (screenCapture is DDACapture)
 				{
 					((DDACapture)screenCapture).OutputManager = outputManager;
 				}
 
-                screenCapture.DriverType = driverType;
-
-                screenCapture.Init(srcRect, destSize);
+				screenCapture.Init(srcRect, destSize);
 				//screenCapture.Init(srcRect);
 
                 deviceReady = true;

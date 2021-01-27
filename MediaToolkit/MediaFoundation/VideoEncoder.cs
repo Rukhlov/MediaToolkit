@@ -19,7 +19,7 @@ using SharpDX.MediaFoundation;
 namespace MediaToolkit.MediaFoundation
 {
 
-	public class VideoEncoder
+	public class VideoFrameEncoder
 	{
 
 		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
@@ -73,7 +73,7 @@ namespace MediaToolkit.MediaFoundation
 			var encoderName = encoderSettings.EncoderId;
 			if (encoderName == "libx264" || encoderName == "h264_nvenc")
 			{
-				encoder = new FFmpegH264Encoder();
+				encoder = new FFmpegH264Encoder(device);
 			}
 			else
 			{
@@ -158,6 +158,7 @@ namespace MediaToolkit.MediaFoundation
 		event Action<IntPtr, int, double> DataEncoded;
 	}
 
+
 	class FFmpegH264Encoder : IVideoFrameEncoder
 	{
 		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
@@ -165,11 +166,23 @@ namespace MediaToolkit.MediaFoundation
 
 		public event Action<IntPtr, int, double> DataEncoded;
 
+		private Device device = null;
+		public FFmpegH264Encoder(Device d = null)
+		{
+			this.device = d;
+		}
+
+
 		public void Setup(VideoEncoderSettings settings)
 		{
 			encoder = new FFmpegLib.H264Encoder();
 			encoder.Setup(settings);
 			encoder.DataEncoded += Encoder_DataEncoded;
+
+			if (device != null)
+			{
+
+			}
 		}
 		public void Start() { }
 		public void Stop() { Close(); }
@@ -183,12 +196,12 @@ namespace MediaToolkit.MediaFoundation
 			}
 		}
 
-		public bool ProcessFrame(IVideoFrame frame)
+		public bool ProcessFrame(IVideoFrame srcFrame)
 		{
 			var Result = false;
 			try
 			{
-				encoder.Encode(frame);
+				encoder.Encode(srcFrame);
 				Result = true;
 			}
 			catch (Exception ex)

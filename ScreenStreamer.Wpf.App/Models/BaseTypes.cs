@@ -53,6 +53,13 @@ namespace ScreenStreamer.Wpf.Models
     {
         public string Name { get; set; }
         public string Id { get; set; }
+		public MediaType MediaType => MediaType.Video;
+		public VideoCodingFormat Format = VideoCodingFormat.H264;
+
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
+		public PixFormat PixelFormat { get; set; } = PixFormat.NV12;
+		public ColorSpace ColorSpace { get; set; } = ColorSpace.BT709;
+		public ColorRange ColorRange { get; set; } = ColorRange.Partial;
 
         public override bool Equals(object obj)
         {
