@@ -63,6 +63,7 @@ namespace MediaToolkit.DirectX
 		public bool KeepAspectRatio { get; set; } = true;
         public SharpDX.Color BackColor { get; set; } = SharpDX.Color.Blue;
 
+		private RgbProcessor rgbProcessor = null;
         public void Init(SharpDX.Direct3D11.Device device,
 			GDI.Size srcSize, PixFormat srcFormat,
 			GDI.Size destSize, PixFormat destFormat,
@@ -71,7 +72,10 @@ namespace MediaToolkit.DirectX
 			ColorRange colorRange = ColorRange.Partial)
 		{
 
-			if (srcFormat != PixFormat.RGB32 && srcFormat != PixFormat.RGB24)
+			if (srcFormat != PixFormat.RGB32 
+				&& srcFormat != PixFormat.RGB24 
+				&& srcFormat != PixFormat.RGB16 
+				&& srcFormat != PixFormat.RGB15)
 			{
 				throw new InvalidOperationException("Invalid source format: " + srcFormat);
 			}
@@ -104,6 +108,10 @@ namespace MediaToolkit.DirectX
 				InitShaders();
 
 				InitResources();
+
+				rgbProcessor = new RgbProcessor();
+				rgbProcessor.Init(device, srcSize, srcFormat, destSize, PixFormat.RGB32, scalingFilter);
+
 			}
 			catch (Exception ex)
 			{
@@ -380,21 +388,24 @@ namespace MediaToolkit.DirectX
 
 			var srcDescr = srcTexture.Description;
 			var rgbDesct = rgbTexture.Description;
-			//if (srcDescr.Format != rgbDesct.Format)
+
+			////if (srcDescr.Format != rgbDesct.Format)
+			////{
+			////	throw new InvalidOperationException("Invalid texture format: " + srcDescr.Format);
+			////}
+
+			//// resize source texture...
+			//var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
+			//if (destSize == srcSize)
 			//{
-			//	throw new InvalidOperationException("Invalid texture format: " + srcDescr.Format);
+			//	device.ImmediateContext.CopyResource(srcTexture, rgbTexture);
+			//}
+			//else
+			//{
+			//	ResizeTexutre(srcTexture, rgbTexture, KeepAspectRatio);
 			//}
 
-			// resize source texture...
-			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
-			if (destSize == srcSize)
-			{
-				device.ImmediateContext.CopyResource(srcTexture, rgbTexture);
-			}
-			else
-			{
-				ResizeTexutre(srcTexture, rgbTexture, KeepAspectRatio);
-			}
+			rgbProcessor.Process(srcTexture, rgbTexture, KeepAspectRatio);
 
 			// draw rgb to YCbCr
 			RenderTargetView[] yuvTargets = null;
