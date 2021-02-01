@@ -73,7 +73,13 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public int Height { get; set; } = 1080;
 
-        [XmlElement]
+		[XmlAttribute]
+		public PixFormat PixFormat { get; set; } = PixFormat.NV12;
+
+		[XmlAttribute]
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
+
+		[XmlElement]
         public MediaRatio FrameRate { get; set; } = new MediaRatio(30, 1);
 
         [XmlIgnore]
@@ -252,7 +258,6 @@ namespace MediaToolkit.Core
 
         VideoDriverType DriverType { get; }
 
-
         bool Lock(int timeout);
         void Unlock();
     }
@@ -373,8 +378,20 @@ namespace MediaToolkit.Core
         [XmlElement(typeof(XmlSize))]
         public Size Resolution  { get; set; } = new Size(640, 480);
 
-        //[XmlIgnore]
-        public abstract CaptureMode CaptureMode { get; }
+		[XmlAttribute]
+		public PixFormat Format { get; set; } = PixFormat.NV12;
+
+		[XmlAttribute]
+		public ColorSpace ColorSpace { get; set; } = ColorSpace.BT709;
+
+		[XmlAttribute]
+		public ColorRange ColorRange { get; set; } = ColorRange.Partial;
+
+		[XmlAttribute]
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
+
+		//[XmlIgnore]
+		public abstract CaptureMode CaptureMode { get; }
 
         public object Clone()
         {
@@ -432,7 +449,7 @@ namespace MediaToolkit.Core
 
         public override string ToString()
         {
-            return string.Join("; ", Name, Format, IsHardware, Activatable);
+            return string.Join("; ", Id, Name, Format, IsHardware, Activatable);
             //return base.ToString();
         }
     }
@@ -505,11 +522,11 @@ namespace MediaToolkit.Core
         [XmlAttribute]
         public bool ShowDebugInfo { get; set; } = true;
 
-        [XmlIgnore]
+
+		[XmlIgnore]
         public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
 
     }
-
 
     public enum VideoCaptureType:int
     {

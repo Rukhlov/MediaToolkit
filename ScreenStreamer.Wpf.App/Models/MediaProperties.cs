@@ -180,9 +180,16 @@ namespace ScreenStreamer.Wpf.Models
         public H264Profile H264Profile { get; set; } = H264Profile.Main;
 
         public string EncoderId { get; set; } = "";
-        //public EncoderItem VideoEncoder { get; set; }
+		public PixFormat PixelFormat { get; set; } = PixFormat.NV12;
+		public ColorSpace ColorSpace { get; set; } = ColorSpace.BT709;
+		public ColorRange ColorRange { get; set; } = ColorRange.Partial;
+		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
 
-        [JsonIgnore]
+		public ScalingFilter DownscaleFilter { get; set; } = ScalingFilter.Linear;
+
+		//public EncoderItem VideoEncoder { get; set; }
+
+		[JsonIgnore]
         public bool AutoStartStreamingOnStartup
         {
             get
@@ -258,6 +265,10 @@ namespace ScreenStreamer.Wpf.Models
             if(encoder.Id != EncoderId)
             {
                 this.EncoderId = encoder.Id;
+				this.DriverType = encoder.DriverType;
+				this.PixelFormat = encoder.PixelFormat;
+				this.ColorRange = encoder.ColorRange;
+				this.ColorSpace = encoder.ColorSpace;
             }
 
         }

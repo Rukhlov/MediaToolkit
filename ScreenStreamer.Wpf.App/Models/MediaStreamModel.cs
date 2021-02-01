@@ -202,6 +202,8 @@ namespace ScreenStreamer.Wpf.Models
                 }
 
                 mediaStreamer.Shutdown();
+                
+                
 
             }
             else if (state == MediaStreamerState.Shutdown)
@@ -304,6 +306,9 @@ namespace ScreenStreamer.Wpf.Models
             var videoEncoderSettings = videoSettings.EncoderSettings;
 
             videoEncoderSettings.EncoderId = AdvancedSettings.EncoderId;
+			videoEncoderSettings.DriverType = AdvancedSettings.DriverType;
+			videoEncoderSettings.PixFormat = AdvancedSettings.PixelFormat;
+
             videoEncoderSettings.Bitrate = AdvancedSettings.Bitrate;
             videoEncoderSettings.MaxBitrate = AdvancedSettings.MaxBitrate;
             videoEncoderSettings.Width = encoderResolution.Width;
@@ -330,6 +335,7 @@ namespace ScreenStreamer.Wpf.Models
                 ShowDebugInfo = false,
                 ShowDebugBorder = PropertyVideo.ShowCaptureBorder,
                 AspectRatio = AdvancedSettings.KeepAspectRatio,
+				
             };
 
             VideoCaptureDevice captureDevice = null;
@@ -358,7 +364,12 @@ namespace ScreenStreamer.Wpf.Models
                 };
             }
 
-            if (PropertyAudio.IsEnabled)
+			captureDevice.DriverType = AdvancedSettings.DriverType;
+			captureDevice.Format = AdvancedSettings.PixelFormat;
+			captureDevice.ColorSpace = AdvancedSettings.ColorSpace;
+			captureDevice.ColorRange = AdvancedSettings.ColorRange;
+
+			if (PropertyAudio.IsEnabled)
             {
                 var deviceId = PropertyAudio.DeviceId;
 

@@ -1218,7 +1218,7 @@ namespace MediaToolkit.MediaFoundation
 
     public class MfVideoArgs
     {
-        public string EncoderId { get; set; } = "";
+        public Guid Id { get; set; } = Guid.Empty;
 
         public int Width { get; set; } = 1280;
         public int Height { get; set; } = 720;

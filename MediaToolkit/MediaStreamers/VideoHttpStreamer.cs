@@ -169,7 +169,7 @@ namespace MediaToolkit.MediaStreamers
                     {
                         break;
                     }
-                    var buffer = screenSource._VideoBuffer;
+                    var buffer = screenSource.VideoBuffer;
                     var frame = buffer.GetFrame();
                     encoder._Encode(frame);
 

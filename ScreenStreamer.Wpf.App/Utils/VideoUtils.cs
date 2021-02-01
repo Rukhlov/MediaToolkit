@@ -291,6 +291,9 @@ namespace ScreenStreamer.Wpf.Helpers
 						{
 							Name = enc.Name,
 							Id = enc.Id,
+							DriverType = VideoDriverType.D3D11,
+							PixelFormat = PixFormat.NV12,
+							Format = VideoCodingFormat.H264,
 						};
 
 						videoEncoders.Add(item);
@@ -305,13 +308,16 @@ namespace ScreenStreamer.Wpf.Helpers
 				Format = VideoCodingFormat.H264,
 				IsHardware = false,
 				Activatable = true,
-
+                
 			};
 
 			videoEncoders.Add(new EncoderItem
 			{
 				Name = libx264Description.Name,
 				Id = libx264Description.Id,
+				DriverType = VideoDriverType.CPU,
+				PixelFormat = PixFormat.NV12,
+				Format = VideoCodingFormat.H264,
 			});
 
 

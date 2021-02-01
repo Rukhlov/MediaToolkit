@@ -154,7 +154,7 @@ namespace MediaToolkit.MediaFoundation
 
         private void InitDx(VideoEncoderSettings encoderSettings)
 		{
-            var videoBuffer = videoSource._VideoBuffer;
+            var videoBuffer = videoSource.VideoBuffer;
           
             if (videoBuffer.DriverType == VideoDriverType.D3D11)
             {

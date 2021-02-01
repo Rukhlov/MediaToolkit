@@ -72,7 +72,7 @@ namespace MediaToolkit.MediaStreamers
 		//private RtpStreamer rtpStreamer = null;
 
 
-		private MfVideoEncoder videoEncoder = null;
+		private VideoFrameEncoder videoEncoder = null;
 		//private VideoEncoderWin7 videoEncoder = null;
 
 		public VideoEncoderSettings EncoderSettings { get; private set; }
@@ -127,11 +127,8 @@ namespace MediaToolkit.MediaStreamers
 				//encoder.Open(encodingParams);
 				//encoder.DataEncoded += Encoder_DataEncoded;
 
-				videoEncoder = new MfVideoEncoder(videoSource);
-
-				//videoEncoder = new VideoEncoderWin7(videoSource);
-
-				videoEncoder.Open(encoderSettings);
+				videoEncoder = new VideoFrameEncoder();
+				videoEncoder.Open(videoSource.VideoBuffer, encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
                 videoSource.BufferUpdated += ScreenSource_BufferUpdated;
@@ -149,8 +146,9 @@ namespace MediaToolkit.MediaStreamers
         }
 
 
-        // private Texture2D SharedTexture = null;
-        private volatile bool running = false;
+
+		// private Texture2D SharedTexture = null;
+		private volatile bool running = false;
 
         private Stopwatch sw = new Stopwatch();
         public bool Start()
@@ -275,10 +273,14 @@ namespace MediaToolkit.MediaStreamers
             streamStats.Update(time, buf.Length, processingTime);
         }
 
+		private void VideoBuffer_BufferUpdated(IVideoFrame obj)
+		{
+			//syncEvent?.Set();
+		}
 
-        private void ScreenSource_BufferUpdated()
+		private void ScreenSource_BufferUpdated()
         {
-            syncEvent.Set();
+            syncEvent?.Set();
         }
 
         public void Close()
@@ -309,7 +311,7 @@ namespace MediaToolkit.MediaStreamers
 
 
             videoSource.BufferUpdated -= ScreenSource_BufferUpdated;
-
+			
             RtpSender?.Close();
 
             state = StreamerState.Closed;

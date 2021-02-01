@@ -27,7 +27,7 @@ namespace MediaToolkit
         //    get { return hwContext?.SharedTexture; }
         //}
 
-        public VideoBufferBase _VideoBuffer => screenCapture?.VideoBuffer;
+        public VideoBufferBase VideoBuffer => screenCapture?.VideoBuffer;
 
         // public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
@@ -51,7 +51,7 @@ namespace MediaToolkit
         private CaptureStats captureStats = new CaptureStats();
         public StatCounter Stats => captureStats;
 
-        private ITexture2DSource hwContext = null;
+       // private ITexture2DSource hwContext = null;
 
 		public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -155,34 +155,32 @@ namespace MediaToolkit
                 captArgs["WindowHandle"] = hwnd;
 
                 screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
-                screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
-                screenCapture.AspectRatio = CaptureProps.AspectRatio;
-                
-                var d3d11Capture = screenCapture as ITexture2DSource;
-				if (d3d11Capture != null)
-				{
-                    d3d11Capture.UseHwContext = CaptureProps.UseHardware;
-					this.hwContext = d3d11Capture;
-                    //this.AdapterId = d3d11Capture.AdapterId;
-                    this.AdapterIndex = d3d11Capture.AdapterIndex;
 
-                    if(screenCapture is DDACapture)
-                    {
-                        ((DDACapture)screenCapture).OutputManager = outputManager;
-                    }
+				screenCapture.DriverType = captureParams.DriverType;
+				screenCapture.DestFormat = captureParams.Format;
+				screenCapture.ColorSpace = captureParams.ColorSpace;
+				screenCapture.ColorRange = captureParams.ColorRange;
+
+				screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
+                screenCapture.AspectRatio = CaptureProps.AspectRatio;
+
+				//VideoDriverType driverType = VideoDriverType.CPU;
+				//if (CaptureProps.UseHardware)
+				//{
+				//	driverType = VideoDriverType.D3D11;
+				//}
+
+				if (screenCapture is DDACapture)
+				{
+					((DDACapture)screenCapture).OutputManager = outputManager;
 				}
 
 				screenCapture.Init(srcRect, destSize);
 				//screenCapture.Init(srcRect);
 
-
-				//this.SharedBitmap = screenCapture.VideoBuffer;
-
                 deviceReady = true;
 
                 state = CaptureState.Initialized;
-
-
             }
             catch (Exception ex)
             { 
@@ -275,10 +273,10 @@ namespace MediaToolkit
                         {
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
-                            var frame = _VideoBuffer.GetFrame();
+                            var frame = VideoBuffer.GetFrame();
                             frame.Time = time;
                             lastTime = frame.Time;
-                            _VideoBuffer.OnBufferUpdated(frame);
+                            VideoBuffer.OnBufferUpdated(frame);
 
                             //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
 

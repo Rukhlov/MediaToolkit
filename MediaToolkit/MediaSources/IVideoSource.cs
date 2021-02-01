@@ -36,7 +36,7 @@ namespace MediaToolkit
 
         //System.Drawing.Size SrcSize { get; }
 
-        VideoBufferBase _VideoBuffer { get; }
+        VideoBufferBase VideoBuffer { get; }
         void Setup(object pars);
         void Start();
         void Stop();

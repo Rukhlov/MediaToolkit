@@ -178,8 +178,9 @@ namespace ScreenStreamer.Common
 				}
 
 				captureDevice.Resolution = new Size(width, height);
+			
 
-                logger.Info("VideoSettings: " + videoLog);
+				logger.Info("VideoSettings: " + videoLog);
 			}
 
 			if (AudioSettings.Enabled)

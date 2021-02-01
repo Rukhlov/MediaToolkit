@@ -33,17 +33,8 @@ using MediaToolkit.Core;
 
 namespace MediaToolkit.ScreenCaptures
 {
-
-    public interface ITexture2DSource
-    {
-        //Texture2D SharedTexture { get; }
-        // long AdapterId { get; }
-        int AdapterIndex { get; }
-        bool UseHwContext { get; set; }
-    }
-
-    public class DDACapture : ScreenCapture, ITexture2DSource
-    {
+    public class DDACapture : ScreenCapture
+    { 
         public DDACapture(Dictionary<string, object> args = null) : base()
         { }
 
@@ -55,16 +46,11 @@ namespace MediaToolkit.ScreenCaptures
 
         private Texture2D compositionTexture = null;
 
-        private Texture2D renderTexture = null;
-        Direct2D.RenderTarget renderTarget = null;
-
         private Texture2D sharedTexture = null;
-        //public Texture2D SharedTexture { get; private set; }
-        //public long AdapterId { get; private set; }
 
         public int AdapterIndex { get; private set; }
 
-        public bool UseHwContext { get; set; } = true;
+        //public bool UseHwContext { get; set; } = true;
 
         public int PrimaryAdapterIndex { get; set; } = 0;
 
@@ -75,19 +61,13 @@ namespace MediaToolkit.ScreenCaptures
 
         private List<DDAOutputProvider> providers = new List<DDAOutputProvider>();
 
-        //public GDI.Rectangle SrcRect { get; private set; }
-        //public GDI.Size DestSize { get; private set; }
-        //public bool CaptureMouse { get; set; }
-        //public bool AspectRatio { get; set; }
-
         private GDI.Rectangle normalizedSrcRect = GDI.Rectangle.Empty;
 
         private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
 
-        // private D3D11RgbToNv12Converter pixConverter = null;
-        private D3D11RgbToYuvConverter pixConverter = null;
+        private VideoFrameBase srcFrame = null;
+        private D3D11RgbToYuvConverter processor = null;
 
-        
         public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
         {
             logger.Debug("DXGIDesktopDuplicationCapture::Init() " + srcRect.ToString() + " " + destSize.ToString());
@@ -112,58 +92,25 @@ namespace MediaToolkit.ScreenCaptures
             {
                 InitDx();
 
-                if (UseHwContext)
+                if (DriverType == VideoDriverType.D3D11)
                 {
-                    //_VideoBuffer = new D3D11VideoBuffer(mainDevice, DestSize, Core.PixFormat.RGB32);
-                    //var frame = _VideoBuffer.GetFrame();
-                    //var buffer = frame.Buffer;
-                    //var pTexture = buffer[0].Data;
+                    VideoBuffer = new D3D11VideoBuffer(mainDevice, DestSize, DestFormat);
+                }
+                else if (DriverType == VideoDriverType.CPU)
+                {
 
-                    //this.sharedTexture = new Texture2D(pTexture);
-                    //((IUnknown)sharedTexture).AddReference();
-
-
-                    sharedTexture = new Texture2D(mainDevice,
-                        new Texture2DDescription
-                        {
-                            CpuAccessFlags = CpuAccessFlags.None,
-                            BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                            Format = Format.B8G8R8A8_UNorm,
-                            Width = srcRect.Width,
-                            Height = srcRect.Height,
-                            //Width = DestSize.Width,
-                            //Height = DestSize.Height,
-
-                            MipLevels = 1,
-                            ArraySize = 1,
-                            SampleDescription = { Count = 1, Quality = 0 },
-                            Usage = ResourceUsage.Default,
-                            OptionFlags = ResourceOptionFlags.None,
-
-                        });
-
-                    var videoBuffer = new D3D11VideoBuffer(mainDevice, DestSize, Core.PixFormat.NV12);
-                    //var frame = videoBuffer.GetFrame();
-                    //var buffer = frame.Buffer;
-                    //var pTexture = buffer[0].Data;
-
-                    ////this.sharedTexture = new Texture2D(pTexture);
-                    ////((IUnknown)sharedTexture).AddReference();
-
-                    //pixConverter = new D3D11RgbToNv12Converter();
-                    //pixConverter.Init(mainDevice, videoBuffer);
-
-                    pixConverter = new D3D11RgbToYuvConverter();
-                    pixConverter.KeepAspectRatio = true;
-                    pixConverter.Init(mainDevice, SrcRect.Size, Core.PixFormat.RGB32, DestSize, Core.PixFormat.NV12);
-
-                    this.VideoBuffer = videoBuffer;
-
+                    VideoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 16);
                 }
                 else
                 {
-                    VideoBuffer = new MemoryVideoBuffer(DestSize, Core.PixFormat.RGB32, 16);
+                    throw new InvalidOperationException("Invalid driver type: " + DriverType);
                 }
+
+                processor = new D3D11RgbToYuvConverter();
+                processor.KeepAspectRatio = AspectRatio;
+                processor.Init(mainDevice, SrcRect.Size, SrcFormat, DestSize, DestFormat);
+
+                srcFrame = new D3D11VideoFrame(sharedTexture);
 
             }
             catch (SharpDXException ex)
@@ -277,7 +224,7 @@ namespace MediaToolkit.ScreenCaptures
                 {
                     SharpDX.Direct3D.FeatureLevel.Level_11_1,
                     SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                    //SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                    SharpDX.Direct3D.FeatureLevel.Level_10_1,
                 };
 
                 mainDevice = new Device(primaryAdapter, deviceCreationFlags, featureLevel);
@@ -402,24 +349,21 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
+            sharedTexture = new Texture2D(mainDevice,
+                new Texture2DDescription
+                {
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+                    Format = Format.B8G8R8A8_UNorm,
+                    Width = SrcRect.Width,
+                    Height = SrcRect.Height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Default,
+                    OptionFlags = ResourceOptionFlags.None,
 
-            //SharedTexture = new Texture2D(mainDevice,
-            //     new Texture2DDescription
-            //     {
-            //         CpuAccessFlags = CpuAccessFlags.None,
-            //         BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-            //         Format = Format.B8G8R8A8_UNorm,
-            //         Width = DestSize.Width,
-            //         Height = DestSize.Height,
-
-            //         MipLevels = 1,
-            //         ArraySize = 1,
-            //         SampleDescription = { Count = 1, Quality = 0 },
-            //         Usage = ResourceUsage.Default,
-            //         //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-            //         OptionFlags = ResourceOptionFlags.Shared,
-
-            //     });
+                });
 
             compositionTexture = new Texture2D(mainDevice,
                new Texture2DDescription
@@ -435,44 +379,6 @@ namespace MediaToolkit.ScreenCaptures
                    SampleDescription = { Count = 1, Quality = 0 },
                    Usage = ResourceUsage.Default,
                });
-
-            renderTexture = new Texture2D(mainDevice,
-                new Texture2DDescription
-                {
-
-                    CpuAccessFlags = CpuAccessFlags.None,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    Format = Format.B8G8R8A8_UNorm,
-
-                    Width = DestSize.Width,
-                    Height = DestSize.Height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Default,
-                    //OptionFlags = ResourceOptionFlags.GdiCompatible//ResourceOptionFlags.None,
-                    OptionFlags = ResourceOptionFlags.Shared,
-
-                });
-
-            if (DestSize.Width != SrcRect.Width || DestSize.Height != SrcRect.Height)
-            {
-                using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(SharpDX.Direct2D1.FactoryType.MultiThreaded))
-                {
-                    using (var surf = renderTexture.QueryInterface<Surface>())
-                    {
-                        //var pixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.Unknown, SharpDX.Direct2D1.AlphaMode.Ignore);
-
-                        var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
-                        var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
-
-                        renderTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
-
-                        //var d2dContext = new SharpDX.Direct2D1.DeviceContext(surface);
-                    }
-
-                }
-            }
 
             initialized = true;
 
@@ -517,7 +423,7 @@ namespace MediaToolkit.ScreenCaptures
                             continue;
                         }
 
-                        
+
                         var desrc = texture.Description;
                         var srcRegion = new ResourceRegion
                         {
@@ -539,25 +445,17 @@ namespace MediaToolkit.ScreenCaptures
                 }
                 //------------------------------------------------------
 
+                if (Result == ErrorCode.Ok)
+                {
+                    mainDevice.ImmediateContext.CopyResource(compositionTexture, sharedTexture);
+                    mainDevice.ImmediateContext.Flush();
 
-                Texture2D finalTexture = compositionTexture;
-                //if (renderTarget != null)
-                //{// масштабируем текстуру если нужно
-                //    renderTarget.BeginDraw();
-                //    renderTarget.Clear(Color.Black);//(Color.Red);
-
-                //    DrawScreen(renderTarget, compositionTexture);
-
-                //    renderTarget.EndDraw();
-                //    finalTexture = renderTexture;
-                //}
-
-                //SharedTexture = finalTexture;
+                    var destFrame = VideoBuffer.GetFrame();
+                    processor.Process(srcFrame, destFrame);
+                    Result = ErrorCode.Ok;
+                }
 
 
-                Result = FinalyzeTexture(finalTexture);
-
-                Result = ErrorCode.Ok;
 
             }
             catch (SharpDXException ex)
@@ -574,276 +472,6 @@ namespace MediaToolkit.ScreenCaptures
 
             return Result;
         }
-
-        private ErrorCode FinalyzeTexture(Texture2D texture)
-        {
-            ErrorCode errorCode = ErrorCode.Unexpected;
-            var deviceContext = mainDevice.ImmediateContext;
-
-            if (UseHwContext)
-            {
-
-                deviceContext.CopyResource(texture, sharedTexture);
-                // deviceContext.Flush();
-
-                var frame = VideoBuffer.GetFrame();
-                IReadOnlyList<Texture2D> yuvTextures = null;
-                try
-                {
-                    if (frame.DriverType == VideoDriverType.D3D11)
-                    {
-                        yuvTextures = ((D3D11VideoFrame)frame).GetTextures();
-                    }
-                    else if (frame.DriverType == VideoDriverType.CPU)
-                    {
-                        yuvTextures = D3D11RgbToYuvConverter.CreateYuvTextures(mainDevice, frame.Width, frame.Height, frame.Format);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Invalid frame driver type: " + frame.DriverType);
-                    }
-
-                    pixConverter.Process(sharedTexture, yuvTextures.ToArray());
-
-                }
-                finally
-                {
-                    if(yuvTextures!=null && yuvTextures.Count > 0)
-                    {
-                        foreach (var tex in yuvTextures)
-                        {
-                            if(tex!=null && !tex.IsDisposed)
-                            {
-                                tex.Dispose();
-                            }
-                        }
-                    }
-                }
-
-
-
-                //pixConverter.Process(sharedTexture, frame);
-
-                errorCode = ErrorCode.Ok;
-            }
-            else
-            {
-                Texture2D stagingTexture = null;
-                try
-                {
-                    // Create Staging texture CPU-accessible
-                    stagingTexture = new Texture2D(mainDevice,
-                        new Texture2DDescription
-                        {
-                            CpuAccessFlags = CpuAccessFlags.Read,
-                            BindFlags = BindFlags.None,
-                            Format = Format.B8G8R8A8_UNorm,
-                            Width = DestSize.Width,
-                            Height = DestSize.Height,
-                            MipLevels = 1,
-                            ArraySize = 1,
-                            SampleDescription = { Count = 1, Quality = 0 },
-                            Usage = ResourceUsage.Staging,
-                            OptionFlags = ResourceOptionFlags.None,
-                        });
-
-                    deviceContext.CopyResource(texture, stagingTexture);
-                    deviceContext.Flush();
-
-                    errorCode = CopyToFrameBuffer(stagingTexture);
-                    //errorCode = CopyToGdiBuffer(stagingTexture);
-
-                }
-                finally
-                {
-                    stagingTexture?.Dispose();
-                }
-            }
-
-            return errorCode;
-        }
-
-        private void DrawScreen(SharpDX.Direct2D1.RenderTarget renderTarget, Texture2D texture)
-        {
-            using (var surf = texture.QueryInterface<Surface1>())
-            {
-                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
-                Direct2D.Bitmap screenBits = new Direct2D.Bitmap(renderTarget, surf, prop);
-                try
-                {
-                    var srcDecr = surf.Description;
-                    float srcWidth = srcDecr.Width;
-                    float srcHeight = srcDecr.Height;
-
-                    float destX = 0;
-                    float destY = 0;
-                    float destWidth = DestSize.Width;
-                    float destHeight = DestSize.Height;
-
-                    float scaleX = destWidth / srcWidth;
-                    float scaleY = destHeight / srcHeight;
-
-                    if (AspectRatio)
-                    {
-                        if (scaleY < scaleX)
-                        {
-                            scaleX = scaleY;
-                            destX = ((destWidth - srcWidth * scaleX) / 2);
-                        }
-                        else
-                        {
-                            scaleY = scaleX;
-                            destY = ((destHeight - srcHeight * scaleY) / 2);
-                        }
-                    }
-
-                    destWidth = srcWidth * scaleX;
-                    destHeight = srcHeight * scaleY;
-
-                    var destRect = new RawRectangleF
-                    {
-                        Left = destX,
-                        Right = destX + destWidth,
-                        Top = destY,
-                        Bottom = destY + destHeight,
-                    };
-
-                    renderTarget.DrawBitmap(screenBits, destRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
-
-                }
-                finally
-                {
-                    screenBits?.Dispose();
-                }
-            }
-        }
-
-
-        private ErrorCode CopyToFrameBuffer(Texture2D texture)
-        {
-
-            ErrorCode Result = ErrorCode.Unexpected;
-
-            var frame = VideoBuffer.GetFrame();
-
-            bool lockTaken = false;
-            try
-            {
-                lockTaken = frame.Lock(1000);
-                if (lockTaken)
-                {
-                    var dataBox = mainDevice.ImmediateContext.MapSubresource(texture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
-                    try
-                    {
-                        var stagingDescr = texture.Description;
-
-                        int width = stagingDescr.Width;
-                        int height = stagingDescr.Height;
-
-                        var srcPitch = dataBox.RowPitch;
-                        var srcDataSize = dataBox.SlicePitch;
-                        var srcPtr = dataBox.DataPointer;
-
-                        var destPitch = 4 * width;
-                        var destRowNumber = height;
-                        var destBufferSize = destPitch * destRowNumber;
-
-                        if (stagingDescr.Format == Format.R8G8B8A8_SNorm || stagingDescr.Format == Format.B8G8R8A8_UNorm)
-                        {
-
-                        }
-                        else if (stagingDescr.Format == Format.NV12)
-                        {
-                            destPitch = width;
-                            destRowNumber = height + height / 2;
-                            destBufferSize = destPitch * destRowNumber;
-                        }
-                        else if (stagingDescr.Format == Format.R8_UNorm)
-                        {
-                            destPitch = width;
-                            destRowNumber = height;
-                            destBufferSize = destPitch * destRowNumber;
-                        }
-                        else if (stagingDescr.Format == Format.R8G8_UNorm)
-                        {
-                            destPitch = 2 * width;
-                            destRowNumber = height;
-                            destBufferSize = destPitch * destRowNumber;
-                        }
-
-                        var frameBuffer = frame.Buffer;
-                        var destBuffer = frameBuffer[0].Data;
-                        //var destPitch = frameBuffer[0].Stride;
-                        int bufOffset = 0;
-                        for (int i = 0; i < destRowNumber; i++)
-                        {
-                            Kernel32.CopyMemory(destBuffer, srcPtr, (uint)destPitch);
-                            // System.Runtime.InteropServices.Marshal.Copy(srcPtr, destBuffer, bufOffset, destPitch);
-                            destBuffer += destPitch;
-                            //bufOffset += destPitch;
-                            srcPtr += srcPitch;
-                        }
-
-                    }
-                    finally
-                    {
-                        mainDevice.ImmediateContext.UnmapSubresource(texture, 0);
-                    }
-                }
-                else
-                {
-                    logger.Debug("lockTaken == false");
-                }
-
-            }
-            finally
-            {
-                if (lockTaken)
-                {
-                    frame.Unlock();
-                }
-            }
-
-
-
-            return Result;
-        }
-
-        //private ErrorCode CopyToGdiBuffer(Texture2D texture)
-        //{
-
-        //    ErrorCode Result = ErrorCode.Unexpected;
-
-        //    var syncRoot = videoBuffer.syncRoot;
-        //    bool lockTaken = false;
-        //    try
-        //    {
-        //        Monitor.TryEnter(syncRoot, /*timeout*/1000, ref lockTaken);
-        //        if (lockTaken)
-        //        {
-        //            var bmp = videoBuffer.bitmap;
-        //            DirectX.DxTool.TextureToBitmap(texture, ref bmp);
-        //            Result = ErrorCode.Ok;
-        //        }
-        //        else
-        //        {
-        //            logger.Debug("lockTaken == false");
-        //        }
-
-        //    }
-        //    finally
-        //    {
-        //        if (lockTaken)
-        //        {
-        //            Monitor.Exit(syncRoot);
-        //        }
-        //    }
-
-
-
-        //    return Result;
-        //}
-
 
         public override void Close()
         {
@@ -898,18 +526,6 @@ namespace MediaToolkit.ScreenCaptures
                 compositionTexture = null;
             }
 
-            if (renderTexture != null && !renderTexture.IsDisposed)
-            {
-                renderTexture.Dispose();
-                renderTexture = null;
-            }
-
-            if (renderTarget != null && !renderTarget.IsDisposed)
-            {
-                renderTarget.Dispose();
-                renderTarget = null;
-            }
-
             if (sharedTexture != null && !sharedTexture.IsDisposed)
             {
                 sharedTexture.Dispose();
@@ -933,10 +549,16 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            if (pixConverter != null)
+            if (srcFrame != null)
             {
-                pixConverter.Close();
-                pixConverter = null;
+                srcFrame.Dispose();
+                srcFrame = null;
+            }
+
+            if (processor != null)
+            {
+                processor.Close();
+                processor = null;
             }
 
         }

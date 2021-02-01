@@ -14,10 +14,60 @@ using namespace System::Drawing;
 using namespace System::Drawing::Imaging;
 using namespace System::Runtime::InteropServices;
 using namespace MediaToolkit::Core;
-
+using namespace System::Collections::Generic;
 namespace FFmpegLib {
 	public ref class Utils {
 	public:
+
+		static array<VideoEncoderDescription^>^GetH264Encoders() {
+
+			List<VideoEncoderDescription^>^ descriptions = gcnew List<VideoEncoderDescription^>(16);
+
+			const AVCodec *current_codec = nullptr;
+			void *i = 0;
+			while ((current_codec = av_codec_iterate(&i))) {
+				if (av_codec_is_encoder(current_codec)) {
+
+					if (current_codec->type == AVMediaType::AVMEDIA_TYPE_VIDEO && 
+						current_codec->id == AVCodecID::AV_CODEC_ID_H264) {
+						
+						AVCodecContext* context = avcodec_alloc_context3(current_codec);
+						context->width = 640;
+						context->height = 480;
+						context->time_base = { 1, 1 };
+						context->pix_fmt = AV_PIX_FMT_NV12;
+
+						int res = -1;
+						try {
+							res = avcodec_open2(context, NULL, NULL);
+						}
+						finally{
+							if (context) {
+								pin_ptr<AVCodecContext*> p_ectx = &context;
+								avcodec_free_context(p_ectx);
+								context = NULL;
+							}
+						}
+
+						bool hardware = current_codec->capabilities & AV_CODEC_CAP_HARDWARE;
+						String^ wrapperName = gcnew String(current_codec->wrapper_name);
+						String^ name = gcnew String(current_codec->name);
+
+						VideoEncoderDescription^ descr = gcnew VideoEncoderDescription();
+						descr->Id = name;
+						descr->Name = name;
+						descr->Description = gcnew String(current_codec->long_name);
+						descr->Format = VideoCodingFormat::H264;
+						descr->IsHardware = false;
+						descr->Activatable = (res >= 0);
+						descriptions->Add(descr);
+
+					}
+				}
+			}
+
+			return descriptions->ToArray();
+		}
 
 		static int AllocImageData(System::Drawing::Size size, MediaToolkit::Core::PixFormat pixFormat, int align,
 			[Out] array<IntPtr>^% destData, [Out] array<int>^% destLinesize) {

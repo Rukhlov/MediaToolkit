@@ -34,8 +34,154 @@ namespace Test.Encoder
             helperTest.Close();
         }
 
+		public void Start()
+		{
 
-        public void Start()
+			try
+			{
+
+				SharpDX.DXGI.Factory1 dxgiFactory = null;
+
+				try
+				{
+					dxgiFactory = new SharpDX.DXGI.Factory1();
+
+					//logger.Info(DirectX.DxTool.LogDxAdapters(dxgiFactory.Adapters1));
+
+					SharpDX.DXGI.Adapter1 adapter = null;
+					try
+					{
+						var AdapterIndex = 0;
+						adapter = dxgiFactory.GetAdapter1(AdapterIndex);
+						//AdapterId = adapter.Description.Luid;
+						//logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
+
+						var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
+#if DEBUG
+						deviceCreationFlags |= DeviceCreationFlags.Debug;
+#endif
+						var featureLevel = FeatureLevel.Level_10_1;
+						device = new Device(adapter, deviceCreationFlags, featureLevel);
+						using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+						{
+							multiThread.SetMultithreadProtected(true);
+						}
+					}
+					finally
+					{
+						if (adapter != null)
+						{
+							adapter.Dispose();
+							adapter = null;
+						}
+					}
+				}
+				finally
+				{
+					if (dxgiFactory != null)
+					{
+						dxgiFactory.Dispose();
+						dxgiFactory = null;
+					}
+				}
+
+				var fileName = @"Files\2560x1440.bmp";
+				var srcSize = new Size(2560, 1440);
+				var srcFormat = PixFormat.RGB24;
+
+				//var fileName = @"Files\rgb565_1920x1080.raw";
+				//var srcSize = new Size(1920, 1080);
+				//var srcFormat = PixFormat.RGB16;
+
+				//var fileName = @"Files\rgb565_640x480.raw";
+				//var srcSize = new Size(640, 480);
+				//var srcFormat = PixFormat.RGB16;
+
+				//var fileName = @"Files\rgba_1920x1080.raw";
+				//var srcSize = new Size(1920, 1080);
+				//var srcFormat = PixFormat.RGB32;
+
+				//var destSize = new Size(800, 600);
+				//var destSize = new Size(352, 288);
+				//var destSize = new Size(1280, 720);
+				var destSize = new Size(640, 480);
+				var destFormat = PixFormat.RGB32;
+
+				var scalingFilter = ScalingFilter.Linear;
+				RgbProcessor rgbProcessor = new RgbProcessor();
+				rgbProcessor.Init(device, srcSize, srcFormat, destSize, destFormat, scalingFilter);
+
+				var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+				{
+					Width = srcSize.Width,
+					Height = srcSize.Height,
+					Format = DxTool.GetDxgiFormat(srcFormat).ToArray()[0],
+					MipLevels = 1,
+					ArraySize = 1,
+					SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+					BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+					Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+					CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+					//Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+					//Format = SharpDX.DXGI.Format.R16_UNorm,
+					//Format = SharpDX.DXGI.Format.R8G8_UNorm,
+					//Format = SharpDX.DXGI.Format.R16_UInt,
+					//Format = SharpDX.DXGI.Format.B5G6R5_UNorm,
+					OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+				};
+
+				//var srcBytes = File.ReadAllBytes(fileName);
+				//srcTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
+
+				srcTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+
+				destTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
+				{
+					//Width = srcSize.Width,
+					//Height = srcSize.Height,
+					Width = destSize.Width,
+					Height = destSize.Height,
+					Format = DxTool.GetDxgiFormat(destFormat).ToArray()[0],
+
+					//Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+					//Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+
+					SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+					BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+					Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+					CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+					OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+					MipLevels = 1,
+					ArraySize = 1,
+
+				});
+
+				rgbProcessor.Process(srcTexture, destTexture, true);
+
+
+				{
+					var descr = destTexture.Description;
+					var bytes = MediaToolkit.DirectX.DxTool.DumpTexture(device, destTexture);
+
+					var _fileName = "Dest_" + descr.Format + "_" + descr.Width + "x" + descr.Height + "_" + scalingFilter + ".raw";
+					File.WriteAllBytes(_fileName, bytes);
+
+					Console.WriteLine("DestFile: " + _fileName);
+				}
+
+				rgbProcessor.Close();
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+
+		}
+
+
+		public void Start2()
         {
 
             try
@@ -61,7 +207,8 @@ namespace Test.Encoder
 #if DEBUG
                         deviceCreationFlags |= DeviceCreationFlags.Debug;
 #endif
-                        device = new Device(adapter, deviceCreationFlags);
+						var featureLevel = FeatureLevel.Level_10_1;
+                        device = new Device(adapter, deviceCreationFlags, featureLevel);
                         using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
                         {
                             multiThread.SetMultithreadProtected(true);
@@ -86,11 +233,19 @@ namespace Test.Encoder
                 }
 
                 //var fileName = @"Files\rgba_1920x1080.raw";
-                var fileName = @"Files\rgb565_1920x1080.raw";
-                var srcSize = new Size(1920, 1080);
-                //var fileName = @"Files\1920x1080.bmp";
-                //var srcSize = new Size(1920, 1080);
-                var srcFormat = PixFormat.RGB16;
+                var fileName = @"Files\rgb565_640x480.raw";
+                var srcSize = new Size(640, 480);
+				var destSize = srcSize;// new Size(1920, 1080);
+
+
+
+				RgbProcessor rgbProcessor = new RgbProcessor();
+				rgbProcessor.Init(device, srcSize, PixFormat.RGB16, destSize, PixFormat.RGB32);
+
+
+				//var fileName = @"Files\1920x1080.bmp";
+				//var srcSize = new Size(1920, 1080);
+				var srcFormat = PixFormat.RGB16;
 
                 var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
                 {
@@ -127,9 +282,11 @@ namespace Test.Encoder
 
                 destTexture = new Texture2D (device, new SharpDX.Direct3D11.Texture2DDescription()
                 {
-                    Width = srcSize.Width,
-                    Height = srcSize.Height,
-                    Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+					//Width = srcSize.Width,
+					//Height = srcSize.Height,
+					Width = destSize.Width,
+					Height = destSize.Height,
+					Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
 
 				    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
                     BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
@@ -172,7 +329,7 @@ namespace Test.Encoder
                     //MaximumLod = float.MaxValue,
                 });
 
-                _Vertex[] vertices = VertexHelper.GetQuadVertices(srcSize, srcSize, false);
+                _Vertex[] vertices = VertexHelper.GetQuadVertices(srcSize, destSize, false);
 
                 var deviceContext = device.ImmediateContext;
 
@@ -193,9 +350,11 @@ namespace Test.Encoder
 
                 deviceContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
                 {
-                    Width = srcSize.Width,//ImageWidth,
-                    Height = srcSize.Height,//ImageHeight,
-                    MinDepth = 0f,
+					//Width = srcSize.Width,//ImageWidth,
+					//Height = srcSize.Height,//ImageHeight,
+					Width = destSize.Width,//ImageWidth,
+					Height = destSize.Height,//ImageHeight,
+					MinDepth = 0f,
                     MaxDepth = 1f,
                     X = 0,
                     Y = 0,
