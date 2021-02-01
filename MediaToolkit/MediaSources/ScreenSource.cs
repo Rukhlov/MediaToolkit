@@ -257,7 +257,7 @@ namespace MediaToolkit
 
                 Stopwatch sw = Stopwatch.StartNew();
 
-
+                long logInterval = 0;
                 while (state == CaptureState.Capturing && deviceReady)
                 {
                     sw.Restart();
@@ -333,6 +333,14 @@ namespace MediaToolkit
 
                     monotonicTime += sw.ElapsedMilliseconds / 1000.0;
                     captureStats.Update(monotonicTime);
+
+                    logInterval += sw.ElapsedMilliseconds;
+                    if (logInterval >= 3000)
+                    {
+                        var report = captureStats.GetReport();
+                        Console.WriteLine(report);
+                        logInterval = 0;
+                    }
                 }
 
             }
