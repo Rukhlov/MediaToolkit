@@ -52,7 +52,7 @@ namespace Test.Encoder
             //Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
 
             //DatapathCaptTest.Run();
-			//RgbHelperTest.Run();
+			RgbHelperTest.Run();
 
 			//D3D11ConvertersTest.Run();
 

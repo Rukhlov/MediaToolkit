@@ -17,6 +17,8 @@ using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using SharpDX.Direct3D11;
 using MediaToolkit.DirectX;
+using FFmpegLib;
+//using SharpDX;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -87,6 +89,8 @@ namespace MediaToolkit.ScreenCaptures
         private VideoFrame dcaptFrame = null;
         private D3D11VideoFrame srcFrame = null;
 
+
+        //private FFmpegPixelConverter ffmpegPixelConverter = null;
         public override void Init(Rectangle captArea, Size destSize)
         {
             logger.Debug("Init(...) " + captArea.ToString() + " " + destSize.ToString());
@@ -127,7 +131,7 @@ namespace MediaToolkit.ScreenCaptures
                 pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
 
 
-                srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
+                //srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
 
             }
             catch (Exception ex)
@@ -189,22 +193,23 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            srcTexture = new Texture2D(device,
-                new Texture2DDescription
-                {
-                    CpuAccessFlags = CpuAccessFlags.Write,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    Format = SharpDX.DXGI.Format.D16_UNorm,
-                    Width = SrcRect.Width,
-                    Height = SrcRect.Height,
+            //srcTexture = new Texture2D(device,
+            //    new Texture2DDescription
+            //    {
+            //        //CpuAccessFlags = CpuAccessFlags.Write,
+            //        BindFlags = BindFlags.ShaderResource,
+            //        Format = SharpDX.DXGI.Format.R16_UNorm,
+            //        Width = SrcRect.Width,
+            //        Height = SrcRect.Height,
 
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Staging,
-                    OptionFlags = ResourceOptionFlags.None,
+            //        MipLevels = 1,
+            //        ArraySize = 1,
+            //        SampleDescription = { Count = 1, Quality = 0 },
+            //        Usage = ResourceUsage.Staging,
+            //        //Usage = ResourceUsage.Default,
+            //        OptionFlags = ResourceOptionFlags.None,
 
-                });
+            //    });
 
         }
 
@@ -332,30 +337,54 @@ namespace MediaToolkit.ScreenCaptures
             var result = DCapt.DCaptUpdate(hCapt);
             DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
-            var deviceContext = device.ImmediateContext;
-            var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
-            try
+            SharpDX.DataBox[] initData =
             {
-                var width = DestSize.Width;
-                var height = DestSize.Height;
+                new SharpDX.DataBox(dcaptBuffer.Data,  dcaptBuffer.Stride, 0),
+            };
 
-                var srcStride = dcaptBuffer.Stride;
-                var srcPtr = dcaptBuffer.Data;
-
-                var destPtr = dataBox.DataPointer;
-                var destStride = dataBox.RowPitch;
-
-                for (int i = 0; i < height; i++)
+            var srcTexture = new Texture2D(device,
+                new Texture2DDescription
                 {
-                    Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
-                    destPtr += destStride;
-                    srcPtr += srcStride;
-                }
-            }
-            finally
-            {
-                deviceContext.UnmapSubresource(srcTexture, 0);
-            }
+                    //CpuAccessFlags = CpuAccessFlags.Write,
+                    BindFlags = BindFlags.ShaderResource,
+                    Format = SharpDX.DXGI.Format.R16_UNorm,
+                    Width = DestSize.Width,
+                    Height = DestSize.Height,
+
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Immutable,
+                    //Usage = ResourceUsage.Default,
+                    OptionFlags = ResourceOptionFlags.None,
+
+                }, initData);
+           var srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
+
+            //var deviceContext = device.ImmediateContext;
+            //var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
+            //try
+            //{
+            //    var width = DestSize.Width;
+            //    var height = DestSize.Height;
+
+            //    var srcStride = dcaptBuffer.Stride;
+            //    var srcPtr = dcaptBuffer.Data;
+
+            //    var destPtr = dataBox.DataPointer;
+            //    var destStride = dataBox.RowPitch;
+
+            //    for (int i = 0; i < height; i++)
+            //    {
+            //        Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
+            //        destPtr += destStride;
+            //        srcPtr += srcStride;
+            //    }
+            //}
+            //finally
+            //{
+            //    deviceContext.UnmapSubresource(srcTexture, 0);
+            //}
 
 
             var destFrame = VideoBuffer.GetFrame();
@@ -381,6 +410,9 @@ namespace MediaToolkit.ScreenCaptures
                     destFrame.Unlock();
                 }
             }
+
+            srcFrame.Dispose();
+            srcTexture.Dispose();
 
             return errorCode;
             // Console.WriteLine("DCaptCreateCapture() " + result);

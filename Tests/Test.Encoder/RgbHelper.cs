@@ -58,7 +58,7 @@ namespace Test.Encoder
 
 						var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
 #if DEBUG
-						deviceCreationFlags |= DeviceCreationFlags.Debug;
+						//deviceCreationFlags |= DeviceCreationFlags.Debug;
 #endif
 						var featureLevel = FeatureLevel.Level_10_1;
 						device = new Device(adapter, deviceCreationFlags, featureLevel);
@@ -85,26 +85,26 @@ namespace Test.Encoder
 					}
 				}
 
-				var fileName = @"Files\2560x1440.bmp";
-				var srcSize = new Size(2560, 1440);
-				var srcFormat = PixFormat.RGB24;
+                //var fileName = @"Files\2560x1440.bmp";
+                //var srcSize = new Size(2560, 1440);
+                //var srcFormat = PixFormat.RGB24;
 
-				//var fileName = @"Files\rgb565_1920x1080.raw";
-				//var srcSize = new Size(1920, 1080);
-				//var srcFormat = PixFormat.RGB16;
+                var fileName = @"Files\rgb565_1920x1080.raw";
+                var srcSize = new Size(1920, 1080);
+                var srcFormat = PixFormat.RGB16;
 
-				//var fileName = @"Files\rgb565_640x480.raw";
-				//var srcSize = new Size(640, 480);
-				//var srcFormat = PixFormat.RGB16;
+                //var fileName = @"Files\rgb565_640x480.raw";
+                //var srcSize = new Size(640, 480);
+                //var srcFormat = PixFormat.RGB16;
 
-				//var fileName = @"Files\rgba_1920x1080.raw";
-				//var srcSize = new Size(1920, 1080);
-				//var srcFormat = PixFormat.RGB32;
+                //var fileName = @"Files\rgba_1920x1080.raw";
+                //var srcSize = new Size(1920, 1080);
+                //var srcFormat = PixFormat.RGB32;
 
-				//var destSize = new Size(800, 600);
-				//var destSize = new Size(352, 288);
-				//var destSize = new Size(1280, 720);
-				var destSize = new Size(640, 480);
+                //var destSize = new Size(800, 600);
+                //var destSize = new Size(352, 288);
+                //var destSize = new Size(1280, 720);
+                var destSize = new Size(640, 480);
 				var destFormat = PixFormat.RGB32;
 
 				var scalingFilter = ScalingFilter.Linear;
@@ -131,10 +131,10 @@ namespace Test.Encoder
 
 				};
 
-				//var srcBytes = File.ReadAllBytes(fileName);
-				//srcTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
+				var srcBytes = File.ReadAllBytes(fileName);
+				srcTexture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
 
-				srcTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+				//srcTexture = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
 				destTexture = new Texture2D(device, new SharpDX.Direct3D11.Texture2DDescription()
 				{
