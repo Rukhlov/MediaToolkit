@@ -76,16 +76,45 @@ namespace Test.Encoder
 					}
 				}
 
-				var fileName = @"Files\2560x1440.bmp";
-				var srcSize = new Size(2560, 1440);
+				////var fileName = @"Files\2560x1440.bmp";
+				////var srcSize = new Size(2560, 1440);
 				//var fileName = @"Files\1920x1080.bmp";
 				//var srcSize = new Size(1920, 1080);
-				var srcFormat = PixFormat.RGB32;
+				//var srcFormat = PixFormat.RGB32;
+				//var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
-				var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+
+				var fileName = @"Files\rgb565_1920x1080.raw";
+				var srcSize = new Size(1920, 1080);
+				var srcFormat = PixFormat.RGB16;
+				var srcBytes = File.ReadAllBytes(fileName);
 
 
-				var DestSize = new Size(1920, 1080);
+				var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+				{
+					Width = srcSize.Width,
+					Height = srcSize.Height,
+					Format = DxTool.GetDxgiFormat(srcFormat).ToArray()[0],
+					MipLevels = 1,
+					ArraySize = 1,
+					SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+					BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+					Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+					CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+					//Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+					//Format = SharpDX.DXGI.Format.R16_UNorm,
+					//Format = SharpDX.DXGI.Format.R8G8_UNorm,
+					//Format = SharpDX.DXGI.Format.R16_UInt,
+					//Format = SharpDX.DXGI.Format.B5G6R5_UNorm,
+					OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+				};
+
+				var texture = MediaToolkit.DirectX.DxTool.TextureFromDump(device, texDescr, srcBytes);
+
+
+
+				var DestSize = new Size(640, 480);
 				var destFormat = PixFormat.NV12;
 				//var DestSize = new Size(2560, 1440);
 
