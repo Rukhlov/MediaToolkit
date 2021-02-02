@@ -84,7 +84,8 @@ namespace Test.Encoder
 				//var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
 
-				var fileName = @"Files\rgb565_1920x1080.raw";
+				var fileName = @"Files\dcapt_rgb565_1920x1080.raw";
+				//var fileName = @"Files\rgb565_1920x1080.raw";
 				var srcSize = new Size(1920, 1080);
 				var srcFormat = PixFormat.RGB16;
 				var srcBytes = File.ReadAllBytes(fileName);
@@ -114,7 +115,7 @@ namespace Test.Encoder
 
 
 
-				var DestSize = new Size(640, 480);
+				var DestSize = new Size(1920, 1080);
 				var destFormat = PixFormat.NV12;
 				//var DestSize = new Size(2560, 1440);
 

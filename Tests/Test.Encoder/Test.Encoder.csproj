@@ -124,6 +124,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Files\dcapt_rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\NV12_1920x1080.yuv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

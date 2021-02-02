@@ -18,6 +18,7 @@ using MediaToolkit.SharedTypes;
 using SharpDX.Direct3D11;
 using MediaToolkit.DirectX;
 using FFmpegLib;
+using System.IO;
 //using SharpDX;
 
 namespace MediaToolkit.ScreenCaptures
@@ -341,7 +342,7 @@ namespace MediaToolkit.ScreenCaptures
                 new SharpDX.DataBox(dcaptBuffer.Data,  dcaptBuffer.Stride, 0),
             };
 
-            var srcTexture = new Texture2D(device,
+            var dcaptTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     //CpuAccessFlags = CpuAccessFlags.Write,
@@ -358,7 +359,7 @@ namespace MediaToolkit.ScreenCaptures
                     OptionFlags = ResourceOptionFlags.None,
 
                 }, initData);
-           var srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
+           var dcaptD3D11Frame = new D3D11VideoFrame(dcaptFrame.Format, dcaptTexture);
 
             //var deviceContext = device.ImmediateContext;
             //var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
@@ -394,7 +395,7 @@ namespace MediaToolkit.ScreenCaptures
 
                 if (lockTaken)
                 {
-                    pixConverter.Process(srcFrame, destFrame);
+                    pixConverter.Process(dcaptD3D11Frame, destFrame);
                     errorCode = ErrorCode.Ok;
                 }
                 else
@@ -410,8 +411,12 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            srcFrame.Dispose();
-            srcTexture.Dispose();
+			//var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
+
+			//File.WriteAllBytes("NV12_TextureDump.raw", test);
+
+            dcaptD3D11Frame.Dispose();
+            dcaptTexture.Dispose();
 
             return errorCode;
             // Console.WriteLine("DCaptCreateCapture() " + result);
