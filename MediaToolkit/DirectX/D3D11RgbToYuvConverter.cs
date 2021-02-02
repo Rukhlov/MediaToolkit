@@ -302,7 +302,10 @@ namespace MediaToolkit.DirectX
 
 		public void Process(IVideoFrame rgbFrame, IVideoFrame yuvFrame)
 		{
-			if (rgbFrame.Format != PixFormat.RGB32 && rgbFrame.Format != PixFormat.RGB24)
+			if (rgbFrame.Format != PixFormat.RGB32 
+                && rgbFrame.Format != PixFormat.RGB24 
+                && rgbFrame.Format != PixFormat.RGB16
+                && rgbFrame.Format != PixFormat.RGB15)
 			{
 				throw new InvalidOperationException("Invalid source frame format: " + rgbFrame.Format);
 			}

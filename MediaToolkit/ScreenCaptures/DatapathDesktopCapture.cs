@@ -90,7 +90,6 @@ namespace MediaToolkit.ScreenCaptures
         private D3D11VideoFrame srcFrame = null;
 
 
-        //private FFmpegPixelConverter ffmpegPixelConverter = null;
         public override void Init(Rectangle captArea, Size destSize)
         {
             logger.Debug("Init(...) " + captArea.ToString() + " " + destSize.ToString());
