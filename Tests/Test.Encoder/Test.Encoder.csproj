@@ -130,6 +130,9 @@
     <None Include="Files\NV12_352x288.yuv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Content Include="Files\dcapt_rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Files\rgb555_640x480.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -50,7 +50,7 @@ namespace Test.Encoder
 
 						var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
 #if DEBUG
-						deviceCreationFlags |= DeviceCreationFlags.Debug;
+						//deviceCreationFlags |= DeviceCreationFlags.Debug;
 #endif
 						device = new Device(adapter, deviceCreationFlags);
 						using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
@@ -76,21 +76,22 @@ namespace Test.Encoder
 					}
 				}
 
-				////var fileName = @"Files\2560x1440.bmp";
-				////var srcSize = new Size(2560, 1440);
-				//var fileName = @"Files\1920x1080.bmp";
-				//var srcSize = new Size(1920, 1080);
-				//var srcFormat = PixFormat.RGB32;
-				//var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+                ////var fileName = @"Files\2560x1440.bmp";
+                ////var srcSize = new Size(2560, 1440);
+                //var fileName = @"Files\1920x1080.bmp";
+                //var srcSize = new Size(1920, 1080);
+                //var srcFormat = PixFormat.RGB32;
+                //var texture = MediaToolkit.DirectX.WicTool.CreateTexture2DFromBitmapFile(fileName, device);
 
 
-				var fileName = @"Files\rgb565_1920x1080.raw";
-				var srcSize = new Size(1920, 1080);
-				var srcFormat = PixFormat.RGB16;
-				var srcBytes = File.ReadAllBytes(fileName);
+                var fileName = @"Files\dcapt_rgb565_1920x1080.raw";
+                //var fileName = @"Files\rgb565_1920x1080.raw";
+                var srcSize = new Size(1920, 1080);
+                var srcFormat = PixFormat.RGB16;
+                var srcBytes = File.ReadAllBytes(fileName);
 
 
-				var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+                var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
 				{
 					Width = srcSize.Width,
 					Height = srcSize.Height,

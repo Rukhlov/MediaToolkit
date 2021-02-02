@@ -18,6 +18,7 @@ using MediaToolkit.SharedTypes;
 using SharpDX.Direct3D11;
 using MediaToolkit.DirectX;
 using FFmpegLib;
+using System.IO;
 //using SharpDX;
 
 namespace MediaToolkit.ScreenCaptures
@@ -127,7 +128,9 @@ namespace MediaToolkit.ScreenCaptures
 
                 pixConverter = new D3D11RgbToYuvConverter();
                 pixConverter.KeepAspectRatio = AspectRatio;
-                pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
+                var _srcSize = new Size(dcaptFrame.Width, dcaptFrame.Height);
+                var _srcFormat = dcaptFrame.Format;
+                pixConverter.Init(device, _srcSize, _srcFormat, DestSize, DestFormat, DownscaleFilter);
 
 
                 //srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
@@ -336,6 +339,10 @@ namespace MediaToolkit.ScreenCaptures
             var result = DCapt.DCaptUpdate(hCapt);
             DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
+            //TestTools.WriteFile(dcaptBuffer.Data, dcaptBufSize, "dcapt_output.raw");
+
+
+
             SharpDX.DataBox[] initData =
             {
                 new SharpDX.DataBox(dcaptBuffer.Data,  dcaptBuffer.Stride, 0),
@@ -359,6 +366,10 @@ namespace MediaToolkit.ScreenCaptures
 
                 }, initData);
            var srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
+
+            //var test = DxTool.DumpTexture(device, srcTexture);
+
+            //File.WriteAllBytes("R16_UNorm_TextureDump.raw", test);
 
             //var deviceContext = device.ImmediateContext;
             //var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
@@ -409,6 +420,11 @@ namespace MediaToolkit.ScreenCaptures
                     destFrame.Unlock();
                 }
             }
+           // var data = destFrame.Buffer;
+           // TestTools.WriteFile(data[0].Data, destFrame.DataLength, "NV12_TextureDump.raw");
+
+            //var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
+            //File.WriteAllBytes("NV12_TextureDump.raw", test);
 
             srcFrame.Dispose();
             srcTexture.Dispose();
