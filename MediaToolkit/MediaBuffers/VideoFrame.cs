@@ -315,26 +315,6 @@ namespace MediaToolkit
             return textures;
         }
 
-        public byte[] ConvertToContiguousBuffer()
-        {
-            byte[] bytes = null;
-
-            if (Format == PixFormat.NV12)
-            {
-                if (textures.Count == 2)
-                {
-
-                }
-                else if (textures.Count == 1)
-                {
-                    var nv12Texture = textures[0];
-                    //...
-                }
-            }
-
-            return bytes;
-
-        }
 
         private bool disposed = false;
         public override void Dispose()
@@ -349,72 +329,29 @@ namespace MediaToolkit
             }
         }
 
-        public static VideoFrame ToVideoFrame(Device device, D3D11VideoFrame d3d11Frame)
-        {
-            var textures = d3d11Frame.GetTextures();
-            try
-            {
-                var format = d3d11Frame.Format;
-                if (format == PixFormat.NV12)
-                {
-                    if (textures.Count == 2)
-                    {
-
-                    }
-                    else if (textures.Count == 1)
-                    {
-                        var nv12Texture = textures[0];
-                        //...
-                    }
-                }
-                else if (format == PixFormat.I444 || format == PixFormat.I422 || format == PixFormat.I420)
-                {
-
-                }
-                else if (format == PixFormat.RGB32
-                    || format == PixFormat.RGB24
-                    || format == PixFormat.RGB16
-                    || format == PixFormat.RGB15)
-                {
-
-                }
-            }
-            finally
-            {
-                foreach (var t in textures)
-                {
-                    t.Dispose();
-                }
-            }
-
-
-
-            return null;
-        }
-
     }
 
     public class VideoFrame : VideoFrameBase
     {
         public VideoFrame(int width, int height, PixFormat format, int align)
         {
-            var size = FFmpegLib.Utils.AllocImageData(new Size(width, height), format, align, out var buffer);
-            Init(buffer, size, width, height, format, align, true);
+            var length = FFmpegLib.Utils.AllocImageData(new Size(width, height), format, align, out var buffer);
+            Init(buffer, length, width, height, format, align, true);
         }
 
-        public VideoFrame(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align)
+        public VideoFrame(IFrameBuffer[] buffer, int length, int width, int height, PixFormat format, int align)
         {
-            Init(buffer, size, width, height, format, align);
+            Init(buffer, length, width, height, format, align);
         }
 
-        private void Init(IFrameBuffer[] buffer, int size, int width, int height, PixFormat format, int align, bool ffmpegAllocated = false)
+        private void Init(IFrameBuffer[] buffer, int length, int width, int height, PixFormat format, int align, bool ffmpegAllocated = false)
         {
             this.Width = width;
             this.Height = height;
             this.Format = format;
             this.Align = align;
             this.Buffer = buffer;
-            this.DataLength = size;
+            this.DataLength = length;
             this.ffmpegAllocated = ffmpegAllocated;
         }
 

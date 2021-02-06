@@ -65,52 +65,30 @@ namespace MediaToolkit.ScreenCaptures
 
         private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
 
-        private VideoFrameBase srcFrame = null;
-        private D3D11RgbToYuvConverter processor = null;
-
-        public override void Init(GDI.Rectangle srcRect, GDI.Size destSize)
+        public override void Init(ScreenCaptureParameters captParams)
         {
-            logger.Debug("DXGIDesktopDuplicationCapture::Init() " + srcRect.ToString() + " " + destSize.ToString());
-
-            base.Init(srcRect, destSize);
-
-            this.SrcRect = srcRect;
-            if (destSize.IsEmpty)
-            {
-                destSize.Width = srcRect.Width;
-                destSize.Height = srcRect.Height;
-            }
-            this.DestSize = new GDI.Size(destSize.Width, destSize.Height);
-
-            if (OutputManager == null)
-            {
-                OutputManager = new DDAOutputManager();
-                internalOutputManager = true;
-            }
-
             try
             {
+                base.Init(captParams);
+
+                var device = captParams.D3D11Device;
+                if(device != null)
+                {
+                    mainDevice = new Device(device.NativePointer);
+                    ((IUnknown)mainDevice).AddReference();
+                }
+                
+
+                this.CaptureMouse = captParams.CaptureMouse;
+                this.OutputManager = captParams.DDAOutputMan;
+
+                if (OutputManager == null)
+                {
+                    OutputManager = new DDAOutputManager();
+                    internalOutputManager = true;
+                }
+
                 InitDx();
-
-                if (DriverType == VideoDriverType.D3D11)
-                {
-                    VideoBuffer = new D3D11VideoBuffer(mainDevice, DestSize, DestFormat);
-                }
-                else if (DriverType == VideoDriverType.CPU)
-                {
-
-                    VideoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 16);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Invalid driver type: " + DriverType);
-                }
-
-                processor = new D3D11RgbToYuvConverter();
-                processor.KeepAspectRatio = AspectRatio;
-                processor.Init(mainDevice, SrcRect.Size, SrcFormat, DestSize, DestFormat);
-
-                srcFrame = new D3D11VideoFrame(sharedTexture);
 
             }
             catch (SharpDXException ex)
@@ -216,22 +194,27 @@ namespace MediaToolkit.ScreenCaptures
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
-                var deviceCreationFlags =
-                    //DeviceCreationFlags.Debug |
-                    DeviceCreationFlags.BgraSupport;
-
+                var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
+#if DEBUG
+                //deviceCreationFlags |= DeviceCreationFlags.Debug;
+#endif
                 SharpDX.Direct3D.FeatureLevel[] featureLevel =
                 {
-                    SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                    SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                    SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
                 };
 
-                mainDevice = new Device(primaryAdapter, deviceCreationFlags, featureLevel);
-                using (var multiThread = mainDevice.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                if (mainDevice == null)
                 {
-                    multiThread.SetMultithreadProtected(true);
+
+                    mainDevice = new Device(primaryAdapter, deviceCreationFlags, featureLevel);
+                    using (var multiThread = mainDevice.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
                 }
+
 
                 adapterToDeviceMap[0] = mainDevice;
 
@@ -388,9 +371,11 @@ namespace MediaToolkit.ScreenCaptures
 
         private bool initialized = false;
 
-        public override ErrorCode UpdateBuffer(int timeout = 10)
+
+        public override ErrorCode TryGetFrame(out IVideoFrame frame, int timeout = 10)
         {
-            ErrorCode Result = ErrorCode.Ok;
+            frame = null;
+            ErrorCode Result = ErrorCode.Unexpected;
 
             try
             {
@@ -450,12 +435,8 @@ namespace MediaToolkit.ScreenCaptures
                     mainDevice.ImmediateContext.CopyResource(compositionTexture, sharedTexture);
                     mainDevice.ImmediateContext.Flush();
 
-                    var destFrame = VideoBuffer.GetFrame();
-                    processor.Process(srcFrame, destFrame);
-                    Result = ErrorCode.Ok;
+                    frame = new D3D11VideoFrame(sharedTexture);
                 }
-
-
 
             }
             catch (SharpDXException ex)
@@ -472,6 +453,7 @@ namespace MediaToolkit.ScreenCaptures
 
             return Result;
         }
+
 
         public override void Close()
         {
@@ -548,21 +530,7 @@ namespace MediaToolkit.ScreenCaptures
                     d = null;
                 }
             }
-
-            if (srcFrame != null)
-            {
-                srcFrame.Dispose();
-                srcFrame = null;
-            }
-
-            if (processor != null)
-            {
-                processor.Close();
-                processor = null;
-            }
-
         }
-
 
     }
 

@@ -23,7 +23,7 @@ namespace MediaToolkit.ScreenCaptures
     /// Быстрее всего работает с выключенной композитной отрисовкой
     /// и с PixelFormat.Format32bppArgb 
     /// </summary>
-    public class GDICapture : ScreenCapture//, ITexture2DSource
+    public class GDICapture : ScreenCapture
 	{
 		public GDICapture(Dictionary<string, object> args = null) : base()
 		{
@@ -45,85 +45,27 @@ namespace MediaToolkit.ScreenCaptures
         public bool CaptureAllLayers { get; set; } = false;
 		public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
-		private VideoFrameBase srcFrame = null;
-		private D3D11RgbToYuvConverter pixConverter = null;
-
-		public override void Init(Rectangle srcRect, Size destSize = default(Size))
+		public override void Init(ScreenCaptureParameters captParams)
         {
-            base.Init(srcRect, destSize);
+            base.Init(captParams);
 
-			InitDx();
+            this.CaptureMouse = captParams.CaptureMouse;
 
-			VideoBufferBase videoBuffer = null;
-
-			if(DriverType == VideoDriverType.CPU)
-			{
-				videoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 32);
-
-			}
-			else if(DriverType == VideoDriverType.D3D11)
-			{
-				videoBuffer = new D3D11VideoBuffer(device, DestSize, DestFormat);
-			}
-			else
-			{
-				throw new InvalidOperationException("Invalid driver type: "+ DriverType);
-			}
-
-			base.VideoBuffer = videoBuffer;
-
-			pixConverter = new D3D11RgbToYuvConverter();
-            pixConverter.KeepAspectRatio = AspectRatio;
-            pixConverter.Init(device, SrcRect.Size, SrcFormat, DestSize, DestFormat, DownscaleFilter);
-
-			srcFrame = new D3D11VideoFrame(sharedTexture);
+			InitDx(captParams.D3D11Device);
 		}
 
-		private void InitDx()
+		private void InitDx(Device d)
         {
             logger.Debug("GDICapture::InitDx()");
+            if(d == null)
+            {// TODO:...
 
-            SharpDX.DXGI.Factory1 dxgiFactory = null;
-
-            try
-            {
-                dxgiFactory = new SharpDX.DXGI.Factory1();
-                SharpDX.DXGI.Adapter1 adapter = null;
-                try
-                {
-                    adapter = dxgiFactory.GetAdapter1(AdapterIndex);
-                    //AdapterId = adapter.Description.Luid;
-                    //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
-
-                    var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
-#if DEBUG
-                    //deviceCreationFlags |= DeviceCreationFlags.Debug;
-#endif
-                    device = new Device(adapter, deviceCreationFlags);
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
-                }
-                finally
-                {
-                    if (adapter != null)
-                    {
-                        adapter.Dispose();
-                        adapter = null;
-                    }
-                }
-            }
-            finally
-            {
-                if (dxgiFactory != null)
-                {
-                    dxgiFactory.Dispose();
-                    dxgiFactory = null;
-                }
             }
 
-			gdiTexture = new Texture2D(device,
+            device = new Device(d.NativePointer);
+            ((SharpDX.IUnknown)device).AddReference();
+
+            gdiTexture = new Texture2D(device,
                 new Texture2DDescription
                 {
                     CpuAccessFlags = CpuAccessFlags.None,
@@ -159,20 +101,19 @@ namespace MediaToolkit.ScreenCaptures
 
 		}
 
-
-		public override ErrorCode UpdateBuffer(int timeout = 10)
+        public override ErrorCode TryGetFrame(out IVideoFrame frame, int timeout = 10)
         {
-			ErrorCode result = BitBltToGdiSurface();
+            frame = null;
+            ErrorCode result = BitBltToGdiSurface();
             device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
             device.ImmediateContext.Flush();
-
+  
             if (result == ErrorCode.Ok)
-			{
-				var destFrame = VideoBuffer.GetFrame();
-				pixConverter.Process(srcFrame, destFrame);
-			}
+            {
+                frame = new D3D11VideoFrame(sharedTexture);
+            }
 
-			return result;
+            return result;
         }
 
 
@@ -234,8 +175,6 @@ namespace MediaToolkit.ScreenCaptures
                              OptionFlags = ResourceOptionFlags.GdiCompatible,
 
                          });
-
-						srcFrame = new D3D11VideoFrame(gdiTexture);
                     }
                 }
 
@@ -346,6 +285,12 @@ namespace MediaToolkit.ScreenCaptures
         {
             logger.Debug("GDICapture::CloseDx()");
 
+            if(device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
+
             if (gdiTexture != null)
             {
                 gdiTexture.Dispose();
@@ -358,24 +303,23 @@ namespace MediaToolkit.ScreenCaptures
 				sharedTexture = null;
 			}
 
-			if (srcFrame != null)
-			{
-				srcFrame.Dispose();
-				srcFrame = null;
-			}
+			//if (srcFrame != null)
+			//{
+			//	srcFrame.Dispose();
+			//	srcFrame = null;
+			//}
 
-            if (pixConverter != null)
-            {
-                pixConverter.Close();
-                pixConverter = null;
-            }
+   //         if (pixConverter != null)
+   //         {
+   //             pixConverter.Close();
+   //             pixConverter = null;
+   //         }
 
-            if (device != null)
-            {
-                device.Dispose();
-                device = null;
-
-            }
+   //         if (device != null)
+   //         {
+   //             device.Dispose();
+   //             device = null;
+   //         }
 
         }
 

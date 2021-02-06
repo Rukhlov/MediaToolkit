@@ -10,6 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaToolkit.Logging;
 using MediaToolkit.ScreenCaptures;
+using SharpDX.Direct3D11;
+using MediaToolkit.DirectX;
 
 namespace MediaToolkit
 {
@@ -20,27 +22,11 @@ namespace MediaToolkit
 
         public ScreenSource() { }
 
-       // public VideoBuffer SharedBitmap { get; private set; }
-
-        //public SharpDX.Direct3D11.Texture2D SharedTexture
-        //{
-        //    get { return hwContext?.SharedTexture; }
-        //}
-
-        public VideoBufferBase VideoBuffer => screenCapture?.VideoBuffer;
-
-        // public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
 
-        //public Size SrcSize
-        //{
-        //    get
-        //    {
-        //        return SharedBitmap.FrameSize;
-
-        //       // return new Size(SharedBitmap.bitmap.Width, SharedBitmap.bitmap.Height);
-        //    }
-        //}
+        private Device device = null;
+        
+        public VideoBufferBase VideoBuffer { get; private set; }
 
         private volatile CaptureState state = CaptureState.Closed;
         public CaptureState State => state;
@@ -50,8 +36,6 @@ namespace MediaToolkit
 
         private CaptureStats captureStats = new CaptureStats();
         public StatCounter Stats => captureStats;
-
-       // private ITexture2DSource hwContext = null;
 
 		public event Action BufferUpdated;
         private void OnBufferUpdated()
@@ -65,118 +49,123 @@ namespace MediaToolkit
         private AutoResetEvent syncEvent = null;
 
         private ScreenCapture screenCapture = null;
+        private D3D11RgbToYuvConverter pixConverter = null;
 
-       // public ScreenCaptureDevice CaptureParams { get; private set; }
-		public ScreenCaptureProperties CaptureProps{ get; private set; }
+        public ScreenCaptureProperties CaptureProps{ get; private set; }
 
         private static DDAOutputManager outputManager = new DDAOutputManager();
 		private bool deviceReady = false;
+
+
         public void Setup(object pars)//ScreenCaptureParams captureParams)
         {
-
             logger.Debug("ScreenSource::Setup()");
+
+            VideoCaptureDevice captureParams = pars as VideoCaptureDevice;
+            if (captureParams == null)
+            {
+                throw new ArgumentException();
+            }
 
             if (state != CaptureState.Closed)
             {
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-            syncEvent = new AutoResetEvent(false);
-
-			VideoCaptureDevice captureParams = pars as VideoCaptureDevice;
-
-			if (captureParams == null)
-			{
-				throw new ArgumentException();
-			}
 			var srcRect = Rectangle.Empty;
 			var destSize = Size.Empty;
 			var hwnd = IntPtr.Zero;
 
-
-			if (captureParams.CaptureMode == CaptureMode.Screen)
-			{
-				var screenCaptParams = (ScreenCaptureDevice)pars;
-				this.CaptureProps = screenCaptParams.Properties;
-
-				srcRect = screenCaptParams.CaptureRegion;
-
-				var srcLocation = srcRect.Location;
-				var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
-				srcRect = new Rectangle(srcLocation, srcSize);
-
-				//srcRect = new Rectangle(x, y, width, height);
-				if (screenCaptParams.CaptureRegion != srcRect)
-				{
-					screenCaptParams.CaptureRegion = srcRect;
-				}
-
-				destSize = captureParams.Resolution;
-
-				if (destSize.IsEmpty)
-				{
-					destSize = new Size(srcRect.Width, srcRect.Height);
-				}
-
-			}
-			else if(captureParams.CaptureMode == CaptureMode.AppWindow)
-			{
-				var windowCaptParams = (WindowCaptureDevice)pars;
-				this.CaptureProps = windowCaptParams.Properties;
-
-				srcRect = windowCaptParams.ClientRect;
-
-				var srcLocation = srcRect.Location;
-				var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
-				srcRect = new Rectangle(srcLocation, srcSize);
-
-				destSize = captureParams.Resolution;
-
-				if (destSize.IsEmpty)
-				{
-					destSize = new Size(srcRect.Width, srcRect.Height);
-				}
-
-				hwnd = windowCaptParams.hWnd;
-
-            }
-
-            var captArgs = CaptureProps.Attributes;
-
             try
             {
-                //var captureDescr = captureParams.CaptureDescription;
-                
-				//var captArgs = new object[]
-				//{
-				//	hwnd,
-				//};
+                if (captureParams.CaptureMode == CaptureMode.Screen)
+                {
+                    var screenCaptParams = (ScreenCaptureDevice)pars;
+                    this.CaptureProps = screenCaptParams.Properties;
 
-                captArgs["WindowHandle"] = hwnd;
+                    srcRect = screenCaptParams.CaptureRegion;
 
-                screenCapture = ScreenCapture.Create(CaptureProps.CaptureType, captArgs);
+                    var srcLocation = srcRect.Location;
+                    var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
+                    srcRect = new Rectangle(srcLocation, srcSize);
 
-				screenCapture.DriverType = captureParams.DriverType;
-				screenCapture.DestFormat = captureParams.Format;
-				screenCapture.ColorSpace = captureParams.ColorSpace;
-				screenCapture.ColorRange = captureParams.ColorRange;
+                    //srcRect = new Rectangle(x, y, width, height);
+                    if (screenCaptParams.CaptureRegion != srcRect)
+                    {
+                        screenCaptParams.CaptureRegion = srcRect;
+                    }
 
-				screenCapture.CaptureMouse = CaptureProps.CaptureMouse;
-                screenCapture.AspectRatio = CaptureProps.AspectRatio;
+                    destSize = captureParams.Resolution;
 
-				//VideoDriverType driverType = VideoDriverType.CPU;
-				//if (CaptureProps.UseHardware)
-				//{
-				//	driverType = VideoDriverType.D3D11;
-				//}
+                    if (destSize.IsEmpty)
+                    {
+                        destSize = new Size(srcRect.Width, srcRect.Height);
+                    }
 
-				if (screenCapture is DDACapture)
-				{
-					((DDACapture)screenCapture).OutputManager = outputManager;
-				}
+                }
+                else if (captureParams.CaptureMode == CaptureMode.AppWindow)
+                {
+                    var windowCaptParams = (WindowCaptureDevice)pars;
+                    this.CaptureProps = windowCaptParams.Properties;
 
-				screenCapture.Init(srcRect, destSize);
-				//screenCapture.Init(srcRect);
+                    srcRect = windowCaptParams.ClientRect;
+
+                    var srcLocation = srcRect.Location;
+                    var srcSize = GraphicTools.DecreaseToEven(srcRect.Size);
+                    srcRect = new Rectangle(srcLocation, srcSize);
+
+                    destSize = captureParams.Resolution;
+
+                    if (destSize.IsEmpty)
+                    {
+                        destSize = new Size(srcRect.Width, srcRect.Height);
+                    }
+
+                    hwnd = windowCaptParams.hWnd;
+
+                }
+
+                InitDx();
+
+                screenCapture = ScreenCapture.Create(CaptureProps.CaptureType);
+                var captParams = new ScreenCaptureParameters
+                {
+                    SrcRect = srcRect,
+                    DestSize = destSize,
+                    CaptureMouse = CaptureProps.CaptureMouse,
+                    D3D11Device = device,
+                    DDAOutputMan = outputManager,
+                };
+
+                screenCapture.Init(captParams);
+                //screenCapture.Init(srcRect);
+
+                var driverType = captureParams.DriverType;
+                var destFormat = captureParams.Format;
+                if (driverType == VideoDriverType.CPU)
+                {
+                    VideoBuffer = new MemoryVideoBuffer(destSize, destFormat, 32);
+                }
+                else if (driverType == VideoDriverType.D3D11)
+                {
+                    VideoBuffer = new D3D11VideoBuffer(device, destSize, destFormat);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Invalid driver type: " + driverType);
+                }
+
+                var captSize = screenCapture.SrcRect.Size;
+                var captFormat = screenCapture.SrcFormat;
+                var scalingFilter = ScalingFilter.Linear;
+                var colorSpace = captureParams.ColorSpace;
+                var colorRange = captureParams.ColorRange;
+
+                pixConverter = new D3D11RgbToYuvConverter();
+                pixConverter.KeepAspectRatio = CaptureProps.AspectRatio;
+                pixConverter.Init(device, captSize, captFormat, destSize, destFormat, scalingFilter, colorSpace, colorRange);
+
+                syncEvent = new AutoResetEvent(false);
 
                 deviceReady = true;
 
@@ -195,6 +184,58 @@ namespace MediaToolkit
                 throw;
             }
         }
+
+        private void InitDx()
+        {
+            SharpDX.DXGI.Factory1 dxgiFactory = null;
+
+            try
+            {
+                dxgiFactory = new SharpDX.DXGI.Factory1();
+                SharpDX.DXGI.Adapter1 adapter = null;
+                try
+                {
+                    adapter = dxgiFactory.GetAdapter1(AdapterIndex);
+                    //AdapterId = adapter.Description.Luid;
+                    //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
+
+                    var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
+#if DEBUG
+                    //deviceCreationFlags |= DeviceCreationFlags.Debug;
+#endif
+                    SharpDX.Direct3D.FeatureLevel[] featureLevel =
+                    {
+                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
+                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
+                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                    };
+
+                    device = new Device(adapter, deviceCreationFlags, featureLevel);
+                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+                    {
+                        multiThread.SetMultithreadProtected(true);
+                    }
+                }
+                finally
+                {
+                    if (adapter != null)
+                    {
+                        adapter.Dispose();
+                        adapter = null;
+                    }
+                }
+            }
+            finally
+            {
+                if (dxgiFactory != null)
+                {
+                    dxgiFactory.Dispose();
+                    dxgiFactory = null;
+                }
+            }
+
+        }
+
 
         public object LastError { get; private set; }
 
@@ -262,7 +303,9 @@ namespace MediaToolkit
 
                     try
                     {
-                        var res = screenCapture.UpdateBuffer(30);
+                        var res = screenCapture.TryGetFrame(out var srcFrame);
+
+                        //var res = screenCapture.UpdateBuffer(30);
 
                         if (state != CaptureState.Capturing || !deviceReady)
                         {
@@ -274,9 +317,18 @@ namespace MediaToolkit
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
                             var frame = VideoBuffer.GetFrame();
+                            pixConverter.Process(srcFrame, frame);
+
                             frame.Time = time;
                             lastTime = frame.Time;
                             VideoBuffer.OnBufferUpdated(frame);
+
+
+
+                            //var frame = VideoBuffer.GetFrame();
+                            //frame.Time = time;
+                            //lastTime = frame.Time;
+                            //VideoBuffer.OnBufferUpdated(frame);
 
                             //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
 
@@ -287,6 +339,12 @@ namespace MediaToolkit
                             OnBufferUpdated();
 
                             captureStats.UpdateFrameStats(frame.Time, frame.DataLength);
+
+                            if (srcFrame != null)
+                            {
+                                ((VideoFrameBase)srcFrame).Dispose();
+                                srcFrame = null;
+                            }
 
                             // captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
 
@@ -397,8 +455,23 @@ namespace MediaToolkit
             state = CaptureState.Closed;
         }
 
+
         private void CleanUp()
         {
+            CloseDx();
+
+            if (pixConverter != null)
+            {
+                pixConverter.Close();
+                pixConverter = null;
+            }
+
+            if (VideoBuffer != null)
+            {
+                VideoBuffer.Dispose();
+                VideoBuffer = null;
+            }
+
             if (screenCapture != null)
             {
                 screenCapture.Close();
@@ -411,6 +484,16 @@ namespace MediaToolkit
                 syncEvent = null;
             }
         }
+
+        private void CloseDx()
+        {
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
+        }
+
     }
 
 

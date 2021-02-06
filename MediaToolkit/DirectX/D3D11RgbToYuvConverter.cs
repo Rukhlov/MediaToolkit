@@ -754,8 +754,14 @@ namespace MediaToolkit.DirectX
 		}
 
 		public void Close()
-		{
-			SafeDispose(constBuffer);
+        {
+            if (rgbProcessor != null)
+            {
+                rgbProcessor.Close();
+                rgbProcessor = null;
+            }
+
+            SafeDispose(constBuffer);
 
 			SafeDispose(CrCbRT);
 			SafeDispose(CrCbSRV);
@@ -773,6 +779,8 @@ namespace MediaToolkit.DirectX
 			SafeDispose(defaultPS);
 			SafeDispose(defaultVS);
 			SafeDispose(device);
+
+
 
 		}
 

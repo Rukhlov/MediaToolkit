@@ -29,71 +29,18 @@ namespace MediaToolkit.ScreenCaptures
 
         private static TraceSource _logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 
-        public static bool Initialized { get; private set; }
-        public static bool Load()
-        {
-            _logger.Debug("Load()");
-            if (!Initialized)
-            {
-                try
-                {
-                    var result = DCapt.DCaptLoad(out hLoad);
-
-                    if (result == DCapt.CaptError.DESKCAPT_ERROR_API_ALREADY_LOADED)
-                    {
-                        //...
-
-                    }
-
-                    DCapt.ThrowIfError(result, "DCaptLoad");
-
-                    Initialized = true;
-                }
-                catch (DllNotFoundException)
-                {
-                    _logger.Info("Datapath capture not found");
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex);
-                }
-            }
-
-            return Initialized;
-        }
-
-        public static void Unload()
-        {
-            _logger.Debug("Unload()");
-
-            try
-            {
-                if (hLoad != IntPtr.Zero)
-                {
-                    DCapt.DCaptFree(hLoad);
-                    hLoad = IntPtr.Zero;
-                    Initialized = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex);
-            }
-        }
-
         private static IntPtr hLoad = IntPtr.Zero;
         private IntPtr hCapt = IntPtr.Zero;
 
-        // private BITMAPINFO bitmapInfo = default(BITMAPINFO);
+        private SharpDX.Direct3D11.Device device = null;
+        private Texture2D srcTexture = null;
 
-        //private FrameBuffer srcBuffer = null;
         private VideoFrame dcaptFrame = null;
-        private D3D11VideoFrame srcFrame = null;
 
-
-        public override void Init(Rectangle captArea, Size destSize)
+        public override void Init(ScreenCaptureParameters captParams)
         {
-            logger.Debug("Init(...) " + captArea.ToString() + " " + destSize.ToString());
+            base.Init(captParams);
+            this.CaptureMouse = captParams.CaptureMouse;
 
             if (!Initialized)
             {
@@ -105,95 +52,32 @@ namespace MediaToolkit.ScreenCaptures
 
             try
             {
-                this.SrcRect = captArea;
-                this.DestSize = destSize;
+                InitCapture(SrcRect, DestSize);
 
-                InitCapture(captArea, DestSize);
-
-                InitDx();
-
-                if (DriverType == VideoDriverType.CPU)
-                {
-                    this.VideoBuffer = new MemoryVideoBuffer(DestSize, DestFormat, 16);
-                }
-                else if(DriverType == VideoDriverType.D3D11)
-                {
-                    this.VideoBuffer = new D3D11VideoBuffer(device, DestSize, DestFormat);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Invalid driver type: " + DriverType);
-                }
-
-
-                pixConverter = new D3D11RgbToYuvConverter();
-                pixConverter.KeepAspectRatio = AspectRatio;
-                var _srcSize = new Size(dcaptFrame.Width, dcaptFrame.Height);
-                var _srcFormat = dcaptFrame.Format;
-                pixConverter.Init(device, _srcSize, _srcFormat, DestSize, DestFormat, DownscaleFilter);
-
-
-                //srcFrame = new D3D11VideoFrame(dcaptFrame.Format, srcTexture);
+                InitDx(captParams.D3D11Device);
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                _logger.Error(ex);
 
                 Close();
                 throw;
             }
-
+           
         }
 
-        private int AdapterIndex = 0;
-        private SharpDX.Direct3D11.Device device = null;
-        private Texture2D srcTexture = null;
-        private D3D11RgbToYuvConverter pixConverter = null;
-
-        private void InitDx()
+        private void InitDx(Device d)
         {
             logger.Debug("DatapathDesktopCapture::InitDx()");
 
-            SharpDX.DXGI.Factory1 dxgiFactory = null;
-
-            try
-            {
-                dxgiFactory = new SharpDX.DXGI.Factory1();
-                SharpDX.DXGI.Adapter1 adapter = null;
-                try
-                {
-                    adapter = dxgiFactory.GetAdapter1(AdapterIndex);
-                    //AdapterId = adapter.Description.Luid;
-                    //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
-
-                    var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
-#if DEBUG
-                    //deviceCreationFlags |= DeviceCreationFlags.Debug;
-#endif
-                    device = new Device(adapter, deviceCreationFlags);
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
-                }
-                finally
-                {
-                    if (adapter != null)
-                    {
-                        adapter.Dispose();
-                        adapter = null;
-                    }
-                }
+            if (d == null)
+            {// TODO:...
+                throw new InvalidOperationException("");
             }
-            finally
-            {
-                if (dxgiFactory != null)
-                {
-                    dxgiFactory.Dispose();
-                    dxgiFactory = null;
-                }
-            }
+
+            device = new Device(d.NativePointer);
+            ((SharpDX.IUnknown)device).AddReference();
 
             //srcTexture = new Texture2D(device,
             //    new Texture2DDescription
@@ -215,20 +99,6 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        private void CloseDx()
-        {
-            if(srcTexture != null)
-            {
-                srcTexture.Dispose();
-                srcTexture = null;
-            }
-
-            if (device != null)
-            {
-                device.Dispose();
-                device = null;
-            }     
-        }
 
         private void InitCapture(Rectangle captArea, Size resolution)
         {
@@ -318,18 +188,17 @@ namespace MediaToolkit.ScreenCaptures
            
             dcaptFrame = new VideoFrame(new FrameBuffer[] { srcBuffer }, (int)srcDataSize, srcWidth, srcHeight, srcFormat, 16);
         }
-      
-        public override ErrorCode UpdateBuffer(int timeout = 10)
-        {
-            //logger.Verb("Update(...) " + timeout);
 
+        public override ErrorCode TryGetFrame(out IVideoFrame frame, int timeout = 10)
+        { //НЕ РАБОТАЕТ!
+            frame = null;
+  
             ErrorCode errorCode = ErrorCode.Unexpected;
 
             if (!Initialized)
             {
                 return ErrorCode.NotInitialized;
             }
-
 
             var dcaptBuffer = dcaptFrame.Buffer[0];
             var dcaptBufSize = dcaptFrame.DataLength;
@@ -340,7 +209,6 @@ namespace MediaToolkit.ScreenCaptures
             DCapt.ThrowIfError(result, "DCaptCreateCapture");
 
             //TestTools.WriteFile(dcaptBuffer.Data, dcaptBufSize, "dcapt_output.raw");
-
 
 
             SharpDX.DataBox[] initData =
@@ -365,77 +233,129 @@ namespace MediaToolkit.ScreenCaptures
                     OptionFlags = ResourceOptionFlags.None,
 
                 }, initData);
-           var dcaptD3D11Frame = new D3D11VideoFrame(dcaptFrame.Format, dcaptTexture);
 
-            //var test = DxTool.DumpTexture(device, srcTexture);
+            frame = new D3D11VideoFrame(dcaptFrame.Format, dcaptTexture);
 
-            //File.WriteAllBytes("R16_UNorm_TextureDump.raw", test);
-
-            //var deviceContext = device.ImmediateContext;
-            //var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
-            //try
-            //{
-            //    var width = DestSize.Width;
-            //    var height = DestSize.Height;
-
-            //    var srcStride = dcaptBuffer.Stride;
-            //    var srcPtr = dcaptBuffer.Data;
-
-            //    var destPtr = dataBox.DataPointer;
-            //    var destStride = dataBox.RowPitch;
-
-            //    for (int i = 0; i < height; i++)
-            //    {
-            //        Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
-            //        destPtr += destStride;
-            //        srcPtr += srcStride;
-            //    }
-            //}
-            //finally
-            //{
-            //    deviceContext.UnmapSubresource(srcTexture, 0);
-            //}
-
-
-            var destFrame = VideoBuffer.GetFrame();
-            bool lockTaken = false;
-            try
-            {
-                lockTaken = destFrame.Lock(timeout);
-
-                if (lockTaken)
-                {
-                    pixConverter.Process(dcaptD3D11Frame, destFrame);
-                    errorCode = ErrorCode.Ok;
-                }
-                else
-                {
-                    logger.Warn("Drop bits...");
-                }
-            }
-            finally
-            {
-                if (lockTaken)
-                {
-                    destFrame.Unlock();
-                }
-            }
-           // var data = destFrame.Buffer;
-           // TestTools.WriteFile(data[0].Data, destFrame.DataLength, "NV12_TextureDump.raw");
-
-            //var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
-            //File.WriteAllBytes("NV12_TextureDump.raw", test);
-
-			//var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
-
-			//File.WriteAllBytes("NV12_TextureDump.raw", test);
-
-            dcaptD3D11Frame.Dispose();
-            dcaptTexture.Dispose();
 
             return errorCode;
-            // Console.WriteLine("DCaptCreateCapture() " + result);
         }
+
+   //     public override ErrorCode UpdateBuffer(int timeout = 10)
+   //     {
+   //         //logger.Verb("Update(...) " + timeout);
+
+   //         ErrorCode errorCode = ErrorCode.Unexpected;
+
+   //         if (!Initialized)
+   //         {
+   //             return ErrorCode.NotInitialized;
+   //         }
+
+
+   //         var dcaptBuffer = dcaptFrame.Buffer[0];
+   //         var dcaptBufSize = dcaptFrame.DataLength;
+
+   //         Kernel32.ZeroMemory(dcaptBuffer.Data, dcaptBufSize);
+
+   //         var result = DCapt.DCaptUpdate(hCapt);
+   //         DCapt.ThrowIfError(result, "DCaptCreateCapture");
+
+   //         //TestTools.WriteFile(dcaptBuffer.Data, dcaptBufSize, "dcapt_output.raw");
+
+
+   //         SharpDX.DataBox[] initData =
+   //         {
+   //             new SharpDX.DataBox(dcaptBuffer.Data,  dcaptBuffer.Stride, 0),
+   //         };
+
+   //         var dcaptTexture = new Texture2D(device,
+   //             new Texture2DDescription
+   //             {
+   //                 //CpuAccessFlags = CpuAccessFlags.Write,
+   //                 BindFlags = BindFlags.ShaderResource,
+   //                 Format = SharpDX.DXGI.Format.R16_UNorm,
+   //                 Width = DestSize.Width,
+   //                 Height = DestSize.Height,
+
+   //                 MipLevels = 1,
+   //                 ArraySize = 1,
+   //                 SampleDescription = { Count = 1, Quality = 0 },
+   //                 Usage = ResourceUsage.Immutable,
+   //                 //Usage = ResourceUsage.Default,
+   //                 OptionFlags = ResourceOptionFlags.None,
+
+   //             }, initData);
+   //        var dcaptD3D11Frame = new D3D11VideoFrame(dcaptFrame.Format, dcaptTexture);
+
+   //         //var test = DxTool.DumpTexture(device, srcTexture);
+
+   //         //File.WriteAllBytes("R16_UNorm_TextureDump.raw", test);
+
+   //         //var deviceContext = device.ImmediateContext;
+   //         //var dataBox = deviceContext.MapSubresource(srcTexture, 0, MapMode.Write, MapFlags.None);
+   //         //try
+   //         //{
+   //         //    var width = DestSize.Width;
+   //         //    var height = DestSize.Height;
+
+   //         //    var srcStride = dcaptBuffer.Stride;
+   //         //    var srcPtr = dcaptBuffer.Data;
+
+   //         //    var destPtr = dataBox.DataPointer;
+   //         //    var destStride = dataBox.RowPitch;
+
+   //         //    for (int i = 0; i < height; i++)
+   //         //    {
+   //         //        Kernel32.CopyMemory(destPtr, srcPtr, (uint)destStride);
+   //         //        destPtr += destStride;
+   //         //        srcPtr += srcStride;
+   //         //    }
+   //         //}
+   //         //finally
+   //         //{
+   //         //    deviceContext.UnmapSubresource(srcTexture, 0);
+   //         //}
+
+
+   //         var destFrame = VideoBuffer.GetFrame();
+   //         bool lockTaken = false;
+   //         try
+   //         {
+   //             lockTaken = destFrame.Lock(timeout);
+
+   //             if (lockTaken)
+   //             {
+   //                 pixConverter.Process(dcaptD3D11Frame, destFrame);
+   //                 errorCode = ErrorCode.Ok;
+   //             }
+   //             else
+   //             {
+   //                 logger.Warn("Drop bits...");
+   //             }
+   //         }
+   //         finally
+   //         {
+   //             if (lockTaken)
+   //             {
+   //                 destFrame.Unlock();
+   //             }
+   //         }
+   //        // var data = destFrame.Buffer;
+   //        // TestTools.WriteFile(data[0].Data, destFrame.DataLength, "NV12_TextureDump.raw");
+
+   //         //var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
+   //         //File.WriteAllBytes("NV12_TextureDump.raw", test);
+
+			////var test = DxTool.DumpTexture(device, ((D3D11VideoFrame)destFrame).textures[0]);
+
+			////File.WriteAllBytes("NV12_TextureDump.raw", test);
+
+   //         dcaptD3D11Frame.Dispose();
+   //         dcaptTexture.Dispose();
+
+   //         return errorCode;
+   //         // Console.WriteLine("DCaptCreateCapture() " + result);
+   //     }
 
 
         public override void Close()
@@ -453,18 +373,6 @@ namespace MediaToolkit.ScreenCaptures
                 }
             }
 
-            if (pixConverter != null)
-            {
-                pixConverter.Close();
-                pixConverter = null;
-            }
-
-            if (srcFrame != null)
-            {
-                srcFrame.Dispose();
-                srcFrame = null;
-            }
-
             if (dcaptFrame != null)
             {
                 dcaptFrame.Dispose();
@@ -475,6 +383,74 @@ namespace MediaToolkit.ScreenCaptures
 
             base.Close();
 
+        }
+
+        private void CloseDx()
+        {
+            if (srcTexture != null)
+            {
+                srcTexture.Dispose();
+                srcTexture = null;
+            }
+
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
+        }
+
+
+        public static bool Initialized { get; private set; }
+        public static bool Load()
+        {
+            _logger.Debug("Load()");
+            if (!Initialized)
+            {
+                try
+                {
+                    var result = DCapt.DCaptLoad(out hLoad);
+
+                    if (result == DCapt.CaptError.DESKCAPT_ERROR_API_ALREADY_LOADED)
+                    {
+                        //...
+
+                    }
+
+                    DCapt.ThrowIfError(result, "DCaptLoad");
+
+                    Initialized = true;
+                }
+                catch (DllNotFoundException)
+                {
+                    _logger.Info("Datapath capture not found");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex);
+                }
+            }
+
+            return Initialized;
+        }
+
+        public static void Unload()
+        {
+            _logger.Debug("Unload()");
+
+            try
+            {
+                if (hLoad != IntPtr.Zero)
+                {
+                    DCapt.DCaptFree(hLoad);
+                    hLoad = IntPtr.Zero;
+                    Initialized = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+            }
         }
 
 
