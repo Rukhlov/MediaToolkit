@@ -145,8 +145,8 @@
     <Compile Include="ScreenCaptures\GDICapture.cs" />
     <Compile Include="ScreenCaptures\GDIPlusCapture.cs" />
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />
-    <Compile Include="MediaSources\AudioSource.cs" />
-    <Compile Include="MediaSources\ScreenSource.cs" />
+    <Compile Include="MediaSources\AudioCaptureSource.cs" />
+    <Compile Include="MediaSources\ScreenCaptureSource.cs" />
     <Compile Include="MediaEncoders\VideoEncoder.cs" />
     <Compile Include="MediaSources\VideoCaptureSource.cs" />
     <Compile Include="Utils\AudioUtils.cs" />

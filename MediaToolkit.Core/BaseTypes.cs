@@ -232,6 +232,7 @@ namespace MediaToolkit.Core
 	public enum VideoDriverType
 	{
 		CPU,
+		GDI,
 		D3D9,
 		D3D11,
 

@@ -76,11 +76,14 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Unsupported texture format: " + descr.Format);
             }
 
-            frameData = new FrameBuffer[1];
             var tex = new Texture2D(srcTexture.NativePointer);
             ((IUnknown)tex).AddReference();
             textures.Add(tex);
-            frameData[0] = new FrameBuffer(tex.NativePointer, 0);
+
+			frameData = new FrameBuffer[]
+			{
+				new FrameBuffer(tex.NativePointer, 0)
+			};
 
             _D3D11VideoFrame(frameData, dataSize, width, height, format);
         }
@@ -520,7 +523,34 @@ namespace MediaToolkit
 
             return buffer;
         }
-
-
     }
+
+	public class GDIFrame : VideoFrameBase
+	{
+		public GDIFrame(Bitmap bmp)
+		{
+			
+			this.bitmap = bmp;
+			this.Width = bmp.Width;
+			this.Height = bmp.Height;
+			this.Format = PixFormat.RGB32;
+		}
+		private Bitmap bitmap = null;
+		private System.Drawing.Imaging.BitmapData bitmapData = null;
+		public IFrameBuffer LockBits()
+		{
+			var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
+			bitmapData = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
+			return new FrameBuffer(bitmapData.Scan0, bitmapData.Stride);
+		}
+
+		public void UnlockBits()
+		{
+			bitmap.UnlockBits(bitmapData);
+			bitmapData = null;
+		}
+
+		public override VideoDriverType DriverType => VideoDriverType.GDI;
+
+	}
 }

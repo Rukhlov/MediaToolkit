@@ -134,7 +134,7 @@ namespace ScreenStreamer.WinForms.App
         }
 
         private SynchronizationContext syncContext = null; 
-        private AudioSource audioSource = null;
+        private AudioCaptureSource audioSource = null;
         private AudioPreviewForm previewForm = null;
         private bool capturing = false;
         private void previewButton_Click(object sender, EventArgs e)
@@ -144,7 +144,7 @@ namespace ScreenStreamer.WinForms.App
             {
                 if (audioSource == null)
                 {
-                    audioSource = new AudioSource();
+                    audioSource = new AudioCaptureSource();
                     var captureDevice = AudioSettings.CaptureDevice;
 
                     var deviceId = captureDevice.DeviceId;

@@ -503,12 +503,12 @@ namespace ScreenStreamer.WinForms.App
                     }
                     else if (captureDevice.CaptureMode == CaptureMode.Screen)
                     {
-                        videoSource = new ScreenSource();
+                        videoSource = new ScreenCaptureSource();
                         videoSource.Setup(captureDevice);
                     }
 					else if (captureDevice.CaptureMode == CaptureMode.AppWindow)
 					{
-						videoSource = new ScreenSource();
+						videoSource = new ScreenCaptureSource();
 						videoSource.Setup(captureDevice);
 					}
 

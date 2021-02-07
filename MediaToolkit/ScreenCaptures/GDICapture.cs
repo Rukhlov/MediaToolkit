@@ -1,47 +1,39 @@
 ﻿using MediaToolkit.Core;
-using MediaToolkit.Utils;
+using MediaToolkit.Logging;
 using MediaToolkit.NativeAPIs;
+using MediaToolkit.SharedTypes;
+using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using SharpDX.Direct3D11;
-
-using MediaToolkit.Logging;
-using System.Runtime.InteropServices;
-using MediaToolkit.SharedTypes;
 using System.ComponentModel;
-using SharpDX.Direct3D;
-using MediaToolkit.DirectX;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace MediaToolkit.ScreenCaptures
 {
-    /// <summary>
-    /// Быстрее всего работает с выключенной композитной отрисовкой
-    /// и с PixelFormat.Format32bppArgb 
-    /// </summary>
-    public class GDICapture : ScreenCapture
+	/// <summary>
+	/// Быстрее всего работает с выключенной композитной отрисовкой
+	/// и с PixelFormat.Format32bppArgb 
+	/// </summary>
+	public class GDICapture : ScreenCapture
 	{
 		public GDICapture(Dictionary<string, object> args = null) : base()
 		{
-			if (args != null)
-			{
-				if (args.ContainsKey("WindowHandle"))
-				{
-					this.hWnd = (IntPtr)args["WindowHandle"];
-				}
-			}
+			//if (args != null)
+			//{
+			//	if (args.ContainsKey("WindowHandle"))
+			//	{
+			//		this.hWnd = (IntPtr)args["WindowHandle"];
+			//	}
+			//}
 		}
 
 		private Device device = null;
         private Texture2D gdiTexture = null;
 		private Texture2D sharedTexture = null;
 
-		// public long AdapterId { get; private set; }
-		public int AdapterIndex { get; private set; } = 0;
+		private bool UseHwContext = true;
         public bool CaptureAllLayers { get; set; } = false;
 		public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
@@ -50,8 +42,16 @@ namespace MediaToolkit.ScreenCaptures
             base.Init(captParams);
 
             this.CaptureMouse = captParams.CaptureMouse;
-
-			InitDx(captParams.D3D11Device);
+			this.UseHwContext = captParams.UseHwContext;
+			if (UseHwContext)
+			{
+				InitDx(captParams.D3D11Device);
+			}
+			else
+			{
+				throw new NotSupportedException("UseHwContext == false");
+			}
+			
 		}
 
 		private void InitDx(Device d)
@@ -104,81 +104,91 @@ namespace MediaToolkit.ScreenCaptures
         public override ErrorCode TryGetFrame(out IVideoFrame frame, int timeout = 10)
         {
             frame = null;
-            ErrorCode result = BitBltToGdiSurface();
-            device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
-            device.ImmediateContext.Flush();
-  
-            if (result == ErrorCode.Ok)
-            {
-                frame = new D3D11VideoFrame(sharedTexture);
-            }
+			ErrorCode result = ErrorCode.Unexpected;
+			if (UseHwContext)
+			{
+				#region SrcSize changed
+				/*
+				 * 
+				if (hWnd != IntPtr.Zero)
+				{
+					var isIconic = User32.IsIconic(hWnd);
+					if (!isIconic)
+					{
+						var clientRect = User32.GetClientRect(hWnd);
 
+						if (this.SrcRect != clientRect)
+						{
+							logger.Info(SrcRect.ToString());
+
+							this.SrcRect = clientRect;
+
+							if (gdiTexture != null)
+							{
+								gdiTexture.Dispose();
+								gdiTexture = null;
+							}
+						}
+					}
+					else
+					{
+						logger.Debug("IsIconic: " + hWnd);
+						return ErrorCode.Ok;
+					}
+
+					var srcWidth = SrcRect.Width;
+					var srcHeight = SrcRect.Height;
+
+					if (srcWidth == 0 || srcHeight == 0)
+					{
+						logger.Error("Invalid rect: " + SrcRect.ToString());
+						return ErrorCode.Unexpected;
+					}
+
+					if (gdiTexture == null)
+					{
+						gdiTexture = new Texture2D(device,
+						 new Texture2DDescription
+						 {
+							 CpuAccessFlags = CpuAccessFlags.None,
+							 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+							 Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+							 Width = SrcRect.Width,
+							 Height = SrcRect.Height,
+							 MipLevels = 1,
+							 ArraySize = 1,
+							 SampleDescription = { Count = 1, Quality = 0 },
+							 Usage = ResourceUsage.Default,
+							 OptionFlags = ResourceOptionFlags.GdiCompatible,
+
+						 });
+					}
+				}
+				*/ 
+				#endregion
+
+				result = BitBltToGdiSurface();
+				device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+				device.ImmediateContext.Flush();
+
+				if (result == ErrorCode.Ok)
+				{
+					frame = new D3D11VideoFrame(sharedTexture);
+				}
+			}
+			else
+			{
+				result = ErrorCode.NotSupported;
+			}
+  
             return result;
         }
 
-
         private ErrorCode BitBltToGdiSurface()
         {
-
             ErrorCode errorCode = ErrorCode.Unexpected;
             try
             {
-                if (hWnd != IntPtr.Zero)
-                {
-                    var isIconic = User32.IsIconic(hWnd);
-                    if (!isIconic)
-                    {
-                        var clientRect = User32.GetClientRect(hWnd);
-
-                        if (this.SrcRect != clientRect)
-                        {
-                            logger.Info(SrcRect.ToString());
-
-                            this.SrcRect = clientRect;
-
-                            if (gdiTexture != null)
-                            {
-                                gdiTexture.Dispose();
-                                gdiTexture = null;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        logger.Debug("IsIconic: " + hWnd);
-                        return ErrorCode.Ok;
-                    }
-
-                    var srcWidth = SrcRect.Width;
-                    var srcHeight = SrcRect.Height;
-
-                    if (srcWidth == 0 || srcHeight == 0)
-                    {
-                        logger.Error("Invalid rect: " + SrcRect.ToString());
-                        return ErrorCode.Unexpected;
-                    }
-
-                    if (gdiTexture == null)
-                    {
-                        gdiTexture = new Texture2D(device,
-                         new Texture2DDescription
-                         {
-                             CpuAccessFlags = CpuAccessFlags.None,
-                             BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                             Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                             Width = SrcRect.Width,
-                             Height = SrcRect.Height,
-                             MipLevels = 1,
-                             ArraySize = 1,
-                             SampleDescription = { Count = 1, Quality = 0 },
-                             Usage = ResourceUsage.Default,
-                             OptionFlags = ResourceOptionFlags.GdiCompatible,
-
-                         });
-                    }
-                }
-
-
                 using (var surf = gdiTexture.QueryInterface<SharpDX.DXGI.Surface1>())
                 {
                     int nXSrc = SrcRect.Left;
@@ -302,24 +312,6 @@ namespace MediaToolkit.ScreenCaptures
 				sharedTexture.Dispose();
 				sharedTexture = null;
 			}
-
-			//if (srcFrame != null)
-			//{
-			//	srcFrame.Dispose();
-			//	srcFrame = null;
-			//}
-
-   //         if (pixConverter != null)
-   //         {
-   //             pixConverter.Close();
-   //             pixConverter = null;
-   //         }
-
-   //         if (device != null)
-   //         {
-   //             device.Dispose();
-   //             device = null;
-   //         }
 
         }
 

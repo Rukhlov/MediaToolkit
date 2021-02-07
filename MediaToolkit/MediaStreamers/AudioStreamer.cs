@@ -23,12 +23,12 @@ namespace MediaToolkit.MediaStreamers
     {
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
-        public AudioStreamer(AudioSource source)
+        public AudioStreamer(AudioCaptureSource source)
         {
             this.audioSource = source;
         }
 
-        private AudioSource audioSource = null;
+        private AudioCaptureSource audioSource = null;
 
         public AudioEncoderSettings EncoderSettings { get; private set; }
         public NetworkSettings NetworkSettings { get; private set; }

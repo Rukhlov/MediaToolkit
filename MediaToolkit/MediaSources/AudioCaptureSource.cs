@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace MediaToolkit
 {
 
-    public class AudioSource
+    public class AudioCaptureSource
     {
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
@@ -23,7 +23,7 @@ namespace MediaToolkit
         private const long ReftimesPerSec = 10000000;
         private const long ReftimesPerMillisec = 10000;
 
-        public AudioSource(){ }
+        public AudioCaptureSource(){ }
 
         private MMDevice captureDevice = null;
         private AudioClient audioClient;

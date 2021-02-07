@@ -34,7 +34,7 @@ namespace ScreenStreamer.Common
         private IVideoSource videoSource = null;
         private VideoStreamer videoStreamer = null;
 
-        private AudioSource audioSource = null;
+        private AudioCaptureSource audioSource = null;
         private AudioStreamer audioStreamer = null;
 
         private CommunicationService communicationService = null;
@@ -339,7 +339,7 @@ namespace ScreenStreamer.Common
                 }
                 else if (captureDevice.CaptureMode == CaptureMode.Screen)
                 {
-                    videoSource = new ScreenSource();
+                    videoSource = new ScreenCaptureSource();
                     
                 }
 
@@ -367,7 +367,7 @@ namespace ScreenStreamer.Common
             if (audioSettings.Enabled)
             {
 
-                audioSource = new AudioSource();
+                audioSource = new AudioCaptureSource();
 				var captureDevice = audioSettings.CaptureDevice;
 
 				var deviceId = captureDevice.DeviceId;

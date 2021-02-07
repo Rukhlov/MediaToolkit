@@ -15,12 +15,12 @@ using MediaToolkit.DirectX;
 
 namespace MediaToolkit
 {
-    public class ScreenSource : IVideoSource
+    public class ScreenCaptureSource : IVideoSource
     {
         // private static Logger logger = LogManager.GetCurrentClassLogger();
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit");
 
-        public ScreenSource() { }
+        public ScreenCaptureSource() { }
 
         public int AdapterIndex { get; private set; } = 0;
 
@@ -128,11 +128,12 @@ namespace MediaToolkit
                 InitDx();
 
                 screenCapture = ScreenCapture.Create(CaptureProps.CaptureType);
-                var captParams = new ScreenCaptureParameters
-                {
-                    SrcRect = srcRect,
-                    DestSize = destSize,
-                    CaptureMouse = CaptureProps.CaptureMouse,
+				var captParams = new ScreenCaptureParameters
+				{
+					SrcRect = srcRect,
+					DestSize = destSize,
+					CaptureMouse = CaptureProps.CaptureMouse,
+					UseHwContext = true,
                     D3D11Device = device,
                     DDAOutputMan = outputManager,
                 };

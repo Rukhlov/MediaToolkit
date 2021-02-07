@@ -71,7 +71,7 @@ namespace TestStreamer.Controls
 
             VideoCaptureType captureType = (VideoCaptureType)captureTypesComboBox.SelectedItem;
 
-            httpScreenSource = new ScreenSource();
+            httpScreenSource = new ScreenCaptureSource();
             ScreenCaptureDevice captureParams = new ScreenCaptureDevice
             {
                 CaptureRegion = srcRect,

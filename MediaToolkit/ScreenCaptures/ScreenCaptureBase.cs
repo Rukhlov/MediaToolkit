@@ -116,6 +116,7 @@ namespace MediaToolkit.ScreenCaptures
 		public Size DestSize { get; set; }
 		public bool CaptureMouse { get; set; }
 
+		public bool UseHwContext { get; set; }
         public SharpDX.Direct3D11.Device D3D11Device { get; set; }
         public DDAOutputManager DDAOutputMan { get; set; }
 

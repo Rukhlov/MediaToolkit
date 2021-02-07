@@ -23,7 +23,7 @@ namespace MediaToolkit.MediaStreamers
         private VideoHttpStreamer httpStreamer = null;
         //private IVideoSource httpScreenSource = null;
 
-        private ScreenSource httpScreenSource = null;
+        private ScreenCaptureSource httpScreenSource = null;
 
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;
@@ -142,7 +142,7 @@ namespace MediaToolkit.MediaStreamers
 
             try
             {
-                httpScreenSource = new ScreenSource();
+                httpScreenSource = new ScreenCaptureSource();
                 httpScreenSource.Setup(captureParams);
                 httpScreenSource.CaptureStopped += HttpScreenSource_CaptureStopped;
 
