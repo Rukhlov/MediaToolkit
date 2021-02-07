@@ -391,6 +391,9 @@ namespace MediaToolkit.Core
 		[XmlAttribute]
 		public VideoDriverType DriverType { get; set; } = VideoDriverType.CPU;
 
+		[XmlAttribute]
+		public ScalingFilter DownscaleFilter { get; set; } = ScalingFilter.Linear;
+
 		//[XmlIgnore]
 		public abstract CaptureMode CaptureMode { get; }
 

@@ -158,13 +158,14 @@ namespace MediaToolkit
 
                 var captSize = screenCapture.SrcRect.Size;
                 var captFormat = screenCapture.SrcFormat;
-                var scalingFilter = ScalingFilter.Linear;
-                var colorSpace = captureParams.ColorSpace;
+				var downscaleFilter = captureParams.DownscaleFilter;
+
+				var colorSpace = captureParams.ColorSpace;
                 var colorRange = captureParams.ColorRange;
 
                 pixConverter = new D3D11RgbToYuvConverter();
                 pixConverter.KeepAspectRatio = CaptureProps.AspectRatio;
-                pixConverter.Init(device, captSize, captFormat, destSize, destFormat, scalingFilter, colorSpace, colorRange);
+                pixConverter.Init(device, captSize, captFormat, destSize, destFormat, downscaleFilter, colorSpace, colorRange);
 
                 syncEvent = new AutoResetEvent(false);
 
@@ -325,16 +326,13 @@ namespace MediaToolkit
                             VideoBuffer.OnBufferUpdated(frame);
 
 
-
                             //var frame = VideoBuffer.GetFrame();
                             //frame.Time = time;
                             //lastTime = frame.Time;
                             //VideoBuffer.OnBufferUpdated(frame);
 
                             //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
-
                             ////var diff = time - lastTime;
-
                             //lastTime = SharedBitmap.time;
 
                             OnBufferUpdated();

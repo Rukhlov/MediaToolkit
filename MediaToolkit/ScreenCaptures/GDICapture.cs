@@ -37,6 +37,7 @@ namespace MediaToolkit.ScreenCaptures
         public bool CaptureAllLayers { get; set; } = false;
 		public IntPtr hWnd { get; set; } = IntPtr.Zero;
 
+		private Bitmap bitmap = null;
 		public override void Init(ScreenCaptureParameters captParams)
         {
             base.Init(captParams);
@@ -49,7 +50,8 @@ namespace MediaToolkit.ScreenCaptures
 			}
 			else
 			{
-				throw new NotSupportedException("UseHwContext == false");
+				bitmap = new Bitmap(DestSize.Width, DestSize.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				//throw new NotSupportedException("UseHwContext == false");
 			}
 			
 		}
@@ -178,7 +180,21 @@ namespace MediaToolkit.ScreenCaptures
 			}
 			else
 			{
-				result = ErrorCode.NotSupported;
+				//result = ErrorCode.NotSupported;
+
+				var captFlags = TernaryRasterOperations.SRCCOPY;
+				if (CaptureAllLayers)
+				{
+					captFlags |= TernaryRasterOperations.CAPTUREBLT;
+				}
+				var stretchingMode = StretchingMode.COLORONCOLOR;
+
+				result = TryGetScreen(SrcRect, captFlags, stretchingMode, CaptureMouse, ref bitmap);
+				if(result == ErrorCode.Ok)
+				{
+					frame = new GDIFrame(bitmap);
+				}
+
 			}
   
             return result;
@@ -288,6 +304,12 @@ namespace MediaToolkit.ScreenCaptures
         {
             base.Close();
 
+			if (bitmap != null)
+			{
+				bitmap.Dispose();
+				bitmap = null;
+			}
+
             CloseDx();
         }
 
@@ -315,12 +337,22 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
+		public static ErrorCode TryGetScreen(Rectangle srcRect,  
+			ref Bitmap bmp )
+		{
+			var captFlags = TernaryRasterOperations.SRCCOPY;
+			var stretchingMode = StretchingMode.COLORONCOLOR;
+			var captureMouse = false;
 
-        public static ErrorCode TryGetScreen(Rectangle srcRect, ref Bitmap bmp, 
-            TernaryRasterOperations captFlags = TernaryRasterOperations.SRCCOPY, 
-            StretchingMode stretchingMode = StretchingMode.COLORONCOLOR,
-            bool captureMouse = false)
-        {
+			return TryGetScreen(srcRect, captFlags, stretchingMode, captureMouse, ref bmp);
+		}
+
+		public static ErrorCode TryGetScreen(Rectangle srcRect,
+			TernaryRasterOperations captFlags,
+			StretchingMode stretchingMode,
+			bool captureMouse,
+			ref Bitmap bmp)
+		{
 
             bool success = false;
             ErrorCode errorCode = ErrorCode.Unexpected;
@@ -415,140 +447,11 @@ namespace MediaToolkit.ScreenCaptures
                 graphDest?.Dispose();
                 graphDest = null;
 
-                // videoBuffer.bitmap.Save("d:\\__test123.bmp", ImageFormat.Bmp);
             }
-
 
 
             return errorCode;
         }
-
-
-        public static ErrorCode TryGetScreen(Rectangle srcRect, ref VideoBuffer videoBuffer,
-            bool captureMouse = false,
-            int timeout = 10,
-            StretchingMode stretchingMode = StretchingMode.COLORONCOLOR)
-        {
-            bool success = false;
-            ErrorCode errorCode = ErrorCode.Unexpected;
-
-            var syncRoot = videoBuffer.syncRoot;
-            bool lockTaken = false;
-
-            IntPtr hdcSrc = IntPtr.Zero;
-            IntPtr hdcDest = IntPtr.Zero;
-            Graphics graphDest = null;
-            try
-            {
-                Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
-
-                if (lockTaken)
-                {
-                    var bmp = videoBuffer.bitmap;
-                    graphDest = System.Drawing.Graphics.FromImage(bmp);
-                    hdcDest = graphDest.GetHdc();
-                    Size destSize = bmp.Size;
-
-                    int nXDest = 0;
-                    int nYDest = 0;
-                    int nWidth = destSize.Width;
-                    int nHeight = destSize.Height;
-
-                    hdcSrc = User32.GetDC(IntPtr.Zero);
-
-                    int nXSrc = srcRect.Left;
-                    int nYSrc = srcRect.Top;
-
-                    int nWidthSrc = srcRect.Width;
-                    int nHeightSrc = srcRect.Height;
-
-                    // в этом режиме мигает курсор, но захватывается все содержимое рабочего стола (ContextMenu, ToolTip-ы PopUp-ы ...)
-                    // https://docs.microsoft.com/en-us/previous-versions/technet-magazine/dd392008(v=msdn.10)
-                    var dwRop = TernaryRasterOperations.CAPTUREBLT | TernaryRasterOperations.SRCCOPY;
-                    //var dwRop = TernaryRasterOperations.SRCCOPY;
-
-                    if (destSize.Width == srcRect.Width && destSize.Height == srcRect.Height)
-                    {
-                        //IntPtr hOldBmp = Gdi32.SelectObject(hMemoryDC, hBitmap);
-                        //success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-                        //hBitmap = Gdi32.SelectObject(hMemoryDC, hOldBmp);
-                        //videoBuffer.bitmap = Bitmap.FromHbitmap(hBitmap);
-
-                        success = Gdi32.BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop);
-                        if (!success)
-                        {
-                            int code = Marshal.GetLastWin32Error();
-                            throw new Win32Exception(code);
-                        }
-
-                        if (captureMouse)
-                        {
-                            User32.DrawCursorEx(hdcDest, nXSrc, nYSrc);
-                        }
-                    }
-                    else
-                    {// Лучше не использовать масштабирование StretchBlt !!!
-
-                        //самый быстрый и самый кривой режим масштабирования
-                        //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.COLORONCOLOR);
-
-                        //самый качественный но все равно выглядит хуже чем масштабирование sws_scale
-                        //Gdi32.SetStretchBltMode(hdcDest, StretchingMode.HALFTONE);
-
-                        Gdi32.SetStretchBltMode(hdcDest, stretchingMode);
-
-                        success = Gdi32.StretchBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
-                            hdcSrc, nXSrc, nYSrc, nWidthSrc, nHeightSrc,
-                            dwRop);
-
-                        if (!success)
-                        {
-                            int code = Marshal.GetLastWin32Error();
-                            throw new Win32Exception(code);
-                        }
-
-                        // TODO: draw cursor...
-                    }
-
-                    errorCode = ErrorCode.Ok;
-
-                }
-                else
-                {
-                    errorCode = ErrorCode.WaitTimeout;
-                }
-
-            }
-            catch (Win32Exception ex)
-            {
-                logger.Warn(ex);
-
-                if (ex.ErrorCode == (int)HResult.E_ACCESSDENIED)
-                {
-                    errorCode = ErrorCode.AccessDenied;
-                }
-            }
-            finally
-            {
-                Gdi32.DeleteDC(hdcSrc);
-
-                graphDest?.ReleaseHdc(hdcDest);
-                graphDest?.Dispose();
-                graphDest = null;
-
-                if (lockTaken)
-                {
-                    Monitor.Exit(syncRoot);
-                }
-
-                // videoBuffer.bitmap.Save("d:\\__test123.bmp", ImageFormat.Bmp);
-            }
-
-
-
-            return errorCode;
-        }
-
 
 
         public static Bitmap GetScreen(Rectangle rect)

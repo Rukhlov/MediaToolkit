@@ -58,6 +58,7 @@
     <v:String x:Key="AdvancedSettingsUseNativeResolution">Native Resolution of the Source</v:String>
     <v:String x:Key="AdvancedSettingsWidth">Width</v:String>
     <v:String x:Key="AdvancedSettingsHeight">Height</v:String>
+    <v:String x:Key="AdvancedSettingsDownscaleFilter">Downscale Filter</v:String>
     <v:String x:Key="AdvancedSettingsAdjustResolutionToCaptureSize">Adjust Resolution To Capture Size</v:String>
     <v:String x:Key="AdvancedSettingsKeepAspectRatio">Keep Aspect Ratio</v:String>
     <v:String x:Key="AdvancedSettingsAutoStartStreamingOnStartup">Auto Streaming on System Startup</v:String>

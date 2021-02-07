@@ -56,6 +56,7 @@
     <v:String x:Key="AdvancedSettingsUseNativeResolution">Использовать размеры источника</v:String>
     <v:String x:Key="AdvancedSettingsWidth">Ширина</v:String>
     <v:String x:Key="AdvancedSettingsHeight">Высота</v:String>
+    <v:String x:Key="AdvancedSettingsDownscaleFilter">Фильтр масштабирования</v:String>
     <v:String x:Key="AdvancedSettingsAdjustResolutionToCaptureSize">Настроить размеры под разрешение источника</v:String>
     <v:String x:Key="AdvancedSettingsKeepAspectRatio">Сохранять соотношение сторон</v:String>
     <v:String x:Key="AdvancedSettingsAutoStartStreamingOnStartup">Автоматическая трансляция при запуске системы</v:String>

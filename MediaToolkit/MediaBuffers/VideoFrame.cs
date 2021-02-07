@@ -530,27 +530,60 @@ namespace MediaToolkit
 		public GDIFrame(Bitmap bmp)
 		{
 			
-			this.bitmap = bmp;
+			this.GdiBitmap = bmp;
 			this.Width = bmp.Width;
 			this.Height = bmp.Height;
-			this.Format = PixFormat.RGB32;
-		}
-		private Bitmap bitmap = null;
-		private System.Drawing.Imaging.BitmapData bitmapData = null;
-		public IFrameBuffer LockBits()
-		{
-			var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
-			bitmapData = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
-			return new FrameBuffer(bitmapData.Scan0, bitmapData.Stride);
+			var format = GdiFormatToPixFormat(bmp.PixelFormat);
+			if(format == PixFormat.Unknown)
+			{
+				throw new InvalidOperationException("Invalid frame format: " + bmp.PixelFormat);
+			}
+
+			this.Format = format;
 		}
 
-		public void UnlockBits()
-		{
-			bitmap.UnlockBits(bitmapData);
-			bitmapData = null;
-		}
+		public readonly Bitmap GdiBitmap = null;
+
+		//private System.Drawing.Imaging.BitmapData bitmapData = null;
+		//public IFrameBuffer LockBits()
+		//{
+		//	var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
+		//	bitmapData = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
+		//	return new FrameBuffer(bitmapData.Scan0, bitmapData.Stride);
+		//}
+
+		//public void UnlockBits()
+		//{
+		//	bitmap.UnlockBits(bitmapData);
+		//	bitmapData = null;
+		//}
 
 		public override VideoDriverType DriverType => VideoDriverType.GDI;
 
+		public static PixFormat GdiFormatToPixFormat(System.Drawing.Imaging.PixelFormat gdiFormat)
+		{
+			PixFormat pixFormat = PixFormat.Unknown;
+
+			if (gdiFormat == System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+			{
+				pixFormat = PixFormat.RGB32;
+			}
+			else if (gdiFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb)
+			{
+				pixFormat = PixFormat.RGB24;
+			}
+			else if (gdiFormat == System.Drawing.Imaging.PixelFormat.Format16bppRgb565)
+			{
+				pixFormat = PixFormat.RGB16;
+			}
+			else if (gdiFormat == System.Drawing.Imaging.PixelFormat.Format16bppRgb555)
+			{
+				pixFormat = PixFormat.RGB15;
+			}
+
+			return pixFormat;
+		}
 	}
+
+
 }

@@ -286,33 +286,37 @@ namespace FFmpegLib {
 							throw gcnew Exception("getColorspaceDetails not supported");
 						}
 
-						const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
-						//srcRange = 1;
-						dstRange = 1;
-						res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
-						if (res < 0) {
-							throw gcnew Exception("Invalid color space");
-						}
+						//const int* coefs = sws_getCoefficients(SWS_CS_DEFAULT);
+						////srcRange = 1;
+						//dstRange = 1;
+						//res = sws_setColorspaceDetails(sws_ctx, coefs, srcRange, coefs, dstRange, brightness, contrast, saturation);
+						//if (res < 0) {
+						//	throw gcnew Exception("Invalid color space");
+						//}
 					}
 				}
 
 				array<IFrameBuffer^>^ frameBuffer = videoFrame->Buffer;
-				IFrameBuffer^ frameBuffer0 = frameBuffer[0];
+				//IFrameBuffer^ frameBuffer0 = frameBuffer[0];
 
-				const uint8_t* src_data[1] =
+				const uint8_t* src_data[3] =
 				{
-					reinterpret_cast<uint8_t*>(frameBuffer0->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(frameBuffer[0]->Data.ToPointer()),
+					reinterpret_cast<uint8_t*>(frameBuffer[1]->Data.ToPointer()),
+				   reinterpret_cast<uint8_t*>(frameBuffer[2]->Data.ToPointer()),
 				};
 
 				//int bmpStride = 4 * ((width * 3 + 3) / 4);
-				const int scr_size[1] =
+				const int scr_size[3] =
 				{
-					frameBuffer0->Stride,
+					frameBuffer[0]->Stride,
+					frameBuffer[1]->Stride,
+					frameBuffer[2]->Stride,
 					//bmpStride
 				};
 
 				//  конвертируем в новый формат
-				sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
+				int res = sws_scale(sws_ctx, src_data, scr_size, 0, height, frame->data, frame->linesize);
 			}
 			finally{
 

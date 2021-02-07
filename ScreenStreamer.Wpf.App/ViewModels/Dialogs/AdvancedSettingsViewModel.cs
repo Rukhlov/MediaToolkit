@@ -218,7 +218,23 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             }
         }
 
-        public bool KeepAspectRatio
+		public ScalingFilter DonwscaleFilter
+		{
+			get => _model.DownscaleFilter;
+			set
+			{
+				SetProperty(_model, () => _model.DownscaleFilter, value);
+			}
+		}
+
+		public ObservableCollection<ScalingFilter> DonwscaleFilters { get; } = new ObservableCollection<ScalingFilter>()
+		{
+			ScalingFilter.Point,
+			ScalingFilter.FastLinear,
+			ScalingFilter.Linear,
+		};
+
+		public bool KeepAspectRatio
         {
             get => _model.KeepAspectRatio;
             set

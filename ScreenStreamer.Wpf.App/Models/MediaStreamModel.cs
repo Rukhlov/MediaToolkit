@@ -368,6 +368,7 @@ namespace ScreenStreamer.Wpf.Models
 			captureDevice.Format = AdvancedSettings.PixelFormat;
 			captureDevice.ColorSpace = AdvancedSettings.ColorSpace;
 			captureDevice.ColorRange = AdvancedSettings.ColorRange;
+			captureDevice.DownscaleFilter = AdvancedSettings.DownscaleFilter;
 
 			if (PropertyAudio.IsEnabled)
             {
