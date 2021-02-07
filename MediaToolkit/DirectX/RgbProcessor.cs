@@ -255,7 +255,7 @@ namespace MediaToolkit.DirectX
 		}
 
 
-		public void Process(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true)
+		public void Process(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
 		{
 			DeviceContext deviceContext = device.ImmediateContext;
 
@@ -315,9 +315,9 @@ namespace MediaToolkit.DirectX
 					rgb32SRV = tempSRV;
 				}
 
-				if (srcSize != destSize)
+				if (srcSize != destSize || transform != Transform.R0)
 				{
-					vertices = VertexHelper.GetQuadVertices(destSize, srcSize, aspectRatio);
+					vertices = VertexHelper.GetQuadVertices(destSize, srcSize, aspectRatio, transform);
 					using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
 					{
 						VertexBufferBinding vertexBuffer = new VertexBufferBinding

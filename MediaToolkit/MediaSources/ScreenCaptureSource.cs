@@ -389,13 +389,13 @@ namespace MediaToolkit
                     monotonicTime += sw.ElapsedMilliseconds / 1000.0;
                     captureStats.Update(monotonicTime);
 
-                    logInterval += sw.ElapsedMilliseconds;
-                    if (logInterval >= 3000)
-                    {
-                        var report = captureStats.GetReport();
-                        Console.WriteLine(report);
-                        logInterval = 0;
-                    }
+                    //logInterval += sw.ElapsedMilliseconds;
+                    //if (logInterval >= 3000)
+                    //{
+                    //    var report = captureStats.GetReport();
+                    //    Console.WriteLine(report);
+                    //    logInterval = 0;
+                    //}
                 }
 
             }

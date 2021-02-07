@@ -60,6 +60,9 @@
     <v:String x:Key="AdvancedSettingsAdjustResolutionToCaptureSize">Настроить размеры под разрешение источника</v:String>
     <v:String x:Key="AdvancedSettingsKeepAspectRatio">Сохранять соотношение сторон</v:String>
     <v:String x:Key="AdvancedSettingsAutoStartStreamingOnStartup">Автоматическая трансляция при запуске системы</v:String>
+
+    <v:String x:Key="AdvancedSettingsPixelFormat">Пиксельный формат</v:String>
+    <v:String x:Key="AdvancedSettingsColorSpace">Цветовое пространство</v:String>
     
     <!--VideoSettings Dialog-->
     <v:String x:Key="VideoSettingsCaption">Настройки видео источника</v:String>

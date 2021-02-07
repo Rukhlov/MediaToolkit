@@ -218,7 +218,25 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             }
         }
 
-		public ScalingFilter DonwscaleFilter
+        public PixFormat PixelFormat
+        {
+            get => _model.PixelFormat;
+            set
+            {
+                SetProperty(_model, () => _model.PixelFormat, value);
+            }
+        }
+
+        public ColorSpace ColorSpace
+        {
+            get => _model.ColorSpace;
+            set
+            {
+                SetProperty(_model, () => _model.ColorSpace, value);
+            }
+        }
+
+        public ScalingFilter DonwscaleFilter
 		{
 			get => _model.DownscaleFilter;
 			set
@@ -227,7 +245,19 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 			}
 		}
 
-		public ObservableCollection<ScalingFilter> DonwscaleFilters { get; } = new ObservableCollection<ScalingFilter>()
+        public ObservableCollection<ColorSpace> ColorSpaces { get; } = new ObservableCollection<ColorSpace>()
+        {
+            ColorSpace.BT601,
+            ColorSpace.BT709,
+        };
+
+        public ObservableCollection<PixFormat> PixelFormats { get; } = new ObservableCollection<PixFormat>()
+        {
+            PixFormat.NV12,
+            //PixFormat.I420,
+        };
+
+        public ObservableCollection<ScalingFilter> DonwscaleFilters { get; } = new ObservableCollection<ScalingFilter>()
 		{
 			ScalingFilter.Point,
 			ScalingFilter.FastLinear,

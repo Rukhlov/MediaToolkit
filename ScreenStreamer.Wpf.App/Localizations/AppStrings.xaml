@@ -63,6 +63,9 @@
     <v:String x:Key="AdvancedSettingsKeepAspectRatio">Keep Aspect Ratio</v:String>
     <v:String x:Key="AdvancedSettingsAutoStartStreamingOnStartup">Auto Streaming on System Startup</v:String>
 
+    <v:String x:Key="AdvancedSettingsPixelFormat">Pixel Format</v:String>
+    <v:String x:Key="AdvancedSettingsColorSpace">Color Space</v:String>
+    
     <!--VideoSettings Dialog-->
     <v:String x:Key="VideoSettingsCaption">Video Source Settings</v:String>
     <v:String x:Key="VideoSettingsVideoSource">Video Source</v:String>

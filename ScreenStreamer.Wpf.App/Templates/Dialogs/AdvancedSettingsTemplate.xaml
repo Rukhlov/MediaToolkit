@@ -28,7 +28,9 @@
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="32"/>
                 <RowDefinition Height="40"/>
-                
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="1"/>
                 <RowDefinition Height="40"/>
                 <RowDefinition Height="32"/>
@@ -93,16 +95,31 @@
 
             <Rectangle Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
 
-            <TextBlock Text="{DynamicResource AdvancedSettingsUseNativeResolution}" Grid.Row="9" Grid.Column="0"/>
-            <ToggleButton Grid.Row="9" Grid.Column="1"
+            <TextBlock Text="{DynamicResource AdvancedSettingsPixelFormat}" Grid.Row="9" Grid.Column="0"/>
+            <ComboBox Grid.Row="9" Grid.Column="1" 
+                      IsEnabled ="True"
+                      ItemsSource="{Binding PixelFormats}" 
+                      SelectedItem="{Binding PixelFormat}"
+                      Cursor="Hand"/>
+            
+            <TextBlock Text="{DynamicResource AdvancedSettingsColorSpace}" Grid.Row="10" Grid.Column="0"/>
+            <ComboBox Grid.Row="10" Grid.Column="1" 
+                      ItemsSource="{Binding ColorSpaces}" 
+                      SelectedItem="{Binding ColorSpace}"
+                      Cursor="Hand"/>
+            
+            <Rectangle Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
+
+            <TextBlock Text="{DynamicResource AdvancedSettingsUseNativeResolution}" Grid.Row="12" Grid.Column="0"/>
+            <ToggleButton Grid.Row="12" Grid.Column="1"
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding UseResolutionFromCaptureSource}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
+            
 
-
-            <TextBlock Text="{DynamicResource AdvancedSettingsWidth}" Grid.Row="10" Grid.Column="0"/>
-            <TextBox Grid.Row="10" Grid.Column="1"
+            <TextBlock Text="{DynamicResource AdvancedSettingsWidth}" Grid.Row="13" Grid.Column="0"/>
+            <TextBox Grid.Row="13" Grid.Column="1"
                      Style="{StaticResource defaultTextBoxStyle}" 
                      IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
                    
@@ -117,8 +134,8 @@
             </TextBox>
 
             <TextBlock Text="{DynamicResource AdvancedSettingsHeight}" 
-                       Grid.Row="11" Grid.Column="0"/>
-            <TextBox Grid.Row="11" Grid.Column="1"
+                       Grid.Row="14" Grid.Column="0"/>
+            <TextBox Grid.Row="14" Grid.Column="1"
                      Style="{StaticResource defaultTextBoxStyle}" 
                      IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
 
@@ -132,14 +149,14 @@
             </TextBox>
 
             <TextBlock Text="{DynamicResource AdvancedSettingsDownscaleFilter}" 
-                       Grid.Row="12" Grid.Column="0"/>
-            <ComboBox Grid.Row="12" Grid.Column="1" 
+                       Grid.Row="15" Grid.Column="0"/>
+            <ComboBox Grid.Row="15" Grid.Column="1" 
                       IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
                       ItemsSource="{Binding DonwscaleFilters}" 
                       SelectedItem="{Binding DonwscaleFilter}"
                       Cursor="Hand"/>
 
-            <Button  Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2"
+            <Button  Grid.Row="16" Grid.Column="0" Grid.ColumnSpan="2"
                         Style="{StaticResource actionButtonStyle}"
                         IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
                         Command="{Binding AdjustResolutionCommand}"
@@ -150,21 +167,21 @@
 
 
             <TextBlock Text="{DynamicResource AdvancedSettingsKeepAspectRatio}" 
-                       Grid.Row="14" Grid.Column="0"/>
+                       Grid.Row="17" Grid.Column="0"/>
 
-            <ToggleButton Grid.Row="14" Grid.Column="1" 
+            <ToggleButton Grid.Row="17" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsEnabled="{Binding UseResolutionFromCaptureSource, Converter={converters:InverseBooleanConverter}}"
                           IsChecked="{Binding KeepAspectRatio}" 
                           HorizontalAlignment="Right"
                           Cursor="Hand"/>
 
-            <Rectangle Grid.Row="15" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
+            <Rectangle Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource divider}"/>
 
             <TextBlock Text="{DynamicResource AdvancedSettingsAutoStartStreamingOnStartup}" 
-                       Grid.Row="16" Grid.Column="0"/>
+                       Grid.Row="19" Grid.Column="0"/>
 
-            <ToggleButton Grid.Row="16" Grid.Column="1" 
+            <ToggleButton Grid.Row="19" Grid.Column="1" 
                           Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
                           IsChecked="{Binding AutoStartStreamingOnStartup}" 
 
