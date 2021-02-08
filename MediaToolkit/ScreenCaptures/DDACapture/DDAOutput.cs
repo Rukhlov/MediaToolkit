@@ -126,7 +126,7 @@ namespace MediaToolkit.ScreenCaptures
                     {
                         SharpDX.Direct3D.FeatureLevel.Level_11_1,
                         SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                        //SharpDX.Direct3D.FeatureLevel.Level_10_1,
+                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
                     };
 
                     device = new Device(adapter, deviceCreationFlags, featureLevel);

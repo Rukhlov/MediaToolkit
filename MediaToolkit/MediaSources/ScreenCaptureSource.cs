@@ -12,6 +12,7 @@ using MediaToolkit.Logging;
 using MediaToolkit.ScreenCaptures;
 using SharpDX.Direct3D11;
 using MediaToolkit.DirectX;
+using FFmpegLib;
 
 namespace MediaToolkit
 {
@@ -51,7 +52,9 @@ namespace MediaToolkit
         private ScreenCapture screenCapture = null;
         private D3D11RgbToYuvConverter pixConverter = null;
 
-        public ScreenCaptureProperties CaptureProps{ get; private set; }
+		private FFmpegPixelConverter ffmpegConverter = null;
+
+		public ScreenCaptureProperties CaptureProps{ get; private set; }
 
         private static DDAOutputManager outputManager = new DDAOutputManager();
 		private bool deviceReady = false;
@@ -138,7 +141,10 @@ namespace MediaToolkit
                     DDAOutputMan = outputManager,
                 };
 
-                screenCapture.Init(captParams);
+				//captParams.UseHwContext = false;
+				//captParams.DestSize = srcRect.Size;
+
+				screenCapture.Init(captParams);
                 //screenCapture.Init(srcRect);
 
                 var driverType = captureParams.DriverType;
@@ -167,7 +173,11 @@ namespace MediaToolkit
                 pixConverter.KeepAspectRatio = CaptureProps.AspectRatio;
                 pixConverter.Init(device, captSize, captFormat, destSize, destFormat, downscaleFilter, colorSpace, colorRange);
 
-                syncEvent = new AutoResetEvent(false);
+
+				ffmpegConverter = new FFmpegPixelConverter();
+				ffmpegConverter.Init(captSize, captFormat, destSize, destFormat, downscaleFilter);
+
+				syncEvent = new AutoResetEvent(false);
 
                 deviceReady = true;
 
@@ -319,9 +329,42 @@ namespace MediaToolkit
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
                             var frame = VideoBuffer.GetFrame();
-                            pixConverter.Process(srcFrame, frame);
+							if(srcFrame.DriverType == VideoDriverType.GDI)
+							{
+								//ffmpegConverter.Convert()
+								var bmp = ((GDIFrame)srcFrame).GdiBitmap;
+								if (bmp != null)
+								{
+									//bmp.Save("test.jpg");
 
-                            frame.Time = time;
+									var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+									var bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+									try
+									{
+										var srcPtr = bmpData.Scan0;
+										var srcStride = bmpData.Stride;
+										IFrameBuffer[] srcBuffer = new FrameBuffer[] 
+										{
+											new FrameBuffer(srcPtr, srcStride)
+										};
+
+										var destBuffer = frame.Buffer;
+										var _res = ffmpegConverter.Convert(ref srcBuffer, ref destBuffer);
+									}
+									finally
+									{
+										bmp.UnlockBits(bmpData);
+									}
+
+								}
+							}
+							else
+							{
+								pixConverter.Process(srcFrame, frame);
+
+							}
+
+							frame.Time = time;
                             lastTime = frame.Time;
                             VideoBuffer.OnBufferUpdated(frame);
 
@@ -458,6 +501,12 @@ namespace MediaToolkit
         private void CleanUp()
         {
             CloseDx();
+
+			if (ffmpegConverter != null)
+			{
+				ffmpegConverter.Close();
+				ffmpegConverter = null;
+			}
 
             if (pixConverter != null)
             {

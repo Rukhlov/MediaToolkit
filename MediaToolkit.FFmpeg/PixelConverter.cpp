@@ -145,6 +145,95 @@ namespace FFmpegLib {
 			return res;
 		}
 
+		int Convert(array<IFrameBuffer^>^% srcBuffer, array<IFrameBuffer^>^% destBuffer) {
+
+			int res = 0;
+			if (!initialized) {
+
+				throw gcnew InvalidOperationException("Not initialized");
+			}
+
+			try {
+
+				srcFrame = av_frame_alloc();
+				srcFrame->width = srcWidth;
+				srcFrame->height = srcHeight;
+				srcFrame->format = srcFormat;
+
+				int srcSize = av_image_fill_arrays(srcFrame->data, srcFrame->linesize,
+					reinterpret_cast<uint8_t*>(srcBuffer[0]->Data.ToPointer()), srcFormat, srcWidth, srcHeight, 16);
+
+				if (srcSize < 0) {
+					throw gcnew InvalidOperationException("Could not fill source frame " + srcSize);
+				}
+
+			
+				//const uint8_t* src_data[1] = {
+				//	reinterpret_cast<uint8_t*>(srcBuffer[0]->Data.ToPointer())
+				//};
+
+				//int scr_linesize[1] = {
+				//	srcBuffer[0]->Stride
+				//};
+				
+	/*			uint8_t* src_data[1] = {};
+				int scr_linesize[1] = {};
+				for (int i = 0; i < 1; i++) {
+					src_data[i] = reinterpret_cast<uint8_t*>(srcBuffer[i]->Data.ToPointer());
+					scr_linesize[i] = srcBuffer[i]->Stride;
+				}
+*/
+				//const uint8_t* src_data[4] =
+				//{
+				//	reinterpret_cast<uint8_t*>(srcBuffer[0]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(srcBuffer[1]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(srcBuffer[2]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(srcBuffer[3]->Data.ToPointer())
+				//};
+
+				//const int scr_linesize[4] =
+				//{
+				//	srcBuffer[0]->Stride,
+				//	srcBuffer[1]->Stride,
+				//	srcBuffer[2]->Stride,
+				//	srcBuffer[3]->Stride,
+				//};
+
+				//uint8_t* dest_data[4] =
+				//{
+				//	reinterpret_cast<uint8_t*>(destBuffer[0]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(destBuffer[1]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(destBuffer[2]->Data.ToPointer()),
+				//	reinterpret_cast<uint8_t*>(destBuffer[3]->Data.ToPointer())
+				//};
+
+				//int dest_linesize[4] =
+				//{
+				//	destBuffer[0]->Stride,
+				//	destBuffer[1]->Stride,
+				//	destBuffer[2]->Stride,
+				//	destBuffer[3]->Stride,
+				//};
+				
+				uint8_t* dest_data[4] = {};
+				int dest_linesize[4] = {};
+				for (int i = 0; i < destBuffer->Length; i++) {
+					dest_data[i] = reinterpret_cast<uint8_t*>(destBuffer[i]->Data.ToPointer());
+					dest_linesize[i] = destBuffer[i]->Stride;
+				}
+
+				res = sws_scale(sws_ctx, srcFrame->data, srcFrame->linesize, 0, srcHeight, dest_data, dest_linesize);
+
+			}
+			catch (Exception^ ex) {
+
+				logger->TraceEvent(TraceEventType::Error, 0, ex->Message);
+				throw;
+			}
+
+			return res;
+		}
+
 		void _Convert(IVideoFrame^ srcFrame, IVideoFrame^ destFrame) {
 
 			if (!initialized) {
