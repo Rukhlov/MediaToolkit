@@ -75,7 +75,11 @@ namespace MediaToolkit.MediaFoundation
 			{
 				encoder = new FFmpegH264Encoder(device);
 			}
-			else
+            else if (encoderName == "H264EncCpuNull" || encoderName == "H264EncGpuNull")
+            {
+                encoder = new H264NullEncoder();
+            }
+            else
 			{
 				encoder = new MfH264EncoderEx(device);
 			}
@@ -158,8 +162,28 @@ namespace MediaToolkit.MediaFoundation
 		event Action<IntPtr, int, double> DataEncoded;
 	}
 
+    class H264NullEncoder : IVideoFrameEncoder
+    {
+        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
+        public event Action<IntPtr, int, double> DataEncoded;
 
-	class FFmpegH264Encoder : IVideoFrameEncoder
+        private Device device = null;
+        public H264NullEncoder() { }
+
+        public void Setup(VideoEncoderSettings settings){ }
+        public void Start() { }
+        public void Stop() { }
+        public void Close() { }
+
+        public bool ProcessFrame(IVideoFrame srcFrame)
+        {
+            return true;
+        }
+
+    }
+
+
+    class FFmpegH264Encoder : IVideoFrameEncoder
 	{
 		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 		private FFmpegLib.H264Encoder encoder = null;

@@ -320,8 +320,24 @@ namespace ScreenStreamer.Wpf.Helpers
 				Format = VideoCodingFormat.H264,
 			});
 
+            videoEncoders.Add(new EncoderItem
+            {
+                Name = "H264EncCpuNull",
+                Id = "H264EncCpuNull",
+                DriverType = VideoDriverType.CPU,
+                PixelFormat = PixFormat.NV12,
+                Format = VideoCodingFormat.H264,
+            });
 
-			return videoEncoders;
+            videoEncoders.Add(new EncoderItem
+            {
+                Name = "H264EncGpuNull",
+                Id = "H264EncGpuNull",
+                DriverType = VideoDriverType.D3D11,
+                PixelFormat = PixFormat.NV12,
+                Format = VideoCodingFormat.H264,
+            });
+            return videoEncoders;
 		}
 
 		public const string ALL_DISPLAYS = "All";

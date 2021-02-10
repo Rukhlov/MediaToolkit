@@ -540,6 +540,8 @@ namespace MediaToolkit.Core
         GDIPlus,
         Datapath,
         DXGIDeskDupl,
+
+		DummyRGB32,
     }
 
     [Serializable]

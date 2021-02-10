@@ -142,6 +142,7 @@
     <Compile Include="ScreenCaptures\DDACapture\DDACapture.cs" />
     <Compile Include="ScreenCaptures\DDACapture\DDAOutputProvider.cs" />
     <Compile Include="ScreenCaptures\Direct3D9Capture.cs" />
+    <Compile Include="ScreenCaptures\DummyRGBCapture.cs" />
     <Compile Include="ScreenCaptures\GDICapture.cs" />
     <Compile Include="ScreenCaptures\GDIPlusCapture.cs" />
     <Compile Include="ScreenCaptures\ScreenCaptureBase.cs" />

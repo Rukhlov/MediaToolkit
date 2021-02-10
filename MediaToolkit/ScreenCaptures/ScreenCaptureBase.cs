@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.DirectX;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using MediaToolkit.Utils;
@@ -84,6 +85,7 @@ namespace MediaToolkit.ScreenCaptures
 				gdiCapt.CaptureAllLayers = (type == VideoCaptureType.GDILayered);
 
 				capture = gdiCapt;
+
 			}
 			else if (type == VideoCaptureType.DXGIDeskDupl)
 			{
@@ -93,7 +95,10 @@ namespace MediaToolkit.ScreenCaptures
 			{
 				//capture = new DatapathDesktopCapture();
 			}
-
+			else if (type == VideoCaptureType.DummyRGB32)
+			{
+				capture = new DummyRGBCapture();
+			}
 
 			//else if (type == VideoCaptureType.GDIPlus)
 			//{
@@ -121,4 +126,6 @@ namespace MediaToolkit.ScreenCaptures
         public DDAOutputManager DDAOutputMan { get; set; }
 
     }
+
+
 }

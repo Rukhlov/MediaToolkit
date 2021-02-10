@@ -73,6 +73,37 @@ namespace MediaToolkit.DirectX
 			}
 		}
 
+		public static Texture2D CreateTexture2DFromStream(Stream stream, SharpDX.Direct3D11.Device device, SharpDX.Direct3D11.Texture2DDescription descr)
+		{
+			using (SharpDX.WIC.ImagingFactory2 factory = new SharpDX.WIC.ImagingFactory2())
+			{			
+				using (var bitmapSource = LoadBitmapSource(factory, stream))
+				{
+					return CreateTexture2DFromBitmapSource(device, descr, bitmapSource);
+				}
+			}
+		}
+
+		public static SharpDX.WIC.BitmapSource LoadBitmapSource(SharpDX.WIC.ImagingFactory2 factory, Stream stream)
+		{
+			using (var bitmapDecoder = new SharpDX.WIC.BitmapDecoder(factory, stream, SharpDX.WIC.DecodeOptions.CacheOnDemand))
+			{
+				var formatConverter = new SharpDX.WIC.FormatConverter(factory);
+
+				using (var frameDecode = bitmapDecoder.GetFrame(0))
+				{
+					formatConverter.Initialize(frameDecode,
+						SharpDX.WIC.PixelFormat.Format32bppPRGBA,
+						SharpDX.WIC.BitmapDitherType.None,
+						null,
+						0.0,
+						SharpDX.WIC.BitmapPaletteType.Custom);
+				}
+
+				return formatConverter;
+			}
+		}
+
 		public static SharpDX.Direct3D11.Texture2D CreateTexture2DFromBitmapSource(SharpDX.Direct3D11.Device device, SharpDX.WIC.BitmapSource bitmapSource)
 		{
 			var descr = new SharpDX.Direct3D11.Texture2DDescription()

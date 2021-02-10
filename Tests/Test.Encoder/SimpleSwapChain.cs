@@ -250,6 +250,7 @@ namespace Test.Encoder
 				}
 
 			}
+
 			using (var dwriteFactory = new SharpDX.DirectWrite.Factory(SharpDX.DirectWrite.FactoryType.Shared))
 			{
 				sceneColorBrush = new Direct2D.SolidColorBrush(d2dContext, Color.White);
