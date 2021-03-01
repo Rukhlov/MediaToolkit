@@ -121,11 +121,13 @@ namespace MediaToolkit.ScreenCaptures
 			dwriteFactory = new SharpDX.DirectWrite.Factory(SharpDX.DirectWrite.FactoryType.Shared);
 			
 			sceneColorBrush = new Direct2D.SolidColorBrush(d2dContext, Color.Yellow);
-			textFormat = new SharpDX.DirectWrite.TextFormat(dwriteFactory, "Calibri", 120)
+            int fontSize = (int)(Math.Min(SrcRect.Width, SrcRect.Height) / 8);
+
+			textFormat = new SharpDX.DirectWrite.TextFormat(dwriteFactory, "Calibri", fontSize)
 			{
-				TextAlignment = SharpDX.DirectWrite.TextAlignment.Leading,
+				TextAlignment = SharpDX.DirectWrite.TextAlignment.Center,
 				ParagraphAlignment = SharpDX.DirectWrite.ParagraphAlignment.Center
-			};
+            };
 
 
 			sharedTexture = new SharpDX.Direct3D11.Texture2D(device,
@@ -146,34 +148,39 @@ namespace MediaToolkit.ScreenCaptures
 		}
 		private SharpDX.DirectWrite.Factory dwriteFactory = null;
 
+        private Stopwatch stopwatch = new Stopwatch();
+        private ulong drawCount = 0;
+
 		public override ErrorCode TryGetFrame(out IVideoFrame frame, int timeout = 10)
 		{
 			frame = null;
 			ErrorCode result = ErrorCode.Ok;
-			device.ImmediateContext.CopyResource(srcTexture, screenTexture);
-			var text = DateTime.Now.ToString("HH:mm:ss.fff");
-			//var text = "TEST";
-			d2dContext.BeginDraw();
+
+            DateTime time = DateTime.Now;
+            drawCount++;
+            var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+            stopwatch.Restart();
+            var fps = 1000.0 / elapsedMilliseconds;
+
+			var text = SrcRect.Width + "x" + SrcRect.Height + "\r\n" +
+                time.ToString("HH:mm:ss.fff") + "\r\n" + 
+                "------------------------\r\n" +
+                "FPS: " + fps.ToString("F1") + "\r\n" + 
+                "Interval: " + elapsedMilliseconds +"\r\n" +
+                "Count: " + drawCount;
+
+            device.ImmediateContext.CopyResource(srcTexture, screenTexture);
+
+            d2dContext.BeginDraw();
 			d2dContext.Transform = Matrix3x2.Identity;
 
-			var lineLength = 1024;
-			var textHeight = 64;
+            using (var textLayout = new SharpDX.DirectWrite.TextLayout(dwriteFactory, text, textFormat, SrcRect.Width, SrcRect.Height))
+            {
+                d2dContext.DrawTextLayout(new Vector2(0, 0), textLayout, sceneColorBrush, DrawTextOptions.None);
 
-			var location = new Point(8, 8);
-			//using (var textLayout = new SharpDX.DirectWrite.TextLayout(dwriteFactory, "HH:mm:ss.fff", textFormat, 0, 0))
-			//{
-			//	var metrics = textLayout.Metrics;
-			//	var textSize = new GDI.SizeF(metrics.WidthIncludingTrailingWhitespace, metrics.Height);
-			//	var rect = new RectangleF(location.X, location.Y, location.X + textSize.Width, location.Y + textSize.Height);
+            }
 
-			//	d2dContext.DrawText(text, textFormat, rect, sceneColorBrush);
-			
-			//}
-
-			var rect = new RectangleF(location.X, location.Y, location.X + lineLength, location.Y + textHeight);
-
-			d2dContext.DrawText(text, textFormat, rect, sceneColorBrush);
-			d2dContext.EndDraw();
+            d2dContext.EndDraw();
 
 
 			device.ImmediateContext.CopyResource(screenTexture, sharedTexture);

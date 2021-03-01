@@ -81,7 +81,14 @@ namespace ScreenStreamer.Wpf.Helpers
 				CaptType = VideoCaptureType.Datapath,
 				Name = "Datapath"
 			},
-		};
+
+            new ScreenCaptureItem
+            {
+                CaptFeature = ScreenCaptureFeature.Default,
+                CaptType = VideoCaptureType.DummyRGB32,
+                Name = "DummyRGB"
+            },
+        };
 
 
 		public enum LengthDirection
