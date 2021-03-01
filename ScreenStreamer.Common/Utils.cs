@@ -22,15 +22,16 @@ namespace ScreenStreamer.Common
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void RunAsSystem()
+        public static void RunAsSystem(string[] args = null)
         {
             try
             {
                 var fileName = Process.GetCurrentProcess().MainModule.FileName;
 
+                var arguments = string.Join(" ", args);
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    Arguments = "-system",
+                    Arguments = arguments,//"-system",
                     FileName = fileName,
                     UseShellExecute = true,
                     Verb = "runas"
@@ -49,7 +50,7 @@ namespace ScreenStreamer.Common
             }
         }
 
-        public static int RestartAsSystem()
+        public static int RestartAsSystem(string[] args = null)
         {// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
          // перезапускам процесс с системными правами
             logger.Debug("RestartAsSystem()");
@@ -61,9 +62,17 @@ namespace ScreenStreamer.Common
                 var applicationName = AppDomain.CurrentDomain.FriendlyName;
 
                 var applicatonFullName = System.IO.Path.Combine(applicationDir, applicationName);
+                
 
                 var commandLine = "-norestart";
-
+                if(args!=null && args.Length > 0)
+                {
+                    var argStr = string.Join(" ", args);
+                    if (!string.IsNullOrEmpty(argStr))
+                    {
+                        commandLine += " " + argStr;
+                    }
+                }
 
                 pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
 

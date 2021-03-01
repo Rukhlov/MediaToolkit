@@ -90,8 +90,27 @@ namespace ScreenStreamer.Wpf.Helpers
             },
         };
 
+        public static List<ScreenCaptureItem> GetScreenCaptures()
+        {
+           var features = GetCaptureFeatures();
+            var allCaptures = AllSupportedCaptures;
 
-		public enum LengthDirection
+            return allCaptures.Where(c =>
+            {
+                if (!Program.TestMode)
+                {
+                    if (c.CaptType == VideoCaptureType.DummyRGB32)
+                    {
+                        return false;
+                    }
+                }
+
+                return features.HasFlag(c.CaptFeature);
+
+            }).ToList();
+        }
+
+        public enum LengthDirection
 		{
 			Vertical,
 			Horizontal
@@ -327,23 +346,27 @@ namespace ScreenStreamer.Wpf.Helpers
 				Format = VideoCodingFormat.H264,
 			});
 
-            videoEncoders.Add(new EncoderItem
+            if (Program.TestMode)
             {
-                Name = "H264EncCpuNull",
-                Id = "H264EncCpuNull",
-                DriverType = VideoDriverType.CPU,
-                PixelFormat = PixFormat.NV12,
-                Format = VideoCodingFormat.H264,
-            });
+                videoEncoders.Add(new EncoderItem
+                {
+                    Name = "H264EncCpuNull",
+                    Id = "H264EncCpuNull",
+                    DriverType = VideoDriverType.CPU,
+                    PixelFormat = PixFormat.NV12,
+                    Format = VideoCodingFormat.H264,
+                });
 
-            videoEncoders.Add(new EncoderItem
-            {
-                Name = "H264EncGpuNull",
-                Id = "H264EncGpuNull",
-                DriverType = VideoDriverType.D3D11,
-                PixelFormat = PixFormat.NV12,
-                Format = VideoCodingFormat.H264,
-            });
+                videoEncoders.Add(new EncoderItem
+                {
+                    Name = "H264EncGpuNull",
+                    Id = "H264EncGpuNull",
+                    DriverType = VideoDriverType.D3D11,
+                    PixelFormat = PixFormat.NV12,
+                    Format = VideoCodingFormat.H264,
+                });
+            }
+
             return videoEncoders;
 		}
 

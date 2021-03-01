@@ -21,7 +21,15 @@ namespace ScreenStreamer.Wpf
 	{
 		private static Logger logger = null;
 		public static StartupParameters StartupParams { get; private set; }
-		private static bool initialized = false;
+        public static bool TestMode => StartupParams?.TestMode ?? false;
+
+#if DEBUG
+        public static bool DebugMode = true;
+#else
+        public static bool DebugMode = false;
+#endif
+
+        private static bool initialized = false;
 
 		static Program()
 		{
@@ -29,15 +37,16 @@ namespace ScreenStreamer.Wpf
 			{
 				AssemblyPath = mediaToolkitPath;
 				AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-			}
-		}
+            }
+            
+        }
 
         [STAThread]
         public static int Main(string[] args)
         {
             int exitCode = 0;
-			
-			InitLogger();
+
+            InitLogger();
 
             logger.Info("============================ START ============================");
 
@@ -59,14 +68,28 @@ namespace ScreenStreamer.Wpf
 						//return -1;
 						//...
 					}
-
 				}
+
 
                 if (StartupParams.RunAsSystem)
                 {
                     if (StartupParams.IsElevated)
                     {
-                        if (AppManager.RestartAsSystem() > 0)
+                        List<string> _args = new List<string>();
+                        if (args != null && args.Length > 0)
+                        {
+                            foreach(var arg in args)
+                            {
+                                var a = arg.ToLower();
+                                if (a == "-system")
+                                {
+                                    continue;
+                                }
+                                _args.Add(arg);
+                            }
+                        }
+
+                        if (AppManager.RestartAsSystem(_args.ToArray()) > 0)
                         {
                             return 0;
                         }
@@ -74,7 +97,7 @@ namespace ScreenStreamer.Wpf
                     }
                     else
                     {
-                        AppManager.RunAsSystem();
+                        AppManager.RunAsSystem(args);
 
                         return 0;
                     }
@@ -93,7 +116,7 @@ namespace ScreenStreamer.Wpf
 					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 					application.InitializeComponent();
 					initialized = true;
-
+                    
 					logger.Info("============================ RUN ============================");
 					application.Run();
 				}
@@ -277,13 +300,9 @@ namespace ScreenStreamer.Wpf
 
 			if (needConsole)
 			{
-				var hWnd = Kernel32.GetConsoleWindow();
-				if (hWnd == IntPtr.Zero)
-				{
-					Kernel32.AllocConsole();
-				}
-			}
-		}
+                Utils.WinConsole.AllocConsole();
+            }
+        }
 
 
         public class StartupParameters
@@ -298,6 +317,8 @@ namespace ScreenStreamer.Wpf
 			public bool ResetConfig { get; private set; } = false;
 
 			public bool AutoStream { get; private set; } = false;
+            public bool TestMode { get; private set; } = false;
+            //public bool AllocConsole { get; private set; } = false;
 
             public bool IsRemoteSession { get; private set; } = false;
             public bool IsRemotelyControlled { get; private set; } = false;
@@ -325,7 +346,15 @@ namespace ScreenStreamer.Wpf
 					{
 						startupParams.ResetConfig = true;
 					}
-					else if (_arg == "-autostream")
+                    //else if (_arg == "-console")
+                    //{
+                    //    startupParams.AllocConsole = true;
+                    //}
+                    else if (_arg == "-test")
+                    {
+                        startupParams.TestMode = true;
+                    }
+                    else if (_arg == "-autostream")
                     {
                         startupParams.AutoStream = true;
                     }

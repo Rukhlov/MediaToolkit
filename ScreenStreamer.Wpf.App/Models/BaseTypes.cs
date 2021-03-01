@@ -33,6 +33,7 @@ namespace ScreenStreamer.Wpf.Models
 		NvFBC = 4,
 		Datapath = 8,
 
+
 		All = Default | Win8 | NvFBC | Datapath,
 	}
 

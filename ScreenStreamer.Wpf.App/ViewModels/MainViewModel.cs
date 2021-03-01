@@ -60,7 +60,34 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
         public override string Caption
         {
 
-            get => LocalizationManager.GetString("MainWindowTitle");
+            get
+            {
+                string caption = LocalizationManager.GetString("MainWindowTitle");
+                List<string> modes = new List<string>();
+                if (Program.DebugMode)
+                {
+                    modes.Add("DEBUG");
+                }
+                if (Program.TestMode)
+                {
+                    modes.Add("TEST"); 
+                }
+
+                if (Program.StartupParams.IsSystem)
+                {
+                    modes.Add("SYSTEM");
+                }
+
+                if (modes.Count > 0)
+                {
+                   // string modeStr = string.Join("|", modes);
+                    string modeStr = "[" + string.Join("|", modes) + "]";
+                    caption += " " + modeStr;
+                }
+
+                return caption;
+            }
+            //get => LocalizationManager.GetString("MainWindowTitle");
             //get => mainCaption;
             //get => "Polywall Streamer";
             //get => "Polywall Streamer " + AppModel.AppVersion;

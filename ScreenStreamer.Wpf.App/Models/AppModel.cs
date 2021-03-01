@@ -229,12 +229,13 @@ namespace ScreenStreamer.Wpf.Models
 		{
 			logger.Debug("UpdateScreenCaptures()");
 
-            ScreenCaptFeatures = VideoHelper.GetCaptureFeatures();
-            var allCaptures = VideoHelper.AllSupportedCaptures;
+            //         ScreenCaptFeatures = VideoHelper.GetCaptureFeatures();
+            //         var allCaptures = VideoHelper.AllSupportedCaptures;
 
-			ScreenCaptures = allCaptures.Where(c => ScreenCaptFeatures.HasFlag(c.CaptFeature)).ToList();
+            //ScreenCaptures = allCaptures.Where(c => ScreenCaptFeatures.HasFlag(c.CaptFeature)).ToList();
+            ScreenCaptures = VideoHelper.GetScreenCaptures();
 
-		}
+        }
 
 		public void UpdateVideoSources()
 		{

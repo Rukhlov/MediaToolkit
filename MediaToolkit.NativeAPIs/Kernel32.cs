@@ -42,14 +42,53 @@ namespace MediaToolkit.NativeAPIs
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetDllDirectory(string lpPathName);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern bool AllocConsole();
+
+        [DllImport("kernel32.dll", SetLastError = true,  CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern bool AttachConsole(uint dwProcessId);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern IntPtr CreateFileW(
+              string lpFileName,
+              uint dwDesiredAccess,
+              uint dwShareMode,
+              IntPtr lpSecurityAttributes,
+              uint dwCreationDisposition,
+              uint dwFlagsAndAttributes,
+              IntPtr hTemplateFile
+            );
+
+        private const uint GENERIC_WRITE = 0x40000000;
+        private const uint GENERIC_READ = 0x80000000;
+        private const uint FILE_SHARE_READ = 0x00000001;
+        private const uint FILE_SHARE_WRITE = 0x00000002;
+        private const uint OPEN_EXISTING = 0x00000003;
+        private const uint FILE_ATTRIBUTE_NORMAL = 0x80;
+
+        public static Microsoft.Win32.SafeHandles.SafeFileHandle CreateConOutSafeHandle()
+        {
+            var hFile = CreateFileW("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
+            return new Microsoft.Win32.SafeHandles.SafeFileHandle(hFile, true);
+        }
+
+        public static Microsoft.Win32.SafeHandles.SafeFileHandle CreateConInSafeHandle()
+        {
+            var hFile = CreateFileW("CONIN$", GENERIC_READ, FILE_SHARE_READ, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
+            return new Microsoft.Win32.SafeHandles.SafeFileHandle(hFile, true);
+        }
 
         [DllImport("kernel32.dll")]
         public static extern bool FreeConsole();
 
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetConsoleWindow();
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetStdHandle(uint nStdHandle);
+
+        [DllImport("kernel32.dll")]
+        public static extern void SetStdHandle(uint nStdHandle, IntPtr handle);
 
         [DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool CloseHandle(IntPtr hSnapshot);
