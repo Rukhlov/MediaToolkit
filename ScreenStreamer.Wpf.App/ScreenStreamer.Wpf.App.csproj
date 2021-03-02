@@ -158,6 +158,7 @@
     <Compile Include="Prism\Mvvm.cs" />
     <Compile Include="Prism\Commands.cs" />
     <Compile Include="Utils\CommonTools.cs" />
+    <Compile Include="Utils\WinConsole.cs" />
     <Compile Include="Utils\WpfHelpers.cs" />
     <Compile Include="ViewModels\Common\MessageBoxViewModel.cs" />
     <Compile Include="Utils\NativeMethods.cs" />

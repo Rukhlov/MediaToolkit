@@ -24,17 +24,17 @@ namespace ScreenStreamer.Wpf
         public static bool TestMode => StartupParams?.TestMode ?? false;
 
 #if DEBUG
-        public static bool DebugMode = true;
+        public static readonly bool DebugMode = true;
 #else
-        public static bool DebugMode = false;
+        public static readonly bool DebugMode = false;
 #endif
 
-        private static bool initialized = false;
+		private static bool initialized = false;
 
 		static Program()
 		{
 			if(Utils.ConfigTools.TryGetAppSettingsValue("MediaToolkitPath", out string mediaToolkitPath))
-			{
+			{// если переопределен путь к .\MediaToolkit 
 				AssemblyPath = mediaToolkitPath;
 				AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             }
@@ -72,31 +72,19 @@ namespace ScreenStreamer.Wpf
 
 
                 if (StartupParams.RunAsSystem)
-                {
-                    if (StartupParams.IsElevated)
-                    {
-                        List<string> _args = new List<string>();
-                        if (args != null && args.Length > 0)
-                        {
-                            foreach(var arg in args)
-                            {
-                                var a = arg.ToLower();
-                                if (a == "-system")
-                                {
-                                    continue;
-                                }
-                                _args.Add(arg);
-                            }
-                        }
+				{// что бы можно было захватывать защищенный рабочий стол с LogonScreen-ом и UAC 
+					//запускаем правами SYSTEM
 
-                        if (AppManager.RestartAsSystem(_args.ToArray()) > 0)
+                    if (StartupParams.IsElevated)
+                    {// если права повышеные то можно запустить процесс с правами системы
+						if (AppManager.RestartAsSystem(args) > 0)
                         {
                             return 0;
                         }
-                        logger.Warn("Restart failed...");
+                        logger.Warn("Restart as system failed...");
                     }
                     else
-                    {
+                    {// сначала получаем права админа...
                         AppManager.RunAsSystem(args);
 
                         return 0;
@@ -116,8 +104,8 @@ namespace ScreenStreamer.Wpf
 					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
 					application.InitializeComponent();
 					initialized = true;
-                    
-					logger.Info("============================ RUN ============================");
+
+                    logger.Info("============================ RUN ============================");
 					application.Run();
 				}
 				finally
@@ -146,6 +134,7 @@ namespace ScreenStreamer.Wpf
            
             return exitCode;
         }
+
 		private static string AssemblyPath = @"..\";
 		private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
@@ -366,49 +355,48 @@ namespace ScreenStreamer.Wpf
 
                 using (var wi = System.Security.Principal.WindowsIdentity.GetCurrent())
                 {
-
                     startupParams.UserName = wi.Name;
                     startupParams.IsElevated = (wi.Owner != wi.User);
                     startupParams.IsSystem = wi.IsSystem;
-
                 }
 
                 startupParams.IsRemoteSession = SystemParameters.IsRemoteSession;
                 startupParams.IsRemotelyControlled = SystemParameters.IsRemotelyControlled;
                 startupParams.IsCompositionEnabled = DwmApi.IsCompositionEnabled();
 
-
-
                 return startupParams;
             }
 
 			public string GetSysInfo()
 			{
+				StringBuilder sb = new StringBuilder();
                 var sysInfo = Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
 
-               // System.Runtime.InteropServices.RuntimeInformation.OSDescription
+				sb.AppendLine(sysInfo);
+			   // System.Runtime.InteropServices.RuntimeInformation.OSDescription
 
 
-                if (StartupParams.IsSystem)
+				if (StartupParams.IsSystem)
 				{// run as system...
-					sysInfo += "IsSystem\r\n";
+					sb.AppendLine("SYSTEM");
 				}
-				else if (StartupParams.IsElevated)
+
+				if (StartupParams.IsElevated)
 				{// запущен с повышеными правами
-					sysInfo += "IsElevated\r\n";
+					sb.AppendLine("ELEVATED");
 				}
-				else if (StartupParams.IsRemotelyControlled || StartupParams.IsRemoteSession)
+
+				if (StartupParams.IsRemotelyControlled || StartupParams.IsRemoteSession)
 				{// rdp 
-					sysInfo += "IsRDP: " + StartupParams.IsRemotelyControlled + ";" + StartupParams.IsRemoteSession + "\r\n";
+					sb.AppendLine("RDP: " + StartupParams.IsRemotelyControlled + ";" + StartupParams.IsRemoteSession);
 				}
-				else if (!StartupParams.IsCompositionEnabled)
+
+				if (!StartupParams.IsCompositionEnabled)
 				{// выключена композитная отрисовка
-					sysInfo += "DWM Disabled\r\n";
+					sb.AppendLine("DWM Disabled");
 				}
 
-
-				//...
-				return sysInfo;
+				return sb.ToString();
 			}
 
             public override string ToString()

@@ -18,92 +18,100 @@ using NLog;
 
 namespace ScreenStreamer.Common
 {
-    public class AppManager
-    {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+	public class AppManager
+	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void RunAsSystem(string[] args = null)
-        {
-            try
-            {
-                var fileName = Process.GetCurrentProcess().MainModule.FileName;
+		public static void RunAsSystem(string[] args = null)
+		{
+			try
+			{
+				var fileName = Process.GetCurrentProcess().MainModule.FileName;
 
-                var arguments = string.Join(" ", args);
-                ProcessStartInfo startInfo = new ProcessStartInfo
-                {
-                    Arguments = arguments,//"-system",
-                    FileName = fileName,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-                Process process = new Process
-                {
-                    StartInfo = startInfo,
-                };
+				var arguments = string.Join(" ", args);
+				ProcessStartInfo startInfo = new ProcessStartInfo
+				{
+					Arguments = arguments,//"-system",
+					FileName = fileName,
+					UseShellExecute = true,
+					Verb = "runas"
+				};
+				Process process = new Process
+				{
+					StartInfo = startInfo,
+				};
 
-                process.Start();
+				process.Start();
 
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+		}
 
-        public static int RestartAsSystem(string[] args = null)
-        {// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
-         // перезапускам процесс с системными правами
-            logger.Debug("RestartAsSystem()");
+		public static int RestartAsSystem(string[] args = null)
+		{// что бы можно было переключится на защищенные рабочие столы (Winlogon, ScreenSaver)
+		 // перезапускам процесс с системными правами
+			logger.Debug("RestartAsSystem()");
 
-            int pid = 0;
-            try
-            {
-                var applicationDir = System.IO.Directory.GetCurrentDirectory();
-                var applicationName = AppDomain.CurrentDomain.FriendlyName;
+			int pid = 0;
+			try
+			{
+				var applicationDir = System.IO.Directory.GetCurrentDirectory();
+				var applicationName = AppDomain.CurrentDomain.FriendlyName;
 
-                var applicatonFullName = System.IO.Path.Combine(applicationDir, applicationName);
-                
+				var applicatonFullName = System.IO.Path.Combine(applicationDir, applicationName);
 
-                var commandLine = "-norestart";
-                if(args!=null && args.Length > 0)
-                {
-                    var argStr = string.Join(" ", args);
-                    if (!string.IsNullOrEmpty(argStr))
-                    {
-                        commandLine += " " + argStr;
-                    }
-                }
+				List<string> argsList = new List<string>
+				{
+					"-norestart",
+				};
 
-                pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
+				if (args != null && args.Length > 0)
+				{
+					foreach (var arg in args)
+					{
+						var a = arg.ToLower();
+						if (a == "-system")
+						{
+							continue;
+						}
+						argsList.Add(arg);
+					}
+				}
 
-                if (pid > 0)
-                {
-                    using (var process = System.Diagnostics.Process.GetProcessById(pid))
-                    {
-                        if (process != null)
-                        {
-                            logger.Info("New process started: " + process.ProcessName + " " + process.Id);
-                        }
-                    }
-                }
-                else
-                {
-                    //...
-                    //throw new Exception()
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex);
-                // throw;
-            }
+				var commandLine = string.Join(" ", argsList);
+				pid = ProcessTool.StartProcessWithSystemToken(applicatonFullName, commandLine);
 
-            return pid;
-        }
+				if (pid > 0)
+				{
+					using (var process = System.Diagnostics.Process.GetProcessById(pid))
+					{
+						if (process != null)
+						{
+							logger.Info("New process started: " + process.ProcessName + " " + process.Id);
+						}
+					}
+				}
+				else
+				{
+					//...
+					//throw new Exception()
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.Error(ex);
+				// throw;
+			}
 
-    }
+			return pid;
+		}
 
-    public class SystemManager : IWndMessageProcessor
+	}
+
+	public class SystemManager : IWndMessageProcessor
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -153,7 +161,7 @@ namespace ScreenStreamer.Common
 
 		private void RegisterNotification(IntPtr hWnd, Guid classId)
 		{
-			if(notifyHandles == null)
+			if (notifyHandles == null)
 			{
 				notifyHandles = new Dictionary<Guid, IntPtr>();
 			}

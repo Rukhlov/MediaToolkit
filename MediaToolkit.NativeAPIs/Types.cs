@@ -1795,4 +1795,13 @@ namespace MediaToolkit.NativeAPIs
 		OBJID_QUERYCLASSNAMEIDX = 0xFFFFFFF4,
 		OBJID_NATIVEOM = 0xFFFFFFF0
 	}
+
+
+    public enum GenericAccessRight
+    {
+        GENERIC_ALL = unchecked((int)0x10000000),
+        GENERIC_EXECUTE = unchecked((int)0x20000000),
+        GENERIC_WRITE = unchecked((int)0x40000000),
+        GENERIC_READ = unchecked((int)0x80000000),
+    }
 }

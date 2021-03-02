@@ -58,7 +58,7 @@ namespace MediaToolkit.NativeAPIs
               uint dwFlagsAndAttributes,
               IntPtr hTemplateFile
             );
-
+       
         private const uint GENERIC_WRITE = 0x40000000;
         private const uint GENERIC_READ = 0x80000000;
         private const uint FILE_SHARE_READ = 0x00000001;
@@ -66,16 +66,21 @@ namespace MediaToolkit.NativeAPIs
         private const uint OPEN_EXISTING = 0x00000003;
         private const uint FILE_ATTRIBUTE_NORMAL = 0x80;
 
-        public static Microsoft.Win32.SafeHandles.SafeFileHandle CreateConOutSafeHandle()
+		public const int STD_INPUT_HANDLE = -10;
+		public const int STD_OUTPUT_HANDLE = -11;
+		public const int STD_ERROR_HANDLE = -12;
+
+		public static Microsoft.Win32.SafeHandles.SafeFileHandle CreateConOutSafeHandle()
         {
-            var hFile = CreateFileW("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
+            var hFile = CreateFileW("CONOUT$", GENERIC_WRITE , FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
             return new Microsoft.Win32.SafeHandles.SafeFileHandle(hFile, true);
         }
 
         public static Microsoft.Win32.SafeHandles.SafeFileHandle CreateConInSafeHandle()
         {
-            var hFile = CreateFileW("CONIN$", GENERIC_READ, FILE_SHARE_READ, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
-            return new Microsoft.Win32.SafeHandles.SafeFileHandle(hFile, true);
+			var hFile = CreateFileW("CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
+			//var hFile = CreateFileW("CONIN$", GENERIC_READ, FILE_SHARE_READ, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
+			return new Microsoft.Win32.SafeHandles.SafeFileHandle(hFile, true);
         }
 
         [DllImport("kernel32.dll")]
@@ -85,10 +90,10 @@ namespace MediaToolkit.NativeAPIs
         public static extern IntPtr GetConsoleWindow();
 
         [DllImport("kernel32.dll")]
-        public static extern IntPtr GetStdHandle(uint nStdHandle);
+        public static extern IntPtr GetStdHandle(int nStdHandle);
 
         [DllImport("kernel32.dll")]
-        public static extern void SetStdHandle(uint nStdHandle, IntPtr handle);
+        public static extern void SetStdHandle(int nStdHandle, IntPtr handle);
 
         [DllImport("kernel32.dll", SetLastError = true)]
 		public static extern bool CloseHandle(IntPtr hSnapshot);
