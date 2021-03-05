@@ -17,7 +17,6 @@ using MediaToolkit.Logging;
 
 using GDI = System.Drawing;
 using System;
-using System.Collections.Generic;
 
 namespace MediaToolkit.DirectX
 {
@@ -291,7 +290,7 @@ namespace MediaToolkit.DirectX
 				device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
 				deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
-				SetViewPort(0, 0, srcSize.Width, srcSize.Height);
+				deviceContext.Rasterizer.SetViewport(0, 0, srcSize.Width, srcSize.Height);
 
 				if (srcFormat == PixFormat.RGB16 || srcFormat == PixFormat.RGB15)
 				{
@@ -355,7 +354,7 @@ namespace MediaToolkit.DirectX
 					deviceContext.PixelShader.SetShader(defaultPS, null, 0);
 				}
 
-				SetViewPort(0, 0, destWidth, destHeight);
+				deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
 				deviceContext.OutputMerger.SetTargets(rgbRTV);
 				deviceContext.ClearRenderTargetView(rgbRTV, BackColor);
 				deviceContext.PixelShader.SetShaderResource(0, rgb32SRV);
@@ -366,49 +365,25 @@ namespace MediaToolkit.DirectX
 			}
 			finally
 			{
-				SafeDispose(rgbRTV);
-				SafeDispose(srcSRV);
+				DxTool.SafeDispose(rgbRTV);
+				DxTool.SafeDispose(srcSRV);
 			}
 		}
 
 		public void Close()
 		{
-			SafeDispose(tempSRV);
-			SafeDispose(tempRTV);
-			SafeDispose(tempTexture);
-			SafeDispose(rgbTexture);
-			SafeDispose(textureSampler);
-			SafeDispose(downscaleBilinearPS);
-			SafeDispose(rgb16To32PS);
-			SafeDispose(defaultPS);
-			SafeDispose(defaultVS);
-			SafeDispose(device);
+			DxTool.SafeDispose(tempSRV);
+			DxTool.SafeDispose(tempRTV);
+			DxTool.SafeDispose(tempTexture);
+			DxTool.SafeDispose(rgbTexture);
+			DxTool.SafeDispose(textureSampler);
+			DxTool.SafeDispose(downscaleBilinearPS);
+			DxTool.SafeDispose(rgb16To32PS);
+			DxTool.SafeDispose(defaultPS);
+			DxTool.SafeDispose(defaultVS);
+			DxTool.SafeDispose(device);
 
 		}
-
-		private void SetViewPort(int x, int y, int width, int height)
-		{
-			device.ImmediateContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
-			{
-				Width = width,
-				Height = height,
-				MinDepth = 0f,
-				MaxDepth = 1f,
-				X = x,
-				Y = y,
-			});
-		}
-
-
-		private static void SafeDispose(SharpDX.DisposeBase dispose)
-		{
-			if (dispose != null && !dispose.IsDisposed)
-			{
-				dispose.Dispose();
-				dispose = null;
-			}
-		}
-
 
 	}
 }

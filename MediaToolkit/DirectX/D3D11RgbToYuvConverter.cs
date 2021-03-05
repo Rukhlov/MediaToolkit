@@ -368,7 +368,7 @@ namespace MediaToolkit.DirectX
 				{
 					foreach (var t in srcTextures)
 					{
-						SafeDispose(t);
+						DxTool.SafeDispose(t);
 					}
 				}
 
@@ -379,7 +379,7 @@ namespace MediaToolkit.DirectX
 				{
 					foreach (var tex in yuvTextures)
 					{
-						SafeDispose(tex);
+						DxTool.SafeDispose(tex);
 					}
 				}
 			}
@@ -421,7 +421,7 @@ namespace MediaToolkit.DirectX
 			{
 				foreach (var rt in yuvTargets)
 				{
-					SafeDispose(rt);
+					DxTool.SafeDispose(rt);
 				}
 
 			}
@@ -519,7 +519,7 @@ namespace MediaToolkit.DirectX
 			}
 			deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
 
-			SetViewPort(0, 0, destWidth, destHeight);
+			deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
 			deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
 			ShaderResourceView rgbSRV = null;
@@ -562,14 +562,14 @@ namespace MediaToolkit.DirectX
 			}
 			finally
 			{
-				SafeDispose(rgbSRV);
+				DxTool.SafeDispose(rgbSRV);
 			}
 
 			if (destFormat == PixFormat.NV12)
 			{
 				RenderTargetView nv12ChromaRT = yuvTargets[1];
 
-				SetViewPort(0, 0, destWidth / 2, destHeight / 2);
+				deviceContext.Rasterizer.SetViewport(0, 0, destWidth / 2f, destHeight / 2f);
 				deviceContext.PixelShader.SetShader(defaultPS, null, 0);
 				deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
 				deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
@@ -587,11 +587,11 @@ namespace MediaToolkit.DirectX
 				}
 				else if (destFormat == PixFormat.I422)
 				{
-					SetViewPort(0, 0, destWidth / 2, destHeight);
+					deviceContext.Rasterizer.SetViewport(0, 0, destWidth / 2f, destHeight);
 				}
 				else if (destFormat == PixFormat.I420)
 				{
-					SetViewPort(0, 0, destWidth / 2, destHeight / 2);
+					deviceContext.Rasterizer.SetViewport(0, 0, destWidth / 2f, destHeight / 2f);
 				}
 
 				deviceContext.PixelShader.SetShader(defaultPS, null, 0);
@@ -669,7 +669,7 @@ namespace MediaToolkit.DirectX
 				device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
 				deviceContext.PixelShader.SetShader(scalingShader, null, 0);
 
-				SetViewPort(0, 0, destWidth, destHeight);
+				deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
 				deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
 				deviceContext.OutputMerger.SetTargets(destRTV);
@@ -683,8 +683,8 @@ namespace MediaToolkit.DirectX
 			}
 			finally
 			{
-				SafeDispose(destRTV);
-				SafeDispose(srcSRV);
+				DxTool.SafeDispose(destRTV);
+				DxTool.SafeDispose(srcSRV);
 			}
 		}
 
@@ -761,24 +761,24 @@ namespace MediaToolkit.DirectX
                 rgbProcessor = null;
             }
 
-            SafeDispose(constBuffer);
+			DxTool.SafeDispose(constBuffer);
 
-			SafeDispose(CrCbRT);
-			SafeDispose(CrCbSRV);
+			DxTool.SafeDispose(CrCbRT);
+			DxTool.SafeDispose(CrCbSRV);
 
-			SafeDispose(CbRT);
-			SafeDispose(CbSRV);
+			DxTool.SafeDispose(CbRT);
+			DxTool.SafeDispose(CbSRV);
 
-			SafeDispose(CrRT);
-			SafeDispose(CrSRV);
+			DxTool.SafeDispose(CrRT);
+			DxTool.SafeDispose(CrSRV);
 
-			SafeDispose(rgbTexture);
-			SafeDispose(rgbToYuvPS);
-			SafeDispose(textureSampler);
-			SafeDispose(downscaleBilinearPS);
-			SafeDispose(defaultPS);
-			SafeDispose(defaultVS);
-			SafeDispose(device);
+			DxTool.SafeDispose(rgbTexture);
+			DxTool.SafeDispose(rgbToYuvPS);
+			DxTool.SafeDispose(textureSampler);
+			DxTool.SafeDispose(downscaleBilinearPS);
+			DxTool.SafeDispose(defaultPS);
+			DxTool.SafeDispose(defaultVS);
+			DxTool.SafeDispose(device);
 
 
 
@@ -846,31 +846,6 @@ namespace MediaToolkit.DirectX
 				Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
 			});
 		}
-
-
-		private void SetViewPort(int x, int y, int width, int height)
-		{
-			device.ImmediateContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
-			{
-				Width = width,
-				Height = height,
-				MinDepth = 0f,
-				MaxDepth = 1f,
-				X = x,
-				Y = y,
-			});
-		}
-
-
-		private static void SafeDispose(SharpDX.DisposeBase dispose)
-		{
-			if (dispose != null && !dispose.IsDisposed)
-			{
-				dispose.Dispose();
-				dispose = null;
-			}
-		}
-
 
 	}
 

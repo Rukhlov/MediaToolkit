@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using GDI = System.Drawing;
+using MediaToolkit.SharpDXExt;
 
 namespace MediaToolkit.DirectX
 {
@@ -459,6 +460,16 @@ namespace MediaToolkit.DirectX
 
 	public class DxTool
 	{
+
+		public static void SafeDispose(SharpDX.DisposeBase dispose)
+		{
+			if (dispose != null && !dispose.IsDisposed)
+			{
+				dispose.Dispose();
+				dispose = null;
+			}
+		}
+
 		public static IEnumerable<Format> GetDxgiFormat(PixFormat pixFormat, bool videoFormatSupported = false)
 		{
 			List<Format> formats = new List<Format>();
@@ -1133,6 +1144,28 @@ namespace MediaToolkit.DirectX
 			0.000000f, 0.000000f, 0.000000f, 1.000000f
 		};
 
+	}
+
+}
+
+namespace MediaToolkit.SharpDXExt
+{
+
+	public static class SharpDXExt
+	{
+		public static void SetViewPort(this RasterizerStage resterizer, GDI.Rectangle rect, float minDepth = 0f, float maxDepth = 1f)
+		{
+			resterizer.SetViewport(rect.X, rect.Y, rect.Width, rect.Height, minDepth, maxDepth);
+		}
+
+		public static void SafeDispose(this SharpDX.DisposeBase dispose)
+		{
+			if (!dispose.IsDisposed)
+			{
+				dispose.Dispose();
+				dispose = null;
+			}
+		}
 	}
 
 }

@@ -404,7 +404,7 @@ namespace MediaToolkit.DirectX
             }
             deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
 
-            SetViewPort(0, 0, destWidth, destHeight);
+			deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
             deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
             ShaderResourceView rgbSRV = null;
@@ -438,7 +438,7 @@ namespace MediaToolkit.DirectX
 
             // CbCr -> NV12 chroma
             deviceContext.PixelShader.SetShader(defaultPS, null, 0);
-            SetViewPort(0, 0, destWidth / 2, destHeight / 2);
+			deviceContext.Rasterizer.SetViewport(0, 0, destWidth / 2f, destHeight / 2f);
             deviceContext.OutputMerger.SetTargets(nv12ChromaRT);
             deviceContext.ClearRenderTargetView(nv12ChromaRT, SharpDX.Color.Black);
             deviceContext.PixelShader.SetShaderResources(0, CbCrSRV);
@@ -501,9 +501,9 @@ namespace MediaToolkit.DirectX
 
                 device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
                 deviceContext.PixelShader.SetShader(downscalePS, null, 0);
-                //deviceContext.PixelShader.SetShader(defaultPS, null, 0);
+				//deviceContext.PixelShader.SetShader(defaultPS, null, 0);
 
-                SetViewPort(0, 0, destWidth, destHeight);
+				deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
                 deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
                 deviceContext.OutputMerger.SetTargets(destRTV);
@@ -646,18 +646,18 @@ namespace MediaToolkit.DirectX
         }
 
 
-        private void SetViewPort(int x, int y, int width, int height)
-        {
-            device.ImmediateContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
-            {
-                Width = width,
-                Height = height,
-                MinDepth = 0f,
-                MaxDepth = 1f,
-                X = x,
-                Y = y,
-            });
-        }
+        //private void SetViewPort(int x, int y, int width, int height)
+        //{
+        //    device.ImmediateContext.Rasterizer.SetViewport(new SharpDX.Mathematics.Interop.RawViewportF
+        //    {
+        //        Width = width,
+        //        Height = height,
+        //        MinDepth = 0f,
+        //        MaxDepth = 1f,
+        //        X = x,
+        //        Y = y,
+        //    });
+        //}
 
 
         private static void SafeDispose(SharpDX.DisposeBase dispose)
