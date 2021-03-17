@@ -191,25 +191,15 @@
     <EmbeddedResource Include="DirectX\Shaders\DownscaleLanczos6.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Shaders\Nv12ToRgb.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DirectX\Shaders\RgbToNv12.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="DirectX\Shaders\Nv12ToRgb.hlsl" />
+    <EmbeddedResource Include="DirectX\Shaders\RgbToNv12.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Shaders\RgbToYuv.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="DirectX\Shaders\RgbToYuv.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Shaders\Rgb15To32.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="DirectX\Shaders\Rgb16To32.hlsl">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="DirectX\Shaders\Rgb15To32.hlsl" />
+    <EmbeddedResource Include="DirectX\Shaders\Rgb16To32.hlsl" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

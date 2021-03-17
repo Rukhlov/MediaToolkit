@@ -143,8 +143,8 @@ namespace ScreenStreamer.Wpf
 		private static string AssemblyPath = @"..\";
 		private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
+			OnLog("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "", LogLevel.Trace);
 
-			Console.WriteLine("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "");
 			var asmName = args.Name;
 
 			if (asmName.Contains(".resources"))
@@ -173,13 +173,14 @@ namespace ScreenStreamer.Wpf
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine(ex.ToString(), LogLevel.Error);
+					OnLog(ex.ToString(), LogLevel.Error);
 					return null;
 				}
 			}
 			else
 			{
-				Console.WriteLine("Assembly not found: " + asmFileFullName, LogLevel.Error);
+				OnLog("Assembly not found: " + asmFileFullName, LogLevel.Error);
+
 				return null;
 			}
 
@@ -195,8 +196,8 @@ namespace ScreenStreamer.Wpf
             {
                 var thisAssembly = Assembly.GetExecutingAssembly();
                 string embeddedResources = new AssemblyName(thisAssembly.FullName).Name + ".Embedded";
-
                 //const string embeddedResources = "ScreenStreamer.Wpf.App.Embedded";
+
                 var targetName = new AssemblyName(args.Name).Name;
                 var resName = embeddedResources + "." + targetName + ".dll";
 
@@ -214,26 +215,27 @@ namespace ScreenStreamer.Wpf
             }
             catch(Exception ex)
             {
-                StaticLog(ex.Message);
+                OnLog(ex.Message, LogLevel.Error);
                 traceLog += " Failed";
             }
 
-            StaticLog(traceLog);
+            OnLog(traceLog, LogLevel.Trace);
 
             return targetAssembly;
         }
 
-        private static void StaticLog(string traceLog)
+        public static void OnLog(string traceLog, LogLevel logLevel)
         {
-            if (logger != null)
-            {
-                logger.Trace(traceLog);
-            }
-            else
-            {
-                Trace.WriteLine(traceLog);
-            }
-        }
+			if (logger != null)
+			{
+				logger.Log(logLevel, traceLog);
+			}
+			else
+			{
+				Console.WriteLine(traceLog);
+			}
+
+		}
 
         private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
 		{
