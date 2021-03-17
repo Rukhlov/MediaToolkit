@@ -15,7 +15,7 @@ namespace ScreenStreamer.Wpf.Managers
         {
             ResourceDictionary resource = new ResourceDictionary
             {
-                Source = new Uri(@"pack://application:,,,/ScreenStreamer.Wpf.App;component/Templates/NotifyIconTemplate.xaml"),
+                Source = new Uri(@"pack://application:,,,/Templates/NotifyIconTemplate.xaml"),
             };
 
             taskbarIcon = (Hardcodet.Wpf.TaskbarNotification.TaskbarIcon)resource["notifyIcon"];

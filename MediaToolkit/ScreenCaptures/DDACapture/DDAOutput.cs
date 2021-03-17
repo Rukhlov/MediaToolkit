@@ -312,8 +312,10 @@ namespace MediaToolkit.ScreenCaptures
         {
 
             logger.Debug("Activate() ");
-
-            activations++;
+            lock (syncObj)
+            {
+                activations++;
+            }
 
             if (activations > 1)
             {
@@ -381,12 +383,14 @@ namespace MediaToolkit.ScreenCaptures
             return activations;
         }
 
-
+        private object syncObj = new object();
         public int Deactivate()
         {
             logger.Debug("Deactivate()");
-
-            activations--;
+            lock (syncObj)
+            {
+                activations--;
+            }
 
             return activations;
 
@@ -479,10 +483,43 @@ namespace MediaToolkit.ScreenCaptures
 
                     }
 
+                    //if (CaptureMouse && cursorInfo.Visible)
+                    //{
+                    //    DrawCursor(cursorInfo);
+                    //}
+
+
                     if (CaptureMouse && cursorInfo.Visible)
                     {
-                        DrawCursor(cursorInfo);
+                        Texture2D cursorTexture = null;
+                        try
+                        {
+                            if (CreateCursorTexture(cursorInfo, out var cursorRect, out cursorTexture))
+                            {
+                                using (var surf = cursorTexture.QueryInterface<Surface>())
+                                {
+                                    var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                                    var cursorBits = new Direct2D.Bitmap(screenTarget, surf, prop);
+                                    try
+                                    {
+                                        screenTarget.BeginDraw();
+                                        screenTarget.DrawBitmap(cursorBits, cursorRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                                        screenTarget.EndDraw();
+
+                                    }
+                                    finally
+                                    {
+                                        cursorBits?.Dispose();
+                                    }
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            DxTool.SafeDispose(cursorTexture);
+                        }
                     }
+
 
                     device.ImmediateContext.CopyResource(screenTexture, SharedTexture);
                     device.ImmediateContext.Flush();
@@ -762,6 +799,147 @@ namespace MediaToolkit.ScreenCaptures
             }
 
         }
+
+        private unsafe bool CreateCursorTexture(CursorInfo cursorInfo, out RawRectangleF cursorRect, out Texture2D cursorTexture)
+        {
+            cursorRect = new RawRectangleF();
+            cursorTexture = null;
+
+            bool result = false;
+            if (!cursorInfo.Visible)
+            {
+                //logger.Debug("No cursor");
+                return result;
+            }
+
+            var position = cursorInfo.Position;
+
+            var shapeBuff = cursorInfo.PtrShapeBuffer;
+            var shapeInfo = cursorInfo.ShapeInfo;
+
+            int width = shapeInfo.Width;
+            int height = shapeInfo.Height;
+            int pitch = shapeInfo.Pitch;
+
+            int left = position.X;
+            int top = position.Y;
+            int right = position.X + width;
+            int bottom = position.Y + height;
+
+            if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+                var descr = new  Texture2DDescription
+                {
+                    //CpuAccessFlags = CpuAccessFlags.Write,
+                    BindFlags = BindFlags.ShaderResource,//| BindFlags.RenderTarget,
+                    Format = Format.B8G8R8A8_UNorm,
+                    Width = width,
+                    Height = height,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = { Count = 1, Quality = 0 },
+                    Usage = ResourceUsage.Default,
+                    OptionFlags = ResourceOptionFlags.None,
+                };
+
+                var data = new DataBox[] 
+                {
+                    new DataBox(shapeBuff, pitch, 0)
+                };
+
+                cursorRect = new RawRectangleF(left, top, right, bottom);
+                cursorTexture = new Texture2D(device, descr, data);
+                result = true;
+
+            }
+            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
+            {
+                height = height / 2;
+
+                left = position.X;
+                top = position.Y;
+                right = position.X + width;
+                bottom = position.Y + height;
+                pitch = width * 4;
+
+                Texture2D desktopRegionTex = null;
+                try
+                {
+                    desktopRegionTex = new Texture2D(device,
+                    new Texture2DDescription
+                    {
+                        CpuAccessFlags = CpuAccessFlags.Read,
+                        BindFlags = BindFlags.None,
+                        Format = Format.B8G8R8A8_UNorm,
+                        Width = width,
+                        Height = height,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1, Quality = 0 },
+                        Usage = ResourceUsage.Staging,
+                        OptionFlags = ResourceOptionFlags.None,
+                    });
+
+                    var region = new ResourceRegion(left, top, 0, right, bottom, 1);
+                    var immediateContext = device.ImmediateContext;
+
+                    immediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
+
+                    var dataBox = immediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
+                    try
+                    {
+                        var desktopBuffer = new byte[width * height * 4];
+                        Marshal.Copy(dataBox.DataPointer, desktopBuffer, 0, desktopBuffer.Length);
+
+                        fixed (byte* ptr = cursorInfo.GetMonochromeShape(desktopBuffer, new GDI.Size(width, height)))
+                        {
+                            var descr = new Texture2DDescription
+                            {
+                                //CpuAccessFlags = CpuAccessFlags.Write,
+                                BindFlags = BindFlags.ShaderResource,//| BindFlags.RenderTarget,
+                                Format = Format.B8G8R8A8_UNorm,
+                                Width = width,
+                                Height = height,
+                                MipLevels = 1,
+                                ArraySize = 1,
+                                SampleDescription = { Count = 1, Quality = 0 },
+                                Usage = ResourceUsage.Default,
+                                OptionFlags = ResourceOptionFlags.None,
+                            };
+
+                            DataBox[] initData =
+                            {
+                                new DataBox((IntPtr)ptr, pitch, 0),
+                            };
+
+                            cursorRect = new RawRectangleF(left, top, right, bottom);
+                            cursorTexture = new Texture2D(device, descr, initData);
+                            result = true;
+                        };
+
+                    }
+                    finally
+                    {
+                        immediateContext.UnmapSubresource(desktopRegionTex, 0);
+                    }
+
+                }
+                finally
+                {
+                    desktopRegionTex?.Dispose();
+                }
+            }
+            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+                logger.Warn("Not supported cursor type " + ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR);
+                result = false;
+            }
+
+
+            return result;
+        }
+
+
         private unsafe void DrawCursor(CursorInfo cursorInfo)
         {
 

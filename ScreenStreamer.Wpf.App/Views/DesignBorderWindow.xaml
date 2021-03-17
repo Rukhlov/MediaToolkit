@@ -66,7 +66,7 @@
                         Margin="10"
                         CornerRadius="4">
                     <StackPanel Orientation="Horizontal"  >
-                        <Image Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/gripper.png"
+                        <Image Source="pack://application:,,/Icons/gripper.png"
                                MouseDown="Border_MouseDown"
                        Margin="2,0,2,0"
                        Height="22"
@@ -150,7 +150,7 @@
                     Width="40"
                     Height="40"
                     MouseDown="Border_MouseDown">
-                    <Image Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/drag_border_24.png"
+                    <Image Source="pack://application:,,/Icons/drag_border_24.png"
                        Height="24"
                        Width="24"/>
                 </Border>

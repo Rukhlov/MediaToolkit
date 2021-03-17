@@ -375,9 +375,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private static Dictionary<string, BitmapImage> iconDict = new Dictionary<string, BitmapImage>
         {
-            { "TrayLogo", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/tray_logo.ico")) },
-            { "StreamOff", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamoff.ico")) },
-            { "StreamOn", new BitmapImage( new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/streamon.ico")) },
+            { "TrayLogo", new BitmapImage( new Uri("pack://application:,,,/Icons/tray_logo.ico")) },
+            { "StreamOff", new BitmapImage( new Uri("pack://application:,,,/Icons/streamoff.ico")) },
+            { "StreamOn", new BitmapImage( new Uri("pack://application:,,,/Icons/streamon.ico")) },
 
         };
     }

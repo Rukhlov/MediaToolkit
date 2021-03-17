@@ -464,6 +464,15 @@ namespace MediaToolkit.ScreenCaptures
             {
                 int activationNum = d.DeactivateCapture();
                 logger.Debug("DeactivateCapture: " + activationNum);
+
+                if (activationNum > 0)
+                {
+
+                }
+                else
+                {
+                    OutputManager.ReleaseOutput(d.duplOutput);
+                }
             }
             activateCapture = false;
 
@@ -475,6 +484,13 @@ namespace MediaToolkit.ScreenCaptures
                     OutputManager = null;
                 }
                 internalOutputManager = false;
+            }
+            else
+            {
+                if (OutputManager != null)
+                {
+
+                }
             }
 
             CloseDx();

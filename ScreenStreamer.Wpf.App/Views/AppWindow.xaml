@@ -17,7 +17,7 @@
         ResizeMode="NoResize"
         AllowsTransparency="True"
         Background="Transparent"
-        Icon="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/logo_24.png"
+        Icon="pack://application:,,/Icons/logo_24.png"
         Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}, Mode=TwoWay}">
 
     <Window.Resources>

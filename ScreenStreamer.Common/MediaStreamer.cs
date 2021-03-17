@@ -155,13 +155,13 @@ namespace ScreenStreamer.Common
                     }
 
 
-                    if (!communicationService.IsOpened)
-                    {
-                        logger.Warn("communicationService.IsOpened == false");
-                        //...
-                    }
+					if (!communicationService.IsOpened)
+					{
+						logger.Warn("communicationService.IsOpened == false");
+						//...
+					}
 
-                    syncEvent.WaitOne(1000);
+					syncEvent.WaitOne(1000);
 
                 }
 

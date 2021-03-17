@@ -13,7 +13,7 @@ namespace ScreenStreamer.Wpf
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-		private readonly static string localizationsPath = @"pack://application:,,,/ScreenStreamer.Wpf.App;component/Localizations";
+		private readonly static string localizationsPath = @"pack://application:,,,/Localizations";
 
 		private static ResourceDictionary localizationsDict = new ResourceDictionary();
 

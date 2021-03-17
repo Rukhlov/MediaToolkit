@@ -72,9 +72,42 @@ namespace MediaToolkit.ScreenCaptures
             return output;
         }
 
+
+
+        public void ReleaseOutput(DDAOutput output)
+        {
+            var adapterIndex = output.AdapterIndex;
+            var outputIndex = output.OutputIndex;
+
+            ReleaseOutput(adapterIndex, outputIndex);
+        }
+
+        public void ReleaseOutput(int adapterIndex, int outputIndex)
+        {
+            if (OutputDict.ContainsKey(adapterIndex))
+            {
+                var outputs = OutputDict[adapterIndex];
+                if (outputs.ContainsKey(outputIndex))
+                {
+                    var output = outputs[outputIndex];
+                    if (output != null)
+                    {
+                        var activates = output.Deactivate();
+                        if(activates <= 0)
+                        {
+                            output.Close();
+                            output = null;
+
+                            outputs.Remove(outputIndex);
+                        }
+
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
-
             Console.WriteLine("DDAOutputManager::Dispose()");
 
             foreach (var adapter in OutputDict.Keys)

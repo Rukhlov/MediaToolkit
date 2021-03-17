@@ -38,8 +38,13 @@ namespace ScreenStreamer.Wpf
 				AssemblyPath = mediaToolkitPath;
 				AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             }
-            
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolveFromResources;
+
+
         }
+
+
 
         [STAThread]
         public static int Main(string[] args)
@@ -181,7 +186,56 @@ namespace ScreenStreamer.Wpf
 			return null;
 		}
 
-		private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        private static Assembly CurrentDomain_AssemblyResolveFromResources(object sender, ResolveEventArgs args)
+        {
+            string traceLog = "Trying to resolve: " + args.Name;
+
+            Assembly targetAssembly = null;
+            try
+            {
+                var thisAssembly = Assembly.GetExecutingAssembly();
+                string embeddedResources = new AssemblyName(thisAssembly.FullName).Name + ".Embedded";
+
+                //const string embeddedResources = "ScreenStreamer.Wpf.App.Embedded";
+                var targetName = new AssemblyName(args.Name).Name;
+                var resName = embeddedResources + "." + targetName + ".dll";
+
+                using (var stream = thisAssembly.GetManifestResourceStream(resName))
+                {
+                    if (stream != null)
+                    {
+                        byte[] assemblyData = new byte[stream.Length];
+
+                        stream.Read(assemblyData, 0, assemblyData.Length);
+                        targetAssembly = Assembly.Load(assemblyData);
+                    }
+                }
+                traceLog += targetAssembly != null ? " OK" : " Miss";
+            }
+            catch(Exception ex)
+            {
+                StaticLog(ex.Message);
+                traceLog += " Failed";
+            }
+
+            StaticLog(traceLog);
+
+            return targetAssembly;
+        }
+
+        private static void StaticLog(string traceLog)
+        {
+            if (logger != null)
+            {
+                logger.Trace(traceLog);
+            }
+            else
+            {
+                Trace.WriteLine(traceLog);
+            }
+        }
+
+        private static void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
 		{
 			logger.Debug("Application_DispatcherUnhandledException(...)");
 

@@ -35,13 +35,13 @@
                 </Rectangle>
                 
                 <Image Grid.Column="1"
-                       Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/record_stopped_24.png"
+                       Source="pack://application:,,/Icons/record_stopped_24.png"
                        Height="24"
                        Width="24"
                        Visibility="{Binding IsStarted, Converter={converters:InvertedBooleanToVisibilityConverter}}"/>
 
                 <Image Grid.Column="1"
-                       Source="pack://application:,,/ScreenStreamer.Wpf.App;Component/Icons/record_started_24.png"
+                       Source="pack://application:,,/Icons/record_started_24.png"
                        Height="24"
                        Width="24"
                        Visibility="{Binding IsStarted, Converter={converters:BooleanToVisibilityConverter}}"/>

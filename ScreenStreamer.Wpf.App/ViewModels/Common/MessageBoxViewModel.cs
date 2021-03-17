@@ -99,9 +99,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
 
         private static Dictionary<MessageBoxImage, BitmapImage> iconDict = new Dictionary<MessageBoxImage, BitmapImage>
         {
-            { MessageBoxImage.Information, new BitmapImage(new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/Info_32x32.png")) },
-            { MessageBoxImage.Warning, new BitmapImage(new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/Warn_32x32.png")) },
-            { MessageBoxImage.Error, new BitmapImage(new Uri("pack://application:,,,/ScreenStreamer.Wpf.App;Component/Icons/Error_32x32.png")) },
+            { MessageBoxImage.Information, new BitmapImage(new Uri("pack://application:,,,/Icons/Info_32x32.png")) },
+            { MessageBoxImage.Warning, new BitmapImage(new Uri("pack://application:,,,/Icons/Warn_32x32.png")) },
+            { MessageBoxImage.Error, new BitmapImage(new Uri("pack://application:,,,/Icons/Error_32x32.png")) },
         };
     }
 }

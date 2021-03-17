@@ -55,7 +55,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public Texture2D SharedTexture { get; private set; } = null;
 
-        private DDAOutput duplOutput = null;
+        internal DDAOutput duplOutput = null;
 
         public int ActivateCapture()
         {
