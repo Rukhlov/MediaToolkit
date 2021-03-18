@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaToolkit.DeckLink
+namespace MediaToolkit.BMDDeckLink
 {
     public class DeckLinkDeviceManager : IDeckLinkDeviceNotificationCallback
     {

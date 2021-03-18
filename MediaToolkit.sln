@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.UI", "MediaToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.NativeAPIs", "MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj", "{4B001D0F-817D-4075-9714-9A192AF5C0A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.DeckLink", "MediaToolkit.DeckLink\MediaToolkit.DeckLink.csproj", "{707B5F56-5B9B-4453-9058-7F9B8195C3E4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScreenStreamer", "ScreenStreamer", "{7306EEA8-EDEC-4D5C-A40F-B00FEF44A8A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenStreamer.Wpf.App", "ScreenStreamer.Wpf.App\ScreenStreamer.Wpf.App.csproj", "{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D}"
@@ -42,6 +40,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.WebCam", "Tests\Test.WebCam\Test.WebCam.csproj", "{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.DiscoveryClient", "Tests\Test.DiscoveryClient\Test.DiscoveryClient.csproj", "{78DC0D21-8724-47E8-AED2-49B13EDF8D62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.DeckLink", "MediaToolkit.DeckLink\MediaToolkit.DeckLink.csproj", "{707B5F56-5B9B-4453-9058-7F9B8195C3E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,12 +87,6 @@ Global
 		{4B001D0F-817D-4075-9714-9A192AF5C0A0}.Release|Any CPU.ActiveCfg = Release|x86
 		{4B001D0F-817D-4075-9714-9A192AF5C0A0}.Release|x86.ActiveCfg = Release|x86
 		{4B001D0F-817D-4075-9714-9A192AF5C0A0}.Release|x86.Build.0 = Release|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.ActiveCfg = Debug|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.Build.0 = Debug|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|Any CPU.ActiveCfg = Release|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.ActiveCfg = Release|x86
-		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.Build.0 = Release|x86
 		{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{739C605A-042C-4A4C-A35D-AD3E1ABA0F3D}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -175,6 +169,12 @@ Global
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|Any CPU.Build.0 = Release|Any CPU
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|x86.ActiveCfg = Release|Any CPU
 		{78DC0D21-8724-47E8-AED2-49B13EDF8D62}.Release|x86.Build.0 = Release|Any CPU
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.ActiveCfg = Debug|x86
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Debug|x86.Build.0 = Debug|x86
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|Any CPU.ActiveCfg = Release|x86
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.ActiveCfg = Release|x86
+		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

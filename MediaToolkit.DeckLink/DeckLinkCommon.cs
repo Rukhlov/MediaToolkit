@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaToolkit.DeckLink
+namespace MediaToolkit.BMDDeckLink
 {
     public class DeckLinkTools
     {

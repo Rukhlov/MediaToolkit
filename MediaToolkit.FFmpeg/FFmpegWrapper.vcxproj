@@ -99,6 +99,7 @@ XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Co
       <AdditionalLibraryDirectories>$(SolutionDir)Resources\ffmpeg4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>avformat.lib;avcodec.lib;swscale.lib;avutil.lib;swresample.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AssemblyLinkResource>"$(SolutionDir)Resources\ffmpeg4\bin\avcodec-58.dll";"$(SolutionDir)Resources\ffmpeg4\bin\avdevice-58.dll";"$(SolutionDir)Resources\ffmpeg4\bin\avfilter-7.dll";"$(SolutionDir)Resources\ffmpeg4\bin\avformat-58.dll";"$(SolutionDir)Resources\ffmpeg4\bin\avutil-56.dll";"$(SolutionDir)Resources\ffmpeg4\bin\postproc-55.dll";"$(SolutionDir)Resources\ffmpeg4\bin\swresample-3.dll";"$(SolutionDir)Resources\ffmpeg4\bin\swscale-5.dll";%(AssemblyLinkResource)</AssemblyLinkResource>
     </Link>
     <PreBuildEvent>
       <Command>XCOPY "$(SolutionDir)Resources\ffmpeg4\bin\*.dll" "$(SolutionDir)bin\$(Configuration)" /I /D /Y

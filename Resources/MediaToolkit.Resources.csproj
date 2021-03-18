@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\ILMerge.3.0.41\build\ILMerge.props" Condition="Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,6 +14,8 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>logo.ico</ApplicationIcon>
@@ -275,6 +278,8 @@
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.dll" />
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\DebugLib\SharpDX.pdb" />
+    <Content Include="SharpDX.4.2.1\net45\MediaToolkit.SharpDX.dll" />
+    <Content Include="SharpDX.4.2.1\net45\MediaToolkit.SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.D3DCompiler.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll" />
@@ -340,6 +345,8 @@
     <None Include="Files\Bitmaps\NV12_352x288.yuv" />
     <None Include="Files\Bitmaps\NV12_640x480.yuv" />
     <None Include="Files\Bitmaps\yuva444p_352x288.yuv" />
+    <None Include="packages.config" />
+    <None Include="SharpDX.4.2.1\ILMergeSharpDX.bat" />
     <None Include="Utils\mftrace.bat" />
     <None Include="Utils\mftrace_startnew.bat" />
   </ItemGroup>
@@ -352,4 +359,17 @@
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILMerge.3.0.41\build\ILMerge.props'))" />
+  </Target>
+  <ItemGroup>
+    <PackageReference Include="ILMerge" />
+  </ItemGroup>
+  <Target Name="ILMerge">
+    <!-- the ILMergePath property points to the location of ILMerge.exe console application -->
+    <Exec Command="$(ILMergeConsolePath) /out:SharpDX.4.2.1\net45\MediaToolkit.SharpDX.dll /target:SharpDX.4.2.1\net45\SharpDX.dll^ &#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.DXGI.dll^ &#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.Direct3D9.dll^ &#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.Direct3D11.dll^&#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.Direct2D1.dll^&#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.Mathematics.dll.dll^&#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.MediaFoundation.dll.dll^&#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.D3DCompiler.dll.dll^&#xD;&#xA;  SharpDX.4.2.1\net45\SharpDX.dll" />
+  </Target>
 </Project>

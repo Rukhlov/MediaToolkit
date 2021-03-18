@@ -23,7 +23,7 @@ using System.ServiceModel.Discovery;
 using MediaToolkit.Utils;
 
 using MediaToolkit.SharedTypes;
-using MediaToolkit.DeckLink;
+using MediaToolkit.BMDDeckLink;
 using System.Diagnostics;
 using MediaToolkit.Logging;
 
@@ -244,7 +244,7 @@ namespace MediaToolkit.UI
             var state = deckLinkInput.State;
             if (formatChanged)
             {
-                if (state == DeckLink.CaptureState.Starting)
+                if (state == BMDDeckLink.CaptureState.Starting)
                 {// new format...
 
                     AudioRendererArgs audioArgs = GetAudioRenderArgs();
@@ -254,7 +254,7 @@ namespace MediaToolkit.UI
 
                     OnCaptureInitialized();
                 }
-                else if (state == DeckLink.CaptureState.Capturing)
+                else if (state == BMDDeckLink.CaptureState.Capturing)
                 {//  new format, restart media renderers...
 
                     if (renderSession != null)
@@ -276,13 +276,13 @@ namespace MediaToolkit.UI
             }
             else
             {
-                if (state == DeckLink.CaptureState.Capturing)
+                if (state == BMDDeckLink.CaptureState.Capturing)
                 {
                     renderSession?.Start();
 
                     OnCaptureStarted();
                 }
-                else if (state == DeckLink.CaptureState.Stopped)
+                else if (state == BMDDeckLink.CaptureState.Stopped)
                 {
                     errorCode = deckLinkInput.ErrorCode;
 
