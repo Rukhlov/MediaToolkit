@@ -297,6 +297,8 @@
     <Content Include="SharpDX.4.2.1\net45\SharpDX.MediaFoundation.pdb" />
     <Content Include="SharpDX.4.2.1\net45\SharpDX.pdb" />
     <Content Include="SharpDX.4.2.1\ReadMe.txt" />
+    <Content Include="Utils\ILMerge\ILMerge.exe" />
+    <Content Include="Utils\ILMerge\System.Compiler.dll" />
     <Content Include="Utils\yuvplayer.exe" />
     <Content Include="vs_redist\ReadMe.txt" />
     <Content Include="vs_redist\VC_redist.x86.exe">
@@ -304,9 +306,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="FFmpeg4\bin\CopySdpToMp4.bat" />
     <None Include="FFmpeg4\bin\Play_239_0_0_1.bat" />
     <None Include="FFmpeg4\bin\SDP_239_0_0_1.sdp" />
     <None Include="FFmpeg4\bin\Sdp_to_mp4.bat" />
+    <None Include="FFmpeg4\bin\TestRGB555Gen.bat" />
+    <None Include="FFmpeg4\bin\TestRGB565Gen.bat" />
     <None Include="Files\SDP_239_0_0_1.sdp" />
     <None Include="FFmpeg4\bin\TestNV12Gen.bat" />
     <None Include="FFmpeg4\bin\TestRGBAGen.bat" />

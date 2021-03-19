@@ -39,7 +39,9 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
         public bool IsRegion => _model.IsRegion;
         public bool IsScreenSource => !_model.IsUvcDevice;
 
-        private VideoSourceItem videoSource = null;
+		public bool IsDebugScreenSource => (!_model.IsUvcDevice && Program.StartupParams.TestMode);
+
+		private VideoSourceItem videoSource = null;
 
         //[Track]
         public VideoSourceItem Display
@@ -61,8 +63,8 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
                     RaisePropertyChanged(nameof(Display));
                     RaisePropertyChanged(nameof(Info));
                     RaisePropertyChanged(nameof(IsScreenSource));
-
-                }
+					RaisePropertyChanged(nameof(IsDebugScreenSource));
+				}
 
                 //SetupDisplayRegion();
 
@@ -177,9 +179,17 @@ namespace ScreenStreamer.Wpf.ViewModels.Properties
             }
         }
 
+		public bool ShowDebugInfo
+		{
+			get => _model.ShowDebugInfo;
+			set
+			{
+				SetProperty(_model, () => _model.ShowDebugInfo, value);
+			}
+		}
 
 
-        public void SetupDisplayRegion()
+		public void SetupDisplayRegion()
         {
             if (Display == null)
             {

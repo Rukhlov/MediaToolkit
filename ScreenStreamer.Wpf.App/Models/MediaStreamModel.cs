@@ -62,7 +62,10 @@ namespace ScreenStreamer.Wpf.Models
         [Newtonsoft.Json.JsonIgnore]
         internal VideoStreamSettings VideoSettings => streamSession?.VideoSettings;
 
-        public event Action StateChanged;
+		[Newtonsoft.Json.JsonIgnore]
+		internal IList<MediaToolkit.Utils.StatCounter> Statistics => mediaStreamer?.Stats;
+
+		public event Action StateChanged;
         public event Action<object> ErrorOccurred;
 
         //public event Action<string, string> ErrorOccurred;

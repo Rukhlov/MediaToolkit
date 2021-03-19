@@ -232,6 +232,25 @@
 
 
             </Grid>
+
+            <Grid Height="32" Visibility="{Binding Property.IsDebugScreenSource, Mode=OneWay, Converter={converters:BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="160"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Show Debug Info" />
+
+                <ToggleButton  Grid.Column="1"
+                              Style="{StaticResource MaterialDesignSwitchAccentToggleButton}"
+                              IsChecked="{Binding Property.ShowDebugInfo}" 
+                              IsEnabled="{Binding Property.IsScreenSource, Mode=OneWay}"
+                               
+                              HorizontalAlignment="Right"
+                              Cursor="Hand"/>
+
+
+            </Grid>
             
             <Button 
                     Style="{StaticResource actionButtonStyle}"

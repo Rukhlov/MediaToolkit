@@ -407,8 +407,8 @@ namespace ScreenStreamer.Wpf.ViewModels
         }
 
 
-
-        private RegionForm borderForm = null;
+		private StatisticForm statisticForm = null;
+		private RegionForm borderForm = null;
         private void OnStreamStateChanged(bool isStarted)
         {
             logger.Debug("OnStreamStateChanged(...) " + isStarted);
@@ -466,15 +466,26 @@ namespace ScreenStreamer.Wpf.ViewModels
 
             MainViewModel.OnAnyStreamStateChanged();
 
-            if (isStarted)
-            {
-                if (VideoViewModel.ShowCaptureBorder && VideoViewModel.IsScreenSource)
-                {
-                    borderForm = new RegionForm();
-                    borderForm.ShowBorder(VideoViewModel.CaptureRect);
+			if (isStarted)
+			{
+				if (VideoViewModel.ShowCaptureBorder && VideoViewModel.IsScreenSource)
+				{
+					borderForm = new RegionForm();
+					borderForm.ShowBorder(VideoViewModel.CaptureRect);
 
-                }
-            }
+				}
+
+				if (VideoViewModel.ShowDebugInfo && VideoViewModel.IsDebugScreenSource)
+				{
+					if (statisticForm == null)
+					{
+						statisticForm = new StatisticForm();
+					}
+					statisticForm.Location = VideoViewModel.CaptureRect.Location;
+					statisticForm.Start(MediaStreamer.Statistics);
+				}
+
+			}
             else
             {
                 if (borderForm != null)
@@ -483,7 +494,13 @@ namespace ScreenStreamer.Wpf.ViewModels
                     borderForm = null;
                 }
 
-            }
+
+				if (statisticForm != null)
+				{
+					statisticForm.Stop();
+					statisticForm.Visible = false;
+				}
+			}
 
         }
 

@@ -97,7 +97,9 @@ namespace ScreenStreamer.Wpf.Models
 
         public bool ShowCaptureBorder { get; set; } = false;
 
-        public void Init(IEnumerable<VideoSourceItem> videoSources, IEnumerable<ScreenCaptureItem> screenCaptures)
+		public bool ShowDebugInfo { get; set; } = false;
+
+		public void Init(IEnumerable<VideoSourceItem> videoSources, IEnumerable<ScreenCaptureItem> screenCaptures)
         {
 
 			if (!screenCaptures.Any(c => c.CaptType == this.CaptType))
