@@ -23,6 +23,7 @@ namespace ScreenStreamer.Wpf
 
         private NotifyIcon notifyIcon = null;
 
+		//private WindowProcService wndProcService = null;
         protected override void OnStartup(StartupEventArgs e)
         {
             logger.Debug("OnStartup(...) " + string.Join(" ", e.Args));
@@ -48,21 +49,13 @@ namespace ScreenStreamer.Wpf
             var mainViewModel = new ViewModels.Dialogs.MainViewModel(appModel);
             Views.AppWindow mainWindow = new Views.AppWindow(mainViewModel);
 
-            mainWindow.KeyDown += (o, a) =>
-            {
-                if(a.Key == System.Windows.Input.Key.F1)
-                {
-                    Console.WriteLine(MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport());
-                }
-               
-            };
-
             dialogService.Register(mainViewModel, mainWindow);
 
-            //var interopHelper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
-            //interopHelper.EnsureHandle();
 
-            notifyIcon = new NotifyIcon(mainViewModel);
+			//var interopHelper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
+			//interopHelper.EnsureHandle();
+
+			notifyIcon = new NotifyIcon(mainViewModel);
 
             bool autoStartStream = startupParams.AutoStream;
             if (!autoStartStream)
@@ -75,7 +68,10 @@ namespace ScreenStreamer.Wpf
                 mainViewModel.IsVisible = false;
             }
 
-            base.OnStartup(e);
+			//wndProcService = new WindowProcService();
+			//wndProcService.Init(mainWindow);
+
+			base.OnStartup(e);
 
             if (autoStartStream)
             {
@@ -100,6 +96,8 @@ namespace ScreenStreamer.Wpf
 			}
 
             notifyIcon?.Dispose();
+
+			//wndProcService?.Close();
 
             base.OnExit(e);
         }

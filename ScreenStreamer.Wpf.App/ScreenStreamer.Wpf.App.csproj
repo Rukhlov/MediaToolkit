@@ -426,6 +426,7 @@
     <Resource Include="Icons\Warn_32x32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Embedded\ReadMe.txt" />
     <EmbeddedResource Include="..\packages\CommonServiceLocator.2.0.5\lib\net45\CommonServiceLocator.dll">
       <Link>Embedded\CommonServiceLocator.dll</Link>
     </EmbeddedResource>

@@ -357,9 +357,27 @@ namespace ScreenStreamer.Wpf.ViewModels.Dialogs
             IsEdit = true;
         }
 
-        private bool exitSequenceInitiated = false;
 
-        public bool HandleClose()
+		public void OnKeyDown(Key key)
+		{
+			
+			bool hotKeyDown = Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftShift);
+			if (key == System.Windows.Input.Key.F1 && hotKeyDown)
+			{
+				if (Program.TestMode)
+				{
+					var objReport = MediaToolkit.MediaFoundation.MfTool.GetActiveObjectsReport();
+					Console.WriteLine("MFActiveObjectReport:\r\n" + objReport);
+					Console.WriteLine("----------------------------------");
+				}
+
+			}
+
+
+		}
+
+		private bool exitSequenceInitiated = false;
+		public bool HandleClose()
         {
             HideMainWindowCommand.Execute(null);
 

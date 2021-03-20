@@ -29,7 +29,10 @@ namespace ScreenStreamer.Wpf.Views
 
             this.DataContext = viewModel;
             CloseCommand = new DelegateCommand(HandleClose);
-        }
+
+			mainViewModel = DataContext as MainViewModel;
+
+		}
 
 
         //For debug\
@@ -57,12 +60,12 @@ namespace ScreenStreamer.Wpf.Views
         private IDialogService dialogService = null;
         public ICommand CloseCommand { get; set; }
 
-
-        private void HandleClose()
+		private MainViewModel mainViewModel = null;
+		private void HandleClose()
         {
             logger.Debug("HandleClose()");
 
-            var mainViewModel = DataContext as MainViewModel;
+           // var mainViewModel = DataContext as MainViewModel;
             if (mainViewModel != null)
             {
                 mainViewModel.HandleClose();
@@ -145,7 +148,7 @@ namespace ScreenStreamer.Wpf.Views
         {
             logger.Debug("OnClosing(...)");
             
-            var mainViewModel = DataContext as MainViewModel;
+           // var mainViewModel = DataContext as MainViewModel;
             if (mainViewModel != null)
             {
                 e.Cancel = mainViewModel.HandleClose();
@@ -155,21 +158,31 @@ namespace ScreenStreamer.Wpf.Views
             base.OnClosing(e);
         }
 
+		protected override void OnKeyDown(KeyEventArgs e)
+		{
+			if (mainViewModel != null)
+			{
+			
+				mainViewModel.OnKeyDown(e.Key);
+			}
 
-        //private void VmOnPropertyChanged(AcceptChangesMessage obj)
-        //{
-        //    //TODO Process changes
-        //    Debug.WriteLine("VmOnPropertyChanged(...)");
-        //}
+			base.OnKeyDown(e);
+		}
 
-        //private void ApplyInitialState()
-        //{
-        //    //TODO apply initial state
+		//private void VmOnPropertyChanged(AcceptChangesMessage obj)
+		//{
+		//    //TODO Process changes
+		//    Debug.WriteLine("VmOnPropertyChanged(...)");
+		//}
 
-        //    Debug.WriteLine("ApplyInitialState()");
-        //}
+		//private void ApplyInitialState()
+		//{
+		//    //TODO apply initial state
 
-    }
+		//    Debug.WriteLine("ApplyInitialState()");
+		//}
+
+	}
 
     //public class AcceptChangesMessage
     //{
