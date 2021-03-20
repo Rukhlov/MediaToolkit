@@ -39,7 +39,9 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-            FullScreenSwitchTest.Run();
+            //FullScreenSwitchTest.Run();
+
+            SimpleSwapChain.Run();
 
             //var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 

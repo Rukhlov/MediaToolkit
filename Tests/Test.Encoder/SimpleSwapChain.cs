@@ -45,14 +45,15 @@ namespace Test.Encoder
 
         private SwapChain swapChain = null;
 
-        public int ImageWidth = 1920;
-        public int ImageHeight = 1080;
+        //public int ImageWidth = 1920;
+        //public int ImageHeight = 1080;
         public IntPtr ViewHandle = IntPtr.Zero;
         public int FramePerSec = 60;
 
         public int adapterIndex = 0;
 
-
+        public int ImageWidth = 1080;
+        public int ImageHeight = 1920;
 
         private string psName = "";
         public void Start()
@@ -63,15 +64,17 @@ namespace Test.Encoder
             // var fileName = @"D:\Dropbox\Public\1681_source.jpg";
             //var fileName = @"D:\Dropbox\Public\2.png";
 
-            var fileName = @"Files\2560x1440.bmp";
+            var fileName = @"Files\1080x1920.bmp";
+
+            //var fileName = @"Files\2560x1440.bmp";
             // var fileName = @"Files\rgba_352x288.bmp";
             //var fileName = @"Files\Screen0_2560x1440.bmp";
             //var destSize = new GDI.Size(100, 100);
             //var destSize = new GDI.Size(ImageWidth, ImageHeight);
 
-            var destSize = new GDI.Size(640, 360);
+            //var destSize = new GDI.Size(1920, 1080);
 			//var destSize = new GDI.Size(852, 480);
-			// var destSize = new GDI.Size(1280, 720);
+			 var destSize = new GDI.Size(1280, 720);
 
 			//var destSize = new GDI.Size(2560, 1440);
 			//var destSize = new GDI.Size(1920, 1080);
@@ -352,7 +355,7 @@ namespace Test.Encoder
 						var targetSize = new GDI.Size(ImageWidth, ImageHeight);
 						var viewSize = f.ClientSize;
 						aspectRatio = true;
-						Transform transform = Transform.R0;
+						Transform transform = Transform.R90;
 						_Vertex[] vertices = VertexHelper.GetQuadVertices(viewSize, targetSize, aspectRatio, transform);
 
 						//_Vertex[] vertices = CreateVertices(f.ClientSize, new GDI.Size(ImageWidth, ImageHeight), aspectRatio);
@@ -607,7 +610,7 @@ namespace Test.Encoder
 			//float x4 = 1f;
 			//float y4 = -1f;
 
-			float rotateDegrees = 180;
+			float rotateDegrees = 90;
 
 			if (aspectRatio)
             {

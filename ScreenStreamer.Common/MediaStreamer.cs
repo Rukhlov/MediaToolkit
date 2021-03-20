@@ -295,6 +295,39 @@ namespace ScreenStreamer.Common
                 {
                     var screenDevice = (ScreenCaptureDevice)captureDevice;
 
+                    Rectangle actualScreenRect = screenDevice.CaptureRegion;
+
+                    var screenId = screenDevice.DeviceId;
+                    if(screenId == "AllScreens")
+                    {
+                        actualScreenRect = System.Windows.Forms.SystemInformation.VirtualScreen;
+
+                    }
+                    else if (screenId == "ScreenRegion")
+                    {
+
+                    }
+                    else
+                    {
+                        var screens = System.Windows.Forms.Screen.AllScreens;
+                        var currentScreen = screens.FirstOrDefault(s => s.DeviceName == screenId);
+                        if (currentScreen != null)
+                        {
+                            actualScreenRect = currentScreen.Bounds;  
+                        }
+                    }
+
+                    if(screenDevice.DisplayRegion != actualScreenRect)
+                    {
+                        screenDevice.DisplayRegion = actualScreenRect;
+                    }
+                    if (screenDevice.CaptureRegion != actualScreenRect)
+                    {
+                        screenDevice.CaptureRegion = actualScreenRect;
+                    }
+
+
+
                     //if (screenDevice.CaptureRegion.Width > Config.MaxVideoEncoderWidth)
                     //{
                     //    screenDevice.CaptureRegion.Width = Config.MaxVideoEncoderWidth;

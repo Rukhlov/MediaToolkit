@@ -465,7 +465,8 @@ namespace MediaToolkit.ScreenCaptures
                         if (outputDescr.Rotation == DisplayModeRotation.Identity 
                             || outputDescr.Rotation == DisplayModeRotation.Unspecified)
                         {
-                            device.ImmediateContext.CopyResource(duplTexture, screenTexture);
+                            // device.ImmediateContext.CopyResource(duplTexture, screenTexture);
+                            rgbProcessor.Process(duplTexture, screenTexture, false);
                         }
                         else if(outputDescr.Rotation == DisplayModeRotation.Rotate90)
                         {

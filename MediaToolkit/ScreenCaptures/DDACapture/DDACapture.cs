@@ -244,8 +244,8 @@ namespace MediaToolkit.ScreenCaptures
                                 {
                                     var output = outputs[outputIndex];
 
-                                    var descr = output.Description;
-                                    var desktopBounds = descr.DesktopBounds;
+                                    var outputDescr = output.Description;
+                                    var desktopBounds = outputDescr.DesktopBounds;
                                     var desktopRect = new GDI.Rectangle
                                     {
                                         X = desktopBounds.Left,
@@ -257,7 +257,7 @@ namespace MediaToolkit.ScreenCaptures
                                     var rect = GDI.Rectangle.Intersect(desktopRect, SrcRect);
                                     if (rect.Width > 0 && rect.Height > 0)
                                     {
-                                        logger.Info("Screen source info: " + adapter.Description.Description + " " + descr.DeviceName);
+                                        logger.Info("Screen source info: " + adapter.Description.Description + " " + outputDescr.DeviceName);
 
                                         Device device = null;
                                         if (adapterToDeviceMap.ContainsKey(adapterIndex))
@@ -291,7 +291,7 @@ namespace MediaToolkit.ScreenCaptures
                                     }
                                     else
                                     {
-                                        logger.Debug("No common area: " + descr.DeviceName + " " + SrcRect.ToString());
+                                        logger.Debug("No common area: " + outputDescr.DeviceName + " " + SrcRect.ToString());
                                         //continue;
                                     }
                                 }
