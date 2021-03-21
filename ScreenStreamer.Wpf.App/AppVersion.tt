@@ -12,7 +12,7 @@ public static partial class AppConsts
 {
 	public const string AppVersion = "1.1-beta1";
 	public const string AssemblyVersion = "1.1.0.<#= GetBuild() #>";
-	public const string GitVersion = "1.1.0-master+<#= GetSha1().Substring(0,7) #>";
+	public const string GitVersion = "1.1.0-beta1+<#= GetSha1().Substring(0,7) #>";
 
 	public const int Day = <#=DateTime.Now.Day#>;  
 	public const int Month = <#=DateTime.Now.Month#>; 

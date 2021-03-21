@@ -80,6 +80,7 @@ namespace MediaToolkit.DirectX
 			{
 				throw new NotSupportedException("Invalid scaling filter: " + scalingFilter);
 			}
+
 			try
 			{
 				this.device = device;
@@ -254,7 +255,7 @@ namespace MediaToolkit.DirectX
 		}
 
 
-		public void Process(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
+		public void DrawTexture(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
 		{
 			DeviceContext deviceContext = device.ImmediateContext;
 
@@ -262,11 +263,13 @@ namespace MediaToolkit.DirectX
 			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
 
 			var destDescr = destTexture.Description;
-			int destWidth = destDescr.Width;
-			int destHeight = destDescr.Height;
+            if(destSize!= new GDI.Size(destDescr.Width, destDescr.Height))
+            {
+                //...
+            }
 
 			ShaderResourceView srcSRV = null;
-			RenderTargetView rgbRTV = null;
+			RenderTargetView destRTV = null;
 			try
 			{
 				srcSRV = new ShaderResourceView(device, srcTexture, new ShaderResourceViewDescription
@@ -276,7 +279,7 @@ namespace MediaToolkit.DirectX
 					Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
 				});
 
-				rgbRTV = new RenderTargetView(device, destTexture, new RenderTargetViewDescription
+				destRTV = new RenderTargetView(device, destTexture, new RenderTargetViewDescription
 				{
 					Format = destTexture.Description.Format,
 					Dimension = RenderTargetViewDimension.Texture2D,
@@ -354,9 +357,9 @@ namespace MediaToolkit.DirectX
 					deviceContext.PixelShader.SetShader(defaultPS, null, 0);
 				}
 
-				deviceContext.Rasterizer.SetViewport(0, 0, destWidth, destHeight);
-				deviceContext.OutputMerger.SetTargets(rgbRTV);
-				deviceContext.ClearRenderTargetView(rgbRTV, BackColor);
+				deviceContext.Rasterizer.SetViewport(0, 0, destSize.Width, destSize.Height);
+				deviceContext.OutputMerger.SetTargets(destRTV);
+				deviceContext.ClearRenderTargetView(destRTV, BackColor);
 				deviceContext.PixelShader.SetShaderResource(0, rgb32SRV);
 				deviceContext.Draw(vertices.Length, 0);
 
@@ -365,7 +368,7 @@ namespace MediaToolkit.DirectX
 			}
 			finally
 			{
-				DxTool.SafeDispose(rgbRTV);
+				DxTool.SafeDispose(destRTV);
 				DxTool.SafeDispose(srcSRV);
 			}
 		}

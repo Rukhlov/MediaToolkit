@@ -6,7 +6,7 @@
 ;#define ApplicationExeName "MediaToolkit.dll"
 #define ApplicationExeName "ScreenStreamer.Wpf.App.exe"
 
-#define DEBUG
+;#define DEBUG
 
 #define TrunkPath "..\"
 
@@ -27,9 +27,10 @@
 ;Получаем версию из атрибутов исполняемого файла
 ;#define ApplicationVersion GetFileVersion(CurrentSourcePath + "\MediaToolkit.dll")
 
-#define ApplicationVersion GetFileVersion(WpfSourcePath + ApplicationExeName)
+#define ApplicationVersion GetVersionNumbersString(WpfSourcePath + ApplicationExeName)
+#define ProductVersion GetStringFileInfo(WpfSourcePath + ApplicationExeName, PRODUCT_VERSION)
 
-;Форматируем строку версии БД
+
 #define AVF1 Copy(ApplicationVersion, 1, Pos(".", ApplicationVersion) - 1) + "_" + Copy(ApplicationVersion, Pos(".", ApplicationVersion) + 1)
 #define AVF2 Copy(AVF1,1, Pos(".", AVF1) - 1) + "_" + Copy(AVF1, Pos(".", AVF1) + 1)
 #define AppicationVersionFile Copy(AVF2,1, Pos(".", AVF2) - 1) ;+ "b" + Copy(AVF2, Pos(".",AVF2) + 1)
@@ -98,63 +99,41 @@ Source: "{#CurrentSourcePath}\postproc-55.dll"; DestDir: "{app}"; Flags: replace
 Source: "{#CurrentSourcePath}\swresample-3.dll"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#CurrentSourcePath}\swscale-5.dll"; DestDir: "{app}"; Flags: replacesameversion
 
-Source: "{#WpfSourcePath}\CommonServiceLocator.dll"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.pdb"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.xml"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Extras.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Extras.pdb"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Extras.xml"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Platform.dll"; DestDir: "{app}"; Flags: replacesameversion
-
-
-Source: "{#WpfSourcePath}\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\Hardcodet.Wpf.TaskbarNotification.pdb"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\Hardcodet.Wpf.TaskbarNotification.xml"; DestDir: "{app}"; Flags: replacesameversion
-
-
-Source: "{#WpfSourcePath}\MaterialDesignColors.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MaterialDesignColors.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\MaterialDesignThemes.Wpf.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MaterialDesignThemes.Wpf.pdb"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MaterialDesignThemes.Wpf.xml"; DestDir: "{app}"; Flags: replacesameversion
-
 Source: "{#CurrentSourcePath}\MediaToolkit.Resources.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 Source: "{#WpfSourcePath}\MediaToolkit.Core.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.Core.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\MediaToolkit.DeckLink.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.DeckLink.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
 Source: "{#WpfSourcePath}\MediaToolkit.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
 Source: "{#WpfSourcePath}\MediaToolkit.FFmpeg.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.FFmpeg.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
 Source: "{#WpfSourcePath}\MediaToolkit.NativeAPIs.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.NativeAPIs.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-
 Source: "{#WpfSourcePath}\MediaToolkit.UI.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.UI.dll.config"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\MediaToolkit.UI.pdb"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#WpfSourcePath}\MediaToolkit.SharpDX.dll"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#WpfSourcePath}\MediaToolkit.DeckLink.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 Source: "{#WpfSourcePath}\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: replacesameversion
-
-
 Source: "{#WpfSourcePath}\NAudio.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\NAudio.xml"; DestDir: "{app}"; Flags: replacesameversion
-
 Source: "{#WpfSourcePath}\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: replacesameversion
-
-;Source: "{#WpfSourcePath}\NLog.config"; DestDir: "{app}"; Flags: replacesameversion
 Source: "{#WpfSourcePath}\NLog.dll"; DestDir: "{app}"; Flags: replacesameversion
+
+Source: "{#WpfSourcePath}\ScreenStreamer.Common.dll"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#WpfSourcePath}\ScreenStreamer.Wpf.App.exe"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#WpfSourcePath}\ScreenStreamer.Wpf.App.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+
+#ifdef DEBUG 
+Source: "..\Resources\CRT\Debug_NoRedist\ucrtbased.dll"; DestDir: "{app}"; Flags: replacesameversion
+Source: "..\Resources\CRT\Debug_NoRedist\vcruntime140d.dll"; DestDir: "{app}"; Flags: replacesameversion
+
+#endif
+
+;Source: "{#WpfSourcePath}\SharpDX.Direct2D1.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.Direct3D11.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.Direct3D9.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.DXGI.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.Mathematics.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.MediaFoundation.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\SharpDX.D3DCompiler.dll"; DestDir: "{app}"; Flags: replacesameversion
+
+;Source: "{#WpfSourcePath}\System.Runtime.CompilerServices.Unsafe.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 ;Source: "{#WpfSourcePath}\Prism.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\Prism.pdb"; DestDir: "{app}"; Flags: replacesameversion
@@ -163,53 +142,20 @@ Source: "{#WpfSourcePath}\NLog.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\Prism.Wpf.xml"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\Prism.xml"; DestDir: "{app}"; Flags: replacesameversion
 
-
-Source: "{#WpfSourcePath}\ScreenStreamer.Common.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\ScreenStreamer.Common.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\ScreenStreamer.Wpf.App.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#WpfSourcePath}\ScreenStreamer.Wpf.App.exe.config"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\ScreenStreamer.Wpf.App.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.Direct2D1.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.Direct2D1.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.Direct3D11.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.Direct3D11.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.Direct3D9.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.Direct3D9.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.DXGI.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.DXGI.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.Mathematics.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.Mathematics.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.MediaFoundation.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.MediaFoundation.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\SharpDX.D3DCompiler.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\SharpDX.D3DCompiler.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\System.Runtime.CompilerServices.Unsafe.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\System.Runtime.CompilerServices.Unsafe.xml"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\CommonServiceLocator.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Extras.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\GalaSoft.MvvmLight.Platform.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\Hardcodet.Wpf.TaskbarNotification.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\MaterialDesignColors.dll"; DestDir: "{app}"; Flags: replacesameversion
+;Source: "{#WpfSourcePath}\MaterialDesignThemes.Wpf.dll"; DestDir: "{app}"; Flags: replacesameversion
 
 ;Source: "{#WpfSourcePath}\System.Threading.Tasks.Extensions.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\System.Threading.Tasks.Extensions.xml"; DestDir: "{app}"; Flags: replacesameversion
 
 ;Source: "{#WpfSourcePath}\System.ValueTuple.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\System.ValueTuple.xml"; DestDir: "{app}"; Flags: replacesameversion
-
-Source: "{#WpfSourcePath}\System.Windows.Interactivity.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\System.Windows.Interactivity.xml"; DestDir: "{app}"; Flags: replacesameversion
-
+;Source: "{#WpfSourcePath}\System.Windows.Interactivity.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\Unity.Abstractions.dll"; DestDir: "{app}"; Flags: replacesameversion
-;Source: "{#WpfSourcePath}\Unity.Abstractions.pdb"; DestDir: "{app}"; Flags: replacesameversion
-
 ;Source: "{#WpfSourcePath}\Unity.Container.dll"; DestDir: "{app}"; Flags: replacesameversion
 ;Source: "{#WpfSourcePath}\Unity.Container.pdb"; DestDir: "{app}"; Flags: replacesameversion
 
@@ -218,7 +164,7 @@ Source: "{#WpfSourcePath}\System.Windows.Interactivity.dll"; DestDir: "{app}"; F
 
 
 Source: "{#CurrentTestPath}\Test.PolywallClient.exe"; DestDir: "{app}"; Flags: replacesameversion
-Source: "{#CurrentTestPath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion
+Source: "{#CurrentTestPath}\Test.PolywallClient.exe.config"; DestDir: "{app}"; Flags: replacesameversion       
 
 
 

@@ -61,7 +61,7 @@ namespace MediaToolkit.ScreenCaptures
 
         public Texture2D SharedTexture { get; private set; } = null;
 
-        private RgbProcessor rgbProcessor = null;
+        private RgbProcessor texProcessor = null;
         public IntPtr GetSharedHandle()
         {
             IntPtr handle = IntPtr.Zero;
@@ -144,7 +144,7 @@ namespace MediaToolkit.ScreenCaptures
                 InitDuplicator();
                 cursorInfo = new CursorInfo();
 
-                rgbProcessor = new RgbProcessor();
+                texProcessor = new RgbProcessor();
 
                 int width = DesktopRect.Right - DesktopRect.Left;
                 int height = DesktopRect.Bottom - DesktopRect.Top;
@@ -158,7 +158,7 @@ namespace MediaToolkit.ScreenCaptures
                     destSize = new GDI.Size(height, width);
                 }
 
-                rgbProcessor.Init(device, srcSize, Core.PixFormat.RGB32, srcSize, Core.PixFormat.RGB32, Core.ScalingFilter.FastLinear);
+                texProcessor.Init(device, srcSize, Core.PixFormat.RGB32, srcSize, Core.PixFormat.RGB32, Core.ScalingFilter.FastLinear);
 
                 initialized = true;
             }
@@ -462,24 +462,33 @@ namespace MediaToolkit.ScreenCaptures
                         UpdateCursorInfo(frameInfo);
 
                         var outputDescr = outuptDupl.Description;
+                        var screenDescr = screenTexture.Description;
                         if (outputDescr.Rotation == DisplayModeRotation.Identity 
                             || outputDescr.Rotation == DisplayModeRotation.Unspecified)
                         {
-                            // device.ImmediateContext.CopyResource(duplTexture, screenTexture);
-                            rgbProcessor.Process(duplTexture, screenTexture, false);
+                            if(outputDescr.ModeDescription.Width == screenDescr.Width 
+                                && outputDescr.ModeDescription.Height == screenDescr.Height)
+                            {
+                                device.ImmediateContext.CopyResource(duplTexture, screenTexture);
+                            }
+                            else
+                            {
+                                texProcessor.DrawTexture(duplTexture, screenTexture, false);
+                            }
+
                         }
                         else if(outputDescr.Rotation == DisplayModeRotation.Rotate90)
                         {
-                            rgbProcessor.Process(duplTexture, screenTexture, false, DirectX.Transform.R90);
+                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R90);
                         }
                         else if (outputDescr.Rotation == DisplayModeRotation.Rotate180)
                         {
 
-                            rgbProcessor.Process(duplTexture, screenTexture, false, DirectX.Transform.R180);
+                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R180);
                         }
                         else if (outputDescr.Rotation == DisplayModeRotation.Rotate270)
                         {
-                            rgbProcessor.Process(duplTexture, screenTexture, false, DirectX.Transform.R270);
+                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R270);
                         }
 
                     }
@@ -1351,10 +1360,10 @@ namespace MediaToolkit.ScreenCaptures
                 cursorInfo = null;
             }
 
-            if (rgbProcessor != null)
+            if (texProcessor != null)
             {
-                rgbProcessor.Close();
-                rgbProcessor = null;
+                texProcessor.Close();
+                texProcessor = null;
             }
 
             initialized = false;

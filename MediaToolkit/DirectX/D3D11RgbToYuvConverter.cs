@@ -408,7 +408,7 @@ namespace MediaToolkit.DirectX
 			//	ResizeTexutre(srcTexture, rgbTexture, KeepAspectRatio);
 			//}
 
-			rgbProcessor.Process(srcTexture, rgbTexture, KeepAspectRatio);
+			rgbProcessor.DrawTexture(srcTexture, rgbTexture, KeepAspectRatio);
 
 			// draw rgb to YCbCr
 			RenderTargetView[] yuvTargets = null;

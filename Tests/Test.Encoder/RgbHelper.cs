@@ -157,7 +157,7 @@ namespace Test.Encoder
 
 				});
 
-				rgbProcessor.Process(srcTexture, destTexture, true);
+				rgbProcessor.DrawTexture(srcTexture, destTexture, true);
 
 
 				{
