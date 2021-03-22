@@ -27,6 +27,8 @@ using SharpDX.MediaFoundation;
 using MediaToolkit.Logging;
 using MediaToolkit.SharedTypes;
 using MediaToolkit.NativeAPIs;
+using SharpDX.Direct2D1;
+using MediaToolkit.DirectX;
 
 namespace MediaToolkit.ScreenCaptures
 {
@@ -48,14 +50,17 @@ namespace MediaToolkit.ScreenCaptures
         public ResourceRegion SrcRegion { get; private set; } = default(ResourceRegion);
 
         private Device destDevice = null;
-        private bool copyToAnotherDevice = false;
+        private bool copyToAnotherGPU = false;
 
         private Texture2D stagingTexture0 = null;
         private Texture2D stagingTexture1 = null;
 
-        public Texture2D SharedTexture { get; private set; } = null;
+        private Texture2D screenTexture = null;
+        private RenderTarget screenTarget = null;
 
         internal DDAOutput duplOutput = null;
+
+        public bool CaptureMouse { get; set; }
 
         public int ActivateCapture()
         {
@@ -99,29 +104,38 @@ namespace MediaToolkit.ScreenCaptures
                 int width = SrcRegion.Right - SrcRegion.Left;
                 int height = SrcRegion.Bottom - SrcRegion.Top;
 
-                SharedTexture = new Texture2D(device,
-                    new Texture2DDescription
+                screenTexture = new Texture2D(device,
+                  new Texture2DDescription
+                  {
+                      CpuAccessFlags = CpuAccessFlags.None,
+                      BindFlags = BindFlags.RenderTarget,
+                      Format = Format.B8G8R8A8_UNorm,
+                      Width = width,
+                      Height = height,
+                      MipLevels = 1,
+                      ArraySize = 1,
+                      SampleDescription = { Count = 1, Quality = 0 },
+                      Usage = ResourceUsage.Default,
+
+                      OptionFlags = ResourceOptionFlags.None,
+
+                  });
+
+                using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(FactoryType.MultiThreaded))
+                {
+                    using (var surf = screenTexture.QueryInterface<Surface>())
                     {
-                        CpuAccessFlags = CpuAccessFlags.None,
-                        BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                        Format = Format.B8G8R8A8_UNorm,
-                        Width = width,
-                        Height = height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = { Count = 1, Quality = 0 },
-                        Usage = ResourceUsage.Default,
-
-                        OptionFlags = ResourceOptionFlags.Shared,
-
-                    });
-
+                        var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
+                        var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
+                        screenTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
+                    }
+                }
 
 
                 if (destDevice != null)
                 {
                     this.destDevice = destDevice;
-                    copyToAnotherDevice = true;
+                    copyToAnotherGPU = true;
 
                     stagingTexture0 = new Texture2D(device,
                       new SharpDX.Direct3D11.Texture2DDescription
@@ -261,38 +275,49 @@ namespace MediaToolkit.ScreenCaptures
 
             try
             {
-
-                var duplTexture = duplOutput.SharedTexture;
-                if (duplTexture != null)
+                var sharedHandle = duplOutput.GetSharedHandle();
+                if (sharedHandle == IntPtr.Zero)
                 {
-                    //device.ImmediateContext.CopySubresourceRegion(duplTexture, 0, SrcRegion, SharedTexture, 0);
+                    return ErrorCode.NotReady;
+                }
 
-                    using (var sharedRes = duplTexture.QueryInterface<SharpDX.DXGI.Resource>())
+                using (var sharedTex = device.OpenSharedResource<Texture2D>(sharedHandle))
+                {
+                    device.ImmediateContext.CopySubresourceRegion(sharedTex, 0, SrcRegion, screenTexture, 0);
+                }
+
+                if (CaptureMouse)
+                {
+                    CursorFrame cursorFrame = null;
+                    try
                     {
-                        var handle = sharedRes.SharedHandle;
-                        if (handle != IntPtr.Zero)
+                        if (duplOutput.GetCursorFrame(out cursorFrame))
                         {
-                            using (var sharedTex = device.OpenSharedResource<Texture2D>(handle))
+                            if (cursorFrame.Visible)
                             {
-                                //device.ImmediateContext.CopyResource(sharedTex, SharedTexture);
-                                device.ImmediateContext.CopySubresourceRegion(sharedTex, 0, SrcRegion, SharedTexture, 0);
+                                DrawCursor(cursorFrame);
                             }
                         }
                     }
+                    finally
+                    {
+                        if (cursorFrame != null)
+                        {
+                            cursorFrame.Dispose();
+                            cursorFrame = null;
+                        }
+                    }
                 }
-                else
-                {// not ready ... 
 
-                }
 
-                if (!copyToAnotherDevice)
+                if (!copyToAnotherGPU)
                 {
-                    texture = SharedTexture;
+                    texture = screenTexture;
                 }
                 else
                 {// копируем через CPU :(
 
-                    device.ImmediateContext.CopyResource(SharedTexture, stagingTexture0);
+                    device.ImmediateContext.CopyResource(screenTexture, stagingTexture0);
 
                     DataBox srcBox = device.ImmediateContext.MapSubresource(stagingTexture0, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
                     try
@@ -363,29 +388,144 @@ namespace MediaToolkit.ScreenCaptures
             return Result;
         }
 
+
+        private unsafe void DrawCursor(CursorFrame cursorFrame)
+        {
+            if (!cursorFrame.Visible)
+            {
+                //logger.Debug("No cursor");
+                return;
+            }
+
+            var position = cursorFrame.Location;
+
+            var shapePtr = cursorFrame.Ptr;
+            var shapeInfo = cursorFrame.Type;
+
+            int width = cursorFrame.Size.Width;
+            int height = cursorFrame.Size.Height;
+            int pitch = cursorFrame.Pitch;
+
+            int left = position.X;
+            int top = position.Y;
+            int right = position.X + width;
+            int bottom = position.Y + height;
+
+
+            if (cursorFrame.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+
+                var data = new DataPointer(shapePtr, height * pitch);
+                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                var size = new Size2(width, height);
+                var cursorBits = new Direct2D.Bitmap(screenTarget, size, data, pitch, prop);
+                try
+                {
+                    var cursorRect = new RawRectangleF(left, top, right, bottom);
+                    screenTarget.BeginDraw();
+                    screenTarget.DrawBitmap(cursorBits, cursorRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                    screenTarget.EndDraw();
+
+                }
+                finally
+                {
+                    cursorBits?.Dispose();
+                }
+            }
+            else if (cursorFrame.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
+            {
+                height = height / 2;
+
+                left = position.X;
+                top = position.Y;
+                right = position.X + width;
+                bottom = position.Y + height;
+                pitch = width * 4;
+
+                Texture2D desktopRegionTex = null;
+                try
+                {
+                    desktopRegionTex = new Texture2D(device,
+                    new Texture2DDescription
+                    {
+                        CpuAccessFlags = CpuAccessFlags.Read,
+                        BindFlags = BindFlags.None,
+                        Format = Format.B8G8R8A8_UNorm,
+                        Width = width,
+                        Height = height,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                        SampleDescription = { Count = 1, Quality = 0 },
+                        Usage = ResourceUsage.Staging,
+                        OptionFlags = ResourceOptionFlags.None,
+                    });
+
+                    var region = new ResourceRegion(left, top, 0, right, bottom, 1);
+                    var immediateContext = device.ImmediateContext;
+
+                    immediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
+
+                    var dataBox = immediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
+                    try
+                    {
+
+                        Direct2D.Bitmap cursorBits = null;
+                        try
+                        {
+                            //var desktopBuffer = new byte[width * height * 4];
+                            //Marshal.Copy(dataBox.DataPointer, desktopBuffer, 0, desktopBuffer.Length);
+
+                            fixed (byte* ptr = DDAShapeBuffer.GetMonochromeShape(shapePtr, dataBox.DataPointer, new GDI.Size(width, height)))
+                            {
+                                var data = new DataPointer(ptr, height * pitch);
+                                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
+                                var size = new Size2(width, height);
+                                cursorBits = new Direct2D.Bitmap(screenTarget, size, data, pitch, prop);
+                                var shapeRect = new RawRectangleF(left, top, right, bottom);
+
+                                screenTarget.BeginDraw();
+                                screenTarget.DrawBitmap(cursorBits, shapeRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
+                                screenTarget.EndDraw();
+                            };
+
+                        }
+                        finally
+                        {
+                            cursorBits?.Dispose();
+                        }
+
+                    }
+                    finally
+                    {
+                        immediateContext.UnmapSubresource(desktopRegionTex, 0);
+                    }
+
+                }
+                finally
+                {
+                    desktopRegionTex?.Dispose();
+                }
+            }
+            else if (cursorFrame.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+                logger.Warn("Not supported cursor type " + ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR);
+            }
+
+        }
+
+
         public void Close()
         {
             logger.Debug("DDAOutputProvider::Close()");
 
             deviceReady = false;
 
-            if (SharedTexture != null && !SharedTexture.IsDisposed)
-            {
-                SharedTexture.Dispose();
-                SharedTexture = null;
-            }
+            DxTool.SafeDispose(screenTarget);
+            DxTool.SafeDispose(screenTexture);
 
-            if (stagingTexture0 != null && !stagingTexture0.IsDisposed)
-            {
-                stagingTexture0.Dispose();
-                stagingTexture0 = null;
-            }
+            DxTool.SafeDispose(stagingTexture0);
+            DxTool.SafeDispose(stagingTexture1);
 
-            if (stagingTexture1 != null && !stagingTexture1.IsDisposed)
-            {
-                stagingTexture1.Dispose();
-                stagingTexture1 = null;
-            }
         }
 
     }

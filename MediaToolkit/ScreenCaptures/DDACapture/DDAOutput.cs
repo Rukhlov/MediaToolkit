@@ -47,21 +47,17 @@ namespace MediaToolkit.ScreenCaptures
 
     public class DDAOutput
     {
-
         private static TraceSource logger = TraceManager.GetTrace("DesktopDuplicator");
         //private static Logger logger = LogManager.GetCurrentClassLogger();
-
 
         private Device device = null;
         private Output output = null;
 
         private OutputDuplication outuptDupl = null;
-        private Texture2D screenTexture = null;
-        private RenderTarget screenTarget = null;
 
         public Texture2D SharedTexture { get; private set; } = null;
 
-        private RgbProcessor texProcessor = null;
+        private RgbProcessor textureProcessor = null;
         public IntPtr GetSharedHandle()
         {
             IntPtr handle = IntPtr.Zero;
@@ -75,8 +71,7 @@ namespace MediaToolkit.ScreenCaptures
             return IntPtr.Zero;
         }
 
-        public bool CaptureMouse { get; set; } = true;
-        private CursorInfo cursorInfo = null;
+        private DDAShapeBuffer shapeBuffer = null;
 
         public DDAOutputState OutputState { get; private set; } = DDAOutputState.Closed;
 
@@ -142,9 +137,9 @@ namespace MediaToolkit.ScreenCaptures
 
                 InitTextures();
                 InitDuplicator();
-                cursorInfo = new CursorInfo();
+                shapeBuffer = new DDAShapeBuffer();
 
-                texProcessor = new RgbProcessor();
+                textureProcessor = new RgbProcessor();
 
                 int width = DesktopRect.Right - DesktopRect.Left;
                 int height = DesktopRect.Bottom - DesktopRect.Top;
@@ -158,7 +153,7 @@ namespace MediaToolkit.ScreenCaptures
                     destSize = new GDI.Size(height, width);
                 }
 
-                texProcessor.Init(device, srcSize, Core.PixFormat.RGB32, srcSize, Core.PixFormat.RGB32, Core.ScalingFilter.FastLinear);
+                textureProcessor.Init(device, srcSize, Core.PixFormat.RGB32, srcSize, Core.PixFormat.RGB32, Core.ScalingFilter.FastLinear);
 
                 initialized = true;
             }
@@ -198,32 +193,6 @@ namespace MediaToolkit.ScreenCaptures
 
                 });
 
-            screenTexture = new Texture2D(device,
-              new Texture2DDescription
-              {
-                  CpuAccessFlags = CpuAccessFlags.None,
-                  BindFlags = BindFlags.RenderTarget,
-                  Format = Format.B8G8R8A8_UNorm,
-                  Width = width,
-                  Height = height,
-                  MipLevels = 1,
-                  ArraySize = 1,
-                  SampleDescription = { Count = 1, Quality = 0 },
-                  Usage = ResourceUsage.Default,
-
-                  OptionFlags = ResourceOptionFlags.None,
-
-              });
-
-            using (SharpDX.Direct2D1.Factory1 factory2D1 = new SharpDX.Direct2D1.Factory1(FactoryType.MultiThreaded))
-            {
-                using (var surf = screenTexture.QueryInterface<Surface>())
-                {
-                    var pixelFormat = new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied);
-                    var renderTargetProps = new Direct2D.RenderTargetProperties(pixelFormat);
-                    screenTarget = new Direct2D.RenderTarget(factory2D1, surf, renderTargetProps);
-                }
-            }
         }
 
         internal void InitDuplicator()
@@ -462,77 +431,36 @@ namespace MediaToolkit.ScreenCaptures
                         UpdateCursorInfo(frameInfo);
 
                         var outputDescr = outuptDupl.Description;
-                        var screenDescr = screenTexture.Description;
+                        var screenDescr = SharedTexture.Description;
                         if (outputDescr.Rotation == DisplayModeRotation.Identity 
                             || outputDescr.Rotation == DisplayModeRotation.Unspecified)
                         {
                             if(outputDescr.ModeDescription.Width == screenDescr.Width 
                                 && outputDescr.ModeDescription.Height == screenDescr.Height)
                             {
-                                device.ImmediateContext.CopyResource(duplTexture, screenTexture);
+                                device.ImmediateContext.CopyResource(duplTexture, SharedTexture);
                             }
                             else
                             {
-                                texProcessor.DrawTexture(duplTexture, screenTexture, false);
+                                textureProcessor.DrawTexture(duplTexture, SharedTexture, false);
                             }
 
                         }
                         else if(outputDescr.Rotation == DisplayModeRotation.Rotate90)
                         {
-                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R90);
+                            textureProcessor.DrawTexture(duplTexture, SharedTexture, false, DirectX.Transform.R90);
                         }
                         else if (outputDescr.Rotation == DisplayModeRotation.Rotate180)
                         {
 
-                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R180);
+                            textureProcessor.DrawTexture(duplTexture, SharedTexture, false, DirectX.Transform.R180);
                         }
                         else if (outputDescr.Rotation == DisplayModeRotation.Rotate270)
                         {
-                            texProcessor.DrawTexture(duplTexture, screenTexture, false, DirectX.Transform.R270);
+                            textureProcessor.DrawTexture(duplTexture, SharedTexture, false, DirectX.Transform.R270);
                         }
 
                     }
-
-                    //if (CaptureMouse && cursorInfo.Visible)
-                    //{
-                    //    DrawCursor(cursorInfo);
-                    //}
-
-
-                    if (CaptureMouse && cursorInfo.Visible)
-                    {
-                        Texture2D cursorTexture = null;
-                        try
-                        {
-                            if (CreateCursorTexture(cursorInfo, out var cursorRect, out cursorTexture))
-                            {
-                                using (var surf = cursorTexture.QueryInterface<Surface>())
-                                {
-                                    var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
-                                    var cursorBits = new Direct2D.Bitmap(screenTarget, surf, prop);
-                                    try
-                                    {
-                                        screenTarget.BeginDraw();
-                                        screenTarget.DrawBitmap(cursorBits, cursorRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
-                                        screenTarget.EndDraw();
-
-                                    }
-                                    finally
-                                    {
-                                        cursorBits?.Dispose();
-                                    }
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            DxTool.SafeDispose(cursorTexture);
-                        }
-                    }
-
-
-                    device.ImmediateContext.CopyResource(screenTexture, SharedTexture);
-                    device.ImmediateContext.Flush();
 
                     Result = 0;
                 }
@@ -773,498 +701,48 @@ namespace MediaToolkit.ScreenCaptures
             if (frameInfo.LastMouseUpdateTime > 0)
             {// A non-zero mouse update timestamp indicates that there is a mouse position update and optionally a shape change
 
-                cursorInfo.Update(frameInfo);
-
-                if (frameInfo.PointerShapeBufferSize > 0)
+                lock (shapeBuffer.SyncObj)
                 {
-                    try
+                    shapeBuffer.Update(frameInfo);
+
+                    if (frameInfo.PointerShapeBufferSize > 0)
                     {
-                        var size = cursorInfo.BufferSize;
-                        var ptr = cursorInfo.PtrShapeBuffer;
-
-                        outuptDupl.GetFramePointerShape(size, ptr,
-                            out int pointerShapeBufferSizeRequired,
-                            out OutputDuplicatePointerShapeInformation pointerShapeInfo);
-
-                        cursorInfo.ShapeInfo = pointerShapeInfo;
-
-                    }
-                    catch (SharpDXException ex)
-                    {
-                        if (ex.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
-                        {
-                            // TODO:
-                            //...
-                            logger.Error(ex);
-
-                        }
-
-                        throw;
-                    }
-                }
-                //{// No new shape
-
-                //}
-
-            }
-
-        }
-
-        private unsafe bool CreateCursorTexture(CursorInfo cursorInfo, out RawRectangleF cursorRect, out Texture2D cursorTexture)
-        {
-            cursorRect = new RawRectangleF();
-            cursorTexture = null;
-
-            bool result = false;
-            if (!cursorInfo.Visible)
-            {
-                //logger.Debug("No cursor");
-                return result;
-            }
-
-            var position = cursorInfo.Position;
-
-            var shapeBuff = cursorInfo.PtrShapeBuffer;
-            var shapeInfo = cursorInfo.ShapeInfo;
-
-            int width = shapeInfo.Width;
-            int height = shapeInfo.Height;
-            int pitch = shapeInfo.Pitch;
-
-            int left = position.X;
-            int top = position.Y;
-            int right = position.X + width;
-            int bottom = position.Y + height;
-
-            if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-            {
-                var descr = new  Texture2DDescription
-                {
-                    //CpuAccessFlags = CpuAccessFlags.Write,
-                    BindFlags = BindFlags.ShaderResource,//| BindFlags.RenderTarget,
-                    Format = Format.B8G8R8A8_UNorm,
-                    Width = width,
-                    Height = height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Default,
-                    OptionFlags = ResourceOptionFlags.None,
-                };
-
-                var data = new DataBox[] 
-                {
-                    new DataBox(shapeBuff, pitch, 0)
-                };
-
-                cursorRect = new RawRectangleF(left, top, right, bottom);
-                cursorTexture = new Texture2D(device, descr, data);
-                result = true;
-
-            }
-            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
-            {
-                height = height / 2;
-
-                left = position.X;
-                top = position.Y;
-                right = position.X + width;
-                bottom = position.Y + height;
-                pitch = width * 4;
-
-                Texture2D desktopRegionTex = null;
-                try
-                {
-                    desktopRegionTex = new Texture2D(device,
-                    new Texture2DDescription
-                    {
-                        CpuAccessFlags = CpuAccessFlags.Read,
-                        BindFlags = BindFlags.None,
-                        Format = Format.B8G8R8A8_UNorm,
-                        Width = width,
-                        Height = height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = { Count = 1, Quality = 0 },
-                        Usage = ResourceUsage.Staging,
-                        OptionFlags = ResourceOptionFlags.None,
-                    });
-
-                    var region = new ResourceRegion(left, top, 0, right, bottom, 1);
-                    var immediateContext = device.ImmediateContext;
-
-                    immediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
-
-                    var dataBox = immediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
-                    try
-                    {
-                        var desktopBuffer = new byte[width * height * 4];
-                        Marshal.Copy(dataBox.DataPointer, desktopBuffer, 0, desktopBuffer.Length);
-
-                        fixed (byte* ptr = cursorInfo.GetMonochromeShape(desktopBuffer, new GDI.Size(width, height)))
-                        {
-                            var descr = new Texture2DDescription
-                            {
-                                //CpuAccessFlags = CpuAccessFlags.Write,
-                                BindFlags = BindFlags.ShaderResource,//| BindFlags.RenderTarget,
-                                Format = Format.B8G8R8A8_UNorm,
-                                Width = width,
-                                Height = height,
-                                MipLevels = 1,
-                                ArraySize = 1,
-                                SampleDescription = { Count = 1, Quality = 0 },
-                                Usage = ResourceUsage.Default,
-                                OptionFlags = ResourceOptionFlags.None,
-                            };
-
-                            DataBox[] initData =
-                            {
-                                new DataBox((IntPtr)ptr, pitch, 0),
-                            };
-
-                            cursorRect = new RawRectangleF(left, top, right, bottom);
-                            cursorTexture = new Texture2D(device, descr, initData);
-                            result = true;
-                        };
-
-                    }
-                    finally
-                    {
-                        immediateContext.UnmapSubresource(desktopRegionTex, 0);
-                    }
-
-                }
-                finally
-                {
-                    desktopRegionTex?.Dispose();
-                }
-            }
-            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-            {
-                logger.Warn("Not supported cursor type " + ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR);
-                result = false;
-            }
-
-
-            return result;
-        }
-
-
-        private unsafe void DrawCursor(CursorInfo cursorInfo)
-        {
-
-            if (!cursorInfo.Visible)
-            {
-                //logger.Debug("No cursor");
-                return;
-            }
-
-            var position = cursorInfo.Position;
-
-            var shapeBuff = cursorInfo.PtrShapeBuffer;
-            var shapeInfo = cursorInfo.ShapeInfo;
-
-            int width = shapeInfo.Width;
-            int height = shapeInfo.Height;
-            int pitch = shapeInfo.Pitch;
-
-            int left = position.X;
-            int top = position.Y;
-            int right = position.X + width;
-            int bottom = position.Y + height;
-
-            screenTarget.BeginDraw();
-
-            //renderTarger.Clear(Color.Black);
-
-            if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-            {
-
-                var data = new DataPointer(shapeBuff, height * pitch);
-                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
-                var size = new Size2(width, height);
-                var cursorBits = new Direct2D.Bitmap(screenTarget, size, data, pitch, prop);
-                try
-                {
-                    var cursorRect = new RawRectangleF(left, top, right, bottom);
-
-                    screenTarget.DrawBitmap(cursorBits, cursorRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
-
-                }
-                finally
-                {
-                    cursorBits?.Dispose();
-                }
-            }
-            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
-            {
-                height = height / 2;
-
-                left = position.X;
-                top = position.Y;
-                right = position.X + width;
-                bottom = position.Y + height;
-                pitch = width * 4;
-
-                Texture2D desktopRegionTex = null;
-                try
-                {
-                    desktopRegionTex = new Texture2D(device,
-                    new Texture2DDescription
-                    {
-                        CpuAccessFlags = CpuAccessFlags.Read,
-                        BindFlags = BindFlags.None,
-                        Format = Format.B8G8R8A8_UNorm,
-                        Width = width,
-                        Height = height,
-                        MipLevels = 1,
-                        ArraySize = 1,
-                        SampleDescription = { Count = 1, Quality = 0 },
-                        Usage = ResourceUsage.Staging,
-                        OptionFlags = ResourceOptionFlags.None,
-                    });
-
-                    var region = new ResourceRegion(left, top, 0, right, bottom, 1);
-                    var immediateContext = device.ImmediateContext;
-
-                    immediateContext.CopySubresourceRegion(screenTexture, 0, region, desktopRegionTex, 0);
-
-                    var dataBox = immediateContext.MapSubresource(desktopRegionTex, 0, MapMode.Read, MapFlags.None);
-                    try
-                    {
-
-                        Direct2D.Bitmap cursorBits = null;
                         try
                         {
-                            var desktopBuffer = new byte[width * height * 4];
-                            Marshal.Copy(dataBox.DataPointer, desktopBuffer, 0, desktopBuffer.Length);
+                            var size = shapeBuffer.BufferSize;
+                            var ptr = shapeBuffer.PtrShapeBuffer;
 
-                            fixed (byte* ptr = cursorInfo.GetMonochromeShape(desktopBuffer, new GDI.Size(width, height)))
+                            outuptDupl.GetFramePointerShape(size, ptr,
+                                out int pointerShapeBufferSizeRequired,
+                                out OutputDuplicatePointerShapeInformation pointerShapeInfo);
+
+                            shapeBuffer.ShapeInfo = pointerShapeInfo;
+
+                        }
+                        catch (SharpDXException ex)
+                        {
+                            if (ex.ResultCode == SharpDX.DXGI.ResultCode.MoreData)
                             {
-                                var data = new DataPointer(ptr, height * pitch);
-                                var prop = new Direct2D.BitmapProperties(new Direct2D.PixelFormat(Format.B8G8R8A8_UNorm, Direct2D.AlphaMode.Premultiplied));
-                                var size = new Size2(width, height);
-                                cursorBits = new Direct2D.Bitmap(screenTarget, size, data, pitch, prop);
-                                var shapeRect = new RawRectangleF(left, top, right, bottom);
+                                // TODO:
+                                //...
+                                logger.Error(ex);
 
-                                screenTarget.DrawBitmap(cursorBits, shapeRect, 1.0f, Direct2D.BitmapInterpolationMode.Linear);
-                            };
+                            }
 
+                            throw;
                         }
-                        finally
-                        {
-                            cursorBits?.Dispose();
-                        }
-
                     }
-                    finally
-                    {
-                        immediateContext.UnmapSubresource(desktopRegionTex, 0);
-                    }
+                    //{// No new shape
 
+                    //}
                 }
-                finally
-                {
-                    desktopRegionTex?.Dispose();
-                }
-            }
-            else if (shapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-            {
-                logger.Warn("Not supported cursor type " + ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR);
-            }
 
 
-            screenTarget.EndDraw();
+            }
 
         }
 
-
-        class CursorInfo
-        {
-            public IntPtr PtrShapeBuffer { get; private set; } = IntPtr.Zero;
-            public int BufferSize { get; private set; } = 0;
-
-            public OutputDuplicatePointerShapeInformation ShapeInfo { get; internal set; }
-            public RawPoint Position { get; private set; } = new RawPoint();
-            public bool Visible { get; private set; } = false;
-
-            public int WhoUpdatedPositionLast { get; private set; } = 0;
-            public long LastTimeStamp { get; private set; } = 0;
-
-            public int DataSize => ShapeInfo.Height * ShapeInfo.Pitch;
-            public GDI.Rectangle Rect => new GDI.Rectangle(Position.X, Position.Y, ShapeInfo.Width, ShapeInfo.Height);
-            public GDI.Size Size => new GDI.Size(ShapeInfo.Width, ShapeInfo.Height);
-
-
-            public void Update(OutputDuplicateFrameInformation frameInfo)
-            {
-                var pointerPosition = frameInfo.PointerPosition;
-
-                this.LastTimeStamp = frameInfo.LastMouseUpdateTime;
-                this.Position = pointerPosition.Position;
-                this.Visible = pointerPosition.Visible;
-
-                var bufSize = frameInfo.PointerShapeBufferSize;
-
-                if (bufSize > this.BufferSize)
-                {
-                    Alloc(bufSize);
-                }
-            }
-
-            internal GDI.Bitmap GetGdiBitmap(GDI.Bitmap desktop)
-            {
-                GDI.Bitmap bmpCursor = null;
-
-                int x = Position.X;
-                int y = Position.Y;
-
-                int width = ShapeInfo.Width;
-                int height = ShapeInfo.Height;
-                int pitch = ShapeInfo.Pitch;
-
-                int screenWidth = desktop.Width;
-                int screenHeigth = desktop.Height;
-                if (x + width > screenWidth)
-                {
-                    width = screenWidth - x;
-                }
-
-                if (y + height > screenHeigth)
-                {
-                    height = screenHeigth - y;
-                }
-
-                var rect = new GDI.Rectangle(x, y, width, height);
-
-                if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
-                {
-                    bmpCursor = new GDI.Bitmap(width, height, pitch, GDI.Imaging.PixelFormat.Format32bppArgb, PtrShapeBuffer);
-
-                }
-                else if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
-                {
-                    height = height / 2;
-
-                    var desktopBuffer = new byte[width * height * 4];
-
-                    {
-                        var data = desktop.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, desktop.PixelFormat);
-                        var offset = 0;
-                        for (var row = 0; row < height; row++)
-                        {
-                            Marshal.Copy(data.Scan0, desktopBuffer, offset, width * 4);
-                            offset += width * 4;
-                            data.Scan0 = IntPtr.Add(data.Scan0, data.Stride);
-                        }
-
-                        desktop.UnlockBits(data);
-                    }
-
-                    byte[] shapeBuffer = GetMonochromeShape(desktopBuffer, new GDI.Size(width, height));
-
-                    bmpCursor = new GDI.Bitmap(width, height, GDI.Imaging.PixelFormat.Format32bppArgb);
-                    {
-                        var data = bmpCursor.LockBits(new GDI.Rectangle(0, 0, width, height), GDI.Imaging.ImageLockMode.ReadWrite, bmpCursor.PixelFormat);
-                        var offset = 0;
-                        for (var row = 0; row < height; row++)
-                        {
-                            Marshal.Copy(shapeBuffer, offset, data.Scan0, width * 4);
-                            offset += width * 4;
-                            data.Scan0 = IntPtr.Add(data.Scan0, data.Stride);
-                        }
-                        bmpCursor.UnlockBits(data);
-                    }
-
-                }
-                else if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR)
-                {
-                    //...
-                    logger.Warn("Not supported");
-                }
-
-                return bmpCursor;
-            }
-
-            internal void Alloc(int bufferSize)
-            {
-                FreeBuffer();
-
-                this.BufferSize = bufferSize;
-                PtrShapeBuffer = Marshal.AllocHGlobal(BufferSize);
-            }
-
-            internal byte[] GetMonochromeShape(byte[] desktopBuffer, GDI.Size size)
-            {
-
-                int width = size.Width;
-                int height = size.Height;
-
-                var shapeBufferLenght = width * height * 4;
-
-
-                var shapeBuffer = new byte[shapeBufferLenght];
-
-                var maskBufferLenght = width * height / 8;
-                var andMaskBuffer = new byte[maskBufferLenght];
-                Marshal.Copy(PtrShapeBuffer, andMaskBuffer, 0, andMaskBuffer.Length);
-
-                var xorMaskBuffer = new byte[maskBufferLenght];
-                Marshal.Copy(PtrShapeBuffer + andMaskBuffer.Length, xorMaskBuffer, 0, xorMaskBuffer.Length);
-
-                for (var row = 0; row < height; ++row)
-                {
-                    byte mask = 0x80;
-
-                    for (var col = 0; col < width; ++col)
-                    {
-                        var maskIndex = row * width / 8 + col / 8;
-
-                        var andMask = ((andMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
-                        var xorMask = ((xorMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
-
-                        int pos = row * width * 4 + col * 4;
-                        for (int i = 0; i < 3; i++)
-                        {// RGB
-                            shapeBuffer[pos] = (byte)((desktopBuffer[pos] & andMask) ^ xorMask);
-                            pos++;
-                        }
-                        // Alpha
-                        shapeBuffer[pos] = (byte)((desktopBuffer[pos] & 0xFF) ^ 0);
-
-                        if (mask == 0x01)
-                        {
-                            mask = 0x80;
-                        }
-                        else
-                        {
-                            mask = (byte)(mask >> 1);
-                        }
-                    }
-                }
-
-                return shapeBuffer;
-            }
-
-
-            private void FreeBuffer()
-            {
-                if (PtrShapeBuffer != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(PtrShapeBuffer);
-                    PtrShapeBuffer = IntPtr.Zero;
-                }
-            }
-
-            public void Dispose()
-            {
-                FreeBuffer();
-            }
-
-
-        }
         #endregion
-
 
 
         public bool ResetDuplicator()
@@ -1324,78 +802,309 @@ namespace MediaToolkit.ScreenCaptures
 
             CloseDuplicator();
 
-            if (device != null && !device.IsDisposed)
+            DxTool.SafeDispose(device);
+            DxTool.SafeDispose(output);
+            DxTool.SafeDispose(SharedTexture);
+
+            if (shapeBuffer != null)
             {
-                device.Dispose();
-                device = null;
+                shapeBuffer.Dispose();
+                shapeBuffer = null;
             }
 
-            if (output != null && !output.IsDisposed)
+            if (textureProcessor != null)
             {
-                output.Dispose();
-                output = null;
-            }
-
-            if (SharedTexture != null && !SharedTexture.IsDisposed)
-            {
-                SharedTexture.Dispose();
-                SharedTexture = null;
-            }
-
-            if (screenTexture != null && !screenTexture.IsDisposed)
-            {
-                screenTexture.Dispose();
-                screenTexture = null;
-            }
-
-            if (screenTarget != null && !screenTarget.IsDisposed)
-            {
-                screenTarget.Dispose();
-                screenTarget = null;
-            }
-
-            if (cursorInfo != null)
-            {
-                cursorInfo.Dispose();
-                cursorInfo = null;
-            }
-
-            if (texProcessor != null)
-            {
-                texProcessor.Close();
-                texProcessor = null;
+                textureProcessor.Close();
+                textureProcessor = null;
             }
 
             initialized = false;
 
-
         }
 
-        enum ShapeType
+
+        public bool GetCursorFrame(out CursorFrame cursorFrame)
         {
-            /// <summary>
-            /// The pointer type is a monochrome mouse pointer, which is a monochrome bitmap. 
-            /// The bitmap's size is specified by width and height in a 1 bits per pixel (bpp) device independent bitmap (DIB) 
-            /// format AND mask that is followed by another 1 bpp DIB format XOR mask of the same size.
-            /// </summary>
-            DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME = 0x1,
+            bool result = false;
+            cursorFrame = null;
 
-            /// <summary>
-            /// The pointer type is a color mouse pointer, which is a color bitmap. 
-            /// The bitmap's size is specified by width and height in a 32 bpp ARGB DIB format.
-            /// </summary>
-            DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR = 0x2,
+            if (shapeBuffer != null)
+            {
+                lock (shapeBuffer.SyncObj)
+                {
+                    if (shapeBuffer.Visible)
+                    {
+                        var shapeBuff = shapeBuffer.PtrShapeBuffer;
+                        int dataSize = shapeBuffer.BufferSize;
 
-            /// <summary>
-            /// The pointer type is a masked color mouse pointer.
-            /// A masked color mouse pointer is a 32 bpp ARGB format bitmap with the mask value in the alpha bits. 
-            /// The only allowed mask values are 0 and 0xFF. When the mask value is 0, the RGB value should replace the screen pixel. 
-            /// When the mask value is 0xFF, an XOR operation is performed on the RGB value and the screen pixel; the result replaces the screen pixel.
-            /// </summary>
-            DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR = 0x4
+                        IntPtr destPtr = Marshal.AllocHGlobal(dataSize);
+                        Kernel32.CopyMemory(destPtr, shapeBuff, (uint)dataSize);
 
+                        var shapeInfo = shapeBuffer.ShapeInfo;
+                        var position = shapeBuffer.Position;
+                        cursorFrame = new CursorFrame
+                        {
+                            Ptr = destPtr,
+                            DataSize = dataSize,
+                            Pitch = shapeInfo.Pitch,
+                            Location = new GDI.Point(position.X, position.Y),
+                            Size = new GDI.Size(shapeInfo.Width, shapeInfo.Height),
+                            Visible = shapeBuffer.Visible,
+                            Type = shapeInfo.Type,
+                        };
+
+
+                        result = true;
+                    }
+                }
+            }
+
+            return result;
         }
     }
+
+    public class CursorFrame
+    {
+        public GDI.Point Location = GDI.Point.Empty;
+        public GDI.Size Size = GDI.Size.Empty;
+
+        public int Pitch = 0;
+        public IntPtr Ptr = IntPtr.Zero;
+        public int DataSize = 0;
+
+        public int Type = 0;
+        public bool Visible = false;
+
+        public void Dispose()
+        {
+            if (Ptr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(Ptr);
+                Ptr = IntPtr.Zero;
+            }
+        }
+    }
+
+    enum ShapeType
+    {
+        /// <summary>
+        /// The pointer type is a monochrome mouse pointer, which is a monochrome bitmap. 
+        /// The bitmap's size is specified by width and height in a 1 bits per pixel (bpp) device independent bitmap (DIB) 
+        /// format AND mask that is followed by another 1 bpp DIB format XOR mask of the same size.
+        /// </summary>
+        DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME = 0x1,
+
+        /// <summary>
+        /// The pointer type is a color mouse pointer, which is a color bitmap. 
+        /// The bitmap's size is specified by width and height in a 32 bpp ARGB DIB format.
+        /// </summary>
+        DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR = 0x2,
+
+        /// <summary>
+        /// The pointer type is a masked color mouse pointer.
+        /// A masked color mouse pointer is a 32 bpp ARGB format bitmap with the mask value in the alpha bits. 
+        /// The only allowed mask values are 0 and 0xFF. When the mask value is 0, the RGB value should replace the screen pixel. 
+        /// When the mask value is 0xFF, an XOR operation is performed on the RGB value and the screen pixel; the result replaces the screen pixel.
+        /// </summary>
+        DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR = 0x4
+
+    }
+
+    class DDAShapeBuffer
+    {
+        public IntPtr PtrShapeBuffer { get; private set; } = IntPtr.Zero;
+        public int BufferSize { get; private set; } = 0;
+
+        public OutputDuplicatePointerShapeInformation ShapeInfo { get; internal set; }
+        public RawPoint Position { get; private set; } = new RawPoint();
+        public bool Visible { get; private set; } = false;
+
+        public int WhoUpdatedPositionLast { get; private set; } = 0;
+        public long LastTimeStamp { get; private set; } = 0;
+
+        public int DataSize => ShapeInfo.Height * ShapeInfo.Pitch;
+        public GDI.Rectangle Rect => new GDI.Rectangle(Position.X, Position.Y, ShapeInfo.Width, ShapeInfo.Height);
+        public GDI.Size Size => new GDI.Size(ShapeInfo.Width, ShapeInfo.Height);
+
+        public object SyncObj = new object();
+
+        public void Update(OutputDuplicateFrameInformation frameInfo)
+        {
+            var pointerPosition = frameInfo.PointerPosition;
+
+            this.LastTimeStamp = frameInfo.LastMouseUpdateTime;
+            this.Position = pointerPosition.Position;
+            this.Visible = pointerPosition.Visible;
+
+            var bufSize = frameInfo.PointerShapeBufferSize;
+
+            if (bufSize > this.BufferSize)
+            {
+                Alloc(bufSize);
+            }
+        }
+
+        public void Alloc(int bufferSize)
+        {
+            FreeBuffer();
+
+            this.BufferSize = bufferSize;
+            PtrShapeBuffer = Marshal.AllocHGlobal(BufferSize);
+        }
+
+        public static unsafe byte[] GetMonochromeShape(IntPtr shapePtr, IntPtr desktopPtr, GDI.Size size)
+        {
+            int width = size.Width;
+            int height = size.Height;
+
+            var shapeBufferLenght = width * height * 4;
+            var shapeBuffer = new byte[shapeBufferLenght];
+
+            var maskBufferLenght = width * height / 8;
+            var andMaskBuffer = new byte[maskBufferLenght];
+            Marshal.Copy(shapePtr, andMaskBuffer, 0, andMaskBuffer.Length);
+
+            var xorMaskBuffer = new byte[maskBufferLenght];
+            Marshal.Copy((shapePtr + andMaskBuffer.Length), xorMaskBuffer, 0, xorMaskBuffer.Length);
+
+            for (var row = 0; row < height; ++row)
+            {
+                byte mask = 0x80;
+
+                for (var col = 0; col < width; ++col)
+                {
+                    var maskIndex = row * width / 8 + col / 8;
+
+                    var andMask = ((andMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
+                    var xorMask = ((xorMaskBuffer[maskIndex] & mask) == mask) ? 0xFF : 0;
+
+                    int pos = row * width * 4 + col * 4;
+                    for (int i = 0; i < 3; i++)
+                    {// RGB
+
+                        shapeBuffer[pos] = (byte)((*(byte*)(desktopPtr + pos) & andMask) ^ xorMask);
+                        pos++;
+                    }
+                    // Alpha
+
+                    shapeBuffer[pos] = (byte)((*(byte*)(desktopPtr + pos) & 0xFF) ^ 0);
+
+                    if (mask == 0x01)
+                    {
+                        mask = 0x80;
+                    }
+                    else
+                    {
+                        mask = (byte)(mask >> 1);
+                    }
+                }
+            }
+
+            return shapeBuffer;
+        }
+
+        public byte[] GetMonochromeShape(IntPtr desktopPtr, GDI.Size size)
+        {
+            return GetMonochromeShape(PtrShapeBuffer, desktopPtr, size);
+        }
+
+
+        public unsafe GDI.Bitmap GetGdiBitmap(GDI.Bitmap desktop)
+        {
+            GDI.Bitmap bmpCursor = null;
+
+            int x = Position.X;
+            int y = Position.Y;
+
+            int width = ShapeInfo.Width;
+            int height = ShapeInfo.Height;
+            int pitch = ShapeInfo.Pitch;
+
+            int screenWidth = desktop.Width;
+            int screenHeigth = desktop.Height;
+            if (x + width > screenWidth)
+            {
+                width = screenWidth - x;
+            }
+
+            if (y + height > screenHeigth)
+            {
+                height = screenHeigth - y;
+            }
+
+            var rect = new GDI.Rectangle(x, y, width, height);
+
+            if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_COLOR)
+            {
+                bmpCursor = new GDI.Bitmap(width, height, pitch, GDI.Imaging.PixelFormat.Format32bppArgb, PtrShapeBuffer);
+
+            }
+            else if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MONOCHROME)
+            {
+                height = height / 2;
+
+                var desktopBuffer = new byte[width * height * 4];
+
+                {
+                    var data = desktop.LockBits(rect, GDI.Imaging.ImageLockMode.ReadOnly, desktop.PixelFormat);
+                    var offset = 0;
+                    for (var row = 0; row < height; row++)
+                    {
+                        Marshal.Copy(data.Scan0, desktopBuffer, offset, width * 4);
+                        offset += width * 4;
+                        data.Scan0 = IntPtr.Add(data.Scan0, data.Stride);
+                    }
+
+                    desktop.UnlockBits(data);
+                }
+
+                fixed (byte* desktopPtr = desktopBuffer)
+                {
+                    byte[] shapeBuffer = GetMonochromeShape((IntPtr)desktopPtr, new GDI.Size(width, height));
+
+                    bmpCursor = new GDI.Bitmap(width, height, GDI.Imaging.PixelFormat.Format32bppArgb);
+                    {
+                        var data = bmpCursor.LockBits(new GDI.Rectangle(0, 0, width, height), GDI.Imaging.ImageLockMode.ReadWrite, bmpCursor.PixelFormat);
+                        var offset = 0;
+                        for (var row = 0; row < height; row++)
+                        {
+                            Marshal.Copy(shapeBuffer, offset, data.Scan0, width * 4);
+                            offset += width * 4;
+                            data.Scan0 = IntPtr.Add(data.Scan0, data.Stride);
+                        }
+                        bmpCursor.UnlockBits(data);
+                    }
+                }
+
+
+            }
+            else if (ShapeInfo.Type == (int)ShapeType.DXGI_OUTDUPL_POINTER_SHAPE_TYPE_MASKED_COLOR)
+            {
+                //...
+                // logger.Warn("Not supported");
+            }
+
+            return bmpCursor;
+        }
+
+
+        private void FreeBuffer()
+        {
+            if (PtrShapeBuffer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(PtrShapeBuffer);
+                PtrShapeBuffer = IntPtr.Zero;
+            }
+        }
+
+        public void Dispose()
+        {
+            FreeBuffer();
+        }
+
+
+    }
+
 
 
 }

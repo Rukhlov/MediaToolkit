@@ -210,10 +210,12 @@ namespace MediaToolkit.ScreenCaptures
                                         }
 
                                         DDAOutput duplOutput = OutputManager.GetOutput(adapterIndex, outputIndex);
-                                        duplOutput.CaptureMouse = this.CaptureMouse;
+                                        
 
                                         DDAOutputProvider prov = new DDAOutputProvider(duplOutput);
                                         prov.Init(output, device, SrcRect, destDevice);
+                                        prov.CaptureMouse = this.CaptureMouse;
+
                                         providers.Add(prov);
 
                                     }
