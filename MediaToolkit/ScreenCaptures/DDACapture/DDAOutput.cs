@@ -135,14 +135,31 @@ namespace MediaToolkit.ScreenCaptures
                     adapter.Dispose();
                 }
 
-                InitTextures();
-                InitDuplicator();
+
+				int width = DesktopRect.Right - DesktopRect.Left;
+				int height = DesktopRect.Bottom - DesktopRect.Top;
+
+				SharedTexture = new Texture2D(device,
+					new Texture2DDescription
+					{
+						CpuAccessFlags = CpuAccessFlags.None,
+						BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+						Format = Format.B8G8R8A8_UNorm,
+						Width = width,
+						Height = height,
+						MipLevels = 1,
+						ArraySize = 1,
+						SampleDescription = { Count = 1, Quality = 0 },
+						Usage = ResourceUsage.Default,
+
+						OptionFlags = ResourceOptionFlags.Shared,
+
+					});
+
+				InitDuplicator();
                 shapeBuffer = new DDAShapeBuffer();
 
                 textureProcessor = new RgbProcessor();
-
-                int width = DesktopRect.Right - DesktopRect.Left;
-                int height = DesktopRect.Bottom - DesktopRect.Top;
 
                 var srcSize = new GDI.Size(width, height);
                 var outputDesrc = outuptDupl.Description;
@@ -167,32 +184,6 @@ namespace MediaToolkit.ScreenCaptures
             {
                 dxgiFactory.Dispose();
             }
-
-        }
-
-        private void InitTextures()
-        {
-
-            int width = DesktopRect.Right - DesktopRect.Left;
-            int height = DesktopRect.Bottom - DesktopRect.Top;
-
-            SharedTexture = new Texture2D(device,
-                new Texture2DDescription
-                {
-                    CpuAccessFlags = CpuAccessFlags.None,
-                    BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                    Format = Format.B8G8R8A8_UNorm,
-                    Width = width,
-                    Height = height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = { Count = 1, Quality = 0 },
-                    Usage = ResourceUsage.Default,
-
-                    OptionFlags = ResourceOptionFlags.Shared,
-
-                });
-
         }
 
         internal void InitDuplicator()
@@ -274,96 +265,6 @@ namespace MediaToolkit.ScreenCaptures
 
         }
 
-        private volatile int activations = 0;
-        private Task captureTask = null;
-
-        public int Activate()
-        {
-
-            logger.Debug("Activate() ");
-            lock (syncObj)
-            {
-                activations++;
-            }
-
-            if (activations > 1)
-            {
-                logger.Debug("Activate() == false" + activations);
-
-                return activations;
-            }
-
-            captureTask = Task.Run(() =>
-            {
-                if (activations > 0)
-                {
-                    Activated?.Invoke();
-                }
-
-                AutoResetEvent syncEvent = new AutoResetEvent(false);
-                Stopwatch sw = new Stopwatch();
-                int interval = (int)(FrameRate.Item1 * 1000.0 / FrameRate.Item2);
-
-                while (activations > 0)
-                {
-                    sw.Restart();
-
-                    if (OutputState != DDAOutputState.Initialized)
-                    {
-                        Thread.Sleep(100);
-                        ResetDuplicator();
-                        continue;
-                    }
-
-                    if (OutputState == DDAOutputState.Initialized)
-                    {
-                        int timeout = 0;
-                        var res = CaptureScreen(timeout);
-                        if (res == ErrorCode.Ok)
-                        {
-                            FrameAcquired?.Invoke();
-                        }
-                        else
-                        {
-                            OutputState = DDAOutputState.Closed;
-                            continue;
-                        }
-                    }
-
-                    var mSec = sw.ElapsedMilliseconds;
-                    var delay = (int)(interval - mSec);
-                    if (delay > 0)
-                    {
-                        syncEvent.WaitOne(delay);
-                        // logger.Debug(delay);
-                    }
-                }
-
-                if (syncEvent != null)
-                {
-                    syncEvent.Dispose();
-                    syncEvent = null;
-
-                }
-
-                Deactivated?.Invoke();
-            });
-
-            return activations;
-        }
-
-        private object syncObj = new object();
-        public int Deactivate()
-        {
-            logger.Debug("Deactivate()");
-            lock (syncObj)
-            {
-                activations--;
-            }
-
-            return activations;
-
-        }
 
         public ErrorCode CaptureScreen(int timeout = 0)
         {
@@ -774,7 +675,98 @@ namespace MediaToolkit.ScreenCaptures
             OutputState = DDAOutputState.Closed;
         }
 
-        public void Close(bool force = false)
+		private volatile int activations = 0;
+		private Task captureTask = null;
+
+		public int Activate()
+		{
+
+			logger.Debug("Activate() ");
+			lock (syncObj)
+			{
+				activations++;
+			}
+
+			if (activations > 1)
+			{
+				logger.Debug("Activate() == false" + activations);
+
+				return activations;
+			}
+
+			captureTask = Task.Run(() =>
+			{
+				if (activations > 0)
+				{
+					Activated?.Invoke();
+				}
+
+				AutoResetEvent syncEvent = new AutoResetEvent(false);
+				Stopwatch sw = new Stopwatch();
+				int interval = (int)(FrameRate.Item1 * 1000.0 / FrameRate.Item2);
+
+				while (activations > 0)
+				{
+					sw.Restart();
+
+					if (OutputState != DDAOutputState.Initialized)
+					{
+						Thread.Sleep(100);
+						ResetDuplicator();
+						continue;
+					}
+
+					if (OutputState == DDAOutputState.Initialized)
+					{
+						int timeout = 0;
+						var res = CaptureScreen(timeout);
+						if (res == ErrorCode.Ok)
+						{
+							FrameAcquired?.Invoke();
+						}
+						else
+						{
+							OutputState = DDAOutputState.Closed;
+							continue;
+						}
+					}
+
+					var mSec = sw.ElapsedMilliseconds;
+					var delay = (int)(interval - mSec);
+					if (delay > 0)
+					{
+						syncEvent.WaitOne(delay);
+						// logger.Debug(delay);
+					}
+				}
+
+				if (syncEvent != null)
+				{
+					syncEvent.Dispose();
+					syncEvent = null;
+
+				}
+
+				Deactivated?.Invoke();
+			});
+
+			return activations;
+		}
+
+		private object syncObj = new object();
+		public int Deactivate()
+		{
+			logger.Debug("Deactivate()");
+			lock (syncObj)
+			{
+				activations--;
+			}
+
+			return activations;
+
+		}
+
+		public void Close(bool force = false)
         {
             logger.Debug("Close()");
 

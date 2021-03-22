@@ -448,33 +448,15 @@ namespace MediaToolkit.ScreenCaptures
                 providers = null;
             }
 
-            if (compositionTexture != null && !compositionTexture.IsDisposed)
-            {
-                compositionTexture.Dispose();
-                compositionTexture = null;
-            }
 
-            if (sharedTexture != null && !sharedTexture.IsDisposed)
-            {
-                sharedTexture.Dispose();
-                sharedTexture = null;
-            }
-
-            if (mainDevice != null && !mainDevice.IsDisposed)
-            {
-                mainDevice.Dispose();
-                mainDevice = null;
-            }
-
+            DxTool.SafeDispose(compositionTexture);
+            DxTool.SafeDispose(sharedTexture);
+            DxTool.SafeDispose(mainDevice);
 
             for (int i = 0; i < adapterToDeviceMap.Count; i++)
             {
-                var d = adapterToDeviceMap[i];
-                if (d != null && !d.IsDisposed)
-                {
-                    d.Dispose();
-                    d = null;
-                }
+                var device = adapterToDeviceMap[i];
+                DxTool.SafeDispose(device);
             }
         }
 

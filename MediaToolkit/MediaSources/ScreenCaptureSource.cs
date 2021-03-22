@@ -174,10 +174,10 @@ namespace MediaToolkit
                 pixConverter.Init(device, captSize, captFormat, destSize, destFormat, downscaleFilter, colorSpace, colorRange);
 
 
-				ffmpegConverter = new FFmpegPixelConverter();
-				ffmpegConverter.Init(captSize, captFormat, destSize, destFormat, downscaleFilter);
+                ffmpegConverter = new FFmpegPixelConverter();
+                ffmpegConverter.Init(captSize, captFormat, destSize, destFormat, downscaleFilter);
 
-				syncEvent = new AutoResetEvent(false);
+                syncEvent = new AutoResetEvent(false);
 
                 deviceReady = true;
 
@@ -329,54 +329,44 @@ namespace MediaToolkit
                             var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
 
                             var frame = VideoBuffer.GetFrame();
-							if(srcFrame.DriverType == VideoDriverType.GDI)
-							{
-								//ffmpegConverter.Convert()
-								var bmp = ((GDIFrame)srcFrame).GdiBitmap;
-								if (bmp != null)
-								{
-									//bmp.Save("test.jpg");
+                            if (srcFrame.DriverType == VideoDriverType.GDI)
+                            {
+                                //ffmpegConverter.Convert()
+                                var bmp = ((GDIFrame)srcFrame).GdiBitmap;
+                                if (bmp != null)
+                                {
+                                    //bmp.Save("test.jpg");
 
-									var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-									var bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
-									try
-									{
-										var srcPtr = bmpData.Scan0;
-										var srcStride = bmpData.Stride;
-										IFrameBuffer[] srcBuffer = new FrameBuffer[] 
-										{
-											new FrameBuffer(srcPtr, srcStride)
-										};
+                                    var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                                    var bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+                                    try
+                                    {
+                                        var srcPtr = bmpData.Scan0;
+                                        var srcStride = bmpData.Stride;
+                                        IFrameBuffer[] srcBuffer = new FrameBuffer[]
+                                        {
+                                            new FrameBuffer(srcPtr, srcStride)
+                                        };
 
-										var destBuffer = frame.Buffer;
-										var _res = ffmpegConverter.Convert(ref srcBuffer, ref destBuffer);
-									}
-									finally
-									{
-										bmp.UnlockBits(bmpData);
-									}
+                                        var destBuffer = frame.Buffer;
+                                        var _res = ffmpegConverter.Convert(ref srcBuffer, ref destBuffer);
+                                    }
+                                    finally
+                                    {
+                                        bmp.UnlockBits(bmpData);
+                                    }
 
-								}
-							}
-							else
-							{
-								pixConverter.Process(srcFrame, frame);
+                                }
+                            }
+                            else
+                            {
+                                pixConverter.Process(srcFrame, frame);
 
-							}
+                            }
 
-							frame.Time = time;
+                            frame.Time = time;
                             lastTime = frame.Time;
-                            VideoBuffer.OnBufferUpdated(frame);
-
-
-                            //var frame = VideoBuffer.GetFrame();
-                            //frame.Time = time;
-                            //lastTime = frame.Time;
-                            //VideoBuffer.OnBufferUpdated(frame);
-
-                            //SharedBitmap.time = time; //MediaTimer.GetRelativeTime() 
-                            ////var diff = time - lastTime;
-                            //lastTime = SharedBitmap.time;
+                           // VideoBuffer.OnBufferUpdated(frame);
 
                             OnBufferUpdated();
 

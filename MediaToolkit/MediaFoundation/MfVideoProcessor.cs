@@ -43,6 +43,7 @@ namespace MediaToolkit.MediaFoundation
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
 
+        public int OutputBufferStride { get; private set; }
 
         public bool Setup(MfVideoArgs inputArgs, MfVideoArgs outputArgs)
         {
@@ -162,15 +163,41 @@ namespace MediaToolkit.MediaFoundation
                 //OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.Rgb24);
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(outputArgs.Width, outputArgs.Height));
-               // OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
+                // OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                 //OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(outputArgs.Width, outputArgs.Height));
 
                 //OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
                 //OutputMediaType.Set(MediaTypeAttributeKeys.FixedSizeSamples, 1);
 
+
+                //int OutputBufferStride = 0;
+
+                try
+                {
+                    OutputBufferStride = OutputMediaType.Get(MediaTypeAttributeKeys.DefaultStride);
+                }
+                catch(Exception ex)
+                {
+                    logger.Warn(ex);
+                }
+
+               
+                if (OutputBufferStride == 0)
+                {
+                    var bytes = outputArgs.Format.ToByteArray();
+                    var format = BitConverter.ToUInt32(bytes, 0);
+
+                    MediaFactory.GetStrideForBitmapInfoHeader((int)format, outputArgs.Width, out int stride);
+                    OutputBufferStride = stride;
+
+                    OutputMediaType.Set(MediaTypeAttributeKeys.DefaultStride, OutputBufferStride);
+                }
+
+
                 logger.Debug("VideoProcessor::SetOutputType\r\n" + MfTool.LogMediaType(OutputMediaType));
                 processor.SetOutputType(outputStreamId, OutputMediaType, 0);
+
 
 
 

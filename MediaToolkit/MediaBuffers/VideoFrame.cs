@@ -76,14 +76,19 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Unsupported texture format: " + descr.Format);
             }
 
-            var tex = new Texture2D(srcTexture.NativePointer);
-            ((IUnknown)tex).AddReference();
-            textures.Add(tex);
+            frameData = new FrameBuffer[]
+            {
+                new FrameBuffer(srcTexture.NativePointer, 0)
+            };
 
-			frameData = new FrameBuffer[]
-			{
-				new FrameBuffer(tex.NativePointer, 0)
-			};
+            //var tex = new Texture2D(srcTexture.NativePointer);
+            //((IUnknown)tex).AddReference();
+            //textures.Add(tex);
+
+            //frameData = new FrameBuffer[]
+            //{
+            //    new FrameBuffer(tex.NativePointer, 0)
+            //};
 
             _D3D11VideoFrame(frameData, dataSize, width, height, format);
         }

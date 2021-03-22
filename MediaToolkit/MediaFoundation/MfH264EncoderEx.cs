@@ -808,10 +808,24 @@ namespace MediaToolkit.MediaFoundation
 					bufSample.SampleTime = MfTool.SecToMfTicks(frame.Time);
 					bufSample.SampleDuration = MfTool.SecToMfTicks(frame.Duration);
 
-					var videoTexture = ((D3D11VideoFrame)frame).GetTextures()[0];
+                    var videoTextures = ((D3D11VideoFrame)frame).GetTextures();
+                    try
+                    {
+                        var videoTexture = videoTextures[0];
+                        device.ImmediateContext.CopyResource(videoTexture, bufTexture);
 
-					device.ImmediateContext.CopyResource(videoTexture, bufTexture);
-					needUpdate = true;
+                    }
+                    finally
+                    {
+
+                        foreach (var t in videoTextures)
+                        {
+                            DirectX.DxTool.SafeDispose(t);
+                        }
+                    }
+
+
+                    needUpdate = true;
 					// ProcessInput();
 				}
 

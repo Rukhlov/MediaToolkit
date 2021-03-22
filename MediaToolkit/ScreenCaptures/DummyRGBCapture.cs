@@ -208,47 +208,13 @@ namespace MediaToolkit.ScreenCaptures
 
 		private void CloseDx()
 		{
-			if (screenTexture != null)
-			{
-				screenTexture.Dispose();
-				screenTexture = null;
-			}
-			if (srcTexture != null)
-			{
-				srcTexture.Dispose();
-				srcTexture = null;
-			}
-
-			if (sharedTexture != null)
-			{
-				sharedTexture.Dispose();
-				sharedTexture = null;
-			}
-
-			if (d2dContext != null)
-			{
-				d2dContext.Dispose();
-				d2dContext = null;
-			}
-
-			if (textFormat != null)
-			{
-				textFormat.Dispose();
-				textFormat = null;
-			}
-
-			if (sceneColorBrush != null)
-			{
-				sceneColorBrush.Dispose();
-				sceneColorBrush = null;
-			}
-
-			if (dwriteFactory != null)
-			{
-				dwriteFactory.Dispose();
-				dwriteFactory = null;
-			}
-			
+            DxTool.SafeDispose(screenTexture);
+            DxTool.SafeDispose(srcTexture);
+            DxTool.SafeDispose(sharedTexture);
+            DxTool.SafeDispose(d2dContext);
+            DxTool.SafeDispose(textFormat);
+            DxTool.SafeDispose(sceneColorBrush);
+            DxTool.SafeDispose(dwriteFactory);
 		}
 	}
 

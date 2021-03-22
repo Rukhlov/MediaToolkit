@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.DirectX;
 using MediaToolkit.Logging;
 using MediaToolkit.MediaFoundation;
 
@@ -184,7 +185,10 @@ namespace MediaToolkit
                 };
 
                 processor.Setup(intupArgs, outputArgs);
-               // processor.SetMirror(VideoProcessorMirror.MirrorVertical);
+
+
+
+                // processor.SetMirror(VideoProcessorMirror.MirrorVertical);
 
                 state = CaptureState.Initialized;
 
@@ -596,33 +600,64 @@ namespace MediaToolkit
                     var mediaBuffer = outputSample.ConvertToContiguousBuffer();
                     try
                     {
-
                         var pBuffer = mediaBuffer.Lock(out int cbMaxLengthRef, out int cbCurrentLengthRef);
+
                         var driverType = VideoBuffer.DriverType;
                         if(driverType == VideoDriverType.D3D11)
                         {
                             var frame = (D3D11VideoFrame)VideoBuffer.GetFrame();
-                            // var textures = frame.GetTextures();
-                            var textures = frame.textures;
-                            var videoBufferTexture = textures[0];
+                            var textures = frame.GetTextures();
+                            try
+                            {
+                                //var textures = frame.textures;
+                                var videoBufferTexture = textures[0];
 
-                            var immediateContext = device.ImmediateContext;
+                                var immediateContext = device.ImmediateContext;
 
-                            var dataBox = immediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
-                            Kernel32.CopyMemory(dataBox.DataPointer, pBuffer, (uint)cbCurrentLengthRef);
+                                var texDescr = videoBufferTexture.Description;
 
-                            immediateContext.UnmapSubresource(stagingTexture, 0);
+                                var dataBox = immediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
 
-                            immediateContext.CopyResource(stagingTexture, videoBufferTexture);
-                            immediateContext.Flush();
+                                var srcPtr = pBuffer;
+                                var srcPitch = processor.OutputBufferStride;
+                                
+                                var destPtr = dataBox.DataPointer;
+                                var destPitch = dataBox.RowPitch;
+                                var destRowNumber = texDescr.Height;
+                                if(VideoBuffer.Format == PixFormat.NV12)
+                                {
+                                    destRowNumber = texDescr.Height + texDescr.Height / 2;
+                                }
 
-                            //foreach(var t in textures)
-                            //{
-                            //    if (t != null)
-                            //    {
-                            //        t.Dispose();
-                            //    }
-                            //}
+                                if (srcPitch != destPitch)
+                                {
+                                    for (int i = 0; i < destRowNumber; i++)
+                                    {
+                                        SharpDX.Utilities.CopyMemory(destPtr, srcPtr, destPitch);
+                                        srcPtr = IntPtr.Add(srcPtr, srcPitch);
+                                        destPtr = IntPtr.Add(destPtr, destPitch);
+                                    }
+                                }
+                                else
+                                {
+                                    Kernel32.CopyMemory(destPtr, srcPtr, (uint)dataBox.SlicePitch);
+                                }
+
+                                //Kernel32.CopyMemory(dataBox.DataPointer, pBuffer, (uint)cbCurrentLengthRef);
+
+                                immediateContext.UnmapSubresource(stagingTexture, 0);
+
+                                immediateContext.CopyResource(stagingTexture, videoBufferTexture);
+                                immediateContext.Flush();
+                            }
+                            finally
+                            {
+                                foreach (var t in textures)
+                                {
+                                    DirectX.DxTool.SafeDispose(t);
+                                }
+                            }
+
                         }
                         else if(driverType == VideoDriverType.CPU)
                         {
@@ -749,31 +784,11 @@ namespace MediaToolkit
                 sourceReaderCallback.OnFlush -= SourceReaderCallback_OnFlush;
             }
 
-            if (sourceReader != null)
-            {
-                //sourceReader.Flush(SourceReaderIndex.FirstVideoStream);
 
-                sourceReader.Dispose();
-                sourceReader = null;
-            }
+            DxTool.SafeDispose(sourceReader);
+            DxTool.SafeDispose(device);
+            DxTool.SafeDispose(stagingTexture);
 
-            if (device != null)
-            {
-                device.Dispose();
-                device = null;
-            }
-
-            //if (videoBufferTexture != null)
-            //{
-            //    videoBufferTexture.Dispose();
-            //    videoBufferTexture = null;
-            //}
-
-            if (stagingTexture != null)
-            {
-                stagingTexture.Dispose();
-                stagingTexture = null;
-            }
 
             if (processor != null)
             {

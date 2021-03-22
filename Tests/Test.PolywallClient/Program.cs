@@ -29,10 +29,10 @@ namespace Test.PolywallClient
 
                 logger.Info("========== START ============");
                 //var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
-                //var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
+                var mediaToolkitPath = AppDomain.CurrentDomain.BaseDirectory;
                 //var mediaToolkitPath = @"Y:\Users\Alexander\source\repos\ScreenStreamer\bin\Debug";
 
-                var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\MediaToolkit\bin\Debug";
+                //var mediaToolkitPath = @"C:\Users\Alexander\Source\Repos\MediaToolkit\bin\Debug";
                 //@"C:\Users\Alexander\Source\Repos\ScreenStreamer\bin\Debug";
                 // var mediaToolkitPath = @"..\";
 

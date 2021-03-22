@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.Core;
+using MediaToolkit.DirectX;
 using MediaToolkit.Logging;
 using MediaToolkit.NativeAPIs;
 using MediaToolkit.SharedTypes;
@@ -172,12 +173,13 @@ namespace MediaToolkit.ScreenCaptures
 				result = BitBltToGdiSurface();
 				device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
 				device.ImmediateContext.Flush();
-
-				if (result == ErrorCode.Ok)
-				{
-					frame = new D3D11VideoFrame(sharedTexture);
-				}
-			}
+               
+                if (result == ErrorCode.Ok)
+                {
+                    frame = new D3D11VideoFrame(sharedTexture);
+                }
+                //result = ErrorCode.WaitTimeout;
+            }
 			else
 			{
 				//result = ErrorCode.NotSupported;
@@ -317,23 +319,9 @@ namespace MediaToolkit.ScreenCaptures
         {
             logger.Debug("GDICapture::CloseDx()");
 
-            if(device != null)
-            {
-                device.Dispose();
-                device = null;
-            }
-
-            if (gdiTexture != null)
-            {
-                gdiTexture.Dispose();
-                gdiTexture = null;
-            }
-
-			if (sharedTexture != null)
-			{
-				sharedTexture.Dispose();
-				sharedTexture = null;
-			}
+            DxTool.SafeDispose(device);
+            DxTool.SafeDispose(gdiTexture);
+            DxTool.SafeDispose(sharedTexture);
 
         }
 
