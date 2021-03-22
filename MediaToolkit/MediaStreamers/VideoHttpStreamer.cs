@@ -107,7 +107,7 @@ namespace MediaToolkit.MediaStreamers
                     throw new InvalidOperationException("Invalid state " + State);
                 }
 
-                screenSource.BufferUpdated += ScreenSource_BufferUpdated;
+                screenSource.VideoBuffer.BufferUpdated += VideoBuffer_BufferUpdated; 
                 try
                 {
                     logger.Debug("Start main streaming loop...");
@@ -135,6 +135,14 @@ namespace MediaToolkit.MediaStreamers
             });
         }
 
+        private void VideoBuffer_BufferUpdated(IVideoFrame frame)
+        {
+            if (frame != null)
+            {
+                encoder._Encode(frame);
+            }
+            
+        }
 
         private void DoStream(NetworkSettings networkParams)
         {
@@ -162,16 +170,16 @@ namespace MediaToolkit.MediaStreamers
                 {
                     if (!syncEvent.WaitOne(1000))
                     {
-                        continue;
+                       // continue;
                     }
 
                     if (State != MediaState.Started)
                     {
                         break;
                     }
-                    var buffer = screenSource.VideoBuffer;
-                    var frame = buffer.GetFrame();
-                    encoder._Encode(frame);
+                    //var buffer = screenSource.VideoBuffer;
+                    //var frame = buffer.GetFrame();
+                    //encoder._Encode(frame);
 
                     //var buffer = screenSource.SharedBitmap;
                     //encoder.Encode(buffer);
@@ -212,7 +220,9 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("VideoHttpStreamer::Stop()");
 
-            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            screenSource.VideoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+
+            //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
             httpStreamer?.Stop();
 
@@ -247,7 +257,9 @@ namespace MediaToolkit.MediaStreamers
                 }
             }
 
-            screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            screenSource.VideoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+
+            //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
             if (encoder != null)
             {

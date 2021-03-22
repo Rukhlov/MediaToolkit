@@ -244,8 +244,32 @@ namespace MediaToolkit.Utils
             return new Size(width, height);
         }
 
+        public static void CopyImage(IntPtr destPtr, int destPitch, IntPtr srcPtr, int srcPitch, int widthInBytes, int rowNumber)
+        {
+            for (int i = 0; i < rowNumber; i++)
+            {
+                //SharpDX.Utilities.CopyMemory(destPtr, srcPtr, widthInBytes);
 
-		public static int Align(int val, int align)
+                Kernel32.CopyMemory(destPtr, srcPtr, (uint)widthInBytes);
+                srcPtr = IntPtr.Add(srcPtr, srcPitch);
+                destPtr = IntPtr.Add(destPtr, destPitch);
+            }
+        }
+
+        public static void CopyImage(IntPtr destPtr, int destPitch, IntPtr srcPtr, int srcPitch, int widthInBytes, int rowNumber, int dataSize)
+        {
+            if (srcPitch != destPitch)
+            {
+                CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
+            }
+            else
+            {
+                //SharpDX.Utilities.CopyMemory(destPtr, srcPtr, dataSize);
+                Kernel32.CopyMemory(destPtr, srcPtr, (uint)dataSize);
+            }
+        }
+
+        public static int Align(int val, int align)
 		{
 			return ((val + align - 1) & ~(align - 1));
 		}

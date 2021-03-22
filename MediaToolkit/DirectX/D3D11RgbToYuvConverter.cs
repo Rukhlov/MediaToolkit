@@ -729,13 +729,19 @@ namespace MediaToolkit.DirectX
 								var srcDataSize = dataBox.SlicePitch;
 								var srcPtr = dataBox.DataPointer;
 
-								for (int row = 0; row < height; row++)
-								{
-									Kernel32.CopyMemory(destPtr, srcPtr, (uint)destPitch);
-									destPtr += destPitch;
-									srcPtr += srcPitch;
-								}
-							}
+                                int bytesPerPixel = stagingDescr.Format.SizeOfInBytes();
+                                var widthInBytes = width * bytesPerPixel;
+                                var linesNumber = height;
+                                SharpDX.MediaFoundation.MediaFactory.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, linesNumber);
+                                // Utils.GraphicTools.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, linesNumber);
+
+                                //for (int row = 0; row < linesNumber; row++)
+                                //{
+                                //    Kernel32.CopyMemory(destPtr, srcPtr, (uint)widthInBytes);
+                                //    destPtr += destPitch;
+                                //    srcPtr += srcPitch;
+                                //}
+                            }
 							finally
 							{
 								device.ImmediateContext.UnmapSubresource(stagingTexture, 0);

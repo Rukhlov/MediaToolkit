@@ -42,11 +42,11 @@ namespace MediaToolkit
 
         //public VideoBuffer SharedBitmap { get; private set; }
 
-        public event Action BufferUpdated;
-        private void OnBufferUpdated()
-        {
-            BufferUpdated?.Invoke();
-        }
+        //public event Action BufferUpdated;
+        //private void OnBufferUpdated()
+        //{
+        //    BufferUpdated?.Invoke();
+        //}
 
         private GDI.Size srcSize = GDI.Size.Empty;
         //public GDI.Size SrcSize
@@ -596,6 +596,7 @@ namespace MediaToolkit
                 if (res)
                 {
                     // Console.WriteLine("outputSample!=null" + (outputSample != null));
+                    var frame = VideoBuffer.GetFrame();
 
                     var mediaBuffer = outputSample.ConvertToContiguousBuffer();
                     try
@@ -605,47 +606,44 @@ namespace MediaToolkit
                         var driverType = VideoBuffer.DriverType;
                         if(driverType == VideoDriverType.D3D11)
                         {
-                            var frame = (D3D11VideoFrame)VideoBuffer.GetFrame();
-                            var textures = frame.GetTextures();
+                            
+                            var textures = ((D3D11VideoFrame)frame).GetTextures();
                             try
                             {
-                                //var textures = frame.textures;
-                                var videoBufferTexture = textures[0];
-
                                 var immediateContext = device.ImmediateContext;
 
+                                //var textures = frame.textures;
+                                var videoBufferTexture = textures[0];
                                 var texDescr = videoBufferTexture.Description;
 
                                 var dataBox = immediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, MapFlags.None);
-
-                                var srcPtr = pBuffer;
-                                var srcPitch = processor.OutputBufferStride;
-                                
-                                var destPtr = dataBox.DataPointer;
-                                var destPitch = dataBox.RowPitch;
-                                var destRowNumber = texDescr.Height;
-                                if(VideoBuffer.Format == PixFormat.NV12)
+                                try
                                 {
-                                    destRowNumber = texDescr.Height + texDescr.Height / 2;
-                                }
+                                    var srcPtr = pBuffer;
+                                    var srcPitch = processor.OutputBufferStride;
 
-                                if (srcPitch != destPitch)
-                                {
-                                    for (int i = 0; i < destRowNumber; i++)
+                                    var destPtr = dataBox.DataPointer;
+                                    var destPitch = dataBox.RowPitch;
+                                    var destDataSize = dataBox.SlicePitch;
+
+                                    var rowNumber = frame.Height;
+                                    var widthInBytes = frame.Width * 4;
+                                    if (VideoBuffer.Format == PixFormat.NV12)
                                     {
-                                        SharpDX.Utilities.CopyMemory(destPtr, srcPtr, destPitch);
-                                        srcPtr = IntPtr.Add(srcPtr, srcPitch);
-                                        destPtr = IntPtr.Add(destPtr, destPitch);
+                                        widthInBytes = frame.Width;
+                                        rowNumber = frame.Height + frame.Height / 2;
                                     }
+
+                                    MediaFactory.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
+
+                                    //GraphicTools.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
                                 }
-                                else
+                                finally
                                 {
-                                    Kernel32.CopyMemory(destPtr, srcPtr, (uint)dataBox.SlicePitch);
+                                    immediateContext.UnmapSubresource(stagingTexture, 0);
+
                                 }
 
-                                //Kernel32.CopyMemory(dataBox.DataPointer, pBuffer, (uint)cbCurrentLengthRef);
-
-                                immediateContext.UnmapSubresource(stagingTexture, 0);
 
                                 immediateContext.CopyResource(stagingTexture, videoBufferTexture);
                                 immediateContext.Flush();
@@ -661,15 +659,34 @@ namespace MediaToolkit
                         }
                         else if(driverType == VideoDriverType.CPU)
                         {
-                            var frame = VideoBuffer.GetFrame();
                             bool lockTaken = false;
                             try
                             {
                                 lockTaken = frame.Lock();
                                 if (lockTaken)
                                 {
-                                    var frameBuffer = frame.Buffer;
-                                    Kernel32.CopyMemory(frameBuffer[0].Data, pBuffer, (uint)cbCurrentLengthRef);
+                                    var srcPtr = pBuffer;
+                                    var srcPitch = processor.OutputBufferStride;
+
+                                    var frameBuffer = frame.Buffer[0];
+
+                                    var destPtr = frameBuffer.Data;
+                                    var destPitch = frameBuffer.Stride;
+                                    var destDataSize = frame.DataLength;
+
+                                    var rowNumber = frame.Height;
+                                    var widthInBytes = frame.Width * 4;
+                                    if (VideoBuffer.Format == PixFormat.NV12)
+                                    {
+                                        widthInBytes = frame.Width;
+                                        rowNumber = frame.Height + frame.Height / 2;
+                                    }
+
+                                    MediaFactory.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
+                                    //GraphicTools.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
+
+                                    //var frameBuffer = frame.Buffer;
+                                    //Kernel32.CopyMemory(frameBuffer[0].Data, pBuffer, (uint)cbCurrentLengthRef);
                                 }
                             }
                             finally
@@ -685,11 +702,10 @@ namespace MediaToolkit
                         {   
 
                         }
-   
-                        
 
-                        OnBufferUpdated();
+                        VideoBuffer.OnBufferUpdated(frame);
 
+                        //OnBufferUpdated();
                         //var time = (double)(sample.SampleTime) / 10_000_000;
 
                         var time = MfTool.MfTicksToSec(sample.SampleTime);
@@ -718,6 +734,7 @@ namespace MediaToolkit
                 }
             }
         }
+
 
         public void Stop()
         {
@@ -789,6 +806,11 @@ namespace MediaToolkit
             DxTool.SafeDispose(device);
             DxTool.SafeDispose(stagingTexture);
 
+            if (VideoBuffer != null)
+            {
+                VideoBuffer.Dispose();
+                VideoBuffer = null;
+            }
 
             if (processor != null)
             {

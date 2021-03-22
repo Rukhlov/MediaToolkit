@@ -131,7 +131,7 @@ namespace MediaToolkit.MediaStreamers
 				videoEncoder.Open(videoSource.VideoBuffer, encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
-                videoSource.BufferUpdated += ScreenSource_BufferUpdated;
+                //videoSource.BufferUpdated += ScreenSource_BufferUpdated;
 
                 state = StreamerState.Initialized;
             }
@@ -207,7 +207,7 @@ namespace MediaToolkit.MediaStreamers
                     {
                         if (!syncEvent.WaitOne(1000))
                         {
-                            continue;
+                            //continue;
                         }
 
                         if (state != StreamerState.Streaming)
@@ -217,7 +217,7 @@ namespace MediaToolkit.MediaStreamers
 
                         sw.Restart();
 
-                        videoEncoder.Encode();
+                       // videoEncoder.Encode();
 
                     }
                     catch (Exception ex)
@@ -273,15 +273,11 @@ namespace MediaToolkit.MediaStreamers
             streamStats.Update(time, buf.Length, processingTime);
         }
 
-		private void VideoBuffer_BufferUpdated(IVideoFrame obj)
-		{
-			//syncEvent?.Set();
-		}
 
-		private void ScreenSource_BufferUpdated()
-        {
-            syncEvent?.Set();
-        }
+		//private void ScreenSource_BufferUpdated()
+  //      {
+  //          syncEvent?.Set();
+  //      }
 
         public void Close()
         {
@@ -310,7 +306,7 @@ namespace MediaToolkit.MediaStreamers
             }
 
 
-            videoSource.BufferUpdated -= ScreenSource_BufferUpdated;
+            //videoSource.BufferUpdated -= ScreenSource_BufferUpdated;
 			
             RtpSender?.Close();
 

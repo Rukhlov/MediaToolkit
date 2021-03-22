@@ -171,35 +171,40 @@ namespace MediaToolkit.MediaFoundation
                 //OutputMediaType.Set(MediaTypeAttributeKeys.FixedSizeSamples, 1);
 
 
-                //int OutputBufferStride = 0;
-
+                int outputBufferStride = 0;
                 try
                 {
-                    OutputBufferStride = OutputMediaType.Get(MediaTypeAttributeKeys.DefaultStride);
+                    outputBufferStride = OutputMediaType.Get(MediaTypeAttributeKeys.DefaultStride);
                 }
-                catch(Exception ex)
+                catch(SharpDX.SharpDXException ex)
                 {
-                    logger.Warn(ex);
+                    if(ex.ResultCode != SharpDX.MediaFoundation.ResultCode.Attributenotfound)
+                    {
+                        logger.Error(ex);
+                        throw;
+                    }
                 }
 
                
-                if (OutputBufferStride == 0)
+                if (outputBufferStride == 0)
                 {
                     var bytes = outputArgs.Format.ToByteArray();
                     var format = BitConverter.ToUInt32(bytes, 0);
 
-                    MediaFactory.GetStrideForBitmapInfoHeader((int)format, outputArgs.Width, out int stride);
-                    OutputBufferStride = stride;
+                    MediaFactory.GetStrideForBitmapInfoHeader((int)format, outputArgs.Width, out outputBufferStride);
+                    if (outputBufferStride > 0)
+                    {
+                        this.OutputBufferStride = outputBufferStride;
+                        OutputMediaType.Set(MediaTypeAttributeKeys.DefaultStride, outputBufferStride);
+                    }
+                    else
+                    {//... 
 
-                    OutputMediaType.Set(MediaTypeAttributeKeys.DefaultStride, OutputBufferStride);
+                    }
                 }
-
 
                 logger.Debug("VideoProcessor::SetOutputType\r\n" + MfTool.LogMediaType(OutputMediaType));
                 processor.SetOutputType(outputStreamId, OutputMediaType, 0);
-
-
-
 
             }
             catch (Exception ex)

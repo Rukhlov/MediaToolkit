@@ -338,28 +338,32 @@ namespace MediaToolkit.ScreenCaptures
                                 logger.Error("Size not same " + width0 + "!=" + width1 + " || " + height0 + "!=" + height1);
                                 // TODO:...
                             }
-  
-                            var srcPitch = srcBox.RowPitch;
+                            
                             var destPitch = destBox.RowPitch;
-                            var srcPtr = srcBox.DataPointer;
                             var destPtr = destBox.DataPointer;
- 
-                            if (srcPitch != destPitch)
-                            {
-                               // logger.Debug("Pitch not same " + srcPitch + "!=" + destPitch);
+                            var srcPtr = srcBox.DataPointer;
+                            var srcPitch = srcBox.RowPitch;
+                            var widthInBytes = width0 * 4;
+                            var lineNumber = height0;
 
-                                for(int i= 0; i < height1; i++)
-                                {
-                                    Utilities.CopyMemory(destPtr, srcPtr, destPitch);
-                                    srcPtr = IntPtr.Add(srcPtr, srcPitch);
-                                    destPtr = IntPtr.Add(destPtr, destPitch);
-                                }
-                            }
-                            else
-                            {
-                                Kernel32.CopyMemory(destBox.DataPointer, srcBox.DataPointer, (uint)destBox.SlicePitch);
-                            }
-                           
+                            MediaFactory.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, lineNumber);
+
+                            //if (srcPitch != destPitch)
+                            //{
+                            //    // logger.Debug("Pitch not same " + srcPitch + "!=" + destPitch);
+
+                            //    for (int i = 0; i < lineNumber; i++)
+                            //    {
+                            //        Utilities.CopyMemory(destPtr, srcPtr, widthInBytes);
+                            //        srcPtr = IntPtr.Add(srcPtr, srcPitch);
+                            //        destPtr = IntPtr.Add(destPtr, destPitch);
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    Kernel32.CopyMemory(destBox.DataPointer, srcBox.DataPointer, (uint)destBox.SlicePitch);
+                            //}
+
                         }
                         finally
                         {

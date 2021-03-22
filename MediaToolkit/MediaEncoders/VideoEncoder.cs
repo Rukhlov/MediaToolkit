@@ -30,12 +30,14 @@ namespace MediaToolkit.MediaFoundation
 		//private Texture2D bufTexture = null;
 		private Device device = null;
 
-		public void Open(VideoBufferBase videoSource, VideoEncoderSettings encoderSettings)
+		public void Open(VideoBufferBase sourceBuffer, VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Open(...)");
-			this.videoBuffer = videoSource;
 
-			if (this.videoBuffer.DriverType == VideoDriverType.D3D11)
+			this.videoBuffer = sourceBuffer;
+            this.videoBuffer.BufferUpdated += VideoBuffer_BufferUpdated;
+
+            if (this.videoBuffer.DriverType == VideoDriverType.D3D11)
 			{
 				device = ((D3D11VideoBuffer)this.videoBuffer).D3D11Device;
 				using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
@@ -89,7 +91,30 @@ namespace MediaToolkit.MediaFoundation
 			encoder.Start();
 		}
 
-		public void Encode()
+        private void VideoBuffer_BufferUpdated(IVideoFrame frame)
+        {
+            if (frame != null)
+            {
+                bool lockTaken = false;
+                try
+                {
+                    lockTaken = frame.Lock(10);
+                    if (lockTaken)
+                    {
+                        encoder?.ProcessFrame(frame);
+                    }
+                }
+                finally
+                {
+                    if (lockTaken)
+                    {
+                        frame.Unlock();
+                    }
+                }
+            }
+        }
+
+        public void Encode()
 		{
 			var frame = videoBuffer.GetFrame();
 			if (frame != null)
@@ -126,6 +151,11 @@ namespace MediaToolkit.MediaFoundation
 		public void Close()
 		{
 			logger.Debug("VideoEncoder::Close()");
+
+            if (videoBuffer != null)
+            {
+                videoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+            }
 
 			if (encoder != null)
 			{
