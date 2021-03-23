@@ -26,7 +26,7 @@ namespace MediaToolkit
         public int AdapterIndex { get; private set; } = 0;
 
         private Device device = null;
-        
+
         public VideoBufferBase VideoBuffer { get; private set; }
 
         private volatile CaptureState state = CaptureState.Closed;
@@ -52,12 +52,12 @@ namespace MediaToolkit
         private ScreenCapture screenCapture = null;
         private D3D11RgbToYuvConverter pixConverter = null;
 
-		private FFmpegPixelConverter ffmpegConverter = null;
+        private FFmpegPixelConverter ffmpegConverter = null;
 
-		public ScreenCaptureProperties CaptureProps{ get; private set; }
+        public ScreenCaptureProperties CaptureProps { get; private set; }
 
         private static DDAOutputManager outputManager = new DDAOutputManager();
-		private bool deviceReady = false;
+        private bool deviceReady = false;
 
 
         public void Setup(object pars)//ScreenCaptureParams captureParams)
@@ -75,9 +75,9 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-			var srcRect = Rectangle.Empty;
-			var destSize = Size.Empty;
-			var hwnd = IntPtr.Zero;
+            var srcRect = Rectangle.Empty;
+            var destSize = Size.Empty;
+            var hwnd = IntPtr.Zero;
 
             try
             {
@@ -131,22 +131,18 @@ namespace MediaToolkit
                 InitDx();
 
                 screenCapture = ScreenCapture.Create(CaptureProps.CaptureType);
-				var captParams = new ScreenCaptureParameters
-				{
-					SrcRect = srcRect,
-					DestSize = destSize,
-					CaptureMouse = CaptureProps.CaptureMouse,
-					UseHwContext = true,
+                var captParams = new ScreenCaptureParameters
+                {
+                    SrcRect = srcRect,
+                    DestSize = destSize,
+                    CaptureMouse = CaptureProps.CaptureMouse,
+                    UseHwContext = true,
                     D3D11Device = device,
                     DDAOutputMan = outputManager,
                 };
 
-				//captParams.UseHwContext = false;
-				//captParams.DestSize = srcRect.Size;
-
-				screenCapture.Init(captParams);
-                //screenCapture.Init(srcRect);
-
+                screenCapture.Init(captParams);
+  
                 var driverType = captureParams.DriverType;
                 var destFormat = captureParams.Format;
                 if (driverType == VideoDriverType.CPU)
@@ -164,18 +160,22 @@ namespace MediaToolkit
 
                 var captSize = screenCapture.SrcRect.Size;
                 var captFormat = screenCapture.SrcFormat;
-				var downscaleFilter = captureParams.DownscaleFilter;
+                var downscaleFilter = captureParams.DownscaleFilter;
 
-				var colorSpace = captureParams.ColorSpace;
+                var colorSpace = captureParams.ColorSpace;
                 var colorRange = captureParams.ColorRange;
 
-                pixConverter = new D3D11RgbToYuvConverter();
-                pixConverter.KeepAspectRatio = CaptureProps.AspectRatio;
-                pixConverter.Init(device, captSize, captFormat, destSize, destFormat, downscaleFilter, colorSpace, colorRange);
-
-
-                ffmpegConverter = new FFmpegPixelConverter();
-                ffmpegConverter.Init(captSize, captFormat, destSize, destFormat, downscaleFilter);
+                if (captParams.UseHwContext)
+                {
+                    pixConverter = new D3D11RgbToYuvConverter();
+                    pixConverter.KeepAspectRatio = CaptureProps.AspectRatio;
+                    pixConverter.Init(device, captSize, captFormat, destSize, destFormat, downscaleFilter, colorSpace, colorRange);
+                }
+                else
+                {
+                    ffmpegConverter = new FFmpegPixelConverter();
+                    ffmpegConverter.Init(captSize, captFormat, destSize, destFormat, downscaleFilter);
+                }
 
                 syncEvent = new AutoResetEvent(false);
 
@@ -184,7 +184,7 @@ namespace MediaToolkit
                 state = CaptureState.Initialized;
             }
             catch (Exception ex)
-            { 
+            {
                 logger.Error(ex);
                 LastError = ex;
 
@@ -211,22 +211,7 @@ namespace MediaToolkit
                     //AdapterId = adapter.Description.Luid;
                     //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
-                    var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
-#if DEBUG
-                    //deviceCreationFlags |= DeviceCreationFlags.Debug;
-#endif
-                    SharpDX.Direct3D.FeatureLevel[] featureLevel =
-                    {
-                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                    };
-
-                    device = new Device(adapter, deviceCreationFlags, featureLevel);
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
+                    device = DxTool.CreateMultithreadDevice(adapter);
                 }
                 finally
                 {
@@ -260,7 +245,7 @@ namespace MediaToolkit
                 throw new InvalidOperationException("Invalid capture state " + State);
             }
 
-           // State = CaptureState.Starting;
+            // State = CaptureState.Starting;
 
             captureTask = Task.Run(() =>
             {
@@ -295,95 +280,42 @@ namespace MediaToolkit
             captureStats.Reset();
 
             try
-            {                
+            {
 
-               // Statistic.RegisterCounter(captureStats);
+                // Statistic.RegisterCounter(captureStats);
 
                 var fps = CaptureProps.Fps;
                 var frameInterval = (1000.0 / fps);
                 captureStats.frameInterval = frameInterval;
 
-                double lastTime = 0;
                 double monotonicTime = 0;
 
                 Stopwatch sw = Stopwatch.StartNew();
 
-                long logInterval = 0;
                 while (state == CaptureState.Capturing && deviceReady)
                 {
                     sw.Restart();
 
+                    IVideoFrame screenFrame = null;
                     try
                     {
-                        var res = screenCapture.TryGetFrame(out var srcFrame);
-
-                        //var res = screenCapture.UpdateBuffer(30);
+                        var res = screenCapture.TryGetFrame(out screenFrame);
 
                         if (state != CaptureState.Capturing || !deviceReady)
                         {
                             break;
                         }
 
+                        IVideoFrame targetFrame = null;
                         if (res == SharedTypes.ErrorCode.Ok)
                         {
-                            var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
-
-                            var frame = VideoBuffer.GetFrame();
-                            if (srcFrame.DriverType == VideoDriverType.GDI)
-                            {
-                                //ffmpegConverter.Convert()
-                                var bmp = ((GDIFrame)srcFrame).GdiBitmap;
-                                if (bmp != null)
-                                {
-                                    //bmp.Save("test.jpg");
-
-                                    var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-                                    var bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
-                                    try
-                                    {
-                                        var srcPtr = bmpData.Scan0;
-                                        var srcStride = bmpData.Stride;
-                                        IFrameBuffer[] srcBuffer = new FrameBuffer[]
-                                        {
-                                            new FrameBuffer(srcPtr, srcStride)
-                                        };
-
-                                        var destBuffer = frame.Buffer;
-                                        var _res = ffmpegConverter.Convert(ref srcBuffer, ref destBuffer);
-                                    }
-                                    finally
-                                    {
-                                        bmp.UnlockBits(bmpData);
-                                    }
-
-                                }
-                            }
-                            else
-                            {
-                                pixConverter.Process(srcFrame, frame);
-
-                            }
-
-                            frame.Time = time;
-                            lastTime = frame.Time;
-                            VideoBuffer.OnBufferUpdated(frame);
-
-                            //OnBufferUpdated();
-
-                            captureStats.UpdateFrameStats(frame.Time, frame.DataLength);
-
-                            if (srcFrame != null)
-                            {
-                                ((VideoFrameBase)srcFrame).Dispose();
-                                srcFrame = null;
-                            }
-
-                            // captureStats.UpdateFrameStats(SharedBitmap.time, (int)SharedBitmap.DataLength);
-
+                            targetFrame = VideoBuffer.GetFrame();
+                            ProcessFrame(screenFrame, targetFrame);
                         }
                         else if (res == SharedTypes.ErrorCode.WaitTimeout)
                         {
-                            //logger.Warn("No screen buffer...");
+                            logger.Warn("WaitTimeout");
+                            targetFrame = VideoBuffer.GetFrame();
                         }
                         else if (res == SharedTypes.ErrorCode.AccessDenied)
                         {
@@ -391,8 +323,7 @@ namespace MediaToolkit
 
                             logger.Warn("screenCapture.UpdateBuffer(...) == ERROR_ACCESS_DENIED try SwitchToInputDesktop()");
 
-                            Utils.DesktopManager.SwitchToInputDesktop();
-
+                            DesktopManager.SwitchToInputDesktop();
                         }
                         else
                         {
@@ -400,12 +331,31 @@ namespace MediaToolkit
                         }
 
 
+                        if (targetFrame != null)
+                        {
+                            var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
+                            targetFrame.Time = time;
+                            targetFrame.Duration = 0;// !!!!!!
+
+                            VideoBuffer.OnBufferUpdated(targetFrame);
+                            captureStats.UpdateFrameStats(targetFrame.Time, targetFrame.DataLength);
+                        }
                     }
+
                     catch (Exception ex)
                     {
                         logger.Error(ex);
                         Thread.Sleep(1000);
                     }
+                    finally
+                    {
+                        if (screenFrame != null)
+                        {
+                            ((VideoFrameBase)screenFrame).Dispose();
+                            screenFrame = null;
+                        }
+                    }
+
 
                     var mSec = sw.ElapsedMilliseconds;
                     var delay = (int)(frameInterval - mSec);
@@ -422,13 +372,6 @@ namespace MediaToolkit
                     monotonicTime += sw.ElapsedMilliseconds / 1000.0;
                     captureStats.Update(monotonicTime);
 
-                    //logInterval += sw.ElapsedMilliseconds;
-                    //if (logInterval >= 3000)
-                    //{
-                    //    var report = captureStats.GetReport();
-                    //    Console.WriteLine(report);
-                    //    logInterval = 0;
-                    //}
                 }
 
             }
@@ -444,7 +387,51 @@ namespace MediaToolkit
 
         }
 
-  
+        private void ProcessFrame(IVideoFrame screenFrame, IVideoFrame targetFrame)
+        {
+            if(screenFrame.DriverType == VideoDriverType.D3D11)
+            {
+                pixConverter.Process(screenFrame, targetFrame);
+            }
+            else if (screenFrame.DriverType == VideoDriverType.GDI)
+            {
+                ProcessGdiFrame(screenFrame, targetFrame);
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid frame drive type: " + screenFrame.DriverType);
+            }
+        }
+
+        private void ProcessGdiFrame(IVideoFrame screenFrame, IVideoFrame targetFrame)
+        {
+            //ffmpegConverter.Convert()
+            var bmp = ((GDIFrame)screenFrame).GdiBitmap;
+            if (bmp != null)
+            {
+                //bmp.Save("test.jpg");
+
+                var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+                var bmpData = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, bmp.PixelFormat);
+                try
+                {
+                    var srcPtr = bmpData.Scan0;
+                    var srcStride = bmpData.Stride;
+                    IFrameBuffer[] srcBuffer = new FrameBuffer[]
+                    {
+                        new FrameBuffer(srcPtr, srcStride)
+                    };
+
+                    var destBuffer = targetFrame.Buffer;
+                    var _res = ffmpegConverter.Convert(ref srcBuffer, ref destBuffer);
+                }
+                finally
+                {
+                    bmp.UnlockBits(bmpData);
+                }
+            }
+        }
+
         public void Stop()
         {
             logger.Debug("ScreenSource::Close()");
@@ -492,11 +479,11 @@ namespace MediaToolkit
         {
             CloseDx();
 
-			if (ffmpegConverter != null)
-			{
-				ffmpegConverter.Close();
-				ffmpegConverter = null;
-			}
+            if (ffmpegConverter != null)
+            {
+                ffmpegConverter.Close();
+                ffmpegConverter = null;
+            }
 
             if (pixConverter != null)
             {
@@ -534,7 +521,6 @@ namespace MediaToolkit
 
     }
 
-
     class CaptureStats : MediaToolkit.Utils.StatCounter
     {
         public double totalTime = 0;
@@ -555,7 +541,7 @@ namespace MediaToolkit
         public void Update(double timestamp)
         {
             if (lastTimestamp > 0)
-            { 
+            {
 
                 var interval = (timestamp - lastTimestamp) * 1000;
 

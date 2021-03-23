@@ -122,25 +122,9 @@ namespace MediaToolkit.ScreenCaptures
 
                 //logger.Info("Screen source info: " + adapter.Description.Description + " " + output.Description.DeviceName);
 
-                var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
-#if DEBUG
-                //deviceCreationFlags |= DeviceCreationFlags.Debug;
-#endif
-                SharpDX.Direct3D.FeatureLevel[] featureLevel =
-                {
-                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                };
-
                 if (mainDevice == null)
                 {
-
-                    mainDevice = new Device(primaryAdapter, deviceCreationFlags, featureLevel);
-                    using (var multiThread = mainDevice.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
+					mainDevice = DxTool.CreateMultithreadDevice(primaryAdapter);
                 }
 
 
@@ -194,11 +178,7 @@ namespace MediaToolkit.ScreenCaptures
                                         }
                                         else
                                         {
-                                            device = new Device(adapter, deviceCreationFlags, featureLevel);
-                                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                                            {
-                                                multiThread.SetMultithreadProtected(true);
-                                            }
+											device = DxTool.CreateMultithreadDevice(adapter);
 
                                             adapterToDeviceMap[adapterIndex] = device;
                                         }

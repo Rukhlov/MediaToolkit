@@ -94,14 +94,7 @@ namespace MediaToolkit
                 {
                     using (var adapter = dxgiFactory.GetAdapter1(AdapterIndex))
                     {
-                        var deviceCreationFlags = DeviceCreationFlags.BgraSupport;
-
-                        device = new Device(adapter, deviceCreationFlags);
-
-                        using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                        {
-                            multiThread.SetMultithreadProtected(true);
-                        }
+						device = DxTool.CreateMultithreadDevice(adapter);
                     }
 
                 }

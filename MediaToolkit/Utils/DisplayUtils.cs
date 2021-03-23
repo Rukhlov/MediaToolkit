@@ -81,7 +81,7 @@ namespace MediaToolkit.Utils
 
 			var dxDevices = GetDxDisplayDevices(false);
             var dxDevice0 = dxDevices[0];
-            Console.WriteLine("dxDevice0 " + dxDevice0.ToString());
+            Debug.WriteLine("dxDevice0 " + dxDevice0.ToString());
 
             if (dxDevice0.IsSoftware)
             {//
@@ -112,7 +112,7 @@ namespace MediaToolkit.Utils
                         var deviceName = gdiDevice.DeviceName;
 
                         var dxDevice = activeHwGpuDevices[0];
-                        Console.WriteLine(deviceName + " " + dxDevice.DeviceId + " " + gdiDevice.DeviceId);
+                        Debug.WriteLine(deviceName + " " + dxDevice.DeviceId + " " + gdiDevice.DeviceId);
 
                         if (dxDevice.DeviceId != gdiDevice.DeviceId)
                         { // проверяем NvOptimus, AMDSwitchableGraphics,...

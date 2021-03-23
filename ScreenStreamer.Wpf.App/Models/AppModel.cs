@@ -115,6 +115,23 @@ namespace ScreenStreamer.Wpf.Models
 
 			}
 
+            var graphicsMode = MediaToolkit.Utils.DisplayUtil.CheckGraphicsMode();
+            if(graphicsMode!= MediaToolkit.Utils.GraphicsMode.Default)
+            {
+                if(graphicsMode == MediaToolkit.Utils.GraphicsMode.Hybrid || graphicsMode == MediaToolkit.Utils.GraphicsMode.Invalid)
+                {
+                    // Hybrid, Invalid
+                    logger.Error("Not supported graphic mode: " + graphicsMode);
+
+                    //TODO:...
+                }
+                else
+                {// MultipleGPU, Remote, Software
+                    logger.Warn("Special graphic mode detected: " + graphicsMode);
+                }
+                
+            }
+
 			if (StreamList.Count == 0)
             {
 				logger.Warn("StreamList.Count == 0");

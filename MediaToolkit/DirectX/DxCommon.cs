@@ -461,6 +461,29 @@ namespace MediaToolkit.DirectX
 	public class DxTool
 	{
 
+		public static SharpDX.Direct3D11.Device CreateMultithreadDevice(Adapter adapter, 
+			DeviceCreationFlags deviceCreationFlags = DeviceCreationFlags.BgraSupport)
+		{
+#if DEBUG
+			//deviceCreationFlags |= DeviceCreationFlags.Debug;
+#endif
+
+			SharpDX.Direct3D.FeatureLevel[] featureLevel =
+			{
+				SharpDX.Direct3D.FeatureLevel.Level_11_1,
+				SharpDX.Direct3D.FeatureLevel.Level_11_0,
+				SharpDX.Direct3D.FeatureLevel.Level_10_1,
+			};
+
+			var device = new SharpDX.Direct3D11.Device(adapter, deviceCreationFlags, featureLevel);
+			using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
+			{
+				multiThread.SetMultithreadProtected(true);
+			}
+
+			return device;
+		}
+
 		public static void SafeDispose(SharpDX.DisposeBase dispose)
 		{
 			if (dispose != null && !dispose.IsDisposed)

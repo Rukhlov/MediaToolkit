@@ -6,7 +6,7 @@
 ;#define ApplicationExeName "MediaToolkit.dll"
 #define ApplicationExeName "ScreenStreamer.Wpf.App.exe"
 
-;#define DEBUG
+#define DEBUG
 
 #define TrunkPath "..\"
 

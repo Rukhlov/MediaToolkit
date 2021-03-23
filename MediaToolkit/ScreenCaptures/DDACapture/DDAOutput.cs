@@ -105,32 +105,16 @@ namespace MediaToolkit.ScreenCaptures
             {
                 var adapter = dxgiFactory.GetAdapter(AdapterIndex);
                 try
-                {
-                    this.output = adapter.GetOutput(OutputIndex);
+				{
+					this.output = adapter.GetOutput(OutputIndex);
 
-                    var _descr = output.Description;
-                    this.DesktopRect = _descr.DesktopBounds;
+					var _descr = output.Description;
+					this.DesktopRect = _descr.DesktopBounds;
 
-                    //this.device = device;
-                    var deviceCreationFlags =
-                        //DeviceCreationFlags.Debug |
-                        //DeviceCreationFlags.VideoSupport |
-                        DeviceCreationFlags.BgraSupport;
-
-                    SharpDX.Direct3D.FeatureLevel[] featureLevel =
-                    {
-                        SharpDX.Direct3D.FeatureLevel.Level_11_1,
-                        SharpDX.Direct3D.FeatureLevel.Level_11_0,
-                        SharpDX.Direct3D.FeatureLevel.Level_10_1,
-                    };
-
-                    device = new Device(adapter, deviceCreationFlags, featureLevel);
-                    using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
-                }
-                finally
+					//this.device = device;
+					device = DxTool.CreateMultithreadDevice(adapter);
+				}
+				finally
                 {
                     adapter.Dispose();
                 }
@@ -186,7 +170,9 @@ namespace MediaToolkit.ScreenCaptures
             }
         }
 
-        internal void InitDuplicator()
+
+
+		internal void InitDuplicator()
         {
 
             logger.Debug("InitDuplicator()");
