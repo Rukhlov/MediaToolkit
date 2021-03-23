@@ -35,7 +35,7 @@ namespace MediaToolkit.MediaFoundation
 			logger.Debug("VideoEncoder::Open(...)");
 
 			this.videoBuffer = sourceBuffer;
-            this.videoBuffer.BufferUpdated += VideoBuffer_BufferUpdated;
+            //this.videoBuffer.BufferUpdated += VideoBuffer_BufferUpdated;
 
             if (this.videoBuffer.DriverType == VideoDriverType.D3D11)
 			{
@@ -91,7 +91,7 @@ namespace MediaToolkit.MediaFoundation
 			encoder.Start();
 		}
 
-        private void VideoBuffer_BufferUpdated(IVideoFrame frame)
+        public void Encode(IVideoFrame frame)
         {
             if (frame != null)
             {
@@ -114,30 +114,6 @@ namespace MediaToolkit.MediaFoundation
             }
         }
 
-        public void Encode()
-		{
-			var frame = videoBuffer.GetFrame();
-			if (frame != null)
-			{
-				bool lockTaken = false;
-				try
-				{
-					lockTaken = frame.Lock(10);
-					if (lockTaken)
-					{
-
-						encoder.ProcessFrame(frame);
-					}
-				}
-				finally
-				{
-					if (lockTaken)
-					{
-						frame.Unlock();
-					}
-				}
-			}
-		}
 
 		private void Encoder_DataEncoded(IntPtr data, int size, double timestamp)
 		{
@@ -152,10 +128,10 @@ namespace MediaToolkit.MediaFoundation
 		{
 			logger.Debug("VideoEncoder::Close()");
 
-            if (videoBuffer != null)
-            {
-                videoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
-            }
+            //if (videoBuffer != null)
+            //{
+            //    videoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+            //}
 
 			if (encoder != null)
 			{

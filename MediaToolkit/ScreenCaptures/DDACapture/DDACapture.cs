@@ -43,25 +43,17 @@ namespace MediaToolkit.ScreenCaptures
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private Device mainDevice = null;
-
         private Texture2D compositionTexture = null;
-
         private Texture2D sharedTexture = null;
 
         public int AdapterIndex { get; private set; }
-
-        //public bool UseHwContext { get; set; } = true;
 
         public int PrimaryAdapterIndex { get; set; } = 0;
 
         private bool internalOutputManager = false;
         public DDAOutputManager OutputManager { get; set; } = new DDAOutputManager();
 
-        // private List<_DesktopDuplicator> deskDupls = new List<_DesktopDuplicator>();
-
         private List<DDAOutputProvider> providers = new List<DDAOutputProvider>();
-
-        private GDI.Rectangle normalizedSrcRect = GDI.Rectangle.Empty;
 
         private Dictionary<int, Device> adapterToDeviceMap = new Dictionary<int, Device>();
 
@@ -306,11 +298,11 @@ namespace MediaToolkit.ScreenCaptures
                 }
 
 
-                foreach (var dupl in providers)
+                foreach (var provider in providers)
                 {
                     try
                     {
-                        Result = dupl.TryGetScreenTexture(out Rectangle destRect, out Texture2D texture);
+                        Result = provider.TryGetScreenTexture(out Rectangle destRect, out Texture2D texture);
                         if (Result != ErrorCode.Ok)
                         {
                             //...
@@ -329,8 +321,10 @@ namespace MediaToolkit.ScreenCaptures
                             Back = 1,
                         };
 
-                        mainDevice.ImmediateContext.CopySubresourceRegion(texture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
-                        mainDevice.ImmediateContext.Flush();
+                        mainDevice.ImmediateContext.CopySubresourceRegion(texture, 0, srcRegion, sharedTexture, 0, destRect.Left, destRect.Top);
+
+                        //mainDevice.ImmediateContext.CopySubresourceRegion(texture, 0, srcRegion, compositionTexture, 0, destRect.Left, destRect.Top);
+                        // mainDevice.ImmediateContext.Flush();
                     }
                     catch (Exception ex)
                     {
@@ -342,8 +336,8 @@ namespace MediaToolkit.ScreenCaptures
 
                 if (Result == ErrorCode.Ok)
                 {
-                    mainDevice.ImmediateContext.CopyResource(compositionTexture, sharedTexture);
-                    mainDevice.ImmediateContext.Flush();
+                    //mainDevice.ImmediateContext.CopyResource(compositionTexture, sharedTexture);
+                    //mainDevice.ImmediateContext.Flush();
 
                     frame = new D3D11VideoFrame(sharedTexture);
                 }

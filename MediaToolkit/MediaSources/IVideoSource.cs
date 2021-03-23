@@ -29,7 +29,7 @@ namespace MediaToolkit
         int ErrorCode { get; }
 
         CaptureState State { get; }
-       // event Action BufferUpdated;
+        event Action<IVideoFrame> FrameAcquired;
 
         event Action<object> CaptureStopped;
         event Action CaptureStarted;

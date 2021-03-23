@@ -23,7 +23,7 @@ namespace MediaToolkit.MediaStreamers
         private VideoHttpStreamer httpStreamer = null;
         //private IVideoSource httpScreenSource = null;
 
-        private ScreenCaptureSource httpScreenSource = null;
+        private ScreenCaptureSource screenSource = null;
 
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;
@@ -142,11 +142,11 @@ namespace MediaToolkit.MediaStreamers
 
             try
             {
-                httpScreenSource = new ScreenCaptureSource();
-                httpScreenSource.Setup(captureParams);
-                httpScreenSource.CaptureStopped += HttpScreenSource_CaptureStopped;
+                screenSource = new ScreenCaptureSource();
+                screenSource.Setup(captureParams);
+                screenSource.CaptureStopped += ScreenSource_CaptureStopped;
 
-                httpStreamer = new VideoHttpStreamer(httpScreenSource);
+                httpStreamer = new VideoHttpStreamer(screenSource);
                 httpStreamer.Setup(encodingParams, networkParams);
                 httpStreamer.StreamerStopped += HttpStreamer_StreamerStopped;
 
@@ -179,7 +179,7 @@ namespace MediaToolkit.MediaStreamers
             {
                 try
                 {
-                    httpScreenSource.Start();
+                    screenSource.Start();
                     httpStreamer.Start();
 
                     state = MediaState.Started;
@@ -188,12 +188,12 @@ namespace MediaToolkit.MediaStreamers
                     while (State == MediaState.Started)
                     {
 
-                        if (httpScreenSource.ErrorCode != 0 || httpStreamer.ErrorCode != 0)
+                        if (screenSource.ErrorCode != 0 || httpStreamer.ErrorCode != 0)
                         {//В одном из потоков ошибка - останавливаем стрим
 
-                            logger.Warn("HttpScreenStreamer: Error occurred " + httpScreenSource.ErrorCode + ", " + httpStreamer.ErrorCode);
+                            logger.Warn("HttpScreenStreamer: Error occurred " + screenSource.ErrorCode + ", " + httpStreamer.ErrorCode);
 
-                            httpScreenSource.Stop();
+                            screenSource.Stop();
                             httpStreamer.Stop();
 
                             errorCode = 100500;
@@ -206,7 +206,7 @@ namespace MediaToolkit.MediaStreamers
 
                     while (State == MediaState.Stopping)
                     {// ждем остановки потоков
-                        if (httpScreenSource.State == CaptureState.Stopped && httpStreamer.State == MediaState.Stopped)
+                        if (screenSource.State == CaptureState.Stopped && httpStreamer.State == MediaState.Stopped)
                         {
                             logger.Debug("HttpScreenStreamer: All thread stopped...");
                             break;
@@ -270,7 +270,7 @@ namespace MediaToolkit.MediaStreamers
 
         }
 
-        private void HttpScreenSource_CaptureStopped(object obj)
+        private void ScreenSource_CaptureStopped(object obj)
         {
             logger.Debug("HttpScreenSource_CaptureStopped");
 
@@ -286,9 +286,9 @@ namespace MediaToolkit.MediaStreamers
                 throw new InvalidOperationException("Invalid state " + State);
             }
 
-            if (httpScreenSource != null)
+            if (screenSource != null)
             {
-                httpScreenSource.Stop();
+                screenSource.Stop();
             }
 
             if (httpStreamer != null)
@@ -349,10 +349,10 @@ namespace MediaToolkit.MediaStreamers
             }
 
 
-            if (httpScreenSource != null)
+            if (screenSource != null)
             { 
-                httpScreenSource.CaptureStopped -= HttpScreenSource_CaptureStopped;
-                httpScreenSource.Close(force);
+                screenSource.CaptureStopped -= ScreenSource_CaptureStopped;
+                screenSource.Close(force);
             }
 
             state = MediaState.Closed;

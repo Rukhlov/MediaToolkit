@@ -38,11 +38,11 @@ namespace MediaToolkit
         private CaptureStats captureStats = new CaptureStats();
         public StatCounter Stats => captureStats;
 
-        //public event Action BufferUpdated;
-        //private void OnBufferUpdated()
-        //{
-        //    BufferUpdated?.Invoke();
-        //}
+        public event Action<IVideoFrame> FrameAcquired;
+        private void OnFrameAcquired(IVideoFrame frame)
+        {
+            FrameAcquired?.Invoke(frame);
+        }
 
         public event Action CaptureStarted;
         public event Action<object> CaptureStopped;
@@ -337,7 +337,8 @@ namespace MediaToolkit
                             targetFrame.Time = time;
                             targetFrame.Duration = 0;// !!!!!!
 
-                            VideoBuffer.OnBufferUpdated(targetFrame);
+                            OnFrameAcquired(targetFrame);
+
                             captureStats.UpdateFrameStats(targetFrame.Time, targetFrame.DataLength);
                         }
                     }

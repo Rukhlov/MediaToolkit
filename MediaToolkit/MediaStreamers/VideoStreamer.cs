@@ -113,21 +113,23 @@ namespace MediaToolkit.MediaStreamers
                 
                 RtpSender.Start();
 
-				//var hwContext = screenSource.hwContext;
-				//var hwDevice = hwContext.device;
+                //var hwContext = screenSource.hwContext;
+                //var hwDevice = hwContext.device;
 
-				//var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
+                //var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
 
-				//if (encodingSettings.UseResoulutionFromSource)
-				//{
-				//    encodingSettings.Resolution = srcSize;
-				//}
+                //if (encodingSettings.UseResoulutionFromSource)
+                //{
+                //    encodingSettings.Resolution = srcSize;
+                //}
 
-				//encoder = new FFmpegVideoEncoder();
-				//encoder.Open(encodingParams);
-				//encoder.DataEncoded += Encoder_DataEncoded;
+                //encoder = new FFmpegVideoEncoder();
+                //encoder.Open(encodingParams);
+                //encoder.DataEncoded += Encoder_DataEncoded;
 
-				videoEncoder = new VideoFrameEncoder();
+                videoSource.FrameAcquired += VideoSource_FrameAcquired;
+
+                videoEncoder = new VideoFrameEncoder();
 				videoEncoder.Open(videoSource.VideoBuffer, encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
@@ -145,10 +147,18 @@ namespace MediaToolkit.MediaStreamers
 
         }
 
+        private void VideoSource_FrameAcquired(IVideoFrame frame)
+        {
+            if (frame != null)
+            {
+                videoEncoder.Encode(frame);
+            }
+        }
 
 
-		// private Texture2D SharedTexture = null;
-		private volatile bool running = false;
+
+        // private Texture2D SharedTexture = null;
+        private volatile bool running = false;
 
         private Stopwatch sw = new Stopwatch();
         public bool Start()

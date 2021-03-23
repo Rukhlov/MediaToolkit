@@ -107,7 +107,7 @@ namespace MediaToolkit.MediaStreamers
                     throw new InvalidOperationException("Invalid state " + State);
                 }
 
-                screenSource.VideoBuffer.BufferUpdated += VideoBuffer_BufferUpdated; 
+                screenSource.FrameAcquired+= ScreenSource_FrameAcquired; 
                 try
                 {
                     logger.Debug("Start main streaming loop...");
@@ -135,7 +135,7 @@ namespace MediaToolkit.MediaStreamers
             });
         }
 
-        private void VideoBuffer_BufferUpdated(IVideoFrame frame)
+        private void ScreenSource_FrameAcquired(IVideoFrame frame)
         {
             if (frame != null)
             {
@@ -220,7 +220,7 @@ namespace MediaToolkit.MediaStreamers
         {
             logger.Debug("VideoHttpStreamer::Stop()");
 
-            screenSource.VideoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+            screenSource.FrameAcquired -= ScreenSource_FrameAcquired;
 
             //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
@@ -257,7 +257,7 @@ namespace MediaToolkit.MediaStreamers
                 }
             }
 
-            screenSource.VideoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
+            screenSource.FrameAcquired -= ScreenSource_FrameAcquired;
 
             //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 

@@ -35,12 +35,12 @@ namespace MediaToolkit
             return frame;
         }
 
-		public event Action<IVideoFrame> BufferUpdated;
+		//public event Action<IVideoFrame> BufferUpdated;
 
-		public void OnBufferUpdated(IVideoFrame frame)
-		{
-			BufferUpdated?.Invoke(frame);
-		}
+		//public void OnBufferUpdated(IVideoFrame frame)
+		//{
+		//	BufferUpdated?.Invoke(frame);
+		//}
 
 		public abstract void Dispose();
 

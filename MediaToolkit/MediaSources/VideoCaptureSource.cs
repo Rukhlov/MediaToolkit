@@ -39,14 +39,11 @@ namespace MediaToolkit
         //public long AdapterId { get; private set; } = -1;
         public int AdapterIndex { get; private set; } = 0;
 
-
-        //public VideoBuffer SharedBitmap { get; private set; }
-
-        //public event Action BufferUpdated;
-        //private void OnBufferUpdated()
-        //{
-        //    BufferUpdated?.Invoke();
-        //}
+        public event Action<IVideoFrame> FrameAcquired;
+        private void OnFrameAcquired(IVideoFrame frame)
+        {
+            FrameAcquired?.Invoke(frame);
+        }
 
         private GDI.Size srcSize = GDI.Size.Empty;
         //public GDI.Size SrcSize
@@ -696,7 +693,7 @@ namespace MediaToolkit
 
                         }
 
-                        VideoBuffer.OnBufferUpdated(frame);
+                        OnFrameAcquired(frame);
 
                         //OnBufferUpdated();
                         //var time = (double)(sample.SampleTime) / 10_000_000;
