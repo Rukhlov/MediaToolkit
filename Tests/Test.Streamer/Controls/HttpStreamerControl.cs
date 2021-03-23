@@ -35,7 +35,7 @@ namespace TestStreamer.Controls
 
         private StatisticForm statisticForm = new StatisticForm();
 
-        private VideoHttpStreamer httpStreamer = null;
+        private MJpegStreamer httpStreamer = null;
         private IVideoSource httpScreenSource = null;
        // private Screen currentScreen = null;
 
@@ -94,7 +94,7 @@ namespace TestStreamer.Controls
             httpScreenSource.Setup(captureParams);
 
 
-            httpStreamer = new VideoHttpStreamer(httpScreenSource);
+            httpStreamer = new MJpegStreamer(httpScreenSource);
 
             NetworkSettings networkParams = new NetworkSettings
             {
@@ -214,7 +214,7 @@ namespace TestStreamer.Controls
             {
                 if (httpScreenStreamer == null)
                 {
-                    httpScreenStreamer = new HttpScreenStreamer();
+                    httpScreenStreamer = new MJpegScreenStreamer();
 
                     httpScreenStreamer.StreamerStarted += HttpScreenStreamer_StreamerStarted;
                     httpScreenStreamer.StreamerStopped += HttpScreenStreamer_StreamerStopped;

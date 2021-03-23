@@ -113,27 +113,11 @@ namespace MediaToolkit.MediaStreamers
                 
                 RtpSender.Start();
 
-                //var hwContext = screenSource.hwContext;
-                //var hwDevice = hwContext.device;
-
-                //var srcSize = videoSource.SrcSize; //new Size(screenSource.Buffer.bitmap.Width, screenSource.Buffer.bitmap.Height);
-
-                //if (encodingSettings.UseResoulutionFromSource)
-                //{
-                //    encodingSettings.Resolution = srcSize;
-                //}
-
-                //encoder = new FFmpegVideoEncoder();
-                //encoder.Open(encodingParams);
-                //encoder.DataEncoded += Encoder_DataEncoded;
-
-                videoSource.FrameAcquired += VideoSource_FrameAcquired;
-
                 videoEncoder = new VideoFrameEncoder();
 				videoEncoder.Open(videoSource.VideoBuffer, encoderSettings);
                 videoEncoder.DataEncoded += VideoEncoder_DataEncoded;
 
-                //videoSource.BufferUpdated += ScreenSource_BufferUpdated;
+                videoSource.FrameAcquired += VideoSource_FrameAcquired;
 
                 state = StreamerState.Initialized;
             }
@@ -156,8 +140,6 @@ namespace MediaToolkit.MediaStreamers
         }
 
 
-
-        // private Texture2D SharedTexture = null;
         private volatile bool running = false;
 
         private Stopwatch sw = new Stopwatch();

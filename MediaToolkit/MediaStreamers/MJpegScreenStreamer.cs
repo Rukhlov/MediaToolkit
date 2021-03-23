@@ -13,14 +13,14 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.MediaStreamers
 {
-    public class HttpScreenStreamer : SharedTypes.IHttpScreenStreamer
+    public class MJpegScreenStreamer : SharedTypes.IHttpScreenStreamer
     {
 
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaStreamers");
 
-        private VideoHttpStreamer httpStreamer = null;
+        private MJpegStreamer httpStreamer = null;
         //private IVideoSource httpScreenSource = null;
 
         private ScreenCaptureSource screenSource = null;
@@ -38,7 +38,7 @@ namespace MediaToolkit.MediaStreamers
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
         private Task streamerTask = null;
 
-        public HttpScreenStreamer()
+        public MJpegScreenStreamer()
         {
             syncContext = SynchronizationContext.Current;
         }
@@ -146,7 +146,7 @@ namespace MediaToolkit.MediaStreamers
                 screenSource.Setup(captureParams);
                 screenSource.CaptureStopped += ScreenSource_CaptureStopped;
 
-                httpStreamer = new VideoHttpStreamer(screenSource);
+                httpStreamer = new MJpegStreamer(screenSource);
                 httpStreamer.Setup(encodingParams, networkParams);
                 httpStreamer.StreamerStopped += HttpStreamer_StreamerStopped;
 

@@ -89,9 +89,9 @@
     <Compile Include="MediaStreamers\AudioStreamer.cs" />
     <Compile Include="Managers\UsbDeviceManager.cs" />
     <Compile Include="MediaSources\IVideoSource.cs" />
-    <Compile Include="MediaStreamers\HttpScreenStreamer.cs" />
+    <Compile Include="MediaStreamers\MJpegScreenStreamer.cs" />
     <Compile Include="MediaToolkitManager.cs" />
-    <Compile Include="Networks\HttpStreamer.cs" />
+    <Compile Include="Networks\MJpegHttpSender.cs" />
     <Compile Include="Networks\IRtpReceiver.cs" />
     <Compile Include="Networks\RtpTcpReceiver.cs" />
     <Compile Include="Networks\RtpTcpSender.cs" />
@@ -101,7 +101,7 @@
     <Compile Include="MediaFoundation\MfH264Decoder.cs" />
     <Compile Include="MediaFoundation\MfVideoProcessor.cs" />
     <Compile Include="MediaFoundation\MfWriter.cs" />
-    <Compile Include="MediaStreamers\VideoHttpStreamer.cs" />
+    <Compile Include="MediaStreamers\MJpegStreamer.cs" />
     <Compile Include="Networks\RtpCommon.cs" />
     <Compile Include="Networks\RtpUdpReceiver.cs" />
     <Compile Include="Networks\RtpSession.cs" />

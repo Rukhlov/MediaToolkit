@@ -549,20 +549,6 @@ namespace MediaToolkit
 
 		public readonly Bitmap GdiBitmap = null;
 
-		//private System.Drawing.Imaging.BitmapData bitmapData = null;
-		//public IFrameBuffer LockBits()
-		//{
-		//	var rect = new System.Drawing.Rectangle(0, 0, Width, Height);
-		//	bitmapData = bitmap.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bitmap.PixelFormat);
-		//	return new FrameBuffer(bitmapData.Scan0, bitmapData.Stride);
-		//}
-
-		//public void UnlockBits()
-		//{
-		//	bitmap.UnlockBits(bitmapData);
-		//	bitmapData = null;
-		//}
-
 		public override VideoDriverType DriverType => VideoDriverType.GDI;
 
 		public static PixFormat GdiFormatToPixFormat(System.Drawing.Imaging.PixelFormat gdiFormat)

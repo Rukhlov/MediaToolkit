@@ -39,7 +39,7 @@ namespace MediaToolkit.MediaFoundation
 
             if (this.videoBuffer.DriverType == VideoDriverType.D3D11)
 			{
-				device = ((D3D11VideoBuffer)this.videoBuffer).D3D11Device;
+				device = ((D3D11VideoBuffer)videoBuffer).D3D11Device;
 				using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
 				{
 					using (var adapter = dxgiDevice.Adapter)

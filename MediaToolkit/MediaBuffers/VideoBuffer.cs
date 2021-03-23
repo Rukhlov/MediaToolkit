@@ -27,70 +27,100 @@ namespace MediaToolkit
         public virtual VideoFrameBase GetFrame()
         {
             VideoFrameBase frame = null;
-
-            if (frameBuffer != null && frameBuffer.Length > 0)
+            lock (syncObj)
             {
-                frame = frameBuffer[0];
+                if (capacity > 0)
+                {
+                    frame = frameBuffer[index];
+                }
+                else
+                {
+                    //invalid state...
+                }
             }
             return frame;
         }
 
-		//public event Action<IVideoFrame> BufferUpdated;
+        private object syncObj = new object();
 
-		//public void OnBufferUpdated(IVideoFrame frame)
-		//{
-		//	BufferUpdated?.Invoke(frame);
-		//}
+        protected int capacity = 0;
+        private volatile int index = 0;
+        public virtual VideoFrameBase NextFrame()
+        {
+            VideoFrameBase frame = null;
 
-		public abstract void Dispose();
+            lock (syncObj)
+            {
+                if (capacity > 1)
+                {
+                    frame = frameBuffer[index];
 
-	}
+                    index = (index + 1) % frameBuffer.Length;
+                }
+                else if(capacity == 1)
+                {
+                    frame = frameBuffer[index];
+                }
+                else
+                {
+                    //...
+                }
+            }
 
-	public class D3D11VideoBuffer : VideoBufferBase
+            return frame;
+        }
+
+        public abstract void Dispose();
+
+    }
+
+    public class D3D11VideoBuffer : VideoBufferBase
     {
-		public readonly SharpDX.Direct3D11.Device D3D11Device = null;
-		public D3D11VideoBuffer(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format, int framesCount = 1)
-		{
-			this.D3D11Device = device;
+        public readonly SharpDX.Direct3D11.Device D3D11Device = null;
+        public D3D11VideoBuffer(SharpDX.Direct3D11.Device device, Size resolution, PixFormat format, int framesCount = 1)
+        {
+            this.D3D11Device = device;
             this.Width = resolution.Width;
             this.Height = resolution.Height;
             this.Format = format;
+            this.capacity = framesCount;
 
-			this.frameBuffer = new VideoFrameBase[framesCount];
+            this.frameBuffer = new VideoFrameBase[framesCount];
 
-			for (int i = 0; i < framesCount; i++)
-			{
-				frameBuffer[i] = new D3D11VideoFrame(device, resolution, Format);
-			}
-		}
+            for (int i = 0; i < framesCount; i++)
+            {
+                frameBuffer[i] = new D3D11VideoFrame(device, resolution, Format);
+            }
+        }
 
         public override VideoDriverType DriverType => VideoDriverType.D3D11;
         public override void Dispose()
         {
             foreach (var frame in frameBuffer)
             {
-				if (frame != null)
-				{
-					frame.Dispose();
-				}
+                if (frame != null)
+                {
+                    frame.Dispose();
+                }
             }
 
-			frameBuffer = null;
-		}
+            frameBuffer = null;
+        }
     }
 
 
     public class MemoryVideoBuffer : VideoBufferBase
-    { 
+    {
 
         public MemoryVideoBuffer(Size resolution, PixFormat format, int align, int framesCount = 1)
         {
             this.Width = resolution.Width;
             this.Height = resolution.Height;
             this.Format = format;
+            this.capacity = framesCount;
 
             frameBuffer = new VideoFrameBase[framesCount];
-            for (int i= 0; i<framesCount; i++)
+            for (int i = 0; i < framesCount; i++)
             {
                 var dataSize = FFmpegLib.Utils.AllocImageData(resolution, format, align, out var frameData);
 
@@ -101,15 +131,15 @@ namespace MediaToolkit
         public override VideoDriverType DriverType => VideoDriverType.CPU;
         public override void Dispose()
         {
-            foreach(var buf in frameBuffer)
+            foreach (var buf in frameBuffer)
             {
-				buf.Dispose();		
-			}
+                buf.Dispose();
+            }
 
-			frameBuffer = null;
-		}
+            frameBuffer = null;
+        }
 
-	}
+    }
 
 
 }

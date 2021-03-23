@@ -147,11 +147,11 @@ namespace MediaToolkit
                 var destFormat = captureParams.Format;
                 if (driverType == VideoDriverType.CPU)
                 {
-                    VideoBuffer = new MemoryVideoBuffer(destSize, destFormat, 32);
+                    VideoBuffer = new MemoryVideoBuffer(destSize, destFormat, 32, 1);
                 }
                 else if (driverType == VideoDriverType.D3D11)
                 {
-                    VideoBuffer = new D3D11VideoBuffer(device, destSize, destFormat);
+                    VideoBuffer = new D3D11VideoBuffer(device, destSize, destFormat, 1);
                 }
                 else
                 {
@@ -309,7 +309,8 @@ namespace MediaToolkit
                         IVideoFrame targetFrame = null;
                         if (res == SharedTypes.ErrorCode.Ok)
                         {
-                            targetFrame = VideoBuffer.GetFrame();
+                            targetFrame = VideoBuffer.NextFrame();
+
                             ProcessFrame(screenFrame, targetFrame);
                         }
                         else if (res == SharedTypes.ErrorCode.WaitTimeout)
@@ -333,7 +334,7 @@ namespace MediaToolkit
 
                         if (targetFrame != null)
                         {
-                            var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime() ;
+                            var time = (monotonicTime + sw.ElapsedMilliseconds / 1000.0); //MediaTimer.GetRelativeTime();
                             targetFrame.Time = time;
                             targetFrame.Duration = 0;// !!!!!!
 

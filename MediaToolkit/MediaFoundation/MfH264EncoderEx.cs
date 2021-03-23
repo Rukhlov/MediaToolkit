@@ -17,6 +17,7 @@ using SharpDX.MediaFoundation;
 using System.IO;
 using MediaToolkit.Logging;
 
+
 namespace MediaToolkit.MediaFoundation
 {
 
@@ -1076,48 +1077,29 @@ namespace MediaToolkit.MediaFoundation
 
             closing = true;
 
+            DirectX.DxTool.SafeDispose(InputMediaType);
+            DirectX.DxTool.SafeDispose(OutputMediaType);
 
-            if (InputMediaType != null)
-            {
-                InputMediaType.Dispose();
-                InputMediaType = null;
-            }
+            DirectX.DxTool.SafeDispose(encoder);
 
-            if (OutputMediaType != null)
-            {
-                OutputMediaType.Dispose();
-                OutputMediaType = null;
-            }
+            //if (encoder != null)
+            //{
+            //    //using (var shutdown = encoder.QueryInterface<Shutdownable>())
+            //    //{
+            //    //    shutdown.Shutdown();
+            //    //    //while(shutdown.ShutdownStatus != ShutdownStatus.Completed)
+            //    //    //{
+            //    //    //    logger.Warn("shutdown.ShutdownStatus " + shutdown.ShutdownStatus);
+            //    //    //    Thread.Sleep(100);
+            //    //    //}
+            //    //}
+            //    encoder.Dispose();
+            //    encoder = null;
+            //}
 
-            if (encoder != null)
-            {
-                //using (var shutdown = encoder.QueryInterface<Shutdownable>())
-                //{
-                //    shutdown.Shutdown();
-                //    //while(shutdown.ShutdownStatus != ShutdownStatus.Completed)
-                //    //{
-                //    //    logger.Warn("shutdown.ShutdownStatus " + shutdown.ShutdownStatus);
-                //    //    Thread.Sleep(100);
-
-                //    //}
-                //}
-
-                encoder.Dispose();
-                encoder = null;
-            }
-
-            if (bufSample != null)
-            {
-                bufSample.Dispose();
-                bufSample = null;
-            }
-
-            if (bufTexture != null)
-            {
-                bufTexture.Dispose();
-                bufTexture = null;
-            }
-
+            DirectX.DxTool.SafeDispose(bufSample);
+            DirectX.DxTool.SafeDispose(bufTexture);
+            DirectX.DxTool.SafeDispose(mediaEventGenerator);
 
             if (eventHandler != null)
             {
@@ -1125,13 +1107,6 @@ namespace MediaToolkit.MediaFoundation
                 eventHandler.Dispose();
                 eventHandler = null;
             }
-
-            if (mediaEventGenerator != null)
-            {
-                mediaEventGenerator.Dispose();
-                mediaEventGenerator = null;
-            }
-
 
 
             // logger.Info(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());

@@ -16,7 +16,7 @@ using MediaToolkit.Logging;
 namespace MediaToolkit.Networks
 {
 
-    public class HttpStreamer
+    public class MJpegHttpSender
     {
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -154,8 +154,8 @@ namespace MediaToolkit.Networks
 
         class MJpegClientHandler
         {
-            private HttpStreamer streamer = null;
-            internal MJpegClientHandler(HttpStreamer streamer)
+            private MJpegHttpSender streamer = null;
+            internal MJpegClientHandler(MJpegHttpSender streamer)
             {
                 this.streamer = streamer;
             }

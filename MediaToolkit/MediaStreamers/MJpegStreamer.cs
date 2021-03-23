@@ -18,7 +18,7 @@ using MediaToolkit.Logging;
 namespace MediaToolkit.MediaStreamers
 {
 
-    public class VideoHttpStreamer
+    public class MJpegStreamer
     {
         //private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -27,7 +27,7 @@ namespace MediaToolkit.MediaStreamers
         private readonly IVideoSource screenSource = null;
 
 
-        public VideoHttpStreamer(IVideoSource source)
+        public MJpegStreamer(IVideoSource source)
         {
             this.screenSource = source;
            
@@ -42,8 +42,8 @@ namespace MediaToolkit.MediaStreamers
         public event Action<object> StreamerStopped;
         public event Action StreamerStarted;
 
-        private FFmpegVideoEncoder encoder = null;
-        private Networks.HttpStreamer httpStreamer = null;
+        private FFmpegVideoEncoder jpegEncoder = null;
+        private MJpegHttpSender mjpegSender = null;
 
         private AutoResetEvent syncEvent = new AutoResetEvent(false);
         private Task streamTask = null;
@@ -64,11 +64,11 @@ namespace MediaToolkit.MediaStreamers
             {
                 this.networkParams = networkParams;
 
-                httpStreamer = new Networks.HttpStreamer();
+                mjpegSender = new Networks.MJpegHttpSender();
 
-                encoder = new FFmpegVideoEncoder();
-                encoder.Open(encPars);
-                encoder.DataEncoded += Encoder_DataEncoded;
+                jpegEncoder = new FFmpegVideoEncoder();
+                jpegEncoder.Open(encPars);
+                jpegEncoder.DataEncoded += Encoder_DataEncoded;
 
                 state = MediaState.Initialized;
             }
@@ -77,11 +77,11 @@ namespace MediaToolkit.MediaStreamers
                 logger.Error(ex);
 
                 errorCode = 100503;
-                if (encoder != null)
+                if (jpegEncoder != null)
                 {
-                    encoder.DataEncoded -= Encoder_DataEncoded;
-                    encoder.Close();
-                    encoder = null;
+                    jpegEncoder.DataEncoded -= Encoder_DataEncoded;
+                    jpegEncoder.Close();
+                    jpegEncoder = null;
                 }
 
                 state = MediaState.Closed;
@@ -139,7 +139,7 @@ namespace MediaToolkit.MediaStreamers
         {
             if (frame != null)
             {
-                encoder._Encode(frame);
+                jpegEncoder._Encode(frame);
             }
             
         }
@@ -147,7 +147,7 @@ namespace MediaToolkit.MediaStreamers
         private void DoStream(NetworkSettings networkParams)
         {
 
-            var streamerTask = httpStreamer.Start(networkParams);
+            var streamerTask = mjpegSender.Start(networkParams);
 
             streamerTask.ContinueWith(t =>
             {
@@ -203,14 +203,9 @@ namespace MediaToolkit.MediaStreamers
 
         private void Encoder_DataEncoded(IntPtr ptr, int len, double sec)
         {
-            httpStreamer.TryToPush(ptr, len, sec);
+            mjpegSender.TryToPush(ptr, len, sec);
 
             // File.WriteAllBytes("d:\\test_3.jpg", frame);
-        }
-
-        private void ScreenSource_BufferUpdated()
-        {
-            syncEvent?.Set();
         }
 
         private volatile bool running = false;
@@ -224,7 +219,7 @@ namespace MediaToolkit.MediaStreamers
 
             //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
-            httpStreamer?.Stop();
+            mjpegSender?.Stop();
 
             state = MediaState.Stopping;
             syncEvent.Set();
@@ -261,10 +256,10 @@ namespace MediaToolkit.MediaStreamers
 
             //screenSource.BufferUpdated -= ScreenSource_BufferUpdated;
 
-            if (encoder != null)
+            if (jpegEncoder != null)
             {
-                encoder.DataEncoded -= Encoder_DataEncoded;
-                encoder.Close();
+                jpegEncoder.DataEncoded -= Encoder_DataEncoded;
+                jpegEncoder.Close();
             }
 
             state = MediaState.Closed;
