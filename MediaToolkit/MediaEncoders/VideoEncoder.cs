@@ -23,59 +23,23 @@ namespace MediaToolkit.MediaFoundation
 	{
 
 		private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
-		private IVideoFrameEncoder encoder = null;
-		private VideoBufferBase videoBuffer = null;
 
-		//private Texture2D videoSourceTexture = null;
-		//private Texture2D bufTexture = null;
+		private IVideoFrameEncoder encoder = null;
 		private Device device = null;
 
 		public void Open(VideoBufferBase sourceBuffer, VideoEncoderSettings encoderSettings)
 		{
 			logger.Debug("VideoEncoder::Open(...)");
 
-			this.videoBuffer = sourceBuffer;
-            //this.videoBuffer.BufferUpdated += VideoBuffer_BufferUpdated;
-
-            if (this.videoBuffer.DriverType == VideoDriverType.D3D11)
-			{
-				device = ((D3D11VideoBuffer)videoBuffer).D3D11Device;
-				using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
-				{
-					using (var adapter = dxgiDevice.Adapter)
-					{
-						var descr = adapter.Description;
-						var venId = descr.VendorId;
-					}
-				}
-			}
-			else if (this.videoBuffer.DriverType == VideoDriverType.CPU)
-			{
-
-			}
-			else
-			{
-				throw new NotSupportedException();
-			}
-
-
-			if (encoderSettings.DriverType == VideoDriverType.D3D11)
-			{
-
-			}
-			else if(encoderSettings.DriverType == VideoDriverType.CPU)
-			{
-
-			}
-			else
-			{
-				throw new NotSupportedException();
-			}
-
 			var encoderName = encoderSettings.EncoderId;
 			if (encoderName == "libx264" || encoderName == "h264_nvenc")
 			{
-				encoder = new FFmpegH264Encoder(device);
+				if (sourceBuffer.DriverType != VideoDriverType.CPU)
+				{
+					throw new InvalidOperationException("Invalid video buffer driver type: " + sourceBuffer.DriverType);
+				}
+
+				encoder = new FFmpegH264Encoder();
 			}
             else if (encoderName == "H264EncCpuNull" || encoderName == "H264EncGpuNull")
             {
@@ -83,6 +47,24 @@ namespace MediaToolkit.MediaFoundation
             }
             else
 			{
+				if (sourceBuffer.DriverType != VideoDriverType.D3D11)
+				{
+					throw new InvalidOperationException("Invalid video buffer driver type: " + sourceBuffer.DriverType);
+				}
+
+				var d = ((D3D11VideoBuffer)sourceBuffer).D3D11Device;
+				this.device = new Device(d.NativePointer);
+				((IUnknown)device).AddReference();
+
+				//using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
+				//{
+				//	using (var adapter = dxgiDevice.Adapter)
+				//	{
+				//		var descr = adapter.Description;
+				//		var venId = descr.VendorId;
+				//	}
+				//}
+
 				encoder = new MfH264EncoderEx(device);
 			}
 
@@ -103,6 +85,10 @@ namespace MediaToolkit.MediaFoundation
                     {
                         encoder?.ProcessFrame(frame);
                     }
+					else
+					{
+						logger.Debug("Encoder drop frame...");
+					}
                 }
                 finally
                 {
@@ -128,27 +114,16 @@ namespace MediaToolkit.MediaFoundation
 		{
 			logger.Debug("VideoEncoder::Close()");
 
-            //if (videoBuffer != null)
-            //{
-            //    videoBuffer.BufferUpdated -= VideoBuffer_BufferUpdated;
-            //}
-
 			if (encoder != null)
 			{
 				encoder.DataEncoded -= Encoder_DataEncoded;
 				encoder.Stop();
-				//encoder.Close();
 			}
 
-			if (device != null)
-			{
-				device.Dispose();
-				device = null;
-			}
+			DxTool.SafeDispose(device);
 		}
 
 		public event Action<byte[], double> DataEncoded;
-
 		private void OnDataReady(byte[] buf, double time)
 		{
 			DataEncoded?.Invoke(buf, time);
@@ -173,7 +148,6 @@ namespace MediaToolkit.MediaFoundation
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
         public event Action<IntPtr, int, double> DataEncoded;
 
-        private Device device = null;
         public H264NullEncoder() { }
 
         public void Setup(VideoEncoderSettings settings){ }
@@ -196,23 +170,12 @@ namespace MediaToolkit.MediaFoundation
 
 		public event Action<IntPtr, int, double> DataEncoded;
 
-		private Device device = null;
-		public FFmpegH264Encoder(Device d = null)
-		{
-			this.device = d;
-		}
-
-
 		public void Setup(VideoEncoderSettings settings)
 		{
 			encoder = new FFmpegLib.H264Encoder();
 			encoder.Setup(settings);
 			encoder.DataEncoded += Encoder_DataEncoded;
 
-			if (device != null)
-			{
-
-			}
 		}
 		public void Start() { }
 		public void Stop() { Close(); }
@@ -248,7 +211,7 @@ namespace MediaToolkit.MediaFoundation
 		}
 	}
 
-
+	/*
 	public interface IMfVideoTransform
 	{
 		void Setup(MfVideoArgs args);
@@ -335,6 +298,6 @@ namespace MediaToolkit.MediaFoundation
 		public event Action<IntPtr, int, double> DataEncoded;
 	}
 
-
+	*/
 
 }

@@ -281,19 +281,24 @@ namespace ScreenStreamer.Wpf.Helpers
 
 			}
 
-			var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
-			if (captDevices.Count > 0)
+			var win8Version = new Version(6, 2);
+			if (Environment.OSVersion.Version >= win8Version)
 			{
-				var captItems = captDevices.Select(d => new VideoSourceItem
+				var captDevices = MediaToolkit.MediaFoundation.MfTool.FindUvcDevices();
+				if (captDevices.Count > 0)
 				{
-					Name = d.Name,
-					DeviceId = d.DeviceId,
-					CaptureRegion = new Rectangle(new System.Drawing.Point(0, 0), d.Resolution),
-					IsUvcDevice = true,
-				});
+					var captItems = captDevices.Select(d => new VideoSourceItem
+					{
+						Name = d.Name,
+						DeviceId = d.DeviceId,
+						CaptureRegion = new Rectangle(new System.Drawing.Point(0, 0), d.Resolution),
+						IsUvcDevice = true,
+					});
 
-				videoSources.AddRange(captItems);
+					videoSources.AddRange(captItems);
+				}
 			}
+
 
 			return videoSources;
 		}
@@ -301,31 +306,35 @@ namespace ScreenStreamer.Wpf.Helpers
 
 		public static List<EncoderItem> GetVideoEncoders()
 		{
-
 			var videoEncoders = new List<EncoderItem>();
 
-			var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
-			if (encoders.Count > 0)
-			{// отфильтровываем одинаковые энкодеры (могут быть одинаковые Intel H264 MFT)
-				encoders = encoders.GroupBy(e => e.Id).Select(y => y.First()).ToList();
+			var win8Version = new Version(6, 2);
+			if(Environment.OSVersion.Version >= win8Version)
+			{// Video Encoder MFTransform - Win8+
+				var encoders = MediaToolkit.MediaFoundation.MfTool.FindVideoEncoders();
+				if (encoders.Count > 0)
+				{// отфильтровываем одинаковые энкодеры (могут быть одинаковые Intel H264 MFT)
+					encoders = encoders.GroupBy(e => e.Id).Select(y => y.First()).ToList();
 
-				foreach (var enc in encoders)
-				{
-					if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
+					foreach (var enc in encoders)
 					{
-						var item = new EncoderItem
+						if (enc.Activatable && enc.Format == VideoCodingFormat.H264 && enc.IsHardware)
 						{
-							Name = enc.Name,
-							Id = enc.Id,
-							DriverType = VideoDriverType.D3D11,
-							PixelFormat = PixFormat.NV12,
-							Format = VideoCodingFormat.H264,
-						};
+							var item = new EncoderItem
+							{
+								Name = enc.Name,
+								Id = enc.Id,
+								DriverType = VideoDriverType.D3D11,
+								PixelFormat = PixFormat.NV12,
+								Format = VideoCodingFormat.H264,
+							};
 
-						videoEncoders.Add(item);
+							videoEncoders.Add(item);
+						}
 					}
 				}
 			}
+
 
 			VideoEncoderDescription libx264Description = new VideoEncoderDescription
 			{

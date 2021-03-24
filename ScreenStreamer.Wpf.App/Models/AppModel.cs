@@ -197,7 +197,7 @@ namespace ScreenStreamer.Wpf.Models
 
 		private void UsbManager_DeviceChanged(UsbChangeMessage message)
 		{
-			logger.Debug("SystemEvents_EventsThreadShutdown(...) " + message);
+			logger.Debug("UsbManager_DeviceChanged(...) " + message);
 
 			if(message.DeviceType == UsbDeviceType.Audio)
 			{

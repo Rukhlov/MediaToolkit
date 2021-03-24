@@ -678,6 +678,10 @@ namespace MediaToolkit
                                     //var frameBuffer = frame.Buffer;
                                     //Kernel32.CopyMemory(frameBuffer[0].Data, pBuffer, (uint)cbCurrentLengthRef);
                                 }
+								else
+								{
+									logger.Debug("Drop frame...");
+								}
                             }
                             finally
                             {
