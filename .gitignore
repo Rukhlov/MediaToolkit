@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /MediaToolkit.Install/Output
 /Resources/Utils/trace_7324.etl
+/Tests/Test.Encoder/Files/rgba_3840x2160.raw

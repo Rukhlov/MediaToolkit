@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CopyAcrossGPUTest.cs" />
+    <Compile Include="CopyImageTest.cs" />
     <Compile Include="D3D11ConvertersTest.cs" />
     <Compile Include="D3D11VideoProcessor.cs" />
     <Compile Include="DatapathCaptTest.cs" />
@@ -114,6 +115,9 @@
     <Content Include="Files\rgb555_640x480.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Files\rgba_3840x2160.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

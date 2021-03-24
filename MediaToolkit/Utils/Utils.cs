@@ -246,17 +246,35 @@ namespace MediaToolkit.Utils
 
         public static void CopyImage(IntPtr destPtr, int destPitch, IntPtr srcPtr, int srcPitch, int widthInBytes, int rowNumber)
         {
-            for (int i = 0; i < rowNumber; i++)
-            {
-                //SharpDX.Utilities.CopyMemory(destPtr, srcPtr, widthInBytes);
+			//работает быстрее всего!
+			//на больших битмапах может быть 20-30% быстрее чем CopyMemory или memcpy!
+			//SharpDX.MediaFoundation.MediaFactory.CopyImage(destPtr, destPitch, srcPtr, srcPitch, widthInBytes, rowNumber);
 
-                Kernel32.CopyMemory(destPtr, srcPtr, (uint)widthInBytes);
-                srcPtr = IntPtr.Add(srcPtr, srcPitch);
-                destPtr = IntPtr.Add(destPtr, destPitch);
-            }
-        }
+			//var dest = destPtr;
+			//var src = srcPtr;
+			//for (int i = 0; i < rowNumber; i++)
+			//{// в некторых случаях работает быстрее чем Kernel32.CopyMemory()
+			//	SharpDX.Utilities.CopyMemory(dest, src, widthInBytes);// 
+			//	src += srcPitch;
+			//	dest += destPitch;
+			//	//src = IntPtr.Add(src, srcPitch);
+			//	//dest = IntPtr.Add(dest, destPitch);
+			//}
 
-        public static void CopyImage(IntPtr destPtr, int destPitch, IntPtr srcPtr, int srcPitch, int widthInBytes, int rowNumber, int dataSize)
+			var dest = destPtr;
+			var src = srcPtr;
+			for (int i = 0; i < rowNumber; i++)
+			{
+				Kernel32.CopyMemory(dest, src, (uint)widthInBytes);
+				src += srcPitch;
+				dest += destPitch;
+				//src = IntPtr.Add(src, srcPitch);
+				//dest = IntPtr.Add(dest, destPitch);
+			}
+
+		}
+
+		public static void CopyImage(IntPtr destPtr, int destPitch, IntPtr srcPtr, int srcPitch, int widthInBytes, int rowNumber, int dataSize)
         {
             if (srcPitch != destPitch)
             {
@@ -264,8 +282,10 @@ namespace MediaToolkit.Utils
             }
             else
             {
-                //SharpDX.Utilities.CopyMemory(destPtr, srcPtr, dataSize);
-                Kernel32.CopyMemory(destPtr, srcPtr, (uint)dataSize);
+				var dest = destPtr;
+				var src = srcPtr;
+				SharpDX.Utilities.CopyMemory(destPtr, srcPtr, dataSize);
+                //Kernel32.CopyMemory(destPtr, srcPtr, (uint)dataSize);
             }
         }
 
