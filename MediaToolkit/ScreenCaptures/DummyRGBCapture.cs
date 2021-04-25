@@ -115,7 +115,6 @@ namespace MediaToolkit.ScreenCaptures
 						}
 					}
 				}
-
 			}
 
 			dwriteFactory = new SharpDX.DirectWrite.Factory(SharpDX.DirectWrite.FactoryType.Shared);

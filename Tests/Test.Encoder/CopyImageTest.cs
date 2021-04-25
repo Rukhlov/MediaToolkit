@@ -15,19 +15,19 @@ namespace Test.Encoder
 		public static void Run()
 		{
 
-			string fileName = @"Files\rgba_3840x2160.raw";
-			int width = 3840;
-			int height = 2160;
-			//string fileName = @"Files\rgba_1920x1080.raw";
-			//int width = 1920;
-			//int height = 1080;
+            string fileName = @"Files\rgba_3840x2160.raw";
+            int width = 3840;
+            int height = 2160;
+            //string fileName = @"Files\rgba_1920x1080.raw";
+            //int width = 1920;
+            //int height = 1080;
 
-			//string fileName = @"Files\RGB32_1280x720.raw";
-			//int width = 1280;
-			//int height = 720;
+            //string fileName = @"Files\RGB32_1280x720.raw";
+            //int width = 1280;
+            //int height = 720;
 
 
-			var bytes = File.ReadAllBytes(fileName);
+            var bytes = File.ReadAllBytes(fileName);
 			var size = bytes.Length;
 			int srcStride = width * 4;
 			int widthInBytes = width * 4;
@@ -85,7 +85,18 @@ namespace Test.Encoder
 			timePerCopy = (double)msec / count;
 			Console.WriteLine("SharpDX.Utilities.CopyMemory: " + msec + " " + timePerCopy);
 
-			index = count;
+            index = count;
+            sw.Restart();
+            while (index-- > 0)
+            {
+                var dest = destPtr;
+                Marshal.Copy(bytes, 0, dest, bytes.Length);
+            }
+            msec = sw.ElapsedMilliseconds;
+            timePerCopy = (double)msec / count;
+            Console.WriteLine("Marshal.Copy: " + msec + " " + timePerCopy);
+
+            index = count;
 			sw.Restart();
 			while (index-- > 0)
 			{
@@ -113,7 +124,6 @@ namespace Test.Encoder
 			}
 			msec = sw.ElapsedMilliseconds;
 			timePerCopy = (double)msec / count;
-
 			Console.WriteLine("MediaFactory.CopyImage()2: " + msec + " " + timePerCopy);
 
 			index = count;
@@ -127,7 +137,23 @@ namespace Test.Encoder
 			Console.WriteLine("GraphicTools.CopyImage()2: " + msec + " " + timePerCopy);
 
 
-			MediaToolkit.Utils.TestTools.WriteFile(destPtr, size, "ImageCopyTest.raw");
+			index = count;
+			sw.Restart();
+			while (index-- > 0)
+			{
+				var dest = destPtr;
+				var src = srcPtr;
+				SharpDX.MediaFoundation.MediaFactory.CopyImage(dest, destStride, src, srcStride, widthInBytes, lines);
+			}
+			msec = sw.ElapsedMilliseconds;
+			timePerCopy = (double)msec / count;
+			Console.WriteLine("MediaFactory.CopyImage()3: " + msec + " " + timePerCopy);
+
+
+
+
+
+            MediaToolkit.Utils.TestTools.WriteFile(destPtr, size, "ImageCopyTest.raw");
 
 			Marshal.FreeHGlobal(srcPtr);
 			Marshal.FreeHGlobal(destPtr);

@@ -97,5 +97,77 @@ namespace ScreenStreamer.Wpf.Utils
 
 	}
 
+	public class SystemInfo
+	{
+        public static string GetOSInfo()
+        {
+            Microsoft.Win32.RegistryKey localMachineKey = Microsoft.Win32.Registry.LocalMachine;
+            if (Environment.Is64BitOperatingSystem)
+            { // в wow6432 почему то вместо Pro версии - Enterprise!
+                localMachineKey = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine,
+                    Microsoft.Win32.RegistryView.Registry64);
+            }
+            string osInfo = "";
+            var regKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
+            Microsoft.Win32.RegistryKey key = localMachineKey.OpenSubKey(regKey);
+            if (key != null)
+            {
+                var productName = key.GetValue("ProductName")?.ToString() ?? "";
+                var csdVersion = key.GetValue("CSDVersion")?.ToString() ?? "";
+                var buildLab = key.GetValue("BuildLab")?.ToString() ?? "";
+                if (productName != "")
+                {
+                    osInfo = (productName.StartsWith("Microsoft") ? "" : "Microsoft ") + productName;
+                }
+
+                if (csdVersion != "")
+                {
+                    osInfo += " " + csdVersion;
+                }
+
+                if(buildLab!= "")
+                {
+                    osInfo += " (" + buildLab + ")";
+                }
+            }
+
+
+            return osInfo;
+        }
+
+        public static string GetProcessorInfo()
+		{
+			string processInfo = "";
+			var regKey = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0";
+			Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(regKey);
+			if (key != null)
+			{
+				processInfo = key.GetValue("ProcessorNameString")?.ToString() ?? "";
+				string procSpeed = key.GetValue("~MHz")?.ToString() ?? "";
+				if (!string.IsNullOrEmpty(procSpeed))
+				{
+					processInfo += " " + procSpeed + "MHz";
+				}
+			}
+			return processInfo;
+		}
+
+		public static string GetMemoryInfo()
+		{
+			string memoryInfo = "";
+			//if(Kernel32.GetPhysicallyInstalledSystemMemory(out var totalMemory))
+			//{
+			//	memoryInfo = MediaToolkit.Utils.StringHelper.SizeSuffix(totalMemory * 1024);
+			//}
+			Kernel32.MEMORYSTATUSEX memoryStatus = new Kernel32.MEMORYSTATUSEX();
+			if (Kernel32.GlobalMemoryStatusEx(memoryStatus))
+			{
+				var totalMemory = memoryStatus.ullTotalPhys / 1024 / 1024 + "MB";
+				var freeMemory = memoryStatus.ullAvailPhys / 1024 / 1024 + "MB";
+				memoryInfo = totalMemory + " / " + freeMemory + " free";
+			}
+			return memoryInfo;
+		}
+	}
 
 }

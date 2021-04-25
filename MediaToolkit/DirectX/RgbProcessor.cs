@@ -254,19 +254,14 @@ namespace MediaToolkit.DirectX
 			textureSampler = new SamplerState(device, samplerDescr);
 		}
 
-
-		public void DrawTexture(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
+		public void DrawTexture(Texture2D srcTexture, 
+			Texture2D destTexture, GDI.Size viewSize, 
+			bool aspectRatio = true, Transform transform = Transform.R0)
 		{
 			DeviceContext deviceContext = device.ImmediateContext;
 
 			var srcDescr = srcTexture.Description;
 			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
-
-			var destDescr = destTexture.Description;
-            if(destSize!= new GDI.Size(destDescr.Width, destDescr.Height))
-            {
-                //...
-            }
 
 			ShaderResourceView srcSRV = null;
 			RenderTargetView destRTV = null;
@@ -317,9 +312,9 @@ namespace MediaToolkit.DirectX
 					rgb32SRV = tempSRV;
 				}
 
-				if (srcSize != destSize || transform != Transform.R0)
+				if (srcSize != destSize || transform != Transform.R0 || srcSize!= viewSize)
 				{
-					vertices = VertexHelper.GetQuadVertices(destSize, srcSize, aspectRatio, transform);
+					vertices = VertexHelper.GetQuadVertices(viewSize, srcSize, aspectRatio, transform);
 					using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
 					{
 						VertexBufferBinding vertexBuffer = new VertexBufferBinding
@@ -371,6 +366,20 @@ namespace MediaToolkit.DirectX
 				DxTool.SafeDispose(destRTV);
 				DxTool.SafeDispose(srcSRV);
 			}
+		}
+
+
+		public void DrawTexture(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
+		{
+
+			var destDescr = destTexture.Description;
+			if (destSize != new GDI.Size(destDescr.Width, destDescr.Height))
+			{
+				//...
+			}
+
+			DrawTexture(srcTexture, destTexture, destSize, aspectRatio, transform);
+
 		}
 
 		public void Close()

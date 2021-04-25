@@ -98,22 +98,21 @@ namespace ScreenStreamer.Wpf
 
 
                 try
-				{
-                    logger.Info(StartupParams.GetSysInfo());
-					
+                {
+                    LogSystemInfo();
 
-					MediaToolkitManager.Startup();
-					Shcore.SetProcessPerMonitorDpiAwareness();
+                    MediaToolkitManager.Startup();
+                    Shcore.SetProcessPerMonitorDpiAwareness();
 
-					var application = new App();
-					application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
-					application.InitializeComponent();
-					initialized = true;
+                    var application = new App();
+                    application.DispatcherUnhandledException += Application_DispatcherUnhandledException;
+                    application.InitializeComponent();
+                    initialized = true;
 
                     logger.Info("============================ RUN ============================");
-					application.Run();
-				}
-				finally
+                    application.Run();
+                }
+                finally
 				{
 					MediaToolkitManager.Shutdown();
 				}
@@ -140,7 +139,46 @@ namespace ScreenStreamer.Wpf
             return exitCode;
         }
 
-		private static string AssemblyPath = @"..\";
+        private static void LogSystemInfo()
+        {
+            logger.Trace("LogSystemInfo()");
+
+            //var sysInfo = "OS: "  + Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
+            logger.Info("OS: " + Utils.SystemInfo.GetOSInfo());
+            logger.Info("CPU: " + Utils.SystemInfo.GetProcessorInfo());
+            logger.Info("RAM: " + Utils.SystemInfo.GetMemoryInfo());
+
+            if (StartupParams.IsSystem)
+            {
+                logger.Info("Running as SYSTEM: " + StartupParams.IsSystem);
+            }
+
+            if (StartupParams.IsElevated)
+            {
+                logger.Info("Running as Admin: " + StartupParams.IsElevated);
+            }
+
+            // rdp 
+            if (StartupParams.IsRemotelyControlled)
+            {
+                logger.Info("Remotely Controlled: " + StartupParams.IsRemotelyControlled);
+            }
+
+            if (StartupParams.IsRemoteSession)
+            {
+                logger.Info("Remote Session: " + StartupParams.IsRemoteSession);
+            }
+            
+            if (!StartupParams.IsCompositionEnabled)
+            {// выключена композитная отрисовка может быть только для Win7
+                logger.Info("DWM: " + StartupParams.IsCompositionEnabled);
+            }
+
+
+            
+        }
+
+        private static string AssemblyPath = @"..\";
 		private static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
 		{
 			OnLog("CurrentDomain_AssemblyResolve(...) " + args.Name + " " + args.RequestingAssembly?.ToString() ?? "", LogLevel.Trace);
@@ -426,31 +464,32 @@ namespace ScreenStreamer.Wpf
 			public string GetSysInfo()
 			{
 				StringBuilder sb = new StringBuilder();
-                var sysInfo = Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
-
-				sb.AppendLine(sysInfo);
-			   // System.Runtime.InteropServices.RuntimeInformation.OSDescription
+				sb.AppendLine("");
+                var sysInfo = "OS: " + Utils.SystemInfo.GetOSInfo();// + Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
 
 
-				if (StartupParams.IsSystem)
-				{// run as system...
-					sb.AppendLine("SYSTEM");
-				}
+                sb.AppendLine(sysInfo);
+				// System.Runtime.InteropServices.RuntimeInformation.OSDescription
 
-				if (StartupParams.IsElevated)
-				{// запущен с повышеными правами
-					sb.AppendLine("ELEVATED");
-				}
+				var processInfo = "CPU: " + Utils.SystemInfo.GetProcessorInfo();
+				sb.AppendLine(processInfo);
+
+				var memoryInfo = "RAM: " + Utils.SystemInfo.GetMemoryInfo();
+				sb.AppendLine(memoryInfo);
+
+
+				// run as system...
+				sb.AppendLine("Running as SYSTEM: " + StartupParams.IsSystem);
+				// запущен с повышеными правами
+				sb.AppendLine("Running as Admin: " + StartupParams.IsElevated);
 
 				if (StartupParams.IsRemotelyControlled || StartupParams.IsRemoteSession)
 				{// rdp 
 					sb.AppendLine("RDP: " + StartupParams.IsRemotelyControlled + ";" + StartupParams.IsRemoteSession);
 				}
 
-				if (!StartupParams.IsCompositionEnabled)
-				{// выключена композитная отрисовка
-					sb.AppendLine("DWM Disabled");
-				}
+				// композитная отрисовка
+				sb.AppendLine("DWM: " + StartupParams.IsCompositionEnabled);
 
 				return sb.ToString();
 			}

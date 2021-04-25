@@ -178,7 +178,7 @@ namespace MediaToolkit.Jupiter
                 socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 socket.ReceiveTimeout = 10000;
                 socket.SendTimeout = 10000;
-                //socket.Blocking = false;
+              
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
 
                 logger.Trace($"socket.ConnectAsync(...) {Host} {Port}");
@@ -192,6 +192,7 @@ namespace MediaToolkit.Jupiter
                     throw new InvalidOperationException("Connection error");
                 }
 
+                socket.Blocking = false;
                 if (state == ClientState.Connecting)
                 {
                     state = ClientState.Connected;
@@ -223,7 +224,9 @@ namespace MediaToolkit.Jupiter
                             bool dataAvailable = false;
                             do
                             {
-                                byte[] recBuffer = new byte[10*1024];
+
+                                //byte[] recBuffer = new byte[10 * 1024];
+                                byte[] recBuffer = new byte[available];
 
                                 int bytesRec = socket.Receive(recBuffer);
 

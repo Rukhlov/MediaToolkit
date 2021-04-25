@@ -41,9 +41,11 @@ namespace Test.Encoder
             Console.WriteLine("========================RUN=======================");
 			//FullScreenSwitchTest.Run();
 
-			CopyImageTest.Run();
+			//CopyImageTest.Run();
 
-			//SimpleSwapChain.Run();
+			SimpleSwapChain.Run();
+
+			//VideoDecoderTest.Run();
 
 			//var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 

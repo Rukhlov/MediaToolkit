@@ -26,9 +26,69 @@ namespace Test.Encoder
         public static void Run()
         {
             Shcore.SetProcessPerMonitorDpiAwareness();
+            var adapterIndex = 0;
+            var dxgiFactory = new SharpDX.DXGI.Factory1();
+            var adapter = dxgiFactory.GetAdapter1(adapterIndex);
+            var device = DxTool.CreateMultithreadDevice(adapter);
 
-            new SimpleSwapChain().Start();
-        }
+			//var destSize = new GDI.Size(1280, 720);
+			var destSize = new GDI.Size(1920, 1080);
+
+			var fileName = @"Files\1920x1080.bmp";
+            //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
+            //var fileName = @"D:\Dropbox\Public\2.png";
+
+            //var fileName = @"Files\2560x1440.bmp";
+            // var fileName = @"Files\rgba_352x288.bmp";
+
+            //var destSize = new GDI.Size(100, 100);
+            //var destSize = new GDI.Size(ImageWidth, ImageHeight);
+
+            var sourceTexture0 = WicTool.CreateTexture2DFromBitmapFile(fileName, device);
+
+            adapter.Dispose();
+            dxgiFactory.Dispose();
+
+            D3D11Presenter presenter = new D3D11Presenter(device);
+
+			Form f = new Form
+            {
+				ClientSize = destSize,
+				Text = fileName,
+            };
+
+            f.SizeChanged += (o,e) => 
+            {
+				if (presenter != null)
+				{
+					presenter.RenderSize = f.ClientSize;
+				}
+            };
+
+			var srcDescr = sourceTexture0.Description;
+			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
+			var hWnd = f.Handle;
+
+			presenter.Setup(srcSize, destSize, hWnd, adapterIndex);
+			presenter.AspectRatio = true;
+			presenter.RenderSize = f.ClientSize;
+
+			presenter.Start();
+
+			Task.Run(() => 
+            {
+				while (true)
+                {
+                    presenter.Update(sourceTexture0);
+                    Thread.Sleep(16);
+                }
+            });
+
+            Application.Run(f);
+			presenter.Close();
+			sourceTexture0?.Dispose();
+
+		}
 
 		private SharpDX.Direct2D1.DeviceContext d2dContext = null;
 		private SharpDX.DirectWrite.TextFormat textFormat = null;

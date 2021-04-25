@@ -169,6 +169,7 @@ namespace MediaToolkit.MediaFoundation
                             break;
                         }
                         
+						//logger.Info(MfTool.LogMediaType(mediaType));
                         var formatId = mediaType.Get(MediaTypeAttributeKeys.Subtype);
                         if (formatId == inputFormat)
                         {
@@ -210,9 +211,38 @@ namespace MediaToolkit.MediaFoundation
                 logger.Info("============== INPUT TYPE==================");
                 logger.Info(MfTool.LogMediaType(InputMediaType));
 
+				
 
 
-                OutputMediaType = new MediaType();
+				//for (int i = 0; ; i++)
+				//{
+				//	try
+				//	{
+				//		decoder.TryGetOutputAvailableType(0, i, out MediaType mediaType);
+
+				//		if (mediaType == null)
+				//		{
+				//			logger.Warn("NoMoreType");
+				//			break;
+				//		}
+
+				//		logger.Info(MfTool.LogMediaType(mediaType));
+
+				//		mediaType.Dispose();
+				//		mediaType = null;
+
+				//	}
+				//	catch (SharpDX.SharpDXException ex)
+				//	{
+				//		if (ex.ResultCode != SharpDX.MediaFoundation.ResultCode.NoMoreTypes)
+				//		{
+				//			throw;
+				//		}
+				//	}
+				//}
+
+
+				OutputMediaType = new MediaType();
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
                 //OutputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);

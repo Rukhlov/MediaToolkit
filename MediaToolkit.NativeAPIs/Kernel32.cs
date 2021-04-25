@@ -101,9 +101,6 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
 		public static extern IntPtr GetCommandLine();
 
-		[return: MarshalAs(UnmanagedType.Bool)]
-		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-		public static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
 
 		[DllImport("kernel32.dll")]
 		public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
@@ -137,6 +134,14 @@ namespace MediaToolkit.NativeAPIs
 				this.dwLength = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
 			}
 		}
+
+		[return: MarshalAs(UnmanagedType.Bool)]
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		public static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+
+		[DllImport("kernel32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetPhysicallyInstalledSystemMemory(out long TotalMemoryInKilobytes);
 
 
 		[DllImport("kernel32.dll")]

@@ -93,6 +93,7 @@
     <Compile Include="RgbHelper.cs" />
     <Compile Include="RgbToNv12Converter.cs" />
     <Compile Include="SimpleSwapChain.cs" />
+    <Compile Include="VideoDecoderTest.cs" />
     <Compile Include="WicTests.cs" />
   </ItemGroup>
   <ItemGroup>
