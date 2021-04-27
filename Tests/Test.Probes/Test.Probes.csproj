@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DCCA5B60-E2BA-4A44-8218-7E4C0AC59B5F}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Test.Probe</RootNamespace>
+    <AssemblyName>Test.Probe</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MediaToolkit.SharpDX">
+      <HintPath>..\..\Resources\SharpDX.4.2.1\net45\MediaToolkit.SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NLog.4.7.5\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Discovery" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Video\CopyAcrossGPUTest.cs" />
+    <Compile Include="Video\CopyImageTest.cs" />
+    <Compile Include="Video\D3D11ConvertersTest.cs" />
+    <Compile Include="Video\D3D11VideoProcessor.cs" />
+    <Compile Include="Captures\DatapathCaptTest.cs" />
+    <Compile Include="Captures\DDATest\DDACapture.cs" />
+    <Compile Include="Captures\DDATest\DDAOutput.cs" />
+    <Compile Include="Captures\DDATest\DDATest.cs" />
+    <Compile Include="Captures\DDATest\DesktopDuplicator.cs" />
+    <Compile Include="Captures\DDATest\Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Captures\DDATest\Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Captures\DDATest\ScreenRenderer.cs" />
+    <Compile Include="Captures\DDATest\Utils.cs" />
+    <Compile Include="Display\DisplayDeviceTest.cs" />
+    <Compile Include="Display\DisplayManager.cs" />
+    <Compile Include="Display\DisplaySettingChanged.cs" />
+    <Compile Include="Video\DxTextureTest.cs" />
+    <Compile Include="FFmpeg\FFmpegJpegEncoderTest.cs" />
+    <Compile Include="FFmpeg\FFmpegPixConverterTest.cs" />
+    <Compile Include="Video\FullScreenSwitchTest.cs" />
+    <Compile Include="Mft\MftH264Test.cs" />
+    <Compile Include="Mft\MfTransformTests.cs" />
+    <Compile Include="NvApi\NvApiTest.cs" />
+    <Compile Include="NvApi\NvEncTest.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Video\RgbHelper.cs" />
+    <Compile Include="Video\RgbToNv12Converter.cs" />
+    <Compile Include="Video\SimpleSwapChain.cs" />
+    <Compile Include="Video\VideoDecoderTest.cs" />
+    <Compile Include="Video\WicTests.cs" />
+    <Compile Include="WsDiscovery\WsDiscoveryTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="Files\dcapt_rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\NV12_1920x1080.yuv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\NV12_352x288.yuv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="Files\1080x1920.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\dcapt_rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgb555_640x480.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Files\rgba_3840x2160.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+      <Project>{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}</Project>
+      <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.FFmpeg\FFmpegWrapper.vcxproj">
+      <Project>{f83157fd-4e1f-4f55-bed8-f4f138824ffd}</Project>
+      <Name>MediaToolkit.FFmpeg</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+      <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
+      <Name>MediaToolkit.NativeAPIs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj">
+      <Project>{78b312e1-a492-46f2-98bb-6c841f4e553e}</Project>
+      <Name>MediaToolkit.Nvidia</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit\MediaToolkit.csproj">
+      <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>
+      <Name>MediaToolkit</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Files\1920x1080.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\I420_1280x720.raw" />
+    <Content Include="Files\I420_352x288.raw" />
+    <Content Include="Files\I420_640x480.raw" />
+    <Content Include="Files\I422_1280x720.raw" />
+    <Content Include="Files\I422_352x288.raw" />
+    <Content Include="Files\I444_1280x720.raw" />
+    <Content Include="Files\NV12_352x288.raw" />
+    <Content Include="Files\RGB24_1280x720.raw" />
+    <Content Include="Files\RGB24_352x288.raw" />
+    <Content Include="Files\RGB32_1280x720.raw" />
+    <Content Include="Files\RGB565_1280x720.raw" />
+    <Content Include="Files\rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgb565_640x480.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgba_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgba_352x288.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\2560x1440.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgba_352x288.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Files\rgba_640x480.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\BiCubicPS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\BiCubicScale.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\BiLinearScaling.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\BiLinerealResizerPS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\DefaultPS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\DownscaleBicubic.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\DownscaleBilinear9.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\DownscaleLanczos6tap.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\Rgb15To32.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\Rgb16To32.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\Rgb565ToRgbaPs.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\Nv12ToRgbPS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\DefaultVS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\Nv12ToRgb2PS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\RgbToYuvPS_2.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Shaders\RgbToYuvPS.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Captures\DDATest\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

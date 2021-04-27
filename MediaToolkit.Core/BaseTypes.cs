@@ -174,9 +174,20 @@ namespace MediaToolkit.Core
 		{
 			return new Tuple<int, int> (aspectRatio.Num, aspectRatio.Den);
 		}
-	} 
+	}
 
-    public enum VideoCodingFormat
+	public enum VendorId : uint
+	{
+		// 0x0000-0xfffe
+		None = 0,
+		Intel = 0x8086, //32902
+		Nvidia = 0x10DE, //4318
+		AMD = 0x1002,
+		Microsoft = 0x1414,
+		//...
+	}
+
+	public enum VideoCodingFormat
     {
         Unknown,
         H264,
