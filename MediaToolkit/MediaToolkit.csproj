@@ -67,6 +67,7 @@
     <Compile Include="..\Resources\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DirectX\D2D1TextRenderer.cs" />
     <Compile Include="DirectX\D3D11RgbToNv12Converter.cs" />
     <Compile Include="DirectX\D3D11Presenter.cs" />
     <Compile Include="DirectX\D3D11RgbToYuvConverter.cs" />

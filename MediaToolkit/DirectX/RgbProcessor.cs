@@ -262,6 +262,8 @@ namespace MediaToolkit.DirectX
 
 			var srcDescr = srcTexture.Description;
 			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);
+			var destDescr = destTexture.Description;
+			var destSize = new GDI.Size(destDescr.Width, destDescr.Height);
 
 			ShaderResourceView srcSRV = null;
 			RenderTargetView destRTV = null;

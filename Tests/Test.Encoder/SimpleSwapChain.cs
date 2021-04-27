@@ -25,15 +25,19 @@ namespace Test.Encoder
 
         public static void Run()
         {
+           var featureLevel = DxTool.GetDefaultAdapterFeatureLevel();
+
+            Console.WriteLine("GetDefaultAdapterFeatureLevel() " + featureLevel);
+
             Shcore.SetProcessPerMonitorDpiAwareness();
             var adapterIndex = 0;
             var dxgiFactory = new SharpDX.DXGI.Factory1();
             var adapter = dxgiFactory.GetAdapter1(adapterIndex);
-            var device = DxTool.CreateMultithreadDevice(adapter);
+            var device = DxTool.CreateMultithreadDevice(adapter, DeviceCreationFlags.BgraSupport);
 
-			//var destSize = new GDI.Size(1280, 720);
-			var destSize = new GDI.Size(1920, 1080);
-
+			var destSize = new GDI.Size(1280, 720);
+			//var destSize = new GDI.Size(1920, 1080);
+			//var destSize = new GDI.Size(2560, 1440);
 			var fileName = @"Files\1920x1080.bmp";
             //var fileName = @"D:\Dropbox\Public\1681_source.jpg";
             //var fileName = @"D:\Dropbox\Public\2.png";
@@ -61,9 +65,25 @@ namespace Test.Encoder
             {
 				if (presenter != null)
 				{
-					presenter.RenderSize = f.ClientSize;
+					presenter.Resize(f.ClientSize);
+					//presenter.RenderSize = f.ClientSize;
 				}
             };
+			f.KeyDown += (o, e) => 
+			{
+				if(e.KeyCode == Keys.D)
+				{
+					presenter.ShowLabel = !presenter.ShowLabel;
+				}
+				else if(e.KeyCode == Keys.A)
+				{
+					presenter.AspectRatio = !presenter.AspectRatio;
+				}
+				else if (e.KeyCode == Keys.V)
+				{
+					presenter.VSync = !presenter.VSync;
+				}
+			};
 
 			var srcDescr = sourceTexture0.Description;
 			var srcSize = new GDI.Size(srcDescr.Width, srcDescr.Height);

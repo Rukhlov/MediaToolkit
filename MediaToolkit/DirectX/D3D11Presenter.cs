@@ -24,7 +24,7 @@ namespace MediaToolkit.DirectX
         }
 
         private RgbProcessor rgbProcessor = null;
-        private TextRenderer fpsRenderer = null;
+        private D2D1TextRenderer fpsRenderer = null;
 
         private SharpDX.Direct3D11.Device device = null;
         private Texture2D sharedTexture = null;
@@ -40,6 +40,9 @@ namespace MediaToolkit.DirectX
 		public bool AspectRatio { get; set; } = true;
 
 		public GDI.Size RenderSize { get; set; } = GDI.Size.Empty;
+
+		public bool ShowLabel { get; set; } = false;
+		public bool VSync { get; set; } = true;
 
 		public void Setup(GDI.Size srcSize, GDI.Size destSize, IntPtr hWnd, int adapterIndex = 0)
 		{
@@ -89,13 +92,14 @@ namespace MediaToolkit.DirectX
 					ModeDescription = new ModeDescription
 					{
 						Format = Format.R8G8B8A8_UNorm,
-						//Scaling = DisplayModeScaling.Stretched,
-						Scaling = DisplayModeScaling.Unspecified,
-						Width = DestSize.Width,//ImageWidth,
-						Height = DestSize.Height,//ImageHeight,
-						RefreshRate = new Rational(FramePerSec, 1),
-
+						//Scaling = DisplayModeScaling.Centered,
+						Scaling = DisplayModeScaling.Stretched,
+						//Scaling = DisplayModeScaling.Unspecified,
+						Width = DestSize.Width,
+						Height = DestSize.Height,
+						RefreshRate = new Rational(FramePerSec, 1),				
 					},
+					
 					IsWindowed = true,
 					Usage = Usage.RenderTargetOutput | Usage.BackBuffer,
 					Flags = SwapChainFlags.None,
@@ -107,16 +111,16 @@ namespace MediaToolkit.DirectX
 
 				swapChain = new SwapChain(dxgiFactory, device, scd);
 
-                fpsRenderer = new TextRenderer();
-                using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
-                {
-                    var backColor = GDI.Color.FromArgb(128, GDI.Color.Black);
-                    var foreColor = GDI.Color.Yellow;
-                    var font = new GDI.Font("Calibri", 16);
+                fpsRenderer = new D2D1TextRenderer();
+				using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				{
+					var backColor = GDI.Color.FromArgb(128, GDI.Color.Black);
+					var foreColor = GDI.Color.Yellow;
+					var font = new GDI.Font("Calibri", 16);
 
-                    fpsRenderer.Init(device, backBuffer, font, foreColor, backColor);
-                }
-            }
+					fpsRenderer.Init(device, backBuffer, font, foreColor, backColor);
+				}
+			}
 			finally
 			{
 				DxTool.SafeDispose(dxgiFactory);
@@ -143,23 +147,26 @@ namespace MediaToolkit.DirectX
 				running = true;
 				Stopwatch sw = Stopwatch.StartNew();
                 int interval = (int)(1000.0 / FramePerSec);
-                ulong count = 0;
+                int count = 0;
                 while (running)
                 {
                     try
                     {
-                        var text = DateTime.Now.ToString("HH: mm:ss.fff") + "\r\n" + (count++);
+						count++;
+						//count = swapChain.FrameStatistics.PresentCount;
+						var text = DateTime.Now.ToString("HH: mm:ss.fff") + "\r\n" + count;
                         lock (syncLock)
                         {
                             using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
                             {
                                 device.ImmediateContext.CopyResource(sharedTexture, backBuffer);
 
-                                var scaleX = DestSize.Width / (float)RenderSize.Width;
-                                var scaleY = DestSize.Height / (float)RenderSize.Height;
+								if (ShowLabel)
+								{
+									fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
+								}
 
-                                fpsRenderer.DrawText(text, new GDI.Point(0,0));
-                                swapChain.Present(1, PresentFlags.None);
+                                swapChain.Present((VSync ? 1 : 0), PresentFlags.None);
                             }
                         }
 
@@ -187,6 +194,34 @@ namespace MediaToolkit.DirectX
 
         }
 
+		public void Resize(GDI.Size newSize)
+		{
+			if (swapChain != null)
+			{
+				//var modeDescription = new ModeDescription
+				//{
+				//	Format = Format.R8G8B8A8_UNorm,
+				//	//Scaling = DisplayModeScaling.Centered,
+				//	Scaling = DisplayModeScaling.Centered,
+				//	//Scaling = DisplayModeScaling.Unspecified,
+				//	Width = newSize.Width,
+				//	Height = newSize.Height,
+				//	RefreshRate = new Rational(FramePerSec, 1),
+				//};
+
+				//swapChain.ResizeTarget(ref modeDescription);
+
+
+				//lock (syncLock)
+				//{
+				//	swapChain.ResizeBuffers(4, newSize.Width, newSize.Height, Format.R8G8B8A8_UNorm, SwapChainFlags.None);
+				//}
+
+			}
+
+			RenderSize = newSize;
+		}
+
 		public void Stop()
 		{
 			running = false;
@@ -202,11 +237,15 @@ namespace MediaToolkit.DirectX
 
             lock (syncLock)
             {
-                if (rgbProcessor != null)
-                {
-                    rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
-                    //syncEvent?.Set();
-                }
+				//using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				{
+					if (rgbProcessor != null)
+					{
+						rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
+						//syncEvent?.Set();
+					}
+				}
+
             }
 
 		}
@@ -255,123 +294,6 @@ namespace MediaToolkit.DirectX
 				syncEvent = null;
 			}
 		}
-
-    }
-
-    public class TextRenderer
-    {
-
-        private SharpDX.DirectWrite.TextFormat textFormat = null;
-        private Direct2D.SolidColorBrush foreBrush = null;
-        private Direct2D.SolidColorBrush backBrush = null;
-        private Direct2D.DeviceContext d2dContext = null;
-        private SharpDX.DirectWrite.Factory dwriteFactory = null;
-        public GDI.Rectangle SrcRect { get; set; }
-        private Direct2D.Bitmap1 targetBitmap = null;
-
-
-        public void Init(SharpDX.Direct3D11.Device device, Texture2D texture, GDI.Font gdiFont, GDI.Color gdiForeColor, GDI.Color gdiBackColor)
-        {
-
-            var srcDescr = texture.Description;
-
-            using (Direct2D.Factory1 factory2D1 = new Direct2D.Factory1(Direct2D.FactoryType.MultiThreaded))
-            {
-                using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
-                {
-                    using (var d2dDevice = new Direct2D.Device(factory2D1, dxgiDevice))
-                    {
-                        d2dContext = new Direct2D.DeviceContext(d2dDevice, Direct2D.DeviceContextOptions.None);
-
-                        var bitmapProperties = new Direct2D.BitmapProperties1(
-                        new SharpDX.Direct2D1.PixelFormat(srcDescr.Format, Direct2D.AlphaMode.Premultiplied),
-                        96, 96,
-                        Direct2D.BitmapOptions.Target | Direct2D.BitmapOptions.CannotDraw);
-
-                        using (var surf = texture.QueryInterface<Surface>())
-                        {
-                            targetBitmap = new Direct2D.Bitmap1(d2dContext, surf, bitmapProperties);
-
-                            d2dContext.Target = targetBitmap;
-                            d2dContext.TextAntialiasMode = Direct2D.TextAntialiasMode.Grayscale;
-                            d2dContext.DotsPerInch = new Size2F(96, 96);
-
-                        }
-                    }
-                }
-            }
-
-            dwriteFactory = new SharpDX.DirectWrite.Factory(SharpDX.DirectWrite.FactoryType.Shared);
-
-            Color foreColor = new Color(gdiForeColor.R, gdiForeColor.G, gdiForeColor.B, gdiForeColor.A);
-            foreBrush = new Direct2D.SolidColorBrush(d2dContext, foreColor);
-
-            Color backColor = new Color(gdiBackColor.R, gdiBackColor.G, gdiBackColor.B, gdiBackColor.A);
-            backBrush = new Direct2D.SolidColorBrush(d2dContext, backColor);
-
-            // int fontSize = (int)(Math.Min(SrcRect.Width, SrcRect.Height) / 8);
-
-            var fontSize = gdiFont.Size;
-            var fontFamilyName = gdiFont.FontFamily.Name;
-            textFormat = new SharpDX.DirectWrite.TextFormat(dwriteFactory, fontFamilyName, fontSize)
-            {
-               // TextAlignment = SharpDX.DirectWrite.TextAlignment.Center,
-                TextAlignment = SharpDX.DirectWrite.TextAlignment.Leading,
-                ParagraphAlignment = SharpDX.DirectWrite.ParagraphAlignment.Near,
-                //FlowDirection = SharpDX.DirectWrite.FlowDirection.TopToBottom,
-                WordWrapping = SharpDX.DirectWrite.WordWrapping.NoWrap,
-            };
-
-        }
-
-
-        public void DrawText(string text, GDI.Point pos, float scaleX = 1f, float scaleY = 1f)
-        {
-            d2dContext.BeginDraw();      
-            //d2dContext.Transform = Matrix3x2.Identity;
-            d2dContext.Transform = Matrix3x2.Scaling(scaleX, scaleY);
-
-            //SharpDX.Mathematics.Interop.RawRectangleF rect = new SharpDX.Mathematics.Interop.RawRectangleF
-            //{
-            //    Left = pos.X,
-            //    Top = pos.Y,
-            //    Right = 128,
-            //    Bottom = 32,
-            //};
-            //d2dContext.FillRectangle(rect, backBrush);
-            //d2dContext.DrawText(text, textFormat, rect, foreBrush);
-
-            int maxWidth = 0;
-            int maxHeight = 0;
-            using (var textLayout = new SharpDX.DirectWrite.TextLayout(dwriteFactory, text, textFormat, maxWidth, maxHeight))
-            {
-                var metrics = textLayout.Metrics;
-
-                SharpDX.Mathematics.Interop.RawRectangleF rect = new SharpDX.Mathematics.Interop.RawRectangleF
-                {
-                    Left = metrics.Left,
-                    Top = metrics.Top,
-                    Right = metrics.Width - metrics.Left,
-                    Bottom = metrics.Height - metrics.Top,
-                };
-                d2dContext.FillRectangle(rect, backBrush);
-
-                var origin = new Vector2(pos.X, pos.Y);
-                d2dContext.DrawTextLayout(origin, textLayout, foreBrush, Direct2D.DrawTextOptions.None);
-            }
-
-            d2dContext.EndDraw();
-        }
-
-        public void Close()
-        {
-            DxTool.SafeDispose(d2dContext);
-            DxTool.SafeDispose(textFormat);
-            DxTool.SafeDispose(foreBrush);
-            DxTool.SafeDispose(backBrush);
-            DxTool.SafeDispose(dwriteFactory);
-            DxTool.SafeDispose(targetBitmap);
-        }
 
     }
 

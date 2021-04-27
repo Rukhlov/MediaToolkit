@@ -93,47 +93,7 @@ namespace MediaToolkit.NativeAPIs
 			public int dwFlags = 0;
 		}
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct SECURITY_ATTRIBUTES
-		{
-			public int Length;
-			public IntPtr lpSecurityDescriptor;
-			public int bInheritHandle;
-			//public bool bInheritHandle;
-		}
 
-		[StructLayout(LayoutKind.Sequential)]
-		public struct PROCESS_INFORMATION
-		{
-			public IntPtr hProcess;
-			public IntPtr hThread;
-			public int dwProcessId;
-			public int dwThreadId;
-		}
-
-
-		[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-		public struct STARTUPINFO
-		{
-			public int cb;
-			public string lpReserved;
-			public string lpDesktop;
-			public string lpTitle;
-			public int dwX;
-			public int dwY;
-			public int dwXSize;
-			public int dwYSize;
-			public int dwXCountChars;
-			public int dwYCountChars;
-			public int dwFillAttribute;
-			public int dwFlags;
-			public short wShowWindow;
-			public short cbReserved2;
-			public IntPtr lpReserved2;
-			public IntPtr hStdInput;
-			public IntPtr hStdOutput;
-			public IntPtr hStdError;
-		}
 
 		//TOKEN_INFORMATION_CLASS
 		public enum TokenInformationClass
@@ -240,21 +200,6 @@ namespace MediaToolkit.NativeAPIs
 			SidTypeComputer
 		}
 
-		public enum LogonFlags
-		{
-			WithProfile = 1,
-			NetCredentialsOnly
-		}
-		public enum CreationFlags
-		{
-			DefaultErrorMode = 0x04000000,
-			NewConsole = 0x00000010,
-			NewProcessGroup = 0x00000200,
-			SeparateWOWVDM = 0x00000800,
-			Suspended = 0x00000004,
-			UnicodeEnvironment = 0x00000400,
-			ExtendedStartupInfoPresent = 0x00080000
-		}
 
 		public const int TOKEN_DUPLICATE = 0x0002;
 		public const uint MAXIMUM_ALLOWED = 0x2000000;
@@ -297,6 +242,8 @@ namespace MediaToolkit.NativeAPIs
 		   UInt32 bufferLengthInBytes,
 		   ref TOKEN_PRIVILEGES previousState,
 		   out UInt32 returnLengthInBytes);
+
+
 
 		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 		public static extern bool CreateProcessAsUser(

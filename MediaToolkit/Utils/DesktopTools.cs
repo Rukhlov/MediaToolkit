@@ -427,7 +427,7 @@ namespace MediaToolkit.Utils
 		}
 
 
-		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out AdvApi32.PROCESS_INFORMATION procInfo)
+		public static bool OpenInteractiveProcess(string applicationName, string desktopName, bool hiddenWindow, out PROCESS_INFORMATION procInfo)
 		{ //работает если только если запускать из сервиса !!!
 
 			uint winlogonPid = 0;
@@ -436,7 +436,7 @@ namespace MediaToolkit.Utils
 			IntPtr hPToken = IntPtr.Zero;
 			IntPtr hProcess = IntPtr.Zero;
 
-			procInfo = new AdvApi32.PROCESS_INFORMATION();
+			procInfo = new PROCESS_INFORMATION();
 
 			// Check for RDP session.  If active, use that session ID instead.
 			var activeSessions = GetActiveSessions();
@@ -465,7 +465,7 @@ namespace MediaToolkit.Utils
 			}
 
 			// Security attibute structure used in DuplicateTokenEx and CreateProcessAsUser.
-			AdvApi32.SECURITY_ATTRIBUTES sa = new AdvApi32.SECURITY_ATTRIBUTES();
+			SECURITY_ATTRIBUTES sa = new SECURITY_ATTRIBUTES();
 			sa.Length = Marshal.SizeOf(sa);
 
 			// Copy the access token of the winlogon process; the newly created token will be a primary token.
@@ -484,7 +484,7 @@ namespace MediaToolkit.Utils
 			// the window station has a desktop that is invisible and the process is incapable of receiving
 			// user input. To remedy this we set the lpDesktop parameter to indicate we want to enable user 
 			// interaction with the new process.
-			AdvApi32.STARTUPINFO si = new AdvApi32.STARTUPINFO();
+			STARTUPINFO si = new STARTUPINFO();
 			si.cb = Marshal.SizeOf(si);
 			si.lpDesktop = @"winsta0\" + desktopName;
 

@@ -101,6 +101,13 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
 		public static extern IntPtr GetCommandLine();
 
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool CreateProcess(
+			string lpApplicationName, string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes,
+			ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles, int dwCreationFlags,
+			IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFO lpStartupInfo,
+			out PROCESS_INFORMATION lpProcessInformation);
 
 		[DllImport("kernel32.dll")]
 		public static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
@@ -147,6 +154,12 @@ namespace MediaToolkit.NativeAPIs
 		[DllImport("kernel32.dll")]
 		public static extern IntPtr LocalFree(IntPtr hMem);
 
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool Wow64DisableWow64FsRedirection(ref IntPtr ptr);
+
+		[DllImport("kernel32.dll", SetLastError = true)]
+		public static extern bool Wow64RevertWow64FsRedirection(IntPtr ptr);
 	}
 
 }

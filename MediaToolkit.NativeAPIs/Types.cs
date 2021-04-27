@@ -1804,4 +1804,63 @@ namespace MediaToolkit.NativeAPIs
         GENERIC_WRITE = unchecked((int)0x40000000),
         GENERIC_READ = unchecked((int)0x80000000),
     }
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct SECURITY_ATTRIBUTES
+	{
+		public int Length;
+		public IntPtr lpSecurityDescriptor;
+		public int bInheritHandle;
+		//public bool bInheritHandle;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct PROCESS_INFORMATION
+	{
+		public IntPtr hProcess;
+		public IntPtr hThread;
+		public int dwProcessId;
+		public int dwThreadId;
+	}
+
+
+	[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+	public struct STARTUPINFO
+	{
+		public int cb;
+		public string lpReserved;
+		public string lpDesktop;
+		public string lpTitle;
+		public int dwX;
+		public int dwY;
+		public int dwXSize;
+		public int dwYSize;
+		public int dwXCountChars;
+		public int dwYCountChars;
+		public int dwFillAttribute;
+		public int dwFlags;
+		public short wShowWindow;
+		public short cbReserved2;
+		public IntPtr lpReserved2;
+		public IntPtr hStdInput;
+		public IntPtr hStdOutput;
+		public IntPtr hStdError;
+	}
+
+	public enum LogonFlags
+	{
+		WithProfile = 1,
+		NetCredentialsOnly
+	}
+
+	public enum CreationFlags
+	{
+		DefaultErrorMode = 0x04000000,
+		NewConsole = 0x00000010,
+		NewProcessGroup = 0x00000200,
+		SeparateWOWVDM = 0x00000800,
+		Suspended = 0x00000004,
+		UnicodeEnvironment = 0x00000400,
+		ExtendedStartupInfoPresent = 0x00080000
+	}
 }

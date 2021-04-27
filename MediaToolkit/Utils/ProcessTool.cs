@@ -15,6 +15,34 @@ namespace MediaToolkit.Utils
 	{
 		private static TraceSource tracer = new TraceSource("MediaToolkit");
 
+
+		public static int CreateProcess(string applicationName, string commandLine, string currentDirectory = null)
+		{
+			var processInfo = new PROCESS_INFORMATION();
+
+			var startUpInfo = new STARTUPINFO();
+			startUpInfo.cb = Marshal.SizeOf(startUpInfo);
+
+			var proccessAttrs = new SECURITY_ATTRIBUTES();
+			proccessAttrs.Length = Marshal.SizeOf(proccessAttrs);
+
+			var threadAttrs = new SECURITY_ATTRIBUTES();
+			threadAttrs.Length = Marshal.SizeOf(threadAttrs);
+
+			var result = Kernel32.CreateProcess(applicationName, commandLine, 
+				ref proccessAttrs, ref threadAttrs, false, (int)CreationFlags.UnicodeEnvironment, IntPtr.Zero, currentDirectory, ref startUpInfo, 
+				out processInfo);
+
+			if (!result)
+			{
+				var code = Marshal.GetLastWin32Error();
+				var message = $"CreateProcess failed with error code: {code}";
+				throw new Win32Exception(code, message);
+			}
+
+			return processInfo.dwProcessId;
+		}
+
 		public static int StartProcessWithSystemToken(string applicationName, string commandLine)
 		{
 			tracer.TraceEvent(TraceEventType.Verbose, 0, "StartProcessWithSystemToken(...) " + applicationName + " " + commandLine);
@@ -76,7 +104,7 @@ namespace MediaToolkit.Utils
 				IntPtr hDuplicatedSystemToken = IntPtr.Zero;
 				try
 				{
-					AdvApi32.SECURITY_ATTRIBUTES secAttr = new AdvApi32.SECURITY_ATTRIBUTES();
+					SECURITY_ATTRIBUTES secAttr = new SECURITY_ATTRIBUTES();
 					secAttr.bInheritHandle = 0;
 
 
@@ -96,16 +124,16 @@ namespace MediaToolkit.Utils
 
 
 
-					AdvApi32.PROCESS_INFORMATION lpProcessInformation = default(AdvApi32.PROCESS_INFORMATION);
+					PROCESS_INFORMATION lpProcessInformation = default(PROCESS_INFORMATION);
 					try
 					{
-						var dwLogonFlags = AdvApi32.LogonFlags.NetCredentialsOnly;//???
-						var dwCreationFlags = AdvApi32.CreationFlags.NewConsole;// ??
+						var dwLogonFlags = LogonFlags.NetCredentialsOnly;//???
+						var dwCreationFlags = CreationFlags.NewConsole;// ??
 						var lpEnvironment = IntPtr.Zero;
 						string lpCurrentDirectory = null;//@"C:\";
 
 						//TODO: setup info...
-						var lpStartupInfo = new AdvApi32.STARTUPINFO();
+						var lpStartupInfo = new STARTUPINFO();
 
 						var args = string.Join(" ", applicationName, commandLine);
 						result = AdvApi32.CreateProcessWithTokenW(hDuplicatedSystemToken,
