@@ -91,6 +91,7 @@
     <Compile Include="NvApi\NvEncTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Video\GDIRendererTest.cs" />
     <Compile Include="Video\RgbHelper.cs" />
     <Compile Include="Video\RgbToNv12Converter.cs" />
     <Compile Include="Video\SimpleSwapChain.cs" />

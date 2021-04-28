@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 using System.Windows.Forms;
 using MediaToolkit.Utils;
+using Test.Probe.Video;
 
 namespace Test.Encoder
 {
@@ -32,7 +33,9 @@ namespace Test.Encoder
 
 			//CopyImageTest.Run();
 
-			SimpleSwapChain.Run();
+
+			GDIRendererTest.Run();
+			//SimpleSwapChain.Run();
 
 			//VideoDecoderTest.Run();
 

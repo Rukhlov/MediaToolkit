@@ -70,106 +70,106 @@ namespace WebCamTest
 
         }
 
-		[STAThread]
-		static void Main(string[] args)
-		{
+        [STAThread]
+        static void Main(string[] args)
+        {
 
-			Console.WriteLine("==============START=============");
-			try
-			{
-				MediaManager.Startup();
+            Console.WriteLine("==============START=============");
+            try
+            {
+                MediaManager.Startup();
 
-				Activate[] activates = null;
-				using (var attributes = new MediaAttributes())
-				{
-					MediaFactory.CreateAttributes(attributes, 1);
-					attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
+                Activate[] activates = null;
+                using (var attributes = new MediaAttributes())
+                {
+                    MediaFactory.CreateAttributes(attributes, 1);
+                    attributes.Set(CaptureDeviceAttributeKeys.SourceType, CaptureDeviceAttributeKeys.SourceTypeVideoCapture.Guid);
 
-					activates = MediaFactory.EnumDeviceSources(attributes);
+                    activates = MediaFactory.EnumDeviceSources(attributes);
 
-				}
+                }
 
-				if (activates == null || activates.Length == 0)
-				{
-					Console.WriteLine("SourceTypeVideoCapture not found");
-					Console.ReadKey();
-				}
+                if (activates == null || activates.Length == 0)
+                {
+                    Console.WriteLine("SourceTypeVideoCapture not found");
+                    Console.ReadKey();
+                }
 
-				foreach (var activate in activates)
-				{
-					Console.WriteLine("---------------------------------------------");
-					var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
-					var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
-					//var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
-					var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
+                foreach (var activate in activates)
+                {
+                    Console.WriteLine("---------------------------------------------");
+                    var friendlyName = activate.Get(CaptureDeviceAttributeKeys.FriendlyName);
+                    var isHwSource = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapHwSource);
+                    //var maxBuffers = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapMaxBuffers);
+                    var symbolicLink = activate.Get(CaptureDeviceAttributeKeys.SourceTypeVidcapSymbolicLink);
 
-					Console.WriteLine("FriendlyName " + friendlyName + "\r\n" +
-						"isHwSource " + isHwSource + "\r\n" +
-						//"maxBuffers " + maxBuffers + 
-						"symbolicLink " + symbolicLink);
-				}
-
-
-				var currentActivator = activates[0];
-
-				var mediaSource = currentActivator.ActivateObject<MediaSource>();
-
-				foreach (var a in activates)
-				{
-					a.Dispose();
-				}
-
-				mediaSource.CreatePresentationDescriptor(out PresentationDescriptor presentationDescriptor);
-
-				for (int i = 0; i < presentationDescriptor.Count; i++)
-				{
-					var obj = presentationDescriptor.GetByIndex(i, out Guid guid);
-					Console.WriteLine(guid + " " + obj.ToString());
-
-				}
-
-				for (int i = 0; i < presentationDescriptor.StreamDescriptorCount; i++)
-				{
-					var streamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(i, out SharpDX.Mathematics.Interop.RawBool selected);
-					Console.WriteLine(i + " " + streamDescriptor.ToString() + " " + selected);
-
-					//if (selected)
-					{
-						using (var mediaHandler = streamDescriptor.MediaTypeHandler)
-						{
-							for (int j = 0; j < mediaHandler.MediaTypeCount; j++)
-							{
-								var mediaType = mediaHandler.GetMediaTypeByIndex(j);
-								Console.WriteLine(MfTool.LogMediaType(mediaType));
-							}
-						}
-					}
+                    Console.WriteLine("FriendlyName " + friendlyName + "\r\n" +
+                        "isHwSource " + isHwSource + "\r\n" +
+                        //"maxBuffers " + maxBuffers + 
+                        "symbolicLink " + symbolicLink);
+                }
 
 
-					for (int j = 0; j < streamDescriptor.Count; j++)
-					{
-						var obj = streamDescriptor.GetByIndex(j, out Guid guid);
-						Console.WriteLine(guid + " " + obj.ToString());
-					}
+                var currentActivator = activates[0];
 
-					Console.WriteLine("------------------------------------");
+                var mediaSource = currentActivator.ActivateObject<MediaSource>();
 
-				}
-			}
-			catch(Exception ex)
-			{
-				Console.WriteLine(ex);
-			}
+                foreach (var a in activates)
+                {
+                    a.Dispose();
+                }
 
-			Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
-			MediaToolkitManager.Shutdown();
+                mediaSource.CreatePresentationDescriptor(out PresentationDescriptor presentationDescriptor);
 
-			Console.WriteLine("==============THE END=============");
-			Console.WriteLine("Any key to quit...");
-			Console.ReadKey();
-		}
+                for (int i = 0; i < presentationDescriptor.Count; i++)
+                {
+                    var obj = presentationDescriptor.GetByIndex(i, out Guid guid);
+                    Console.WriteLine(guid + " " + obj.ToString());
 
-		[STAThread]
+                }
+
+                for (int i = 0; i < presentationDescriptor.StreamDescriptorCount; i++)
+                {
+                    var streamDescriptor = presentationDescriptor.GetStreamDescriptorByIndex(i, out SharpDX.Mathematics.Interop.RawBool selected);
+                    Console.WriteLine(i + " " + streamDescriptor.ToString() + " " + selected);
+
+                    //if (selected)
+                    {
+                        using (var mediaHandler = streamDescriptor.MediaTypeHandler)
+                        {
+                            for (int j = 0; j < mediaHandler.MediaTypeCount; j++)
+                            {
+                                var mediaType = mediaHandler.GetMediaTypeByIndex(j);
+                                Console.WriteLine(MfTool.LogMediaType(mediaType));
+                            }
+                        }
+                    }
+
+
+                    for (int j = 0; j < streamDescriptor.Count; j++)
+                    {
+                        var obj = streamDescriptor.GetByIndex(j, out Guid guid);
+                        Console.WriteLine(guid + " " + obj.ToString());
+                    }
+
+                    Console.WriteLine("------------------------------------");
+
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+            MediaToolkitManager.Shutdown();
+
+            Console.WriteLine("==============THE END=============");
+            Console.WriteLine("Any key to quit...");
+            Console.ReadKey();
+        }
+
+        [STAThread]
         static void __Main2(string[] args)
         {
 

@@ -414,6 +414,8 @@ namespace Test.Encoder
                 //    g.Dispose();
                 //}
             }
+
+
             totalMsec = sw.ElapsedMilliseconds;
             timePerFrame = totalMsec / num;
             Console.WriteLine("--------------------GDI----------------------");

@@ -113,6 +113,9 @@ namespace MediaToolkit.NativeAPIs
         }
 
         [DllImport("user32.dll")]
+        public static extern int FillRect(IntPtr hDC, [In] ref RECT lprc, IntPtr hbr);
+
+        [DllImport("user32.dll")]
         public static extern bool DrawIcon(IntPtr hDC, int X, int Y, IntPtr hIcon);
 
 		[DllImport("User32.dll", SetLastError = true)]

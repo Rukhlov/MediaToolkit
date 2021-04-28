@@ -289,6 +289,47 @@ namespace MediaToolkit.Utils
             }
         }
 
+        public static Rectangle CalcAspectRatio(Rectangle srcRect, Size targetSize, bool aspectRatio = true)
+        {
+
+            if (targetSize.IsEmpty || !aspectRatio)
+            {
+                return srcRect;
+            }
+
+            double targetWidth = targetSize.Width;
+            double targetHeight = targetSize.Height;
+
+            double srcWidth = srcRect.Width;
+            double srcHeight = srcRect.Height;
+
+            double targetRatio = targetWidth / targetHeight;
+            double containerRatio = srcWidth / srcHeight;
+
+            // в координатах формы                
+            double viewLeft = srcRect.X;
+            double viewTop = srcRect.Y;
+            double viewWidth = srcWidth;
+            double viewHeight = srcHeight;
+
+            if (containerRatio < targetRatio)
+            {
+                viewWidth = srcWidth;
+                viewHeight = (viewWidth / targetRatio);
+                viewTop += (srcHeight - viewHeight) / 2;
+                //viewLeft = 0;
+            }
+            else
+            {
+                viewHeight = srcHeight;
+                viewWidth = viewHeight * targetRatio;
+                //viewTop = 0;
+                viewLeft += (srcWidth - viewWidth) / 2;
+            }
+
+            return new Rectangle((int)viewLeft, (int)viewTop, (int)viewWidth, (int)viewHeight);
+        }
+
         public static int Align(int val, int align)
 		{
 			return ((val + align - 1) & ~(align - 1));
