@@ -44,7 +44,7 @@ namespace MediaToolkit.NativeAPIs
 		public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
 
 
-		public enum DeviceCap
+        public enum DeviceCap
 		{
 			DRIVERVERSION = 0,
 			TECHNOLOGY = 2,
