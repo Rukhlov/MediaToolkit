@@ -39,6 +39,9 @@ namespace MediaToolkit.NativeAPIs
         [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
         public static extern bool DeleteObject(IntPtr hObject);
 
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern IntPtr CreateDIBSection(IntPtr hdc, [In] ref BITMAPINFO pbmi, uint pila, out IntPtr ppvBits, IntPtr hSection, uint dwOffset);
+
 
         [DllImport("gdi32.dll")]
 		public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
