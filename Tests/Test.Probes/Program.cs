@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using MediaToolkit.Utils;
 using Test.Probe.Video;
+using Test.Probe;
 
 namespace Test.Encoder
 {
@@ -29,15 +30,17 @@ namespace Test.Encoder
 
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
-			//FullScreenSwitchTest.Run();
+            //FullScreenSwitchTest.Run();
 
-			//CopyImageTest.Run();
+            //CopyImageTest.Run();
 
 
-			GDIRendererTest.Run();
-			//SimpleSwapChain.Run();
+            //GDIRendererTest.Run();
+            //SimpleSwapChain.Run();
 
-			//VideoDecoderTest.Run();
+             //IDRDecoder.Run();
+
+            VideoDecoderTest.Run();
 
 			//var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 

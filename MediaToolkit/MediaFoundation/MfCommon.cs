@@ -1258,8 +1258,10 @@ namespace MediaToolkit.MediaFoundation
         /// </summary>
         public int GopSize { get; set; } = 0;
 
-
         public int MaxBFrame { get; set; } = 0;
+
+        public Core.VideoDriverType DriverType { get; set; } = Core.VideoDriverType.D3D11;
+        public IntPtr D3DPointer { get; set; } = IntPtr.Zero;
 
     }
 

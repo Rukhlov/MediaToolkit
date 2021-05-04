@@ -41,7 +41,10 @@ namespace MediaToolkit.Renderers
 
             try
             {
-                bitCount = Image.GetPixelFormatSize(Format);
+				var planes = Gdi32.GetDeviceCaps(windowDc, (int)Gdi32.DeviceCap.PLANES);
+				var bitspixel = Gdi32.GetDeviceCaps(windowDc, (int)Gdi32.DeviceCap.BITSPIXEL);
+
+				bitCount = Image.GetPixelFormatSize(Format);
                 uint biSizeImage = (uint)(biWidth * biHeight * bitCount / 8);
 
                 const int BI_RGB = 0;

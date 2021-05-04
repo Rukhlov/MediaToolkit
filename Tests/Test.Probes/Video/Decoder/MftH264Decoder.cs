@@ -1,31 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-
-using System.Linq;
-
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
 using Device = SharpDX.Direct3D11.Device;
 using System.IO;
-using MediaToolkit.MediaFoundation;
-using MediaToolkit.Logging;
 
-namespace MediaToolkit.MediaFoundation
+using NLog;
+using MediaToolkit.MediaFoundation;
+
+namespace Test.Probe
 {
+
+
     /// <summary>
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
     /// </summary>
-    public class MfH264Decoder
+    public class MfH264DecoderTest
     {
-        //private static Logger logger = LogManager.GetCurrentClassLogger();
-        private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+        // private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
-        public Device device = null;
+       // private Device device = null;
 
         private Transform decoder = null;
 
@@ -35,11 +39,8 @@ namespace MediaToolkit.MediaFoundation
         private long frameNumber = -1;
         private long frameDuration;
 
-        public MfH264Decoder(Device device)
-        {
-            this.device = device;
+        public MfH264DecoderTest() { }
 
-        }
 
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
@@ -62,24 +63,10 @@ namespace MediaToolkit.MediaFoundation
             try
             {
                 //device = new Device(adapter, DeviceCreationFlags.BgraSupport);
-                if (device == null)
-                {
-                    using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-                    {
-                        using (var adapter = dxgiFactory.GetAdapter1(0))
-                        {
-                            device = new Device(adapter,
-                               //DeviceCreationFlags.Debug |
-                               DeviceCreationFlags.VideoSupport |
-                               DeviceCreationFlags.BgraSupport);
-
-                            using (var multiThread = device.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                            {
-                                multiThread.SetMultithreadProtected(true);
-                            }
-                        }
-                    }
-                }
+                //if (device == null)
+                //{
+   
+                //}
 
 
                 var transformFlags = //TransformEnumFlag.Hardware |
@@ -142,20 +129,35 @@ namespace MediaToolkit.MediaFoundation
 
                 using (var attr = decoder.Attributes)
                 {
-                    bool d3dAware = attr.Get(TransformAttributeKeys.D3DAware);
 
-                    bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
-                    if (d3d11Aware)
+                    if(inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
                     {
-						if (device != null)
-						{
+                        var device = new Device(inputArgs.D3DPointer);
+                        bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
+                        if (d3d11Aware)
+                        {
                             using (DXGIDeviceManager devMan = new DXGIDeviceManager())
                             {
                                 devMan.ResetDevice(device);
                                 decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                            }                         
+                        }
+                    }
+                    else if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D9)
+                    {
+                        var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer);
+                        bool d3dAware = attr.Get(TransformAttributeKeys.D3DAware);
+                        if (d3dAware)
+                        {
+                              using (SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager devMan = new SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager())
+                            {
+                                devMan.ResetDevice(device, devMan.CreationToken);
+
+                                decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                             }
                         }
-					}
+                    }
+
 
                     attr.Set(SinkWriterAttributeKeys.LowLatency, true);
 
@@ -194,7 +196,7 @@ namespace MediaToolkit.MediaFoundation
                             logger.Warn("NoMoreType");
                             break;
                         }
-                        
+
                         var formatId = mediaType.Get(MediaTypeAttributeKeys.Subtype);
                         if (formatId == inputFormat)
                         {
@@ -205,7 +207,7 @@ namespace MediaToolkit.MediaFoundation
                         }
                         mediaType.Dispose();
                         mediaType = null;
-                        
+
 
                     }
                     catch (SharpDX.SharpDXException ex)
@@ -228,7 +230,7 @@ namespace MediaToolkit.MediaFoundation
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
 
-               // InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
+                // InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                 InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
@@ -313,21 +315,18 @@ namespace MediaToolkit.MediaFoundation
 
         public bool ProcessSample(Sample inputSample, Action<Sample> OnSampleDecoded)
         {
- 
+
             bool Result = false;
 
-
-            if (inputSample == null)
+            if (inputSample != null)
             {
-                return false;
-            }
+				//FIXME:
+				frameNumber++;
+				inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
+				inputSample.SampleDuration = frameDuration;
 
-            //FIXME:
-            frameNumber++;
-            inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
-            inputSample.SampleDuration = frameDuration;
-
-            decoder.ProcessInput(0, inputSample, 0);
+				decoder.ProcessInput(0, inputSample, 0);
+			}
 
             //if (decoder.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
             {
@@ -344,9 +343,13 @@ namespace MediaToolkit.MediaFoundation
                     if (createSample)
                     {
                         pSample = MediaFactory.CreateSample();
-                        pSample.SampleTime = inputSample.SampleTime;
-                        pSample.SampleDuration = inputSample.SampleDuration;
-                        pSample.SampleFlags = inputSample.SampleFlags;
+						if (inputSample != null)
+						{
+							pSample.SampleTime = inputSample.SampleTime;
+							pSample.SampleDuration = inputSample.SampleDuration;
+							pSample.SampleFlags = inputSample.SampleFlags;
+						}
+
                         //logger.Debug("CreateSample: " + inputSample.SampleTime);
 
                         using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(streamInfo.CbSize))
@@ -412,11 +415,11 @@ namespace MediaToolkit.MediaFoundation
                         //logger.Info("-------------------------");
                         Result = true;
 
-						if (pSample != null)
-						{
-							pSample.Dispose();
-							pSample = null;
-						}
+                        if (pSample != null)
+                        {
+                            pSample.Dispose();
+                            pSample = null;
+                        }
 
                         break;
                     }
@@ -470,17 +473,26 @@ namespace MediaToolkit.MediaFoundation
             return Result;
         }
 
+		public void Drain()
+		{
+			if (decoder != null)
+			{
+				decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+
+			}
+		}
 
         public void Stop()
         {
             logger.Debug("MfH264Decoder::Stop()");
 
             if (decoder != null)
-            {
-                decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+			{
+				decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+				//decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
-                decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+
 
             }
 

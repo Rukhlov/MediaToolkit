@@ -312,6 +312,14 @@
     <None Include="FFmpeg4\bin\Sdp_to_mp4.bat" />
     <None Include="FFmpeg4\bin\TestRGB555Gen.bat" />
     <None Include="FFmpeg4\bin\TestRGB565Gen.bat" />
+    <None Include="Files\h264\IFrame_1920x1080_yuv420p.h264" />
+    <None Include="Files\h264\testsrc_1280x720_yuv420p_Iframe.h264" />
+    <None Include="Files\h264\testsrc_2560x1440_yuv420p_Iframe.h264" />
+    <None Include="Files\h264\testsrc_320x240_yuv420p_1sec.h264" />
+    <None Include="Files\h264\testsrc_320x240_yuv420p_Iframe.h264" />
+    <None Include="Files\h264\testsrc_320x240_yuv444p_1sec.h264" />
+    <None Include="Files\h264\testsrc_3840x2160_yuv420p_Iframe.h264" />
+    <None Include="Files\h264\testsrc_640x480_yuv420p_Iframe.h264" />
     <None Include="Files\SDP_239_0_0_1.sdp" />
     <None Include="FFmpeg4\bin\TestNV12Gen.bat" />
     <None Include="FFmpeg4\bin\TestRGBAGen.bat" />

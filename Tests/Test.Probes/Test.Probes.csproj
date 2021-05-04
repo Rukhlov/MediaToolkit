@@ -81,6 +81,9 @@
     <Compile Include="Display\DisplayDeviceTest.cs" />
     <Compile Include="Display\DisplayManager.cs" />
     <Compile Include="Display\DisplaySettingChanged.cs" />
+    <Compile Include="Video\Decoder\IDRDecoder.cs" />
+    <Compile Include="Video\Decoder\MftH264Decoder.cs" />
+    <Compile Include="Video\Decoder\NalUnitBitstreamParser.cs" />
     <Compile Include="Video\DxTextureTest.cs" />
     <Compile Include="FFmpeg\FFmpegJpegEncoderTest.cs" />
     <Compile Include="FFmpeg\FFmpegPixConverterTest.cs" />
@@ -95,13 +98,16 @@
     <Compile Include="Video\RgbHelper.cs" />
     <Compile Include="Video\RgbToNv12Converter.cs" />
     <Compile Include="Video\SimpleSwapChain.cs" />
-    <Compile Include="Video\VideoDecoderTest.cs" />
+    <Compile Include="Video\Decoder\VideoDecoderTest.cs" />
     <Compile Include="Video\WicTests.cs" />
     <Compile Include="WsDiscovery\WsDiscoveryTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Files\dcapt_rgb565_1920x1080.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\IFrame_1920x1080_yuv420p.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Files\NV12_1920x1080.yuv">
@@ -120,6 +126,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="Files\rgba_3840x2160.raw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_1280x720_yuv420p_Iframe.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_2560x1440_yuv420p_Iframe.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_320x240_yuv420p_1sec.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_320x240_yuv420p_Iframe.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_3840x2160_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
