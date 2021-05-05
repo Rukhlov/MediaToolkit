@@ -58,7 +58,9 @@ namespace MediaToolkit.MediaFoundation
 			FillAttrDict(typeof(SampleAttributeKeys));
 
             FillAttrDict(typeof(CaptureDeviceAttributeKeys));
-		}
+
+            FillAttrDict(typeof(MFSampleExtension));
+        }
 
         public static string GetMediaTypeName(Guid guid, bool GetFullName = false)
         {
@@ -109,12 +111,21 @@ namespace MediaToolkit.MediaFoundation
             StringBuilder log = new StringBuilder();
             for (int i = 0; i < mediaAttributes.Count; i++)
             {
-                var obj = mediaAttributes.GetByIndex(i, out Guid guid);
+                try
                 {
-                    string result = LogAttribute(guid, obj);
+                    var obj = mediaAttributes.GetByIndex(i, out Guid guid);
+                    {
+                        string result = LogAttribute(guid, obj);
 
-                    log.AppendLine(result);
+                        log.AppendLine(result);
+                    }
                 }
+                catch(Exception ex)
+                {
+                    log.AppendLine("Unexpected error while getting attribute by index: " + i);
+                }
+
+
             }
 
             return log.ToString();
@@ -127,7 +138,6 @@ namespace MediaToolkit.MediaFoundation
             if (AttrsDict.ContainsKey(guid))
             {
                 attrName = AttrsDict[guid];
-
             }
 
             var valStr = "";
@@ -1133,6 +1143,17 @@ namespace MediaToolkit.MediaFoundation
 
     }
 
+
+    public static class MFSampleExtension
+    {
+        public static readonly MediaAttributeKey<int> AccumulatedNonRefPicPercent = new MediaAttributeKey<int>("79ea74df-a740-445b-bc98-c9ed1f260eee");
+        public static readonly MediaAttributeKey<int> Encryption_ResumeVideoOutput = new MediaAttributeKey<int>("a435aba5-afde-4cf5-bc1c-f6acaf13949d");
+        public static readonly MediaAttributeKey<byte[]> NALULengthInfo = new MediaAttributeKey<byte[]>("19124e7c-ad4b-465f-bb18-20186287b6af");
+
+        //public static readonly Guid AccumulatedNonRefPicPercent = new Guid("79ea74df-a740-445b-bc98-c9ed1f260eee");
+        //public static readonly Guid Encryption_ResumeVideoOutput = new Guid("a435aba5-afde-4cf5-bc1c-f6acaf13949d");
+        //public static readonly Guid NALULengthInfo = new Guid("19124e7c-ad4b-465f-bb18-20186287b6af");
+    }
 
     public class ClsId
     {

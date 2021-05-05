@@ -624,12 +624,12 @@ namespace MediaToolkit.DirectX
 			stagingDescr.CpuAccessFlags = CpuAccessFlags.Read;
 			stagingDescr.Usage = ResourceUsage.Staging;
 			stagingDescr.OptionFlags = ResourceOptionFlags.None;
-
+            stagingDescr.ArraySize = 1;
 			using (var stagingTexture = new Texture2D(device, stagingDescr))
 			{
-				device.ImmediateContext.CopyResource(texture, stagingTexture);
-
-				var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
+				//device.ImmediateContext.CopyResource(texture, stagingTexture);
+                device.ImmediateContext.CopySubresourceRegion(texture, 0, null, stagingTexture, 0);
+                var dataBox = device.ImmediateContext.MapSubresource(stagingTexture, 0, MapMode.Read, SharpDX.Direct3D11.MapFlags.None);
 				try
 				{
 					int width = stagingDescr.Width;

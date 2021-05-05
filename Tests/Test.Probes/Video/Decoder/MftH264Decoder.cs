@@ -38,8 +38,12 @@ namespace Test.Probe
 
         private long frameNumber = -1;
         private long frameDuration;
-
-        public MfH264DecoderTest() { }
+        //private Device device = null;
+        //public MfH264DecoderTest(Device d = null)
+        public MfH264DecoderTest()
+        {
+           // this.device = d;
+        }
 
 
         public MediaType InputMediaType { get; private set; }
@@ -132,28 +136,38 @@ namespace Test.Probe
 
                     if(inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
                     {
-                        var device = new Device(inputArgs.D3DPointer);
+                        
                         bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                         if (d3d11Aware)
                         {
                             using (DXGIDeviceManager devMan = new DXGIDeviceManager())
                             {
-                                devMan.ResetDevice(device);
-                                decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                                using (var device = new Device(inputArgs.D3DPointer))
+                                {
+                                    devMan.ResetDevice(device);
+                                    decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                                }
+
                             }                         
                         }
+
+                       //attr.Set(TransformAttributeKeys.D3D11Bindflags, (int)(BindFlags.ShaderResource | BindFlags.Decoder));
                     }
                     else if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D9)
                     {
-                        var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer);
+                       
                         bool d3dAware = attr.Get(TransformAttributeKeys.D3DAware);
                         if (d3dAware)
                         {
-                              using (SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager devMan = new SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager())
+                            using (SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager devMan = new SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager())
                             {
-                                devMan.ResetDevice(device, devMan.CreationToken);
+                                using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
+                                {
+                                    devMan.ResetDevice(device, devMan.CreationToken);
 
-                                decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                                    decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
+                                }
+
                             }
                         }
                     }
