@@ -1,1 +1,0 @@
-ffmpeg -f lavfi -i testsrc=duration=3600:size=320x240:rate=30  -pix_fmt yuv420p testsrc.mp4

@@ -38,6 +38,8 @@ namespace Test.Probe
 
         private long frameNumber = -1;
         private long frameDuration;
+
+         
         //private Device device = null;
         //public MfH264DecoderTest(Device d = null)
         public MfH264DecoderTest()
@@ -45,7 +47,7 @@ namespace Test.Probe
            // this.device = d;
         }
 
-
+        public MediaToolkit.Core.VideoDriverType DriverType { get; private set; } = MediaToolkit.Core.VideoDriverType.CPU;
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
 
@@ -61,17 +63,12 @@ namespace Test.Probe
             var width = inputArgs.Width;
             var height = inputArgs.Height;
             var bufSize = width * height * 4;
+            this.DriverType = inputArgs.DriverType;
 
             var inputFormat = VideoFormatGuids.H264;
 
             try
             {
-                //device = new Device(adapter, DeviceCreationFlags.BgraSupport);
-                //if (device == null)
-                //{
-   
-                //}
-
 
                 var transformFlags = //TransformEnumFlag.Hardware |
                                      TransformEnumFlag.SortAndFilter;
@@ -164,7 +161,6 @@ namespace Test.Probe
                                 using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
                                 {
                                     devMan.ResetDevice(device, devMan.CreationToken);
-
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
 
@@ -327,17 +323,17 @@ namespace Test.Probe
         }
 
 
-        public bool ProcessSample(Sample inputSample, Action<Sample> OnSampleDecoded)
+        public DecodeResult ProcessSample(Sample inputSample, Action<Sample> OnSampleDecoded)
         {
 
-            bool Result = false;
+            DecodeResult Result = DecodeResult.Error;
 
             if (inputSample != null)
             {
 				//FIXME:
 				frameNumber++;
-				inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
-				inputSample.SampleDuration = frameDuration;
+				//inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
+				//inputSample.SampleDuration = frameDuration;
 
 				decoder.ProcessInput(0, inputSample, 0);
 			}
@@ -419,15 +415,16 @@ namespace Test.Probe
 
 
                         Debug.Assert(outputSample != null, "res.Success && outputSample != null");
+                        Result = DecodeResult.Ok;
 
                         OnSampleDecoded?.Invoke(outputSample);
-                        Result = true;
+                        
                         //continue;
                     }
                     else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
                     {
                         //logger.Info("-------------------------");
-                        Result = true;
+                        Result = DecodeResult.NeedMoreData;
 
                         if (pSample != null)
                         {
@@ -453,21 +450,21 @@ namespace Test.Probe
                                 OutputMediaType = null;
                             }
                             OutputMediaType = newOutputType;
-
+                            Result = DecodeResult.Changed;
                             logger.Info("============== NEW OUTPUT TYPE==================");
                             logger.Info(MfTool.LogMediaType(OutputMediaType));
                         }
                         finally
                         {
-                            newOutputType?.Dispose();
-                            newOutputType = null;
+                            //newOutputType?.Dispose();
+                            //newOutputType = null;
                         }
                     }
                     else
                     {
                         res.CheckError();
 
-                        Result = false;
+                        Result = DecodeResult.Error;
                         break;
                     }
 
@@ -488,8 +485,9 @@ namespace Test.Probe
         }
 
 		public void Drain()
-		{
-			if (decoder != null)
+        {
+            logger.Debug("MfH264Decoder::Drain()");
+            if (decoder != null)
 			{
 				decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
 
@@ -501,8 +499,10 @@ namespace Test.Probe
             logger.Debug("MfH264Decoder::Stop()");
 
             if (decoder != null)
-			{
-				decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
+            {
+                //decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
+
+                decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
 				//decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
@@ -527,7 +527,7 @@ namespace Test.Probe
                 OutputMediaType.Dispose();
                 OutputMediaType = null;
             }
-
+           
             if (decoder != null)
             {
                 decoder.Dispose();
@@ -538,4 +538,11 @@ namespace Test.Probe
 
     }
 
+    public enum DecodeResult
+    {
+        Ok,
+        Changed,
+        NeedMoreData,
+        Error,
+    }
 }

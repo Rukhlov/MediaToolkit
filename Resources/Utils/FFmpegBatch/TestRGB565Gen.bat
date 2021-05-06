@@ -1,0 +1,1 @@
+ffmpeg -f lavfi -i testsrc=size=640x480 -frames:v 1 -pix_fmt rgb565  rgb565_640x480.yuv

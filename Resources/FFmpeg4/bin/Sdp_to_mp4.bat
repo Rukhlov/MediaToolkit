@@ -1,1 +1,0 @@
-ffmpeg -protocol_whitelist file,rtp,udp -i SDP_239_0_0_1.sdp -codec copy -map 0  "test.mkv" -loglevel verbose 

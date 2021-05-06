@@ -1,0 +1,1 @@
+"..\..\FFmpeg4\bin\ffmpeg.exe" -f lavfi -i testsrc=size=640x480 -frames:v 1 -pix_fmt rgb555  "output\rgb555_640x480.yuv"

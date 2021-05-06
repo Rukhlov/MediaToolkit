@@ -518,6 +518,24 @@ namespace MediaToolkit.MediaFoundation
             return mediaType;
         }
 
+        public static string LogSample(Sample s)
+        {
+            var log = "";
+            if (s != null)
+            {
+                var attrs = LogMediaAttributes(s);
+                log = "SampleTime: " + s.SampleTime + "; "+ 
+                    "Duration: " + s.SampleDuration + "; " +
+                    "TotalLength: " + s.TotalLength + "; " +
+                    "Flags: " + s.SampleFlags + "; " + "\r\n" +
+                    "Attributes:\r\n" + attrs;
+               
+            }
+
+            return log;
+        }
+
+
         public static string LogSourceReaderTypes(SourceReader sourceReader)
         {
             StringBuilder log = new StringBuilder();

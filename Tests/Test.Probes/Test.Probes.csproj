@@ -131,16 +131,28 @@
     <None Include="Files\testsrc_1280x720_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Files\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\testsrc_2560x1440_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Files\testsrc_320x240_yuv420p_1sec.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_320x240_yuv420p_30fps_60sec.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\testsrc_320x240_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Files\testsrc_3840x2160_yuv420p_Iframe.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_640x480_yuv420p_4frame.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
