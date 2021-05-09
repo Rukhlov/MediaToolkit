@@ -24,12 +24,12 @@ namespace Test.Probe
     /// <summary>
     /// https://docs.microsoft.com/en-us/windows/win32/medfound/h-264-video-decoder
     /// </summary>
-    public class MfH264DecoderTest
+    public class MfH264Decoder
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
         // private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.MediaFoundation");
 
-       // private Device device = null;
+        // private Device device = null;
 
         private Transform decoder = null;
 
@@ -39,12 +39,12 @@ namespace Test.Probe
         private long frameNumber = -1;
         private long frameDuration;
 
-         
+
         //private Device device = null;
         //public MfH264DecoderTest(Device d = null)
-        public MfH264DecoderTest()
+        public MfH264Decoder()
         {
-           // this.device = d;
+            // this.device = d;
         }
 
         public MediaToolkit.Core.VideoDriverType DriverType { get; private set; } = MediaToolkit.Core.VideoDriverType.CPU;
@@ -70,8 +70,7 @@ namespace Test.Probe
             try
             {
 
-                var transformFlags = //TransformEnumFlag.Hardware |
-                                     TransformEnumFlag.SortAndFilter;
+                var transformFlags = TransformEnumFlag.SortAndFilter;
                 var inputType = new TRegisterTypeInformation
                 {
                     GuidMajorType = MediaTypeGuids.Video,
@@ -81,59 +80,27 @@ namespace Test.Probe
                 var transformActivators = MediaFactory.FindTransform(TransformCategoryGuids.VideoDecoder, transformFlags, inputType, null);
                 try
                 {
-                    foreach (var activator in transformActivators)
-                    {
+                    var activator = transformActivators[0];
+                    var log = MfTool.LogMediaAttributes(activator);
+                    logger.Debug("MFTransformInfo:\r\n" + log);
 
-                        //bool isHardware = flags.HasFlag(TransformEnumFlag.Hardware);
-                        //bool isAsync = flags.HasFlag(TransformEnumFlag.Asyncmft);
-
-                        string name = activator.Get(TransformAttributeKeys.MftFriendlyNameAttribute);
-                        Guid clsid = activator.Get(TransformAttributeKeys.MftTransformClsidAttribute);
-                        TransformEnumFlag flags = (TransformEnumFlag)activator.Get(TransformAttributeKeys.TransformFlagsAttribute);
-
-
-                        bool isAsync = !(flags.HasFlag(TransformEnumFlag.Syncmft));
-                        isAsync |= !!(flags.HasFlag(TransformEnumFlag.Asyncmft));
-                        bool isHardware = !!(flags.HasFlag(TransformEnumFlag.Hardware));
-
-
-                        var _flags = Enum.GetValues(typeof(TransformEnumFlag))
-                                     .Cast<TransformEnumFlag>()
-                                     .Where(m => (m != TransformEnumFlag.None && flags.HasFlag(m)));
-
-                        var transformInfo = name + " " + clsid.ToString() + " " + string.Join("|", _flags);
-
-                        logger.Info(transformInfo);
-
-                        //encoder = activator.ActivateObject<Transform>();
-                        //break;
-
-                        //var HardwareUrl = activator.Get(TransformAttributeKeys.MftEnumHardwareUrlAttribute);
-                        //logger.Info(HardwareUrl);
-
-                        //var TransformAsync = activator.Get(TransformAttributeKeys.TransformAsync);
-                        //logger.Info(TransformAsync);
-                        //logger.Info("-------------------------------------");
-                    }
+                    decoder = activator.ActivateObject<Transform>();
                 }
                 finally
                 {
-                    decoder = transformActivators[0].ActivateObject<Transform>();
-
-                    foreach (var activator in transformActivators)
+                    foreach (var act in transformActivators)
                     {
-                        activator.Dispose();
+                        act.Dispose();
                     }
-
                 }
 
 
                 using (var attr = decoder.Attributes)
                 {
 
-                    if(inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
+                    if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
                     {
-                        
+
                         bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
                         if (d3d11Aware)
                         {
@@ -145,14 +112,13 @@ namespace Test.Probe
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
 
-                            }                         
+                            }
                         }
 
-                       //attr.Set(TransformAttributeKeys.D3D11Bindflags, (int)(BindFlags.ShaderResource | BindFlags.Decoder));
+                        //attr.Set(TransformAttributeKeys.D3D11Bindflags, (int)(BindFlags.ShaderResource | BindFlags.Decoder));
                     }
                     else if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D9)
                     {
-                       
                         bool d3dAware = attr.Get(TransformAttributeKeys.D3DAware);
                         if (d3dAware)
                         {
@@ -163,7 +129,6 @@ namespace Test.Probe
                                     devMan.ResetDevice(device, devMan.CreationToken);
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
-
                             }
                         }
                     }
@@ -246,8 +211,7 @@ namespace Test.Probe
                 InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
                 decoder.SetInputType(inputStreamId, InputMediaType, 0);
 
-                logger.Info("============== INPUT TYPE==================");
-                logger.Info(MfTool.LogMediaType(InputMediaType));
+                logger.Info("============== INPUT TYPE==================\r\n" + MfTool.LogMediaType(InputMediaType));
 
 
 
@@ -291,8 +255,7 @@ namespace Test.Probe
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);
 
-                logger.Info("============== OUTPUT TYPE==================");
-                logger.Info(MfTool.LogMediaType(OutputMediaType));
+                logger.Info("============== OUTPUT TYPE==================\r\n" + MfTool.LogMediaType(OutputMediaType));
 
 
             }
@@ -330,13 +293,13 @@ namespace Test.Probe
 
             if (inputSample != null)
             {
-				//FIXME:
-				frameNumber++;
-				//inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
-				//inputSample.SampleDuration = frameDuration;
+                //FIXME:
+                frameNumber++;
+                //inputSample.SampleTime = frameNumber * frameDuration; //!!!!!!!!!1
+                //inputSample.SampleDuration = frameDuration;
 
-				decoder.ProcessInput(0, inputSample, 0);
-			}
+                decoder.ProcessInput(0, inputSample, 0);
+            }
 
             //if (decoder.OutputStatus == (int)MftOutputStatusFlags.MftOutputStatusSampleReady)
             {
@@ -353,12 +316,12 @@ namespace Test.Probe
                     if (createSample)
                     {
                         pSample = MediaFactory.CreateSample();
-						if (inputSample != null)
-						{
-							pSample.SampleTime = inputSample.SampleTime;
-							pSample.SampleDuration = inputSample.SampleDuration;
-							pSample.SampleFlags = inputSample.SampleFlags;
-						}
+                        if (inputSample != null)
+                        {
+                            pSample.SampleTime = inputSample.SampleTime;
+                            pSample.SampleDuration = inputSample.SampleDuration;
+                            pSample.SampleFlags = inputSample.SampleFlags;
+                        }
 
                         //logger.Debug("CreateSample: " + inputSample.SampleTime);
 
@@ -418,7 +381,7 @@ namespace Test.Probe
                         Result = DecodeResult.Ok;
 
                         OnSampleDecoded?.Invoke(outputSample);
-                        
+
                         //continue;
                     }
                     else if (res == SharpDX.MediaFoundation.ResultCode.TransformNeedMoreInput)
@@ -451,8 +414,8 @@ namespace Test.Probe
                             }
                             OutputMediaType = newOutputType;
                             Result = DecodeResult.Changed;
-                            logger.Info("============== NEW OUTPUT TYPE==================");
-                            logger.Info(MfTool.LogMediaType(OutputMediaType));
+                            logger.Info("============== NEW OUTPUT TYPE==================\r\n" + MfTool.LogMediaType(OutputMediaType));
+
                         }
                         finally
                         {
@@ -484,15 +447,15 @@ namespace Test.Probe
             return Result;
         }
 
-		public void Drain()
+        public void Drain()
         {
             logger.Debug("MfH264Decoder::Drain()");
             if (decoder != null)
-			{
-				decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+            {
+                decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
 
-			}
-		}
+            }
+        }
 
         public void Stop()
         {
@@ -503,7 +466,7 @@ namespace Test.Probe
                 //decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
 
                 decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
-				//decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
+                //decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
 
@@ -527,7 +490,7 @@ namespace Test.Probe
                 OutputMediaType.Dispose();
                 OutputMediaType = null;
             }
-           
+
             if (decoder != null)
             {
                 decoder.Dispose();

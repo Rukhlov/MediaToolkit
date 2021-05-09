@@ -10,33 +10,21 @@ namespace MediaToolkit.Codecs
     /// <summary>
     /// https://yumichan.net/video-processing/video-compression/introduction-to-h264-nal-unit/
     /// </summary>
-    public enum NalPacketType
+    public enum NalUnitType
     {
-        Unknown = 0,
-
+        Unspecified = 0,
         Slice = 1,
-
         DataPartitionA = 2,
-
         DataPartitionB = 3,
-
         DataPartitionC = 4,
-
-        Idr = 5,
-
+        IDR = 5,
         SupplentalEnhancementInfo = 6,
-
         SequenceParameterSet = 7,
-
         PictureParameterSet = 8,
-
         AccessUnitDelimiter = 9,
-
         EndOfSequence = 10,
-
         EndOfStream = 11,
-
-        Fill = 12
+        FillerData = 12
     }
 
 

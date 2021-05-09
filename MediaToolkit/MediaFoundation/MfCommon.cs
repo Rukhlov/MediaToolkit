@@ -155,7 +155,7 @@ namespace MediaToolkit.MediaFoundation
                 guid == MediaTypeAttributeKeys.FrameRateRangeMax.Guid ||
                 guid == MediaTypeAttributeKeys.FrameRateRangeMin.Guid ||
                 guid == MediaTypeAttributeKeys.FrameSize.Guid ||
-                guid == MediaTypeAttributeKeys.PixelAspectRatio.Guid)
+                guid == MediaTypeAttributeKeys.PixelAspectRatio.Guid )
             {
                 // Attributes that contain two packed 32-bit values.
                 long val = (long)obj;

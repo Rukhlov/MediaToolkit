@@ -128,6 +128,12 @@
     <None Include="Files\rgba_3840x2160.raw">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Files\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\testsrc_1280x720_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

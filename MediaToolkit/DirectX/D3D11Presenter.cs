@@ -242,7 +242,7 @@ namespace MediaToolkit.DirectX
 					if (rgbProcessor != null)
 					{
 						rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
-						//syncEvent?.Set();
+					    //syncEvent?.Set();
 					}
 				}
 
