@@ -425,6 +425,31 @@ namespace MediaToolkit.MediaFoundation
             return frameSize;
         }
 
+        public static int GetDefaultStride(MediaType mediaType)
+        {
+            var size = MfTool.GetFrameSize(mediaType);
+            var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+
+            var fourCC = BitConverter.ToUInt32(subtype.ToByteArray(), 0);
+            MediaFactory.GetStrideForBitmapInfoHeader((int)fourCC, size.Width, out var stride);
+
+            return stride;
+        }
+
+        public static Tuple<int, int, int> GetImageDimensions(MediaType mediaType)
+        {
+            var subtype = mediaType.Get(MediaTypeAttributeKeys.Subtype);
+
+            var sizeLong = mediaType.Get(MediaTypeAttributeKeys.FrameSize);
+            var sizeInts = MfTool.UnPackLongToInts(sizeLong);
+            int width = sizeInts[0];
+            int height = sizeInts[1];
+            var fourCC = BitConverter.ToUInt32(subtype.ToByteArray(), 0);
+            MediaFactory.GetStrideForBitmapInfoHeader((int)fourCC, width, out var stride);
+
+            return new Tuple<int, int, int>(width, height, stride);
+        }
+
         public static long FrameRateToAverageTimePerFrame(Tuple<int, int> ratio)
         {
             MediaFactory.FrameRateToAverageTimePerFrame(ratio.Item1, ratio.Item2, out long averageTimePerFrame);
