@@ -30,7 +30,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.CPU;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
 
 
                 //// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -86,9 +86,12 @@ namespace Test.Probe
         //private Device3D9.Surface destSurf = null;
         private SharpDX.Direct3D9.Texture sharedTex9 = null;
         private MfH264Decoder decoder = null;
+
         private D3D11Presenter presenter = null;
 
         private MfVideoProcessor xvp = null;
+        private RgbProcessor rgbProcessor = new RgbProcessor();
+
 
         private bool running = false;
 
@@ -388,143 +391,6 @@ namespace Test.Probe
                 videoQueue = null;
             }
         }
-        private RgbProcessor rgbProcessor = new RgbProcessor();
-
-
-
-        private VideoDevice videoDevice = null;
-        private VideoContext videoContext = null;
-        private VideoProcessorEnumerator videoEnumerator = null;
-        private Device3D11.VideoProcessor videoProcessor = null;
-        private VideoProcessorInputView videoInputView = null;
-        private VideoProcessorOutputView videoOutputView = null;
-
-        private Texture2D inputTexture = null;
-        private void CloseVideoProcessor()
-        {
-            DxTool.SafeDispose(videoDevice);
-            DxTool.SafeDispose(videoContext);
-            DxTool.SafeDispose(videoEnumerator);
-            DxTool.SafeDispose(videoProcessor);
-            DxTool.SafeDispose(videoInputView);
-            DxTool.SafeDispose(videoOutputView);
-            DxTool.SafeDispose(inputTexture);
-        }
-
-        private void InitXVP(int width, int height)
-        {
-            xvp = new MfVideoProcessor(device3D11);
-
-            var inProcArgs = new MfVideoArgs
-            {
-                Width = width,
-                Height = height,
-                Format = VideoFormatGuids.NV12,
-            };
-
-            var outProcArgs = new MfVideoArgs
-            {
-                Width = width,
-                Height = height,
-                Format = VideoFormatGuids.Argb32,
-            };
-
-            xvp.Setup(inProcArgs, outProcArgs);
-            xvp.Start();
-
-        }
-
-        private void CloseXVP()
-        {
-            if (xvp != null)
-            {
-                xvp.Stop();
-                xvp.Close();
-
-            }
-        }
-
-        private void InitVideoProcessor(int width, int height)
-        {
-            Console.WriteLine("QueryInterface<VideoDevice>()");
-            videoDevice = device3D11.QueryInterface<VideoDevice>();
-
-            var deviceContext = device3D11.ImmediateContext;
-
-            Console.WriteLine("QueryInterface<VideoContext>()");
-            videoContext = deviceContext.QueryInterface<VideoContext>();
-
-
-            VideoProcessorContentDescription descr = new VideoProcessorContentDescription
-            {
-                InputFrameFormat = VideoFrameFormat.Progressive,
-                //InputFrameRate = new SharpDX.DXGI.Rational(1, 1),
-                InputWidth = width,
-                InputHeight = width,
-
-                //OutputFrameRate = new SharpDX.DXGI.Rational(1, 1),
-                OutputWidth = width,
-                OutputHeight = width,
-                Usage = VideoUsage.PlaybackNormal,
-
-
-            };
-
-            Console.WriteLine("CreateVideoProcessorEnumerator(...)");
-            videoDevice.CreateVideoProcessorEnumerator(ref descr, out videoEnumerator);
-
-            var videoProcCaps = videoEnumerator.VideoProcessorCaps;
-            var rateConversionCapsCount = videoProcCaps.RateConversionCapsCount;
-            for (int i = 0; i < rateConversionCapsCount; i++)
-            {
-                videoEnumerator.GetVideoProcessorRateConversionCaps(i, out var caps);
-
-            }
-
-            Console.WriteLine("CreateVideoProcessor(...)");
-            videoDevice.CreateVideoProcessor(videoEnumerator, 0, out videoProcessor);
-
-            VideoProcessorOutputViewDescription outputViewDescr = new VideoProcessorOutputViewDescription
-            {
-                Dimension = VpovDimension.Texture2D,
-            };
-
-            Console.WriteLine("CreateVideoProcessorOutputView(...)");
-            videoDevice.CreateVideoProcessorOutputView(SharedTexture, videoEnumerator, outputViewDescr, out var _videoOutputView);
-            this.videoOutputView = _videoOutputView;
-
-
-            inputTexture = new Texture2D(device3D11,
-                new Texture2DDescription
-                {
-                    Width = width,
-                    Height = height,
-                    MipLevels = 1,
-                    ArraySize = 1,
-                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                    BindFlags = SharpDX.Direct3D11.BindFlags.None,
-                    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-                    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                    //Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
-                    Format = SharpDX.DXGI.Format.NV12,
-                    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-
-                });
-
-            VideoProcessorInputViewDescription inputViewDescr = new VideoProcessorInputViewDescription
-            {
-                FourCC = 0,
-                Dimension = VpivDimension.Texture2D,
-                Texture2D = new Texture2DVpiv
-                {
-                    MipSlice = 0,
-                    ArraySlice = 0,
-                },
-            };
-            Console.WriteLine("CreateVideoProcessorInputView(...)");
-            videoDevice.CreateVideoProcessorInputView(inputTexture, videoEnumerator, inputViewDescr, out var _videoInputView);
-            this.videoInputView = _videoInputView;
-        }
 
         private void DecoderProc(string fileName, MfVideoArgs inputArgs)
         {
@@ -714,24 +580,23 @@ namespace Test.Probe
                     {
                         deviceEx.StretchRectangle(srcSurf, sharedSurf9, Device3D9.TextureFilter.Linear);
                     }
-                    deviceEx.PresentEx(Device3D9.Present.None);
+
+                    deviceEx.Present();
                     //device3D11.ImmediateContext.Flush();
 
                     var texture = new Texture2D(device3D11,
                         new Texture2DDescription
                         {
+                            Width = SharedTexture.Description.Width,
+                            Height = SharedTexture.Description.Height,
+                            Format = SharedTexture.Description.Format,
                             CpuAccessFlags = CpuAccessFlags.None,
-                            BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                            //Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
-                            Width = width,
-                            Height = height,
+                            BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,                          
+                            Usage = ResourceUsage.Default,
+                            OptionFlags = ResourceOptionFlags.None,
+                            SampleDescription = { Count = 1, Quality = 0 },
                             MipLevels = 1,
                             ArraySize = 1,
-                            SampleDescription = { Count = 1, Quality = 0 },
-                            Usage = ResourceUsage.Default,
-
-                            OptionFlags = ResourceOptionFlags.None,
 
                         });
 
@@ -767,23 +632,26 @@ namespace Test.Probe
                         {
                             deviceEx.StretchRectangle(srcSurf, sharedSurf9, Device3D9.TextureFilter.Linear);
                         }
+                        deviceEx.Present();
 
+                        var texture2d = device3D11.OpenSharedResource<Texture2D>(sharedHandle);
 
-                        using (var texture2d = device3D11.OpenSharedResource<Texture2D>(sharedHandle))
-                        { //Dx9->Dx11 работает только на primary адаптере т.е AdatperIndex = 0;
-                          // на вторичном адаптере текстура DX11 получается пустая, хотя исходная Dx9 с данными... 
-                          // может быть это ограничение DX!??
+                        //using (var texture2d = device3D11.OpenSharedResource<Texture2D>(sharedHandle))
+                        //{ //Dx9->Dx11 работает только на primary адаптере т.е AdatperIndex = 0;
+                        //  // на вторичном адаптере текстура DX11 получается пустая, хотя исходная Dx9 с данными... 
+                        //  // может быть это ограничение DX!??
 
-                            device3D11.ImmediateContext.CopyResource(texture2d, SharedTexture);
-                        }
+                        //    device3D11.ImmediateContext.CopyResource(texture2d, SharedTexture);
+                        //}
 
                         //Иначе утекает память на Win7
                         //https://stackoverflow.com/questions/32428682/directx-9-to-11-opensharedresource-is-leaking-memory-like-crazy-am-i-doing-some
                         device3D11.ImmediateContext.Flush();
+
                         var time = MfTool.MfTicksToSec(s.SampleTime);
 
                         //Thread.Sleep(10);
-                        OnSampleProcessed(SharedTexture, time);
+                        OnSampleProcessed(texture2d, time);
 
                     };
                 }
@@ -793,8 +661,8 @@ namespace Test.Probe
 
         private void ProcessD3D11Sample2(Sample s, long sampleTime)
         {
-            var _res = xvp.ProcessSample(s, out Sample rgbSample);
-            if (_res)
+            var res = xvp.ProcessSample(s, out Sample rgbSample);
+            if (res)
             {
                 using (var buffer = rgbSample.ConvertToContiguousBuffer())
                 {
@@ -804,11 +672,26 @@ namespace Test.Probe
                         using (Texture2D texture = new Texture2D(intPtr))
                         {
                             var subresourceIndex = dxgiBuffer.SubresourceIndex;
-                            device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, SharedTexture, 0);
-                            device3D11.ImmediateContext.Flush();
+
+                            var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                            {
+                                Width = texture.Description.Width,
+                                Height = texture.Description.Height,
+                                Format = texture.Description.Format,
+                                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                                BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                                MipLevels = 1,
+                                ArraySize = 1,
+                            });
+
+                            device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, destTexture, 0);
+                            //device3D11.ImmediateContext.Flush();
 
                             var time = MfTool.MfTicksToSec(s.SampleTime);
-                            OnSampleProcessed(SharedTexture, time);
+                            OnSampleProcessed(destTexture, time);
                         }
                     }
                 }
@@ -832,151 +715,212 @@ namespace Test.Probe
                 using (var dxgiBuffer = buffer.QueryInterface<DXGIBuffer>())
                 {
                     dxgiBuffer.GetResource(IID.D3D11Texture2D, out IntPtr intPtr);
-
+                    var subresourceIndex = dxgiBuffer.SubresourceIndex;
                     using (Texture2D texture = new Texture2D(intPtr))
                     {
-                        var srcTex = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
-                        {
-                            Width = texture.Description.Width,
-                            Height = texture.Description.Height,
-                            Format = texture.Description.Format,
-                            MipLevels = 1,
-                            ArraySize = 1,
-                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                            Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                        Texture2D destTexture = ConvertToRgb32(subresourceIndex, texture);
 
-
-                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-
-                        });
-
-                        var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
-                        {
-                            Width = texture.Description.Width,
-                            Height = texture.Description.Height,
-                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
-                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
-                            Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-                            MipLevels = 1,
-                            ArraySize = 1,
-
-                        });
-                        //device3D11.ImmediateContext.Flush();
-                        var subresourceIndex = dxgiBuffer.SubresourceIndex;
-                        device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, srcTex, 0);
-
-                        ////device3D11.ImmediateContext.Flush();
-                        ////D3D11_VIDEO_PROCESSOR_STREAM stream = { TRUE, 0, 0, 0, 0, nullptr, pVPIn, nullptr };
-                        //VideoProcessorStream videoProcessorStream = new VideoProcessorStream
-                        //{
-                        //	Enable = true,
-                        //	OutputIndex = 0,
-                        //	InputFrameOrField = 0,
-                        //	PastFrames = 0,
-                        //	FutureFrames = 0,
-
-                        //	PInputSurface = videoInputView,
-                        //	PpFutureSurfaces = null,
-                        //	PpPastSurfaces = null,
-                        //	PpFutureSurfacesRight = null,
-                        //	PpPastSurfacesRight = null,
-                        //	PInputSurfaceRight = null,
-                        //};
-
-                        ////Console.WriteLine("VideoProcessorBlt(...)");
-                        //videoContext.VideoProcessorBlt(videoProcessor, videoOutputView, 0, 1, new VideoProcessorStream[] { videoProcessorStream });
-
-
-                        rgbProcessor.DrawTexture(srcTex, destTexture);
-                        srcTex.Dispose();
+                        //Texture2D destTexture = VideoProcessorConvert(subresourceIndex, texture);
 
                         var time = MfTool.MfTicksToSec(s.SampleTime);
                         OnSampleProcessed(destTexture, time);
 
-                        //Console.WriteLine(_sw.ElapsedMilliseconds);
-                        //_sw.Restart();
-
-                        //presenter.Update(SharedTexture);
-
-                        // VideoProcessorInputViewDescription inputViewDescr = new VideoProcessorInputViewDescription
-                        // {
-                        //     FourCC = 0,
-                        //     Dimension = VpivDimension.Texture2D,
-                        //     Texture2D = new Texture2DVpiv
-                        //     {
-                        //         MipSlice = 0,
-                        //         ArraySlice = 0,
-                        //     },
-                        // };
-
-                        // //Console.WriteLine("CreateVideoProcessorInputView(...)");
-                        // videoDevice.CreateVideoProcessorInputView(texture, videoEnumerator, inputViewDescr, out var videoInputView);
-
-                        // VideoProcessorOutputViewDescription outputViewDescr = new VideoProcessorOutputViewDescription
-                        // {
-                        //     Dimension = VpovDimension.Texture2D,
-                        // };
-
-                        // ////Console.WriteLine("CreateVideoProcessorOutputView(...)");
-                        // //var outputTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
-                        // //{
-                        // //    Width = SharedTexture.Description.Width,
-                        // //    Height = SharedTexture.Description.Height,
-                        // //    MipLevels = 1,
-                        // //    ArraySize = 1,
-                        // //    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                        // //    BindFlags = SharpDX.Direct3D11.BindFlags.RenderTarget | BindFlags.ShaderResource,
-                        // //    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-                        // //    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-                        // //    // Format = SharpDX.DXGI.Format.NV12,
-                        // //    Format = SharedTexture.Description.Format,
-                        // //    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-
-                        // //});
-
-                        // videoDevice.CreateVideoProcessorOutputView(SharedTexture, videoEnumerator, outputViewDescr, out var videoOutputView);
-
-
-                        // VideoProcessorStream videoProcessorStream = new VideoProcessorStream
-                        // {
-                        //     Enable = true,
-                        //     OutputIndex = 0,
-                        //     InputFrameOrField = 0,
-                        //     PastFrames = 0,
-                        //     FutureFrames = 0,
-                        //     PInputSurface = videoInputView,
-                        // };
-
-                        // //Console.WriteLine("VideoProcessorBlt(...)");
-                        // videoContext.VideoProcessorBlt(videoProcessor, videoOutputView, 0, 1, new VideoProcessorStream[] { videoProcessorStream });
-
-                        // //device3D11.ImmediateContext.CopyResource(outputTexture, SharedTexture);
-                        // device3D11.ImmediateContext.Flush();
-
-                        //// outputTexture.Dispose();
-                        // videoOutputView.Dispose();
-
-                        // videoInputView.Dispose();
-
-                        //device3D11.ImmediateContext.CopyResource(texture, SharedTexture);
-                        //device3D11.ImmediateContext.Flush();
-                        //var _descr = texture.Description;
-                        //var texBytes = MediaToolkit.DirectX.DxTool.DumpTexture(device3D11, texture);
-
-                        //var fileName = "D3D11_" + _descr.Width + "x" + _descr.Height + "_" + _descr.Format + "_" + sampleTime + ".raw";
-                        //var fullName = Path.Combine("decoded", fileName);
-
-                        //File.WriteAllBytes(fullName, texBytes);
                     }
                 }
             }
 
             //Console.WriteLine(_sw.ElapsedMilliseconds);
+        }
+
+        private Texture2D VideoProcessorConvert(int subresourceIndex, Texture2D texture)
+        {
+            Texture2D outputTexture = null;
+            Texture2D inputTexture = null;
+            try
+            {
+                inputTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                {
+                    Width = texture.Description.Width,
+                    Height = texture.Description.Height,
+                    Format = texture.Description.Format,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                    BindFlags = SharpDX.Direct3D11.BindFlags.None,
+                    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+                });
+
+                device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, inputTexture, 0);
+                VideoProcessorInputViewDescription inputViewDescr = new VideoProcessorInputViewDescription
+                {
+                    FourCC = 0,
+                    Dimension = VpivDimension.Texture2D,
+                    Texture2D = new Texture2DVpiv
+                    {
+                        MipSlice = 0,
+                        ArraySlice = 0,
+                    },
+                };
+
+                VideoProcessorInputView inputView = null;
+                try
+                {
+                    //Console.WriteLine("CreateVideoProcessorInputView(...)");
+                    videoDevice.CreateVideoProcessorInputView(inputTexture, videoEnumerator, inputViewDescr, out inputView);
+
+                    outputTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                    {
+                        Width = SharedTexture.Description.Width,
+                        Height = SharedTexture.Description.Height,
+                        Format = SharedTexture.Description.Format,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                        Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                        MipLevels = 1,
+                        ArraySize = 1,
+                    });
+
+                    VideoProcessorOutputViewDescription outputViewDescr = new VideoProcessorOutputViewDescription
+                    {
+                        Dimension = VpovDimension.Texture2D,
+                    };
+
+                    VideoProcessorOutputView outputView = null;
+                    try
+                    {
+                        videoDevice.CreateVideoProcessorOutputView(outputTexture, videoEnumerator, outputViewDescr, out outputView);
+
+                        //D3D11_VIDEO_PROCESSOR_STREAM stream = { TRUE, 0, 0, 0, 0, nullptr, pVPIn, nullptr };
+                        VideoProcessorStream videoProcessorStream = new VideoProcessorStream
+                        {
+                            Enable = true,
+                            OutputIndex = 0,
+                            InputFrameOrField = 0,
+                            PastFrames = 0,
+                            FutureFrames = 0,
+
+                            PInputSurface = inputView,
+                        };
+
+                        //Console.WriteLine("VideoProcessorBlt(...)");
+                        videoContext.VideoProcessorBlt(videoProcessor, outputView, 0, 1, new VideoProcessorStream[] { videoProcessorStream });
+
+                    }
+                    finally
+                    {
+                        DxTool.SafeDispose(outputView);
+                    }
+
+                }
+                finally
+                {
+                    DxTool.SafeDispose(inputView);
+                }
+
+            }
+            finally
+            {
+                DxTool.SafeDispose(inputTexture);
+            }
+
+            return outputTexture;
+        }
+
+        private Texture2D VideoProcessorConvert2(int subresourceIndex, Texture2D texture)
+        {
+            Texture2D destTexture = null;
+
+            device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, inputTexture, 0);
+
+            //D3D11_VIDEO_PROCESSOR_STREAM stream = { TRUE, 0, 0, 0, 0, nullptr, pVPIn, nullptr };
+            VideoProcessorStream videoProcessorStream = new VideoProcessorStream
+            {
+                Enable = true,
+                OutputIndex = 0,
+                InputFrameOrField = 0,
+                PastFrames = 0,
+                FutureFrames = 0,
+
+                PInputSurface = videoInputView,
+                PpFutureSurfaces = null,
+                PpPastSurfaces = null,
+                PpFutureSurfacesRight = null,
+                PpPastSurfacesRight = null,
+                PInputSurfaceRight = null,
+            };
+
+            //Console.WriteLine("VideoProcessorBlt(...)");
+            videoContext.VideoProcessorBlt(videoProcessor, videoOutputView, 0, 1, new VideoProcessorStream[] { videoProcessorStream });
+
+            destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+            {
+                Width = SharedTexture.Description.Width,
+                Height = SharedTexture.Description.Height,
+                Format = SharedTexture.Description.Format,
+                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                MipLevels = 1,
+                ArraySize = 1,
+            });
+
+            device3D11.ImmediateContext.CopyResource(SharedTexture, destTexture);
+            return destTexture;
+        }
+
+        private Texture2D ConvertToRgb32(int subresourceIndex, Texture2D texture)
+        {
+            Texture2D destTexture = null;
+            Texture2D srcTexture= null;
+            try
+            {
+                srcTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                {
+                    Width = texture.Description.Width,
+                    Height = texture.Description.Height,
+                    Format = texture.Description.Format,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                    BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+                });
+
+
+                device3D11.ImmediateContext.CopySubresourceRegion(texture, subresourceIndex, null, srcTexture, 0);
+
+               destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                {
+                    Width = texture.Description.Width,
+                    Height = texture.Description.Height,
+                    Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                    BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                });
+
+                rgbProcessor.DrawTexture(srcTexture, destTexture);
+            }
+            finally
+            {
+                DxTool.SafeDispose(srcTexture);
+            }
+
+            return destTexture;
         }
 
         private void ProcessCPUSample(Sample s, long sampleTime)
@@ -1148,6 +1092,141 @@ namespace Test.Probe
                 decoder = null;
             }
 
+        }
+
+
+        private VideoDevice videoDevice = null;
+        private VideoContext videoContext = null;
+        private VideoProcessorEnumerator videoEnumerator = null;
+        private Device3D11.VideoProcessor videoProcessor = null;
+        private VideoProcessorInputView videoInputView = null;
+        private VideoProcessorOutputView videoOutputView = null;
+        private Texture2D inputTexture = null;
+
+        private void InitVideoProcessor(int width, int height)
+        {
+            Console.WriteLine("QueryInterface<VideoDevice>()");
+            videoDevice = device3D11.QueryInterface<VideoDevice>();
+
+            var deviceContext = device3D11.ImmediateContext;
+
+            Console.WriteLine("QueryInterface<VideoContext>()");
+            videoContext = deviceContext.QueryInterface<VideoContext>();
+
+
+            VideoProcessorContentDescription descr = new VideoProcessorContentDescription
+            {
+                InputFrameFormat = VideoFrameFormat.Progressive,
+                //InputFrameRate = new SharpDX.DXGI.Rational(1, 1),
+                InputWidth = width,
+                InputHeight = width,
+
+                //OutputFrameRate = new SharpDX.DXGI.Rational(1, 1),
+                OutputWidth = width,
+                OutputHeight = width,
+                Usage = VideoUsage.PlaybackNormal,
+
+
+            };
+
+            Console.WriteLine("CreateVideoProcessorEnumerator(...)");
+            videoDevice.CreateVideoProcessorEnumerator(ref descr, out videoEnumerator);
+
+            var videoProcCaps = videoEnumerator.VideoProcessorCaps;
+            var rateConversionCapsCount = videoProcCaps.RateConversionCapsCount;
+            for (int i = 0; i < rateConversionCapsCount; i++)
+            {
+                videoEnumerator.GetVideoProcessorRateConversionCaps(i, out var caps);
+
+            }
+
+            Console.WriteLine("CreateVideoProcessor(...)");
+            videoDevice.CreateVideoProcessor(videoEnumerator, 0, out videoProcessor);
+
+            VideoProcessorOutputViewDescription outputViewDescr = new VideoProcessorOutputViewDescription
+            {
+                Dimension = VpovDimension.Texture2D,
+            };
+
+            Console.WriteLine("CreateVideoProcessorOutputView(...)");
+            videoDevice.CreateVideoProcessorOutputView(SharedTexture, videoEnumerator, outputViewDescr, out var _videoOutputView);
+            this.videoOutputView = _videoOutputView;
+
+
+            inputTexture = new Texture2D(device3D11,
+                new Texture2DDescription
+                {
+                    Width = width,
+                    Height = height,
+                    //Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+                    Format = SharpDX.DXGI.Format.NV12,
+                    MipLevels = 1,
+                    ArraySize = 1,
+                    SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                    BindFlags = SharpDX.Direct3D11.BindFlags.None,
+                    Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                    CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                    OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+
+                });
+
+            VideoProcessorInputViewDescription inputViewDescr = new VideoProcessorInputViewDescription
+            {
+                FourCC = 0,
+                Dimension = VpivDimension.Texture2D,
+                Texture2D = new Texture2DVpiv
+                {
+                    MipSlice = 0,
+                    ArraySlice = 0,
+                },
+            };
+            Console.WriteLine("CreateVideoProcessorInputView(...)");
+            videoDevice.CreateVideoProcessorInputView(inputTexture, videoEnumerator, inputViewDescr, out var _videoInputView);
+            this.videoInputView = _videoInputView;
+        }
+
+        private void CloseVideoProcessor()
+        {
+            DxTool.SafeDispose(videoDevice);
+            DxTool.SafeDispose(videoContext);
+            DxTool.SafeDispose(videoEnumerator);
+            DxTool.SafeDispose(videoProcessor);
+            DxTool.SafeDispose(videoInputView);
+            DxTool.SafeDispose(videoOutputView);
+            DxTool.SafeDispose(inputTexture);
+        }
+
+        private void InitXVP(int width, int height)
+        {
+            xvp = new MfVideoProcessor(device3D11);
+
+            var inProcArgs = new MfVideoArgs
+            {
+                Width = width,
+                Height = height,
+                Format = VideoFormatGuids.NV12,
+            };
+
+            var outProcArgs = new MfVideoArgs
+            {
+                Width = width,
+                Height = height,
+                Format = VideoFormatGuids.Argb32,
+            };
+
+            xvp.Setup(inProcArgs, outProcArgs);
+            xvp.Start();
+
+        }
+
+        private void CloseXVP()
+        {
+            if (xvp != null)
+            {
+                xvp.Stop();
+                xvp.Close();
+
+            }
         }
 
 

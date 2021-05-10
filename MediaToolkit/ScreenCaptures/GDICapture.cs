@@ -171,7 +171,11 @@ namespace MediaToolkit.ScreenCaptures
 				#endregion
 
 				result = BitBltToGdiSurface();
-				device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+                if (result == ErrorCode.Ok)
+                {
+                    device.ImmediateContext.CopyResource(gdiTexture, sharedTexture);
+                }
+
 				device.ImmediateContext.Flush();
                
                 if (result == ErrorCode.Ok)
