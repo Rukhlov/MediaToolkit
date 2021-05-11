@@ -30,7 +30,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
 
 
                 //// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -106,14 +106,17 @@ namespace Test.Probe
                 //Width = 320,
                 //Height = 240,
                 FrameRate = MfTool.PackToLong(fps, 1),
+                LowLatency = true,
             };
 
-
+            string adapterInfo = "";
             int adapterIndex = 0;
             using (var dxgiFactory = new SharpDX.DXGI.Factory1())
             {
                 using (var adapter = dxgiFactory.GetAdapter1(adapterIndex))
                 {
+                    adapterInfo = adapter.Description.Description;
+
                     device3D11 = new Device3D11.Device(adapter,
                        // DeviceCreationFlags.Debug |
                        // DeviceCreationFlags.VideoSupport |
@@ -219,14 +222,27 @@ namespace Test.Probe
             var srcSize = new System.Drawing.Size(width, height);
             rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-
             presenter = new D3D11Presenter(device3D11);
+
+            var presenterTask = new Task(() =>
+            {
+                Console.WriteLine("PresenterTask BEGIN");
+                PresenterTask(fps);
+                Console.WriteLine("PresenterTask END");
+            });
+
+            var decoderTask = new Task(() =>
+            {
+                Console.WriteLine("DecoderTask BEGIN");
+                DecoderTask(fileName, inputArgs);
+                Console.WriteLine("DecoderTask END");
+            });
 
             var size = new System.Drawing.Size(width, height);
             Form f = new Form
             {
                 ClientSize = size,
-                Text = fileName,
+                Text = driverType + " " +  adapterInfo + " " + fileName,
             };
 
             f.SizeChanged += (o, e) =>
@@ -251,6 +267,30 @@ namespace Test.Probe
                 {
                     presenter.VSync = !presenter.VSync;
                 }
+                else if (e.KeyCode == Keys.V)
+                {
+                    presenter.VSync = !presenter.VSync;
+                }
+                else if (e.KeyCode == Keys.Add)
+                {
+                    clockRate += 0.1f;
+                    if (clockRate > 4)
+                    {
+                        clockRate = 4;
+                    }
+
+                    Console.WriteLine(clockRate);
+                }
+                else if (e.KeyCode == Keys.Subtract)
+                {
+                    clockRate -= 0.1f;
+                    if (clockRate < 0)
+                    {
+                        clockRate = 0;
+                    }
+
+                    Console.WriteLine(clockRate);
+                }
             };
 
             f.FormClosed += (o, e) =>
@@ -259,30 +299,30 @@ namespace Test.Probe
                 presenter?.Stop();
             };
 
-            var hwnd = f.Handle;
-            presenter.Setup(size, size, hwnd, adapterIndex);
-            presenter.AspectRatio = true;
-            presenter.FramePerSec = 60;
-            presenter.RenderSize = f.ClientSize;
-            presenter.Start();
-
-
-
-            Task.Run(() =>
+            f.Shown += (o, e) =>
             {
-                PresenterTask(fps);
-            });
+                running = true;
 
-            Task.Run(() =>
-            {
-                DecoderProc(fileName, inputArgs);
-            });
+                var hwnd = f.Handle;
+                presenter.Setup(size, size, hwnd, adapterIndex);
+                presenter.AspectRatio = true;
+                presenter.FramePerSec = 60;
+                presenter.RenderSize = f.ClientSize;
+                presenter.Start();
 
-            running = true;
+                decoderTask.Start();
+                presenterTask.Start();
+
+            };
+
             Application.Run(f);
             running = false;
 
+            Task.WaitAll(decoderTask, presenterTask);
+
             presenter.Close();
+            rgbProcessor.Close();
+            
         }
 
 
@@ -297,19 +337,22 @@ namespace Test.Probe
         private BlockingCollection<Frame> videoQueue = null;
 
         //private Queue<Frame> frames = new Queue<Frame>(4);
-
+        private double clockRate = 1.0;
         private void PresenterTask(int fps)
         {
 
-            videoQueue = new BlockingCollection<Frame>(3);
+            videoQueue = new BlockingCollection<Frame>(4);
 
             double presentationTime = 0;
-            var lastTime = MediaTimer.GetRelativeTime();
+			var lastTime = double.NaN;
 
             Func<double> getPresentationTime = new Func<double>(() =>
             {
                 var currTime = MediaTimer.GetRelativeTime();
-                presentationTime += (currTime - lastTime);
+				if (!double.IsNaN(lastTime))
+				{
+					presentationTime += (currTime - lastTime) * clockRate;
+				}
                 lastTime = currTime;
                 return presentationTime;
             });
@@ -319,12 +362,18 @@ namespace Test.Probe
             double perFrame_3_4th = 3 * perFrame_1_4th;
 
             while (videoQueue.IsAddingCompleted)
+            //while (videoQueue.Count < 4)
             {
                 Thread.Sleep(1);
+
+                if (!running)
+                {
+                    break;
+                }
             }
 
-            Console.WriteLine("videoQueue.IsAddingCompleted()");
-            lastTime = MediaTimer.GetRelativeTime();
+            Console.WriteLine("videoQueue.IsAddingCompleted");
+
             AutoResetEvent syncEvent = new AutoResetEvent(false);
             while (running)
             {
@@ -334,16 +383,22 @@ namespace Test.Probe
 
                 while (videoQueue.Count > 0)
                 {
-
                     presentNow = true;
                     if (frame == null)
                     {
-                        frame = videoQueue.Take();
+                        bool frameTaken = videoQueue.TryTake(out frame, 10);
+                        if (!frameTaken)
+                        {
+                            Console.WriteLine("frameTaken == false");
+                            continue;
+                        }
+
+						//frame = videoQueue.Take();
                         //frame = frames.Dequeue();
                     }
 
                     var delta = frame.time - getPresentationTime();
-
+                   
                     if (delta < -perFrame_1_4th)
                     {// This sample is late.
                         presentNow = true;
@@ -357,25 +412,25 @@ namespace Test.Probe
 
                     if (!presentNow && delay > 0)
                     {
-                        if (delay > 100)
+                        if (delay > 5000)
                         {
-                            delay = 100;
+							Console.WriteLine(delay);
+                            delay = 5000;
                         }
 
                         //Debug.WriteLine(delay);
-                        //syncEvent.WaitOne(delay);
-                        Thread.Sleep(delay);
+                        syncEvent.WaitOne(delay);
                         continue;
                     }
 
 
                     var tex = frame.tex;
                     presenter.Update(tex);
-                    tex.Dispose();
+                    tex?.Dispose();
                     frame = null;
                 }
 
-                syncEvent.WaitOne(100);
+                syncEvent.WaitOne(10);
             }
 
             if (videoQueue != null && videoQueue.Count > 0)
@@ -392,7 +447,7 @@ namespace Test.Probe
             }
         }
 
-        private void DecoderProc(string fileName, MfVideoArgs inputArgs)
+        private void DecoderTask(string fileName, MfVideoArgs inputArgs)
         {
             decoder = new MfH264Decoder();
             decoder.Setup(inputArgs);
@@ -412,15 +467,17 @@ namespace Test.Probe
             bool loopback = true;
 
             Random rnd = new Random();
-            while (loopback)
+
+            while (loopback )
             {
                 List<byte[]> nalsBuffer = new List<byte[]>();
                 do
                 {
+                    //int delay = (int)(0.033 * 1000);
+                    //delay += rnd.Next(-5, 5);
+                    //Thread.Sleep(delay);
 
-                    //Thread.Sleep(rnd.Next(0, 50));
-
-                    dataAvailable = nalReader.ReadNext(out var nal);
+					dataAvailable = nalReader.ReadNext(out var nal);
                     if (nal != null && nal.Length > 0)
                     {
                         var firstByte = nal[0];
@@ -485,11 +542,15 @@ namespace Test.Probe
 
                 } while (dataAvailable && running);
 
+                if (!running)
+                {
+                    break;
+                }
+
                 stream.Position = 0;
             }
 
             stream.Dispose();
-
             decoder.Drain();
 
 
@@ -515,13 +576,13 @@ namespace Test.Probe
         private int decodedCount = 0;
         private void OnSampleDecoded(Sample s)
         {
-            if (!running)
-            {
-                return;
-            }
-
             try
             {
+                if (!running)
+                {
+                    return;
+                }
+
                 var driverType = decoder.DriverType;
                 var sampleTime = s.SampleTime;
                 var sampleDur = s.SampleDuration;
@@ -644,9 +705,9 @@ namespace Test.Probe
                         //    device3D11.ImmediateContext.CopyResource(texture2d, SharedTexture);
                         //}
 
-                        //Иначе утекает память на Win7
+                        //Иначе может утекать память на Win7
                         //https://stackoverflow.com/questions/32428682/directx-9-to-11-opensharedresource-is-leaking-memory-like-crazy-am-i-doing-some
-                        device3D11.ImmediateContext.Flush();
+                        //device3D11.ImmediateContext.Flush();
 
                         var time = MfTool.MfTicksToSec(s.SampleTime);
 
@@ -1059,10 +1120,14 @@ namespace Test.Probe
 
             videoQueue.Add(frame);
 
+            //var frameAdded = videoQueue.TryAdd(frame, 5);
+            //if (!frameAdded)
+            //{
+            //    Console.WriteLine("frameAdded == " + frameAdded);
+            //    frame.tex?.Dispose();
+            //}
 
-            //frames.Enqueue(frame);
-            //syncEvent.Set();
-            //presenter.Update(tex);
+
 
             //var texBytes = DxTool.DumpTexture(device3D11, SharedTexture);
             //var _descr = SharedTexture.Description;

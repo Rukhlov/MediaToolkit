@@ -134,7 +134,7 @@ namespace Test.Probe
                     }
 
 
-                    attr.Set(SinkWriterAttributeKeys.LowLatency, true);
+                    attr.Set(SinkWriterAttributeKeys.LowLatency, inputArgs.LowLatency);
 
                     //attr.Set(MFAttributeKeys.MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, 1);
                 }
