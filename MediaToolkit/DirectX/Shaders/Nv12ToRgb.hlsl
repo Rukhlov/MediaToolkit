@@ -10,7 +10,7 @@ cbuffer dataBuffer : register(b0)
 
 struct VertData
 {
-    float4 pos      : SV_Position;
+    float4 pos      : SV_Position; 
     float2 texCoord : TexCoord0;
 };
 
@@ -23,5 +23,7 @@ float4 PS(VertData input) : SV_Target
 	float4 yuvx = float4(y, uv, 1.0);
 	float4 rgba = mul(yuvx, colorMatrix);
 
-    return float4(saturate(rgba.zxy), 1.0);
+	return float4(saturate(rgba.rgb), 1.0);
+
+   // return float4(saturate(rgba.zxy), 1.0);
 }
