@@ -155,6 +155,9 @@
     <None Include="Files\testsrc_320x240_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Files\testsrc_3840x2160_yuv420p_Iframe.h264">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

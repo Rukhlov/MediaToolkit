@@ -1,1 +1,1 @@
-"..\..\FFmpeg4\bin\ffmpeg.exe" -f lavfi -i testsrc=duration=30:size=1920x1080:rate=30 -vcodec h264 -bf 0 -pix_fmt yuv420p "output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264"
+"..\..\FFmpeg4\bin\ffmpeg.exe" -f lavfi -i testsrc=duration=10:size=3840x2160:rate=30 -vcodec h264 -bf 0 -pix_fmt yuv420p "output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264"
