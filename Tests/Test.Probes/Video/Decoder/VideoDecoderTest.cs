@@ -30,7 +30,7 @@ namespace Test.Probe
 			Console.WriteLine("VideoDecoderTest::Run()");
 			try
 			{
-				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
 
 
                 //// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -46,12 +46,14 @@ namespace Test.Probe
                 //var height = 480;
 
 
-                ////string fileName = @"Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                //string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec.h264";               
+                // string fileName = @"Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
                 //string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-                ////string fileName = @"Files\testsrc_1280x720_yuv420p_Iframe.h264";
-                //var width = 1280;
-                //var height = 720;
-                //var fps = 30;
+                string fileName = @"Files\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                //string fileName = @"Files\testsrc_1280x720_yuv420p_Iframe.h264";
+                var width = 1280;
+                var height = 720;
+                var fps = 30;
 
                 //string fileName = @"Files\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
                 ////string fileName = @"Files\IFrame_1920x1080_yuv420p.h264";
@@ -63,11 +65,11 @@ namespace Test.Probe
                 //var width = 2560;
                 //var height = 1440;
 
-                string fileName = @"Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
-                //string fileName = @"Files\testsrc_3840x2160_yuv420p_Iframe.h264";
-                var width = 3840;
-                var height = 2160;
-                var fps = 30;
+                //string fileName = @"Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
+                ////string fileName = @"Files\testsrc_3840x2160_yuv420p_Iframe.h264";
+                //var width = 3840;
+                //var height = 2160;
+                //var fps = 30;
 
 
                 VideoDecoderTest test = new VideoDecoderTest();
@@ -107,6 +109,7 @@ namespace Test.Probe
 		private BlockingCollection<VideoFrame> videoQueue = null;
 		// private ConcurrentQueue<Frame> videoQueue = null;
 		//private Queue<Frame> frames = new Queue<Frame>(4);
+
 		private int VideoAdapterIndex = 0;
 
 		private bool xvpMode = false;
@@ -124,7 +127,7 @@ namespace Test.Probe
 				//Width = 320,
 				//Height = 240,
 				FrameRate = MfTool.PackToLong(fps, 1),
-				LowLatency = true,
+				LowLatency = false,
 			};
 
 			string adapterInfo = "";
@@ -315,12 +318,12 @@ namespace Test.Probe
 				}
 				else if (e.KeyCode == Keys.Add)
 				{
-					presentationClock.ClockRate += 0.1f;
+					presentationClock.ClockRate += 0.05f;
 					Console.WriteLine(presentationClock.ClockRate);
 				}
 				else if (e.KeyCode == Keys.Subtract)
 				{
-					presentationClock.ClockRate -= 0.1f;
+					presentationClock.ClockRate -= 0.05f;
 					Console.WriteLine(presentationClock.ClockRate);
 				}
 				else if (e.KeyCode == Keys.Space)
@@ -439,7 +442,14 @@ namespace Test.Probe
 
 					try
 					{
-						presenter.Update(frame.tex);
+                        var timeNow = presentationClock.GetTime();
+                        int timeDelta = (int)((frame.time - timeNow) * 1000);
+                        var text = timeNow.ToString("0.000") + "\r\n" 
+                            + frame.time.ToString("0.000") + "\r\n" 
+                            + timeDelta + "\r\n" 
+                            + frame.seq;
+
+                        presenter.Update(frame.tex, text);
 					}
 					finally
 					{
@@ -1227,9 +1237,9 @@ namespace Test.Probe
 					{
 						clockRate = 0;
 					}
-					else if (value > 4)
+					else if (value > 8)
 					{
-						clockRate = 4;
+						clockRate = 8;
 					}
 					else
 					{

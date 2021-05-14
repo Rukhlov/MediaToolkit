@@ -112,14 +112,15 @@ namespace MediaToolkit.DirectX
 				swapChain = new SwapChain(dxgiFactory, device, scd);
 
                 fpsRenderer = new D2D1TextRenderer();
-				using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				//using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
 				{
 					var backColor = GDI.Color.FromArgb(128, GDI.Color.Black);
 					var foreColor = GDI.Color.Yellow;
 					var font = new GDI.Font("Calibri", 16);
 
-					fpsRenderer.Init(device, backBuffer, font, foreColor, backColor);
-				}
+                    fpsRenderer.Init(device, sharedTexture, font, foreColor, backColor);
+                    //fpsRenderer.Init(device, backBuffer, font, foreColor, backColor);
+                }
 			}
 			finally
 			{
@@ -154,17 +155,17 @@ namespace MediaToolkit.DirectX
                     {
 						count++;
 						//count = swapChain.FrameStatistics.PresentCount;
-						var text = DateTime.Now.ToString("HH: mm:ss.fff") + "\r\n" + count;
+						//var text = DateTime.Now.ToString("HH: mm:ss.fff") + "\r\n" + count;
                         lock (syncLock)
                         {
                             using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
                             {
                                 device.ImmediateContext.CopyResource(sharedTexture, backBuffer);
 
-								if (ShowLabel)
-								{
-									fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
-								}
+                                //if (ShowLabel)
+                                //{
+                                //    fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
+                                //}
 
                                 swapChain.Present((VSync ? 1 : 0), PresentFlags.None);
                             }
@@ -228,7 +229,7 @@ namespace MediaToolkit.DirectX
 			syncEvent?.Set();
 		}
 
-		public void Update(Texture2D srcTexture)
+		public void Update(Texture2D srcTexture, string text = "")
 		{
 			if(!running)
 			{
@@ -237,13 +238,21 @@ namespace MediaToolkit.DirectX
 
             lock (syncLock)
             {
-				//using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
 				{
 					if (rgbProcessor != null)
 					{
-						rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
-					    //syncEvent?.Set();
-					}
+                        //rgbProcessor.DrawTexture(srcTexture, backBuffer, RenderSize, AspectRatio, Transform.R0);
+                        //swapChain.Present((VSync ? 1 : 0), PresentFlags.None);
+                        rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
+
+                        if (ShowLabel && !string.IsNullOrEmpty(text))
+                        {
+                            fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
+                        }
+
+                        //syncEvent?.Set();
+                    }
 				}
 
             }

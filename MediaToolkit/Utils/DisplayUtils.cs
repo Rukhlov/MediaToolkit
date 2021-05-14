@@ -190,7 +190,7 @@ namespace MediaToolkit.Utils
                 {
                     var adapter = adapters[adapterIndex];
                     var adaptDescr = adapter.Description1;
-
+                    
                     //Console.WriteLine(adaptDescr.Description + " " + adaptDescr.Flags);
 
                     var outputs = adapter.Outputs;
@@ -534,8 +534,9 @@ namespace MediaToolkit.Utils
         {
             List<GpuHardwareInfo> hardwareInfos = new List<GpuHardwareInfo>();
 
+            const string DEVCLASS_DISPLAY = "{4d36e968-e325-11ce-bfc1-08002be10318}";
 
-            string RegPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
+            string RegPath = @"SYSTEM\CurrentControlSet\Control\Class\" + DEVCLASS_DISPLAY;
             Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(RegPath);
             if (key != null)
             {
@@ -642,7 +643,7 @@ namespace MediaToolkit.Utils
             var keyValue = key.GetValue(valueName);
             if (keyValue != null)
             {
-                var bytes = (byte[])keyValue;
+				var bytes = keyValue as byte[];
                 if (bytes != null)
                 {
                     int offset = 0;
