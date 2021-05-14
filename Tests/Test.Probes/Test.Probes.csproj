@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Display\EnumWindowsTest.cs" />
     <Compile Include="Video\CopyAcrossGPUTest.cs" />
     <Compile Include="Video\CopyImageTest.cs" />
     <Compile Include="Video\D3D11ConvertersTest.cs" />

@@ -13,73 +13,73 @@ using System.Threading.Tasks;
 namespace MediaToolkit.Utils
 {
 
-	public class DisplayConfigInfo
-	{
-		public string FriendlyName { get; set; }
-		public string Path { get; set; }
-		public string GdiDeviceName { get; set; }
-		public uint DisplayId { get; set; }
+    public class DisplayConfigInfo
+    {
+        public string FriendlyName { get; set; }
+        public string Path { get; set; }
+        public string GdiDeviceName { get; set; }
+        public uint DisplayId { get; set; }
 
-		public string AdapterDevicePath { get; set; }
-		public Rectangle Bounds { get; set; }
+        public string AdapterDevicePath { get; set; }
+        public Rectangle Bounds { get; set; }
 
-		public uint PixelFormat { get; set; }
-		public uint Rotation { get; set; }
-		public uint Scaling { get; set; }
+        public uint PixelFormat { get; set; }
+        public uint Rotation { get; set; }
+        public uint Scaling { get; set; }
 
-		public MediaRatio RefreshRate { get; set; }
-	}
+        public MediaRatio RefreshRate { get; set; }
+    }
 
 
-	public class DisplayDeviceInfo
-	{
-		public int EnumIndex { get; set; } = -1;
-		public string DeviceName { get; set; } = "";
-		public int VendorId { get; set; } = -1;
-		public int DeviceId { get; set; } = -1;
-		public string Description { get; set; } = "";
+    public class DisplayDeviceInfo
+    {
+        public int EnumIndex { get; set; } = -1;
+        public string DeviceName { get; set; } = "";
+        public int VendorId { get; set; } = -1;
+        public int DeviceId { get; set; } = -1;
+        public string Description { get; set; } = "";
 
-		public bool IsPrimary { get; set; } = false;
-		public bool IsRemote { get; set; } = false;
+        public bool IsPrimary { get; set; } = false;
+        public bool IsRemote { get; set; } = false;
         public bool IsSoftware { get; set; } = false;
 
         public override string ToString()
-		{
-			return "#" + EnumIndex + " " + string.Join("; ", DeviceName, Description, VendorId, DeviceId, IsPrimary, IsRemote, IsSoftware);
-		}
-	}
+        {
+            return "#" + EnumIndex + " " + string.Join("; ", DeviceName, Description, VendorId, DeviceId, IsPrimary, IsRemote, IsSoftware);
+        }
+    }
 
-	public enum GraphicsMode
-	{
-		Default,
-		Hybrid,
-		Remote,
-		MultiGpu,
+    public enum GraphicsMode
+    {
+        Default,
+        Hybrid,
+        Remote,
+        MultiGpu,
         Software,
 
         Invalid,
-	}
+    }
 
-	public class DisplayUtil
-	{
+    public class DisplayUtil
+    {
 
-		public static GraphicsMode CheckGraphicsMode()
-		{
-			GraphicsMode adapterMode = GraphicsMode.Default;
+        public static GraphicsMode CheckGraphicsMode()
+        {
+            GraphicsMode adapterMode = GraphicsMode.Default;
 
-			var gdiDevices = GetGdiDisplayDeviceInfos();
-			var gdiDeivce0 = gdiDevices.FirstOrDefault();
-			if (gdiDeivce0 == null)
-			{
-				return GraphicsMode.Invalid;
-			}
+            var gdiDevices = GetGdiDisplayDeviceInfos();
+            var gdiDeivce0 = gdiDevices.FirstOrDefault();
+            if (gdiDeivce0 == null)
+            {
+                return GraphicsMode.Invalid;
+            }
 
-			if (gdiDeivce0.IsRemote)
-			{// RDP mode
-				return GraphicsMode.Remote;
-			}
+            if (gdiDeivce0.IsRemote)
+            {// RDP mode
+                return GraphicsMode.Remote;
+            }
 
-			var dxDevices = GetDxDisplayDevices(false);
+            var dxDevices = GetDxDisplayDevices(false);
             var dxDevice0 = dxDevices[0];
             Debug.WriteLine("dxDevice0 " + dxDevice0.ToString());
 
@@ -89,7 +89,7 @@ namespace MediaToolkit.Utils
             }
 
             var hwGpuDevices = dxDevices.Where(d => !d.IsSoftware);
-            if(hwGpuDevices.Count() > 1)
+            if (hwGpuDevices.Count() > 1)
             {
                 var activeHwGpuDevices = hwGpuDevices.Where(d => !string.IsNullOrEmpty(d.DeviceName)).ToList();
 
@@ -105,7 +105,7 @@ namespace MediaToolkit.Utils
                         adapterMode = GraphicsMode.MultiGpu;
                     }
                 }
-                else if(activeHwGpuDevices.Count == 1)
+                else if (activeHwGpuDevices.Count == 1)
                 {
                     foreach (var gdiDevice in gdiDevices)
                     {
@@ -178,22 +178,22 @@ namespace MediaToolkit.Utils
 
 
         public static List<DisplayDeviceInfo> GetDxDisplayDevices(bool attached = true)
-		{
-			List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
+        {
+            List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
 
 
-			using (var dxgiFactory = new SharpDX.DXGI.Factory1())
-			{
-				var adapters = dxgiFactory.Adapters1;
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+            {
+                var adapters = dxgiFactory.Adapters1;
 
-				for (int adapterIndex = 0; adapterIndex < adapters.Length; adapterIndex++)
-				{
-					var adapter = adapters[adapterIndex];
-					var adaptDescr = adapter.Description1;
+                for (int adapterIndex = 0; adapterIndex < adapters.Length; adapterIndex++)
+                {
+                    var adapter = adapters[adapterIndex];
+                    var adaptDescr = adapter.Description1;
 
                     //Console.WriteLine(adaptDescr.Description + " " + adaptDescr.Flags);
 
-					var outputs = adapter.Outputs;
+                    var outputs = adapter.Outputs;
                     if (outputs.Length > 0)
                     {
                         for (int outputIndex = 0; outputIndex < outputs.Length; outputIndex++)
@@ -255,268 +255,460 @@ namespace MediaToolkit.Utils
                         //Console.WriteLine("+++" + displayDevice);
                     }
 
- 
-				}
 
-				foreach (var a in adapters)
-				{
-					if (a != null && !a.IsDisposed)
-					{
-						a.Dispose();
-					}
-				}
-			}
+                }
 
-			return displayDevices;
-		}
+                foreach (var a in adapters)
+                {
+                    if (a != null && !a.IsDisposed)
+                    {
+                        a.Dispose();
+                    }
+                }
+            }
 
-		public static List<DisplayDeviceInfo> GetGdiDisplayDeviceInfos(bool attached = true)
-		{
-			List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
+            return displayDevices;
+        }
 
-			var gdiDisplayDevices = EnumDisplayDevices();
-			int _adapterNum = 0;
-			foreach (var adapter in gdiDisplayDevices.Keys)
-			{
-				var deviceName = adapter.DeviceName;
-				var pciInfo = PciDeviceInfo.Parse(adapter.DeviceID);
+        public static List<DisplayDeviceInfo> GetGdiDisplayDeviceInfos(bool attached = true)
+        {
+            List<DisplayDeviceInfo> displayDevices = new List<DisplayDeviceInfo>();
 
-				var stateFlags = adapter.StateFlags;
-				DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
-				{
-					EnumIndex = _adapterNum,
-					DeviceName = deviceName,
-					Description = adapter.DeviceString,
-					VendorId = pciInfo.VendorId,
-					DeviceId = pciInfo.DeviceId,
-					IsRemote = stateFlags.HasFlag(DisplayDeviceStateFlags.Remote),
-					IsPrimary = stateFlags.HasFlag(DisplayDeviceStateFlags.PrimaryDevice),
+            var gdiDisplayDevices = EnumDisplayDevices();
+            int _adapterNum = 0;
+            foreach (var adapter in gdiDisplayDevices.Keys)
+            {
+                var deviceName = adapter.DeviceName;
+                var pciInfo = PciDeviceInfo.Parse(adapter.DeviceID);
 
-				};
+                var stateFlags = adapter.StateFlags;
+                DisplayDeviceInfo displayDevice = new DisplayDeviceInfo
+                {
+                    EnumIndex = _adapterNum,
+                    DeviceName = deviceName,
+                    Description = adapter.DeviceString,
+                    VendorId = pciInfo.VendorId,
+                    DeviceId = pciInfo.DeviceId,
+                    IsRemote = stateFlags.HasFlag(DisplayDeviceStateFlags.Remote),
+                    IsPrimary = stateFlags.HasFlag(DisplayDeviceStateFlags.PrimaryDevice),
 
-				displayDevices.Add(displayDevice);
+                };
 
-				_adapterNum++;
-			}
+                displayDevices.Add(displayDevice);
 
-			return displayDevices;
-		}
+                _adapterNum++;
+            }
+
+            return displayDevices;
+        }
 
 
-		public static List<DisplayConfigInfo> GetDisplayConfigInfos()
-		{
-			List<DisplayConfigInfo> displayInfos = new List<DisplayConfigInfo>();
+        public static List<DisplayConfigInfo> GetDisplayConfigInfos()
+        {
+            List<DisplayConfigInfo> displayInfos = new List<DisplayConfigInfo>();
 
-			uint pathCount, modeCount;
-			var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
+            uint pathCount, modeCount;
+            var result = User32.GetDisplayConfigBufferSizes(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out pathCount, out modeCount);
 
-			if (result != (int)HResult.S_OK)
-			{
-				throw new Win32Exception(result);
-			}
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
 
-            if(pathCount == 0 || modeCount == 0)
+            if (pathCount == 0 || modeCount == 0)
             {
                 return displayInfos;
             }
 
-			var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
-			var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+            var displayPaths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var displayModes = new DISPLAYCONFIG_MODE_INFO[modeCount];
 
-			result = User32.QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-				ref pathCount, displayPaths, ref modeCount, displayModes, IntPtr.Zero);
+            result = User32.QueryDisplayConfig(QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                ref pathCount, displayPaths, ref modeCount, displayModes, IntPtr.Zero);
 
-			if (result != (int)HResult.S_OK)
-			{
-				throw new Win32Exception(result);
-			}
-
-
-			Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO> sourceInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO>();
-			Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO> targetInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO>();
-
-			for (int i = 0; i < pathCount; i++)
-			{
-				var pathInfo = displayPaths[i];
-				
-				var sourceInfo = pathInfo.sourceInfo;
-				var srcModeIdx = sourceInfo.modeInfoIdx;
-				sourceInfos[srcModeIdx] = sourceInfo;
-
-				var targetInfo = pathInfo.targetInfo;
-				var targetModeIdx = targetInfo.modeInfoIdx;
-				targetInfos[targetModeIdx] = targetInfo;
-			}
-
-		    for (uint i = 0; i < modeCount; i += 2)
-			{
-				var targetDisplayMode = displayModes[i];
-				var sourceDisplayMode = displayModes[i + 1];
-
-				var targetPathInfo = targetInfos[i];
-				var sourcePathInfo = sourceInfos[i + 1];
-				
-				if (targetDisplayMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
-				{
-					var monitorInfo = GetDisplayConfigTargetDeviceName(targetDisplayMode.adapterId, targetDisplayMode.id);
-					var adapterInfo = GetDisplayConfigAdapterName(targetDisplayMode.adapterId, targetDisplayMode.id);
-
-					var gdiDeviceInfo = GetDisplayConfigSourceDeviceName(sourceDisplayMode.adapterId, sourceDisplayMode.id);
-					var sourceMode = sourceDisplayMode.modeInfo.sourceMode;
-
-					var pos = sourceMode.position;
-					int width = (int)sourceMode.width;
-					int height = (int)sourceMode.height;
-					var refreshRate = targetPathInfo.refreshRate;
-
-					var di = new DisplayConfigInfo
-					{
-						FriendlyName = monitorInfo.monitorFriendlyDeviceName,
-						Path = monitorInfo.monitorDevicePath,
-						DisplayId = targetDisplayMode.id,
-						GdiDeviceName = gdiDeviceInfo.viewGdiDeviceName,
-						AdapterDevicePath = adapterInfo.adapterDevicePath,
-						Bounds = new Rectangle(pos.x, pos.y, width, height),
-						PixelFormat = (uint)sourceMode.pixelFormat,
-						Rotation = (uint)targetPathInfo.rotation,
-						Scaling = (uint)targetPathInfo.scaling,
-						RefreshRate = new MediaRatio((int)refreshRate.Numerator, (int)refreshRate.Denominator),
-
-					};
-
-					displayInfos.Add(di);
-				}
-				else
-				{// unexpected ...
-
-				}
-			}
-
-			return displayInfos;
-		}
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
 
 
+            Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO> sourceInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_SOURCE_INFO>();
+            Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO> targetInfos = new Dictionary<uint, DISPLAYCONFIG_PATH_TARGET_INFO>();
 
-		public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDisplayConfigSourceDeviceName(LUID adapterId, uint sourceId)
-		{
-			DISPLAYCONFIG_SOURCE_DEVICE_NAME deviceInfo = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
-			{
-				size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)),
-				adapterId = adapterId,
-				id = sourceId,
-				type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
+            for (int i = 0; i < pathCount; i++)
+            {
+                var pathInfo = displayPaths[i];
 
-			};
+                var sourceInfo = pathInfo.sourceInfo;
+                var srcModeIdx = sourceInfo.modeInfoIdx;
+                sourceInfos[srcModeIdx] = sourceInfo;
 
-			int result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
-			if (result != (int)HResult.S_OK)
-			{
-				throw new Win32Exception(result);
-			}
+                var targetInfo = pathInfo.targetInfo;
+                var targetModeIdx = targetInfo.modeInfoIdx;
+                targetInfos[targetModeIdx] = targetInfo;
+            }
 
-			return deviceInfo;
-		}
+            for (uint i = 0; i < modeCount; i += 2)
+            {
+                var targetDisplayMode = displayModes[i];
+                var sourceDisplayMode = displayModes[i + 1];
+
+                var targetPathInfo = targetInfos[i];
+                var sourcePathInfo = sourceInfos[i + 1];
+
+                if (targetDisplayMode.infoType == DISPLAYCONFIG_MODE_INFO_TYPE.DISPLAYCONFIG_MODE_INFO_TYPE_TARGET)
+                {
+                    var monitorInfo = GetDisplayConfigTargetDeviceName(targetDisplayMode.adapterId, targetDisplayMode.id);
+                    var adapterInfo = GetDisplayConfigAdapterName(targetDisplayMode.adapterId, targetDisplayMode.id);
+
+                    var gdiDeviceInfo = GetDisplayConfigSourceDeviceName(sourceDisplayMode.adapterId, sourceDisplayMode.id);
+                    var sourceMode = sourceDisplayMode.modeInfo.sourceMode;
+
+                    var pos = sourceMode.position;
+                    int width = (int)sourceMode.width;
+                    int height = (int)sourceMode.height;
+                    var refreshRate = targetPathInfo.refreshRate;
+
+                    var di = new DisplayConfigInfo
+                    {
+                        FriendlyName = monitorInfo.monitorFriendlyDeviceName,
+                        Path = monitorInfo.monitorDevicePath,
+                        DisplayId = targetDisplayMode.id,
+                        GdiDeviceName = gdiDeviceInfo.viewGdiDeviceName,
+                        AdapterDevicePath = adapterInfo.adapterDevicePath,
+                        Bounds = new Rectangle(pos.x, pos.y, width, height),
+                        PixelFormat = (uint)sourceMode.pixelFormat,
+                        Rotation = (uint)targetPathInfo.rotation,
+                        Scaling = (uint)targetPathInfo.scaling,
+                        RefreshRate = new MediaRatio((int)refreshRate.Numerator, (int)refreshRate.Denominator),
+
+                    };
+
+                    displayInfos.Add(di);
+                }
+                else
+                {// unexpected ...
+
+                }
+            }
+
+            return displayInfos;
+        }
 
 
-		public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDisplayConfigTargetDeviceName(LUID adapterId, uint targetId)
-		{
 
-			var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
-			{
-				size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_TARGET_DEVICE_NAME)),
-				adapterId = adapterId,
-				id = targetId,
-				type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
+        public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDisplayConfigSourceDeviceName(LUID adapterId, uint sourceId)
+        {
+            DISPLAYCONFIG_SOURCE_DEVICE_NAME deviceInfo = new DISPLAYCONFIG_SOURCE_DEVICE_NAME
+            {
+                size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME)),
+                adapterId = adapterId,
+                id = sourceId,
+                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME
 
-			};
+            };
 
-			var result = User32.DisplayConfigGetDeviceInfo(ref deviceName);
-			if (result != (int)HResult.S_OK)
-			{
-				throw new Win32Exception(result);
-			}
+            int result = User32.DisplayConfigGetDeviceInfo(ref deviceInfo);
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
 
-			return deviceName;
-		}
+            return deviceInfo;
+        }
 
-		public static DISPLAYCONFIG_ADAPTER_NAME GetDisplayConfigAdapterName(LUID adapterId, uint targetId)
-		{
-			var adapterName = new DISPLAYCONFIG_ADAPTER_NAME
-			{
-				size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_ADAPTER_NAME)),
-				adapterId = adapterId,
-				id = targetId,
-				type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME
 
-			};
+        public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDisplayConfigTargetDeviceName(LUID adapterId, uint targetId)
+        {
 
-			var result = User32.DisplayConfigGetDeviceInfo(ref adapterName);
-			if (result != (int)HResult.S_OK)
-			{
-				throw new Win32Exception(result);
-			}
+            var deviceName = new DISPLAYCONFIG_TARGET_DEVICE_NAME
+            {
+                size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_TARGET_DEVICE_NAME)),
+                adapterId = adapterId,
+                id = targetId,
+                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME
 
-			return adapterName;
-		}
+            };
+
+            var result = User32.DisplayConfigGetDeviceInfo(ref deviceName);
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+
+            return deviceName;
+        }
+
+        public static DISPLAYCONFIG_ADAPTER_NAME GetDisplayConfigAdapterName(LUID adapterId, uint targetId)
+        {
+            var adapterName = new DISPLAYCONFIG_ADAPTER_NAME
+            {
+                size = (uint)Marshal.SizeOf(typeof(DISPLAYCONFIG_ADAPTER_NAME)),
+                adapterId = adapterId,
+                id = targetId,
+                type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADAPTER_NAME
+
+            };
+
+            var result = User32.DisplayConfigGetDeviceInfo(ref adapterName);
+            if (result != (int)HResult.S_OK)
+            {
+                throw new Win32Exception(result);
+            }
+
+            return adapterName;
+        }
 
         public static Dictionary<string, DisplayDevice> GetDisplayDeviceInfos(bool attached = true)
         {
-            return EnumDisplayDevices().Keys.ToDictionary(d => d.DeviceName); 
+            return EnumDisplayDevices().Keys.ToDictionary(d => d.DeviceName);
         }
 
 
         public static Dictionary<DisplayDevice, IEnumerable<DisplayDevice>> EnumDisplayDevices(bool attached = true)
-		{
-			Dictionary<DisplayDevice, IEnumerable<DisplayDevice>> displayDict = new Dictionary<DisplayDevice, IEnumerable<DisplayDevice>>();
+        {
+            Dictionary<DisplayDevice, IEnumerable<DisplayDevice>> displayDict = new Dictionary<DisplayDevice, IEnumerable<DisplayDevice>>();
 
-			try
-			{
-				DisplayDevice adapter = new DisplayDevice
-				{
-					cb = Marshal.SizeOf(typeof(DisplayDevice)),
-				};
+            try
+            {
+                DisplayDevice adapter = new DisplayDevice
+                {
+                    cb = Marshal.SizeOf(typeof(DisplayDevice)),
+                };
 
-				uint adapterNum = 0;
-				while (User32.EnumDisplayDevices(null, adapterNum, ref adapter, 0))
-				{
-					if (attached)
-					{
-						if (!adapter.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
-						{
-							adapterNum++;
-							continue;
-						}
-					}
+                uint adapterNum = 0;
+                while (User32.EnumDisplayDevices(null, adapterNum, ref adapter, 0))
+                {
+                    if (attached)
+                    {
+                        if (!adapter.StateFlags.HasFlag(DisplayDeviceStateFlags.AttachedToDesktop))
+                        {
+                            adapterNum++;
+                            continue;
+                        }
+                    }
 
-					DisplayDevice monitor = new DisplayDevice
-					{
-						cb = Marshal.SizeOf(typeof(DisplayDevice)),
-					};
+                    DisplayDevice monitor = new DisplayDevice
+                    {
+                        cb = Marshal.SizeOf(typeof(DisplayDevice)),
+                    };
 
-					uint monitorNum = 0;
-					var adapterName = adapter.DeviceName;
-					List<DisplayDevice> monitors = new List<DisplayDevice>();
+                    uint monitorNum = 0;
+                    var adapterName = adapter.DeviceName;
+                    List<DisplayDevice> monitors = new List<DisplayDevice>();
 
-					while (User32.EnumDisplayDevices(adapterName, monitorNum, ref monitor, 0))
-					{
-						monitors.Add(monitor);
-						monitorNum++;
-					}
+                    while (User32.EnumDisplayDevices(adapterName, monitorNum, ref monitor, 0))
+                    {
+                        monitors.Add(monitor);
+                        monitorNum++;
+                    }
 
-					displayDict.Add(adapter, monitors);
+                    displayDict.Add(adapter, monitors);
 
-					adapterNum++;
+                    adapterNum++;
 
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex.Message);
-			}
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
 
-			return displayDict;
-		}
+            return displayDict;
+        }
 
-	}
+    }
 
+    public class GpuHardwareInfo
+    {
+        public string DriverDate { get; set; }
+        public string DriverVersion { get; set; }
+        public string AdapterString { get; set; }
+        public string BiosString { get; set; }
+        public string ChipType { get; set; }
+        public string DacType { get; set; }
+        public uint MemorySize { get; set; }
+        public string[] DriverDlls { get; set; }
+
+        public static IEnumerable<GpuHardwareInfo> GetHardwareInfos()
+        {
+            List<GpuHardwareInfo> hardwareInfos = new List<GpuHardwareInfo>();
+
+
+            string RegPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
+            Microsoft.Win32.RegistryKey key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(RegPath);
+            if (key != null)
+            {
+                var subKeyNames = key.GetSubKeyNames();
+                foreach (var name in subKeyNames)
+                {
+                    if (name.Length == 4)
+                    {
+                        if (int.TryParse(name, out var index))
+                        {
+                            var subKey = key.OpenSubKey(name);
+                            if (subKey != null)
+                            {
+                                var info = new GpuHardwareInfo();
+                                if (GetRegValue(subKey, "DriverDate", out string driverDate))
+                                {
+                                    info.DriverDate = driverDate;
+                                }
+
+                                if (GetRegValue(subKey, "DriverVersion", out string driverVersion))
+                                {
+                                    info.DriverVersion = driverVersion;
+                                }
+
+                                if (GetRegValue(subKey, "HardwareInformation.AdapterString", out string adapterString))
+                                {
+                                    info.AdapterString = adapterString;
+                                }
+
+                                if (GetRegValue(subKey, "HardwareInformation.ChipType", out string chipType))
+                                {
+                                    info.ChipType = chipType;
+                                }
+
+                                if (GetRegValue(subKey, "HardwareInformation.DacType", out string dacType))
+                                {
+                                    info.DacType = dacType;
+                                }
+
+                                if (GetRegValue(subKey, "HardwareInformation.MemorySize", out int memorySize))
+                                {
+                                    info.MemorySize = unchecked((uint)memorySize);
+                                }
+
+                                if (GetRegValue(subKey, "HardwareInformation.BiosString", out string biosString))
+                                {
+                                    info.BiosString = biosString;
+                                }
+
+                                if (GetRegValue(subKey, "UserModeDriverName", out string[] driverDlls))
+                                {
+                                    info.DriverDlls = driverDlls;
+                                }
+
+                                hardwareInfos.Add(info);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            return hardwareInfos;
+        }
+
+        private unsafe static bool GetRegValue<T>(Microsoft.Win32.RegistryKey key, string valueName, out T t)
+        {
+            bool result = false;
+            t = default(T);
+            try
+            {
+                if (key != null)
+                {
+                    var valueKind = key.GetValueKind(valueName);
+                     if (valueKind == Microsoft.Win32.RegistryValueKind.Binary)
+                    {
+                        result = BinnaryToValue(key, valueName, out t);
+                    }
+                    else if (valueKind != Microsoft.Win32.RegistryValueKind.Unknown 
+                        && valueKind != Microsoft.Win32.RegistryValueKind.None)
+                    {
+                        var keyValue = key.GetValue(valueName);
+                        if (keyValue != null)
+                        {
+                            t = (T)keyValue;
+                            result = (t != null);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return result;
+        }
+
+        private unsafe static bool BinnaryToValue<T>(Microsoft.Win32.RegistryKey key, string valueName, out T t)// where T : IComparable, IConvertible
+        {
+            bool result = false;
+            t = default(T);
+
+            var keyValue = key.GetValue(valueName);
+            if (keyValue != null)
+            {
+                var bytes = (byte[])keyValue;
+                if (bytes != null)
+                {
+                    int offset = 0;
+                    var type = typeof(T);
+                    if (type == typeof(sbyte))
+                    {
+                        t = (T)(object)((sbyte)bytes[offset]);
+                        result = true;
+                    }
+
+                    if (type == typeof(byte))
+                    {
+                        t = (T)(object)bytes[offset];
+                        result = true;
+                    }
+
+                    if (type == typeof(short))
+                    {
+                        t = (T)(object)BitConverter.ToInt16(bytes, offset);
+                        result = true;
+                    }
+
+                    if (type == typeof(ushort))
+                    {
+                        t = (T)(object)BitConverter.ToUInt16(bytes, offset);
+                        result = true;
+                    }
+                    if (type == typeof(int))
+                    {
+                        t = (T)(object)BitConverter.ToInt32(bytes, offset);
+                        result = true;
+                    }
+
+                    if (type == typeof(uint))
+                    {
+                        t = (T)(object)BitConverter.ToUInt32(bytes, offset);
+                        result = true;
+                    }
+
+                    if (type == typeof(long))
+                    {
+                        t = (T)(object)BitConverter.ToInt64(bytes, offset);
+                        result = true;
+                    }
+
+                    if (type == typeof(ulong))
+                    {
+                        t = (T)(object)BitConverter.ToUInt64(bytes, offset);
+                        result = true;
+                    }
+
+                    if (type == typeof(string))
+                    {
+                        fixed (byte* ptr = bytes)
+                        {
+                            t = (T)(object)Marshal.PtrToStringUni((IntPtr)ptr);
+                            result = true;
+                        }
+                    }
+                }
+            }
+
+
+            return result;
+        }
+
+
+    }
 }

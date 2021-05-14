@@ -198,7 +198,13 @@ namespace MediaToolkit.NativeAPIs
 		// Define the callback delegate's type.
 		public delegate bool EnumDelegate(IntPtr hWnd, int lParam);
 
-		[DllImport("user32.dll")]
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+
+        [DllImport("user32.dll")]
         public static extern IntPtr GetWindowDC(IntPtr hWnd);
 
         public static Rectangle GetClientRect(IntPtr hwnd)
@@ -335,9 +341,13 @@ namespace MediaToolkit.NativeAPIs
 		public static extern bool SetProcessWindowStation(IntPtr hWinSta);
 
 
-		public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
-		[DllImport("user32.dll")]
+        public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
 		public static extern IntPtr GetProcessWindowStation();
 
 		[DllImport("user32.dll", SetLastError = true)]

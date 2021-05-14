@@ -30,47 +30,47 @@ namespace Test.Probe
 			Console.WriteLine("VideoDecoderTest::Run()");
 			try
 			{
-				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
+				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
 
 
-				//// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
-				////string fileName = @"Files\testsrc_320x240_yuv420p_1sec.h264";
-				//string fileName = @"Files\testsrc_320x240_yuv420p_30fps_60sec.h264";
-				////string fileName = @"Files\testsrc_320x240_yuv420p_Iframe.h264";
-				//var width = 320;
-				//var height = 240;
-				//var fps = 30;
+                //// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
+                ////string fileName = @"Files\testsrc_320x240_yuv420p_1sec.h264";
+                //string fileName = @"Files\testsrc_320x240_yuv420p_30fps_60sec.h264";
+                ////string fileName = @"Files\testsrc_320x240_yuv420p_Iframe.h264";
+                //var width = 320;
+                //var height = 240;
+                //var fps = 30;
 
-				//string fileName = @"Files\testsrc_640x480_yuv420p_4frame.h264";
-				//var width = 640;
-				//var height = 480;
-
-
-				////string fileName = @"Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				//string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				////string fileName = @"Files\testsrc_1280x720_yuv420p_Iframe.h264";
-				//var width = 1280;
-				//var height = 720;
-				//var fps = 30;
-
-				string fileName = @"Files\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				//string fileName = @"Files\IFrame_1920x1080_yuv420p.h264";
-				var width = 1920;
-				var height = 1080;
-				var fps = 30;
-
-				//string fileName = @"Files\testsrc_2560x1440_yuv420p_Iframe.h264";
-				//var width = 2560;
-				//var height = 1440;
-
-				//string fileName = @"Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
-				////string fileName = @"Files\testsrc_3840x2160_yuv420p_Iframe.h264";
-				//var width = 3840;
-				//var height = 2160;
-				//var fps = 30;
+                //string fileName = @"Files\testsrc_640x480_yuv420p_4frame.h264";
+                //var width = 640;
+                //var height = 480;
 
 
-				VideoDecoderTest test = new VideoDecoderTest();
+                ////string fileName = @"Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                //string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+                ////string fileName = @"Files\testsrc_1280x720_yuv420p_Iframe.h264";
+                //var width = 1280;
+                //var height = 720;
+                //var fps = 30;
+
+                //string fileName = @"Files\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+                ////string fileName = @"Files\IFrame_1920x1080_yuv420p.h264";
+                //var width = 1920;
+                //var height = 1080;
+                //var fps = 30;
+
+                //string fileName = @"Files\testsrc_2560x1440_yuv420p_Iframe.h264";
+                //var width = 2560;
+                //var height = 1440;
+
+                string fileName = @"Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
+                //string fileName = @"Files\testsrc_3840x2160_yuv420p_Iframe.h264";
+                var width = 3840;
+                var height = 2160;
+                var fps = 30;
+
+
+                VideoDecoderTest test = new VideoDecoderTest();
 				try
 				{
 					test.Start(fileName, width, height, fps, driverType);
