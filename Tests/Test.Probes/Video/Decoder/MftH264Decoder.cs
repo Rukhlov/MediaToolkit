@@ -108,6 +108,7 @@ namespace Test.Probe
                             {
                                 using (var device = new Device(inputArgs.D3DPointer))
                                 {
+                                    ((SharpDX.IUnknown)device).AddReference();
                                     devMan.ResetDevice(device);
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }

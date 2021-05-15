@@ -156,7 +156,7 @@ namespace MediaToolkit.DirectX
 						count++;
 						//count = swapChain.FrameStatistics.PresentCount;
 						//var text = DateTime.Now.ToString("HH: mm:ss.fff") + "\r\n" + count;
-                        lock (syncLock)
+                        //lock (syncLock)
                         {
                             using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
                             {
@@ -238,24 +238,26 @@ namespace MediaToolkit.DirectX
 
             lock (syncLock)
             {
-				using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				if (rgbProcessor != null)
 				{
-					if (rgbProcessor != null)
+					//rgbProcessor.DrawTexture(srcTexture, backBuffer, RenderSize, AspectRatio, Transform.R0);
+					//swapChain.Present((VSync ? 1 : 0), PresentFlags.None);
+					rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
+
+					if (ShowLabel && !string.IsNullOrEmpty(text))
 					{
-                        //rgbProcessor.DrawTexture(srcTexture, backBuffer, RenderSize, AspectRatio, Transform.R0);
-                        //swapChain.Present((VSync ? 1 : 0), PresentFlags.None);
-                        rgbProcessor.DrawTexture(srcTexture, sharedTexture, RenderSize, AspectRatio, Transform.R0);
+						fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
+					}
 
-                        if (ShowLabel && !string.IsNullOrEmpty(text))
-                        {
-                            fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
-                        }
-
-                        //syncEvent?.Set();
-                    }
+					//syncEvent?.Set();
 				}
 
-            }
+				//using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))
+				//{
+
+				//}
+
+			}
 
 		}
 

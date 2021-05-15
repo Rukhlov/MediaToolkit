@@ -33,40 +33,41 @@ namespace Test.Probe
 				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
 
 
-				//// string fileName = @"Files\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
-				////string fileName = @"Files\testsrc_320x240_yuv420p_1sec.h264";
-				//string fileName = @"Files\testsrc_320x240_yuv420p_30fps_60sec.h264";
-				////string fileName = @"Files\testsrc_320x240_yuv420p_Iframe.h264";
+				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
 				//var width = 320;
 				//var height = 240;
 				//var fps = 30;
 
-				//string fileName = @"Files\testsrc_640x480_yuv420p_4frame.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
 				//var width = 640;
 				//var height = 480;
 
-
-				string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				//string fileName = @"Files\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				//string fileName = @"Files\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				//string fileName = @"Files\testsrc_1280x720_yuv420p_Iframe.h264";
-				//string fileName = @"Files\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				var width = 1280;
-				var height = 720;
-				var fps = 30;
-
-				//string fileName = @"Files\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				////string fileName = @"Files\IFrame_1920x1080_yuv420p.h264";
-				//var width = 1920;
-				//var height = 1080;
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+				//var width = 1280;
+				//var height = 720;
 				//var fps = 30;
 
-				//string fileName = @"Files\testsrc_2560x1440_yuv420p_Iframe.h264";
+
+
+				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+				var width = 1920;
+				var height = 1080;
+				var fps = 30;
+
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
 				//var width = 2560;
 				//var height = 1440;
 
-				//string fileName = @"Files\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
-				////string fileName = @"Files\testsrc_3840x2160_yuv420p_Iframe.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
 				//var width = 3840;
 				//var height = 2160;
 				//var fps = 30;
@@ -104,13 +105,13 @@ namespace Test.Probe
 
 		private PresentationClock presentationClock = new PresentationClock();
 
-		private int videoBuffeSize = 1;
+		private int videoBuffeSize = 3;
 		private BlockingCollection<VideoFrame> videoQueue = null;
 		// private ConcurrentQueue<Frame> videoQueue = null;
 		//private Queue<Frame> frames = new Queue<Frame>(4);
 
-		private int VideoAdapterIndex = 1;
-
+		private int VideoAdapterIndex = 0;
+        private bool LowLatency = false;
 		private bool xvpMode = false;
 
 		private bool running = false;
@@ -126,7 +127,7 @@ namespace Test.Probe
 				//Width = 320,
 				//Height = 240,
 				FrameRate = MfTool.PackToLong(fps, 1),
-				LowLatency = false,
+				LowLatency = LowLatency,
 			};
 
 			string adapterInfo = "";
@@ -149,9 +150,9 @@ namespace Test.Probe
 
 					using (var dxgiDevice = device3D11.QueryInterface<SharpDX.DXGI.Device1>())
 					{
-						//dxgiDevice.MaximumFrameLatency = 16;
-						//dxgiDevice.GPUThreadPriority = 1;
-					}
+                        dxgiDevice.MaximumFrameLatency = 16;
+                        dxgiDevice.GPUThreadPriority = 1;
+                    }
 
 					var formatSupport = device3D11.CheckFormatSupport(SharpDX.DXGI.Format.NV12);
 					dxgiNv12Supported = formatSupport.HasFlag(FormatSupport.Texture2D);
@@ -218,7 +219,6 @@ namespace Test.Probe
 					MultiSampleType = Device3D9.MultisampleType.None,
 					SwapEffect = Device3D9.SwapEffect.Discard,
 					PresentFlags = Device3D9.PresentFlags.Video,
-
 				};
 
 				var flags = Device3D9.CreateFlags.HardwareVertexProcessing |
@@ -510,9 +510,12 @@ namespace Test.Probe
 						f.Dispose();
 					}
 				}
-				//videoQueue = null;
-			}
+                videoQueue.Dispose();
+                videoQueue = null;
+
+            }
 		}
+
 		private double sampleInterval = 0;
 		private void DecoderTask(string fileName, MfVideoArgs inputArgs)
 		{
@@ -563,13 +566,13 @@ namespace Test.Probe
 							nalsBuffer.Clear();
 							var bytes = data.ToArray();
 							sw.Restart();
-							using (var pSample = MediaFactory.CreateSample())
+							using (var sample = MediaFactory.CreateSample())
 							{
 								try
 								{
 									sampleTime = sampleInterval * samplesCount;
-									pSample.SampleTime = MfTool.SecToMfTicks(sampleTime);
-									pSample.SampleDuration = MfTool.SecToMfTicks(sampleInterval);
+									sample.SampleTime = MfTool.SecToMfTicks(sampleTime);
+									sample.SampleDuration = MfTool.SecToMfTicks(sampleInterval);
 
 									using (var mediaBuffer = MediaFactory.CreateMemoryBuffer(bytes.Length))
 									{
@@ -578,10 +581,10 @@ namespace Test.Probe
 										mediaBuffer.CurrentLength = bytes.Length;
 										mediaBuffer.Unlock();
 
-										pSample.AddBuffer(mediaBuffer);
+										sample.AddBuffer(mediaBuffer);
 									}
 									// Console.WriteLine(">>>>>>>>>> ProcessSample(...) BEGIN " + (procCount++));
-									var res = decoder.ProcessSample(pSample, OnSampleDecoded);
+									var res = decoder.ProcessSample(sample, OnSampleDecoded);
 									if (res == DecodeResult.Error)
 									{
 										Console.WriteLine("decoder.ProcessSample == " + res);
