@@ -60,6 +60,7 @@ namespace MediaToolkit.MediaFoundation
             FillAttrDict(typeof(CaptureDeviceAttributeKeys));
 
             FillAttrDict(typeof(MFSampleExtension));
+            FillTypeDict(typeof(Dxva2Guids));
         }
 
         public static string GetMediaTypeName(Guid guid, bool GetFullName = false)
@@ -149,6 +150,10 @@ namespace MediaToolkit.MediaFoundation
                 {
                     valStr = GetMediaTypeName((Guid)obj, true);
                 }
+                else if(obj is byte[])
+                {
+                    valStr = ((byte[])obj).Length + " bytes";
+                }
             }
 
             if (guid == MediaTypeAttributeKeys.FrameRate.Guid ||
@@ -208,7 +213,7 @@ namespace MediaToolkit.MediaFoundation
                 }
             }
 
-            return attrName + " " + valStr;
+            return attrName + ": " + valStr;
         }
 
 
@@ -1193,9 +1198,15 @@ namespace MediaToolkit.MediaFoundation
         public static readonly MediaAttributeKey<int> Encryption_ResumeVideoOutput = new MediaAttributeKey<int>("a435aba5-afde-4cf5-bc1c-f6acaf13949d");
         public static readonly MediaAttributeKey<byte[]> NALULengthInfo = new MediaAttributeKey<byte[]>("19124e7c-ad4b-465f-bb18-20186287b6af");
 
-        //public static readonly Guid AccumulatedNonRefPicPercent = new Guid("79ea74df-a740-445b-bc98-c9ed1f260eee");
-        //public static readonly Guid Encryption_ResumeVideoOutput = new Guid("a435aba5-afde-4cf5-bc1c-f6acaf13949d");
-        //public static readonly Guid NALULengthInfo = new Guid("19124e7c-ad4b-465f-bb18-20186287b6af");
+    }
+
+    //https://docs.microsoft.com/en-us/windows/win32/api/dxva2api/nf-dxva2api-idirectxvideodecoderservice-getdecoderdeviceguids
+    public static class Dxva2Guids
+    {
+        //DXVA2_ModeH264_E (DXVA2_ModeH264_VLD_NoFGT) 	H.264 VLD, no FGT.
+        public static readonly Guid DXVA2_ModeH264_E = new Guid("1b81be68-a0c7-11d3-b984-00c04f2e73c5");
+
+        //..
     }
 
     public class ClsId

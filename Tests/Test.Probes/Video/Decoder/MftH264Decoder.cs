@@ -124,9 +124,11 @@ namespace Test.Probe
                         {
                             using (SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager devMan = new SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager())
                             {
-                                using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
+								
+								using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
                                 {
-                                    devMan.ResetDevice(device, devMan.CreationToken);
+									((SharpDX.IUnknown)device).AddReference();
+									devMan.ResetDevice(device, devMan.CreationToken);
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
                             }
@@ -205,7 +207,7 @@ namespace Test.Probe
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 InputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
 
-                // InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
+                InputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
 
                 InputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 InputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
@@ -249,9 +251,8 @@ namespace Test.Probe
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
-
-
-                OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+				OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
+				OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);
 
@@ -463,15 +464,16 @@ namespace Test.Probe
 
             if (decoder != null)
             {
-                //decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
+                
 
                 decoder.ProcessMessage(TMessageType.CommandFlush, IntPtr.Zero);
                 //decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
+				decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
 
 
-            }
+			}
 
         }
 
