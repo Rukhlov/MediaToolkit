@@ -360,12 +360,14 @@
     <None Include="Utils\FFmpegBatch\H264Gen.bat" />
     <None Include="Utils\FFmpegBatch\output\IFrame_1920x1080_yuv420p.h264" />
     <None Include="Utils\FFmpegBatch\output\rgb555_640x480.yuv" />
+    <None Include="Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_10sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264" />
+    <None Include="Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264" />
     <None Include="Utils\FFmpegBatch\output\testsrc_320x240_nv12.h264" />

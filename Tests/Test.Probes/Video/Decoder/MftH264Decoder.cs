@@ -51,6 +51,8 @@ namespace Test.Probe
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
 
+        public System.Drawing.Size MinSize { get; } = new System.Drawing.Size(48, 48);
+        public System.Drawing.Size MaxSize { get; } = new System.Drawing.Size(4096, 2304);
 
         public void Setup(MfVideoArgs inputArgs)
         {
@@ -125,11 +127,11 @@ namespace Test.Probe
                         {
                             using (SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager devMan = new SharpDX.MediaFoundation.DirectX.Direct3DDeviceManager())
                             {
-								
-								using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
+
+                                using (var device = new SharpDX.Direct3D9.DeviceEx(inputArgs.D3DPointer))
                                 {
-									((SharpDX.IUnknown)device).AddReference();
-									devMan.ResetDevice(device, devMan.CreationToken);
+                                    ((SharpDX.IUnknown)device).AddReference();
+                                    devMan.ResetDevice(device, devMan.CreationToken);
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
                             }
@@ -146,6 +148,7 @@ namespace Test.Probe
                 int inputStreamCount = -1;
                 int outputStreamsCount = -1;
                 decoder.GetStreamCount(out inputStreamCount, out outputStreamsCount);
+
                 int[] inputStreamIDs = new int[inputStreamCount];
                 int[] outputStreamIDs = new int[outputStreamsCount];
 
@@ -161,41 +164,7 @@ namespace Test.Probe
                     outputStreamId = 0;
                 }
 
-
-
-                for (int i = 0; ; i++)
-                {
-                    try
-                    {
-                        decoder.GetInputAvailableType(0, i, out MediaType mediaType);
-
-                        if (mediaType == null)
-                        {
-                            logger.Warn("NoMoreType");
-                            break;
-                        }
-
-                        var formatId = mediaType.Get(MediaTypeAttributeKeys.Subtype);
-                        if (formatId == inputFormat)
-                        {
-                            logger.Debug("inputFormat " + inputFormat);
-
-                            InputMediaType = mediaType;
-                            break;
-                        }
-                        mediaType.Dispose();
-                        mediaType = null;
-
-
-                    }
-                    catch (SharpDX.SharpDXException ex)
-                    {
-                        if (ex.ResultCode != SharpDX.MediaFoundation.ResultCode.NoMoreTypes)
-                        {
-                            throw;
-                        }
-                    }
-                }
+                InputMediaType = MfTool.GetTransformInputType(decoder, inputStreamId, inputFormat);
 
                 if (InputMediaType == null)
                 {
@@ -216,35 +185,11 @@ namespace Test.Probe
 
                 logger.Info("============== INPUT TYPE==================\r\n" + MfTool.LogMediaType(InputMediaType));
 
-
-
-                //MediaType outputMediaType = null;
-                //for (int i = 0; ; i++)
-                //{
-                //    res = decoder.TryGetOutputAvailableType(outputStreamId, i, out outputMediaType);
-
-                //    if (!res)
-                //    {
-                //        break;
-                //    }
-
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.AvgBitrate, 30000000);
-
-                //    outputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
-                //    outputMediaType.Set(MediaTypeAttributeKeys.FrameRate, MfTool.PackToLong(frameRate, 1));
-
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
-                //    //outputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
-
-                //    decoder.SetOutputType(outputStreamId, outputMediaType, 0);
-
-
-                //    outputMediaType.Dispose();
-                //    outputMediaType = null;
-                //    break;
-                //}
+               // Console.WriteLine(MfTool.LogTransformOutputs(decoder, outputStreamId));
 
                 OutputMediaType = new MediaType();
+
+                //OutputMediaType = MfTool.GetTransformOutputType(decoder, outputStreamId, VideoFormatGuids.NV12);
 
                 OutputMediaType.Set(MediaTypeAttributeKeys.MajorType, MediaTypeGuids.Video);
                 OutputMediaType.Set(MediaTypeAttributeKeys.Subtype, VideoFormatGuids.NV12);
@@ -252,8 +197,8 @@ namespace Test.Probe
                 OutputMediaType.Set(MediaTypeAttributeKeys.InterlaceMode, (int)VideoInterlaceMode.Progressive);
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameSize, MfTool.PackToLong(width, height));
                 OutputMediaType.Set(MediaTypeAttributeKeys.FrameRate, frameRate);
-				OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
-				OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
+                OutputMediaType.Set(MediaTypeAttributeKeys.PixelAspectRatio, MfTool.PackToLong(1, 1));
+                OutputMediaType.Set(MediaTypeAttributeKeys.AllSamplesIndependent, 1);
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);
 
@@ -280,7 +225,7 @@ namespace Test.Probe
             decoder.ProcessMessage(TMessageType.NotifyStartOfStream, IntPtr.Zero);
 
 
-            decoder.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
+            //decoder.GetOutputStreamInfo(0, out TOutputStreamInformation streamInformation);
 
             //logger.Debug(streamInformation.CbSize);
 
@@ -471,7 +416,7 @@ namespace Test.Probe
                 //decoder.ProcessMessage(TMessageType.CommandDrain, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndOfStream, IntPtr.Zero);
                 decoder.ProcessMessage(TMessageType.NotifyEndStreaming, IntPtr.Zero);
-				decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
+				//decoder.ProcessMessage(TMessageType.SetD3DManager, IntPtr.Zero);
 
 
 			}

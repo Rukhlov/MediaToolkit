@@ -473,8 +473,75 @@ namespace MediaToolkit.MediaFoundation
 			return new Tuple<int, int>(num, den);
 		}
 
+        public static MediaType GetTransformInputType(Transform transform, int streamId, Guid format)
+        {
+            MediaType mediaType = null;
+            for (int i = 0; ; i++)
+            {
+                try
+                {
+                    transform.GetInputAvailableType(streamId, i, out MediaType type);
+                    if (type == null)
+                    {
+                        break;
+                    }
 
-		public static string LogMediaSource(MediaSource mediaSource)
+                    var formatId = type.Get(MediaTypeAttributeKeys.Subtype);
+                    if (formatId == format)
+                    {
+                        mediaType = type;
+                        break;
+                    }
+
+                    mediaType.Dispose();
+                    mediaType = null;
+                }
+                catch (SharpDX.SharpDXException ex)
+                {
+                    if (ex.ResultCode != SharpDX.MediaFoundation.ResultCode.NoMoreTypes)
+                    {
+                        throw;
+                    }
+                }
+            }
+            return mediaType;
+        }
+
+        public static MediaType GetTransformOutputType(Transform transform, int streamId, Guid format)
+        {
+            MediaType mediaType = null;
+            for (int i = 0; ; i++)
+            {
+                MediaType type = null;
+
+                var res = transform.TryGetOutputAvailableType(streamId, i, out type);
+                if (!res)
+                {
+                    break;
+                }
+
+                if (type == null)
+                {
+                    break;
+                }
+
+                var formatId = type.Get(MediaTypeAttributeKeys.Subtype);
+                if (formatId == format)
+                {
+                    mediaType = type;
+                    break;
+                }
+
+                type.Dispose();
+                type = null;
+                
+            }
+
+            return mediaType;
+        }
+
+
+        public static string LogMediaSource(MediaSource mediaSource)
         {
             StringBuilder log = new StringBuilder();
             PresentationDescriptor presentDescriptor = null;
@@ -565,6 +632,73 @@ namespace MediaToolkit.MediaFoundation
             return log;
         }
 
+        public static string LogTransformInputs(Transform transform, int streamId)
+        {
+            StringBuilder log = new StringBuilder();
+            for (int i = 0; ; i++)
+            {
+                MediaType mediaType = null;
+                try
+                {
+                    transform.GetInputAvailableType(streamId, i, out mediaType);
+
+                    if (mediaType == null)
+                    {
+                        logger.Warn("NoMoreType");
+                        break;
+                    }
+
+                    log.AppendLine("Input #" + i);
+                    log.AppendLine(LogMediaType(mediaType));
+
+                }
+                catch (SharpDX.SharpDXException ex)
+                {
+                    if (ex.ResultCode != SharpDX.MediaFoundation.ResultCode.NoMoreTypes)
+                    {
+                        throw;
+                    }
+                }
+                finally
+                {
+                    if (mediaType != null)
+                    {
+                        mediaType.Dispose();
+                        mediaType = null;
+                    }
+                }
+            }
+            return log.ToString();
+        }
+
+        public static string LogTransformOutputs(Transform transform, int streamId)
+        {
+            StringBuilder log = new StringBuilder();
+
+            for (int i = 0; ; i++)
+            {
+                MediaType mediaType = null;
+                try
+                {
+                    var res = transform.TryGetOutputAvailableType(streamId, i, out mediaType);
+                    if (!res)
+                    {
+                        break;
+                    }
+                    log.AppendLine("Output #" + i);
+                    log.AppendLine(LogMediaType(mediaType));
+                }
+                finally
+                {
+                    if (mediaType != null)
+                    {
+                        mediaType.Dispose();
+                        mediaType = null;
+                    }
+                }
+            }
+            return log.ToString();
+        }
 
         public static string LogSourceReaderTypes(SourceReader sourceReader)
         {
