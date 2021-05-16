@@ -30,7 +30,7 @@ namespace Test.Probe
 			Console.WriteLine("VideoDecoderTest::Run()");
 			try
 			{
-				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
 
 
                 //// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -48,9 +48,9 @@ namespace Test.Probe
 
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
                 ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
                 var width = 1280;
@@ -557,7 +557,7 @@ namespace Test.Probe
         private void SourceReaderTask(string fileName, MfVideoArgs inputArgs)
         {
             //videoPackets = new Queue<VideoPacket>(4);
-            videoPackets = new BlockingCollection<VideoPacket>(4);
+            videoPackets = new BlockingCollection<VideoPacket>(8);
             Stream stream = null;
             try
             {
@@ -651,8 +651,8 @@ namespace Test.Probe
 
                 Stopwatch sw = Stopwatch.StartNew();
 
-                //while (videoPackets.IsAddingCompleted)
-                while (videoPackets.Count < 4)
+                while (videoPackets.IsAddingCompleted)
+                //while (videoPackets.Count < 4)
                 {
                     Thread.Sleep(1);
                     if (!running)
@@ -1315,29 +1315,6 @@ namespace Test.Probe
 			//AddFrame(frame);
 
 			videoFrames.Add(frame);
-
-
-			////videoQueue.Enqueue(frame);
-			////while (videoQueue.Count > videoBuffeSize)
-			////{
-			////    videoQueue.TryDequeue(out var f);
-			////    if (f != null)
-			////    {
-			////        f.tex?.Dispose();
-			////        f = null;
-			////    }
-			////}
-
-
-
-			//var frameAdded = videoQueue.TryAdd(frame, 5);
-			//if (!frameAdded)
-			//{
-			//    Console.WriteLine("frameAdded == " + frameAdded);
-			//    frame.tex?.Dispose();
-			//}
-
-
 
 			//var texBytes = DxTool.DumpTexture(device3D11, SharedTexture);
 			//var _descr = SharedTexture.Description;

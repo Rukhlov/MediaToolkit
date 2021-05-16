@@ -142,19 +142,6 @@ namespace MediaToolkit.MediaFoundation
             }
 
             var valStr = "";
-            if (obj != null)
-            {
-                valStr = obj.ToString();
-
-                if (obj is Guid)
-                {
-                    valStr = GetMediaTypeName((Guid)obj, true);
-                }
-                else if(obj is byte[])
-                {
-                    valStr = ((byte[])obj).Length + " bytes";
-                }
-            }
 
             if (guid == MediaTypeAttributeKeys.FrameRate.Guid ||
                 guid == MediaTypeAttributeKeys.FrameRateRangeMax.Guid ||
@@ -163,17 +150,39 @@ namespace MediaToolkit.MediaFoundation
                 guid == MediaTypeAttributeKeys.PixelAspectRatio.Guid )
             {
                 // Attributes that contain two packed 32-bit values.
-                long val = (long)obj;
-
-                valStr = string.Join(" ", UnPackLongToInts(val));
-
+                if (obj != null)
+                {
+                    long val = (long)obj;
+                    valStr = string.Join(" ", UnPackLongToInts(val));
+                }
             }
             else if (guid == MediaTypeAttributeKeys.GeometricAperture.Guid ||
                   guid == MediaTypeAttributeKeys.MinimumDisplayAperture.Guid ||
                   guid == MediaTypeAttributeKeys.PanScanAperture.Guid)
             {
                 // Attributes that an MFVideoArea structure.
-                //...
+                if (obj != null)
+                {
+                    var data = obj as byte[];
+                    if (data != null)
+                    {
+                        try
+                        {
+                            VideoArea videoArea = NativeAPIs.Utils.MarshalHelper.BytesToStruct<VideoArea>(data);
+
+                            float offsetX = GetVideoAreaOffset(videoArea.OffsetX);
+                            float offsetY = GetVideoAreaOffset(videoArea.OffsetX);
+                            var area = videoArea.Area;
+                            valStr = string.Join(" ", offsetX, offsetY, area.Width, area.Height);
+
+                        }
+                        catch (Exception ex)
+                        {
+                            valStr = "error";
+                            Debug.Fail(ex.Message);
+                        }
+                    }
+                }
             }
             else if (guid == TransformAttributeKeys.MftInputTypesAttributes.Guid ||
                 guid == TransformAttributeKeys.MftOutputTypesAttributes.Guid)
@@ -185,11 +194,7 @@ namespace MediaToolkit.MediaFoundation
                     {
                         try
                         {
-                            TRegisterTypeInformation typeInfo;
-                            fixed (byte* ptr = data)
-                            {
-                                typeInfo = (TRegisterTypeInformation)Marshal.PtrToStructure((IntPtr)ptr, typeof(TRegisterTypeInformation));
-                            }
+                            TRegisterTypeInformation typeInfo = NativeAPIs.Utils.MarshalHelper.BytesToStruct<TRegisterTypeInformation>(data);
                             valStr = GetMediaTypeName(typeInfo.GuidMajorType) + " " + GetMediaTypeName(typeInfo.GuidSubtype);
                         }
                         catch (Exception ex)
@@ -212,10 +217,25 @@ namespace MediaToolkit.MediaFoundation
                     valStr = string.Join("|", flags);
                 }
             }
+            else
+            {
+                if (obj != null)
+                {
+                    valStr = obj.ToString();
+
+                    if (obj is Guid)
+                    {
+                        valStr = GetMediaTypeName((Guid)obj, true);
+                    }
+                    else if (obj is byte[])
+                    {
+                        valStr = ((byte[])obj).Length + " bytes";
+                    }
+                }
+            }
 
             return attrName + ": " + valStr;
         }
-
 
 
         public static string LogEnumFlags(Enum flags)
@@ -322,8 +342,13 @@ namespace MediaToolkit.MediaFoundation
 			return new Tuple<int, int>(pars[0], pars[1]);
 		}
 
+        public static float GetVideoAreaOffset(Offset offset)
+        {//value + (fract / 65536.0f)
+            return offset.Value + offset.Fract / 65536.0f;
+        }
 
-		public static Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
+
+        public static Format GetDXGIFormatFromVideoFormatGuid(Guid guid)
         {
             Format format = Format.Unknown;
             if (DxgiFormatsDict.ContainsKey(guid))

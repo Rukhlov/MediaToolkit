@@ -82,7 +82,15 @@ namespace MediaToolkit.NativeAPIs.Utils
 				throw new NotSupportedException("Platform is neither 32 bits nor 64 bits.");
 			}
 		}
-	}
+
+        public static unsafe T BytesToStruct<T>(byte[] bytes) where T : struct
+        {
+            fixed (byte* ptr = bytes)
+            {
+                return (T)Marshal.PtrToStructure((IntPtr)ptr, typeof(T));
+            }
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     public class MFInt
