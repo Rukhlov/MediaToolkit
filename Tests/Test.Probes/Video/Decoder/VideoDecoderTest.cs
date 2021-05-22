@@ -23,7 +23,7 @@ using Device3D9 = SharpDX.Direct3D9;
 
 namespace Test.Probe
 {
-    class VideoDecoderTest
+    partial class VideoDecoderTest
     {
         public static void Run()
         {
@@ -49,10 +49,10 @@ namespace Test.Probe
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-                ///string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
                 var width = 1280;
                 var height = 720;
                 var fps = 30;
@@ -107,8 +107,8 @@ namespace Test.Probe
 
         private PresentationClock presentationClock = new PresentationClock();
 
-        private NalSourceReader sourceReader = null;
-		//private NalSourceReaderRealTime sourceReader = null;
+        //private NalSourceReader sourceReader = null;
+		private NalSourceReaderRealTime sourceReader = null;
 
 		private int videoBuffeSize = 3;
         private BlockingCollection<VideoFrame> videoFrames = null;
@@ -117,7 +117,7 @@ namespace Test.Probe
         //private Queue<Frame> frames = new Queue<Frame>(4);
 
         private int VideoAdapterIndex = 0;
-        private bool LowLatency = false;
+        private bool LowLatency = true;
         private bool xvpMode = false;
 
         private bool running = false;
@@ -282,8 +282,8 @@ namespace Test.Probe
 			//    Console.WriteLine("SourceReaderTask END");
 			//});
 
-			//sourceReader = new NalSourceReaderRealTime();
-            sourceReader = new NalSourceReader();
+			sourceReader = new NalSourceReaderRealTime();
+            //sourceReader = new NalSourceReader();
 
 
             //var readerTask = nalSource.Start(fileName, inputArgs);
@@ -298,8 +298,11 @@ namespace Test.Probe
             var presenterTask = new Task(() =>
             {
                 Console.WriteLine("PresenterTask BEGIN");
-                PresenterTask(fps);
-                Console.WriteLine("PresenterTask END");
+				PresenterTaskRealTime(fps);
+
+				//PresenterTask(fps);
+
+				Console.WriteLine("PresenterTask END");
             });
 
             var size = new System.Drawing.Size(width, height);
@@ -336,14 +339,18 @@ namespace Test.Probe
                 }
                 else if (e.KeyCode == Keys.Add)
                 {
-                    presentationClock.ClockRate += 0.05f;
-                    Console.WriteLine(presentationClock.ClockRate);
-                }
+					sourceReader.PacketInterval += 0.001f;
+					Console.WriteLine(sourceReader.PacketInterval);
+					//presentationClock.ClockRate += 0.05f;
+					//Console.WriteLine(presentationClock.ClockRate);
+				}
                 else if (e.KeyCode == Keys.Subtract)
                 {
-                    presentationClock.ClockRate -= 0.05f;
-                    Console.WriteLine(presentationClock.ClockRate);
-                }
+					sourceReader.PacketInterval -= 0.001f;
+					Console.WriteLine(sourceReader.PacketInterval);
+					//presentationClock.ClockRate -= 0.05f;
+					//Console.WriteLine(presentationClock.ClockRate);
+				}
                 else if (e.KeyCode == Keys.Space)
                 {
                     presentationClock.Paused = !presentationClock.Paused;
@@ -387,101 +394,100 @@ namespace Test.Probe
 
         }
 
+		private void PresenterTask(int presenterFps)
+		{
+			PerfCounter perfCounter = new PerfCounter();
 
-        private void PresenterTask(int presenterFps)
-        {
-            PerfCounter perfCounter = new PerfCounter();
+			try
+			{
+				//presenterFps = 1;
+				//videoQueue = new ConcurrentQueue<Frame>();
+				videoFrames = new BlockingCollection<VideoFrame>(videoBuffeSize);
 
-            try
-            {
-                //presenterFps = 1;
-                //videoQueue = new ConcurrentQueue<Frame>();
-                videoFrames = new BlockingCollection<VideoFrame>(videoBuffeSize);
+				double perFrameInterval = 1.0 / presenterFps;
+				double perFrame_1_4th = perFrameInterval / 4;
+				double perFrame_3_4th = 3 * perFrame_1_4th;
 
-                double perFrameInterval = 1.0 / presenterFps;
-                double perFrame_1_4th = perFrameInterval / 4;
-                double perFrame_3_4th = 3 * perFrame_1_4th;
+				//while(videoFrameBuffer.Count<7)
+				while (videoFrames.IsAddingCompleted)
+				//while (videoQueue.Count < videoBuffeSize)
+				{
+					Thread.Sleep(1);
 
-                //while(videoFrameBuffer.Count<7)
-                while (videoFrames.IsAddingCompleted)
-                //while (videoQueue.Count < videoBuffeSize)
-                {
-                    Thread.Sleep(1);
+					if (!running)
+					{
+						break;
+					}
+				}
 
-                    if (!running)
-                    {
-                        break;
-                    }
-                }
-
-                Console.WriteLine("videoQueue.IsAddingCompleted");
-                presentationClock.Reset();
-                AutoResetEvent syncEvent = new AutoResetEvent(false);
-                VideoFrame frame = null;
-                try
-                {
-                    double frameTime = 0;
-                    while (running)
-                    {
-                        bool presentNow = true;
-                        int delay = 1;//(int)(presentInterval * 1000);
+				Console.WriteLine("videoQueue.IsAddingCompleted");
+				presentationClock.Reset();
+				AutoResetEvent syncEvent = new AutoResetEvent(false);
+				VideoFrame frame = null;
+				try
+				{
+					double frameTime = 0;
+					while (running)
+					{
+						bool presentNow = true;
+						int delay = 1;//(int)(presentInterval * 1000);
 
 
-                        //while(videoFrameBuffer.Count>0)
-                        while (videoFrames.Count > 0)
-                        {
-                            presentNow = true;
-                            if (frame == null)
-                            {
-                                //frame = GetFrame();
+						//while(videoFrameBuffer.Count>0)
+						while (videoFrames.Count > 0)
+						{
+							presentNow = true;
+							if (frame == null)
+							{
+								//frame = GetFrame();
 
-                                // bool frameTaken = videoQueue.TryDequeue(out frame);
-                                bool frameTaken = videoFrames.TryTake(out frame, 10);
-                                if (!frameTaken)
-                                {
-                                    Console.WriteLine("frameTaken == false");
-                                    continue;
-                                }
+								// bool frameTaken = videoQueue.TryDequeue(out frame);
+								bool frameTaken = videoFrames.TryTake(out frame, 10);
+								if (!frameTaken)
+								{
+									Console.WriteLine("frameTaken == false");
+									continue;
+								}
 
-                                //frame = videoQueue.Take();
-                                //frame = frames.Dequeue();
-                            }
+								//frame = videoQueue.Take();
+								//frame = frames.Dequeue();
+							}
 
-                            if (frame.time < frameTime)
-                            {
-                                Console.WriteLine("Non monotonic time: " + frame.time + "<" + frameTime);
-                                if (frame != null)
-                                {
-                                    frame.Dispose();
-                                    frame = null;
-                                }
-                                continue;
-                            }
+							if (frame.time < frameTime)
+							{
+								Console.WriteLine("Non monotonic time: " + frame.time + "<" + frameTime);
+								if (frame != null)
+								{
+									frame.Dispose();
+									frame = null;
+								}
+								continue;
+							}
 
-                            frameTime = frame.time;
-                            var delta = frame.time - presentationClock.GetTime();
-                            if (delta < -perFrame_1_4th)
-                            {// This sample is late.
-                                presentNow = true;
-                            }
-                            else if (delta > perFrame_3_4th)
-                            {// This sample is still too early. Go to sleep.
-                                presentNow = false;
-                                delay = (int)((delta - perFrame_3_4th) * 1000);
-                            }
+							frameTime = frame.time;
+							var delta = frame.time - presentationClock.GetTime();
+							if (delta < -perFrame_1_4th)
+							{// This sample is late.
+								presentNow = true;
+							}
+							else if (delta > perFrame_3_4th)
+							{// This sample is still too early. Go to sleep.
+								presentNow = false;
+								delay = (int)((delta - perFrame_3_4th) * 1000);
+							}
 
-                            if (!presentNow && delay > 0 && running)
-                            {
-                                if (delay > 3000)
-                                {
-                                    Console.WriteLine(delay);
-                                    delay = 3000;
-                                }
+							if (!presentNow && delay > 0 && running)
+							{
+								if (delay > 3000)
+								{
+									Console.WriteLine(delay);
+									delay = 3000;
+								}
 
-                                //Debug.WriteLine(delay);
-                                syncEvent.WaitOne(delay);
-                                continue;
-                            }
+								//Debug.WriteLine(delay);
+								syncEvent.WaitOne(delay);
+								continue;
+							}
 
 							if (delta < -perFrameInterval * 3)
 							{
@@ -495,73 +501,177 @@ namespace Test.Probe
 							}
 
 							try
-                            {
-                                var cpuReport = perfCounter.GetReport();
-                                var timeNow = presentationClock.GetTime();
-                                int timeDelta = (int)((frame.time - timeNow) * 1000);
-                                var text = cpuReport + "\r\n"
-                                    + timeNow.ToString("0.000") + "\r\n"
-                                    + frame.time.ToString("0.000") + "\r\n"
-                                    + timeDelta + "\r\n"
-                                    + frame.seq;
+							{
+								var cpuReport = perfCounter.GetReport();
+								var timeNow = presentationClock.GetTime();
+								int timeDelta = (int)((frame.time - timeNow) * 1000);
+								var text = cpuReport + "\r\n"
+									+ timeNow.ToString("0.000") + "\r\n"
+									+ frame.time.ToString("0.000") + "\r\n"
+									+ timeDelta + "\r\n"
+									+ frame.seq;
 
-                                presenter.Update(frame.tex, text);
-                            }
-                            finally
-                            {
-                                if (frame != null)
-                                {
-                                    frame.Dispose();
-                                    frame = null;
-                                }
-                            }
-                        }
+								presenter.Update(frame.tex, text);
+							}
+							finally
+							{
+								if (frame != null)
+								{
+									frame.Dispose();
+									frame = null;
+								}
+							}
+						}
 
-                        syncEvent.WaitOne(10);
-                    }
+						syncEvent.WaitOne(10);
+					}
 
-                }
-                finally
-                {
-                    if (frame != null)
-                    {
-                        frame.Dispose();
-                        frame = null;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                running = false;
-            }
-            finally
-            {
-                if (videoFrames != null && videoFrames.Count > 0)
-                {
-                    foreach (var f in videoFrames)
-                    {
-                        if (f != null)
-                        {
-                            f.Dispose();
-                        }
-                    }
-                    videoFrames.Dispose();
-                    videoFrames = null;
-                }
+				}
+				finally
+				{
+					if (frame != null)
+					{
+						frame.Dispose();
+						frame = null;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				running = false;
+			}
+			finally
+			{
+				if (videoFrames != null && videoFrames.Count > 0)
+				{
+					foreach (var f in videoFrames)
+					{
+						if (f != null)
+						{
+							f.Dispose();
+						}
+					}
+					videoFrames.Dispose();
+					videoFrames = null;
+				}
 
-                if (perfCounter != null)
-                {
-                    perfCounter.Dispose();
-                    perfCounter = null;
-                }
-            }
-
-
-        }
+				if (perfCounter != null)
+				{
+					perfCounter.Dispose();
+					perfCounter = null;
+				}
+			}
 
 
-        private void DecoderTask(MfVideoArgs inputArgs)
+		}
+
+
+
+		private double delayEstimate = 0;
+		private double activeDelay = 0;
+
+		bool isFirstTime = true;
+		private double estimate1 = double.NaN;
+		private double estimate2 = double.NaN;
+		private double meanSkew = 0;
+		private Tuple<double, double> prevPoint = null;
+		private double AdjustmentDueToSkew(Tuple<double, double> currPoint, double offset = 0.0001, double smooth1 = 0.05, double smooth2 = 0.05, double maxdelay = 0.005)
+		{
+			double upBound = 1.0 + offset;
+			double bottomBound = 1.0 - offset;
+
+			double local = currPoint.Item1;
+			double remote = currPoint.Item2;
+
+			double adjustment = double.NaN;
+
+			if (prevPoint != null)
+			{
+				double prevLocal = prevPoint.Item1;
+				double prevRemote = prevPoint.Item2;
+
+				double diffLocal = (local - prevLocal);
+				double diffRemote = (remote - prevRemote);
+
+				if (diffRemote != 0)
+				{
+					var skew = diffLocal / diffRemote;
+
+					meanSkew = smooth1 * skew + (1 - smooth1) * meanSkew;
+
+					//Debug.WriteLine("meanSkew " + meanSkew + " x " + x + " prevX " + prevX + " y " + y + " prevY " + prevY + " diffX " + diffX + " diffY " + diffY);
+
+					if (double.IsInfinity(meanSkew))
+					{
+						throw new Exception("Inavalid meanSkew value (" + meanSkew + ")");
+					}
+				}
+				if (meanSkew > bottomBound && meanSkew < upBound)
+				{
+					// mainLogger.Debug("meanSkew " + meanSkew);
+					double val = local - remote;
+					if (double.IsNaN(estimate1))
+					{
+						estimate1 = val;
+					}
+
+					estimate1 = (smooth1 * val + (1 - smooth1) * estimate1);
+
+					if (double.IsNaN(estimate2))
+					{
+						estimate2 = estimate1;
+					}
+
+					estimate2 = (smooth2 * estimate1 + (1 - smooth2) * estimate2);
+
+					if (isFirstTime)
+					{
+						isFirstTime = false;
+
+						activeDelay = estimate2;
+						delayEstimate = estimate2;
+					}
+					else
+					{
+						delayEstimate = estimate2;
+					}
+
+					double delay = (activeDelay - delayEstimate);
+
+					if (delay > maxdelay)
+					{
+						Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
+						activeDelay = delayEstimate;
+						adjustment = delay;
+
+
+					}
+					else if (delay < -maxdelay)
+					{
+						Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
+
+						activeDelay = delayEstimate;
+						adjustment = delay;
+
+					}
+				}
+				else if (meanSkew > 1.1 || meanSkew < 0.9) // (meanSkew > 1.5 || meanSkew < 0.5)
+				{//large network delay
+
+					// mainLogger.Warn("meanSkew " + meanSkew);;
+				}
+
+			}
+
+			prevPoint = currPoint;
+
+			return adjustment;
+		}
+
+
+
+		private void DecoderTask(MfVideoArgs inputArgs)
         {
             try
             {
@@ -773,7 +883,7 @@ namespace Test.Probe
 
                     var sampleTimeSec = MfTool.MfTicksToSec(s.SampleTime);
                     var decoderTimeSec = MfTool.MfTicksToSec(decoderTime);
-                    OnSampleProcessed(texture, decoderTimeSec);
+                    OnSampleProcessed(texture, sampleTimeSec);
 
 
                 }
@@ -1228,11 +1338,15 @@ namespace Test.Probe
                 return;
             }
 
+            var arrivalTime = presentationClock.GetTime();
+           // Console.WriteLine(arrivalTime + " " + time + " " + (arrivalTime - time));
+
             var frame = new VideoFrame
             {
                 tex = tex,
                 time = time,
                 seq = decodedCount,
+                arrival = arrivalTime,
             };
 
             //AddFrame(frame);
@@ -1310,8 +1424,21 @@ namespace Test.Probe
                     return isAddingCompleted;
                 }
             }
+			public int Count
+			{
+				get
+				{
+					int count = -1;
+					if (videoPackets != null)
+					{
+						count = videoPackets.Count;
+					}
+					return count;
+				}
+			}
 
-            public bool TryGetPacket(out VideoPacket packet, int timeout)
+
+			public bool TryGetPacket(out VideoPacket packet, int timeout)
             {
                 packet = null;
                 bool result = false;
@@ -1431,250 +1558,13 @@ namespace Test.Probe
         }
 
 
-		class NalSourceReaderRealTime
-		{
-
-			CircularQueue<VideoPacket> videoPackets = null;
-			//private BlockingCollection<VideoPacket> videoPackets = null;
-			private volatile bool running = false;
-			public bool PacketsAvailable
-			{
-				get
-				{
-					bool available = false;
-					if (videoPackets != null)
-					{
-						available = videoPackets.Count>0;
-					}
-					return available;
-				}
-			}
-			public int Count
-			{
-				get
-				{
-					int count = -1;
-					if (videoPackets != null)
-					{
-						count = videoPackets.Count;
-					}
-					return count;
-				}
-			}
-			public bool IsFull
-			{
-				get
-				{
-					bool isComplete = false;
-					if (videoPackets != null)
-					{
-						isComplete = videoPackets.IsComplete;
-					}
-					return isComplete;
-				}
-			}
-
-			private object syncLock = new object();
-			public bool TryGetPacket(out VideoPacket packet, int timeout)
-			{
-				packet = null;
-				bool result = false;
-				if (videoPackets != null)
-				{
-					//lock (syncLock)
-					{
-						packet = videoPackets.Get();
-					}
-					
-					result = true;
-				}
-
-				return result;
-			}
-			public double PacketInterval { get; private set; }
-			public Task Start(string fileName, MfVideoArgs inputArgs)
-			{
-				if (running)
-				{
-					throw new InvalidOperationException("Invalid state " + running);
-				}
-
-				running = true;
-				return Task.Run(() =>
-				{
-					//videoPackets = new Queue<VideoPacket>(4);
-					videoPackets = new CircularQueue<VideoPacket>(16);
-
-					Stream stream = null;
-					try
-					{
-						var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-						PacketInterval = (double)frameRate[1] / frameRate[0];
-						long packetCount = 0;
-						double packetTime = 0;
-
-						stream = new FileStream(fileName, FileMode.Open);
-						var nalReader = new NalUnitReader(stream);
-						var dataAvailable = false;
-
-						bool loopback = true;
-
-						Random rnd = new Random();
-						while (loopback)
-						{
-							List<byte[]> nalsBuffer = new List<byte[]>();
-							do
-							{
-								int delay = (int)(PacketInterval * 1000);
-								//delay += rnd.Next(-5, 5);
-								Thread.Sleep(delay);
-
-								dataAvailable = nalReader.ReadNext(out var nal);
-								if (nal != null && nal.Length > 0)
-								{
-									var firstByte = nal[0];
-									var nalUnitType = firstByte & 0x1F;
-									nalsBuffer.Add(nal);
-
-									if (nalUnitType == (int)NalUnitType.IDR || nalUnitType == (int)NalUnitType.Slice)
-									{
-										IEnumerable<byte> data = new List<byte>();
-										var startCodes = new byte[] { 0, 0, 0, 1 };
-										foreach (var n in nalsBuffer)
-										{
-											data = data.Concat(startCodes).Concat(n);
-										}
-
-										nalsBuffer.Clear();
-										packetTime = PacketInterval * packetCount;
-										var bytes = data.ToArray();
-										var packet = new VideoPacket
-										{
-											data = bytes,
-											time = packetTime,
-											duration = PacketInterval,
-										};
-
-										//videoPackets.Enqueue(packet);
-										//lock (syncLock)
-										{
-											videoPackets.Add(packet);
-										}
-										
-										packetCount++;
-									}
-								}
-
-							} while (dataAvailable && running);
-
-							if (!running)
-							{
-								break;
-							}
-
-							stream.Position = 0;
-						}
-					}
-					catch (Exception ex)
-					{
-						Console.WriteLine(ex.Message);
-						running = false;
-					}
-					finally
-					{
-						if (stream != null)
-						{
-							stream.Dispose();
-							stream = null;
-						}
-
-						//if (videoPackets != null)
-						//{
-						//	videoPackets.Dispose();
-						//	videoPackets = null;
-						//}
-					}
-				});
-			}
-
-			public void Stop()
-			{
-				running = false;
-			}
-
-			public class CircularQueue<T> //where T : new()
-			{
-				private T[] buffer;
-
-				private object locker = new object();
-
-				private volatile int indexOut;
-				private volatile int indexIn;
-
-				private volatile int count;
-
-				private volatile bool isComplete;
-
-				public int Count => count;
-				public bool IsComplete => isComplete;
-
-				public readonly int Capacity = 8;
-				public CircularQueue(int capacity = 8)
-				{
-					this.Capacity = capacity;
-					buffer = new T[Capacity];
-					indexOut = 0;
-					indexIn = 0;
-					count = 0;
-				}
-
-				public void Add(T t)
-				{
-					lock (locker)
-					{
-						buffer[indexIn] = t;
-						indexIn = (indexIn + 1) % Capacity;
-						count = (count + 1) % Capacity;
-
-						isComplete = (indexIn == indexOut);
-
-						if (count == 0)
-						{
-							Console.WriteLine("Buffer full droping items...");
-						}
-					}
-				}
-
-
-				public T Get()
-				{
-					T t = default(T);
-					lock (locker)
-					{
-						if (count > 0)
-						{
-							int index = indexOut;
-							indexOut = (indexOut + 1) % Capacity;
-							count = (count - 1) % Capacity;
-
-							isComplete = (indexIn == indexOut);
-
-							t = buffer[index];
-						}
-					}
-
-					return t;
-				}
-			}
-		}
-
 		class VideoFrame
         {
             public Texture2D tex = null;
             public double time = 0;
             public double duration = 0;
             public ulong seq = 0;
-
+            public double arrival = 0;
             public void Dispose()
             {
                 DxTool.SafeDispose(tex);

@@ -85,6 +85,7 @@
     <Compile Include="Video\Decoder\CircularBuffer.cs" />
     <Compile Include="Video\Decoder\IDRDecoder.cs" />
     <Compile Include="Video\Decoder\MftH264Decoder.cs" />
+    <Compile Include="Video\Decoder\VideoDecoderTest.RealTime.cs" />
     <Compile Include="Video\DxTextureTest.cs" />
     <Compile Include="FFmpeg\FFmpegJpegEncoderTest.cs" />
     <Compile Include="FFmpeg\FFmpegPixConverterTest.cs" />
