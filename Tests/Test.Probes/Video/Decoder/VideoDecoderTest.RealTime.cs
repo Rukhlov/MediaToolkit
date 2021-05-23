@@ -22,7 +22,7 @@ namespace Test.Probe
 			try
 			{
 				//presenterFps = 1;
-				videoFrames = new BlockingCollection<VideoFrame>(2);
+				videoFrames = new BlockingCollection<VideoFrame>(1);
 
 				while (videoFrames.Count < videoFrames.BoundedCapacity)
 				{
@@ -38,70 +38,54 @@ namespace Test.Probe
 				//presentationClock.ClockRate = 0.997;
 				AutoResetEvent syncEvent = new AutoResetEvent(false);
 
-				VideoFrame frame = null;
-				try
+
+				double prevFrameTime = double.NaN;
+				while (running)
 				{
-					double prevFrameTime = double.NaN;
-					while (running)
+					while (videoFrames.Count > 0)
 					{
-						int delay = 0;
-
-						while (videoFrames.Count > 0)
+						VideoFrame frame = null;
+						try
 						{
-							if (frame == null)
-							{
-								bool frameTaken = videoFrames.TryTake(out frame, 1);
-								if (!frameTaken)
-								{
-									Console.WriteLine("frameTaken == false");
-									continue;
-								}
-							}
 
-							double delta = 0;
-							if (!double.IsNaN(prevFrameTime))
+							bool frameTaken = videoFrames.TryTake(out frame, 1);
+							if (!frameTaken)
 							{
-								delta = frame.time - prevFrameTime;
-							}
-
-							prevFrameTime = frame.time;
-
-							if (delta < 0)
-							{
-								Console.WriteLine("Non monotonic time: " + frame.time + "<" + prevFrameTime);
-								if (frame != null)
-								{
-									frame.Dispose();
-									frame = null;
-								}
+								Console.WriteLine("frameTaken == false");
 								continue;
 							}
 
-							delay = (int)(delta * 1000);
-
-		
-							if (sourceReader.Count > 2)
+							double frameDiff = 0;
+							if (!double.IsNaN(prevFrameTime))
 							{
-								delay = (int)(delay * 0.5);
+								frameDiff = frame.time - prevFrameTime;
 							}
-							else if (sourceReader.Count > 1)
-							{
-								delta = (int)(delay * 0.75);
-							}
+							prevFrameTime = frame.time;
 
-							if (delay > 0 && running)
+							if (frameDiff >= 0)
 							{
-								if (delay > 3000)
+								int delay = (int)(frameDiff * 1000);
+
+								if (sourceReader.Count > 2)
 								{
-									Console.WriteLine(delay);
-									delay = 3000;
+									delay = (int)(delay * 0.5);
+								}
+								else if (sourceReader.Count > 1)
+								{
+									delay = (int)(delay * 0.75);
 								}
 
-								syncEvent.WaitOne(delay);
-							}
+								if (delay > 0 && running)
+								{
+									if (delay > 3000)
+									{
+										Console.WriteLine(delay);
+										delay = 3000;
+									}
 
-							try
-							{
+									syncEvent.WaitOne(delay);
+								}
+
 								var cpuReport = perfCounter.GetReport();
 								var timeNow = presentationClock.GetTime();
 								int timeDelta = (int)((frame.time - timeNow) * 1000);
@@ -110,7 +94,7 @@ namespace Test.Probe
 								var text = cpuReport + "\r\n"
 									+ timeNow.ToString("0.000") + "\r\n"
 									+ frame.time.ToString("0.000") + "\r\n"
-									+ timeDelta + "\r\n" 
+									+ timeDelta + "\r\n"
 									+ timeDelta2 + "\r\n"
 									+ frame.seq + "\r\n"
 									+ sourceReader.Count + "\r\n"
@@ -119,28 +103,25 @@ namespace Test.Probe
 
 								presenter.Update(frame.tex, text);
 							}
-							finally
+							else
 							{
-								if (frame != null)
-								{
-									frame.Dispose();
-									frame = null;
-								}
+								Console.WriteLine("Non monotonic time: " + frame.time + "<" + prevFrameTime);
 							}
 						}
-
-						syncEvent.WaitOne(10);
+						finally
+						{
+							if (frame != null)
+							{
+								frame.Dispose();
+								frame = null;
+							}
+						}
 					}
 
+					//Console.WriteLine("syncEvent.WaitOne(10");
+					syncEvent.WaitOne(10);
 				}
-				finally
-				{
-					if (frame != null)
-					{
-						frame.Dispose();
-						frame = null;
-					}
-				}
+
 			}
 			catch (Exception ex)
 			{
@@ -234,7 +215,8 @@ namespace Test.Probe
 
 				return result;
 			}
-			public double PacketInterval { get;  set; }
+			public int WaitDelay { get; set; } = 33;
+			public double PacketInterval { get; set; }
 			public Task Start(string fileName, MfVideoArgs inputArgs)
 			{
 				if (running)
@@ -246,13 +228,15 @@ namespace Test.Probe
 				return Task.Run(() =>
 				{
 					//videoPackets = new Queue<VideoPacket>(4);
-					videoPackets = new CircularQueue<VideoPacket>(16);
+					videoPackets = new CircularQueue<VideoPacket>(64);
 
 					Stream stream = null;
 					try
 					{
 						var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
 						PacketInterval = (double)frameRate[1] / frameRate[0];
+						WaitDelay = (int)(PacketInterval * 1000);
+
 						long packetCount = 0;
 						double packetTime = 0;
 						double prevTime = 0;
@@ -316,8 +300,8 @@ namespace Test.Probe
 
 
 										int delay = (int)(PacketInterval * 1000);
-										delay += rnd.Next(-5, 5);
-										Thread.Sleep(delay);
+										//delay += rnd.Next(-15, 15);
+										Thread.Sleep(WaitDelay);
 
 										packetCount++;
 									}

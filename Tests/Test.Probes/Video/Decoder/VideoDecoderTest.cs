@@ -30,7 +30,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.CPU;
 
 
                 //// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -339,18 +339,21 @@ namespace Test.Probe
                 }
                 else if (e.KeyCode == Keys.Add)
                 {
-					sourceReader.PacketInterval += 0.001f;
-					Console.WriteLine(sourceReader.PacketInterval);
+                    sourceReader.WaitDelay += 1;
+                    Console.WriteLine(sourceReader.WaitDelay);
 					//presentationClock.ClockRate += 0.05f;
 					//Console.WriteLine(presentationClock.ClockRate);
 				}
                 else if (e.KeyCode == Keys.Subtract)
                 {
-					sourceReader.PacketInterval -= 0.001f;
-					Console.WriteLine(sourceReader.PacketInterval);
-					//presentationClock.ClockRate -= 0.05f;
-					//Console.WriteLine(presentationClock.ClockRate);
-				}
+                    sourceReader.WaitDelay -= 1;
+                    Console.WriteLine(sourceReader.WaitDelay);
+
+                    //sourceReader.PacketInterval -= 0.001f;
+                    //Console.WriteLine(sourceReader.PacketInterval);
+                    //presentationClock.ClockRate -= 0.05f;
+                    //Console.WriteLine(presentationClock.ClockRate);
+                }
                 else if (e.KeyCode == Keys.Space)
                 {
                     presentationClock.Paused = !presentationClock.Paused;
