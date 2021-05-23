@@ -114,6 +114,7 @@ XCOPY "$(SolutionDir)Resources\CRT\Debug_NoRedist\*.dll" "$(SolutionDir)bin\$(Co
   <ItemGroup>
     <ClCompile Include="AudioDecoder.cpp" />
     <ClCompile Include="AudioEncoder.cpp" />
+    <ClCompile Include="H264Decoder.cpp" />
     <ClCompile Include="H264Encoder.cpp" />
     <ClCompile Include="PixelConverter.cpp" />
     <ClCompile Include="Utils.cpp" />

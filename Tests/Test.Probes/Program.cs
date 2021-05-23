@@ -31,26 +31,27 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-            //var info = GpuHardwareInfo.GetHardwareInfos();
-            //foreach (var i in info)
-            //{
-            //    Console.WriteLine(i.AdapterString + " " + StringHelper.SizeSuffix(i.MemorySize, 0));
+			FFmpegDecoderTest.Run();
+			//var info = GpuHardwareInfo.GetHardwareInfos();
+			//foreach (var i in info)
+			//{
+			//    Console.WriteLine(i.AdapterString + " " + StringHelper.SizeSuffix(i.MemorySize, 0));
 
-            //}
+			//}
 
-            //EnumWindowsTest.Run();
+			//EnumWindowsTest.Run();
 
-            //FullScreenSwitchTest.Run();
+			//FullScreenSwitchTest.Run();
 
-            //CopyImageTest.Run();
+			//CopyImageTest.Run();
 
 
-            //GDIRendererTest.Run();
-            //SimpleSwapChain.Run();
+			//GDIRendererTest.Run();
+			//SimpleSwapChain.Run();
 
-            //IDRDecoder.Run();
+			//IDRDecoder.Run();
 
-            VideoDecoderTest.Run();
+			//VideoDecoderTest.Run();
 
             //var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 

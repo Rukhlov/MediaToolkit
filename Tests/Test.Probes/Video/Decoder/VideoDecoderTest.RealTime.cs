@@ -68,11 +68,11 @@ namespace Test.Probe
 
 								if (sourceReader.Count > 2)
 								{
-									delay = (int)(delay * 0.5);
+									delay = (int)(delay * 0.75);
 								}
 								else if (sourceReader.Count > 1)
 								{
-									delay = (int)(delay * 0.75);
+									delay = (int)(delay * 0.95);
 								}
 
 								if (delay > 0 && running)
@@ -95,7 +95,8 @@ namespace Test.Probe
 									+ timeNow.ToString("0.000") + "\r\n"
 									+ frame.time.ToString("0.000") + "\r\n"
 									+ timeDelta + "\r\n"
-									+ timeDelta2 + "\r\n"
+									+ timeDelta2 + "\r\n" 
+									+ delay + "\r\n"
 									+ frame.seq + "\r\n"
 									+ sourceReader.Count + "\r\n"
 									+ videoFrames.Count;
