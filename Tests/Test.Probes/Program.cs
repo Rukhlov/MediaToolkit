@@ -31,7 +31,7 @@ namespace Test.Encoder
             MediaToolkitManager.Startup();
             Console.WriteLine("========================RUN=======================");
 
-			FFmpegDecoderTest.Run();
+			//FFmpegDecoderTest.Run();
 			//var info = GpuHardwareInfo.GetHardwareInfos();
 			//foreach (var i in info)
 			//{
@@ -51,7 +51,7 @@ namespace Test.Encoder
 
 			//IDRDecoder.Run();
 
-			//VideoDecoderTest.Run();
+			VideoDecoderTest.Run();
 
             //var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 

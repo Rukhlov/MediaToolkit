@@ -32,22 +32,27 @@ namespace Test.Encoder
 				Width = width,
 				Height = height,
 			};
-            decoder.DataDecoded += (frame, time) =>
+
+
+			Action<IVideoFrame> OnDataDecoded = new Action<IVideoFrame>((frame) =>
               {
-                  var lumaSize = frame[0].Stride * height;
-                  var CbSize = frame[1].Stride * height /2;
-                  var CrSize = frame[2].Stride * height /2;
+				  var frameBuffer = frame.Buffer;
+				  var time = frame.Time;
+
+                  var lumaSize = frameBuffer[0].Stride * height;
+                  var CbSize = frameBuffer[1].Stride * height /2;
+                  var CrSize = frameBuffer[2].Stride * height /2;
 
                   var totalSize = lumaSize + CbSize + CrSize;
                   byte[] _bytes = new byte[totalSize];
                   int offset = 0;
-                  Marshal.Copy(frame[0].Data, _bytes, offset, lumaSize);
+                  Marshal.Copy(frameBuffer[0].Data, _bytes, offset, lumaSize);
                   offset += lumaSize;
 
-                  Marshal.Copy(frame[1].Data, _bytes, offset, CbSize);
+                  Marshal.Copy(frameBuffer[1].Data, _bytes, offset, CbSize);
                   offset += CbSize;
 
-                  Marshal.Copy(frame[2].Data, _bytes, offset, CrSize);
+                  Marshal.Copy(frameBuffer[2].Data, _bytes, offset, CrSize);
                   offset += CrSize;
                   var decodedName = width + "x" + height + "_yuv420p_" + time + ".yuv";
                  
@@ -59,7 +64,7 @@ namespace Test.Encoder
                   //    Console.WriteLine(b.Stride);
                   //}
 
-              };
+              });
 
             decoder.Setup(settings);
             var bytes = File.ReadAllBytes(fileName);
@@ -78,63 +83,22 @@ namespace Test.Encoder
 
                 if (nalUnitType == (int)NalUnitType.IDR || nalUnitType == (int)NalUnitType.Slice)
                 {
-                    decoder.Decode(data.ToArray(), sec);
+                    decoder.Decode(data.ToArray(), sec, OnDataDecoded);
                     sec += 0.033;
 
                     data = new List<byte>();
                 }
             }
+			if (decoder.Drain())
+			{
+				int decodeResult = 0;
+				while (decodeResult == 0)
+				{
+					decodeResult = decoder.Decode(null, 0, OnDataDecoded);
+				}
+			}
 
-           
-            decoder.Close();
-
-			////var fileName = @"Files\1920x1080.bmp";
-			////var fileName = @"Files\rgba_640x480.bmp";
-			//var fileName = @"Files\2560x1440.bmp";
-
-			//Bitmap srcBitmap = new Bitmap(fileName);
-			//VideoBuffer video = new VideoBuffer(1920, 1080, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-
-			//var b = video.bitmap;
-
-			//var g = Graphics.FromImage(b);
-			//g.DrawImage(srcBitmap, 0, 0, b.Width, b.Height);
-			//g.Dispose();
-			//srcBitmap.Dispose();
-
-			//Console.WriteLine("InputFile: " + fileName);
-
-			//FFmpegLib.FFmpegVideoEncoder encoder = new FFmpegLib.FFmpegVideoEncoder();
-			//VideoEncoderSettings settings = new VideoEncoderSettings
-			//{
-			//	EncoderId = "mjpeg",
-			//	EncoderFormat = VideoCodingFormat.JPEG,
-			//	Width = 1920,
-			//	Height = 1080,
-			//	FrameRate = new MediaRatio(1, 1),
-			//};
-
-			//encoder.Open(settings);
-
-			//encoder.DataEncoded += (ptr, size, time) =>
-			//{
-
-			//	var path = AppDomain.CurrentDomain.BaseDirectory + "Jpeg";
-			//	if (!Directory.Exists(path))
-			//	{
-			//		Directory.CreateDirectory(path);
-			//	}
-
-			//	var outputFile = Path.Combine(path, "full_FFjpeg.jpg");
-
-			//	MediaToolkit.Utils.TestTools.WriteFile(ptr, size, outputFile);
-
-			//	Console.WriteLine("OutputFile: " + outputFile);
-
-			//};
-			//encoder.Encode(video);
-
-			//encoder.Close();
+			decoder.Close();
 
 			Console.WriteLine("FFmpegDecoderTest::Run() END");
 

@@ -274,7 +274,45 @@ namespace MediaToolkit.Core
         void Unlock();
     }
 
-    public interface IFrameBuffer
+	public abstract class VideoFrameBase : IVideoFrame
+	{
+		public IFrameBuffer[] Buffer { get; protected set; }
+
+		public double Time { get; set; }
+		public double Duration { get; set; }
+
+		public int Width { get; protected set; }
+		public int Height { get; protected set; }
+		public PixFormat Format { get; protected set; } = PixFormat.RGB32;
+		public int Align { get; protected set; }
+
+		public abstract VideoDriverType DriverType { get; }
+
+		public ColorSpace ColorSpace { get; set; }
+		public ColorRange ColorRange { get; set; }
+
+		public int DataLength { get; protected set; }
+
+
+		protected readonly object syncRoot = new object();
+		public virtual bool Lock(int timeout = 10)
+		{
+			bool lockTaken = false;
+			Monitor.TryEnter(syncRoot, timeout, ref lockTaken);
+			return lockTaken;
+		}
+
+		public virtual void Unlock()
+		{
+			Monitor.Exit(syncRoot);
+		}
+
+		public virtual void Dispose()
+		{ }
+	}
+
+
+	public interface IFrameBuffer
     {
         IntPtr Data { get; }
         int Stride { get; }

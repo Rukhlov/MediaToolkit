@@ -1,4 +1,6 @@
-﻿using MediaToolkit.Codecs;
+﻿using FFmpegLib;
+using MediaToolkit.Codecs;
+using MediaToolkit.Core;
 using MediaToolkit.DirectX;
 using MediaToolkit.MediaFoundation;
 using MediaToolkit.Utils;
@@ -46,23 +48,23 @@ namespace Test.Probe
 				//var height = 480;\
 
 
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				//var width = 1280;
-				//var height = 720;
-				//var fps = 30;
-
-
-
-				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				var width = 1920;
-				var height = 1080;
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+				var width = 1280;
+				var height = 720;
 				var fps = 30;
+
+
+
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+				//var width = 1920;
+				//var height = 1080;
+				//var fps = 30;
 
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
 				//var width = 2560;
@@ -271,9 +273,11 @@ namespace Test.Probe
 
             rgbProcessor = new RgbProcessor();
             var srcSize = new System.Drawing.Size(width, height);
-            rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+			//rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-            presenter = new D3D11Presenter(device3D11);
+			rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+
+			presenter = new D3D11Presenter(device3D11);
 
 			//var readerTask = new Task(() =>
 			//{
@@ -291,8 +295,10 @@ namespace Test.Probe
             var decoderTask = new Task(() =>
             {
                 Console.WriteLine("DecoderTask BEGIN");
-                DecoderTask(inputArgs);
-                Console.WriteLine("DecoderTask END");
+				//DecoderTask(inputArgs);
+				FFmpegDecoderTask(inputArgs);
+
+				Console.WriteLine("DecoderTask END");
             });
 
             var presenterTask = new Task(() =>
@@ -779,7 +785,184 @@ namespace Test.Probe
         }
 
 
-        private Stopwatch stopwatch = new Stopwatch();
+		private void FFmpegDecoderTask(MfVideoArgs inputArgs)
+		{
+			H264Decoder decoder = null;
+			try
+			{
+				decoder = new H264Decoder();
+				var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
+				VideoEncoderSettings settings = new VideoEncoderSettings
+				{
+					EncoderFormat = VideoCodingFormat.H264,
+					Width = inputArgs.Width,
+					Height = inputArgs.Height,
+				};
+
+				decoder.Setup(settings);
+
+				var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+
+				Stopwatch sw = Stopwatch.StartNew();
+
+				while (sourceReader.IsFull)
+				//while (sourceReader.Count < 2)
+				{
+					Thread.Sleep(1);
+					if (!running)
+					{
+						break;
+					}
+				}
+
+				Action<IVideoFrame> OnDataDecoded = new Action<IVideoFrame>((frame) =>
+				{
+					//Console.WriteLine("OnDataDecoded() " + time);
+					var time = frame.Time;
+					var frameBuffer = frame.Buffer;
+
+					Texture2D[] srcTextures = null;
+
+					var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+					{
+						Width = size.Width,
+						Height = size.Height,
+						MipLevels = 1,
+						ArraySize = 1,
+						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+						BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+						Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+						CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+						Format = SharpDX.DXGI.Format.R8_UNorm,
+
+						OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+					};
+					var lumaPtr = frameBuffer[0].Data;
+					var lumaStride = frameBuffer[0].Stride;
+
+					SharpDX.DataBox[] lumaData =
+					{
+						new SharpDX.DataBox(lumaPtr,  lumaStride, 0),
+					};
+					var lumaTexture = new Texture2D(device3D11, texDescr, lumaData);
+					var pixFormat = frame.Format;
+
+					if(pixFormat == PixFormat.I420)
+					{
+						texDescr.Width = size.Width / 2;
+						texDescr.Height = size.Height / 2;
+					}
+					else if (pixFormat == PixFormat.I422)
+					{
+						texDescr.Width = size.Width / 2;
+					}
+					else if (pixFormat == PixFormat.I444) { }
+					else
+					{
+						throw new NotSupportedException("Invalid format " + pixFormat);
+					}
+
+					var chromaCbPtr = frameBuffer[1].Data;
+					var chromaCbStride = frameBuffer[1].Stride;
+					SharpDX.DataBox[] cbData =
+					{
+						new SharpDX.DataBox(chromaCbPtr, chromaCbStride, 0),
+					};
+					var cbTexture = new Texture2D(device3D11, texDescr, cbData);
+
+
+					var chromaCrPtr = frameBuffer[2].Data;
+					var chromaCrStride = frameBuffer[2].Stride;
+					SharpDX.DataBox[] crData =
+					{
+						new SharpDX.DataBox(chromaCrPtr, chromaCrStride, 0),
+					};
+					var crTexture = new Texture2D(device3D11, texDescr, crData);
+
+					srcTextures = new Texture2D[] { lumaTexture, cbTexture, crTexture };
+
+					var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+					{
+						Width = size.Width,
+						Height = size.Height,
+						Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+						BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+						Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+						CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+						OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+						MipLevels = 1,
+						ArraySize = 1,
+
+					});
+
+					rgbProcessor.DrawTexture(srcTextures, destTexture, size);
+
+					OnSampleProcessed(destTexture, time);
+
+					foreach (var t in srcTextures)
+					{
+						DxTool.SafeDispose(t);
+					}
+				});
+
+				AutoResetEvent syncEvent = new AutoResetEvent(false);
+				while (running)
+				{
+					while (sourceReader.PacketsAvailable)
+					{
+						bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
+						if (!packetTaken)
+						{
+							Console.WriteLine("packet == false");
+							continue;
+						}
+
+						//var packet = videoPackets.Dequeue();
+
+						try
+						{
+							var res = decoder.Decode(packet.data, packet.time, OnDataDecoded);
+
+						}
+						catch (Exception ex)
+						{
+							Console.WriteLine(ex.Message);
+						}
+						
+					}
+
+					syncEvent.WaitOne(10);
+				}
+
+				if (decoder.Drain())
+				{
+					var decodeResult = 0;
+					do
+					{
+						//Console.WriteLine("ProcessSample(...) " + (procCount++));
+						decodeResult = decoder.Decode(null, 0, OnDataDecoded);
+					} while (decodeResult == 0);
+
+					var totalMilliseconds = sw.ElapsedMilliseconds;
+					Console.WriteLine("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
+
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				running = false;
+			}
+			finally
+			{
+				decoder.Close();
+				decoder = null;
+			}
+		}
+
+		private Stopwatch stopwatch = new Stopwatch();
         long prevTimestamp = 0;
         private long decoderTime = 0;
         private ulong decodedCount = 0;

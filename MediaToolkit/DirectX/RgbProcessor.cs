@@ -64,7 +64,8 @@ namespace MediaToolkit.DirectX
                 srcFormat != PixFormat.RGB24 &&
                 srcFormat != PixFormat.RGB16 &&
                 srcFormat != PixFormat.RGB15 &&
-                srcFormat != PixFormat.NV12)
+                srcFormat != PixFormat.NV12 && 
+				srcFormat != PixFormat.I444 && srcFormat != PixFormat.I422 && srcFormat != PixFormat.I420)
             {
                 throw new InvalidOperationException("Invalid source format: " + srcFormat);
             }
@@ -135,7 +136,11 @@ namespace MediaToolkit.DirectX
             {
                 toRgb32Ps = HlslCompiler.GetPixelShader(device, "Nv12ToRgb", "PS");
             }
-            if (scalingFilter == ScalingFilter.Linear)
+			else if (srcFormat == PixFormat.I444 || srcFormat == PixFormat.I422 || srcFormat == PixFormat.I420)
+			{
+				toRgb32Ps = HlslCompiler.GetPixelShader(device, "YuvToRgb", "PS");
+			}
+			if (scalingFilter == ScalingFilter.Linear)
             {
                 downscaleBilinearPS = HlslCompiler.GetPixelShader(device, "DownscaleBilinear8", "PS");
             }
@@ -164,7 +169,9 @@ namespace MediaToolkit.DirectX
 
             });
 
-            if (srcFormat == PixFormat.RGB15 || srcFormat == PixFormat.RGB16 || srcFormat == PixFormat.NV12)
+            if (srcFormat == PixFormat.RGB15 || srcFormat == PixFormat.RGB16 
+				|| srcFormat == PixFormat.NV12 
+				|| srcFormat == PixFormat.I444 || srcFormat == PixFormat.I422 || srcFormat == PixFormat.I420)
             {
                 tempTexture = new Texture2D(device, new Texture2DDescription
                 {
@@ -396,9 +403,66 @@ namespace MediaToolkit.DirectX
 
                     rgb32SRV = tempSRV;
                 }
+				else if (srcFormat == PixFormat.I444 || srcFormat == PixFormat.I422 || srcFormat == PixFormat.I420)
+				{
+					ShaderResourceView lumaSRV = null;
+					ShaderResourceView CbSRV = null;
+					ShaderResourceView CrSRV = null;
+					try
+					{
+						if (srcTextures.Length == 3)
+						{
+							ShaderResourceViewDescription description = new ShaderResourceViewDescription
+							{
+								Format = Format.R8_UNorm,
+								Dimension = ShaderResourceViewDimension.Texture2D,
+								Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+							};
 
+							lumaSRV = new ShaderResourceView(device, srcTextures[0], description);
+							CbSRV = new ShaderResourceView(device, srcTextures[1], description);
+							CrSRV = new ShaderResourceView(device, srcTextures[2], description);
+						}
+						else
+						{
+							throw new InvalidOperationException("Invalid source textures number");
+						}
 
-                if (srcSize != destSize || transform != Transform.R0 || srcSize != viewSize)
+						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+						{
+							VertexBufferBinding vertexBuffer = new VertexBufferBinding
+							{
+								Buffer = buffer,
+								Stride = Utilities.SizeOf<_Vertex>(),
+								Offset = 0,
+							};
+							deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+						}
+
+						var yuvToRgbMatrix = ColorSpaceHelper.GetYuvToRgbMatrix();
+						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref yuvToRgbMatrix))
+						{
+							deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+						}
+
+						deviceContext.PixelShader.SetShader(toRgb32Ps, null, 0);
+						deviceContext.OutputMerger.SetTargets(tempRTV);
+						deviceContext.ClearRenderTargetView(tempRTV, BackColor);
+						deviceContext.PixelShader.SetShaderResources(0, lumaSRV, CbSRV, CrSRV);
+						deviceContext.Draw(vertices.Length, 0);
+
+					}
+					finally
+					{
+						DxTool.SafeDispose(lumaSRV);
+						DxTool.SafeDispose(CbSRV);
+						DxTool.SafeDispose(CrSRV);
+					}
+
+					rgb32SRV = tempSRV;
+				}
+
+				if (srcSize != destSize || transform != Transform.R0 || srcSize != viewSize)
                 {
                     vertices = VertexHelper.GetQuadVertices(viewSize, srcSize, aspectRatio, transform);
                     using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))

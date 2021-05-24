@@ -4,6 +4,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
+
 }
 
 
@@ -147,6 +148,23 @@ namespace FFmpegLib {
 			return destSize;
 		}
 
+		static String^ GetErrorStr(int errnum)
+		{
+			char errbuf[AV_ERROR_MAX_STRING_SIZE] = { 0 };
+			av_strerror(errnum, errbuf, AV_ERROR_MAX_STRING_SIZE);
+			return gcnew String(errbuf);
+		}
+
+		static void ThrowIfError(int errnum, String^ callerName) {
+
+			if (errnum < 0) {
+				String^ description = GetErrorStr(errnum);
+				String^ message = callerName + " returned result: " + errnum + ", " + description;
+
+				throw gcnew Exception(message);
+			}
+		}
+
 	internal:
 		static AVPixelFormat GetAVPixelFormat(MediaToolkit::Core::PixFormat pixFormat)
 		{
@@ -179,6 +197,39 @@ namespace FFmpegLib {
 			}
 
 			return pix_fmt;
+		}
+
+		static MediaToolkit::Core::PixFormat GetPixelFormat(AVPixelFormat pix_fmt)
+		{
+			MediaToolkit::Core::PixFormat pixFormat = MediaToolkit::Core::PixFormat::Unknown;
+			switch (pix_fmt) {
+
+			case AV_PIX_FMT_YUV420P:
+				pixFormat = PixFormat::I420;
+				break;
+			case AV_PIX_FMT_YUV422P:
+				pixFormat = PixFormat::I422;
+				break;
+			case AV_PIX_FMT_YUV444P:
+				pixFormat = PixFormat::I444;
+				break;
+			case AV_PIX_FMT_NV12:
+				pixFormat = PixFormat::NV12;
+				break;
+			case AV_PIX_FMT_BGRA:
+				pixFormat = PixFormat::RGB32;
+				break;
+			case AV_PIX_FMT_BGR24:
+				pixFormat = PixFormat::RGB24;
+				break;
+			case AV_PIX_FMT_RGB565LE:
+				pixFormat = PixFormat::RGB16;
+				break;			
+			default:
+				break;
+			}
+
+			return pixFormat;
 		}
 
 		static AVPixelFormat GetAVPixelFormat(System::Drawing::Imaging::PixelFormat pixFormat)
@@ -234,4 +285,17 @@ namespace FFmpegLib {
 
 	};
 
+	public ref class FFVideoFrame : public VideoFrameBase {
+	public:
+		FFVideoFrame(array<IFrameBuffer^>^ buffer, double time, int width, int height, PixFormat format) {
+			Width = width;
+			Height = height;
+			Format = format;
+			Buffer = buffer;
+			Time = time;
+		}
+		virtual property VideoDriverType DriverType{
+			VideoDriverType get() override { return VideoDriverType::CPU; }
+		}
+	};
 }
