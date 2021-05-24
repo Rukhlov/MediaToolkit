@@ -73,7 +73,6 @@ namespace FFmpegLib {
 		}
 
 		int Decode(array<Byte>^ srcData, double sec, Action<IVideoFrame^>^ OnDataDecoded) {
-		//int Decode(array<Byte>^ srcData, double sec, Action<array<IFrameBuffer^>^, double>^ OnDataDecoded) {
 
 			int decodeResult = 0;
 

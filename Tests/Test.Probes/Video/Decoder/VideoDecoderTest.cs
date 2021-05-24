@@ -32,7 +32,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.CPU;
 
 
 				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -48,11 +48,11 @@ namespace Test.Probe
 				//var height = 480;\
 
 
-				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
 				var width = 1280;
@@ -105,7 +105,7 @@ namespace Test.Probe
         private D3D11Presenter presenter = null;
 
         private MfVideoProcessor xvp = null;
-        private RgbProcessor rgbProcessor = new RgbProcessor();
+        //private RgbProcessor rgbProcessor = new RgbProcessor();
 
         private PresentationClock presentationClock = new PresentationClock();
 
@@ -119,7 +119,7 @@ namespace Test.Probe
         //private Queue<Frame> frames = new Queue<Frame>(4);
 
         private int VideoAdapterIndex = 0;
-        private bool LowLatency = true;
+        private bool lowLatency = true;
         private bool xvpMode = false;
 
         private bool running = false;
@@ -135,7 +135,7 @@ namespace Test.Probe
                 //Width = 320,
                 //Height = 240,
                 FrameRate = MfTool.PackToLong(fps, 1),
-                LowLatency = LowLatency,
+                LowLatency = lowLatency,
             };
 
             string adapterInfo = "";
@@ -271,11 +271,6 @@ namespace Test.Probe
 
             inputArgs.DriverType = driverType;
 
-            rgbProcessor = new RgbProcessor();
-            var srcSize = new System.Drawing.Size(width, height);
-			//rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
-
-			rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
 			presenter = new D3D11Presenter(device3D11);
 
@@ -399,7 +394,7 @@ namespace Test.Probe
 
           
             presenter.Close();
-            rgbProcessor.Close();
+
 
         }
 
@@ -576,114 +571,16 @@ namespace Test.Probe
 		}
 
 
-
-		private double delayEstimate = 0;
-		private double activeDelay = 0;
-
-		bool isFirstTime = true;
-		private double estimate1 = double.NaN;
-		private double estimate2 = double.NaN;
-		private double meanSkew = 0;
-		private Tuple<double, double> prevPoint = null;
-		private double AdjustmentDueToSkew(Tuple<double, double> currPoint, double offset = 0.0001, double smooth1 = 0.05, double smooth2 = 0.05, double maxdelay = 0.005)
-		{
-			double upBound = 1.0 + offset;
-			double bottomBound = 1.0 - offset;
-
-			double local = currPoint.Item1;
-			double remote = currPoint.Item2;
-
-			double adjustment = double.NaN;
-
-			if (prevPoint != null)
-			{
-				double prevLocal = prevPoint.Item1;
-				double prevRemote = prevPoint.Item2;
-
-				double diffLocal = (local - prevLocal);
-				double diffRemote = (remote - prevRemote);
-
-				if (diffRemote != 0)
-				{
-					var skew = diffLocal / diffRemote;
-
-					meanSkew = smooth1 * skew + (1 - smooth1) * meanSkew;
-
-					//Debug.WriteLine("meanSkew " + meanSkew + " x " + x + " prevX " + prevX + " y " + y + " prevY " + prevY + " diffX " + diffX + " diffY " + diffY);
-
-					if (double.IsInfinity(meanSkew))
-					{
-						throw new Exception("Inavalid meanSkew value (" + meanSkew + ")");
-					}
-				}
-				if (meanSkew > bottomBound && meanSkew < upBound)
-				{
-					// mainLogger.Debug("meanSkew " + meanSkew);
-					double val = local - remote;
-					if (double.IsNaN(estimate1))
-					{
-						estimate1 = val;
-					}
-
-					estimate1 = (smooth1 * val + (1 - smooth1) * estimate1);
-
-					if (double.IsNaN(estimate2))
-					{
-						estimate2 = estimate1;
-					}
-
-					estimate2 = (smooth2 * estimate1 + (1 - smooth2) * estimate2);
-
-					if (isFirstTime)
-					{
-						isFirstTime = false;
-
-						activeDelay = estimate2;
-						delayEstimate = estimate2;
-					}
-					else
-					{
-						delayEstimate = estimate2;
-					}
-
-					double delay = (activeDelay - delayEstimate);
-
-					if (delay > maxdelay)
-					{
-						Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
-						activeDelay = delayEstimate;
-						adjustment = delay;
-
-
-					}
-					else if (delay < -maxdelay)
-					{
-						Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
-
-						activeDelay = delayEstimate;
-						adjustment = delay;
-
-					}
-				}
-				else if (meanSkew > 1.1 || meanSkew < 0.9) // (meanSkew > 1.5 || meanSkew < 0.5)
-				{//large network delay
-
-					// mainLogger.Warn("meanSkew " + meanSkew);;
-				}
-
-			}
-
-			prevPoint = currPoint;
-
-			return adjustment;
-		}
-
-
-
-		private void DecoderTask(MfVideoArgs inputArgs)
+        RgbProcessor rgbProcessor = null;
+        private void DecoderTask(MfVideoArgs inputArgs)
         {
+           
             try
             {
+                rgbProcessor = new RgbProcessor();
+                var srcSize = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
+                rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+
                 decoder = new MfH264Decoder();
                 decoder.Setup(inputArgs);
 
@@ -779,18 +676,30 @@ namespace Test.Probe
             }
             finally
             {
-                decoder.Close();
-                decoder = null;
+                if (decoder != null)
+                {
+                    decoder.Close();
+                    decoder = null;
+                }
+
+                if (rgbProcessor != null)
+                {
+                    rgbProcessor.Close();
+                    rgbProcessor = null;
+                }
+
             }
         }
 
 
 		private void FFmpegDecoderTask(MfVideoArgs inputArgs)
 		{
-			H264Decoder decoder = null;
+
+            RgbProcessor processor = null;
+            H264Decoder decoder = null;
 			try
 			{
-				decoder = new H264Decoder();
+                decoder = new H264Decoder();
 				var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
 				VideoEncoderSettings settings = new VideoEncoderSettings
 				{
@@ -801,8 +710,14 @@ namespace Test.Probe
 
 				decoder.Setup(settings);
 
-				var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+                processor = new RgbProcessor();
+                var srcSize = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
+                //rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
+                processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+
+
+                var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
 				Stopwatch sw = Stopwatch.StartNew();
 
 				while (sourceReader.IsFull)
@@ -896,7 +811,7 @@ namespace Test.Probe
 
 					});
 
-					rgbProcessor.DrawTexture(srcTextures, destTexture, size);
+					processor.DrawTexture(srcTextures, destTexture, size);
 
 					OnSampleProcessed(destTexture, time);
 
@@ -957,8 +872,18 @@ namespace Test.Probe
 			}
 			finally
 			{
-				decoder.Close();
-				decoder = null;
+                if (processor != null)
+                {
+                    processor.Close();
+                    processor = null;
+                }
+
+                if (decoder != null)
+                {
+                    decoder.Close();
+                    decoder = null;
+                }
+
 			}
 		}
 
@@ -1946,6 +1871,112 @@ namespace Test.Probe
 
             }
         }
+
+
+
+        private double delayEstimate = 0;
+        private double activeDelay = 0;
+
+        bool isFirstTime = true;
+        private double estimate1 = double.NaN;
+        private double estimate2 = double.NaN;
+        private double meanSkew = 0;
+        private Tuple<double, double> prevPoint = null;
+        private double AdjustmentDueToSkew(Tuple<double, double> currPoint, double offset = 0.0001, double smooth1 = 0.05, double smooth2 = 0.05, double maxdelay = 0.005)
+        {
+            double upBound = 1.0 + offset;
+            double bottomBound = 1.0 - offset;
+
+            double local = currPoint.Item1;
+            double remote = currPoint.Item2;
+
+            double adjustment = double.NaN;
+
+            if (prevPoint != null)
+            {
+                double prevLocal = prevPoint.Item1;
+                double prevRemote = prevPoint.Item2;
+
+                double diffLocal = (local - prevLocal);
+                double diffRemote = (remote - prevRemote);
+
+                if (diffRemote != 0)
+                {
+                    var skew = diffLocal / diffRemote;
+
+                    meanSkew = smooth1 * skew + (1 - smooth1) * meanSkew;
+
+                    //Debug.WriteLine("meanSkew " + meanSkew + " x " + x + " prevX " + prevX + " y " + y + " prevY " + prevY + " diffX " + diffX + " diffY " + diffY);
+
+                    if (double.IsInfinity(meanSkew))
+                    {
+                        throw new Exception("Inavalid meanSkew value (" + meanSkew + ")");
+                    }
+                }
+                if (meanSkew > bottomBound && meanSkew < upBound)
+                {
+                    // mainLogger.Debug("meanSkew " + meanSkew);
+                    double val = local - remote;
+                    if (double.IsNaN(estimate1))
+                    {
+                        estimate1 = val;
+                    }
+
+                    estimate1 = (smooth1 * val + (1 - smooth1) * estimate1);
+
+                    if (double.IsNaN(estimate2))
+                    {
+                        estimate2 = estimate1;
+                    }
+
+                    estimate2 = (smooth2 * estimate1 + (1 - smooth2) * estimate2);
+
+                    if (isFirstTime)
+                    {
+                        isFirstTime = false;
+
+                        activeDelay = estimate2;
+                        delayEstimate = estimate2;
+                    }
+                    else
+                    {
+                        delayEstimate = estimate2;
+                    }
+
+                    double delay = (activeDelay - delayEstimate);
+
+                    if (delay > maxdelay)
+                    {
+                        Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
+                        activeDelay = delayEstimate;
+                        adjustment = delay;
+
+
+                    }
+                    else if (delay < -maxdelay)
+                    {
+                        Console.WriteLine("meanSkew " + meanSkew + " activeDelay " + activeDelay + " delayEstimate " + delayEstimate + " delay " + delay);
+
+                        activeDelay = delayEstimate;
+                        adjustment = delay;
+
+                    }
+                }
+                else if (meanSkew > 1.1 || meanSkew < 0.9) // (meanSkew > 1.5 || meanSkew < 0.5)
+                {//large network delay
+
+                    // mainLogger.Warn("meanSkew " + meanSkew);;
+                }
+
+            }
+
+            prevPoint = currPoint;
+
+            return adjustment;
+        }
+
+
+
         //SortedList<long, VideoFrame> videoFrameBuffer = new SortedList<long, VideoFrame>(8);
         //AutoResetEvent waitEvent = new AutoResetEvent(false);
         //private void AddFrame(VideoFrame frame)
