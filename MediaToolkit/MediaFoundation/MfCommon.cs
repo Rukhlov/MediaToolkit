@@ -110,6 +110,7 @@ namespace MediaToolkit.MediaFoundation
         public static string LogMediaAttributes(MediaAttributes mediaAttributes)
         {
             StringBuilder log = new StringBuilder();
+            //mediaAttributes.LockStore();
             for (int i = 0; i < mediaAttributes.Count; i++)
             {
                 try
@@ -128,7 +129,7 @@ namespace MediaToolkit.MediaFoundation
 
 
             }
-
+            //mediaAttributes.UnlockStore();
             return log.ToString();
         }
 
@@ -641,10 +642,25 @@ namespace MediaToolkit.MediaFoundation
         }
 
         public static string LogSample(Sample s)
-        {
+        { // для некоторых аттрибутов возвращающих значение IUnknown не работает!!!
             var log = "";
             if (s != null)
             {
+               
+                //var attrs = (MediaToolkit.NativeAPIs.MF.Objects.IMFAttributes)Marshal.GetTypedObjectForIUnknown(s.NativePointer,
+                //    typeof(MediaToolkit.NativeAPIs.MF.Objects.IMFAttributes));
+                //var result = attrs.LockStore();
+
+                //MediaToolkit.NativeAPIs.Ole.PropVariant pValue = new MediaToolkit.NativeAPIs.Ole.PropVariant();
+                //result = attrs.GetItemByIndex(1, out var guid, null);
+                //result = attrs.GetItemType(guid, out var itemType);
+                //if (itemType == NativeAPIs.MF.Objects.MFAttributeType.IUnknown)
+                //{//не работает c атрибутом MFSampleExtension_ForwardedDecodeUnits {"424c754c-97c8-48d6-8777-fc41f7b60879"}
+                //    var riid = SharpDX.Utilities.GetGuidFromType(typeof(SharpDX.IUnknown));
+                //    result = attrs.GetUnknown(guid, riid, out var ppv);
+                //}
+                //attrs.UnlockStore();
+
                 var attrs = LogMediaAttributes(s);
                 log = "SampleTime: " + s.SampleTime + "; "+ 
                     "Duration: " + s.SampleDuration + "; " +
@@ -1233,10 +1249,25 @@ namespace MediaToolkit.MediaFoundation
 
     public static class CodecApiPropertyKeys
     {
-        /// <summary>
-        /// Sets the number of worker threads used by a video encoder.
-        /// </summary> //CODECAPI_AVEncNumWorkerThreads
-        public static readonly MediaAttributeKey<int> AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
+		//CODECAPI_AVDecNumWorkerThreads
+		public static readonly MediaAttributeKey<int> AVDecNumWorkerThreads = new MediaAttributeKey<int>("9561c3e8-ea9e-4435-9b1e-a93e691894d8");
+
+		//CODECAPI_AVDecVideoMaxCodedWidth
+		public static readonly MediaAttributeKey<int> AVDecVideoMaxCodedWidth = new MediaAttributeKey<int>("5ae557b8-77af-41f5-9fa6-4db2fe1d4bca");
+
+		//CODECAPI_AVDecVideoMaxCodedHeight
+		public static readonly MediaAttributeKey<int> AVDecVideoMaxCodedHeight = new MediaAttributeKey<int>("7262a16a-d2dc-4e75-9ba8-65c0c6d32b13");
+
+		//CODECAPI_AVDecVideoAcceleration_H264
+		public static readonly MediaAttributeKey<bool> AVDecVideoAcceleration_H264 = new MediaAttributeKey<bool>("f7db8a2f-4f48-4ee8-ae31-8b6ebe558ae2");
+
+		//CODECAPI_AVDecVideoThumbnailGenerationMode
+		public static readonly MediaAttributeKey<bool> AVDecVideoThumbnailGenerationMode = new MediaAttributeKey<bool>("2efd8eee-1150-4328-9cf5-66dce933fcf4");
+
+		/// <summary>
+		/// Sets the number of worker threads used by a video encoder.
+		/// </summary> //CODECAPI_AVEncNumWorkerThreads
+		public static readonly MediaAttributeKey<int> AVEncNumWorkerThreads = new MediaAttributeKey<int>(new Guid(0xb0c8bf60, 0x16f7, 0x4951, 0xa3, 0xb, 0x1d, 0xb1, 0x60, 0x92, 0x93, 0xd6));
 
         //#define STATIC_CODECAPI_AVLowLatencyMode  0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee
         public static readonly MediaAttributeKey<bool> AVLowLatencyMode = new MediaAttributeKey<bool>(new Guid(0x9c27891a, 0xed7a, 0x40e1, 0x88, 0xe8, 0xb2, 0x27, 0x27, 0xa0, 0x24, 0xee));
@@ -1276,7 +1307,7 @@ namespace MediaToolkit.MediaFoundation
         // Specifies the unique identifier for a video adapter. Use this attribute when calling MFTEnum2 to enumerate MFTs associated with a specific adapter.
         // Min supported client: Windows 10, version 1703 [desktop apps only]
         // Minimum supported server: Windows Server 2016 [desktop apps only]
-        public static readonly MediaAttributeKey<byte[]> MFT_ENUM_ADAPTER_LUID = new MediaAttributeKey<byte[]>("1d39518c-e220-4da8-a07f-ba172552d6b1");
+        public static readonly MediaAttributeKey<byte[]> MftEnumAdapterLuid = new MediaAttributeKey<byte[]>("1d39518c-e220-4da8-a07f-ba172552d6b1");
 
 		// MF_VIDEO_MAX_MB_PER_SEC e3f2e203-d445-4b8c-9211ba017-ae390d3
 		public static readonly MediaAttributeKey<int> MF_VIDEO_MAX_MB_PER_SEC = new MediaAttributeKey<int>(new Guid(0xe3f2e203, 0xd445, 0x4b8c, 0x92, 0x11, 0xae, 0x39, 0xd, 0x3b, 0xa0, 0x17));
@@ -1290,6 +1321,11 @@ namespace MediaToolkit.MediaFoundation
         //MFT_ENCODER_SUPPORTS_CONFIG_EVENT 86a355ae-3a77-4ec4-9f31-01149a4e92de
         public static readonly MediaAttributeKey<int> MFT_ENCODER_SUPPORTS_CONFIG_EVENT = new MediaAttributeKey<int>(new Guid(0x86a355ae, 0x3a77, 0x4ec4, 0x9f, 0x31, 0x1, 0x14, 0x9a, 0x4e, 0x92, 0xde));
 
+        //MFT_DECODER_QUALITY_MANAGEMENT_RECOVERY_WITHOUT_ARTIFACTS //
+        public static readonly MediaAttributeKey<int> MftDecoderQualityManagementRecoveryWithoutArtifacts = new MediaAttributeKey<int>("d8980deb-0a48-425f-8623-611db41d3810");
+
+        //MFT_DECODER_QUALITY_MANAGEMENT_CUSTOM_CONTROL
+        public static readonly MediaAttributeKey<int> MftDecoderQualityManagementCustomControl = new MediaAttributeKey<int>("a24e30d7-de25-4558-bbfb-71070a2d332e");
 
         public static readonly MediaAttributeKey<int> MF_SA_REQUIRED_SAMPLE_COUNT = new MediaAttributeKey<int>("18802c61-324b-4952-abd0-176ff5c696ff");
 
@@ -1370,8 +1406,11 @@ namespace MediaToolkit.MediaFoundation
 
     public class ClsId
     {
-        //CLSID_VideoProcessorMFT
-        public static readonly Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
+		//CLSID_CMSH264DecoderMFT
+		public static readonly Guid CMSH264DecoderMFT = new Guid("62ce7e72-4c71-4d20-b15d-452831a87d9d");
+
+		//CLSID_VideoProcessorMFT
+		public static readonly Guid VideoProcessorMFT = new Guid("88753B26-5B24-49BD-B2E7-0C445C78C982");
 
         //CLSID_CColorConvertDMO
         public static readonly Guid CColorConvertDMO = new Guid("98230571-0087-4204-b020-3282538e57d3");

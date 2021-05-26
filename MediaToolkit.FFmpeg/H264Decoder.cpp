@@ -43,11 +43,11 @@ namespace FFmpegLib {
 				encodingSettings->Resolution.Width + "x" + encodingSettings->Resolution.Height);
 
 			try {
-
+	
 				AVCodec* decoder = avcodec_find_decoder(AVCodecID::AV_CODEC_ID_H264);;
 
 				if (decoder == NULL) {
-					throw gcnew Exception("Could not find video codec");
+					throw gcnew LibAvException("Could not find video codec");
 				}
 
 				decoder_ctx = avcodec_alloc_context3(decoder);
@@ -60,7 +60,7 @@ namespace FFmpegLib {
 				//decoder_ctx->pix_fmt = AVPixelFormat::AV_PIX_FMT_NV12;
 
 				int res = avcodec_open2(decoder_ctx, decoder, NULL);
-				Utils::ThrowIfError(res, "avcodec_open2");
+				LibAvException::ThrowIfError(res, "avcodec_open2");
 
 				initialized = true;
 
@@ -99,19 +99,19 @@ namespace FFmpegLib {
 				}
 
 				res = avcodec_send_packet(decoder_ctx, packet);
-				Utils::ThrowIfError(res, "avcodec_send_packet");
+				LibAvException::ThrowIfError(res, "avcodec_send_packet");
 
 				while (res >= 0) {
 
 					if (frame == NULL) {
 
 						frame = av_frame_alloc();
-						frame->width = decoder_ctx->width;
-						frame->height = decoder_ctx->height;
-						frame->format = decoder_ctx->pix_fmt;
+						//frame->width = decoder_ctx->width;
+						//frame->height = decoder_ctx->height;
+						//frame->format = decoder_ctx->pix_fmt;
 
-						res = av_frame_get_buffer(frame, 0);
-						Utils::ThrowIfError(res, "av_frame_get_buffer");
+						//res = av_frame_get_buffer(frame, 0);
+						//LibAvException::ThrowIfError(res, "av_frame_get_buffer");
 					}
 
 					res = avcodec_receive_frame(decoder_ctx, frame);
@@ -126,16 +126,21 @@ namespace FFmpegLib {
 					}
 					else if (res < 0) {
 
-						Utils::ThrowIfError(res, "avcodec_receive_frame");
+						LibAvException::ThrowIfError(res, "avcodec_receive_frame");
 					}
 
 					decodeResult = 0;
-					array<IFrameBuffer^>^destBuffer = gcnew array<IFrameBuffer^>(4);
-					for (int i = 0; i < 4; i++) {
+					array<IFrameBuffer^>^destBuffer = gcnew array<IFrameBuffer^>(3);
+					for (int i = 0; i < destBuffer->Length; i++) {
 						destBuffer[i] = gcnew FrameBuffer((IntPtr)frame->data[i], frame->linesize[i]);
 					}
-			
-					double destTime = (frame->pts / (double)AV_TIME_BASE);
+
+					double destTime = 0;
+					__int64 frame_pts = frame->pts;
+					if (frame_pts != AV_NOPTS_VALUE) {
+						destTime = (frame->pts / (double)AV_TIME_BASE);
+					}
+					
 					int destWidth = frame->width;
 					int destHeight = frame->height;
 					PixFormat destFormat = Utils::GetPixelFormat((AVPixelFormat)frame->format);
@@ -182,8 +187,6 @@ namespace FFmpegLib {
 
 			logger->TraceEvent(TraceEventType::Verbose, 0, "CleanUp()");
 
-			initialized = false;
-
 			if (decoder_ctx) {
 
 				pin_ptr<AVCodecContext*> p_ectx = &decoder_ctx;
@@ -197,6 +200,7 @@ namespace FFmpegLib {
 				frame = NULL;
 			}
 
+			initialized = false;
 		}
 
 		bool initialized;

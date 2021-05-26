@@ -155,17 +155,9 @@ namespace FFmpegLib {
 			return gcnew String(errbuf);
 		}
 
-		static void ThrowIfError(int errnum, String^ callerName) {
-
-			if (errnum < 0) {
-				String^ description = GetErrorStr(errnum);
-				String^ message = callerName + " returned result: " + errnum + ", " + description;
-
-				throw gcnew Exception(message);
-			}
-		}
-
 	internal:
+
+
 		static AVPixelFormat GetAVPixelFormat(MediaToolkit::Core::PixFormat pixFormat)
 		{
 			AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
@@ -282,10 +274,32 @@ namespace FFmpegLib {
 			return sws_filter;
 		}
 
+	};
+
+
+	ref class LibAvException : public System::Exception
+	{
+	internal:
+		LibAvException(String^ message): Exception(message)
+		{ }
+
+		LibAvException(String^ callerName, int errnum, String^ description)
+			: Exception(callerName + " returned result: " + errnum + " (" + description + ")")
+		{ }
+
+		static void ThrowIfError(int errnum, String^ callerName) {
+
+			if (errnum < 0) {
+				String^ description = Utils::GetErrorStr(errnum);
+
+				throw gcnew LibAvException(callerName, errnum, description);
+			}
+		}
 
 	};
 
-	public ref class FFVideoFrame : public VideoFrameBase {
+	public ref class FFVideoFrame : public VideoFrameBase
+	{
 	public:
 		FFVideoFrame(array<IFrameBuffer^>^ buffer, double time, int width, int height, PixFormat format) {
 			Width = width;

@@ -138,6 +138,7 @@ namespace MediaToolkit.DirectX
 
 					var origin = new Vector2(pos.X, pos.Y);
 					d2dContext.DrawTextLayout(origin, layout, foreBrush, Direct2D.DrawTextOptions.None);
+					d2dContext.Flush();
 				}
 			}
 			finally

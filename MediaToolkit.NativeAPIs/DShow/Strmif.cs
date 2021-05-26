@@ -469,4 +469,14 @@ namespace MediaToolkit.NativeAPIs.DShow
         [PreserveSig]
         int SetAllSettingsWithNotify([In] IStream pStream,[Out] out Guid[] ChangedParam, [Out] out int ChangedParamCount);
     }
+
+	[ComImport, System.Security.SuppressUnmanagedCodeSecurity, 
+		Guid("a8809222-07bb-48ea-951c-33158100625b"),
+		InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+	public interface IGetCapabilitiesKey
+	{
+		[PreserveSig]
+		int GetCapabilitiesKey([Out] out IntPtr pHKey);
+	}
+
 }

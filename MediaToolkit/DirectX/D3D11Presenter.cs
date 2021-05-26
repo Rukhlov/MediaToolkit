@@ -236,7 +236,7 @@ namespace MediaToolkit.DirectX
 				return;
 			}
 
-            lock (syncLock)
+           // lock (syncLock)
             {
 				if (rgbProcessor != null)
 				{
@@ -249,6 +249,7 @@ namespace MediaToolkit.DirectX
 						fpsRenderer.DrawText(text, new GDI.Point(0, 0), 16);
 					}
 
+                    device.ImmediateContext.Flush();
 					//syncEvent?.Set();
 				}
 

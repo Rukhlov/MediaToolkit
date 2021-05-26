@@ -32,52 +32,52 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.CPU;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
 
 
-				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
-				//var width = 320;
-				//var height = 240;
-				//var fps = 30;
+                //// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
+                //var width = 320;
+                //var height = 240;
+                //var fps = 30;
 
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
-				//var width = 640;
-				//var height = 480;\
-
-
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				var width = 1280;
-				var height = 720;
-				var fps = 30;
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
+                //var width = 640;
+                //var height = 480;\
 
 
-
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				//var width = 1920;
-				//var height = 1080;
-				//var fps = 30;
-
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
-				//var width = 2560;
-				//var height = 1440;
-
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
-				//var width = 3840;
-				//var height = 2160;
-				//var fps = 30;
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                var width = 1280;
+                var height = 720;
+                var fps = 30;
 
 
-				VideoDecoderTest test = new VideoDecoderTest();
+
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+                //var width = 1920;
+                //var height = 1080;
+                //var fps = 30;
+
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
+                //var width = 2560;
+                //var height = 1440;
+
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
+                //var width = 3840;
+                //var height = 2160;
+                //var fps = 30;
+
+
+                VideoDecoderTest test = new VideoDecoderTest();
                 try
                 {
                     test.Start(fileName, width, height, fps, driverType);
@@ -290,8 +290,8 @@ namespace Test.Probe
             var decoderTask = new Task(() =>
             {
                 Console.WriteLine("DecoderTask BEGIN");
-				//DecoderTask(inputArgs);
-				FFmpegDecoderTask(inputArgs);
+				DecoderTask(inputArgs);
+				//FFmpegDecoderTask(inputArgs);
 
 				Console.WriteLine("DecoderTask END");
             });
@@ -923,8 +923,9 @@ namespace Test.Probe
                 //Console.WriteLine("onSampleDecoded(...) " + decodedCount  + " " + MfTool.MfTicksToSec(sampleTime) + " " + MfTool.MfTicksToSec(monotonicTime) + " " + timestamp + " " + delta);
                 //stopwatch.Restart();
 
-                ////Console.WriteLine(MfTool.LogSample(s));
-                ////Console.WriteLine("-------------------");
+
+                //Console.WriteLine(MfTool.LogSample(s));
+                //Console.WriteLine("-------------------");
 
                 if (driverType == MediaToolkit.Core.VideoDriverType.D3D11)
                 {

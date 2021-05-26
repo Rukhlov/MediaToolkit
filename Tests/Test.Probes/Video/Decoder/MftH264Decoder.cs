@@ -58,49 +58,23 @@ namespace Test.Probe
         {
             logger.Debug("MfH264Decoder::Setup(...)");
 
-
             var frameRate = inputArgs.FrameRate;
-            frameDuration = MfTool.TicksPerSecond / frameRate;
-
             var width = inputArgs.Width;
             var height = inputArgs.Height;
-            var bufSize = width * height * 4;
-            this.DriverType = inputArgs.DriverType;
 
+            this.DriverType = inputArgs.DriverType;
             var inputFormat = VideoFormatGuids.H264;
 
             try
             {
+				decoder = new Transform(ClsId.CMSH264DecoderMFT);
 
-                var transformFlags = TransformEnumFlag.SortAndFilter;
-                var inputType = new TRegisterTypeInformation
+				using (var attr = decoder.Attributes)
                 {
-                    GuidMajorType = MediaTypeGuids.Video,
-                    GuidSubtype = VideoFormatGuids.H264
-                };
+					var log = MfTool.LogMediaAttributes(attr);
+					logger.Debug("MFTransformInfo:\r\n" + log);
 
-                var transformActivators = MediaFactory.FindTransform(TransformCategoryGuids.VideoDecoder, transformFlags, inputType, null);
-                try
-                {
-                    var activator = transformActivators[0];
-                    var log = MfTool.LogMediaAttributes(activator);
-                    logger.Debug("MFTransformInfo:\r\n" + log);
-
-                    decoder = activator.ActivateObject<Transform>();
-                }
-                finally
-                {
-                    foreach (var act in transformActivators)
-                    {
-                        act.Dispose();
-                    }
-                }
-
-
-                using (var attr = decoder.Attributes)
-                {
-
-                    if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
+					if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
                     {
 
                         bool d3d11Aware = attr.Get(TransformAttributeKeys.D3D11Aware);
@@ -114,7 +88,6 @@ namespace Test.Probe
                                     devMan.ResetDevice(device);
                                     decoder.ProcessMessage(TMessageType.SetD3DManager, devMan.NativePointer);
                                 }
-
                             }
                         }
 
@@ -202,7 +175,11 @@ namespace Test.Probe
 
                 decoder.SetOutputType(outputStreamId, OutputMediaType, 0);
 
-                logger.Info("============== OUTPUT TYPE==================\r\n" + MfTool.LogMediaType(OutputMediaType));
+				//var guid = new Guid("901db4c7-31ce-41a2-85dc-8fa0bf41b8da");
+				//decoder.QueryInterface(guid, out var pUnk);
+				//var codecAPI = (MediaToolkit.NativeAPIs.DShow.ICodecAPI)Marshal.GetObjectForIUnknown(pUnk);
+
+				logger.Info("============== OUTPUT TYPE==================\r\n" + MfTool.LogMediaType(OutputMediaType));
 
 
             }
