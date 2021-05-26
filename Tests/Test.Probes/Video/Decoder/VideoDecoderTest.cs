@@ -48,23 +48,23 @@ namespace Test.Probe
                 //var height = 480;\
 
 
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-                var width = 1280;
-                var height = 720;
-                var fps = 30;
-
-
-
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-                //var width = 1920;
-                //var height = 1080;
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                //var width = 1280;
+                //var height = 720;
                 //var fps = 30;
+
+
+
+                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+                var width = 1920;
+                var height = 1080;
+                var fps = 30;
 
                 //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
                 //var width = 2560;
@@ -110,9 +110,9 @@ namespace Test.Probe
         private PresentationClock presentationClock = new PresentationClock();
 
         //private NalSourceReader sourceReader = null;
-		private NalSourceReaderRealTime sourceReader = null;
+        private NalSourceReaderRealTime sourceReader = null;
 
-		private int videoBuffeSize = 3;
+        private int videoBuffeSize = 3;
         private BlockingCollection<VideoFrame> videoFrames = null;
 
         // private ConcurrentQueue<Frame> videoQueue = null;
@@ -272,16 +272,16 @@ namespace Test.Probe
             inputArgs.DriverType = driverType;
 
 
-			presenter = new D3D11Presenter(device3D11);
+            presenter = new D3D11Presenter(device3D11);
 
-			//var readerTask = new Task(() =>
-			//{
-			//    Console.WriteLine("SourceReaderTask BEGIN");
-			//    SourceReaderTask(fileName, inputArgs);
-			//    Console.WriteLine("SourceReaderTask END");
-			//});
+            //var readerTask = new Task(() =>
+            //{
+            //    Console.WriteLine("SourceReaderTask BEGIN");
+            //    SourceReaderTask(fileName, inputArgs);
+            //    Console.WriteLine("SourceReaderTask END");
+            //});
 
-			sourceReader = new NalSourceReaderRealTime();
+            sourceReader = new NalSourceReaderRealTime();
             //sourceReader = new NalSourceReader();
 
 
@@ -290,20 +290,20 @@ namespace Test.Probe
             var decoderTask = new Task(() =>
             {
                 Console.WriteLine("DecoderTask BEGIN");
-				DecoderTask(inputArgs);
-				//FFmpegDecoderTask(inputArgs);
+                //DecoderTask(inputArgs);
+                FFmpegDecoderTask(inputArgs);
 
-				Console.WriteLine("DecoderTask END");
+                Console.WriteLine("DecoderTask END");
             });
 
             var presenterTask = new Task(() =>
             {
                 Console.WriteLine("PresenterTask BEGIN");
-				PresenterTaskRealTime(fps);
+                PresenterTaskRealTime(fps);
 
-				//PresenterTask(fps);
+                //PresenterTask(fps);
 
-				Console.WriteLine("PresenterTask END");
+                Console.WriteLine("PresenterTask END");
             });
 
             var size = new System.Drawing.Size(width, height);
@@ -342,9 +342,9 @@ namespace Test.Probe
                 {
                     sourceReader.WaitDelay += 1;
                     Console.WriteLine(sourceReader.WaitDelay);
-					//presentationClock.ClockRate += 0.05f;
-					//Console.WriteLine(presentationClock.ClockRate);
-				}
+                    //presentationClock.ClockRate += 0.05f;
+                    //Console.WriteLine(presentationClock.ClockRate);
+                }
                 else if (e.KeyCode == Keys.Subtract)
                 {
                     sourceReader.WaitDelay -= 1;
@@ -392,189 +392,189 @@ namespace Test.Probe
 
             Task.WaitAll(decoderTask, presenterTask);
 
-          
+
             presenter.Close();
 
 
         }
 
-		private void PresenterTask(int presenterFps)
-		{
-			PerfCounter perfCounter = new PerfCounter();
+        private void PresenterTask(int presenterFps)
+        {
+            PerfCounter perfCounter = new PerfCounter();
 
-			try
-			{
-				//presenterFps = 1;
-				//videoQueue = new ConcurrentQueue<Frame>();
-				videoFrames = new BlockingCollection<VideoFrame>(videoBuffeSize);
+            try
+            {
+                //presenterFps = 1;
+                //videoQueue = new ConcurrentQueue<Frame>();
+                videoFrames = new BlockingCollection<VideoFrame>(videoBuffeSize);
 
-				double perFrameInterval = 1.0 / presenterFps;
-				double perFrame_1_4th = perFrameInterval / 4;
-				double perFrame_3_4th = 3 * perFrame_1_4th;
+                double perFrameInterval = 1.0 / presenterFps;
+                double perFrame_1_4th = perFrameInterval / 4;
+                double perFrame_3_4th = 3 * perFrame_1_4th;
 
-				//while(videoFrameBuffer.Count<7)
-				while (videoFrames.IsAddingCompleted)
-				//while (videoQueue.Count < videoBuffeSize)
-				{
-					Thread.Sleep(1);
+                //while(videoFrameBuffer.Count<7)
+                while (videoFrames.IsAddingCompleted)
+                //while (videoQueue.Count < videoBuffeSize)
+                {
+                    Thread.Sleep(1);
 
-					if (!running)
-					{
-						break;
-					}
-				}
+                    if (!running)
+                    {
+                        break;
+                    }
+                }
 
-				Console.WriteLine("videoQueue.IsAddingCompleted");
-				presentationClock.Reset();
-				AutoResetEvent syncEvent = new AutoResetEvent(false);
-				VideoFrame frame = null;
-				try
-				{
-					double frameTime = 0;
-					while (running)
-					{
-						bool presentNow = true;
-						int delay = 1;//(int)(presentInterval * 1000);
-
-
-						//while(videoFrameBuffer.Count>0)
-						while (videoFrames.Count > 0)
-						{
-							presentNow = true;
-							if (frame == null)
-							{
-								//frame = GetFrame();
-
-								// bool frameTaken = videoQueue.TryDequeue(out frame);
-								bool frameTaken = videoFrames.TryTake(out frame, 10);
-								if (!frameTaken)
-								{
-									Console.WriteLine("frameTaken == false");
-									continue;
-								}
-
-								//frame = videoQueue.Take();
-								//frame = frames.Dequeue();
-							}
-
-							if (frame.time < frameTime)
-							{
-								Console.WriteLine("Non monotonic time: " + frame.time + "<" + frameTime);
-								if (frame != null)
-								{
-									frame.Dispose();
-									frame = null;
-								}
-								continue;
-							}
-
-							frameTime = frame.time;
-							var delta = frame.time - presentationClock.GetTime();
-							if (delta < -perFrame_1_4th)
-							{// This sample is late.
-								presentNow = true;
-							}
-							else if (delta > perFrame_3_4th)
-							{// This sample is still too early. Go to sleep.
-								presentNow = false;
-								delay = (int)((delta - perFrame_3_4th) * 1000);
-							}
-
-							if (!presentNow && delay > 0 && running)
-							{
-								if (delay > 3000)
-								{
-									Console.WriteLine(delay);
-									delay = 3000;
-								}
-
-								//Debug.WriteLine(delay);
-								syncEvent.WaitOne(delay);
-								continue;
-							}
-
-							if (delta < -perFrameInterval * 3)
-							{
-								Console.WriteLine("Sample is too late: " + delta);
-								//if (frame != null)
-								//{
-								//	frame.Dispose();
-								//	frame = null;
-								//}
-								//continue;
-							}
-
-							try
-							{
-								var cpuReport = perfCounter.GetReport();
-								var timeNow = presentationClock.GetTime();
-								int timeDelta = (int)((frame.time - timeNow) * 1000);
-								var text = cpuReport + "\r\n"
-									+ timeNow.ToString("0.000") + "\r\n"
-									+ frame.time.ToString("0.000") + "\r\n"
-									+ timeDelta + "\r\n"
-									+ frame.seq;
-
-								presenter.Update(frame.tex, text);
-							}
-							finally
-							{
-								if (frame != null)
-								{
-									frame.Dispose();
-									frame = null;
-								}
-							}
-						}
-
-						syncEvent.WaitOne(10);
-					}
-
-				}
-				finally
-				{
-					if (frame != null)
-					{
-						frame.Dispose();
-						frame = null;
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-				running = false;
-			}
-			finally
-			{
-				if (videoFrames != null && videoFrames.Count > 0)
-				{
-					foreach (var f in videoFrames)
-					{
-						if (f != null)
-						{
-							f.Dispose();
-						}
-					}
-					videoFrames.Dispose();
-					videoFrames = null;
-				}
-
-				if (perfCounter != null)
-				{
-					perfCounter.Dispose();
-					perfCounter = null;
-				}
-			}
+                Console.WriteLine("videoQueue.IsAddingCompleted");
+                presentationClock.Reset();
+                AutoResetEvent syncEvent = new AutoResetEvent(false);
+                VideoFrame frame = null;
+                try
+                {
+                    double frameTime = 0;
+                    while (running)
+                    {
+                        bool presentNow = true;
+                        int delay = 1;//(int)(presentInterval * 1000);
 
 
-		}
+                        //while(videoFrameBuffer.Count>0)
+                        while (videoFrames.Count > 0)
+                        {
+                            presentNow = true;
+                            if (frame == null)
+                            {
+                                //frame = GetFrame();
+
+                                // bool frameTaken = videoQueue.TryDequeue(out frame);
+                                bool frameTaken = videoFrames.TryTake(out frame, 10);
+                                if (!frameTaken)
+                                {
+                                    Console.WriteLine("frameTaken == false");
+                                    continue;
+                                }
+
+                                //frame = videoQueue.Take();
+                                //frame = frames.Dequeue();
+                            }
+
+                            if (frame.time < frameTime)
+                            {
+                                Console.WriteLine("Non monotonic time: " + frame.time + "<" + frameTime);
+                                if (frame != null)
+                                {
+                                    frame.Dispose();
+                                    frame = null;
+                                }
+                                continue;
+                            }
+
+                            frameTime = frame.time;
+                            var delta = frame.time - presentationClock.GetTime();
+                            if (delta < -perFrame_1_4th)
+                            {// This sample is late.
+                                presentNow = true;
+                            }
+                            else if (delta > perFrame_3_4th)
+                            {// This sample is still too early. Go to sleep.
+                                presentNow = false;
+                                delay = (int)((delta - perFrame_3_4th) * 1000);
+                            }
+
+                            if (!presentNow && delay > 0 && running)
+                            {
+                                if (delay > 3000)
+                                {
+                                    Console.WriteLine(delay);
+                                    delay = 3000;
+                                }
+
+                                //Debug.WriteLine(delay);
+                                syncEvent.WaitOne(delay);
+                                continue;
+                            }
+
+                            if (delta < -perFrameInterval * 3)
+                            {
+                                Console.WriteLine("Sample is too late: " + delta);
+                                //if (frame != null)
+                                //{
+                                //	frame.Dispose();
+                                //	frame = null;
+                                //}
+                                //continue;
+                            }
+
+                            try
+                            {
+                                var cpuReport = perfCounter.GetReport();
+                                var timeNow = presentationClock.GetTime();
+                                int timeDelta = (int)((frame.time - timeNow) * 1000);
+                                var text = cpuReport + "\r\n"
+                                    + timeNow.ToString("0.000") + "\r\n"
+                                    + frame.time.ToString("0.000") + "\r\n"
+                                    + timeDelta + "\r\n"
+                                    + frame.seq;
+
+                                presenter.Update(frame.tex, text);
+                            }
+                            finally
+                            {
+                                if (frame != null)
+                                {
+                                    frame.Dispose();
+                                    frame = null;
+                                }
+                            }
+                        }
+
+                        syncEvent.WaitOne(10);
+                    }
+
+                }
+                finally
+                {
+                    if (frame != null)
+                    {
+                        frame.Dispose();
+                        frame = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                running = false;
+            }
+            finally
+            {
+                if (videoFrames != null && videoFrames.Count > 0)
+                {
+                    foreach (var f in videoFrames)
+                    {
+                        if (f != null)
+                        {
+                            f.Dispose();
+                        }
+                    }
+                    videoFrames.Dispose();
+                    videoFrames = null;
+                }
+
+                if (perfCounter != null)
+                {
+                    perfCounter.Dispose();
+                    perfCounter = null;
+                }
+            }
+
+
+        }
 
 
         RgbProcessor rgbProcessor = null;
         private void DecoderTask(MfVideoArgs inputArgs)
         {
-           
+
             try
             {
                 rgbProcessor = new RgbProcessor();
@@ -692,186 +692,213 @@ namespace Test.Probe
         }
 
 
-		private void FFmpegDecoderTask(MfVideoArgs inputArgs)
-		{
+        private void FFmpegDecoderTask(MfVideoArgs inputArgs)
+        {
 
             RgbProcessor processor = null;
             H264Decoder decoder = null;
-			try
-			{
+            try
+            {
                 decoder = new H264Decoder();
-				var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
-				VideoEncoderSettings settings = new VideoEncoderSettings
-				{
-					EncoderFormat = VideoCodingFormat.H264,
-					Width = inputArgs.Width,
-					Height = inputArgs.Height,
-				};
+                var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
+                VideoEncoderSettings settings = new VideoEncoderSettings
+                {
+                    EncoderFormat = VideoCodingFormat.H264,
+                    Width = inputArgs.Width,
+                    Height = inputArgs.Height,
+                };
 
-				decoder.Setup(settings);
+                decoder.Setup(settings);
 
                 processor = new RgbProcessor();
                 var srcSize = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
                 //rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
+                //processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.RGB32, srcSize, MediaToolkit.Core.PixFormat.RGB32);
                 processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-
                 var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-				Stopwatch sw = Stopwatch.StartNew();
+                Stopwatch sw = Stopwatch.StartNew();
 
-				while (sourceReader.IsFull)
-				//while (sourceReader.Count < 2)
-				{
-					Thread.Sleep(1);
-					if (!running)
-					{
-						break;
-					}
-				}
+                while (sourceReader.IsFull)
+                //while (sourceReader.Count < 2)
+                {
+                    Thread.Sleep(1);
+                    if (!running)
+                    {
+                        break;
+                    }
+                }
 
-				Action<IVideoFrame> OnDataDecoded = new Action<IVideoFrame>((frame) =>
-				{
-					//Console.WriteLine("OnDataDecoded() " + time);
-					var time = frame.Time;
-					var frameBuffer = frame.Buffer;
+                Action<IVideoFrame> OnDataDecoded = new Action<IVideoFrame>((frame) =>
+                {
+                    //Console.WriteLine("OnDataDecoded() " + time);
+                    var time = frame.Time;
+                    var frameBuffer = frame.Buffer;
 
-					Texture2D[] srcTextures = null;
+                    Texture2D[] srcTextures = null;
+                    if (frame.Format == PixFormat.RGB32)
+                    {
+                        var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+                        {
+                            Width = size.Width,
+                            Height = size.Height,
+                            MipLevels = 1,
+                            ArraySize = 1,
+                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                            Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                            Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
 
-					var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
-					{
-						Width = size.Width,
-						Height = size.Height,
-						MipLevels = 1,
-						ArraySize = 1,
-						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-						BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-						Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-						CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-						Format = SharpDX.DXGI.Format.R8_UNorm,
+                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                        };
+                        var ptr = frameBuffer[0].Data;
+                        var stride = frameBuffer[0].Stride;
+                        SharpDX.DataBox[] data =
+                        {
+                            new SharpDX.DataBox(ptr, stride, 0),
+                        };
+                        var texture = new Texture2D(device3D11, texDescr, data);
+                        srcTextures = new Texture2D[] { texture };
+                    }
+                    else
+                    {
 
-						OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-					};
-					var lumaPtr = frameBuffer[0].Data;
-					var lumaStride = frameBuffer[0].Stride;
+                        var texDescr = new SharpDX.Direct3D11.Texture2DDescription()
+                        {
+                            Width = size.Width,
+                            Height = size.Height,
+                            MipLevels = 1,
+                            ArraySize = 1,
+                            SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
+                            Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
+                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                            Format = SharpDX.DXGI.Format.R8_UNorm,
 
-					SharpDX.DataBox[] lumaData =
-					{
-						new SharpDX.DataBox(lumaPtr,  lumaStride, 0),
-					};
-					var lumaTexture = new Texture2D(device3D11, texDescr, lumaData);
-					var pixFormat = frame.Format;
+                            OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                        };
+                        var lumaPtr = frameBuffer[0].Data;
+                        var lumaStride = frameBuffer[0].Stride;
 
-					if(pixFormat == PixFormat.I420)
-					{
-						texDescr.Width = size.Width / 2;
-						texDescr.Height = size.Height / 2;
-					}
-					else if (pixFormat == PixFormat.I422)
-					{
-						texDescr.Width = size.Width / 2;
-					}
-					else if (pixFormat == PixFormat.I444) { }
-					else
-					{
-						throw new NotSupportedException("Invalid format " + pixFormat);
-					}
+                        SharpDX.DataBox[] lumaData =
+                        {
+                            new SharpDX.DataBox(lumaPtr,  lumaStride, 0),
+                        };
+                        var lumaTexture = new Texture2D(device3D11, texDescr, lumaData);
+                        var pixFormat = frame.Format;
 
-					var chromaCbPtr = frameBuffer[1].Data;
-					var chromaCbStride = frameBuffer[1].Stride;
-					SharpDX.DataBox[] cbData =
-					{
-						new SharpDX.DataBox(chromaCbPtr, chromaCbStride, 0),
-					};
-					var cbTexture = new Texture2D(device3D11, texDescr, cbData);
+                        if (pixFormat == PixFormat.I420)
+                        {
+                            texDescr.Width = size.Width / 2;
+                            texDescr.Height = size.Height / 2;
+                        }
+                        else if (pixFormat == PixFormat.I422)
+                        {
+                            texDescr.Width = size.Width / 2;
+                        }
+                        else if (pixFormat == PixFormat.I444) { }
+                        else
+                        {
+                            throw new NotSupportedException("Invalid format " + pixFormat);
+                        }
 
+                        var chromaCbPtr = frameBuffer[1].Data;
+                        var chromaCbStride = frameBuffer[1].Stride;
+                        SharpDX.DataBox[] cbData =
+                        {
+                            new SharpDX.DataBox(chromaCbPtr, chromaCbStride, 0),
+                        };
+                        var cbTexture = new Texture2D(device3D11, texDescr, cbData);
 
-					var chromaCrPtr = frameBuffer[2].Data;
-					var chromaCrStride = frameBuffer[2].Stride;
-					SharpDX.DataBox[] crData =
-					{
-						new SharpDX.DataBox(chromaCrPtr, chromaCrStride, 0),
-					};
-					var crTexture = new Texture2D(device3D11, texDescr, crData);
+                        var chromaCrPtr = frameBuffer[2].Data;
+                        var chromaCrStride = frameBuffer[2].Stride;
+                        SharpDX.DataBox[] crData =
+                        {
+                            new SharpDX.DataBox(chromaCrPtr, chromaCrStride, 0),
+                        };
+                        var crTexture = new Texture2D(device3D11, texDescr, crData);
 
-					srcTextures = new Texture2D[] { lumaTexture, cbTexture, crTexture };
+                        srcTextures = new Texture2D[] { lumaTexture, cbTexture, crTexture };
+                    }
 
-					var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
-					{
-						Width = size.Width,
-						Height = size.Height,
-						Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
-						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-						BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
-						Usage = SharpDX.Direct3D11.ResourceUsage.Default,
-						CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
-						OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
-						MipLevels = 1,
-						ArraySize = 1,
+                    var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
+                    {
+                        Width = size.Width,
+                        Height = size.Height,
+                        Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
+                        Usage = SharpDX.Direct3D11.ResourceUsage.Default,
+                        CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                        OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
+                        MipLevels = 1,
+                        ArraySize = 1,
 
-					});
+                    });
 
-					processor.DrawTexture(srcTextures, destTexture, size);
+                    processor.DrawTexture(srcTextures, destTexture, size);
 
-					OnSampleProcessed(destTexture, time);
+                    OnSampleProcessed(destTexture, time);
 
-					foreach (var t in srcTextures)
-					{
-						DxTool.SafeDispose(t);
-					}
-				});
+                    foreach (var t in srcTextures)
+                    {
+                        DxTool.SafeDispose(t);
+                    }
+                });
 
-				AutoResetEvent syncEvent = new AutoResetEvent(false);
-				while (running)
-				{
-					while (sourceReader.PacketsAvailable)
-					{
-						bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
-						if (!packetTaken)
-						{
-							Console.WriteLine("packet == false");
-							continue;
-						}
+                AutoResetEvent syncEvent = new AutoResetEvent(false);
+                while (running)
+                {
+                    while (sourceReader.PacketsAvailable)
+                    {
+                        bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
+                        if (!packetTaken)
+                        {
+                            Console.WriteLine("packet == false");
+                            continue;
+                        }
 
-						//var packet = videoPackets.Dequeue();
+                        //var packet = videoPackets.Dequeue();
 
-						try
-						{
-							var res = decoder.Decode(packet.data, packet.time, OnDataDecoded);
+                        try
+                        {
+                            var res = decoder.Decode(packet.data, packet.time, OnDataDecoded);
 
-						}
-						catch (Exception ex)
-						{
-							Console.WriteLine(ex.Message);
-						}
-						
-					}
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
 
-					syncEvent.WaitOne(10);
-				}
+                    }
 
-				if (decoder.Drain())
-				{
-					var decodeResult = 0;
-					do
-					{
-						//Console.WriteLine("ProcessSample(...) " + (procCount++));
-						decodeResult = decoder.Decode(null, 0, OnDataDecoded);
-					} while (decodeResult == 0);
+                    syncEvent.WaitOne(10);
+                }
 
-					var totalMilliseconds = sw.ElapsedMilliseconds;
-					Console.WriteLine("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
+                if (decoder.Drain())
+                {
+                    var decodeResult = 0;
+                    do
+                    {
+                        //Console.WriteLine("ProcessSample(...) " + (procCount++));
+                        decodeResult = decoder.Decode(null, 0, OnDataDecoded);
+                    } while (decodeResult == 0);
 
-				}
+                    var totalMilliseconds = sw.ElapsedMilliseconds;
+                    Console.WriteLine("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
 
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-				running = false;
-			}
-			finally
-			{
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                running = false;
+            }
+            finally
+            {
                 if (processor != null)
                 {
                     processor.Close();
@@ -884,10 +911,10 @@ namespace Test.Probe
                     decoder = null;
                 }
 
-			}
-		}
+            }
+        }
 
-		private Stopwatch stopwatch = new Stopwatch();
+        private Stopwatch stopwatch = new Stopwatch();
         long prevTimestamp = 0;
         private long decoderTime = 0;
         private ulong decodedCount = 0;
@@ -1451,7 +1478,7 @@ namespace Test.Probe
             }
 
             var arrivalTime = presentationClock.GetTime();
-           // Console.WriteLine(arrivalTime + " " + time + " " + (arrivalTime - time));
+            // Console.WriteLine(arrivalTime + " " + time + " " + (arrivalTime - time));
 
             var frame = new VideoFrame
             {
@@ -1536,21 +1563,21 @@ namespace Test.Probe
                     return isAddingCompleted;
                 }
             }
-			public int Count
-			{
-				get
-				{
-					int count = -1;
-					if (videoPackets != null)
-					{
-						count = videoPackets.Count;
-					}
-					return count;
-				}
-			}
+            public int Count
+            {
+                get
+                {
+                    int count = -1;
+                    if (videoPackets != null)
+                    {
+                        count = videoPackets.Count;
+                    }
+                    return count;
+                }
+            }
 
 
-			public bool TryGetPacket(out VideoPacket packet, int timeout)
+            public bool TryGetPacket(out VideoPacket packet, int timeout)
             {
                 packet = null;
                 bool result = false;
@@ -1670,7 +1697,7 @@ namespace Test.Probe
         }
 
 
-		class VideoFrame
+        class VideoFrame
         {
             public Texture2D tex = null;
             public double time = 0;
@@ -1752,7 +1779,7 @@ namespace Test.Probe
             Console.WriteLine("QueryInterface<VideoContext>()");
             videoContext = deviceContext.QueryInterface<VideoContext>();
 
-            
+
             VideoProcessorContentDescription descr = new VideoProcessorContentDescription
             {
                 InputFrameFormat = VideoFrameFormat.Progressive,
@@ -1786,7 +1813,7 @@ namespace Test.Probe
             //{
             //    videoContext1.VideoProcessorSetOutputColorSpace1(videoProcessor, SharpDX.DXGI.ColorSpaceType.RgbFullG10NoneP709);
             //}
-                
+
             VideoProcessorOutputViewDescription outputViewDescr = new VideoProcessorOutputViewDescription
             {
                 Dimension = VpovDimension.Texture2D,

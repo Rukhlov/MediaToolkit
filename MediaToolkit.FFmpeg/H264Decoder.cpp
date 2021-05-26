@@ -43,7 +43,7 @@ namespace FFmpegLib {
 				encodingSettings->Resolution.Width + "x" + encodingSettings->Resolution.Height);
 
 			try {
-	
+
 				AVCodec* decoder = avcodec_find_decoder(AVCodecID::AV_CODEC_ID_H264);;
 
 				if (decoder == NULL) {
@@ -129,22 +129,69 @@ namespace FFmpegLib {
 						LibAvException::ThrowIfError(res, "avcodec_receive_frame");
 					}
 
-					decodeResult = 0;
-					array<IFrameBuffer^>^destBuffer = gcnew array<IFrameBuffer^>(3);
-					for (int i = 0; i < destBuffer->Length; i++) {
-						destBuffer[i] = gcnew FrameBuffer((IntPtr)frame->data[i], frame->linesize[i]);
-					}
-
 					double destTime = 0;
 					__int64 frame_pts = frame->pts;
 					if (frame_pts != AV_NOPTS_VALUE) {
 						destTime = (frame->pts / (double)AV_TIME_BASE);
 					}
-					
-					int destWidth = frame->width;
-					int destHeight = frame->height;
-					PixFormat destFormat = Utils::GetPixelFormat((AVPixelFormat)frame->format);
-					FFVideoFrame^ videoFrame = gcnew FFVideoFrame(destBuffer, destTime, destWidth, destHeight, destFormat);
+
+					AVFrame* destFrame = frame;
+					bool needConvert = false;
+					if (needConvert) {
+
+						AVPixelFormat destAVPixelFormat = AVPixelFormat::AV_PIX_FMT_BGRA;
+						int destWidth = decoder_ctx->width;
+						int destHeight = decoder_ctx->height;
+
+						if (sws_ctx == NULL) {
+
+							sws_ctx = sws_getCachedContext(sws_ctx,
+								decoder_ctx->width, decoder_ctx->height, decoder_ctx->pix_fmt, // input
+								destWidth, destHeight, destAVPixelFormat,  // output
+								//SWS_POINT,
+								//SWS_FAST_BILINEAR,
+								//SWS_BILINEAR,
+								//SWS_AREA,
+								SWS_BICUBIC,
+								//SWS_LANCZOS,
+								//SWS_SPLINE,
+
+								NULL, NULL, NULL);
+
+							if (sws_ctx == NULL) {
+
+								throw gcnew LibAvException("Could not allocate convert context");
+							}
+
+							if (scaledFrame) {
+								pin_ptr<AVFrame*> p_frame = &scaledFrame;
+								av_frame_free(p_frame);
+								scaledFrame = NULL;
+							}
+
+							scaledFrame = av_frame_alloc();
+							scaledFrame->width = destWidth;
+							scaledFrame->height = destHeight;
+							scaledFrame->format = destAVPixelFormat;
+
+							res = av_frame_get_buffer(scaledFrame, 0);
+							LibAvException::ThrowIfError(res, "av_frame_get_buffer");
+
+						}
+
+						sws_scale(sws_ctx, frame->data, frame->linesize, 0, destHeight, scaledFrame->data, scaledFrame->linesize);
+						destFrame = scaledFrame;
+
+					}
+
+					array<IFrameBuffer^>^ destBuffer = gcnew array<IFrameBuffer^>(3);
+					for (int i = 0; i < destBuffer->Length; i++) {
+						destBuffer[i] = gcnew FrameBuffer((IntPtr)destFrame->data[i], destFrame->linesize[i]);
+					}
+
+					PixFormat destPixFormat = Utils::GetPixelFormat((AVPixelFormat)destFrame->format);
+					FFVideoFrame^ videoFrame = gcnew FFVideoFrame(destBuffer, destTime, destFrame->width, destFrame->height, destPixFormat);
+					decodeResult = 0;
 					OnDataDecoded(videoFrame);
 				}
 			}
@@ -161,7 +208,7 @@ namespace FFmpegLib {
 		bool Drain() {
 
 			logger->TraceEvent(TraceEventType::Verbose, 0, "H264Decoder::Drain()");
-;
+			;
 			if (!initialized) {
 
 				return false;
@@ -200,6 +247,12 @@ namespace FFmpegLib {
 				frame = NULL;
 			}
 
+			if (scaledFrame) {
+				pin_ptr<AVFrame*> p_frame = &scaledFrame;
+				av_frame_free(p_frame);
+				scaledFrame = NULL;
+			}
+
 			initialized = false;
 		}
 
@@ -209,6 +262,8 @@ namespace FFmpegLib {
 
 		AVCodecContext* decoder_ctx;
 		AVFrame* frame;
+		AVFrame* scaledFrame;
+		struct SwsContext* sws_ctx;
 
 		static TraceSource^ logger = TraceManager::GetTrace("MediaToolkit.FFmpeg");
 

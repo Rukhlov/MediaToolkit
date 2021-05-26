@@ -39,20 +39,18 @@ namespace Test.Probe
         private long frameNumber = -1;
         private long frameDuration;
 
-
-        //private Device device = null;
-        //public MfH264DecoderTest(Device d = null)
         public MfH264Decoder()
-        {
-            // this.device = d;
-        }
+        { }
 
         public MediaToolkit.Core.VideoDriverType DriverType { get; private set; } = MediaToolkit.Core.VideoDriverType.CPU;
         public MediaType InputMediaType { get; private set; }
         public MediaType OutputMediaType { get; private set; }
 
-        public System.Drawing.Size MinSize { get; } = new System.Drawing.Size(48, 48);
-        public System.Drawing.Size MaxSize { get; } = new System.Drawing.Size(4096, 2304);
+        public System.Drawing.Size MinSize => new System.Drawing.Size(48, 48);
+        public System.Drawing.Size MaxSize => new System.Drawing.Size(maxCodedWidth, maxCodedHeight);
+
+        private int maxCodedWidth = 4096;
+        private int maxCodedHeight = 2304;
 
         public void Setup(MfVideoArgs inputArgs)
         {
@@ -68,10 +66,26 @@ namespace Test.Probe
             try
             {
 				decoder = new Transform(ClsId.CMSH264DecoderMFT);
+                StringBuilder log = new StringBuilder();
 
-				using (var attr = decoder.Attributes)
+                using (var attr = decoder.Attributes)
                 {
-					var log = MfTool.LogMediaAttributes(attr);
+                    for (int i = 0; i < attr.Count; i++)
+                    {
+                        var obj = attr.GetByIndex(i, out Guid guid);
+                        if(guid == CodecApiPropertyKeys.AVDecVideoMaxCodedWidth.Guid)
+                        {
+                            maxCodedWidth = (int)obj;
+                        }
+                        else if (guid == CodecApiPropertyKeys.AVDecVideoMaxCodedHeight.Guid)
+                        {
+                            maxCodedHeight = (int)obj;
+                        }
+
+                        string logStr = MfTool.LogAttribute(guid, obj);
+                        log.AppendLine(logStr);
+                    }
+
 					logger.Debug("MFTransformInfo:\r\n" + log);
 
 					if (inputArgs.DriverType == MediaToolkit.Core.VideoDriverType.D3D11)
