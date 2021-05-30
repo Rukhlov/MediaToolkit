@@ -32,37 +32,37 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D11;
 
 
-				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
-				//var width = 320;
-				//var height = 240;
-				//var fps = 30;
+                //// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
+                //var width = 320;
+                //var height = 240;
+                //var fps = 30;
 
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
-				//var width = 640;
-				//var height = 480;\
-
-
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				//var width = 1280;
-				//var height = 720;
-				//var fps = 30;
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
+                //var width = 640;
+                //var height = 480;\
 
 
-				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_1920x1080_5sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				var width = 1920;
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+                //var width = 1280;
+                //var height = 720;
+                //var fps = 30;
+
+
+                string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_1920x1080_5sec.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+                var width = 1920;
                 var height = 1080;
                 var fps = 30;
 
@@ -70,12 +70,20 @@ namespace Test.Probe
                 //var width = 2560;
                 //var height = 1440;
 
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_3840x2160_5sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
                 ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
                 //var width = 3840;
                 //var height = 2160;
                 //var fps = 30;
 
+
+
+                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_4096x2304_5sec.h264";
+                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
+                //var width = 4096;
+                //var height = 2304;
+                //var fps = 30;
 
                 VideoDecoderTest test = new VideoDecoderTest();
                 try
@@ -151,18 +159,18 @@ namespace Test.Probe
                        // DeviceCreationFlags.VideoSupport |
                        DeviceCreationFlags.BgraSupport);
 
-                    using (var multiThread = device3D11.QueryInterface<SharpDX.Direct3D11.Multithread>())
-                    {
-                        multiThread.SetMultithreadProtected(true);
-                    }
+					using (var multiThread = device3D11.QueryInterface<SharpDX.Direct3D11.Multithread>())
+					{
+						multiThread.SetMultithreadProtected(true);
+					}
 
-                    using (var dxgiDevice = device3D11.QueryInterface<SharpDX.DXGI.Device1>())
-                    {
-                        dxgiDevice.MaximumFrameLatency = 16;
-                        dxgiDevice.GPUThreadPriority = 1;
-                    }
+					//using (var dxgiDevice = device3D11.QueryInterface<SharpDX.DXGI.Device1>())
+					//{
+					//    dxgiDevice.MaximumFrameLatency = 16;
+					//    dxgiDevice.GPUThreadPriority = 1;
+					//}
 
-                    var formatSupport = device3D11.CheckFormatSupport(SharpDX.DXGI.Format.NV12);
+					var formatSupport = device3D11.CheckFormatSupport(SharpDX.DXGI.Format.NV12);
                     dxgiNv12Supported = formatSupport.HasFlag(FormatSupport.Texture2D);
 
                     var log = MfTool.LogEnumFlags(formatSupport);
@@ -290,8 +298,8 @@ namespace Test.Probe
             var decoderTask = new Task(() =>
             {
                 Console.WriteLine("DecoderTask BEGIN");
-                //DecoderTask(inputArgs);
-                FFmpegDecoderTask(inputArgs);
+                DecoderTask(inputArgs);
+                //FFmpegDecoderTask(inputArgs);
 
                 Console.WriteLine("DecoderTask END");
             });
@@ -712,12 +720,12 @@ namespace Test.Probe
 
                 processor = new RgbProcessor();
                 var srcSize = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
-                //rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-               // processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.RGB32, srcSize, MediaToolkit.Core.PixFormat.RGB32);
-                processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+                // processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.RGB32, srcSize, MediaToolkit.Core.PixFormat.RGB32);
+				processor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.I420, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-                var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+				processor.BackColor = SharpDX.Color.Yellow;
+				var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
                 Stopwatch sw = Stopwatch.StartNew();
 
                 while (sourceReader.IsFull)
@@ -746,9 +754,9 @@ namespace Test.Probe
                             MipLevels = 1,
                             ArraySize = 1,
                             SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
-                            BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource,
-                            Usage = SharpDX.Direct3D11.ResourceUsage.Immutable,
-                            CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
+                            BindFlags = BindFlags.ShaderResource,
+                            Usage = ResourceUsage.Immutable,
+                            CpuAccessFlags = CpuAccessFlags.None,
                             Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
 
                             OptionFlags = SharpDX.Direct3D11.ResourceOptionFlags.None,
@@ -827,8 +835,9 @@ namespace Test.Probe
                     {
                         Width = size.Width,
                         Height = size.Height,
-                        Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
-                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+						// Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
+						Format = SharpDX.DXGI.Format.B8G8R8A8_UNorm,
+						SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
                         BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
                         Usage = SharpDX.Direct3D11.ResourceUsage.Default,
                         CpuAccessFlags = SharpDX.Direct3D11.CpuAccessFlags.None,
@@ -838,9 +847,15 @@ namespace Test.Probe
 
                     });
 
-                    processor.DrawTexture(srcTextures, destTexture, size);
+                    lock (device3D11)
+                    {
+                        processor.DrawTexture(srcTextures, destTexture, size);
+                    }
+					
+					
 
-                    OnSampleProcessed(destTexture, time);
+					//device3D11.ImmediateContext.CopyResource(srcTextures[0], destTexture);
+					OnSampleProcessed(destTexture, time);
 
                     foreach (var t in srcTextures)
                     {

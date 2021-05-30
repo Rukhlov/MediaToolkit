@@ -31,11 +31,13 @@ namespace MediaToolkit.DirectX
 		private string fontFamilyName = "Calibri";
 		private bool initialized = false;
 
-		public void Init(SharpDX.Direct3D11.Device device, Texture2D texture, GDI.Font gdiFont, GDI.Color gdiForeColor, GDI.Color gdiBackColor)
+        private SharpDX.Direct3D11.Device device = null;
+
+        public void Init(SharpDX.Direct3D11.Device device, Texture2D texture, GDI.Font gdiFont, GDI.Color gdiForeColor, GDI.Color gdiBackColor)
 		{
 
 			var srcDescr = texture.Description;
-
+            this.device = device;
 			using (Direct2D.Factory1 factory2D1 = new Direct2D.Factory1(Direct2D.FactoryType.MultiThreaded))
 			{
 				using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
@@ -87,8 +89,15 @@ namespace MediaToolkit.DirectX
 			initialized = true;
 		}
 
+        public void DrawText(string text, GDI.Point pos, float fontSize)
+        {
+            lock (device)
+            {
+                DrawTextInternal(text, pos, fontSize);
+            }
+        }
 
-		public void DrawText(string text, GDI.Point pos, float fontSize)
+        private void DrawTextInternal(string text, GDI.Point pos, float fontSize)
 		{
 			if (!initialized)
 			{
@@ -138,7 +147,7 @@ namespace MediaToolkit.DirectX
 
 					var origin = new Vector2(pos.X, pos.Y);
 					d2dContext.DrawTextLayout(origin, layout, foreBrush, Direct2D.DrawTextOptions.None);
-					d2dContext.Flush();
+					//d2dContext.Flush();
 				}
 			}
 			finally

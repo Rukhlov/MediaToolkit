@@ -52,147 +52,148 @@ namespace Test.Encoder
 			//IDRDecoder.Run();
 
 			VideoDecoderTest.Run();
+			//Probe.Utils.WindowHookTest.Run();
 
-            //var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
+			//var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
 
-            //foreach(var d in encoderDescrs)
-            //{
-            //    Console.WriteLine(d.ToString() + " (" + d.Description + ")");
-            //}
-
-
-            //Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
-
-            //DatapathCaptTest.Run();
-            //RgbHelperTest.Run();
-
-            //D3D11ConvertersTest.Run();
-
-            ////MftH264Test.Run();
-            //int count = 10;
-            //while (count-->0)
-            //{
-
-            //    DxTextureTest.Run2();
-            //    Thread.Sleep(100);
-            //}
+			//foreach(var d in encoderDescrs)
+			//{
+			//    Console.WriteLine(d.ToString() + " (" + d.Description + ")");
+			//}
 
 
-            //var displayInfos = DisplayUtil.GetDisplayConfigInfos();
+			//Console.WriteLine( MediaToolkit.DirectX.DxTool.LogDxInfo());
 
-            // FFmpegPixConverterTest.Run();
+			//DatapathCaptTest.Run();
+			//RgbHelperTest.Run();
 
-            //DisplaySettingChanged.Run();
-            //SimpleSwapChain.Run();
+			//D3D11ConvertersTest.Run();
 
-            //RgbToNv12Converter.Run();
+			////MftH264Test.Run();
+			//int count = 10;
+			//while (count-->0)
+			//{
 
-            //FFmpegJpegEncoderTest.Run();
-
-            //D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
-            //videoProcessor.Test();
-
-
-
-            //var adapterMode = DisplayUtil.CheckGraphicsMode();
-
-            //         Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
-            //         Console.WriteLine("-----------------------------\r\n");
-            //         //NvApiTest.Run4();
-
-            //         var dxDevices = DisplayUtil.GetDxDisplayDevices();
-            //         foreach(var d in dxDevices)
-            //         {
-            //             Console.WriteLine(d.ToString());
-            //         }
+			//    DxTextureTest.Run2();
+			//    Thread.Sleep(100);
+			//}
 
 
-            //         var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
+			//var displayInfos = DisplayUtil.GetDisplayConfigInfos();
 
-            //         foreach (var adapter in gdiDevices.Keys)
-            //         {
-            //	Console.WriteLine("Adapter: ");
+			// FFmpegPixConverterTest.Run();
 
-            //	Console.WriteLine(adapter.ToString());
+			//DisplaySettingChanged.Run();
+			//SimpleSwapChain.Run();
 
-            //             var monitors = gdiDevices[adapter];
+			//RgbToNv12Converter.Run();
 
-            //	Console.WriteLine("Monitors: ");
-            //	foreach (var m in monitors)
-            //             {
-            //                 Console.WriteLine(m.ToString());
-            //             }
-            //	Console.WriteLine("---------------------");
-            //}
+			//FFmpegJpegEncoderTest.Run();
 
-
-            //         string path = AppDomain.CurrentDomain.BaseDirectory;
-            //         string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
-            //         //fileFullName = @"d:\Test.Encoder.exe";
-            //         //fileFullName = @"vlc.exe";
+			//D3D11VideoProcessor videoProcessor = new D3D11VideoProcessor();
+			//videoProcessor.Test();
 
 
 
-            //string fileName = Path.GetFileName(fileFullName);
-            //string name = Path.GetFileNameWithoutExtension(fileName);
-            //bool forceIntegratedGPU = true;
+			//var adapterMode = DisplayUtil.CheckGraphicsMode();
 
-            //var settings = NvApiTest.CreateShimRenderingSettings(forceIntegratedGPU);
-            //NvApiTest.SetupNvProfile(name, fileName, settings);
+			//         Console.WriteLine(">>>>>>>>>>> Graphics System Mode: " + adapterMode);
+			//         Console.WriteLine("-----------------------------\r\n");
+			//         //NvApiTest.Run4();
 
-
-
-
-
-            //NvApiTest.SetupNvOptimusProfile(name, fileName, forceIntegratedGPU);
-
-
-            //var profileName = "Calculator";
-            // profileName = "Skype Metro App";
-            //NvApiTest.Run3(profileName);
-
-            //DisplayDeviceTest.GetDisplayInfoTest();
-
-            //NvApiTest.Run4();
+			//         var dxDevices = DisplayUtil.GetDxDisplayDevices();
+			//         foreach(var d in dxDevices)
+			//         {
+			//             Console.WriteLine(d.ToString());
+			//         }
 
 
-            //MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);
+			//         var gdiDevices = DisplayUtil.EnumDisplayDevices(false);
 
-            ////MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
+			//         foreach (var adapter in gdiDevices.Keys)
+			//         {
+			//	Console.WriteLine("Adapter: ");
 
-            //var devices = MediaToolkit.NativeAPIs.Utils.DisplayTool.GetDisplayDevices();
+			//	Console.WriteLine(adapter.ToString());
 
-            //foreach (var d in devices)
-            //{
-            //    Console.WriteLine(d .ToString());
-            //    var monitors = d.Monitors;
-            //    foreach (var m in monitors)
-            //    {
-            //        Console.WriteLine(m.ToString());
-            //    }
+			//             var monitors = gdiDevices[adapter];
 
-            //    Console.WriteLine("------------------------------------");
-            //    Console.WriteLine("");
-            //}
-
-            //Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
-
-            // Test.Encoder.DDATest.DDATest.Run();
-
-            //MfTransformTests.FindEncoderTest();
-
-            //SimpleSwapChain.Run();
-
-            // WicTest1.Run();
-
-            // CopyAcrossGPUTest.Run();
-
-            //NewMethod1();
-
-            //Console.WriteLine(DxTool.LogDxInfo());
+			//	Console.WriteLine("Monitors: ");
+			//	foreach (var m in monitors)
+			//             {
+			//                 Console.WriteLine(m.ToString());
+			//             }
+			//	Console.WriteLine("---------------------");
+			//}
 
 
-            Console.WriteLine("------------------------------------------------------");
+			//         string path = AppDomain.CurrentDomain.BaseDirectory;
+			//         string fileFullName = System.Reflection.Assembly.GetCallingAssembly().Location;
+			//         //fileFullName = @"d:\Test.Encoder.exe";
+			//         //fileFullName = @"vlc.exe";
+
+
+
+			//string fileName = Path.GetFileName(fileFullName);
+			//string name = Path.GetFileNameWithoutExtension(fileName);
+			//bool forceIntegratedGPU = true;
+
+			//var settings = NvApiTest.CreateShimRenderingSettings(forceIntegratedGPU);
+			//NvApiTest.SetupNvProfile(name, fileName, settings);
+
+
+
+
+
+			//NvApiTest.SetupNvOptimusProfile(name, fileName, forceIntegratedGPU);
+
+
+			//var profileName = "Calculator";
+			// profileName = "Skype Metro App";
+			//NvApiTest.Run3(profileName);
+
+			//DisplayDeviceTest.GetDisplayInfoTest();
+
+			//NvApiTest.Run4();
+
+
+			//MediaToolkit.Utils.RegistryTool.SetUserGpuPreferences("123423", 1);
+
+			////MediaToolkit.NativeAPIs.Utils.DisplayTool.DumpDevices();
+
+			//var devices = MediaToolkit.NativeAPIs.Utils.DisplayTool.GetDisplayDevices();
+
+			//foreach (var d in devices)
+			//{
+			//    Console.WriteLine(d .ToString());
+			//    var monitors = d.Monitors;
+			//    foreach (var m in monitors)
+			//    {
+			//        Console.WriteLine(m.ToString());
+			//    }
+
+			//    Console.WriteLine("------------------------------------");
+			//    Console.WriteLine("");
+			//}
+
+			//Console.WriteLine(MediaToolkit.MediaFoundation.DxTool.LogDxInfo());
+
+			// Test.Encoder.DDATest.DDATest.Run();
+
+			//MfTransformTests.FindEncoderTest();
+
+			//SimpleSwapChain.Run();
+
+			// WicTest1.Run();
+
+			// CopyAcrossGPUTest.Run();
+
+			//NewMethod1();
+
+			//Console.WriteLine(DxTool.LogDxInfo());
+
+
+			Console.WriteLine("------------------------------------------------------");
             Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
 
             Console.WriteLine("MediaToolkitManager.Shutdown()");

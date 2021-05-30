@@ -95,6 +95,7 @@ namespace MediaToolkit.DirectX
                 InitShaders();
 
                 InitResources();
+
             }
             catch (Exception ex)
             {
@@ -263,6 +264,28 @@ namespace MediaToolkit.DirectX
             }
 
             textureSampler = new SamplerState(device, samplerDescr);
+
+
+		}
+
+		public void DrawTexture(Texture2D srcTexture,
+            Texture2D destTexture, GDI.Size viewSize,
+            bool aspectRatio = true, Transform transform = Transform.R0)
+        {
+            DrawTexture(new Texture2D[] { srcTexture }, destTexture, viewSize, aspectRatio, transform);
+        }
+
+        public void DrawTexture(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
+        {
+
+            var destDescr = destTexture.Description;
+            if (destSize != new GDI.Size(destDescr.Width, destDescr.Height))
+            {
+                //...
+            }
+
+            DrawTexture(new Texture2D[] { srcTexture }, destTexture, destSize, aspectRatio, transform);
+
         }
 
         public void DrawTexture(Texture2D[] srcTextures,
@@ -270,6 +293,18 @@ namespace MediaToolkit.DirectX
             bool aspectRatio = true, Transform transform = Transform.R0)
 
         {
+            lock (device)
+            {
+                DrawTextureInternal(srcTextures, destTexture, viewSize, aspectRatio, transform);
+            }
+        }
+
+        private void DrawTextureInternal(Texture2D[] srcTextures,
+            Texture2D destTexture, GDI.Size viewSize,
+            bool aspectRatio = true, Transform transform = Transform.R0)
+
+        {
+
             DeviceContext deviceContext = device.ImmediateContext;
 
             var srcTexture = srcTextures[0];
@@ -279,7 +314,6 @@ namespace MediaToolkit.DirectX
             var destSize = new GDI.Size(destDescr.Width, destDescr.Height);
 
             ShaderResourceView srcSRV = null;
-            RenderTargetView destRTV = null;
             try
             {
                 if (srcFormat == PixFormat.RGB15 || srcFormat == PixFormat.RGB16
@@ -295,21 +329,15 @@ namespace MediaToolkit.DirectX
                 }
 
 
-                destRTV = new RenderTargetView(device, destTexture, new RenderTargetViewDescription
-                {
-                    Format = destTexture.Description.Format,
-                    Dimension = RenderTargetViewDimension.Texture2D,
-                    Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
-                });
-
 
                 var rgb32SRV = srcSRV;
                 var vertices = VertexHelper.DefaultQuad;
                 deviceContext.InputAssembler.PrimitiveTopology = PrimitiveTopology.TriangleStrip;
-                device.ImmediateContext.PixelShader.SetSamplers(0, textureSampler);
+                deviceContext.PixelShader.SetSamplers(0, textureSampler);
                 deviceContext.VertexShader.SetShader(defaultVS, null, 0);
 
                 deviceContext.Rasterizer.SetViewport(0, 0, srcSize.Width, srcSize.Height);
+
 
                 if (srcFormat == PixFormat.RGB16 || srcFormat == PixFormat.RGB15)
                 {
@@ -334,6 +362,7 @@ namespace MediaToolkit.DirectX
                 }
                 else if (srcFormat == PixFormat.NV12)
                 {
+                    ShaderResourceView[] shaderResourceViews = null;
                     ShaderResourceView lumaSRV = null;
                     ShaderResourceView chromaSRV = null;
                     try
@@ -370,6 +399,12 @@ namespace MediaToolkit.DirectX
                             throw new InvalidOperationException("Invalid source textures number");
                         }
 
+                        //shaderResourceViews = new ShaderResourceView[]
+                        //{
+                        //	lumaSRV,
+                        //	chromaSRV
+                        //};
+
                         using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                         {
                             VertexBufferBinding vertexBuffer = new VertexBufferBinding
@@ -403,66 +438,66 @@ namespace MediaToolkit.DirectX
 
                     rgb32SRV = tempSRV;
                 }
-				else if (srcFormat == PixFormat.I444 || srcFormat == PixFormat.I422 || srcFormat == PixFormat.I420)
-				{
-					ShaderResourceView lumaSRV = null;
-					ShaderResourceView CbSRV = null;
-					ShaderResourceView CrSRV = null;
-					try
-					{
-						if (srcTextures.Length == 3)
-						{
-							ShaderResourceViewDescription description = new ShaderResourceViewDescription
-							{
-								Format = Format.R8_UNorm,
-								Dimension = ShaderResourceViewDimension.Texture2D,
-								Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
-							};
+                else if (srcFormat == PixFormat.I444 || srcFormat == PixFormat.I422 || srcFormat == PixFormat.I420)
+                {
+                    ShaderResourceView lumaSRV = null;
+                    ShaderResourceView CbSRV = null;
+                    ShaderResourceView CrSRV = null;
+                    try
+                    {
+                        if (srcTextures.Length == 3)
+                        {
+                            ShaderResourceViewDescription description = new ShaderResourceViewDescription
+                            {
+                                Format = Format.R8_UNorm,
+                                Dimension = ShaderResourceViewDimension.Texture2D,
+                                Texture2D = new ShaderResourceViewDescription.Texture2DResource { MipLevels = 1, MostDetailedMip = 0 },
+                            };
 
-							lumaSRV = new ShaderResourceView(device, srcTextures[0], description);
-							CbSRV = new ShaderResourceView(device, srcTextures[1], description);
-							CrSRV = new ShaderResourceView(device, srcTextures[2], description);
-						}
-						else
-						{
-							throw new InvalidOperationException("Invalid source textures number");
-						}
+                            lumaSRV = new ShaderResourceView(device, srcTextures[0], description);
+                            CbSRV = new ShaderResourceView(device, srcTextures[1], description);
+                            CrSRV = new ShaderResourceView(device, srcTextures[2], description);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Invalid source textures number");
+                        }
 
-						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
-						{
-							VertexBufferBinding vertexBuffer = new VertexBufferBinding
-							{
-								Buffer = buffer,
-								Stride = Utilities.SizeOf<_Vertex>(),
-								Offset = 0,
-							};
-							deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
-						}
+                        using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
+                        {
+                            VertexBufferBinding vertexBuffer = new VertexBufferBinding
+                            {
+                                Buffer = buffer,
+                                Stride = Utilities.SizeOf<_Vertex>(),
+                                Offset = 0,
+                            };
+                            deviceContext.InputAssembler.SetVertexBuffers(0, vertexBuffer);
+                        }
 
-						var yuvToRgbMatrix = ColorSpaceHelper.GetYuvToRgbMatrix();
-						using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref yuvToRgbMatrix))
-						{
-							deviceContext.PixelShader.SetConstantBuffer(0, buffer);
-						}
+                        var yuvToRgbMatrix = ColorSpaceHelper.GetYuvToRgbMatrix();
+                        using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.ConstantBuffer, ref yuvToRgbMatrix))
+                        {
+                            deviceContext.PixelShader.SetConstantBuffer(0, buffer);
+                        }
 
-						deviceContext.PixelShader.SetShader(toRgb32Ps, null, 0);
-						deviceContext.OutputMerger.SetTargets(tempRTV);
-						deviceContext.ClearRenderTargetView(tempRTV, BackColor);
-						deviceContext.PixelShader.SetShaderResources(0, lumaSRV, CbSRV, CrSRV);
-						deviceContext.Draw(vertices.Length, 0);
+                        deviceContext.PixelShader.SetShader(toRgb32Ps, null, 0);
+                        deviceContext.OutputMerger.SetTargets(tempRTV);
+                        deviceContext.ClearRenderTargetView(tempRTV, BackColor);
+                        deviceContext.PixelShader.SetShaderResources(0, lumaSRV, CbSRV, CrSRV);
+                        deviceContext.Draw(vertices.Length, 0);
 
-					}
-					finally
-					{
-						DxTool.SafeDispose(lumaSRV);
-						DxTool.SafeDispose(CbSRV);
-						DxTool.SafeDispose(CrSRV);
-					}
+                    }
+                    finally
+                    {
+                        DxTool.SafeDispose(lumaSRV);
+                        DxTool.SafeDispose(CbSRV);
+                        DxTool.SafeDispose(CrSRV);
+                    }
 
-					rgb32SRV = tempSRV;
-				}
+                    rgb32SRV = tempSRV;
+                }
 
-				if (srcSize != destSize || transform != Transform.R0 || srcSize != viewSize)
+                if (srcSize != destSize || transform != Transform.R0 || srcSize != viewSize)
                 {
                     vertices = VertexHelper.GetQuadVertices(viewSize, srcSize, aspectRatio, transform);
                     using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
@@ -490,6 +525,7 @@ namespace MediaToolkit.DirectX
                     vertices = VertexHelper.DefaultQuad;
                     using (var buffer = SharpDX.Direct3D11.Buffer.Create(device, BindFlags.VertexBuffer, vertices))
                     {
+
                         VertexBufferBinding vertexBuffer = new VertexBufferBinding
                         {
                             Buffer = buffer,
@@ -502,40 +538,35 @@ namespace MediaToolkit.DirectX
                     deviceContext.PixelShader.SetShader(defaultPS, null, 0);
                 }
 
-                deviceContext.Rasterizer.SetViewport(0, 0, destSize.Width, destSize.Height);
-                deviceContext.OutputMerger.SetTargets(destRTV);
-                deviceContext.ClearRenderTargetView(destRTV, BackColor);
-                deviceContext.PixelShader.SetShaderResource(0, rgb32SRV);
-                deviceContext.Draw(vertices.Length, 0);
+                RenderTargetView destRTV = null;
+                try
+                {
+                    destRTV = new RenderTargetView(device, destTexture, new RenderTargetViewDescription
+                    {
+                        Format = destTexture.Description.Format,
+                        Dimension = RenderTargetViewDimension.Texture2D,
+                        Texture2D = new RenderTargetViewDescription.Texture2DResource { MipSlice = 0 },
+                    });
 
-                rgb32SRV = null;
+                    deviceContext.Rasterizer.SetViewport(0, 0, destSize.Width, destSize.Height);
+                    deviceContext.OutputMerger.SetTargets(destRTV);
+                    deviceContext.ClearRenderTargetView(destRTV, BackColor);
+                    deviceContext.PixelShader.SetShaderResource(0, rgb32SRV);
+                    deviceContext.Draw(vertices.Length, 0);
+                    //deviceContext.Flush();
+                    rgb32SRV = null;
 
+                }
+                finally
+                {
+                    DxTool.SafeDispose(destRTV);
+                }
             }
             finally
             {
-                DxTool.SafeDispose(destRTV);
+
                 DxTool.SafeDispose(srcSRV);
             }
-        }
-
-        public void DrawTexture(Texture2D srcTexture,
-            Texture2D destTexture, GDI.Size viewSize,
-            bool aspectRatio = true, Transform transform = Transform.R0)
-        {
-            DrawTexture(new Texture2D[] { srcTexture }, destTexture, viewSize, aspectRatio, transform);
-        }
-
-        public void DrawTexture(Texture2D srcTexture, Texture2D destTexture, bool aspectRatio = true, Transform transform = Transform.R0)
-        {
-
-            var destDescr = destTexture.Description;
-            if (destSize != new GDI.Size(destDescr.Width, destDescr.Height))
-            {
-                //...
-            }
-
-            DrawTexture(new Texture2D[] { srcTexture }, destTexture, destSize, aspectRatio, transform);
-
         }
 
         public void Close()
