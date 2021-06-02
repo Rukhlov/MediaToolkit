@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Display\EnumWindowsTest.cs" />
     <Compile Include="FFmpeg\FFmpegDecoderTest.cs" />
+    <Compile Include="NvApi\NvDecTest.cs" />
     <Compile Include="Video\CopyAcrossGPUTest.cs" />
     <Compile Include="Video\CopyImageTest.cs" />
     <Compile Include="Video\D3D11ConvertersTest.cs" />

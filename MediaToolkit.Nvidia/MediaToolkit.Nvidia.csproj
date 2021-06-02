@@ -48,7 +48,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cuda\CuDevice.cs" />
+    <Compile Include="Cuda\LibCuda.Ctx.cs" />
+    <Compile Include="Cuda\LibCuda.D3D11.cs" />
+    <Compile Include="Cuda\LibCuda.Device.cs" />
+    <Compile Include="Cuda\LibCuda.Enums.cs" />
+    <Compile Include="Cuda\LibCuda.Graphics.cs" />
+    <Compile Include="Cuda\LibCuda.Handles.cs" />
+    <Compile Include="Cuda\LibCuda.Mem.cs" />
+    <Compile Include="Cuda\LibCuda.Memcpy.cs" />
+    <Compile Include="Cuda\LibCuda.Memset.cs" />
+    <Compile Include="Cuda\LibCuda.Stream.cs" />
+    <Compile Include="Cuda\LibCuda.Structs.cs" />
+    <Compile Include="Cuda\LibCuVideo.cs" />
     <Compile Include="Cuda\LibCuVideo.Enums.cs" />
+    <Compile Include="Cuda\LibCuVideo.Handles.cs" />
+    <Compile Include="Cuda\LibCuVideo.Structs.cs" />
+    <Compile Include="LibCuda.cs" />
     <Compile Include="LibNvApi.cs" />
     <Compile Include="LibNvEnc.cs" />
     <Compile Include="NvAPI\Enums.cs" />

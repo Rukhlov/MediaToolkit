@@ -17,6 +17,7 @@ using System.Windows.Forms;
 using MediaToolkit.Utils;
 using Test.Probe.Video;
 using Test.Probe;
+using Test.Probe.NvApi;
 
 namespace Test.Encoder
 {
@@ -51,7 +52,8 @@ namespace Test.Encoder
 
 			//IDRDecoder.Run();
 
-			VideoDecoderTest.Run();
+			NvDecTest.Run();
+			//VideoDecoderTest.Run();
 			//Probe.Utils.WindowHookTest.Run();
 
 			//var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();

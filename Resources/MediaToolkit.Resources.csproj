@@ -309,6 +309,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Doc\T-REC-H.264-201402-S!!PDF-E.pdf" />
     <None Include="Files\h264\IFrame_1920x1080_yuv420p.h264" />
     <None Include="Files\h264\testsrc_1280x720_yuv420p_Iframe.h264" />
     <None Include="Files\h264\testsrc_2560x1440_yuv420p_Iframe.h264" />

@@ -234,6 +234,7 @@ namespace MediaToolkit.Codecs
 
 			return sps;
 		}
+
 		public static bool TryParse(byte[] rbsp, out SequenceParameterSet sps)
 		{
 			bool success = false;
@@ -253,6 +254,7 @@ namespace MediaToolkit.Codecs
 		}
 
 		public int Profile => profile_idc;
+		//public int Level => (int)(level_idc / 10.0);
 		public int Level => level_idc;
 
 		public int Width
@@ -270,6 +272,7 @@ namespace MediaToolkit.Codecs
 				return ((2 - frame_mbs_only_flag) * (pic_height_in_map_units_minus1 + 1) * 16) - (frame_crop_top_offset * 2) - (frame_crop_bottom_offset * 2);
 			}
 		}
+
 		public double MaxFps
 		{
 			get
@@ -426,11 +429,13 @@ namespace MediaToolkit.Codecs
 		}
 
 		internal void Parse(H264BitStream bs)
-		{
+		{// 7.3.2.1.1 Sequence parameter set data syntax
+
 			frame_crop_left_offset = 0;
 			frame_crop_right_offset = 0;
 			frame_crop_top_offset = 0;
 			frame_crop_bottom_offset = 0;
+			chroma_format_idc = 1;
 
 			profile_idc = bs.ReadBits(8);
 
@@ -447,9 +452,17 @@ namespace MediaToolkit.Codecs
 			level_idc = bs.ReadBits(8);
 			seq_parameter_set_id = bs.ReadUE();
 
+			//if (seq_parameter_set_id > 31)
+			//{
+			//	// sequence_parameter_set_id shall be in the range of 0 to 31, inclusive. Reject anything else.
+			//	throw new InvalidOperationException("seq_parameter_set_id == " + seq_parameter_set_id);
+			//}
+
 			if (profile_idc == 100 || profile_idc == 110 ||
 				profile_idc == 122 || profile_idc == 244 || profile_idc == 44 ||
-				profile_idc == 83 || profile_idc == 86 || profile_idc == 118)
+				profile_idc == 83 || profile_idc == 86 || profile_idc == 118 || 
+				profile_idc == 128 || profile_idc == 138 || profile_idc == 139 ||
+			    profile_idc == 134)
 			{
 				chroma_format_idc = bs.ReadUE();
 
@@ -457,6 +470,7 @@ namespace MediaToolkit.Codecs
 				{
 					residual_colour_transform_flag = bs.ReadBit();
 				}
+
 				bit_depth_luma_minus8 = bs.ReadUE();
 				bit_depth_chroma_minus8 = bs.ReadUE();
 				qpprime_y_zero_transform_bypass_flag = bs.ReadBit();
@@ -464,8 +478,8 @@ namespace MediaToolkit.Codecs
 
 				if (seq_scaling_matrix_present_flag != 0)
 				{// по другому ->> https://sourceforge.net/projects/h264streamanalysis/ (скорее всего не правильно...)
-				 // у всех реализовано по разному, х.з насколько этот вариант правильный
-					for (var i = 0; i < (3 != chroma_format_idc ? 8 : 12); ++i)
+
+					for (var i = 0; i < ( chroma_format_idc !=3 ? 8 : 12); i++)
 					{
 						seq_scaling_list_present_flag = bs.ReadBits(1);
 
@@ -486,31 +500,6 @@ namespace MediaToolkit.Codecs
 
 					}
 				}
-
-				//if (seq_scaling_matrix_present_flag != 0)
-				//{
-				//    int i = 0;
-				//    for (i = 0; i < 8; i++)
-				//    {
-				//        seq_scaling_list_present_flag = bs.ReadBit();
-				//        if (seq_scaling_list_present_flag != 0)
-				//        {
-				//            int sizeOfScalingList = (i < 6) ? 16 : 64;
-				//            int lastScale = 8;
-				//            int nextScale = 8;
-				//            int j = 0;
-				//            for (j = 0; j < sizeOfScalingList; j++)
-				//            {
-				//                if (nextScale != 0)
-				//                {
-				//                    int delta_scale = bs.ReadSE();
-				//                    nextScale = (lastScale + delta_scale + 256) % 256;
-				//                }
-				//                lastScale = (nextScale == 0) ? lastScale : nextScale;
-				//            }
-				//        }
-				//    }
-				//}
 			}
 
 			log2_max_frame_num_minus4 = bs.ReadUE();
@@ -531,6 +520,7 @@ namespace MediaToolkit.Codecs
 					bs.ReadSE();
 				}
 			}
+
 			max_num_ref_frames = bs.ReadUE();
 			gaps_in_frame_num_value_allowed_flag = bs.ReadBit();
 			pic_width_in_mbs_minus1 = bs.ReadUE();
@@ -556,6 +546,8 @@ namespace MediaToolkit.Codecs
 				VuiParameters(bs);
 			}
 		}
+
+	
 
 		private void ParseScalingList(H264BitStream bs, int sizeOfScalingList)
 		{
@@ -679,6 +671,58 @@ namespace MediaToolkit.Codecs
 			dpb_output_delay_length_minus1 = bs.ReadBits(5);
 
 			time_offset_length = bs.ReadBits(5);
+		}
+
+		private void CalcSize()
+		{ //https://stackoverflow.com/questions/31919054/h264-getting-frame-height-and-width-from-sequence-parameter-set-sps-nal-unit
+			int SubWidthC = 0;
+			int SubHeightC = 0;
+			int separate_colour_plane_flag = residual_colour_transform_flag;
+			if (chroma_format_idc == 0 && separate_colour_plane_flag == 0)
+			{ //monochrome
+				SubWidthC = SubHeightC = 0;
+			}
+			else if (chroma_format_idc == 1 && separate_colour_plane_flag == 0)
+			{ //4:2:0 
+				SubWidthC = SubHeightC = 2;
+			}
+			else if (chroma_format_idc == 2 && separate_colour_plane_flag == 0)
+			{ //4:2:2 
+				SubWidthC = 2;
+				SubHeightC = 1;
+			}
+			else if (chroma_format_idc == 3)
+			{ //4:4:4
+				if (separate_colour_plane_flag == 0)
+				{
+					SubWidthC = SubHeightC = 1;
+				}
+				else if (separate_colour_plane_flag == 1)
+				{
+					SubWidthC = SubHeightC = 0;
+				}
+			}
+
+			int PicWidthInMbs = pic_width_in_mbs_minus1 + 1;
+
+			int PicHeightInMapUnits = pic_height_in_map_units_minus1 + 1;
+			int FrameHeightInMbs = (2 - frame_mbs_only_flag) * PicHeightInMapUnits;
+
+			int crop_left = 0;
+			int crop_right = 0;
+			int crop_top = 0;
+			int crop_bottom = 0;
+
+			if (frame_cropping_flag != 0)
+			{
+				crop_left = frame_crop_left_offset;
+				crop_right = frame_crop_right_offset;
+				crop_top = frame_crop_top_offset;
+				crop_bottom = frame_crop_bottom_offset;
+			}
+
+			int width = PicWidthInMbs * 16 - SubWidthC * (crop_left + crop_right);
+			int height = FrameHeightInMbs * 16 - SubHeightC * (2 - frame_mbs_only_flag);
 		}
 	}
 
