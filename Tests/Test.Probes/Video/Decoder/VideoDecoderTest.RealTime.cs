@@ -306,6 +306,20 @@ namespace Test.Probe
 
 										packetCount++;
 									}
+                                    else if(nalUnitType == (int)NalUnitType.SequenceParameterSet)
+                                    {
+										var rbsp = NalUnitReader.NalToRbsp(nal, 1);
+
+										SequenceParameterSet.TryParse(rbsp, out var sps);
+										Console.WriteLine(sps.ToString());
+
+										//var startCodes = new byte[] { 0, 0, 0, 1 };
+										//IEnumerable<byte> data = new List<byte>();
+										//data = data.Concat(startCodes).Concat(nal);
+
+										//File.WriteAllBytes(@"d:\temp\sps_1280x720_30fps.h264", data.ToArray());
+
+									}
 								}
 
 							} while (dataAvailable && running);
