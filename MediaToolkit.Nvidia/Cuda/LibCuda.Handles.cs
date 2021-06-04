@@ -154,12 +154,11 @@ namespace MediaToolkit.Nvidia
         public bool IsEmpty => Handle == IntPtr.Zero;
 
         /// <inheritdoc cref="GraphicsD3D11RegisterResource(out CuGraphicsResource, IntPtr, CuGraphicsRegisters)"/>
-        public static CuGraphicsResource Register(
-            IntPtr resourcePtr,
+        public static CuGraphicsResource Register(IntPtr resourcePtr,
             CuGraphicsRegisters flags = CuGraphicsRegisters.None)
         {
-            var result = GraphicsD3D11RegisterResource(
-                out var resource, resourcePtr, flags);
+            var result = GraphicsD3D11RegisterResource(out var resource, resourcePtr, flags);
+
             CheckResult(result);
 
             return resource;
@@ -209,13 +208,9 @@ namespace MediaToolkit.Nvidia
         }
 
         /// <inheritdoc cref="GraphicsSubResourceGetMappedArray(out CuArray, CuGraphicsResource, int, int)"/>
-        public CuArray GetMappedArray(
-            int arrayIndex = 0,
-            int mipLevel = 0)
+        public CuArray GetMappedArray(int arrayIndex = 0, int mipLevel = 0)
         {
-            var result = GraphicsSubResourceGetMappedArray(
-                out var array,
-                this, arrayIndex, mipLevel);
+            var result = GraphicsSubResourceGetMappedArray(out var array, this, arrayIndex, mipLevel);
             CheckResult(result);
 
             return array;

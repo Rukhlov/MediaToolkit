@@ -229,6 +229,10 @@ namespace MediaToolkit.Nvidia
         [DllImport(_dllpath, EntryPoint = "cuGraphicsMapResources")]
         public static extern CuResult GraphicsMapResources(int count, CuGraphicsResource* resources, CuStream hStream);
 
+        [DllImport(_dllpath, EntryPoint = "cuGraphicsMapResources")]
+        public static extern CuResult GraphicsMapResources(int count, IntPtr resources, CuStream hStream);
+
+
         /// <summary>Unmap graphics resources.
         ///
         /// Unmaps the <paramref name="count"/> graphics resources in <paramref name="resources"/>.
