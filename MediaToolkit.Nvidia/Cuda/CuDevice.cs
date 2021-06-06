@@ -130,8 +130,7 @@ namespace MediaToolkit.Nvidia
         }
 
         /// <inheritdoc cref="LibCuda.CtxCreate(out CuContext, CuContextFlags, CuDevice)"/>
-        public CuContext CreateContext(
-            CuContextFlags flags = CuContextFlags.SchedAuto)
+        public CuContext CreateContext( CuContextFlags flags = CuContextFlags.SchedAuto)
         {
             var result = CtxCreate(out var ctx, flags, this);
             CheckResult(result);

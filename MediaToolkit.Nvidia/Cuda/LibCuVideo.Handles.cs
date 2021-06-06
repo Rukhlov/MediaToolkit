@@ -124,8 +124,7 @@ namespace MediaToolkit.Nvidia
         }
 
         /// <inheritdoc cref="ReconfigureDecoder(CuVideoDecoder, ref CuVideoReconfigureDecoderInfo)"/>
-        public void Reconfigure(
-            ref CuVideoReconfigureDecoderInfo decReconfigParams)
+        public void Reconfigure(ref CuVideoReconfigureDecoderInfo decReconfigParams)
         {
             var result = ReconfigureDecoder(this, ref decReconfigParams);
             CheckResult(result);
@@ -152,19 +151,13 @@ namespace MediaToolkit.Nvidia
         }
 
         /// <inheritdoc cref="LibCuVideo.MapVideoFrame64(CuVideoDecoder, int, out CuDevicePtr, out int, ref CuVideoProcParams)"/>
-        public CuVideoFrame MapVideoFrame(
-            int picIndex, ref CuVideoProcParams param,
-            out int pitch)
+        public CuVideoFrame MapVideoFrame(int picIndex, ref CuVideoProcParams param, out int pitch)
         {
             CuDevicePtr devicePtr;
 
             var result = Environment.Is64BitProcess
-                ? LibCuVideo.MapVideoFrame64(
-                    this, picIndex, out devicePtr,
-                    out pitch, ref param)
-                : LibCuVideo.MapVideoFrame(
-                    this, picIndex, out devicePtr,
-                    out pitch, ref param);
+                ? LibCuVideo.MapVideoFrame64( this, picIndex, out devicePtr,out pitch, ref param)
+                : LibCuVideo.MapVideoFrame( this, picIndex, out devicePtr, out pitch, ref param);
 
             CheckResult(result);
 

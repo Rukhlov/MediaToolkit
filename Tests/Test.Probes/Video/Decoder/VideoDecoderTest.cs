@@ -298,7 +298,10 @@ namespace Test.Probe
             var decoderTask = new Task(() =>
             {
                 Console.WriteLine("DecoderTask BEGIN");
-                DecoderTask(inputArgs);
+
+				NvDecDecoderTask(inputArgs);
+
+               // DecoderTask(inputArgs);
                // FFmpegDecoderTask(inputArgs);
 
                 Console.WriteLine("DecoderTask END");

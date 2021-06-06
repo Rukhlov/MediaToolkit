@@ -52,8 +52,8 @@ namespace Test.Encoder
 
 			//IDRDecoder.Run();
 
-			NvDecTest.Run();
-			//VideoDecoderTest.Run();
+			//NvDecTest.Run();
+			VideoDecoderTest.Run();
 			//Probe.Utils.WindowHookTest.Run();
 
 			//var encoderDescrs = FFmpegLib.Utils.GetH264Encoders();
