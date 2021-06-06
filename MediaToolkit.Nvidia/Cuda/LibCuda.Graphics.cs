@@ -33,7 +33,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsGLRegisterImage,
         /// ::cudaGraphicsUnregisterResource
         /// CUresult CUDAAPI cuGraphicsUnregisterResource(CUgraphicsResource resource);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsUnregisterResource")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsUnregisterResource")]
         public static extern CuResult GraphicsUnregisterResource(CuGraphicsResource resource);
 
         /// <summary>Get an array through which to access a subresource of a mapped graphics resource.
@@ -74,7 +74,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsResourceGetMappedPointer,
         /// ::cudaGraphicsSubResourceGetMappedArray
         /// CUresult CUDAAPI cuGraphicsSubResourceGetMappedArray(CUarray *pArray, CUgraphicsResource resource, unsigned int arrayIndex, unsigned int mipLevel);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsSubResourceGetMappedArray")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsSubResourceGetMappedArray")]
         public static extern CuResult GraphicsSubResourceGetMappedArray(out CuArray pArray, CuGraphicsResource resource, int arrayIndex, int mipLevel);
 
         /// <summary>Get a mipmapped array through which to access a mapped graphics resource.
@@ -106,7 +106,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsResourceGetMappedPointer,
         /// ::cudaGraphicsResourceGetMappedMipmappedArray
         /// CUresult CUDAAPI cuGraphicsResourceGetMappedMipmappedArray(CUmipmappedArray *pMipmappedArray, CUgraphicsResource resource);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsResourceGetMappedMipmappedArray")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsResourceGetMappedMipmappedArray")]
         public static extern CuResult GraphicsResourceGetMappedMipmappedArray(out CuMipMappedArray pMipmappedArray, CuGraphicsResource resource);
 
         /// <summary>Get a device pointer through which to access a mapped graphics resource.
@@ -142,7 +142,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsSubResourceGetMappedArray,
         /// ::cudaGraphicsResourceGetMappedPointer
         /// CUresult CUDAAPI cuGraphicsResourceGetMappedPointer(CUdeviceptr *pDevPtr, size_t *pSize, CUgraphicsResource resource);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsResourceGetMappedPointer")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsResourceGetMappedPointer")]
         public static extern CuResult GraphicsResourceGetMappedPointer(out CuDevicePtr pDevPtr, out IntPtr pSize, CuGraphicsResource resource);
 
         /// <summary>Set usage flags for mapping a graphics resource</summary>
@@ -185,7 +185,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsMapResources,
         /// ::cudaGraphicsResourceSetMapFlags
         /// CUresult CUDAAPI cuGraphicsResourceSetMapFlags(CUgraphicsResource resource, unsigned int flags);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsResourceSetMapFlags" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsResourceSetMapFlags" + _ver)]
         public static extern CuResult GraphicsResourceSetMapFlags(CuGraphicsResource resource, CuGraphicsMapResources flags);
 
         /// <summary>Map graphics resources for access by CUDA
@@ -226,10 +226,10 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsUnmapResources,
         /// ::cudaGraphicsMapResources
         /// CUresult CUDAAPI cuGraphicsMapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsMapResources")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsMapResources")]
         public static extern CuResult GraphicsMapResources(int count, CuGraphicsResource* resources, CuStream hStream);
 
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsMapResources")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsMapResources")]
         public static extern CuResult GraphicsMapResources(int count, IntPtr resources, CuStream hStream);
 
 
@@ -267,7 +267,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsMapResources,
         /// ::cudaGraphicsUnmapResources
         /// CUresult CUDAAPI cuGraphicsUnmapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsUnmapResources")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsUnmapResources")]
         public static extern CuResult GraphicsUnmapResources(int count, CuGraphicsResource* resources, CuStream hStream);
     }
 }

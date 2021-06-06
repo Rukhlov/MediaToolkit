@@ -12,7 +12,7 @@ namespace MediaToolkit.Nvidia
 	{
 		public const int ApiVerison = 10020;
 
-		private const string _dllpath = "nvcuda.dll";
+		private const string nvCudaPath = "nvcuda.dll";
 		private const string _ver = "_v2";
 
 		/// <summary>CUDA stream callback</summary>
@@ -28,7 +28,7 @@ namespace MediaToolkit.Nvidia
 
 		/// <summary>CUresult cuInit(unsigned int Flags)
 		/// Initialize the CUDA driver API.</summary>
-		[DllImport(_dllpath, EntryPoint = "cuInit")]
+		[DllImport(nvCudaPath, EntryPoint = "cuInit")]
 		public static extern CuResult Initialize(uint flags);
 
 		/// <inheritdoc cref="LibCuda.Initialize(uint)"/>
@@ -57,7 +57,7 @@ namespace MediaToolkit.Nvidia
 		/// ::cudaDriverGetVersion,
 		/// ::cudaRuntimeGetVersion
 		/// CUresult CUDAAPI cuDriverGetVersion(int *driverVersion);
-		[DllImport(_dllpath, EntryPoint = "cuDriverGetVersion")]
+		[DllImport(nvCudaPath, EntryPoint = "cuDriverGetVersion")]
 		public static extern CuResult DriverGetVersion(out int driverVersion);
 
 		/// <inheritdoc cref="LibCuda.DriverGetVersion(out int)"/>
@@ -87,7 +87,7 @@ namespace MediaToolkit.Nvidia
 		/// ::CUresult,
 		/// ::cudaGetErrorString
 		/// CUresult CUDAAPI cuGetErrorString(CUresult error, const char **pStr);
-		[DllImport(_dllpath, EntryPoint = "cuGetErrorString")]
+		[DllImport(nvCudaPath, EntryPoint = "cuGetErrorString")]
 		public static extern CuResult GetErrorString(CuResult error, out IntPtr str);
 
 		/// <inheritdoc cref="LibCuda.GetErrorString(CuResult, out IntPtr)"/>
@@ -120,7 +120,7 @@ namespace MediaToolkit.Nvidia
 		/// ::CUresult,
 		/// ::cudaGetErrorName
 		/// CUresult CUDAAPI cuGetErrorName(CUresult error, const char **pStr);
-		[DllImport(_dllpath, EntryPoint = "cuGetErrorName")]
+		[DllImport(nvCudaPath, EntryPoint = "cuGetErrorName")]
 		public static extern CuResult GetErrorName(CuResult error, out IntPtr str);
 
 		/// <inheritdoc cref="LibCuda.GetErrorName(CuResult, out IntPtr)"/>
@@ -133,7 +133,7 @@ namespace MediaToolkit.Nvidia
 		}
 
 		/// CUresult CUDAAPI cuGetExportTable(const void **ppExportTable, const CUuuid *pExportTableId);
-		[DllImport(_dllpath, EntryPoint = "cuGetExportTable")]
+		[DllImport(nvCudaPath, EntryPoint = "cuGetExportTable")]
 		public static extern CuResult GetExportTable(IntPtr* ppExportTable, Guid* pExportTableId);
 
 		/// <summary>

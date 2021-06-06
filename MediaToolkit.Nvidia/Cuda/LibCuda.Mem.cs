@@ -34,7 +34,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemGetInfo
         /// CUresult CUDAAPI cuMemGetInfo(size_t *free, size_t *total);
-        [DllImport(_dllpath, EntryPoint = "cuMemGetInfo" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemGetInfo" + _ver)]
         public static extern CuResult MemGetInfo(out IntPtr free, out IntPtr total);
 
         /// <summary>Allocates device memory
@@ -69,7 +69,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMalloc
         /// CUresult CUDAAPI cuMemAlloc(CUdeviceptr *dptr, size_t bytesize);
-        [DllImport(_dllpath, EntryPoint = "cuMemAlloc" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemAlloc" + _ver)]
         public static extern CuResult MemAlloc(out CuDevicePtr dptr, IntPtr bytesize);
 
         /// <summary>Allocates pitched device memory
@@ -132,7 +132,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMallocPitch
         /// CUresult CUDAAPI cuMemAllocPitch(CUdeviceptr *dptr, size_t *pPitch, size_t WidthInBytes, size_t Height, unsigned int ElementSizeBytes);
-        [DllImport(_dllpath, EntryPoint = "cuMemAllocPitch" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemAllocPitch" + _ver)]
         public static extern CuResult MemAllocPitch(out CuDevicePtr dptr, out IntPtr pitch, IntPtr widthInBytes, IntPtr height, uint elementSizeBytes);
 
         /// <summary>Frees device memory
@@ -163,7 +163,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaFree
         /// CUresult CUDAAPI cuMemFree(CUdeviceptr dptr);
-        [DllImport(_dllpath, EntryPoint = "cuMemFree" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemFree" + _ver)]
         public static extern CuResult MemFree(CuDevicePtr dptr);
 
         /// <summary>Set attributes on a previously allocated memory region
@@ -206,7 +206,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostRegister,
         /// ::cuMemHostUnregister
         /// CUresult CUDAAPI cuPointerSetAttribute(const void *value, CUpointer_attribute attribute, CUdeviceptr ptr);
-        [DllImport(_dllpath, EntryPoint = "cuPointerSetAttribute")]
+        [DllImport(nvCudaPath, EntryPoint = "cuPointerSetAttribute")]
         public static extern CuResult PointerSetAttribute(IntPtr value, PointerAttribute attribute, CuDeviceMemory ptr);
 
         /// <summary>Returns information about a pointer.
@@ -249,7 +249,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuPointerSetAttribute,
         /// ::cudaPointerGetAttributes
         /// CUresult CUDAAPI cuPointerGetAttributes(unsigned int numAttributes, CUpointer_attribute *attributes, void **data, CUdeviceptr ptr);
-        [DllImport(_dllpath, EntryPoint = "cuPointerGetAttributes")]
+        [DllImport(nvCudaPath, EntryPoint = "cuPointerGetAttributes")]
         public static extern CuResult PointerGetAttributes(int numAttributes, out PointerAttribute[] attributes, out IntPtr[] data, CuDevicePtr ptr);
 
         /// <summary>Get information on memory allocations
@@ -284,7 +284,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostGetDevicePointer, ::cuMemsetD2D8, ::cuMemsetD2D16,
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32
         /// CUresult CUDAAPI cuMemGetAddressRange(CUdeviceptr *pbase, size_t *psize, CUdeviceptr dptr);
-        [DllImport(_dllpath, EntryPoint = "cuMemGetAddressRange")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemGetAddressRange")]
         public static extern CuResult MemGetAddressRange(out CuDevicePtr pbase, out IntPtr psize, CuDevicePtr dptr);
 
         /// <summary>Allocates page-locked host memory
@@ -332,7 +332,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMallocHost
         /// CUresult CUDAAPI cuMemAllocHost(void **pp, size_t bytesize);
-        [DllImport(_dllpath, EntryPoint = "cuMemAllocHost")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemAllocHost")]
         public static extern CuResult MemAllocHost(out CuHostMemory pp, IntPtr bytesize);
 
         /// <summary>Frees page-locked host memory
@@ -363,7 +363,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaFreeHost
         /// CUresult CUDAAPI cuMemFreeHost(void *p);
-        [DllImport(_dllpath, EntryPoint = "cuMemFreeHost")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemFreeHost")]
         public static extern CuResult MemFreeHost(CuHostMemory p);
 
         /// <summary>Allocates page-locked host memory
@@ -446,7 +446,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaHostAlloc
         /// CUresult CUDAAPI cuMemHostAlloc(void **pp, size_t bytesize, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuMemHostAlloc")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemHostAlloc")]
         public static extern CuResult MemHostAlloc(out CuHostMemory pp, IntPtr bytesize, MemHostAllocFlags flags);
 
         /// <summary>Passes back device pointer of mapped pinned memory
@@ -500,7 +500,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaHostGetDevicePointer
         /// CUresult CUDAAPI cuMemHostGetDevicePointer(CUdeviceptr *pdptr, void *p, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuMemHostGetDevicePointer")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemHostGetDevicePointer")]
         public static extern CuResult MemHostGetDevicePointer(out CuDevicePtr pdptr, CuHostMemory p, int flags = 0);
 
         /// <summary>Passes back flags that were used for a pinned allocation
@@ -528,7 +528,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostAlloc,
         /// ::cudaHostGetFlags
         /// CUresult CUDAAPI cuMemHostGetFlags(unsigned int *pFlags, void *p);
-        [DllImport(_dllpath, EntryPoint = "cuMemHostGetFlags")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemHostGetFlags")]
         public static extern CuResult MemHostGetFlags(out MemHostAllocFlags pFlags, CuHostMemory p);
 
         /// <summary>Allocates memory that will be automatically managed by the Unified Memory system
@@ -639,7 +639,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuDeviceGetAttribute, ::cuStreamAttachMemAsync,
         /// ::cudaMallocManaged
         /// CUresult CUDAAPI cuMemAllocManaged(CUdeviceptr *dptr, size_t bytesize, unsigned int flags);
-        [DllImport(_dllpath, EntryPoint = "cuMemAllocManaged")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemAllocManaged")]
         public static extern CuResult MemAllocManaged(out CuDevicePtr dptr, IntPtr bytesize, MemoryAttachFlags flags);
 
         /// <summary>Registers an existing host memory range for use by CUDA
@@ -723,7 +723,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostGetDevicePointer,
         /// ::cudaHostRegister
         /// CUresult CUDAAPI cuMemHostRegister(void *p, size_t bytesize, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuMemHostRegister")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemHostRegister")]
         public static extern CuResult MemHostRegister(CuHostMemory p, IntPtr bytesize, int Flags);
 
         /// <summary>Unregisters a memory range that was registered with cuMemHostRegister.
@@ -750,7 +750,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostRegister,
         /// ::cudaHostUnregister
         /// CUresult CUDAAPI cuMemHostUnregister(void *p);
-        [DllImport(_dllpath, EntryPoint = "cuMemHostUnregister")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemHostUnregister")]
         public static extern CuResult MemHostUnregister(void* p);
 
         #region Array
@@ -833,7 +833,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMallocArray
         /// CUresult CUDAAPI cuArrayCreate(CUarray *pHandle, const CUDA_ARRAY_DESCRIPTOR *pAllocateArray);
-        [DllImport(_dllpath, EntryPoint = "cuArrayCreate")]
+        [DllImport(nvCudaPath, EntryPoint = "cuArrayCreate")]
         public static extern CuResult ArrayCreate(out CuArray pHandle, ref CuArrayDescription pAllocateArray);
 
         /// <summary>Get a 1D or 2D CUDA array descriptor
@@ -868,7 +868,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaArrayGetInfo
         /// CUresult CUDAAPI cuArrayGetDescriptor(CUDA_ARRAY_DESCRIPTOR *pArrayDescriptor, CUarray hArray);
-        [DllImport(_dllpath, EntryPoint = "cuArrayGetDescriptor")]
+        [DllImport(nvCudaPath, EntryPoint = "cuArrayGetDescriptor")]
         public static extern CuResult ArrayGetDescriptor(out CuArrayDescription pArrayDescriptor, CuArray hArray);
 
         /// <summary>Destroys a CUDA array
@@ -899,7 +899,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaFreeArray
         /// CUresult CUDAAPI cuArrayDestroy(CUarray hArray);
-        [DllImport(_dllpath, EntryPoint = "cuArrayDestroy")]
+        [DllImport(nvCudaPath, EntryPoint = "cuArrayDestroy")]
         public static extern CuResult ArrayDestroy(CuArray hArray);
 
         /// <summary>Creates a 3D CUDA array
@@ -1053,7 +1053,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMalloc3DArray
         /// CUresult CUDAAPI cuArray3DCreate(CUarray *pHandle, const CUDA_ARRAY3D_DESCRIPTOR *pAllocateArray);
-        [DllImport(_dllpath, EntryPoint = "cuArray3DCreate")]
+        [DllImport(nvCudaPath, EntryPoint = "cuArray3DCreate")]
         public static extern CuResult Array3DCreate(out CuArray pHandle, ref CuArray3DDescription pAllocateArray);
 
         /// <summary>Get a 3D CUDA array descriptor
@@ -1091,7 +1091,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaArrayGetInfo
         /// CUresult CUDAAPI cuArray3DGetDescriptor(CUDA_ARRAY3D_DESCRIPTOR *pArrayDescriptor, CUarray hArray);
-        [DllImport(_dllpath, EntryPoint = "cuArray3DGetDescriptor")]
+        [DllImport(nvCudaPath, EntryPoint = "cuArray3DGetDescriptor")]
         public static extern CuResult Array3DGetDescriptor(out CuArray3DDescription pArrayDescriptor, CuArray hArray);
 
         /// <summary>Creates a CUDA mipmapped array
@@ -1208,7 +1208,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuArrayCreate,
         /// ::cudaMallocMipmappedArray
         /// CUresult CUDAAPI cuMipmappedArrayCreate(CUmipmappedArray *pHandle, const CUDA_ARRAY3D_DESCRIPTOR *pMipmappedArrayDesc, unsigned int numMipmapLevels);
-        [DllImport(_dllpath, EntryPoint = "cuMipmappedArrayCreate")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMipmappedArrayCreate")]
         public static extern CuResult MipmappedArrayCreate(out CuMipMappedArray pHandle, ref CuArray3DDescription pMipmappedArrayDesc, int numMipmapLevels);
 
         /// <summary>Gets a mipmap level of a CUDA mipmapped array
@@ -1239,7 +1239,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuArrayCreate,
         /// ::cudaGetMipmappedArrayLevel
         /// CUresult CUDAAPI cuMipmappedArrayGetLevel(CUarray *pLevelArray, CUmipmappedArray hMipmappedArray, unsigned int level);
-        [DllImport(_dllpath, EntryPoint = "cuMipmappedArrayGetLevel")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMipmappedArrayGetLevel")]
         public static extern CuResult MipmappedArrayGetLevel(out CuArray pLevelArray, CuMipMappedArray hMipmappedArray, int level);
 
         /// <summary>Destroys a CUDA mipmapped array
@@ -1264,7 +1264,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuArrayCreate,
         /// ::cudaFreeMipmappedArray
         /// CUresult CUDAAPI cuMipmappedArrayDestroy(CUmipmappedArray hMipmappedArray);
-        [DllImport(_dllpath, EntryPoint = "cuMipmappedArrayDestroy")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMipmappedArrayDestroy")]
         public static extern CuResult MipmappedArrayDestroy(CuMipMappedArray hMipmappedArray);
         #endregion
     }

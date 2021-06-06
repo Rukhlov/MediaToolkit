@@ -44,7 +44,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyToSymbol,
         /// ::cudaMemcpyFromSymbol
         /// CUresult CUDAAPI cuMemcpy(CUdeviceptr dst, CUdeviceptr src, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy")]
         public static extern CuResult Memcpy(CuDevicePtr dst, CuDevicePtr src, IntPtr byteCount);
 
         /// <summary>Copies device memory between two contexts
@@ -75,7 +75,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemcpy3DPeerAsync,
         /// ::cudaMemcpyPeer
         /// CUresult CUDAAPI cuMemcpyPeer(CUdeviceptr dstDevice, CUcontext dstContext, CUdeviceptr srcDevice, CUcontext srcContext, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyPeer")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyPeer")]
         public static extern CuResult MemcpyPeer(CuDevicePtr dstDevice, CuContext dstContext, CuDevicePtr srcDevice, CuContext srcContext, IntPtr byteCount);
 
         /// <summary>Copies memory from Host to Device
@@ -111,7 +111,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpy,
         /// ::cudaMemcpyToSymbol
         /// CUresult CUDAAPI cuMemcpyHtoD(CUdeviceptr dstDevice, const void *srcHost, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyHtoD" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyHtoD" + _ver)]
         public static extern CuResult MemcpyHtoD(CuDevicePtr dstDevice, IntPtr srcHost, IntPtr byteCount);
 
         /// <summary>Copies memory from Device to Host
@@ -147,7 +147,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpy,
         /// ::cudaMemcpyFromSymbol
         /// CUresult CUDAAPI cuMemcpyDtoH(void *dstHost, CUdeviceptr srcDevice, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyDtoH" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyDtoH" + _ver)]
         public static extern CuResult MemcpyDtoH(IntPtr dstHost, CuDevicePtr srcDevice, IntPtr byteCount);
 
         /// <summary>Copies memory from Device to Device
@@ -184,7 +184,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyToSymbol,
         /// ::cudaMemcpyFromSymbol
         /// CUresult CUDAAPI cuMemcpyDtoD(CUdeviceptr dstDevice, CUdeviceptr srcDevice, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyDtoD" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyDtoD" + _ver)]
         public static extern CuResult MemcpyDtoD(CuDevicePtr dstDevice, CuDevicePtr srcDevice, IntPtr byteCount);
 
         /// <summary>Copies memory from Device to Array
@@ -221,7 +221,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpyToArray
         /// CUresult CUDAAPI cuMemcpyDtoA(CUarray dstArray, size_t dstOffset, CUdeviceptr srcDevice, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyDtoA" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyDtoA" + _ver)]
         public static extern CuResult MemcpyDtoA(CuArray dstArray, IntPtr dstOffset, CuDevicePtr srcDevice, IntPtr byteCount);
 
         /// <summary>Copies memory from Array to Device
@@ -260,7 +260,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpyFromArray
         /// CUresult CUDAAPI cuMemcpyAtoD(CUdeviceptr dstDevice, CUarray srcArray, size_t srcOffset, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyAtoD" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyAtoD" + _ver)]
         public static extern CuResult MemcpyAtoD(CuDevicePtr dstDevice, CuArray srcArray, IntPtr srcOffset, IntPtr byteCount);
 
         /// <summary>Copies memory from Host to Array
@@ -297,7 +297,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpyToArray
         /// CUresult CUDAAPI cuMemcpyHtoA(CUarray dstArray, size_t dstOffset, const void *srcHost, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyHtoA" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyHtoA" + _ver)]
         public static extern CuResult MemcpyHtoA(CuArray dstArray, IntPtr dstOffset, IntPtr srcHost, IntPtr byteCount);
 
         /// <summary>Copies memory from Array to Host
@@ -334,7 +334,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpyFromArray
         /// CUresult CUDAAPI cuMemcpyAtoH(void *dstHost, CUarray srcArray, size_t srcOffset, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyAtoH" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyAtoH" + _ver)]
         public static extern CuResult MemcpyAtoH(IntPtr dstHost, CuArray srcArray, IntPtr srcOffset, IntPtr byteCount);
 
         /// <summary>Copies memory from Array to Array
@@ -375,7 +375,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpyArrayToArray
         /// CUresult CUDAAPI cuMemcpyAtoA(CUarray dstArray, size_t dstOffset, CUarray srcArray, size_t srcOffset, size_t ByteCount);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyAtoA" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyAtoA" + _ver)]
         public static extern CuResult MemcpyAtoA(CuArray dstArray, IntPtr dstOffset, CuArray srcArray, IntPtr srcOffset, IntPtr byteCount);
 
         /// <summary>Copies memory for 2D arrays
@@ -511,7 +511,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpy2DToArray,
         /// ::cudaMemcpy2DFromArray
         /// CUresult CUDAAPI cuMemcpy2D(const CUDA_MEMCPY2D *pCopy);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy2D" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy2D" + _ver)]
         public static extern CuResult Memcpy2D(ref CuMemcopy2D pCopy);
 
         /// <summary>Copies memory for 2D arrays
@@ -647,7 +647,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpy2DToArray,
         /// ::cudaMemcpy2DFromArray
         /// CUresult CUDAAPI cuMemcpy2DUnaligned(const CUDA_MEMCPY2D *pCopy);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy2DUnaligned" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy2DUnaligned" + _ver)]
         public static extern CuResult Memcpy2DUnaligned(ref CuMemcopy2D pCopy);
 
         /// <summary>Copies memory for 3D arrays
@@ -783,7 +783,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32,
         /// ::cudaMemcpy3D
         /// CUresult CUDAAPI cuMemcpy3D(const CUDA_MEMCPY3D *pCopy);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy3D")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy3D")]
         public static extern CuResult Memcpy3D(ref CuMemcpy3D pCopy);
 
         /// <summary>Copies memory between contexts
@@ -808,7 +808,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemcpy3DPeerAsync,
         /// ::cudaMemcpy3DPeer
         /// CUresult CUDAAPI cuMemcpy3DPeer(const CUDA_MEMCPY3D_PEER *pCopy);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy3DPeer")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy3DPeer")]
         public static extern CuResult Memcpy3DPeer(ref CuMemcpy3D pCopy);
 
         /// <summary>Copies memory asynchronously
@@ -852,7 +852,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyToSymbolAsync,
         /// ::cudaMemcpyFromSymbolAsync
         /// CUresult CUDAAPI cuMemcpyAsync(CUdeviceptr dst, CUdeviceptr src, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyAsync")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyAsync")]
         public static extern CuResult MemcpyAsync(CuDevicePtr dst, CuDevicePtr src, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies device memory between two contexts asynchronously.
@@ -885,7 +885,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemcpy3DPeerAsync,
         /// ::cudaMemcpyPeerAsync
         /// CUresult CUDAAPI cuMemcpyPeerAsync(CUdeviceptr dstDevice, CUcontext dstContext, CUdeviceptr srcDevice, CUcontext srcContext, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyPeerAsync")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyPeerAsync")]
         public static extern CuResult MemcpyPeerAsync(CuDevicePtr dstDevice, CuContext dstContext, CuDevicePtr srcDevice, CuContext srcContext, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory from Host to Device
@@ -925,7 +925,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyAsync,
         /// ::cudaMemcpyToSymbolAsync
         /// CUresult CUDAAPI cuMemcpyHtoDAsync(CUdeviceptr dstDevice, const void *srcHost, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyHtoDAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyHtoDAsync" + _ver)]
         public static extern CuResult MemcpyHtoDAsync(CuDevicePtr dstDevice, IntPtr srcHost, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory from Device to Host
@@ -965,7 +965,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyAsync,
         /// ::cudaMemcpyFromSymbolAsync
         /// CUresult CUDAAPI cuMemcpyDtoHAsync(void *dstHost, CUdeviceptr srcDevice, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyDtoHAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyDtoHAsync" + _ver)]
         public static extern CuResult MemcpyDtoHAsync(IntPtr dstHost, CuDevicePtr srcDevice, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory from Device to Device
@@ -1006,7 +1006,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpyToSymbolAsync,
         /// ::cudaMemcpyFromSymbolAsync
         /// CUresult CUDAAPI cuMemcpyDtoDAsync(CUdeviceptr dstDevice, CUdeviceptr srcDevice, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyDtoDAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyDtoDAsync" + _ver)]
         public static extern CuResult MemcpyDtoDAsync(CuDevicePtr dstDevice, CuDevicePtr srcDevice, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory from Host to Array
@@ -1047,7 +1047,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD32, ::cuMemsetD32Async,
         /// ::cudaMemcpyToArrayAsync
         /// CUresult CUDAAPI cuMemcpyHtoAAsync(CUarray dstArray, size_t dstOffset, const void *srcHost, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyHtoAAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyHtoAAsync" + _ver)]
         public static extern CuResult MemcpyHtoAAsync(CuArray dstArray, IntPtr dstOffset, IntPtr srcHost, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory from Array to Host
@@ -1088,7 +1088,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD32, ::cuMemsetD32Async,
         /// ::cudaMemcpyFromArrayAsync
         /// CUresult CUDAAPI cuMemcpyAtoHAsync(void *dstHost, CUarray srcArray, size_t srcOffset, size_t ByteCount, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpyAtoHAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpyAtoHAsync" + _ver)]
         public static extern CuResult MemcpyAtoHAsync(IntPtr dstHost, CuArray srcArray, IntPtr srcOffset, IntPtr byteCount, CuStream hStream);
 
         /// <summary>Copies memory for 2D arrays</summary>
@@ -1236,7 +1236,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemcpy2DToArrayAsync,
         /// ::cudaMemcpy2DFromArrayAsync
         /// CUresult CUDAAPI cuMemcpy2DAsync(const CUDA_MEMCPY2D *pCopy, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy2DAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy2DAsync" + _ver)]
         public static extern CuResult Memcpy2DAsync(ref CuMemcopy2D pCopy, CuStream hStream);
 
         /// <summary>Copies memory for 3D arrays</summary>
@@ -1389,7 +1389,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD32, ::cuMemsetD32Async,
         /// ::cudaMemcpy3DAsync
         /// CUresult CUDAAPI cuMemcpy3DAsync(const CUDA_MEMCPY3D *pCopy, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy3DAsync" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy3DAsync" + _ver)]
         public static extern CuResult Memcpy3DAsync(ref CuMemcpy3D pCopy, CuStream hStream);
 
         /// <summary>Copies memory between contexts asynchronously.</summary>
@@ -1419,7 +1419,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemcpy3DPeerAsync,
         /// ::cudaMemcpy3DPeerAsync
         /// CUresult CUDAAPI cuMemcpy3DPeerAsync(const CUDA_MEMCPY3D_PEER *pCopy, CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuMemcpy3DPeerAsync")]
+        [DllImport(nvCudaPath, EntryPoint = "cuMemcpy3DPeerAsync")]
         public static extern CuResult Memcpy3DPeerAsync(ref CuMemcpy3DPeer pCopy, CuStream hStream);
     }
 }

@@ -39,7 +39,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaStreamCreate,
         /// ::cudaStreamCreateWithFlags
         /// CUresult CUDAAPI cuStreamCreate(CUstream *phStream, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuStreamCreate")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamCreate")]
         public static extern CuResult StreamCreate(out CuStream phStream, CuStreamFlags flags);
 
         /// <summary>Create a stream with the given priority
@@ -89,7 +89,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamAddCallback,
         /// ::cudaStreamCreateWithPriority
         /// CUresult CUDAAPI cuStreamCreateWithPriority(CUstream *phStream, unsigned int flags, int priority);
-        [DllImport(_dllpath, EntryPoint = "cuStreamCreateWithPriority")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamCreateWithPriority")]
         public static extern CuResult StreamCreateWithPriority(out CuStream phStream, CuStreamFlags flags, int priority);
 
         /// <summary>Query the priority of a given stream
@@ -121,7 +121,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamGetFlags,
         /// ::cudaStreamGetPriority
         /// CUresult CUDAAPI cuStreamGetPriority(CUstream hStream, int *priority);
-        [DllImport(_dllpath, EntryPoint = "cuStreamGetPriority")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamGetPriority")]
         public static extern CuResult StreamGetPriority(CuStream hStream, out int priority);
 
         /// <summary>Query the flags of a given stream
@@ -151,7 +151,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamGetPriority,
         /// ::cudaStreamGetFlags
         /// CUresult CUDAAPI cuStreamGetFlags(CUstream hStream, unsigned int *flags);
-        [DllImport(_dllpath, EntryPoint = "cuStreamGetFlags")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamGetFlags")]
         public static extern CuResult StreamGetFlags(CuStream hStream, out CuStreamFlags flags);
 
         /// <summary>Make a compute stream wait on an event
@@ -193,7 +193,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamDestroy,
         /// ::cudaStreamWaitEvent
         /// CUresult CUDAAPI cuStreamWaitEvent(CUstream hStream, CUevent hEvent, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuStreamWaitEvent")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamWaitEvent")]
         public static extern CuResult StreamWaitEvent(CuStream hStream, CuEvent hEvent, uint flags = 0);
 
         /// <summary>Add a callback to a compute stream
@@ -261,7 +261,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamAttachMemAsync,
         /// ::cudaStreamAddCallback
         /// CUresult CUDAAPI cuStreamAddCallback(CUstream hStream, CUstreamCallback callback, void *userData, unsigned int flags);
-        [DllImport(_dllpath, EntryPoint = "cuStreamAddCallback")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamAddCallback")]
         public static extern CuResult StreamAddCallback(CuStream hStream, CuStreamCallback callback, IntPtr userData, uint flags = 0);
 
         /// <summary>Attach memory to a stream asynchronously
@@ -340,7 +340,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemAllocManaged,
         /// ::cudaStreamAttachMemAsync
         /// CUresult CUDAAPI cuStreamAttachMemAsync(CUstream hStream, CUdeviceptr dptr, size_t length, unsigned int flags);
-        [DllImport(_dllpath, EntryPoint = "cuStreamAttachMemAsync")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamAttachMemAsync")]
         public static extern CuResult StreamAttachMemAsync(CuStream hStream, CuDevicePtr dptr, IntPtr length, MemoryAttachFlags flags);
 
         /// <summary>Determine status of a compute stream
@@ -371,7 +371,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamAddCallback,
         /// ::cudaStreamQuery
         /// CUresult CUDAAPI cuStreamQuery(CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuStreamQuery")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamQuery")]
         public static extern CuResult StreamQuery(CuStream hStream);
 
         /// <summary>Wait until a stream's tasks are completed
@@ -400,7 +400,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamAddCallback,
         /// ::cudaStreamSynchronize
         /// CUresult CUDAAPI cuStreamSynchronize(CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuStreamSynchronize")]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamSynchronize")]
         public static extern CuResult StreamSynchronize(CuStream hStream);
 
         /// <summary>Destroys a stream
@@ -430,7 +430,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuStreamAddCallback,
         /// ::cudaStreamDestroy
         /// CUresult CUDAAPI cuStreamDestroy(CUstream hStream);
-        [DllImport(_dllpath, EntryPoint = "cuStreamDestroy" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuStreamDestroy" + _ver)]
         public static extern CuResult StreamDestroy(CuStream hStream);
     }
 }

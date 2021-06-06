@@ -70,7 +70,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxGetFlags,
         /// ::cudaSetDeviceFlags
         /// CUresult CUDAAPI cuCtxCreate(CUcontext *pctx, unsigned int flags, CUdevice dev);
-        [DllImport(_dllpath, EntryPoint = "cuCtxCreate" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxCreate" + _ver)]
         public static extern CuResult CtxCreate(out CuContext pctx, CuContextFlags flags, CuDevice dev);
 
         /// <summary>Destroy a CUDA context
@@ -109,7 +109,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSetLimit,
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxDestroy(CUcontext ctx);
-        [DllImport(_dllpath, EntryPoint = "cuCtxDestroy" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxDestroy" + _ver)]
         public static extern CuResult CtxDestroy(CuContext ctx);
 
         /// <summary>Pushes a context on the current CPU thread
@@ -144,7 +144,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSetLimit,
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxPushCurrent(CUcontext ctx);
-        [DllImport(_dllpath, EntryPoint = "cuCtxPushCurrent" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxPushCurrent" + _ver)]
         public static extern CuResult CtxPushCurrent(CuContext ctx);
 
         /// <summary>Pops the current CUDA context from the current CPU thread.
@@ -179,7 +179,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSetLimit,
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxPopCurrent(CUcontext *pctx);
-        [DllImport(_dllpath, EntryPoint = "cuCtxPopCurrent" + _ver)]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxPopCurrent" + _ver)]
         public static extern CuResult CtxPopCurrent(out CuContext pctx);
 
         /// <summary>Binds the specified CUDA context to the calling CPU thread
@@ -210,7 +210,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxDestroy,
         /// ::cudaSetDevice
         /// CUresult CUDAAPI cuCtxSetCurrent(CUcontext ctx);
-        [DllImport(_dllpath, EntryPoint = "cuCtxSetCurrent")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxSetCurrent")]
         public static extern CuResult CtxSetCurrent(CuContext ctx);
 
         /// <summary>Returns the CUDA context bound to the calling CPU thread.
@@ -234,7 +234,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxDestroy,
         /// ::cudaGetDevice
         /// CUresult CUDAAPI cuCtxGetCurrent(CUcontext *pctx);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetCurrent")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetCurrent")]
         public static extern CuResult CtxGetCurrent(out CuContext pctx);
 
         /// <summary>Set resource limits
@@ -320,7 +320,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize,
         /// ::cudaDeviceSetLimit
         /// CUresult CUDAAPI cuCtxSetLimit(CUlimit limit, size_t value);
-        [DllImport(_dllpath, EntryPoint = "cuCtxSetLimit")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxSetLimit")]
         public static extern CuResult CtxSetLimit(CuLimit limit, IntPtr value);
 
         /// <summary>Returns resource limits
@@ -361,7 +361,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize,
         /// ::cudaDeviceGetLimit
         /// CUresult CUDAAPI cuCtxGetLimit(size_t *pvalue, CUlimit limit);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetLimit")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetLimit")]
         public static extern CuResult CtxGetLimit(out IntPtr pvalue, CuLimit limit);
 
         /// <summary>Returns the preferred cache configuration for the current context.
@@ -406,7 +406,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuFuncSetCacheConfig,
         /// ::cudaDeviceGetCacheConfig
         /// CUresult CUDAAPI cuCtxGetCacheConfig(CUfunc_cache *pconfig);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetCacheConfig")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetCacheConfig")]
         public static extern CuResult CtxGetCacheConfig(out CuFunctionCache pconfig);
 
         /// <summary>Sets the preferred cache configuration for the current context.
@@ -458,7 +458,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuFuncSetCacheConfig,
         /// ::cudaDeviceSetCacheConfig
         /// CUresult CUDAAPI cuCtxSetCacheConfig(CUfunc_cache config);
-        [DllImport(_dllpath, EntryPoint = "cuCtxSetCacheConfig")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxSetCacheConfig")]
         public static extern CuResult CtxSetCacheConfig(CuFunctionCache config);
 
         /// <summary>Returns the current shared memory configuration for the current context.
@@ -502,7 +502,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuFuncSetCacheConfig,
         /// ::cudaDeviceGetSharedMemConfig
         /// CUresult CUDAAPI cuCtxGetSharedMemConfig(CUsharedconfig *pConfig);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetSharedMemConfig")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetSharedMemConfig")]
         public static extern CuResult CtxGetSharedMemConfig(out SharedMemoryConfig pConfig);
 
         /// <summary>Sets the shared memory configuration for the current context.
@@ -556,7 +556,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuFuncSetCacheConfig,
         /// ::cudaDeviceSetSharedMemConfig
         /// CUresult CUDAAPI cuCtxSetSharedMemConfig(CUsharedconfig config);
-        [DllImport(_dllpath, EntryPoint = "cuCtxSetSharedMemConfig")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxSetSharedMemConfig")]
         public static extern CuResult CtxSetSharedMemConfig(SharedMemoryConfig config);
 
         /// <summary>Gets the context's API version.
@@ -594,7 +594,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSetLimit,
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxGetApiVersion(CUcontext ctx, unsigned int *version);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetApiVersion")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetApiVersion")]
         public static extern CuResult CtxGetApiVersion(CuContext ctx, out uint version);
 
         /// <summary>Returns numerical values that correspond to the least and
@@ -635,7 +635,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize,
         /// ::cudaDeviceGetStreamPriorityRange
         /// CUresult CUDAAPI cuCtxGetStreamPriorityRange(int *leastPriority, int *greatestPriority);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetStreamPriorityRange")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetStreamPriorityRange")]
         public static extern CuResult CtxGetStreamPriorityRange(out int leastPriority, out int greatestPriority);
 
         /// <summary>Returns the device ID for the current context
@@ -666,7 +666,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize,
         /// ::cudaGetDevice
         /// CUresult CUDAAPI cuCtxGetDevice(CUdevice *device);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetDevice")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetDevice")]
         public static extern CuResult CtxGetDevice(out CuDevice device);
 
         /// <summary>Returns the flags for the current context
@@ -695,7 +695,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxGetStreamPriorityRange,
         /// ::cudaGetDeviceFlags
         /// CUresult CUDAAPI cuCtxGetFlags(unsigned int *flags);
-        [DllImport(_dllpath, EntryPoint = "cuCtxGetFlags")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxGetFlags")]
         public static extern CuResult CtxGetFlags(out CuContextFlags flags);
 
         /// <summary>Block for a context's tasks to complete
@@ -726,7 +726,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSetLimit,
         /// ::cudaDeviceSynchronize
         /// CUresult CUDAAPI cuCtxSynchronize(void);
-        [DllImport(_dllpath, EntryPoint = "cuCtxSynchronize")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxSynchronize")]
         public static extern CuResult CtxSynchronize();
 
         /// <summary>Increment a context's usage-count
@@ -769,7 +769,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxAttach(CUcontext *pctx, unsigned int flags);
         [Obsolete]
-        [DllImport(_dllpath, EntryPoint = "cuCtxAttach")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxAttach")]
         public static extern CuResult CtxAttach(out CuContext pctx, CuContextFlags flags);
 
         /// <summary>Decrement a context's usage-count
@@ -807,7 +807,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuCtxDetach(CUcontext ctx);
         [Obsolete]
-        [DllImport(_dllpath, EntryPoint = "cuCtxDetach")]
+        [DllImport(nvCudaPath, EntryPoint = "cuCtxDetach")]
         public static extern CuResult CtxDetach(CuContext ctx);
     }
 }

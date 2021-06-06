@@ -34,7 +34,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaD3D11GetDevice
         ///
         /// CUresult CUDAAPI cuD3D11GetDevice(CUdevice* pCudaDevice, IDXGIAdapter* pAdapter);
-        [DllImport(_dllpath, EntryPoint = "cuD3D11GetDevice")]
+        [DllImport(nvCudaPath, EntryPoint = "cuD3D11GetDevice")]
         public static extern CuResult D3D11GetDevice(out CuDevice cudaDevice, IntPtr pAdapter);
 
         /// <summary>Gets the CUDA devices corresponding to a Direct3D 11 device</summary>
@@ -74,7 +74,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaD3D11GetDevices
         ///
         /// CUresult CUDAAPI cuD3D11GetDevices(unsigned int *pCudaDeviceCount, CUdevice *pCudaDevices, int cudaDeviceCount, ref ID3D11Device pD3D11Device, CUd3d11DeviceList deviceList);
-        [DllImport(_dllpath, EntryPoint = "cuD3D11GetDevices")]
+        [DllImport(nvCudaPath, EntryPoint = "cuD3D11GetDevices")]
         public static extern CuResult D3D11GetDevices(out int returnedCudaDeviceCount, CuDevice* cudaDevices, int cudaDeviceCount, IntPtr pD3D11Device, D3D11DeviceList deviceList);
 
         /// <summary>Register a Direct3D 11 resource for access by CUDA</summary>
@@ -158,7 +158,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuGraphicsResourceGetMappedPointer,
         /// ::cudaGraphicsD3D11RegisterResource
         /// CUresult CUDAAPI cuGraphicsD3D11RegisterResource(CUgraphicsResource *pCudaResource, ID3D11Resource *pD3DResource, unsigned int Flags);
-        [DllImport(_dllpath, EntryPoint = "cuGraphicsD3D11RegisterResource")]
+        [DllImport(nvCudaPath, EntryPoint = "cuGraphicsD3D11RegisterResource")]
         public static extern CuResult GraphicsD3D11RegisterResource(out CuGraphicsResource cudaResource, IntPtr pD3DResource, CuGraphicsRegisters flags);
     }
 }
