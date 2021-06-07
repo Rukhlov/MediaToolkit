@@ -126,7 +126,9 @@ namespace MediaToolkit.Nvidia
 		/// <inheritdoc cref="LibCuda.GetErrorName(CuResult, out IntPtr)"/>
 		public static string GetErrorName(CuResult error)
 		{
+
 			CheckResult(GetErrorName(error, out var str));
+
 			return str == IntPtr.Zero
 				? "Unknown error"
 				: Marshal.PtrToStringAnsi(str);
@@ -143,16 +145,14 @@ namespace MediaToolkit.Nvidia
 		/// <param name="callerName"></param>
 		/// <exception cref="LibNvEncException">Thrown if <paramref name="result"/> is not <c>CuResult.Success</c>.</exception>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void CheckResult(
-			CuResult result,
-			[CallerMemberName] string callerName = "")
+		public static void CheckResult(CuResult result, [CallerMemberName] string callerName = "")
 		{
 			if (result != CuResult.Success)
 			{
-				throw new LibNvEncException(
-					callerName, result,
-					GetErrorName(result),
-					GetErrorString(result));
+				var errorName = GetErrorName(result);
+				var errorString = GetErrorString(result);
+
+				throw new LibNvEncException(callerName, result, errorName, errorString);
 			}
 		}
 	}

@@ -24,9 +24,9 @@ namespace MediaToolkit.Nvidia
 		public IntPtr UserData;
 		/// <summary>IN: Called to deliver video packets</summary>
 		// TODO: Fix non-delegate type.
-		public LibCuVideo.VideoSourceCallback VideoDataHandler;
+		public NvCuVid.VideoSourceCallback VideoDataHandler;
 		/// <summary>IN: Called to deliver audio packets.</summary>
-		public LibCuVideo.VideoSourceCallback AudioDataHandler;
+		public NvCuVid.VideoSourceCallback AudioDataHandler;
 		private IntPtr _reserved21;
 		private IntPtr _reserved22;
 		private IntPtr _reserved23;
@@ -173,6 +173,32 @@ namespace MediaToolkit.Nvidia
 	}
 
 
+	[StructLayout(LayoutKind.Sequential)]
+	public struct CuRectangle
+	{
+		public static CuRectangle Null { get; } = new CuRectangle(0, 0, 0, 0);
+
+		public int Width => Right - Left;
+		public int Height => Bottom - Top;
+
+		/// <summary>left position of rect</summary>
+		public int Left;
+		/// <summary>top position of rect</summary>
+		public int Top;
+		/// <summary>right position of rect</summary>
+		public int Right;
+		/// <summary>bottom position of rect</summary>
+		public int Bottom;
+
+		public CuRectangle(int left, int top, int right, int bottom)
+		{
+			Left = left;
+			Top = top;
+			Right = right;
+			Bottom = bottom;
+		}
+	}
+
 	/// <summary>
 	/// \struct CUAUDIOFORMAT
 	/// Audio formats
@@ -236,11 +262,11 @@ namespace MediaToolkit.Nvidia
 		/// <summary>IN: User data for callbacks</summary>
 		public IntPtr UserData;
 		/// <summary>IN: Called before decoding frames and/or whenever there is a fmt change</summary>
-		public LibCuVideo.VideoSequenceCallback SequenceCallback;
+		public NvCuVid.VideoSequenceCallback SequenceCallback;
 		/// <summary>IN: Called when a picture is ready to be decoded (decode order)</summary>
-		public LibCuVideo.VideoDecodeCallback DecodePicture;
+		public NvCuVid.VideoDecodeCallback DecodePicture;
 		/// <summary>IN: Called whenever a picture is ready to be displayed (display order)</summary>
-		public LibCuVideo.VideoDisplayCallback DisplayPicture;
+		public NvCuVid.VideoDisplayCallback DisplayPicture;
 		private IntPtr _reserved21;
 		private IntPtr _reserved22;
 		private IntPtr _reserved23;
@@ -251,6 +277,7 @@ namespace MediaToolkit.Nvidia
 		/// <summary>IN: [Optional] sequence header data from system layer </summary>
 		public CuVideoFormatEx* ExtVideoInfo;
 	}
+
 
 
 }

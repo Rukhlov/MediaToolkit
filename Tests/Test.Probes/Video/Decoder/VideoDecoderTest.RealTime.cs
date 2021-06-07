@@ -323,7 +323,7 @@ namespace Test.Probe
 									}
 									else
 									{
-										Console.WriteLine("nalUnitType == " + nalUnitType);
+										//Console.WriteLine("nalUnitType == " + nalUnitType);
 									}
 								}
 

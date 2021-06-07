@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 using static MediaToolkit.Nvidia.LibCuda;
-using static MediaToolkit.Nvidia.LibCuVideo;
+using static MediaToolkit.Nvidia.NvCuVid;
 
 namespace MediaToolkit.Nvidia
 {
@@ -25,7 +25,7 @@ namespace MediaToolkit.Nvidia
             if (handle == IntPtr.Zero) return;
             var obj = new CuVideoSource { Handle = handle };
 
-			LibCuda.CheckResult(DestroyVideoSource(obj));
+			CheckResult(DestroyVideoSource(obj));
         }
     }
 
@@ -38,23 +38,19 @@ namespace MediaToolkit.Nvidia
         public bool IsEmpty => Handle == IntPtr.Zero;
 
         /// <inheritdoc cref="StreamCreate(out CuStream, CuStreamFlags)"/>
-        public static CuStream Create(
-            CuStreamFlags flags = CuStreamFlags.Default)
+        public static CuStream Create(CuStreamFlags flags = CuStreamFlags.Default)
         {
             var result = StreamCreate(out var stream, flags);
-			LibCuda.CheckResult(result);
+			CheckResult(result);
 
             return stream;
         }
 
         /// <inheritdoc cref="StreamCreateWithPriority(out CuStream, CuStreamFlags, int)"/>
-        public static CuStream Create(
-            int priority,
-            CuStreamFlags flags = CuStreamFlags.Default)
+        public static CuStream Create(int priority, CuStreamFlags flags = CuStreamFlags.Default)
         {
-            var result = StreamCreateWithPriority(
-                out var stream, flags, priority);
-			LibCuda.CheckResult(result);
+            var result = StreamCreateWithPriority(out var stream, flags, priority);
+			CheckResult(result);
 
             return stream;
         }
@@ -75,7 +71,7 @@ namespace MediaToolkit.Nvidia
         public void Synchronize()
         {
             var result = StreamSynchronize(this);
-			LibCuda.CheckResult(result);
+			CheckResult(result);
         }
 
         /// <inheritdoc cref="StreamDestroy(CuStream)"/>
@@ -89,16 +85,20 @@ namespace MediaToolkit.Nvidia
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    [DebuggerDisplay("{" + nameof(Handle) + "}")]
-    public struct CuEvent
-    {
-        public static readonly CuEvent Empty = new CuEvent { Handle = IntPtr.Zero };
-        public IntPtr Handle;
-        public bool IsEmpty => Handle == IntPtr.Zero;
-    }
+	public partial struct CuContext 
+	{
+		/// <inheritdoc cref="CtxLockCreate(out CuVideoContextLock, CuContext)"/>
+		public CuVideoContextLock CreateLock()
+		{
+			var result = CtxLockCreate(out var lok, this);
+			CheckResult(result);
 
-    [StructLayout(LayoutKind.Sequential)]
+			return lok;
+		}
+
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
     [DebuggerDisplay("{" + nameof(Handle) + "}")]
     public struct CuVideoDecoder : IDisposable
     {
@@ -114,11 +114,10 @@ namespace MediaToolkit.Nvidia
             return decoder;
         }
 
-        /// <inheritdoc cref="LibCuVideo.GetDecodeStatus(CuVideoDecoder, int, out CuVideoDecodeStatus)"/>
+        /// <inheritdoc cref="NvCuVid.GetDecodeStatus(CuVideoDecoder, int, out CuVideoDecodeStatus)"/>
         public CuVideoDecodeStatus GetDecodeStatus(int picIndex = 0)
         {
-            var result = LibCuVideo.GetDecodeStatus(
-                this, picIndex, out var status);
+            var result = NvCuVid.GetDecodeStatus(this, picIndex, out var status);
             CheckResult(result);
             return status;
         }
@@ -143,28 +142,28 @@ namespace MediaToolkit.Nvidia
             Reconfigure(ref info);
         }
 
-        /// <inheritdoc cref="LibCuVideo.DecodePicture(CuVideoDecoder, ref CuVideoPicParams)"/>
+        /// <inheritdoc cref="NvCuVid.DecodePicture(CuVideoDecoder, ref CuVideoPicParams)"/>
         public void DecodePicture(ref CuVideoPicParams param)
         {
-            var result = LibCuVideo.DecodePicture(this, ref param);
+            var result = NvCuVid.DecodePicture(this, ref param);
             CheckResult(result);
         }
 
-        /// <inheritdoc cref="LibCuVideo.MapVideoFrame64(CuVideoDecoder, int, out CuDevicePtr, out int, ref CuVideoProcParams)"/>
+        /// <inheritdoc cref="NvCuVid.MapVideoFrame64(CuVideoDecoder, int, out CuDevicePtr, out int, ref CuVideoProcParams)"/>
         public CuVideoFrame MapVideoFrame(int picIndex, ref CuVideoProcParams param, out int pitch)
         {
             CuDevicePtr devicePtr;
 
             var result = Environment.Is64BitProcess
-                ? LibCuVideo.MapVideoFrame64( this, picIndex, out devicePtr,out pitch, ref param)
-                : LibCuVideo.MapVideoFrame( this, picIndex, out devicePtr, out pitch, ref param);
+                ? NvCuVid.MapVideoFrame64( this, picIndex, out devicePtr,out pitch, ref param)
+                : NvCuVid.MapVideoFrame( this, picIndex, out devicePtr, out pitch, ref param);
 
             CheckResult(result);
 
             return new CuVideoFrame(devicePtr, this);
         }
 
-        /// <inheritdoc cref="LibCuVideo.DestroyDecoder(CuVideoDecoder)"/>
+        /// <inheritdoc cref="NvCuVid.DestroyDecoder(CuVideoDecoder)"/>
         public void Dispose()
         {
             var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
@@ -190,7 +189,7 @@ namespace MediaToolkit.Nvidia
             _decoder = decoder;
         }
 
-        /// <inheritdoc cref="LibCuVideo.UnmapVideoFrame64(CuVideoDecoder, CuDevicePtr)"/>
+        /// <inheritdoc cref="NvCuVid.UnmapVideoFrame64(CuVideoDecoder, CuDevicePtr)"/>
         public void Dispose()
         {
             var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
@@ -215,14 +214,14 @@ namespace MediaToolkit.Nvidia
         public IntPtr Handle;
         public bool IsEmpty => Handle == IntPtr.Zero;
 
-        /// <inheritdoc cref="LibCuVideo.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
+        /// <inheritdoc cref="NvCuVid.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
         public void ParseVideoData(ref CuVideoSourceDataPacket packet)
         {
-            var result = LibCuVideo.ParseVideoData(this, ref packet);
+            var result = NvCuVid.ParseVideoData(this, ref packet);
             CheckResult(result);
 		}
 
-        /// <inheritdoc cref="LibCuVideo.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
+        /// <inheritdoc cref="NvCuVid.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
 		/// public void ParseVideoData(Span<byte> payload, CuVideoPacketFlags flags = CuVideoPacketFlags.None, long timestamp = 0)
         public void ParseVideoData(byte[] payload, CuVideoPacketFlags flags = CuVideoPacketFlags.None, long timestamp = 0)
         {
@@ -240,7 +239,7 @@ namespace MediaToolkit.Nvidia
             }
         }
 
-        /// <inheritdoc cref="LibCuVideo.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
+        /// <inheritdoc cref="NvCuVid.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
         public void ParseVideoData(IntPtr payload, int payloadLength, CuVideoPacketFlags flags = CuVideoPacketFlags.None,long timestamp = 0)
         {
             var packet = new CuVideoSourceDataPacket
@@ -254,7 +253,7 @@ namespace MediaToolkit.Nvidia
             ParseVideoData(ref packet);
         }
 
-        /// <inheritdoc cref="LibCuVideo.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
+        /// <inheritdoc cref="NvCuVid.ParseVideoData(CuVideoParser, ref CuVideoSourceDataPacket)"/>
         public void SendEndOfStream()
         {
             var eosPacket = new CuVideoSourceDataPacket
@@ -265,7 +264,7 @@ namespace MediaToolkit.Nvidia
             ParseVideoData(ref eosPacket);
         }
 
-        /// <inheritdoc cref="LibCuVideo.CreateVideoParser(out CuVideoParser, ref CuVideoParserParams)"/>
+        /// <inheritdoc cref="NvCuVid.CreateVideoParser(out CuVideoParser, ref CuVideoParserParams)"/>
         public static CuVideoParser Create(ref CuVideoParserParams @params)
         {
             var result = CreateVideoParser(out var parser, ref @params);
@@ -273,7 +272,7 @@ namespace MediaToolkit.Nvidia
             return parser;
         }
 
-        /// <inheritdoc cref="LibCuVideo.DestroyVideoParser(CuVideoParser)"/>
+        /// <inheritdoc cref="NvCuVid.DestroyVideoParser(CuVideoParser)"/>
         public void Dispose()
         {
             var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
@@ -284,80 +283,6 @@ namespace MediaToolkit.Nvidia
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-    [DebuggerDisplay("{" + nameof(Handle) + "}")]
-    public partial struct CuDevice
-    {
-        public static readonly CuDevice Empty = new CuDevice { Handle = 0 };
-
-        public int Handle;
-        public bool IsEmpty => Handle == 0;
-
-        public CuDevice(int handle)
-        {
-            Handle = handle;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    [DebuggerDisplay("{" + nameof(Handle) + "}")]
-    public unsafe struct CuDevicePtr
-    {
-        public static readonly CuDevicePtr Empty = new CuDevicePtr { Handle = IntPtr.Zero };
-        public IntPtr Handle;
-        public bool IsEmpty => Handle == IntPtr.Zero;
-
-        public CuDevicePtr(IntPtr handle)
-        {
-            Handle = handle;
-        }
-
-        public CuDevicePtr(byte* handle)
-        {
-            Handle = (IntPtr)handle;
-        }
-
-        public CuDevicePtr(long handle)
-        {
-            Handle = (IntPtr)handle;
-        }
-
-        public static implicit operator ulong(CuDevicePtr d) => (ulong)d.Handle.ToInt64();
-        public static implicit operator CuDevicePtr(byte* d) => new CuDevicePtr(d);
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    [DebuggerDisplay("{" + nameof(Handle) + "}")]
-    public struct CuArray
-    {
-        public static readonly CuArray Empty = new CuArray { Handle = IntPtr.Zero };
-        public IntPtr Handle;
-        public bool IsEmpty => Handle == IntPtr.Zero;
-
-        public CuArray(IntPtr handle)
-        {
-            Handle = handle;
-        }
-    }
-
-    [DebuggerDisplay("{" + nameof(DevicePtr) + "}")]
-    public struct CuDevicePtrSafe
-    {
-        public CuDevicePtr DevicePtr;
-        private CuDevicePtrDeallocator _deallocator;
-
-        public delegate CuResult CuDevicePtrDeallocator(CuDevicePtr dptr);
-
-        public CuDevicePtrSafe(
-            CuDevicePtr devicePtr,
-            CuDevicePtrDeallocator deallocator)
-        {
-            DevicePtr = devicePtr;
-            _deallocator = deallocator;
-        }
-
-        public static implicit operator CuDevicePtr(CuDevicePtrSafe d) => d.DevicePtr;
-    }
 
     /// <summary>
     /// Wraps the CuDevicePtr with a safe memory deallocator.
@@ -392,13 +317,9 @@ namespace MediaToolkit.Nvidia
         }
 
         /// <inheritdoc cref="LibCuda.MemAllocPitch(out CuDevicePtr, out IntPtr, IntPtr, IntPtr, uint)"/>
-        public static CuDeviceMemory AllocatePitch(
-            out IntPtr pitch, IntPtr widthInBytes,
-            IntPtr height, uint elementSizeBytes)
+        public static CuDeviceMemory AllocatePitch(out IntPtr pitch, IntPtr widthInBytes,  IntPtr height, uint elementSizeBytes)
         {
-            var result = LibCuda.MemAllocPitch(
-                out var device, out pitch,
-                widthInBytes, height, elementSizeBytes);
+            var result = LibCuda.MemAllocPitch(out var device, out pitch, widthInBytes, height, elementSizeBytes);
 
             CheckResult(result);
 
@@ -456,7 +377,7 @@ namespace MediaToolkit.Nvidia
                 _disposed = 0;
             }
 
-            /// <inheritdoc cref="LibCuVideo.CtxUnlock(CuVideoContextLock, uint)"/>
+            /// <inheritdoc cref="NvCuVid.CtxUnlock(CuVideoContextLock, uint)"/>
             public void Dispose()
             {
                 var disposed = Interlocked.Exchange(ref _disposed, 1);
@@ -466,20 +387,20 @@ namespace MediaToolkit.Nvidia
             }
         }
 
-        /// <inheritdoc cref="LibCuVideo.CtxLock(CuVideoContextLock, uint)"/>
+        /// <inheritdoc cref="NvCuVid.CtxLock(CuVideoContextLock, uint)"/>
         public AutoCuVideoContextLock Lock()
         {
             CheckResult(CtxLock(this, 0));
             return new AutoCuVideoContextLock(this);
         }
 
-        /// <inheritdoc cref="LibCuVideo.CtxUnlock(CuVideoContextLock, uint)"/>
+        /// <inheritdoc cref="NvCuVid.CtxUnlock(CuVideoContextLock, uint)"/>
         public void Unlock()
         {
             CheckResult(CtxUnlock(this, 0));
         }
 
-        /// <inheritdoc cref="LibCuVideo.CtxLockDestroy(CuVideoContextLock)"/>
+        /// <inheritdoc cref="NvCuVid.CtxLockDestroy(CuVideoContextLock)"/>
         public void Dispose()
         {
             var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);

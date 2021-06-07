@@ -89,8 +89,8 @@ namespace Test.Probe
 					}
 				}
 
-
-				while (running)
+                AutoResetEvent syncEvent = new AutoResetEvent(false);
+                while (running)
 				{
 
 					while (sourceReader.PacketsAvailable)
@@ -106,7 +106,10 @@ namespace Test.Probe
 						long timestamp = (long)(packet.time * 10_000_000);
 						parser.ParseVideoData(packet.data, flags, timestamp);
 					}
-				}
+
+                    syncEvent.WaitOne(10);
+
+                }
 			}
 			finally
 			{
