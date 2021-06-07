@@ -154,8 +154,7 @@ namespace MediaToolkit.Nvidia
         public bool IsEmpty => Handle == IntPtr.Zero;
 
         /// <inheritdoc cref="GraphicsD3D11RegisterResource(out CuGraphicsResource, IntPtr, CuGraphicsRegisters)"/>
-        public static CuGraphicsResource Register(IntPtr resourcePtr,
-            CuGraphicsRegisters flags = CuGraphicsRegisters.None)
+        public static CuGraphicsResource Register(IntPtr resourcePtr, CuGraphicsRegisters flags = CuGraphicsRegisters.None)
         {
             var result = GraphicsD3D11RegisterResource(out var resource, resourcePtr, flags);
 
@@ -192,9 +191,7 @@ namespace MediaToolkit.Nvidia
             private readonly CuGraphicsResource _resource;
             private readonly CuStream _stream;
 
-            public CuGraphicsMappedResource(
-                CuGraphicsResource resource,
-                CuStream stream)
+            public CuGraphicsMappedResource(CuGraphicsResource resource, CuStream stream)
             {
                 _resource = resource;
                 _stream = stream;

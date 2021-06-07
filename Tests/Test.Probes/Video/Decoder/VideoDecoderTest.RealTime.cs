@@ -263,6 +263,8 @@ namespace Test.Probe
 								{
 									var firstByte = nal[0];
 									var nalUnitType = firstByte & 0x1F;
+
+
 									nalsBuffer.Add(nal);
 
 									if (nalUnitType == (int)NalUnitType.IDR || nalUnitType == (int)NalUnitType.Slice)
@@ -318,7 +320,10 @@ namespace Test.Probe
 										//data = data.Concat(startCodes).Concat(nal);
 
 										//File.WriteAllBytes(@"d:\temp\sps_1280x720_30fps.h264", data.ToArray());
-
+									}
+									else
+									{
+										Console.WriteLine("nalUnitType == " + nalUnitType);
 									}
 								}
 

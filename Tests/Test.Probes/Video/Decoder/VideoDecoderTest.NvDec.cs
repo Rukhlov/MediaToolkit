@@ -55,7 +55,7 @@ namespace Test.Probe
 			//_context = device.CreateContext(CuContextFlags.Default);
 			cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
 			videoContextLock = cuContext.CreateLock();
-			
+
 
 			var parserParams = new CuVideoParserParams
 			{
@@ -67,7 +67,7 @@ namespace Test.Probe
 				SequenceCallback = SequenceCallback,
 				DecodePicture = DecodePictureCallback,
 				DisplayPicture = VideoDisplayCallback,
-				
+
 			};
 
 
@@ -101,7 +101,7 @@ namespace Test.Probe
 							Console.WriteLine("packet == false");
 							continue;
 						}
-
+						//Console.WriteLine("packet.data.Length == " + packet.data.Length);
 						var flags = CuVideoPacketFlags.Timestamp;
 						long timestamp = (long)(packet.time * 10_000_000);
 						parser.ParseVideoData(packet.data, flags, timestamp);
@@ -118,33 +118,15 @@ namespace Test.Probe
 					rgbProcessor = null;
 				}
 
-				if (!lumaResource.IsEmpty)
-				{
-					lumaResource.Dispose();
-				}
-
-				if (lumaTexture != null)
-				{
-					lumaTexture.Dispose();
-					lumaTexture = null;
-				}
-
-				if (!chromaResource.IsEmpty)
-				{
-					chromaResource.Dispose();
-				}
-
-				if (chromaTexture != null)
-				{
-					chromaTexture.Dispose();
-					chromaTexture = null;
-				}
+				CloseGraphicsResources();
 
 			}
 
 		}
 
-		private CuCallbackResult SequenceCallback(IntPtr userData, ref CuVideoFormat format)
+
+
+		private int SequenceCallback(IntPtr userData, ref CuVideoFormat format)
 		{
 			Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
 
@@ -153,14 +135,16 @@ namespace Test.Probe
 			{
 				Console.WriteLine(error);
 
-				return CuCallbackResult.Failure;
+				return 0;
 			}
 
 			if (!cuVideoDecoder.IsEmpty)
 			{
+				Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)::Reconfigure()");
+
 				cuVideoDecoder.Reconfigure(ref format);
 
-				return CuCallbackResult.Success;
+				return 1;
 			}
 
 			decodeInfo = new CuVideoDecodeCreateInfo
@@ -181,42 +165,47 @@ namespace Test.Probe
 				MaxHeight = format.CodedHeight,
 				TargetWidth = format.CodedWidth,
 				TargetHeight = format.CodedHeight,
-				
 
 			};
 
-			cuVideoDecoder = CuVideoDecoder.Create(ref decodeInfo);
+			using (var contextPush = cuContext.Push())
+			{
+				cuVideoDecoder = CuVideoDecoder.Create(ref decodeInfo);
+			}
 
-           return (CuCallbackResult)format.MinNumDecodeSurfaces;
-           // return CuCallbackResult.Success;
+			InitGraphicResources(decodeInfo.Width, decodeInfo.Height, decodeInfo.OutputFormat);
 
 
-        }
+			return decodeInfo.NumDecodeSurfaces;
+			//return 1;
 
 
-		private CuCallbackResult DecodePictureCallback(IntPtr userData, ref CuVideoPicParams param)
+		}
+
+
+		private int DecodePictureCallback(IntPtr userData, ref CuVideoPicParams param)
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>DecodePictureCallback(...)");
-			
-			cuVideoDecoder.DecodePicture(ref param);
+			using (var contextPush = cuContext.Push())
+			{
+				cuVideoDecoder.DecodePicture(ref param);
+			}
 
-			return CuCallbackResult.Success;
+			return 1;
 		}
 
 
 
 		private CuGraphicsResource lumaResource;
 		private Texture2D lumaTexture = null;
-		private CuArray lumaArray;
 
 		private CuGraphicsResource chromaResource;
 		private Texture2D chromaTexture = null;
-		private CuArray chromaArray;
 
-        private unsafe CuCallbackResult VideoDisplayCallback(IntPtr userData, IntPtr infoPtr)
+		private unsafe int VideoDisplayCallback(IntPtr userData, IntPtr infoPtr)
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
-			//var contextPush = cuContext.Push();
+
 
 			CuVideoParseDisplayInfo displayInfo;
 			if (infoPtr != IntPtr.Zero)
@@ -225,95 +214,107 @@ namespace Test.Probe
 			}
 			else
 			{ //IsFinalFrame()
-				return CuCallbackResult.Success;
+				return 1;
 			}
 
-			var processingParam = new CuVideoProcParams
+			using (var contextPush = cuContext.Push())
 			{
-				
-				ProgressiveFrame = displayInfo.ProgressiveFrame,
-				SecondField = displayInfo.RepeatFirstField + 1,
-				TopFieldFirst = displayInfo.TopFieldFirst,
-				UnpairedField = displayInfo.RepeatFirstField < 0 ? 1 : 0
-			};
-
-			var frame = cuVideoDecoder.MapVideoFrame(displayInfo.PictureIndex, ref processingParam, out var pitch);
-			var status = cuVideoDecoder.GetDecodeStatus(displayInfo.PictureIndex);
-
-			if (status != CuVideoDecodeStatus.Success)
-			{
-				Console.WriteLine("GetDecodeStatus(...) " + status);
-				//...
+				HandlePictureDisplay(displayInfo);
 			}
 
 			var timestamp = displayInfo.Timestamp;
+			ProcessTextures(timestamp);
 
-			//var chromaInfo = new CuVideoChromaFormatInformation(_info.ChromaFormat);
-			//var chromaHeight = (int)(_info.Height * chromaInfo.HeightFactor);
-			//var height = _info.Height + chromaHeight * chromaInfo.PlaneCount;
-			//var bytesPerPixel = _info.BitDepthMinus8 > 0 ? 2 : 1;
-			//var frameByteSize = pitch * height * bytesPerPixel;
-			//var byteWidth = _info.Width * bytesPerPixel;
+			return 1;
+		}
 
-			var width = decodeInfo.Width;
-			var height = decodeInfo.Height;
+		private unsafe void HandlePictureDisplay(CuVideoParseDisplayInfo displayInfo)
+		{
 
-			lock (device3D11)
+			CuVideoFrame cuFrame = default(CuVideoFrame);
+			try
 			{
-				CuGraphicsResource[] resources = InitGraphicResources(width, height);
-
-				fixed (CuGraphicsResource* resPtr = resources)
+				/*
+				 *  videoProcessingParameters.progressive_frame = pDispInfo->progressive_frame;
+					videoProcessingParameters.second_field = pDispInfo->repeat_first_field + 1;
+					videoProcessingParameters.top_field_first = pDispInfo->top_field_first;
+					videoProcessingParameters.unpaired_field = pDispInfo->repeat_first_field < 0;
+					videoProcessingParameters.output_stream = m_cuvidStream;
+				 */
+				var processingParam = new CuVideoProcParams
 				{
-					var stream = CuStream.Empty;
-
-					LibCuda.GraphicsMapResources(resources.Length, resPtr, stream);
-
-					if (lumaArray.IsEmpty)
-					{
-						lumaArray = lumaResource.GetMappedArray();
-					}
-
-					var memcopy = new CuMemcopy2D
-					{
-						SrcMemoryType = CuMemoryType.Device,
-						SrcDevice = frame,
-						SrcPitch = (IntPtr)pitch,
-						DstMemoryType = CuMemoryType.Array,
-						DstArray = lumaArray,//lumaResource.GetMappedArray(),
-						DstPitch = (IntPtr)width,
-						WidthInBytes = (IntPtr)width,
-						Height = (IntPtr)height,
-					};
-					memcopy.Memcpy2D();
-
-					if (chromaArray.IsEmpty)
-					{
-						chromaArray = chromaResource.GetMappedArray();
-					}
-
-					memcopy.SrcDevice = new CuDevicePtr(frame.Handle + pitch * height);
-					memcopy.DstArray = chromaArray;//chromaResource.GetMappedArray(); 
-					memcopy.DstPitch = (IntPtr)(width);
-					memcopy.Height = (IntPtr)(height / 2);
-					memcopy.Memcpy2D();
+					ProgressiveFrame = displayInfo.ProgressiveFrame,
+					SecondField = displayInfo.RepeatFirstField + 1,
+					TopFieldFirst = displayInfo.TopFieldFirst,
+					UnpairedField = displayInfo.RepeatFirstField < 0 ? 1 : 0
+				};
 
 
-					LibCuda.GraphicsUnmapResources(resources.Length, resPtr, stream);
+				cuFrame = cuVideoDecoder.MapVideoFrame(displayInfo.PictureIndex, ref processingParam, out var pitch);
+
+				var status = cuVideoDecoder.GetDecodeStatus(displayInfo.PictureIndex);
+				if (status != CuVideoDecodeStatus.Success)
+				{
+					Console.WriteLine("GetDecodeStatus(...) " + status);
+					//...
 				}
 
+				var width = decodeInfo.Width;
+				var height = decodeInfo.Height;
+
+				lock (device3D11)
+				{
+					var resources = new CuGraphicsResource[] { lumaResource, chromaResource };
+
+					fixed (CuGraphicsResource* resPtr = resources)
+					{
+						var stream = CuStream.Empty;
+
+						var result = LibCuda.GraphicsMapResources(resources.Length, resPtr, stream);
+						LibCuda.CheckResult(result);
+
+						var memcopy = new CuMemcopy2D
+						{
+							SrcMemoryType = CuMemoryType.Device,
+							SrcDevice = cuFrame,
+							SrcPitch = (IntPtr)pitch,
+							DstMemoryType = CuMemoryType.Array,
+							DstArray = lumaResource.GetMappedArray(),
+							DstPitch = (IntPtr)width,
+							WidthInBytes = (IntPtr)width,
+							Height = (IntPtr)height,
+						};
+
+						result = LibCuda.Memcpy2D(ref memcopy);
+						LibCuda.CheckResult(result);
+
+						memcopy.SrcDevice = new CuDevicePtr(cuFrame.Handle + pitch * height);
+						memcopy.DstArray = chromaResource.GetMappedArray();
+						memcopy.DstPitch = (IntPtr)(width);
+						memcopy.Height = (IntPtr)(height / 2);
+
+						result = LibCuda.Memcpy2D(ref memcopy);
+						LibCuda.CheckResult(result);
+
+						result = LibCuda.GraphicsUnmapResources(resources.Length, resPtr, stream);
+						LibCuda.CheckResult(result);
+					}
+				}
+			}
+			finally
+			{
+				cuFrame.Dispose();
 			}
 
+		}
 
-
-			frame.Dispose();
-
-
-			//contextPush.Dispose();
-
+		private void ProcessTextures(long timestamp)
+		{
+			var size = new System.Drawing.Size(lumaTexture.Description.Width, lumaTexture.Description.Height);
 			var destTexture = new Texture2D(device3D11, new SharpDX.Direct3D11.Texture2DDescription()
 			{
-				Width = lumaTexture.Description.Width,
-				Height = lumaTexture.Description.Height,
+				Width = size.Width,
+				Height = size.Height,
 				Format = SharpDX.DXGI.Format.R8G8B8A8_UNorm,
 				SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
 				BindFlags = SharpDX.Direct3D11.BindFlags.ShaderResource | BindFlags.RenderTarget,
@@ -324,75 +325,76 @@ namespace Test.Probe
 				ArraySize = 1,
 			});
 
-			{
-				var size = new System.Drawing.Size(lumaTexture.Description.Width, lumaTexture.Description.Height);
-				rgbProcessor.DrawTexture(new Texture2D[] { lumaTexture, chromaTexture }, destTexture, size);
-				var sec = (double)timestamp / 10_000_000;
+	
+			rgbProcessor.DrawTexture(new Texture2D[] { lumaTexture, chromaTexture }, destTexture, size);
+			var sec = (double)timestamp / 10_000_000;
 
-				OnSampleProcessed(destTexture, sec);
-			}
+			OnSampleProcessed(destTexture, sec);
 
-			//lumaResource.Dispose();
-			//lumaTexture.Dispose();
-
-			//chromaResource.Dispose();
-			//chromaTexture.Dispose();
 
 			//var bytes = DxTool.DumpTexture(deviceD3D11, destTexture);
 			//TestTools.WriteFile(bytes, "nvdec_test_dxinterop_rgba" + width + "x" + height + ".yuv");
-
-
-
-			return CuCallbackResult.Success;
 		}
 
-		private unsafe CuGraphicsResource[] InitGraphicResources(int width, int height)
+		private void InitGraphicResources(int width, int height, CuVideoSurfaceFormat format)
 		{
-			if (lumaTexture == null)
+			if (format != 0)
 			{
-				lumaTexture = new Texture2D(device3D11, new Texture2DDescription()
-				{
-					Width = width,
-					Height = height,
-					MipLevels = 1,
-					ArraySize = 1,
-					SampleDescription = new SampleDescription(1, 0),
-					Usage = ResourceUsage.Default,
-
-					Format = Format.R8_UNorm,
-					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-					CpuAccessFlags = CpuAccessFlags.None,
-					OptionFlags = ResourceOptionFlags.None,
-
-				});
-				lumaResource = CuGraphicsResource.Register(lumaTexture.NativePointer);
-				//lumaArray = lumaResource.GetMappedArray();
+				throw new NotSupportedException("Invalid format: " + format);
 			}
 
-			if (chromaTexture == null)
+			var texDescr = new Texture2DDescription()
 			{
-				chromaTexture = new Texture2D(device3D11, new Texture2DDescription()
-				{
-					Width = width / 2,
-					Height = height / 2,
-					MipLevels = 1,
-					ArraySize = 1,
-					SampleDescription = new SampleDescription(1, 0),
-					Usage = ResourceUsage.Default,
+				Width = width,
+				Height = height,
+				MipLevels = 1,
+				ArraySize = 1,
+				SampleDescription = new SampleDescription(1, 0),
+				Usage = ResourceUsage.Default,
 
-					Format = Format.R8G8_UNorm,
-					BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
-					CpuAccessFlags = CpuAccessFlags.None,
-					OptionFlags = ResourceOptionFlags.None,
+				Format = Format.R8_UNorm,
+				BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
+				CpuAccessFlags = CpuAccessFlags.None,
+				OptionFlags = ResourceOptionFlags.None,
 
-				});
-				chromaResource = CuGraphicsResource.Register(chromaTexture.NativePointer);
-				//chromaArray = chromaResource.GetMappedArray();
+			};
+
+			lumaTexture = new Texture2D(device3D11, texDescr);
+			lumaResource = CuGraphicsResource.Register(lumaTexture.NativePointer, CuGraphicsRegisters.None);
+
+
+			texDescr.Width = width / 2;
+			texDescr.Height = height / 2;
+			texDescr.Format = Format.R8G8_UNorm;
+
+			chromaTexture = new Texture2D(device3D11, texDescr);
+			chromaResource = CuGraphicsResource.Register(chromaTexture.NativePointer, CuGraphicsRegisters.None);
+
+		}
+
+		private void CloseGraphicsResources()
+		{
+			if (!lumaResource.IsEmpty)
+			{
+				lumaResource.Dispose();
 			}
 
-			var resources = new CuGraphicsResource[] { lumaResource, chromaResource };
+			if (lumaTexture != null)
+			{
+				lumaTexture.Dispose();
+				lumaTexture = null;
+			}
 
-			return resources;
+			if (!chromaResource.IsEmpty)
+			{
+				chromaResource.Dispose();
+			}
+
+			if (chromaTexture != null)
+			{
+				chromaTexture.Dispose();
+				chromaTexture = null;
+			}
 		}
 
 	}

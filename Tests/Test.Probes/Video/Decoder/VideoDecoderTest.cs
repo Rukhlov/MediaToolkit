@@ -69,6 +69,7 @@ namespace Test.Probe
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
 				//var width = 2560;
 				//var height = 1440;
+				//var fps = 30;
 
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_3840x2160_5sec.h264";
 				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
@@ -117,8 +118,8 @@ namespace Test.Probe
 
         private PresentationClock presentationClock = new PresentationClock();
 
-        //private NalSourceReader sourceReader = null;
-        private NalSourceReaderRealTime sourceReader = null;
+        private NalSourceReader sourceReader = null;
+       // private NalSourceReaderRealTime sourceReader = null;
 
         private int videoBuffeSize = 3;
         private BlockingCollection<VideoFrame> videoFrames = null;
@@ -289,8 +290,8 @@ namespace Test.Probe
             //    Console.WriteLine("SourceReaderTask END");
             //});
 
-            sourceReader = new NalSourceReaderRealTime();
-            //sourceReader = new NalSourceReader();
+           // sourceReader = new NalSourceReaderRealTime();
+            sourceReader = new NalSourceReader();
 
 
             //var readerTask = nalSource.Start(fileName, inputArgs);
@@ -310,9 +311,9 @@ namespace Test.Probe
             var presenterTask = new Task(() =>
             {
                 Console.WriteLine("PresenterTask BEGIN");
-                PresenterTaskRealTime(fps);
+                //PresenterTaskRealTime(fps);
 
-                //PresenterTask(fps);
+                PresenterTask(fps);
 
                 Console.WriteLine("PresenterTask END");
             });
@@ -351,16 +352,16 @@ namespace Test.Probe
                 }
                 else if (e.KeyCode == Keys.Add)
                 {
-                    sourceReader.WaitDelay += 1;
-                    Console.WriteLine(sourceReader.WaitDelay);
+                    //sourceReader.WaitDelay += 1;
+                    //Console.WriteLine(sourceReader.WaitDelay);
 
                     //presentationClock.ClockRate += 0.05f;
                     //Console.WriteLine(presentationClock.ClockRate);
                 }
                 else if (e.KeyCode == Keys.Subtract)
                 {
-                    sourceReader.WaitDelay -= 1;
-                    Console.WriteLine(sourceReader.WaitDelay);
+                    //sourceReader.WaitDelay -= 1;
+                    //Console.WriteLine(sourceReader.WaitDelay);
 
                     //sourceReader.PacketInterval -= 0.001f;
                     //Console.WriteLine(sourceReader.PacketInterval);

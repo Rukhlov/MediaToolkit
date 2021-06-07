@@ -198,7 +198,7 @@ namespace Test.Probe.NvApi
 			
 		}
 
-		private CuCallbackResult SequenceCallback(IntPtr data, ref CuVideoFormat format)
+		private int SequenceCallback(IntPtr data, ref CuVideoFormat format)
         {
             Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
 
@@ -207,14 +207,14 @@ namespace Test.Probe.NvApi
             {
                 Console.Error.WriteLine(error);
 
-                return CuCallbackResult.Failure;
+                return 0;
             }
 
             if (!_decoder.IsEmpty)
             {
                 _decoder.Reconfigure(ref format);
 
-                return CuCallbackResult.Success;
+                return 1;
             }
 
             decodeInfo = new CuVideoDecodeCreateInfo
@@ -240,19 +240,19 @@ namespace Test.Probe.NvApi
 
             _decoder = CuVideoDecoder.Create(ref decodeInfo);
 
-            return CuCallbackResult.Success;
+            return 1;
 
 
         }
 
 
-        private CuCallbackResult DecodePictureCallback(IntPtr data, ref CuVideoPicParams param)
+        private int DecodePictureCallback(IntPtr data, ref CuVideoPicParams param)
         {
             //Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>DecodePictureCallback(...)");
 
             _decoder.DecodePicture(ref param);
 
-            return CuCallbackResult.Success;
+            return 1;
         }
 
 
@@ -265,7 +265,7 @@ namespace Test.Probe.NvApi
         Texture2D chromaTexture = null;
         CuArray chromaArray;
 
-        private unsafe CuCallbackResult VideoDisplayCallback(IntPtr data, IntPtr infoPtr)
+        private unsafe int VideoDisplayCallback(IntPtr data, IntPtr infoPtr)
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
 			var contextPush = _context.Push();
@@ -277,7 +277,7 @@ namespace Test.Probe.NvApi
 			}
 			else
 			{ //IsFinalFrame()
-				return CuCallbackResult.Success;
+				return 1;
 			}
 
 			var processingParam = new CuVideoProcParams
@@ -390,7 +390,7 @@ namespace Test.Probe.NvApi
 
 			contextPush.Dispose();
 
-			return CuCallbackResult.Success;
+			return 1;
 		}
 
 		private unsafe CuGraphicsResource[] InitGraphicResources(int width, int height)

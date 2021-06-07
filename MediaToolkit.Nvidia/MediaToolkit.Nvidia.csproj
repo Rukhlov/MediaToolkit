@@ -102,6 +102,7 @@
     <None Include="Cuda\NvCuVid\nvcuvid.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Cuda\cuda.h" />
     <Content Include="NvAPI\nvapi.h" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

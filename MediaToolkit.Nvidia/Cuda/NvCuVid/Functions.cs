@@ -13,12 +13,14 @@ namespace MediaToolkit.Nvidia
         /// typedef int (CUDAAPI *PFNVIDSOURCECALLBACK)(void *, CUVIDSOURCEDATAPACKET *);
         /// Callback for packet delivery
         /// </summary>
-        public delegate CuCallbackResult VideoSourceCallback(IntPtr data, ref CuVideoSourceDataPacket packet);
+        public delegate int VideoSourceCallback(IntPtr data, ref CuVideoSourceDataPacket packet);
 
         // typedef int (CUDAAPI *PFNVIDSEQUENCECALLBACK)(void *, CUVIDEOFORMAT *);
-        public delegate CuCallbackResult VideoSequenceCallback(IntPtr userData, ref CuVideoFormat pvidfmt);
+        public delegate int VideoSequenceCallback(IntPtr userData, ref CuVideoFormat pvidfmt);
+
         // typedef int (CUDAAPI* PFNVIDDECODECALLBACK) (void*, CUVIDPICPARAMS*);
-        public delegate CuCallbackResult VideoDecodeCallback(IntPtr userData, ref CuVideoPicParams param);
+        public delegate int VideoDecodeCallback(IntPtr userData, ref CuVideoPicParams param);
+
         // typedef int (CUDAAPI* PFNVIDDISPLAYCALLBACK) (void*, CUVIDPARSERDISPINFO*);
         /// <summary>
         /// The callback when a decoded frame is ready for display.
@@ -29,7 +31,7 @@ namespace MediaToolkit.Nvidia
         /// actual structure.</param>
         ///
         /// <seealso cref="CuVideoParseDisplayInfo.IsFinalFrame(IntPtr, out CuVideoParseDisplayInfo)" />
-        public delegate CuCallbackResult VideoDisplayCallback(IntPtr userData, IntPtr infoPtr);
+        public delegate int VideoDisplayCallback(IntPtr userData, IntPtr infoPtr);
 
         #region Obsolete
         /// <summary>
