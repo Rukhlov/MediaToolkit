@@ -75,7 +75,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaGraphicsSubResourceGetMappedArray
         /// CUresult CUDAAPI cuGraphicsSubResourceGetMappedArray(CUarray *pArray, CUgraphicsResource resource, unsigned int arrayIndex, unsigned int mipLevel);
         [DllImport(nvCudaPath, EntryPoint = "cuGraphicsSubResourceGetMappedArray")]
-        public static extern CuResult GraphicsSubResourceGetMappedArray(out CuArray pArray, CuGraphicsResourcePtr resource, int arrayIndex, int mipLevel);
+        public static extern CuResult GraphicsSubResourceGetMappedArray(out CuArrayPtr pArray, CuGraphicsResourcePtr resource, int arrayIndex, int mipLevel);
 
         /// <summary>Get a mipmapped array through which to access a mapped graphics resource.
         ///

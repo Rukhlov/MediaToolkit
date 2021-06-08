@@ -19,7 +19,7 @@ namespace Test.Probe
 
 		private CuContext cuContext;
 		private CuVideoDecoder cuVideoDecoder;
-		private CuVideoContextLock videoContextLock;
+		private CuVideoContextLockObj videoContextLock;
 		private CuVideoDecodeCreateInfo decodeInfo;
 
 
@@ -177,7 +177,7 @@ namespace Test.Probe
 				//CreationFlags = CuVideoCreateFlags.PreferCUDA,
 				CreationFlags = CuVideoCreateFlags.PreferCUVID,
 				NumDecodeSurfaces = format.MinNumDecodeSurfaces,
-				VideoLock = videoContextLock,
+				VideoLock = videoContextLock.NativePtr,
 				Width = format.CodedWidth,
 				Height = format.CodedHeight,
 				MaxWidth = format.CodedWidth,

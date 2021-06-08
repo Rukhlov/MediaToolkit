@@ -5,8 +5,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using static MediaToolkit.Nvidia.LibNvEnc;
 
-// ReSharper disable UnusedMember.Global
-
 namespace MediaToolkit.Nvidia
 {
     public class NvEncoder

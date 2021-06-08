@@ -9,142 +9,54 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Nvidia
 {
-	public unsafe partial class LibCuda
+	public partial class LibCuda
 	{
 		public const int ApiVerison = 10020;
 
 		private const string nvCudaPath = "nvcuda.dll";
 		private const string _ver = "_v2";
 
-		/// <summary>CUDA stream callback</summary>
-		/// <param name="hStream">The stream the callback was added to, as passed to ::cuStreamAddCallback.  May be NULL.</param>
-		/// <param name="status">::CUDA_SUCCESS or any persistent error on the stream.</param>
-		/// <param name="userData">User parameter provided at registration.</param>
-		public delegate void CuStreamCallback(CuStreamPtr hStream, CuResult status, IntPtr userData);
-
-		/// <summary>Block size to per-block dynamic shared memory mapping for a certain kernel.</summary>
-		/// <param name="blockSize">blockSize Block size of the kernel</param>
-		/// <returns>The dynamic shared memory needed by a block.</returns>
-		public delegate IntPtr CuOccupancyB2DSize(int blockSize);
-
-		/// <summary>CUresult cuInit(unsigned int Flags)
-		/// Initialize the CUDA driver API.</summary>
-		[DllImport(nvCudaPath, EntryPoint = "cuInit")]
-		public static extern CuResult Initialize(uint flags);
-
-		/// <inheritdoc cref="LibCuda.Initialize(uint)"/>
 		public static void Initialize()
 		{
-			CheckResult(Initialize(0));
+            var result = Initialize(0);
+            CheckResult(result);
 		}
 
-		/// <summary>Returns the CUDA driver version</summary>
-		///
-		/// <remarks>
-		/// Returns in *<paramref name="driverVersion"/> the version number of the installed CUDA
-		/// driver. This function automatically returns ::CUDA_ERROR_INVALID_VALUE if
-		/// the <paramref name="driverVersion"/> argument is NULL.
-		/// </remarks>
-		///
-		/// <param name="driverVersion">Returns the CUDA driver version</param>
-		///
-		/// <returns>
-		/// ::CUDA_SUCCESS,
-		/// ::CUDA_ERROR_INVALID_VALUE
-		/// </returns>
-		/// \notefnerr
-		///
-		/// \sa
-		/// ::cudaDriverGetVersion,
-		/// ::cudaRuntimeGetVersion
-		/// CUresult CUDAAPI cuDriverGetVersion(int *driverVersion);
-		[DllImport(nvCudaPath, EntryPoint = "cuDriverGetVersion")]
-		public static extern CuResult DriverGetVersion(out int driverVersion);
-
-		/// <inheritdoc cref="LibCuda.DriverGetVersion(out int)"/>
 		public static int DriverGetVersion()
 		{
-			CheckResult(DriverGetVersion(out var version));
+            var result = DriverGetVersion(out var version);
+
+			CheckResult(result);
+
 			return version;
 		}
 
-		/// <summary>Gets the string description of an error code</summary>
-		///
-		/// <remarks>
-		/// Sets *<paramref name="str"/> to the address of a NULL-terminated string description
-		/// of the error code <paramref name="error"/>.
-		/// If the error code is not recognized, ::CUDA_ERROR_INVALID_VALUE
-		/// will be returned and *<paramref name="str"/> will be set to the NULL address.
-		/// </remarks>
-		///
-		/// <param name="error">Error code to convert to string</param>
-		/// <param name="str">Address of the string pointer.</param>
-		///
-		/// <returns>
-		/// ::CUDA_SUCCESS,
-		/// ::CUDA_ERROR_INVALID_VALUE
-		/// </returns>
-		/// \sa
-		/// ::CUresult,
-		/// ::cudaGetErrorString
-		/// CUresult CUDAAPI cuGetErrorString(CUresult error, const char **pStr);
-		[DllImport(nvCudaPath, EntryPoint = "cuGetErrorString")]
-		public static extern CuResult GetErrorString(CuResult error, out IntPtr str);
 
-		/// <inheritdoc cref="LibCuda.GetErrorString(CuResult, out IntPtr)"/>
-		public static string GetErrorString(CuResult error)
+        public static string GetErrorString(CuResult error)
+        {
+            var errorStr = "Unknown error";
+            var result = GetErrorString(error, out var str);
+            CheckResult(result);
+            if (str != IntPtr.Zero)
+            {
+                errorStr = Marshal.PtrToStringAnsi(str);
+            }
+            return errorStr;
+        }
+
+        public static string GetErrorName(CuResult error)
 		{
-			CheckResult(GetErrorString(error, out var str));
-
-			return str == IntPtr.Zero
-				? "Unknown error"
-				: Marshal.PtrToStringAnsi(str);
+            var errorStr = "Unknown error";
+            var result = GetErrorName(error, out var str);
+            CheckResult(result);
+            if (str != IntPtr.Zero)
+            {
+                errorStr = Marshal.PtrToStringAnsi(str);
+            }
+            return errorStr;
 		}
 
-		/// <summary>Gets the string representation of an error code enum name</summary>
-		///
-		/// <remarks>
-		/// Sets *<paramref name="str"/> to the address of a NULL-terminated string representation
-		/// of the name of the enum error code <c>error</c>.
-		/// If the error code is not recognized, ::CUDA_ERROR_INVALID_VALUE
-		/// will be returned and *<paramref name="str"/> will be set to the NULL address.
-		/// </remarks>
-		///
-		/// <param name="error">Error code to convert to string</param>
-		/// <param name="str">Address of the string pointer.</param>
-		///
-		/// <returns>
-		/// ::CUDA_SUCCESS,
-		/// ::CUDA_ERROR_INVALID_VALUE
-		/// </returns>
-		/// \sa
-		/// ::CUresult,
-		/// ::cudaGetErrorName
-		/// CUresult CUDAAPI cuGetErrorName(CUresult error, const char **pStr);
-		[DllImport(nvCudaPath, EntryPoint = "cuGetErrorName")]
-		public static extern CuResult GetErrorName(CuResult error, out IntPtr str);
 
-		/// <inheritdoc cref="LibCuda.GetErrorName(CuResult, out IntPtr)"/>
-		public static string GetErrorName(CuResult error)
-		{
-
-			CheckResult(GetErrorName(error, out var str));
-
-			return str == IntPtr.Zero
-				? "Unknown error"
-				: Marshal.PtrToStringAnsi(str);
-		}
-
-		/// CUresult CUDAAPI cuGetExportTable(const void **ppExportTable, const CUuuid *pExportTableId);
-		[DllImport(nvCudaPath, EntryPoint = "cuGetExportTable")]
-		public static extern CuResult GetExportTable(IntPtr* ppExportTable, Guid* pExportTableId);
-
-		/// <summary>
-		/// Exception if <paramref name="result"/> is not <c>CuResult.Success</c>.
-		/// </summary>
-		/// <param name="result">The CuResult from a LibCuda API call to check.</param>
-		/// <param name="callerName"></param>
-		/// <exception cref="LibNvEncException">Thrown if <paramref name="result"/> is not <c>CuResult.Success</c>.</exception>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void CheckResult(CuResult result, [CallerMemberName] string callerName = "")
 		{
@@ -375,12 +287,12 @@ namespace MediaToolkit.Nvidia
 			return device;
 		}
 
-		public CuVideoContextLock CreateLock()
+		public CuVideoContextLockObj CreateLock()
 		{
 			var result = NvCuVid.CtxLockCreate(out var contextLock, ContextPtr);
 			LibCuda.CheckResult(result);
 
-			return contextLock;
+			return new CuVideoContextLockObj(contextLock);
 		}
 
 		private bool disposed = false;
@@ -454,7 +366,7 @@ namespace MediaToolkit.Nvidia
 			}
 		}
 
-		public CuArray GetMappedArray(int arrayIndex = 0, int mipLevel = 0)
+		public CuArrayPtr GetMappedArray(int arrayIndex = 0, int mipLevel = 0)
 		{
 			var result = LibCuda.GraphicsSubResourceGetMappedArray(out var array, ResourcePtr, arrayIndex, mipLevel);
 			LibCuda.CheckResult(result);
@@ -513,4 +425,101 @@ namespace MediaToolkit.Nvidia
 			LibCuda.CheckResult(result);
 		}
 	}
+
+
+    public class CuHostMemory : IDisposable
+    {
+        public static readonly CuHostMemory Empty = new CuHostMemory (CuHostMemoryPtr.Empty);
+
+        private readonly CuHostMemoryPtr memoryPtr;
+        internal CuHostMemory(CuHostMemoryPtr ptr)
+        {
+            this.memoryPtr = ptr;
+        }
+
+        public static CuHostMemoryPtr Allocate(long bytesize)
+        {
+            var result = LibCuda.MemAllocHost(out var mem, (IntPtr)bytesize);
+            LibCuda.CheckResult(result);
+            return mem;
+        }
+
+        // TODO: Move?
+        public static CuDevicePtr AllocateManaged(long bytesize, MemoryAttachFlags flags)
+        {
+            var result = LibCuda.MemAllocManaged(out var mem, (IntPtr)bytesize, flags);
+            LibCuda.CheckResult(result);
+            return mem;
+        }
+
+        public void Dispose()
+        {
+            var result = LibCuda.MemFreeHost(memoryPtr);
+            LibCuda.CheckResult(result);
+        }
+    }
+
+    public class CuDeviceMemoryObj : IDisposable
+    {
+        private readonly CuDevicePtr DevicePtr;
+        private CuDeviceMemoryObj(CuDevicePtr devicePtr)
+        {
+            this.DevicePtr = devicePtr;
+            //Handle = devicePtr.Handle;
+        }
+
+        public static CuDeviceMemoryObj Allocate(IntPtr bytesize)
+        {
+            if (bytesize.ToInt64() < 0) throw new ArgumentOutOfRangeException(nameof(bytesize));
+
+            var result = LibCuda.MemAlloc(out var device, bytesize);
+            LibCuda.CheckResult(result);
+
+            return new CuDeviceMemoryObj(device);
+        }
+
+        public static CuDeviceMemoryObj Allocate(int bytesize)
+        {
+            if (bytesize < 0) throw new ArgumentOutOfRangeException(nameof(bytesize));
+
+            return Allocate((IntPtr)bytesize);
+        }
+
+
+        public static CuDeviceMemoryObj AllocatePitch(out IntPtr pitch, IntPtr widthInBytes, IntPtr height, uint elementSizeBytes)
+        {
+            var result = LibCuda.MemAllocPitch(out var device, out pitch, widthInBytes, height, elementSizeBytes);
+
+            LibCuda.CheckResult(result);
+
+            return new CuDeviceMemoryObj(device);
+        }
+
+        public unsafe byte[] CopyToHost(int size)
+        {
+            var host = new byte[size];
+
+            fixed (byte* hostPtr = host)
+            {
+                CopyToHost(hostPtr, size);
+            }
+
+            return host;
+        }
+
+        public unsafe void CopyToHost(byte* hostDestination, int size)
+        {
+            var result = LibCuda.MemcpyDtoH((IntPtr)hostDestination, DevicePtr, (IntPtr)size);
+            LibCuda.CheckResult(result);
+        }
+
+        /// <inheritdoc cref="LibCuda.MemFree(CuDevicePtr)"/>
+        public void Dispose()
+        {
+            var result = LibCuda.MemFree(DevicePtr);
+            LibCuda.CheckResult(result);
+        }
+
+    }
+
 }

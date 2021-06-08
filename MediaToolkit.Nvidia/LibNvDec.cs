@@ -245,4 +245,55 @@ namespace MediaToolkit.Nvidia
         }
     }
 
+
+    public class CuVideoContextLockObj : IDisposable
+    {
+        public readonly CuVideoContextLock NativePtr;
+        internal CuVideoContextLockObj(CuVideoContextLock ptr)
+        {
+            this.NativePtr = ptr;
+        }
+
+        public class AutoCuVideoContextLock : IDisposable
+        {
+            private readonly CuVideoContextLockObj _lock;
+            private int _disposed;
+
+            public AutoCuVideoContextLock(CuVideoContextLockObj obj)
+            {
+                _lock = obj;
+                _disposed = 0;
+            }
+
+            public void Dispose()
+            {
+                var disposed = Interlocked.Exchange(ref _disposed, 1);
+                if (disposed != 0) return;
+
+                _lock.Unlock();
+            }
+        }
+
+        public AutoCuVideoContextLock Lock()
+        {
+            var result = NvCuVid.CtxLock(NativePtr, 0);
+            LibCuda.CheckResult(result);
+
+            return new AutoCuVideoContextLock(this);
+        }
+
+        public void Unlock()
+        {
+            var result = NvCuVid.CtxUnlock(NativePtr, 0);
+            LibCuda.CheckResult(result);
+        }
+
+        public void Dispose()
+        {
+            var result = NvCuVid.CtxLockDestroy(NativePtr);
+            LibCuda.CheckResult(result);
+        }
+
+    }
+
 }

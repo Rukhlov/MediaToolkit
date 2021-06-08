@@ -43,7 +43,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidCreateVideoSource", CharSet = CharSet.Ansi, SetLastError = true)]
-        public static extern CuResult CreateVideoSource(CuVideoSource* pObj, string pszFileName, ref CuVideoSourceParams pParams);
+        public static extern CuResult CreateVideoSource(CuVideoSourcePtr* pObj, string pszFileName, ref CuVideoSourceParams pParams);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidCreateVideoSourceW(CUvideosource *pObj, const wchar_t *pwszFileName, CUVIDSOURCEPARAMS *pParams)
@@ -51,7 +51,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidCreateVideoSourceW", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern CuResult CreateVideoSourceW(CuVideoSource* pObj, string pszFileName, ref CuVideoSourceParams pParams);
+        public static extern CuResult CreateVideoSourceW(CuVideoSourcePtr* pObj, string pszFileName, ref CuVideoSourceParams pParams);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidDestroyVideoSource(CUvideosource obj)
@@ -59,7 +59,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidDestroyVideoSource", SetLastError = true)]
-        public static extern CuResult DestroyVideoSource(CuVideoSource obj);
+        public static extern CuResult DestroyVideoSource(CuVideoSourcePtr obj);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidSetVideoSourceState(CUvideosource obj, cudaVideoState state)
@@ -70,7 +70,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidSetVideoSourceState", SetLastError = true)]
-        public static extern CuResult SetVideoSourceState(CuVideoSource obj, CuVideoState state);
+        public static extern CuResult SetVideoSourceState(CuVideoSourcePtr obj, CuVideoState state);
 
         /// <summary>
         /// \fn cudaVideoState CUDAAPI cuvidGetVideoSourceState(CUvideosource obj)
@@ -83,7 +83,7 @@ namespace MediaToolkit.Nvidia
         /// </returns>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidGetVideoSourceState", SetLastError = true)]
-        public static extern CuVideoState GetVideoSourceState(CuVideoSource obj);
+        public static extern CuVideoState GetVideoSourceState(CuVideoSourcePtr obj);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidGetSourceVideoFormat(CUvideosource obj, CUVIDEOFORMAT *pvidfmt, unsigned int flags)
@@ -91,7 +91,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidGetSourceVideoFormat", SetLastError = true)]
-        public static extern CuResult GetSourceVideoFormat(CuVideoSource obj, ref CuVideoFormat pvidfmt, uint flags);
+        public static extern CuResult GetSourceVideoFormat(CuVideoSourcePtr obj, ref CuVideoFormat pvidfmt, uint flags);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidGetSourceAudioFormat(CUvideosource obj, CUAUDIOFORMAT *paudfmt, unsigned int flags)
@@ -101,7 +101,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         [Obsolete]
         [DllImport(nvCuVidPath, EntryPoint = "cuvidGetSourceAudioFormat", SetLastError = true)]
-        public static extern CuResult GetSourceAudioFormat(CuVideoSource obj, ref CuAudioFormat paudfmt, uint flags);
+        public static extern CuResult GetSourceAudioFormat(CuVideoSourcePtr obj, ref CuAudioFormat paudfmt, uint flags);
         #endregion
 
         /// <summary>

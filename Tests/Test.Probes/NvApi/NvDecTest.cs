@@ -69,7 +69,7 @@ namespace Test.Probe.NvApi
 
         private CuContext _context;
         private CuVideoDecoder _decoder;
-        private CuVideoContextLock _contextLock;
+        private CuVideoContextLockObj _contextLock;
         private CuVideoDecodeCreateInfo decodeInfo;
 
         private NalSourceReader sourceReader = null;
@@ -226,7 +226,7 @@ namespace Test.Probe.NvApi
                 NumOutputSurfaces = 2,
                 CreationFlags = CuVideoCreateFlags.PreferCUVID,
                 NumDecodeSurfaces = format.MinNumDecodeSurfaces,
-                VideoLock = _contextLock,
+                VideoLock = _contextLock.NativePtr,
                 Width = format.CodedWidth,
                 Height = format.CodedHeight,
                 MaxWidth = format.CodedWidth,
@@ -258,11 +258,11 @@ namespace Test.Probe.NvApi
 
 		CuGraphicsResource lumaResource;
         Texture2D lumaTexture = null;
-        CuArray lumaArray;
+        CuArrayPtr lumaArray;
 
 		CuGraphicsResource chromaResource;
         Texture2D chromaTexture = null;
-        CuArray chromaArray;
+        CuArrayPtr chromaArray;
 
         private unsafe int VideoDisplayCallback(IntPtr data, IntPtr infoPtr)
 		{
@@ -333,9 +333,9 @@ namespace Test.Probe.NvApi
 					WidthInBytes = (IntPtr)width,
 					Height = (IntPtr)height,
 				};
-				memcopy.Memcpy2D();
+                LibCuda.Memcpy2D(ref memcopy);
 
-				if (chromaArray.IsEmpty)
+                if (chromaArray.IsEmpty)
 				{
 					chromaArray = chromaResource.GetMappedArray();
 				}
@@ -344,9 +344,10 @@ namespace Test.Probe.NvApi
 				memcopy.DstArray = chromaArray;//chromaResource.GetMappedArray(); 
 				memcopy.DstPitch = (IntPtr)(width);
 				memcopy.Height = (IntPtr)(height / 2);
-				memcopy.Memcpy2D();
+	
+                LibCuda.Memcpy2D(ref memcopy);
 
-				LibCuda.GraphicsUnmapResources(resources.Length, resPtr, stream);
+                LibCuda.GraphicsUnmapResources(resources.Length, resPtr, stream);
 			}
 
 

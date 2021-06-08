@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cuda\Functions\Cuda.cs" />
     <Compile Include="CuVidDec\Enums.cs" />
     <Compile Include="CuVidDec\Functions.cs" />
     <Compile Include="CuVidDec\Structs.cs" />
@@ -63,8 +64,7 @@
     <Compile Include="Cuda\Structs.cs" />
     <Compile Include="NvCuVid\Enums.cs" />
     <Compile Include="NvCuVid\Functions.cs" />
-    <Compile Include="NvCuVid\LibCuVideo.cs" />
-    <Compile Include="NvDecodeApi.cs" />
+    <Compile Include="LibNvDec.cs" />
     <Compile Include="NvCuVid\Structs.cs" />
     <Compile Include="LibCuda.cs" />
     <Compile Include="LibNvApi.cs" />

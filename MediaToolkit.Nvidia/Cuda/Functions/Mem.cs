@@ -207,7 +207,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemHostUnregister
         /// CUresult CUDAAPI cuPointerSetAttribute(const void *value, CUpointer_attribute attribute, CUdeviceptr ptr);
         [DllImport(nvCudaPath, EntryPoint = "cuPointerSetAttribute")]
-        public static extern CuResult PointerSetAttribute(IntPtr value, PointerAttribute attribute, CuDeviceMemory ptr);
+        public static extern CuResult PointerSetAttribute(IntPtr value, PointerAttribute attribute, CuDeviceMemoryPtr ptr);
 
         /// <summary>Returns information about a pointer.
         ///
@@ -333,7 +333,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMallocHost
         /// CUresult CUDAAPI cuMemAllocHost(void **pp, size_t bytesize);
         [DllImport(nvCudaPath, EntryPoint = "cuMemAllocHost")]
-        public static extern CuResult MemAllocHost(out CuHostMemory pp, IntPtr bytesize);
+        public static extern CuResult MemAllocHost(out CuHostMemoryPtr pp, IntPtr bytesize);
 
         /// <summary>Frees page-locked host memory
         ///
@@ -364,7 +364,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaFreeHost
         /// CUresult CUDAAPI cuMemFreeHost(void *p);
         [DllImport(nvCudaPath, EntryPoint = "cuMemFreeHost")]
-        public static extern CuResult MemFreeHost(CuHostMemory p);
+        public static extern CuResult MemFreeHost(CuHostMemoryPtr p);
 
         /// <summary>Allocates page-locked host memory
         ///
@@ -447,7 +447,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostAlloc
         /// CUresult CUDAAPI cuMemHostAlloc(void **pp, size_t bytesize, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostAlloc")]
-        public static extern CuResult MemHostAlloc(out CuHostMemory pp, IntPtr bytesize, MemHostAllocFlags flags);
+        public static extern CuResult MemHostAlloc(out CuHostMemoryPtr pp, IntPtr bytesize, MemHostAllocFlags flags);
 
         /// <summary>Passes back device pointer of mapped pinned memory
         ///
@@ -501,7 +501,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostGetDevicePointer
         /// CUresult CUDAAPI cuMemHostGetDevicePointer(CUdeviceptr *pdptr, void *p, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostGetDevicePointer")]
-        public static extern CuResult MemHostGetDevicePointer(out CuDevicePtr pdptr, CuHostMemory p, int flags = 0);
+        public static extern CuResult MemHostGetDevicePointer(out CuDevicePtr pdptr, CuHostMemoryPtr p, int flags = 0);
 
         /// <summary>Passes back flags that were used for a pinned allocation
         ///
@@ -529,7 +529,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostGetFlags
         /// CUresult CUDAAPI cuMemHostGetFlags(unsigned int *pFlags, void *p);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostGetFlags")]
-        public static extern CuResult MemHostGetFlags(out MemHostAllocFlags pFlags, CuHostMemory p);
+        public static extern CuResult MemHostGetFlags(out MemHostAllocFlags pFlags, CuHostMemoryPtr p);
 
         /// <summary>Allocates memory that will be automatically managed by the Unified Memory system
         ///
@@ -724,7 +724,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostRegister
         /// CUresult CUDAAPI cuMemHostRegister(void *p, size_t bytesize, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostRegister")]
-        public static extern CuResult MemHostRegister(CuHostMemory p, IntPtr bytesize, int Flags);
+        public static extern CuResult MemHostRegister(CuHostMemoryPtr p, IntPtr bytesize, int Flags);
 
         /// <summary>Unregisters a memory range that was registered with cuMemHostRegister.
         ///
@@ -834,7 +834,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMallocArray
         /// CUresult CUDAAPI cuArrayCreate(CUarray *pHandle, const CUDA_ARRAY_DESCRIPTOR *pAllocateArray);
         [DllImport(nvCudaPath, EntryPoint = "cuArrayCreate")]
-        public static extern CuResult ArrayCreate(out CuArray pHandle, ref CuArrayDescription pAllocateArray);
+        public static extern CuResult ArrayCreate(out CuArrayPtr pHandle, ref CuArrayDescription pAllocateArray);
 
         /// <summary>Get a 1D or 2D CUDA array descriptor
         ///
@@ -869,7 +869,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaArrayGetInfo
         /// CUresult CUDAAPI cuArrayGetDescriptor(CUDA_ARRAY_DESCRIPTOR *pArrayDescriptor, CUarray hArray);
         [DllImport(nvCudaPath, EntryPoint = "cuArrayGetDescriptor")]
-        public static extern CuResult ArrayGetDescriptor(out CuArrayDescription pArrayDescriptor, CuArray hArray);
+        public static extern CuResult ArrayGetDescriptor(out CuArrayDescription pArrayDescriptor, CuArrayPtr hArray);
 
         /// <summary>Destroys a CUDA array
         ///
@@ -900,7 +900,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaFreeArray
         /// CUresult CUDAAPI cuArrayDestroy(CUarray hArray);
         [DllImport(nvCudaPath, EntryPoint = "cuArrayDestroy")]
-        public static extern CuResult ArrayDestroy(CuArray hArray);
+        public static extern CuResult ArrayDestroy(CuArrayPtr hArray);
 
         /// <summary>Creates a 3D CUDA array
         ///
@@ -1054,7 +1054,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMalloc3DArray
         /// CUresult CUDAAPI cuArray3DCreate(CUarray *pHandle, const CUDA_ARRAY3D_DESCRIPTOR *pAllocateArray);
         [DllImport(nvCudaPath, EntryPoint = "cuArray3DCreate")]
-        public static extern CuResult Array3DCreate(out CuArray pHandle, ref CuArray3DDescription pAllocateArray);
+        public static extern CuResult Array3DCreate(out CuArrayPtr pHandle, ref CuArray3DDescription pAllocateArray);
 
         /// <summary>Get a 3D CUDA array descriptor
         ///
@@ -1092,7 +1092,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaArrayGetInfo
         /// CUresult CUDAAPI cuArray3DGetDescriptor(CUDA_ARRAY3D_DESCRIPTOR *pArrayDescriptor, CUarray hArray);
         [DllImport(nvCudaPath, EntryPoint = "cuArray3DGetDescriptor")]
-        public static extern CuResult Array3DGetDescriptor(out CuArray3DDescription pArrayDescriptor, CuArray hArray);
+        public static extern CuResult Array3DGetDescriptor(out CuArray3DDescription pArrayDescriptor, CuArrayPtr hArray);
 
         /// <summary>Creates a CUDA mipmapped array
         ///
@@ -1240,7 +1240,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaGetMipmappedArrayLevel
         /// CUresult CUDAAPI cuMipmappedArrayGetLevel(CUarray *pLevelArray, CUmipmappedArray hMipmappedArray, unsigned int level);
         [DllImport(nvCudaPath, EntryPoint = "cuMipmappedArrayGetLevel")]
-        public static extern CuResult MipmappedArrayGetLevel(out CuArray pLevelArray, CuMipMappedArray hMipmappedArray, int level);
+        public static extern CuResult MipmappedArrayGetLevel(out CuArrayPtr pLevelArray, CuMipMappedArray hMipmappedArray, int level);
 
         /// <summary>Destroys a CUDA mipmapped array
         ///

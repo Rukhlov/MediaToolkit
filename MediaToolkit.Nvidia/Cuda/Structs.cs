@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using static MediaToolkit.Nvidia.LibCuda;
-//using static MediaToolkit.Nvidia.LibCuVideo;
-
-#pragma warning disable 169
 
 namespace MediaToolkit.Nvidia
 {
@@ -167,36 +163,11 @@ namespace MediaToolkit.Nvidia
 
 	[StructLayout(LayoutKind.Sequential)]
 	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public struct CuHostMemory : IDisposable
+	public struct CuHostMemoryPtr 
 	{
-		public static readonly CuHostMemory Empty = new CuHostMemory { Handle = IntPtr.Zero };
+		public static readonly CuHostMemoryPtr Empty = new CuHostMemoryPtr { Handle = IntPtr.Zero };
 		public IntPtr Handle;
 		public bool IsEmpty => Handle == IntPtr.Zero;
-
-		/// <inheritdoc cref="MemAllocHost(out CuHostMemory, IntPtr)"/>
-		public static CuHostMemory Allocate(long bytesize)
-		{
-			CheckResult(MemAllocHost(out var mem, (IntPtr)bytesize));
-			return mem;
-		}
-
-		// TODO: Move?
-		/// <inheritdoc cref="MemAllocManaged(out CuDevicePtr, IntPtr, MemoryAttachFlags)"/>
-		public static CuDevicePtr AllocateManaged(long bytesize, MemoryAttachFlags flags)
-		{
-			CheckResult(MemAllocManaged(out var mem, (IntPtr)bytesize, flags));
-			return mem;
-		}
-
-		/// <inheritdoc cref="MemFreeHost(CuHostMemory)"/>
-		public void Dispose()
-		{
-			var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
-			if (handle == IntPtr.Zero) return;
-			var obj = new CuHostMemory { Handle = handle };
-
-			MemFreeHost(obj);
-		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -208,9 +179,19 @@ namespace MediaToolkit.Nvidia
 		public bool IsEmpty => Handle == IntPtr.Zero;
 	}
 
-	/// <summary>CUDA_MEMCPY2D:
-	/// 2D memory copy parameters</summary>
-	public struct CuMemcopy2D
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public struct CuDeviceMemoryPtr // !?!?
+    {
+        public static readonly CuDeviceMemoryPtr Empty = new CuDeviceMemoryPtr { Handle = IntPtr.Zero };
+        public IntPtr Handle;
+        public bool IsEmpty => Handle == IntPtr.Zero;
+    }
+
+
+    /// <summary>CUDA_MEMCPY2D:
+    /// 2D memory copy parameters</summary>
+    public struct CuMemcopy2D
     {
         /// <summary>Source X in bytes</summary>
         public IntPtr SrcXInBytes;
@@ -224,7 +205,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source device pointer</summary>
         public CuDevicePtr SrcDevice;
         /// <summary>Source array reference</summary>
-        public CuArray SrcArray;
+        public CuArrayPtr SrcArray;
         /// <summary>Source pitch (ignored when src is array)</summary>
         public IntPtr SrcPitch;
 
@@ -240,7 +221,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination device pointer</summary>
         public CuDevicePtr DstDevice;
         /// <summary>Destination array reference</summary>
-        public CuArray DstArray;
+        public CuArrayPtr DstArray;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
         public IntPtr DstPitch;
 
@@ -249,19 +230,13 @@ namespace MediaToolkit.Nvidia
         /// <summary>Height of 2D memory copy</summary>
         public IntPtr Height;
 
-        /// <inheritdoc cref="LibCuda.Memcpy2D(ref CuMemcopy2D)"/>
-        public void Memcpy2D()
-        {
-            var result = LibCuda.Memcpy2D(ref this);
-            CheckResult(result);
-        }
     }
 
 	[StructLayout(LayoutKind.Sequential)]
 	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public struct CuArray
+	public struct CuArrayPtr
 	{
-		public static readonly CuArray Empty = new CuArray { Handle = IntPtr.Zero };
+		public static readonly CuArrayPtr Empty = new CuArrayPtr { Handle = IntPtr.Zero };
 		public IntPtr Handle;
 		public bool IsEmpty => Handle == IntPtr.Zero;
 	}
@@ -284,7 +259,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source device pointer</summary>
         public CuDevicePtr SrcDevice;
         /// <summary>Source array reference</summary>
-        public CuArray SrcArray;
+        public CuArrayPtr SrcArray;
         /// <summary>Must be NULL</summary>
         private IntPtr _reserved0;
         /// <summary>Source pitch (ignored when src is array)</summary>
@@ -307,7 +282,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination device pointer</summary>
         public CuDevicePtr DstDevice;
         /// <summary>Destination array reference</summary>
-        public CuArray DstArray;
+        public CuArrayPtr DstArray;
         /// <summary>Must be NULL</summary>
         public IntPtr Reserved1;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
@@ -340,7 +315,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source device pointer</summary>
         public CuDevicePtr SrcDevice;
         /// <summary>Source array reference</summary>
-        public CuArray SrcArray;
+        public CuArrayPtr SrcArray;
         /// <summary>Source context (ignored with srcMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
         public CuContextPtr SrcContext;
         /// <summary>Source pitch (ignored when src is array)</summary>
@@ -363,7 +338,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination device pointer</summary>
         public CuDevicePtr DstDevice;
         /// <summary>Destination array reference</summary>
-        public CuArray DstArray;
+        public CuArrayPtr DstArray;
         /// <summary>Destination context (ignored with dstMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
         public CuContextPtr DstContext;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
@@ -453,7 +428,7 @@ namespace MediaToolkit.Nvidia
     public struct CuResourceDescArray
     {
         /// <summary>CUDA array</summary>
-        public CuArray Array;
+        public CuArrayPtr Array;
     }
 
     public struct CuResourceDescMipmap

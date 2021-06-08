@@ -8,13 +8,49 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Nvidia
 {
-	/// <summary>
-	/// \struct CUVIDSOURCEPARAMS
-	/// Describes parameters needed in cuvidCreateVideoSource API
-	/// NVDECODE API is intended for HW accelerated video decoding so CUvideosource doesn't have audio demuxer for all supported
-	/// containers. It's recommended to clients to use their own or third party demuxer if audio support is needed.
-	/// </summary>
-	[StructLayout(LayoutKind.Sequential)]
+
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public unsafe struct CuVideoDecoderPtr { public IntPtr Handle; }
+
+
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public struct CuVideoFramePtr { public IntPtr Handle; }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public unsafe struct CuVideoParserPtr { public IntPtr Handle; }
+
+
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public struct CuVideoContextLock
+    {
+        public static readonly CuVideoContextLock Empty = new CuVideoContextLock { Handle = IntPtr.Zero };
+        public IntPtr Handle;
+        public bool IsEmpty => Handle == IntPtr.Zero;
+
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    [Obsolete]
+    public struct CuVideoSourcePtr
+    {
+        public static readonly CuVideoSourcePtr Empty = new CuVideoSourcePtr { Handle = IntPtr.Zero };
+        public IntPtr Handle;
+        public bool IsEmpty => Handle == IntPtr.Zero;
+    }
+
+
+    /// <summary>
+    /// \struct CUVIDSOURCEPARAMS
+    /// Describes parameters needed in cuvidCreateVideoSource API
+    /// NVDECODE API is intended for HW accelerated video decoding so CUvideosource doesn't have audio demuxer for all supported
+    /// containers. It's recommended to clients to use their own or third party demuxer if audio support is needed.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
 	public unsafe struct CuVideoSourceParams
 	{
 		/// <summary>IN: Time stamp units in Hz (0=default=10000000Hz)</summary>
