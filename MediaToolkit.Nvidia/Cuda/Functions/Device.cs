@@ -8,7 +8,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>CUresult cuDeviceGet ( CUdevice* device, int  ordinal )
         /// Returns a handle to a compute device.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGet")]
-        public static extern CuResult DeviceGet(out CuDevice device, int ordinal);
+        public static extern CuResult DeviceGet(out CuDevicePtr device, int ordinal);
 
         /// <summary>Returns information about the device</summary>
         ///
@@ -210,7 +210,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaGetDeviceProperties
         /// CUresult CUDAAPI cuDeviceGetAttribute(int *pi, CUdevice_attribute attrib, CUdevice dev);
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetAttribute")]
-        public static extern CuResult DeviceGetAttribute(out int pi, CuDeviceAttribute attrib, CuDevice device);
+        public static extern CuResult DeviceGetAttribute(out int pi, CuDeviceAttribute attrib, CuDevicePtr device);
 
         /// <summary>CUresult cuDeviceGetCount ( int* count )
         /// Returns the number of compute-capable devices.</summary>
@@ -220,29 +220,29 @@ namespace MediaToolkit.Nvidia
         /// <summary>CUresult cuDeviceGetLuid ( char* luid, unsigned int* deviceNodeMask, CUdevice dev )
         /// Return an LUID and device node mask for the device.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetLuid")]
-        public static extern CuResult DeviceGetLuid(out byte luid, out uint deviceNodeMask, CuDevice device);
+        public static extern CuResult DeviceGetLuid(out byte luid, out uint deviceNodeMask, CuDevicePtr device);
 
         /// <summary>CUresult cuDeviceGetName ( char* name, int  len, CUdevice dev )
         /// Returns an identifer string for the device.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetName")]
-        public static extern CuResult DeviceGetName(byte* name, int len, CuDevice device);
+        public static extern CuResult DeviceGetName(byte* name, int len, CuDevicePtr device);
 
         /// <summary>CUresult cuDeviceGetNvSciSyncAttributes ( void* nvSciSyncAttrList, CUdevice dev, int  flags )
         /// Return NvSciSync attributes that this device can support.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetNvSciSyncAttributes")]
-        public static extern CuResult DeviceGetNvSciSyncAttributes(IntPtr nvSciSyncAttrList, CuDevice device, int flags);
+        public static extern CuResult DeviceGetNvSciSyncAttributes(IntPtr nvSciSyncAttrList, CuDevicePtr device, int flags);
 
         /// <summary>CUresult cuDeviceGetUuid ( CUuuid* uuid, CUdevice dev )
         /// Return an UUID for the device.</summary>
         // TODO: Does CUuuid == GUID?
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetUuid")]
-        public static extern CuResult DeviceGetUuid(out Guid uuid, CuDevice device);
+        public static extern CuResult DeviceGetUuid(out Guid uuid, CuDevicePtr device);
 
         /// <summary>CUresult cuDeviceTotalMem ( size_t* bytes, CUdevice dev )
         /// Returns the total amount of memory on the device.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceTotalMem" + _ver)]
 		//public static extern CuResult DeviceTotalMemory(out IntPtr bytes, CuDevice device);
-		public static extern CuResult DeviceTotalMemory(out long bytes, CuDevice device);
+		public static extern CuResult DeviceTotalMemory(out long bytes, CuDevicePtr device);
 
 		/// <summary>Retain the primary context on the GPU
 		///
@@ -292,7 +292,7 @@ namespace MediaToolkit.Nvidia
 		/// ::cuCtxSynchronize
 		/// CUresult CUDAAPI cuDevicePrimaryCtxRetain(CUcontext *pctx, CUdevice dev);
 		[DllImport(nvCudaPath, EntryPoint = "cuDevicePrimaryCtxRetain")]
-        public static extern CuResult DevicePrimaryCtxRetain(out CuContext pctx, CuDevice dev);
+        public static extern CuResult DevicePrimaryCtxRetain(out CuContextPtr pctx, CuDevicePtr dev);
 
         /// <summary>Release the primary context on the GPU
         ///
@@ -327,7 +327,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuCtxSynchronize
         /// CUresult CUDAAPI cuDevicePrimaryCtxRelease(CUdevice dev);
         [DllImport(nvCudaPath, EntryPoint = "cuDevicePrimaryCtxRelease")]
-        public static extern CuResult DevicePrimaryCtxRelease(CuDevice dev);
+        public static extern CuResult DevicePrimaryCtxRelease(CuDevicePtr dev);
 
         /// <summary>Set flags for the primary context
         ///
@@ -392,7 +392,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaSetDeviceFlags
         /// CUresult CUDAAPI cuDevicePrimaryCtxSetFlags(CUdevice dev, unsigned int flags);
         [DllImport(nvCudaPath, EntryPoint = "cuDevicePrimaryCtxSetFlags")]
-        public static extern CuResult DevicePrimaryCtxSetFlags(CuDevice dev, CuContextFlags flags);
+        public static extern CuResult DevicePrimaryCtxSetFlags(CuDevicePtr dev, CuContextFlags flags);
 
         /// <summary>Get the state of the primary context
         ///
@@ -419,7 +419,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaGetDeviceFlags
         /// CUresult CUDAAPI cuDevicePrimaryCtxGetState(CUdevice dev, unsigned int *flags, int *active);
         [DllImport(nvCudaPath, EntryPoint = "cuDevicePrimaryCtxGetState")]
-        public static extern CuResult DevicePrimaryCtxGetState(CuDevice dev, out CuContextFlags flags, out bool active);
+        public static extern CuResult DevicePrimaryCtxGetState(CuDevicePtr dev, out CuContextFlags flags, out bool active);
 
         /// <summary>Destroy all allocations and reset all state on the primary context
         ///
@@ -458,7 +458,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceReset
         /// CUresult CUDAAPI cuDevicePrimaryCtxReset(CUdevice dev);
         [DllImport(nvCudaPath, EntryPoint = "cuDevicePrimaryCtxReset")]
-        public static extern CuResult DevicePrimaryCtxReset(CuDevice dev);
+        public static extern CuResult DevicePrimaryCtxReset(CuDevicePtr dev);
 
         /// <summary>Returns a handle to a compute device
         ///
@@ -487,7 +487,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceGetByPCIBusId
         /// CUresult CUDAAPI cuDeviceGetByPCIBusId(CUdevice *dev, const char *pciBusId);
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetByPCIBusId", CharSet = CharSet.Ansi)]
-        public static extern CuResult DeviceGetByPCIBusId(out CuDevice dev, string pciBusId);
+        public static extern CuResult DeviceGetByPCIBusId(out CuDevicePtr dev, string pciBusId);
 
         /// <summary>Returns a PCI Bus Id string for the device
         ///
@@ -518,7 +518,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceGetPCIBusId
         /// CUresult CUDAAPI cuDeviceGetPCIBusId(char *pciBusId, int len, CUdevice dev);
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetPCIBusId", CharSet = CharSet.Ansi)]
-        public static extern CuResult DeviceGetPCIBusId(byte* pciBusId, int len, CuDevice dev);
+        public static extern CuResult DeviceGetPCIBusId(byte* pciBusId, int len, CuDevicePtr dev);
 
         #region Peer access
         /// <summary>Queries if a device may directly access a peer device's memory.
@@ -548,7 +548,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceCanAccessPeer
         /// CUresult CUDAAPI cuDeviceCanAccessPeer(int *canAccessPeer, CUdevice dev, CUdevice peerDev);
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceCanAccessPeer")]
-        public static extern CuResult DeviceCanAccessPeer(out bool canAccessPeer, CuDevice dev, CuDevice peerDev);
+        public static extern CuResult DeviceCanAccessPeer(out bool canAccessPeer, CuDevicePtr dev, CuDevicePtr peerDev);
 
         /// <summary>Enables direct access to memory allocations in a peer context.
         ///
@@ -600,7 +600,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceEnablePeerAccess
         /// CUresult CUDAAPI cuCtxEnablePeerAccess(CUcontext peerContext, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuCtxEnablePeerAccess")]
-        public static extern CuResult CtxEnablePeerAccess(CuContext peerContext, int flags = 0);
+        public static extern CuResult CtxEnablePeerAccess(CuContextPtr peerContext, int flags = 0);
 
         /// <summary>Disables direct access to memory allocations in a peer context and
         /// unregisters any registered allocations.
@@ -628,7 +628,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceDisablePeerAccess
         /// CUresult CUDAAPI cuCtxDisablePeerAccess(CUcontext peerContext);
         [DllImport(nvCudaPath, EntryPoint = "cuCtxDisablePeerAccess")]
-        public static extern CuResult CtxDisablePeerAccess(CuContext peerContext);
+        public static extern CuResult CtxDisablePeerAccess(CuContextPtr peerContext);
 
         /// <summary>Queries attributes of the link between two devices.
         ///
@@ -667,7 +667,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceGetP2PAttribute
         /// CUresult CUDAAPI cuDeviceGetP2PAttribute(int* value, CUdevice_P2PAttribute attrib, CUdevice srcDevice, CUdevice dstDevice);
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetP2PAttribute")]
-        public static extern CuResult DeviceGetP2PAttribute(out int value, DeviceP2PAttribute attrib, CuDevice srcDevice, CuDevice dstDevice);
+        public static extern CuResult DeviceGetP2PAttribute(out int value, DeviceP2PAttribute attrib, CuDevicePtr srcDevice, CuDevicePtr dstDevice);
         #endregion
     }
 }

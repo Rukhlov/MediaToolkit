@@ -109,7 +109,7 @@ namespace MediaToolkit.Nvidia
         /// Create video parser object and initialize
         /// </summary>
         [DllImport(nvCuVidPath, EntryPoint = "cuvidCreateVideoParser", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
-        public static extern CuResult CreateVideoParser(out CuVideoParser parser, ref CuVideoParserParams @params);
+        public static extern CuResult CreateVideoParser(out CuVideoParserPtr parser, ref CuVideoParserParams @params);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidParseVideoData(CUvideoparser obj, CUVIDSOURCEDATAPACKET *pPacket)
@@ -122,7 +122,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         /// CUresult CUDAAPI cuvidParseVideoData(CUvideoparser obj, CUVIDSOURCEDATAPACKET *pPacket);
         [DllImport(nvCuVidPath, EntryPoint = "cuvidParseVideoData")]
-        public static extern CuResult ParseVideoData(CuVideoParser obj, ref CuVideoSourceDataPacket packet);
+        public static extern CuResult ParseVideoData(CuVideoParserPtr obj, ref CuVideoSourceDataPacket packet);
 
         /// <summary>
         /// \fn CUresult CUDAAPI cuvidDestroyVideoParser(CUvideoparser obj)
@@ -130,7 +130,7 @@ namespace MediaToolkit.Nvidia
         /// </summary>
         /// CUresult CUDAAPI cuvidDestroyVideoParser(CUvideoparser obj);
         [DllImport(nvCuVidPath, EntryPoint = "cuvidDestroyVideoParser")]
-        public static extern CuResult DestroyVideoParser(CuVideoParser obj);
+        public static extern CuResult DestroyVideoParser(CuVideoParserPtr obj);
 
 
 

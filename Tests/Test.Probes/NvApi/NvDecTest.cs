@@ -135,9 +135,7 @@ namespace Test.Probe.NvApi
 			{
 				using (var a = dxgiDevice.Adapter)
 				{
-					var result = LibCuda.D3D11GetDevice(out device, a.NativePointer);
-
-					LibCuda.CheckResult(result, "D3D11GetDevice");
+                    device = CuDevice.GetFromDxgiAdapter(a.NativePointer);
 				}
 			}
 
@@ -162,8 +160,9 @@ namespace Test.Probe.NvApi
 				DisplayPicture = VideoDisplayCallback,
 			};
 
+			CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
 
-			CuVideoParser parser = CuVideoParser.Create(ref parserParams);
+			//CuVideoParser parser = CuVideoParser.Create(ref parserParams);
 			try
 			{
 				rgbProcessor = new RgbProcessor();
@@ -203,14 +202,14 @@ namespace Test.Probe.NvApi
             Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
 
 
-            if (!format.IsSupportedByDecoder(out var error, out var caps))
+            if (!NvDecodeApi.IsFormatSupportedByDecoder(format, out var error, out var caps))
             {
                 Console.Error.WriteLine(error);
 
                 return 0;
             }
 
-            if (!_decoder.IsEmpty)
+            if (_decoder!=null && !_decoder.IsEmpty)
             {
                 _decoder.Reconfigure(ref format);
 
@@ -238,7 +237,7 @@ namespace Test.Probe.NvApi
 
             };
 
-            _decoder = CuVideoDecoder.Create(ref decodeInfo);
+            _decoder = NvDecodeApi.CreateDecoder(decodeInfo);
 
             return 1;
 
@@ -257,11 +256,11 @@ namespace Test.Probe.NvApi
 
 
 
-        CuGraphicsResource lumaResource;
+		CuGraphicsResource lumaResource;
         Texture2D lumaTexture = null;
         CuArray lumaArray;
 
-        CuGraphicsResource chromaResource;
+		CuGraphicsResource chromaResource;
         Texture2D chromaTexture = null;
         CuArray chromaArray;
 
@@ -310,11 +309,11 @@ namespace Test.Probe.NvApi
 			var width = decodeInfo.Width;
 			var height = decodeInfo.Height;
 
-			CuGraphicsResource[] resources = InitGraphicResources(width, height);
+			CuGraphicsResourcePtr[] resources = InitGraphicResources(width, height).Select(r => r.ResourcePtr).ToArray();
 
-			fixed (CuGraphicsResource* resPtr = resources)
+			fixed (CuGraphicsResourcePtr* resPtr = resources)
 			{
-				var stream = CuStream.Empty;
+				var stream = CuStreamPtr.Empty;
 
 				LibCuda.GraphicsMapResources(resources.Length, resPtr, stream);
 
@@ -326,7 +325,7 @@ namespace Test.Probe.NvApi
 				var memcopy = new CuMemcopy2D
 				{
 					SrcMemoryType = CuMemoryType.Device,
-					SrcDevice = frame,
+					SrcDevice = frame.DevicePtr,
 					SrcPitch = (IntPtr)pitch,
 					DstMemoryType = CuMemoryType.Array,
 					DstArray = lumaArray,//lumaResource.GetMappedArray(),

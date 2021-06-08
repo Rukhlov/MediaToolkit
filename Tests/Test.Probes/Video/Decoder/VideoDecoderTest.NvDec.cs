@@ -41,23 +41,37 @@ namespace Test.Probe
 			{
 				using (var a = dxgiDevice.Adapter)
 				{
-					var result = LibCuda.D3D11GetDevice(out device, a.NativePointer);
-
-					LibCuda.CheckResult(result, "D3D11GetDevice");
+                    device = CuDevice.GetFromDxgiAdapter(a.NativePointer);
 				}
 			}
 
-			//if (device.IsEmpty)
-			//{
-			//	throw new Exception("device.IsEmpty");
-			//}
+            var name = device.GetName();
+            var pciId = device.GetPciBusId();
+            var memory = device.GetTotalMemory();
 
-			//_context = device.CreateContext(CuContextFlags.Default);
-			cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
-			videoContextLock = cuContext.CreateLock();
+            //if (device.IsEmpty)
+            //{
+            //	throw new Exception("device.IsEmpty");
+            //}
 
+            //_context = device.CreateContext(CuContextFlags.Default);
+            cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
 
-			var parserParams = new CuVideoParserParams
+			var codecType = CuVideoCodec.H264;
+			var chromaFormat = CuVideoChromaFormat.YUV420;
+			var bit = 8;
+			var bitDepthMinus8 = (bit - 8);
+
+			var decodeCaps = NvDecodeApi.GetDecoderCaps(codecType, chromaFormat, bitDepthMinus8);
+			if (!decodeCaps.IsSupported)
+			{
+				throw new NotSupportedException("Not supported codec: " + string.Join(", ", codecType, chromaFormat, bitDepthMinus8));
+			}
+			Console.WriteLine("Codec caps: " + decodeCaps);
+
+            videoContextLock = cuContext.CreateLock();
+
+            var parserParams = new CuVideoParserParams
 			{
 				CodecType = CuVideoCodec.H264,
 				MaxNumDecodeSurfaces = 1,
@@ -70,8 +84,10 @@ namespace Test.Probe
 
 			};
 
+			CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
 
-			CuVideoParser parser = CuVideoParser.Create(ref parserParams);
+
+			//CuVideoParser parser = CuVideoParser.Create(ref parserParams);
 			try
 			{
 				rgbProcessor = new RgbProcessor();
@@ -134,14 +150,14 @@ namespace Test.Probe
 			Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
 
 
-			if (!format.IsSupportedByDecoder(out var error, out var caps))
+			if (!NvDecodeApi.IsFormatSupportedByDecoder(format, out var error, out var caps))
 			{
 				Console.WriteLine(error);
 
 				return 0;
 			}
 
-			if (!cuVideoDecoder.IsEmpty)
+			if (cuVideoDecoder !=null && !cuVideoDecoder.IsEmpty)
 			{
 				Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)::Reconfigure()");
 
@@ -173,7 +189,7 @@ namespace Test.Probe
 
 			using (var contextPush = cuContext.Push())
 			{
-				cuVideoDecoder = CuVideoDecoder.Create(ref decodeInfo);
+				cuVideoDecoder = NvDecodeApi.CreateDecoder(decodeInfo);
 			}
 
 			InitGraphicResources(decodeInfo.Width, decodeInfo.Height, decodeInfo.OutputFormat);
@@ -234,7 +250,7 @@ namespace Test.Probe
 		private unsafe void HandlePictureDisplay(CuVideoParseDisplayInfo displayInfo)
 		{
 
-			CuVideoFrame cuFrame = default(CuVideoFrame);
+            CuVideoFrame cuFrame = null;
 			try
 			{
 				/*
@@ -267,11 +283,11 @@ namespace Test.Probe
 
 				lock (device3D11)
 				{
-					var resources = new CuGraphicsResource[] { lumaResource, chromaResource };
+					var resources = new CuGraphicsResourcePtr[] { lumaResource.ResourcePtr, chromaResource.ResourcePtr };
 
-					fixed (CuGraphicsResource* resPtr = resources)
+					fixed (CuGraphicsResourcePtr* resPtr = resources)
 					{
-						var stream = CuStream.Empty;
+						var stream = CuStreamPtr.Empty;
 
 						var result = LibCuda.GraphicsMapResources(resources.Length, resPtr, stream);
 						LibCuda.CheckResult(result);
@@ -279,7 +295,7 @@ namespace Test.Probe
 						var memcopy = new CuMemcopy2D
 						{
 							SrcMemoryType = CuMemoryType.Device,
-							SrcDevice = cuFrame,
+							SrcDevice = cuFrame.DevicePtr,
 							SrcPitch = (IntPtr)pitch,
 							DstMemoryType = CuMemoryType.Array,
 							DstArray = lumaResource.GetMappedArray(),
@@ -306,7 +322,12 @@ namespace Test.Probe
 			}
 			finally
 			{
-				cuFrame.Dispose();
+                if (cuFrame != null)
+                {
+                    cuFrame.Dispose();
+                    cuFrame = null;
+                }
+				
 			}
 
 		}
@@ -377,9 +398,10 @@ namespace Test.Probe
 
 		private void CloseGraphicsResources()
 		{
-			if (!lumaResource.IsEmpty)
+			if (lumaResource!=null)
 			{
 				lumaResource.Dispose();
+				lumaResource = null;
 			}
 
 			if (lumaTexture != null)
@@ -388,9 +410,10 @@ namespace Test.Probe
 				lumaTexture = null;
 			}
 
-			if (!chromaResource.IsEmpty)
+			if (chromaResource!=null)
 			{
 				chromaResource.Dispose();
+				chromaResource = null;
 			}
 
 			if (chromaTexture != null)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -145,31 +146,6 @@ namespace MediaToolkit.Nvidia
 			return CuVideoSurfaceFormat.Default;
 		}
 
-		public bool IsSupportedByDecoder(out string error)
-		{
-			return IsSupportedByDecoder(out error, out _);
-		}
-
-		public bool IsSupportedByDecoder(out string error, out CuVideoDecodeCaps caps)
-		{
-			caps = CuVideoDecodeCaps.GetDecoderCaps(Codec, ChromaFormat, BitDepthLumaMinus8);
-
-			if (!caps.IsSupported)
-			{
-				error = $"Codec {Codec} is not supported.";
-				return false;
-			}
-
-			if (CodedWidth > caps.MaxWidth ||
-				CodedHeight > caps.MaxHeight)
-			{
-				error = $"Unsupported video dimentions. Requested: {CodedWidth}x{CodedHeight}. Supported max: {caps.MaxWidth}x{caps.MaxHeight}.";
-				return false;
-			}
-
-			error = "";
-			return true;
-		}
 	}
 
 
@@ -278,6 +254,25 @@ namespace MediaToolkit.Nvidia
 		public CuVideoFormatEx* ExtVideoInfo;
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	[DebuggerDisplay("{" + nameof(Value) + "}")]
+	public struct ByteBool
+	{
+		public byte Value;
 
+		public unsafe ByteBool(bool b)
+		{
+			//Value = Unsafe.As<bool, byte>(ref b);
+			Value = *((byte*)(&b));
+		}
+
+		public static implicit operator bool(ByteBool d) => d.Value != 0;
+		public static implicit operator ByteBool(bool d) => new ByteBool(d);
+
+		public override string ToString()
+		{
+			return (Value != 0).ToString();
+		}
+	}
 
 }

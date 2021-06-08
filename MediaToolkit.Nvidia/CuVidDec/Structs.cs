@@ -49,20 +49,14 @@ namespace MediaToolkit.Nvidia
 		/// <summary>Reserved for future use - set to zero</summary>
 		private fixed uint _reserved3[11];
 
-		public static CuVideoDecodeCaps GetDecoderCaps(CuVideoCodec codecType, CuVideoChromaFormat chromaFormat, int bitDepthMinus8)
+
+		public override string ToString()
 		{
-			var caps = new CuVideoDecodeCaps
-			{
-				CodecType = codecType,
-				ChromaFormat = chromaFormat,
-				BitDepthMinus8 = bitDepthMinus8
-			};
-
-			var result = NvCuVid.GetDecoderCaps(ref caps);
-			CheckResult(result);
-
-			return caps;
+			return string.Join(", ",
+				CodecType, ChromaFormat, BitDepthMinus8, IsSupported,
+				OutputFormatMask, MaxWidth, MaxHeight, MaxMBCount, MinWidth, MinHeight);
 		}
+
 	}
 
 
@@ -914,7 +908,7 @@ namespace MediaToolkit.Nvidia
 		/// <summary>IN: stream object used by cuvidMapVideoFrame</summary>
 		//public CUstream OutputStream;
 		// TODO: fix.
-		public CuStream OutputStream;
+		public CuStreamPtr OutputStream;
 		/// <summary>Reserved for future use (set to zero)</summary>
 		private fixed uint _reserved[46];
 		private IntPtr _reserved21;
@@ -990,20 +984,6 @@ namespace MediaToolkit.Nvidia
 		/// <summary>OUT: Presentation time stamp</summary>
 		public long Timestamp;
 
-		/// Determine if <param name="infoPtr" /> is the final frame. If not,
-		/// the CuVideoParseDisplayInfo is returned as <param name="info" />.
-		public static bool IsFinalFrame(IntPtr infoPtr, out CuVideoParseDisplayInfo info)
-		{
-			if (infoPtr == IntPtr.Zero)
-			{
-				info = default;
-				return true;
-			}
-
-			info = Marshal.PtrToStructure<CuVideoParseDisplayInfo>(infoPtr);
-
-			return false;
-		}
 	}
 
 }

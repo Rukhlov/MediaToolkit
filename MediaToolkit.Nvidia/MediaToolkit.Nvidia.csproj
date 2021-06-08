@@ -64,6 +64,7 @@
     <Compile Include="NvCuVid\Enums.cs" />
     <Compile Include="NvCuVid\Functions.cs" />
     <Compile Include="NvCuVid\LibCuVideo.cs" />
+    <Compile Include="NvDecodeApi.cs" />
     <Compile Include="NvCuVid\Structs.cs" />
     <Compile Include="LibCuda.cs" />
     <Compile Include="LibNvApi.cs" />

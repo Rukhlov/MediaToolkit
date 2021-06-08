@@ -28,7 +28,7 @@ namespace MediaToolkit.Nvidia
 		/// decoder in any way (implemented as a critical section associated with cuCtx{Push|Pop}Current calls).
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCtxLockCreate")]
-		public static extern CuResult CtxLockCreate(out CuVideoContextLock pLock, CuContext ctx);
+		public static extern CuResult CtxLockCreate(out CuVideoContextLock pLock, CuContextPtr ctx);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidCtxLockDestroy(CUvideoctxlock lck)
@@ -71,14 +71,14 @@ namespace MediaToolkit.Nvidia
 		/// Create the decoder object based on pdci. A handle to the created decoder is returned
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCreateDecoder")]
-		public static extern CuResult CreateDecoder(out CuVideoDecoder decoder, ref CuVideoDecodeCreateInfo pdci);
+		public static extern CuResult CreateDecoder(out CuVideoDecoderPtr decoder, ref CuVideoDecodeCreateInfo pdci);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidDestroyDecoder(CUvideodecoder hDecoder)
 		/// Destroy the decoder object
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidDestroyDecoder")]
-		public static extern CuResult DestroyDecoder(CuVideoDecoder decoder);
+		public static extern CuResult DestroyDecoder(CuVideoDecoderPtr decoder);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidDecodePicture(CUvideodecoder hDecoder, CUVIDPicParams *pPicParams)
@@ -86,14 +86,14 @@ namespace MediaToolkit.Nvidia
 		/// Kicks off HW decoding
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidDecodePicture")]
-		public static extern CuResult DecodePicture(CuVideoDecoder decoder, ref CuVideoPicParams picParams);
+		public static extern CuResult DecodePicture(CuVideoDecoderPtr decoder, ref CuVideoPicParams picParams);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidGetDecodeStatus(CUvideodecoder hDecoder, int nPicIdx);
 		/// Get the decode status for frame corresponding to nPicIdx
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidGetDecodeStatus")]
-		public static extern CuResult GetDecodeStatus(CuVideoDecoder decoder, int nPicIdx, out CuVideoDecodeStatus decodeStatus);
+		public static extern CuResult GetDecodeStatus(CuVideoDecoderPtr decoder, int nPicIdx, out CuVideoDecodeStatus decodeStatus);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidReconfigureDecoder(CUvideodecoder hDecoder, CUVIDRECONFIGUREDECODERINFO *pDecReconfigParams)
@@ -101,7 +101,7 @@ namespace MediaToolkit.Nvidia
 		/// params, target area params change for same codec. Must be called during CUVIDPARSERPARAMS::pfnSequenceCallback
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidReconfigureDecoder")]
-		public static extern CuResult ReconfigureDecoder(CuVideoDecoder decoder, ref CuVideoReconfigureDecoderInfo decReconfigParams);
+		public static extern CuResult ReconfigureDecoder(CuVideoDecoderPtr decoder, ref CuVideoReconfigureDecoderInfo decReconfigParams);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidMapVideoFrame(CUvideodecoder hDecoder, int nPicIdx, unsigned int *pDevPtr,
@@ -110,7 +110,7 @@ namespace MediaToolkit.Nvidia
 		/// pitch of the video frame
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidMapVideoFrame")]
-		public static extern CuResult MapVideoFrame(CuVideoDecoder decoder, int picIdx,
+		public static extern CuResult MapVideoFrame(CuVideoDecoderPtr decoder, int picIdx,
 			out CuDevicePtr devPtr, out int pitch, ref CuVideoProcParams vpp);
 
 		/// <summary>
@@ -118,7 +118,7 @@ namespace MediaToolkit.Nvidia
 		/// Unmap a previously mapped video frame
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidUnmapVideoFrame")]
-		public static extern CuResult UnmapVideoFrame(CuVideoDecoder decoder, CuDevicePtr devPtr);
+		public static extern CuResult UnmapVideoFrame(CuVideoDecoderPtr decoder, CuDevicePtr devPtr);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidMapVideoFrame64(CUvideodecoder hDecoder, int nPicIdx, unsigned long long *pDevPtr,
@@ -127,7 +127,7 @@ namespace MediaToolkit.Nvidia
 		/// pitch of the video frame
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidMapVideoFrame64")]
-		public static extern CuResult MapVideoFrame64(CuVideoDecoder decoder, int nPicIdx,
+		public static extern CuResult MapVideoFrame64(CuVideoDecoderPtr decoder, int nPicIdx,
 			out CuDevicePtr devPtr, out int pitch, ref CuVideoProcParams vpp);
 
 		/// <summary>
@@ -135,6 +135,6 @@ namespace MediaToolkit.Nvidia
 		/// Unmap a previously mapped video frame
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidUnmapVideoFrame64")]
-		public static extern CuResult UnmapVideoFrame64(CuVideoDecoder decoder, CuDevicePtr devPtr);
+		public static extern CuResult UnmapVideoFrame64(CuVideoDecoderPtr decoder, CuDevicePtr devPtr);
 	}
 }

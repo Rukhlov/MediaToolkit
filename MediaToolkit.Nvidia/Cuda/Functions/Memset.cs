@@ -276,7 +276,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemsetAsync
         /// CUresult CUDAAPI cuMemsetD8Async(CUdeviceptr dstDevice, unsigned char uc, size_t N, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD8Async")]
-        public static extern CuResult MemsetD8Async(CuDevicePtr dstDevice, byte uc, IntPtr n, CuStream hStream);
+        public static extern CuResult MemsetD8Async(CuDevicePtr dstDevice, byte uc, IntPtr n, CuStreamPtr hStream);
 
         /// <summary>Sets device memory
         ///
@@ -314,7 +314,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemsetAsync
         /// CUresult CUDAAPI cuMemsetD16Async(CUdeviceptr dstDevice, unsigned short us, size_t N, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD16Async")]
-        public static extern CuResult MemsetD16Async(CuDevicePtr dstDevice, short us, IntPtr n, CuStream hStream);
+        public static extern CuResult MemsetD16Async(CuDevicePtr dstDevice, short us, IntPtr n, CuStreamPtr hStream);
 
         /// <summary>Sets device memory
         ///
@@ -351,7 +351,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemsetAsync
         /// CUresult CUDAAPI cuMemsetD32Async(CUdeviceptr dstDevice, unsigned int ui, size_t N, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD32Async")]
-        public static extern CuResult MemsetD32Async(CuDevicePtr dstDevice, int ui, IntPtr n, CuStream hStream);
+        public static extern CuResult MemsetD32Async(CuDevicePtr dstDevice, int ui, IntPtr n, CuStreamPtr hStream);
 
         /// <summary>Sets device memory
         ///
@@ -394,7 +394,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemset2DAsync
         /// CUresult CUDAAPI cuMemsetD2D8Async(CUdeviceptr dstDevice, size_t dstPitch, unsigned char uc, size_t Width, size_t Height, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD2D8Async")]
-        public static extern CuResult MemsetD2D8Async(CuDevicePtr dstDevice, IntPtr dstPitch, byte uc, IntPtr width, IntPtr height, CuStream hStream);
+        public static extern CuResult MemsetD2D8Async(CuDevicePtr dstDevice, IntPtr dstPitch, byte uc, IntPtr width, IntPtr height, CuStreamPtr hStream);
 
         /// <summary>Sets device memory
         ///
@@ -438,7 +438,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemset2DAsync
         /// CUresult CUDAAPI cuMemsetD2D16Async(CUdeviceptr dstDevice, size_t dstPitch, unsigned short us, size_t Width, size_t Height, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD2D16Async")]
-        public static extern CuResult MemsetD2D16Async(CuDevicePtr dstDevice, IntPtr dstPitch, short us, IntPtr width, IntPtr height, CuStream hStream);
+        public static extern CuResult MemsetD2D16Async(CuDevicePtr dstDevice, IntPtr dstPitch, short us, IntPtr width, IntPtr height, CuStreamPtr hStream);
 
         /// <summary>Sets device memory
         ///
@@ -482,6 +482,6 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemset2DAsync
         /// CUresult CUDAAPI cuMemsetD2D32Async(CUdeviceptr dstDevice, size_t dstPitch, unsigned int ui, size_t Width, size_t Height, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD2D32Async")]
-        public static extern CuResult MemsetD2D32Async(CuDevicePtr dstDevice, IntPtr dstPitch, int ui, IntPtr width, IntPtr height, CuStream hStream);
+        public static extern CuResult MemsetD2D32Async(CuDevicePtr dstDevice, IntPtr dstPitch, int ui, IntPtr width, IntPtr height, CuStreamPtr hStream);
     }
 }

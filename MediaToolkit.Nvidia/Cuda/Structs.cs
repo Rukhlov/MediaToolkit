@@ -13,161 +13,6 @@ namespace MediaToolkit.Nvidia
 
 	[StructLayout(LayoutKind.Sequential)]
 	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public unsafe struct CuDevice
-	{
-		public static readonly CuDevice Empty = new CuDevice { Handle = 0 };
-
-		public int Handle;
-		public bool IsEmpty => Handle == 0;
-
-		public CuDevice(int handle)
-		{
-			Handle = handle;
-		}
-
-		/// <summary>CU_DEVICE_CPU
-		/// Device that represents the CPU</summary>
-		public static readonly CuDevice DeviceCpu = new CuDevice(-1);
-
-		/// <summary>CU_DEVICE_INVALID
-		/// Device that represents an invalid device</summary>
-		public static readonly CuDevice DeviceInvalid = new CuDevice(-2);
-
-		/// <inheritdoc cref="LibCuda.DeviceGet(out CuDevice, int)"/>
-		public static CuDevice GetDevice(int ordinal)
-		{
-			var result = DeviceGet(out var device, ordinal);
-			CheckResult(result);
-
-			return device;
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceGetCount(out int)"/>
-		public static int GetCount()
-		{
-			var result = DeviceGetCount(out var count);
-			CheckResult(result);
-
-			return count;
-		}
-
-		public static IEnumerable<CuDeviceDescription> GetDescriptions()
-		{
-			var count = GetCount();
-
-			for (var i = 0; i < count; ++i)
-			{
-				yield return new CuDeviceDescription(new CuDevice(i));
-			}
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceGetPCIBusId(byte*, int, CuDevice)"/>
-		public string GetPciBusId()
-		{
-			const int length = 20;
-			var namePtr = stackalloc byte[length];
-			Kernel32.ZeroMemory(namePtr, length);
-			var result = DeviceGetPCIBusId(namePtr, length, this);
-
-			CheckResult(result);
-			var pciBusId = Marshal.PtrToStringAnsi((IntPtr)namePtr);
-
-			return pciBusId;
-
-			// return Marshal.PtrToStringAnsi((IntPtr) namePtr, length);
-		}
-
-		/// <inheritdoc cref="LibCuda.D3D11GetDevice(out CuDevice, IntPtr)"/>
-		public static CuDevice GetD3D11Device(IntPtr adapter)
-		{
-			var result = D3D11GetDevice(out var device, adapter);
-			CheckResult(result);
-
-			return device;
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceGetName(byte*, int, CuDevice)"/>
-		public string GetName()
-		{
-			const int inputLength = 256;
-			var name = stackalloc byte[inputLength];
-			Kernel32.ZeroMemory(name, inputLength);
-
-			var result = DeviceGetName(name, inputLength, this);
-			CheckResult(result);
-
-			var nameStr = Marshal.PtrToStringAnsi((IntPtr)name);
-
-			return nameStr;
-			//return Marshal.PtrToStringAnsi((IntPtr)name, inputLength);
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceTotalMemory(out IntPtr, CuDevice)"/>
-		public long GetTotalMemory()
-		{
-			var result = DeviceTotalMemory(out var memorySize, this);
-			CheckResult(result);
-			return memorySize;
-			//return memorySize.ToInt64();
-		}
-
-		public CuDeviceDescription GetDescription()
-		{
-			return new CuDeviceDescription(this);
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceGetAttribute(out int, CuDeviceAttribute, CuDevice)"/>
-		public int GetAttribute(CuDeviceAttribute attribute)
-		{
-			var result = DeviceGetAttribute(out var output, attribute, this);
-			CheckResult(result);
-
-			return output;
-		}
-
-		/// <inheritdoc cref="LibCuda.CtxCreate(out CuContext, CuContextFlags, CuDevice)"/>
-		public CuContext CreateContext(CuContextFlags flags = CuContextFlags.SchedAuto)
-		{
-			var result = CtxCreate(out var ctx, flags, this);
-			CheckResult(result);
-
-			return ctx;
-		}
-	}
-
-	public readonly struct CuDeviceDescription
-	{
-		public readonly CuDevice Device;
-		public readonly string Name;
-		public readonly long TotalMemory;
-
-		public int Handle => Device.Handle;
-
-		public CuDeviceDescription(CuDevice device)
-		{
-			Device = device;
-			Name = device.GetName();
-			TotalMemory = device.GetTotalMemory();
-		}
-
-		/// <inheritdoc cref="LibCuda.DeviceGetAttribute(out int, CuDeviceAttribute, CuDevice)"/>
-		public int GetAttribute(CuDeviceAttribute attribute) => Device.GetAttribute(attribute);
-		/// <inheritdoc cref="LibCuda.DeviceGetPCIBusId(byte*, int, CuDevice)"/>
-		public string GetPciBusId() => Device.GetPciBusId();
-	}
-
-
-	[StructLayout(LayoutKind.Sequential)]
-	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public struct CuEvent
-	{
-		public static readonly CuEvent Empty = new CuEvent { Handle = IntPtr.Zero };
-		public IntPtr Handle;
-		public bool IsEmpty => Handle == IntPtr.Zero;
-	}
-
-	[StructLayout(LayoutKind.Sequential)]
-	[DebuggerDisplay("{" + nameof(Handle) + "}")]
 	public unsafe struct CuDevicePtr
 	{
 		public static readonly CuDevicePtr Empty = new CuDevicePtr { Handle = IntPtr.Zero };
@@ -189,218 +34,51 @@ namespace MediaToolkit.Nvidia
 			Handle = (IntPtr)handle;
 		}
 
-		public static implicit operator ulong(CuDevicePtr d) => (ulong)d.Handle.ToInt64();
+        public CuDevicePtr(int handle)
+        {
+            Handle = (IntPtr)handle; 
+        }
+
+        /// <summary>CU_DEVICE_CPU
+        /// Device that represents the CPU</summary>
+        public static readonly CuDevicePtr DeviceCpu = new CuDevicePtr(-1);
+
+        /// <summary>CU_DEVICE_INVALID
+        /// Device that represents an invalid device</summary>
+        public static readonly CuDevicePtr DeviceInvalid = new CuDevicePtr(-2);
+
+        public static implicit operator ulong(CuDevicePtr d) => (ulong)d.Handle.ToInt64();
 		public static implicit operator CuDevicePtr(byte* d) => new CuDevicePtr(d);
 	}
 
 
+    [StructLayout(LayoutKind.Sequential)]
+    [DebuggerDisplay("{" + nameof(Handle) + "}")]
+    public struct CuEventPtr
+    {
+        public static readonly CuEventPtr Empty = new CuEventPtr { Handle = IntPtr.Zero };
+        public IntPtr Handle;
+        public bool IsEmpty => Handle == IntPtr.Zero;
+    }
 
-	[StructLayout(LayoutKind.Sequential)]
+
+    [StructLayout(LayoutKind.Sequential)]
 	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public partial struct CuContext : IDisposable
+	public struct CuContextPtr 
 	{
-		public static readonly CuContext Empty = new CuContext { Handle = IntPtr.Zero };
+		public static readonly CuContextPtr Empty = new CuContextPtr { Handle = IntPtr.Zero };
 		public IntPtr Handle;
 		public bool IsEmpty => Handle == IntPtr.Zero;
-
-		public struct CuContextPush : IDisposable
-		{
-			private CuContext _context;
-			private int _disposed;
-
-			internal CuContextPush(CuContext context)
-			{
-				_context = context;
-				_disposed = 0;
-			}
-
-			/// <inheritdoc cref="CtxPopCurrent(out CuContext)"/>
-			public void Dispose()
-			{
-				var disposed = Interlocked.Exchange(ref _disposed, 1);
-				if (disposed != 0) return;
-
-				CtxPopCurrent(out _);
-			}
-		}
-
-
-		/// <inheritdoc cref="CtxPushCurrent(CuContext)"/>
-		public CuContextPush Push()
-		{
-			var result = CtxPushCurrent(this);
-			CheckResult(result);
-
-			return new CuContextPush(this);
-		}
-
-		/// <inheritdoc cref="CtxSetCurrent(CuContext)"/>
-		public void SetCurrent()
-		{
-			var result = CtxSetCurrent(this);
-			CheckResult(result);
-		}
-
-		/// <inheritdoc cref="CtxGetApiVersion(CuContext, out uint)"/>
-		public uint GetApiVersion()
-		{
-			var result = CtxGetApiVersion(this, out var version);
-			CheckResult(result);
-
-			return version;
-		}
-
-		/// <inheritdoc cref="CtxGetDevice(out CuDevice)"/>
-		public CuDevice GetDevice()
-		{
-			//using var _ = Push();
-			var context = Push();
-
-			var result = CtxGetDevice(out var device);
-			CheckResult(result);
-			context.Dispose();
-
-			return device;
-		}
-
-		/// <inheritdoc cref="CtxGetCurrent(out CuContext)"/>
-		public static CuContext GetCurrent()
-		{
-			var result = CtxGetCurrent(out var ctx);
-			CheckResult(result);
-
-			return ctx;
-		}
-
-		/// <inheritdoc cref="CtxGetSharedMemConfig(out SharedMemoryConfig)"/>
-		public static SharedMemoryConfig GetSharedMemConfig()
-		{
-			var result = CtxGetSharedMemConfig(out var config);
-			CheckResult(result);
-
-			return config;
-		}
-
-		/// <inheritdoc cref="CtxSetSharedMemConfig(SharedMemoryConfig)"/>
-		public static void SetSharedMemConfig(SharedMemoryConfig config)
-		{
-			var result = CtxSetSharedMemConfig(config);
-			CheckResult(result);
-		}
-
-		/// <inheritdoc cref="CtxGetCacheConfig(out CuFunctionCache)"/>
-		public static CuFunctionCache GetCacheConfig()
-		{
-			var result = CtxGetCacheConfig(out var config);
-			CheckResult(result);
-
-			return config;
-		}
-
-		/// <inheritdoc cref="CtxSetCacheConfig(CuFunctionCache)"/>
-		public static void SetCacheConfig(CuFunctionCache config)
-		{
-			var result = CtxSetCacheConfig(config);
-			CheckResult(result);
-		}
-
-		/// <inheritdoc cref="CtxGetDevice(out CuDevice)"/>
-		public static CuDevice GetCurrentDevice()
-		{
-			var result = CtxGetDevice(out var device);
-			CheckResult(result);
-
-			return device;
-		}
-
-		/// <inheritdoc cref="CtxDestroy(CuContext)"/>
-		public void Dispose()
-		{
-			var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
-			if (handle == IntPtr.Zero) return;
-			var obj = new CuContext { Handle = handle };
-
-			CtxDestroy(obj);
-		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
 	[DebuggerDisplay("{" + nameof(Handle) + "}")]
-	public struct CuGraphicsResource : IDisposable
+	public struct CuGraphicsResourcePtr
 	{
-		public static readonly CuGraphicsResource Empty = new CuGraphicsResource { Handle = IntPtr.Zero };
+		public static readonly CuGraphicsResourcePtr Empty = new CuGraphicsResourcePtr { Handle = IntPtr.Zero };
 		public IntPtr Handle;
 		public bool IsEmpty => Handle == IntPtr.Zero;
 
-		/// <inheritdoc cref="GraphicsD3D11RegisterResource(out CuGraphicsResource, IntPtr, CuGraphicsRegisters)"/>
-		public static CuGraphicsResource Register(IntPtr resourcePtr, CuGraphicsRegisters flags = CuGraphicsRegisters.None)
-		{
-			var result = GraphicsD3D11RegisterResource(out var resource, resourcePtr, flags);
-
-			CheckResult(result);
-
-			return resource;
-		}
-
-		/// <inheritdoc cref="GraphicsResourceSetMapFlags(CuGraphicsResource, CuGraphicsMapResources)"/>
-		public void SetMapFlags(CuGraphicsMapResources flags)
-		{
-			var result = GraphicsResourceSetMapFlags(this, flags);
-			CheckResult(result);
-		}
-
-		/// <inheritdoc cref="GraphicsMapResources(int, CuGraphicsResource*, CuStream)"/>
-		public CuGraphicsMappedResource Map()
-		{
-			return Map(CuStream.Empty);
-		}
-
-		/// <inheritdoc cref="GraphicsMapResources(int, CuGraphicsResource*, CuStream)"/>
-		public unsafe CuGraphicsMappedResource Map(CuStream stream)
-		{
-			var copy = this;
-			var result = GraphicsMapResources(1, &copy, stream);
-			CheckResult(result);
-
-			return new CuGraphicsMappedResource(this, stream);
-		}
-
-		public unsafe struct CuGraphicsMappedResource : IDisposable
-		{
-			private readonly CuGraphicsResource _resource;
-			private readonly CuStream _stream;
-
-			public CuGraphicsMappedResource(CuGraphicsResource resource, CuStream stream)
-			{
-				_resource = resource;
-				_stream = stream;
-			}
-
-			public void Dispose()
-			{
-				var copy = _resource;
-				GraphicsUnmapResources(1, &copy, _stream);
-			}
-		}
-
-		/// <inheritdoc cref="GraphicsSubResourceGetMappedArray(out CuArray, CuGraphicsResource, int, int)"/>
-		public CuArray GetMappedArray(int arrayIndex = 0, int mipLevel = 0)
-		{
-			var result = GraphicsSubResourceGetMappedArray(out var array, this, arrayIndex, mipLevel);
-			CheckResult(result);
-
-			return array;
-		}
-
-		/// <inheritdoc cref="GraphicsUnregisterResource(CuGraphicsResource)"/>
-		public void Dispose()
-		{
-			var handle = Interlocked.Exchange(ref Handle, IntPtr.Zero);
-			if (handle == IntPtr.Zero) return;
-			var obj = new CuGraphicsResource { Handle = handle };
-
-			GraphicsUnregisterResource(obj);
-		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -504,8 +182,7 @@ namespace MediaToolkit.Nvidia
 
 		// TODO: Move?
 		/// <inheritdoc cref="MemAllocManaged(out CuDevicePtr, IntPtr, MemoryAttachFlags)"/>
-		public static CuDevicePtr AllocateManaged(
-			long bytesize, MemoryAttachFlags flags)
+		public static CuDevicePtr AllocateManaged(long bytesize, MemoryAttachFlags flags)
 		{
 			CheckResult(MemAllocManaged(out var mem, (IntPtr)bytesize, flags));
 			return mem;
@@ -520,6 +197,15 @@ namespace MediaToolkit.Nvidia
 
 			MemFreeHost(obj);
 		}
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	[DebuggerDisplay("{" + nameof(Handle) + "}")]
+	public struct CuStreamPtr 
+	{
+		public static readonly CuStreamPtr Empty = new CuStreamPtr { Handle = IntPtr.Zero };
+		public IntPtr Handle;
+		public bool IsEmpty => Handle == IntPtr.Zero;
 	}
 
 	/// <summary>CUDA_MEMCPY2D:
@@ -578,11 +264,6 @@ namespace MediaToolkit.Nvidia
 		public static readonly CuArray Empty = new CuArray { Handle = IntPtr.Zero };
 		public IntPtr Handle;
 		public bool IsEmpty => Handle == IntPtr.Zero;
-
-		public CuArray(IntPtr handle)
-		{
-			Handle = handle;
-		}
 	}
 
 	/// <summary>CUDA_MEMCPY3D</summary>
@@ -661,7 +342,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source array reference</summary>
         public CuArray SrcArray;
         /// <summary>Source context (ignored with srcMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
-        public CuContext SrcContext;
+        public CuContextPtr SrcContext;
         /// <summary>Source pitch (ignored when src is array)</summary>
         public IntPtr SrcPitch;
         /// <summary>Source height (ignored when src is array; may be 0 if Depth==1)</summary>
@@ -684,7 +365,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination array reference</summary>
         public CuArray DstArray;
         /// <summary>Destination context (ignored with dstMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
-        public CuContext DstContext;
+        public CuContextPtr DstContext;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
         public IntPtr DstPitch;
         /// <summary>Destination height (ignored when dst is array; may be 0 if Depth==1)</summary>
@@ -910,7 +591,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Dynamic shared-memory size per thread block in bytes</summary>
         public int SharedMemBytes;
         /// <summary>Stream identifier</summary>
-        public CuStream Stream;
+        public CuStreamPtr Stream;
         /// <summary>Array of pointers to kernel parameters</summary>
         public IntPtr KernelParams;
     }
