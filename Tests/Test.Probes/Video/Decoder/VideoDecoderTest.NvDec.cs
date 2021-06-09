@@ -16,139 +16,148 @@ namespace Test.Probe
 	public partial class VideoDecoderTest
 	{
 
-
 		private CuContext cuContext;
 		private CuVideoDecoder cuVideoDecoder;
-		private CuVideoContextLockObj videoContextLock;
+		private CuVideoContextLock videoContextLock;
 		private CuVideoDecodeCreateInfo decodeInfo;
+
+		private CuGraphicsResource lumaResource;
+		private Texture2D lumaTexture = null;
+
+		private CuGraphicsResource chromaResource;
+		private Texture2D chromaTexture = null;
 
 
 		private void NvDecDecoderTask(MfVideoArgs inputArgs)
 		{
-
-			LibCuda.Initialize();
-
-			//var descriptions = CuDevice.GetDescriptions().ToArray();
-			//foreach (var d in descriptions)
-			//{
-			//    var pciBusId = d.GetPciBusId();
-			//    Console.WriteLine(string.Join(" ", d.Name, d.TotalMemory, pciBusId));
-			//}
-			//var device = descriptions[0].Device;
-
-			CuDevice device;
-			using (var dxgiDevice = device3D11.QueryInterface<SharpDX.DXGI.Device>())
-			{
-				using (var a = dxgiDevice.Adapter)
-				{
-                    device = CuDevice.GetFromDxgiAdapter(a.NativePointer);
-				}
-			}
-
-            var name = device.GetName();
-            var pciId = device.GetPciBusId();
-            var memory = device.GetTotalMemory();
-
-            //if (device.IsEmpty)
-            //{
-            //	throw new Exception("device.IsEmpty");
-            //}
-
-            //_context = device.CreateContext(CuContextFlags.Default);
-            cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
-
-			var codecType = CuVideoCodec.H264;
-			var chromaFormat = CuVideoChromaFormat.YUV420;
-			var bit = 8;
-			var bitDepthMinus8 = (bit - 8);
-
-			var decodeCaps = NvDecodeApi.GetDecoderCaps(codecType, chromaFormat, bitDepthMinus8);
-			if (!decodeCaps.IsSupported)
-			{
-				throw new NotSupportedException("Not supported codec: " + string.Join(", ", codecType, chromaFormat, bitDepthMinus8));
-			}
-			Console.WriteLine("Codec caps: " + decodeCaps);
-
-            videoContextLock = cuContext.CreateLock();
-
-            var parserParams = new CuVideoParserParams
-			{
-				CodecType = CuVideoCodec.H264,
-				MaxNumDecodeSurfaces = 1,
-				MaxDisplayDelay = 0,
-				ErrorThreshold = 100,
-				UserData = IntPtr.Zero,
-				SequenceCallback = SequenceCallback,
-				DecodePicture = DecodePictureCallback,
-				DisplayPicture = VideoDisplayCallback,
-
-			};
-
-			CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
-
-
-			//CuVideoParser parser = CuVideoParser.Create(ref parserParams);
 			try
 			{
-				rgbProcessor = new RgbProcessor();
-				var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
-				rgbProcessor.Init(device3D11, size, MediaToolkit.Core.PixFormat.NV12, size, MediaToolkit.Core.PixFormat.RGB32);
+				LibCuda.Initialize();
 
-
-				while (sourceReader.IsFull)
-				//while (sourceReader.Count < 2)
+				AdapterDescription adapterDescr;
+				CuDevice device;
+				using (var dxgiDevice = device3D11.QueryInterface<SharpDX.DXGI.Device>())
 				{
-					Thread.Sleep(1);
-					if (!running)
+					using (var a = dxgiDevice.Adapter)
 					{
-						break;
+						adapterDescr = a.Description;
+						device = CuDevice.GetFromDxgiAdapter(a.NativePointer);
 					}
 				}
 
-                AutoResetEvent syncEvent = new AutoResetEvent(false);
-                while (running)
-				{
+				var id = device.GetId();
+				var name = device.GetName();
+				var pciId = device.GetPciBusId();
+				var memory = device.GetTotalMemory();
 
-					while (sourceReader.PacketsAvailable)
+				Console.WriteLine("--------------------------");
+				Console.WriteLine("CUDA device info:\r\n" + string.Join("\r\n", id, name, pciId, memory));
+				Console.WriteLine("--------------------------");
+				cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
+
+				var codecType = CuVideoCodec.H264;
+				var chromaFormat = CuVideoChromaFormat.YUV420;
+				var bit = 8;
+				var bitDepthMinus8 = (bit - 8);
+
+				var decodeCaps = NvDecodeApi.GetDecoderCaps(codecType, chromaFormat, bitDepthMinus8);
+				if (!decodeCaps.IsSupported)
+				{
+					throw new NotSupportedException("Not supported codec: " + string.Join(", ", codecType, chromaFormat, bitDepthMinus8));
+				}
+				Console.WriteLine("Codec caps: " + decodeCaps);
+
+				videoContextLock = cuContext.CreateLock();
+
+				var parserParams = new CuVideoParserParams
+				{
+					CodecType = CuVideoCodec.H264,
+					MaxNumDecodeSurfaces = 1,
+					MaxDisplayDelay = 0,
+					ErrorThreshold = 100,
+					UserData = IntPtr.Zero,
+					SequenceCallback = SequenceCallback,
+					DecodePicture = DecodePictureCallback,
+					DisplayPicture = VideoDisplayCallback,
+
+				};
+
+				CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
+
+				try
+				{
+					rgbProcessor = new RgbProcessor();
+					var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
+					rgbProcessor.Init(device3D11, size, MediaToolkit.Core.PixFormat.NV12, size, MediaToolkit.Core.PixFormat.RGB32);
+
+
+					while (sourceReader.IsFull)
+					//while (sourceReader.Count < 2)
 					{
-						bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
-						if (!packetTaken)
+						Thread.Sleep(1);
+						if (!running)
 						{
-							Console.WriteLine("packet == false");
-							continue;
+							break;
 						}
-						//Console.WriteLine("packet.data.Length == " + packet.data.Length);
-						var flags = CuVideoPacketFlags.Timestamp;
-						long timestamp = (long)(packet.time * 10_000_000);
-						parser.ParseVideoData(packet.data, flags, timestamp);
 					}
 
-                    syncEvent.WaitOne(10);
+					AutoResetEvent syncEvent = new AutoResetEvent(false);
+					while (running)
+					{
 
-                }
+						while (sourceReader.PacketsAvailable)
+						{
+							bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
+							if (!packetTaken)
+							{
+								Console.WriteLine("packet == false");
+								continue;
+							}
+							//Console.WriteLine("packet.data.Length == " + packet.data.Length);
+							var flags = CuVideoPacketFlags.Timestamp;
+							long timestamp = (long)(packet.time * 10_000_000);
+							parser.ParseVideoData(packet.data, flags, timestamp);
+						}
+
+						syncEvent.WaitOne(10);
+					}
+
+				}
+				finally
+				{
+					if (parser != null)
+					{
+						parser.Dispose();
+						parser = null;
+					}
+					
+					if (rgbProcessor != null)
+					{
+						rgbProcessor.Close();
+						rgbProcessor = null;
+					}
+
+					CloseGraphicsResources();
+
+				}
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+
 			}
 			finally
 			{
-				parser.Dispose();
-
-				if (rgbProcessor != null)
-				{
-					rgbProcessor.Close();
-					rgbProcessor = null;
-				}
-
-				CloseGraphicsResources();
-
+				CloseCuda();
 			}
 
-		}
 
+		}
 
 
 		private int SequenceCallback(IntPtr userData, ref CuVideoFormat format)
 		{
 			Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
-
 
 			if (!NvDecodeApi.IsFormatSupportedByDecoder(format, out var error, out var caps))
 			{
@@ -157,13 +166,11 @@ namespace Test.Probe
 				return 0;
 			}
 
-			if (cuVideoDecoder !=null && !cuVideoDecoder.IsEmpty)
+			if (cuVideoDecoder != null)
 			{
-				Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)::Reconfigure()");
-
-				cuVideoDecoder.Reconfigure(ref format);
-
-				return 1;
+				// TODO:
+				//cuVideoDecoder.Reconfigure(ref format);
+				//...
 			}
 
 			decodeInfo = new CuVideoDecodeCreateInfo
@@ -214,28 +221,18 @@ namespace Test.Probe
 		}
 
 
-
-		private CuGraphicsResource lumaResource;
-		private Texture2D lumaTexture = null;
-
-		private CuGraphicsResource chromaResource;
-		private Texture2D chromaTexture = null;
-
-		private unsafe int VideoDisplayCallback(IntPtr userData, IntPtr infoPtr)
+		private int VideoDisplayCallback(IntPtr userData, IntPtr infoPtr)
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
 
-
-			CuVideoParseDisplayInfo displayInfo;
-			if (infoPtr != IntPtr.Zero)
+			if (infoPtr == IntPtr.Zero)
 			{
-				displayInfo = Marshal.PtrToStructure<CuVideoParseDisplayInfo>(infoPtr);
-			}
-			else
-			{ //IsFinalFrame()
+				//IsFinalFrame()
 				return 1;
 			}
 
+			CuVideoParseDisplayInfo displayInfo = Marshal.PtrToStructure<CuVideoParseDisplayInfo>(infoPtr);
+			
 			using (var contextPush = cuContext.Push())
 			{
 				HandlePictureDisplay(displayInfo);
@@ -362,8 +359,8 @@ namespace Test.Probe
 
 		private void InitGraphicResources(int width, int height, CuVideoSurfaceFormat format)
 		{
-			if (format != 0)
-			{
+			if (format != CuVideoSurfaceFormat.Default)
+			{// only NV12 currently supported
 				throw new NotSupportedException("Invalid format: " + format);
 			}
 
@@ -422,6 +419,34 @@ namespace Test.Probe
 				chromaTexture = null;
 			}
 		}
+
+
+		private void CloseCuda()
+		{
+			Console.WriteLine("CloseCuda()");
+
+
+			if (cuVideoDecoder != null)
+			{
+				cuVideoDecoder.Dispose();
+				cuVideoDecoder = null;
+			}
+
+			if (videoContextLock != null)
+			{
+				videoContextLock.Dispose();
+				videoContextLock = null;
+			}
+
+			if (cuContext != null)
+			{
+				cuContext.Dispose();
+				cuContext = null;
+			}
+
+			decodeInfo = default(CuVideoDecodeCreateInfo);
+		}
+
 
 	}
 }

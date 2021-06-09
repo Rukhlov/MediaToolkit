@@ -108,7 +108,7 @@ namespace MediaToolkit.Nvidia
 		public int NumOutputSurfaces;
 		/// <summary>IN: If non-NULL, context lock used for synchronizing ownership of
 		/// the Cu context. Needed for CuVideoCreate_PreferCUDA decode</summary>
-		public CuVideoContextLock VideoLock;
+		public CuVideoContextLockPtr VideoLock;
 		/// <summary>IN: target rectangle in the output frame (for aspect ratio conversion)</summary>
 		public CuRectangleShort TargetRect;
 		private fixed uint _reserved2[5];

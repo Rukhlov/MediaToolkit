@@ -28,28 +28,28 @@ namespace MediaToolkit.Nvidia
 		/// decoder in any way (implemented as a critical section associated with cuCtx{Push|Pop}Current calls).
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCtxLockCreate")]
-		public static extern CuResult CtxLockCreate(out CuVideoContextLock pLock, CuContextPtr ctx);
+		public static extern CuResult CtxLockCreate(out CuVideoContextLockPtr pLock, CuContextPtr ctx);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidCtxLockDestroy(CUvideoctxlock lck)
 		/// This API is used to free CtxLock object
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCtxLockDestroy")]
-		public static extern CuResult CtxLockDestroy(CuVideoContextLock lck);
+		public static extern CuResult CtxLockDestroy(CuVideoContextLockPtr lck);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidCtxLock(CUvideoctxlock lck, unsigned int reserved_flags)
 		/// This API is used to acquire ctxlock
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCtxLock")]
-		public static extern CuResult CtxLock(CuVideoContextLock lck, uint reservedFlags);
+		public static extern CuResult CtxLock(CuVideoContextLockPtr lck, uint reservedFlags);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidCtxUnlock(CUvideoctxlock lck, unsigned int reserved_flags)
 		/// This API is used to release ctxlock
 		/// </summary>
 		[DllImport(nvCuVidPath, EntryPoint = "cuvidCtxUnlock")]
-		public static extern CuResult CtxUnlock(CuVideoContextLock lck, uint reservedFlags);
+		public static extern CuResult CtxUnlock(CuVideoContextLockPtr lck, uint reservedFlags);
 
 		/// <summary>
 		/// \fn CUresult CuAPI cuvidGetDecoderCaps(CUVIDDECODECAPS *pdc)

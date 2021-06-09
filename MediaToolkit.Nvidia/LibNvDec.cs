@@ -246,22 +246,22 @@ namespace MediaToolkit.Nvidia
     }
 
 
-    public class CuVideoContextLockObj : IDisposable
+    public class CuVideoContextLock : IDisposable
     {
-        public readonly CuVideoContextLock NativePtr;
-        internal CuVideoContextLockObj(CuVideoContextLock ptr)
+        public readonly CuVideoContextLockPtr NativePtr;
+        internal CuVideoContextLock(CuVideoContextLockPtr ptr)
         {
             this.NativePtr = ptr;
         }
 
         public class AutoCuVideoContextLock : IDisposable
         {
-            private readonly CuVideoContextLockObj _lock;
+            private readonly CuVideoContextLock contextLock;
             private int _disposed;
 
-            public AutoCuVideoContextLock(CuVideoContextLockObj obj)
+            public AutoCuVideoContextLock(CuVideoContextLock obj)
             {
-                _lock = obj;
+                contextLock = obj;
                 _disposed = 0;
             }
 
@@ -270,7 +270,7 @@ namespace MediaToolkit.Nvidia
                 var disposed = Interlocked.Exchange(ref _disposed, 1);
                 if (disposed != 0) return;
 
-                _lock.Unlock();
+                contextLock.Unlock();
             }
         }
 

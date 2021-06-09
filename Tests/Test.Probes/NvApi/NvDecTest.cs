@@ -69,7 +69,7 @@ namespace Test.Probe.NvApi
 
         private CuContext _context;
         private CuVideoDecoder _decoder;
-        private CuVideoContextLockObj _contextLock;
+        private CuVideoContextLock _contextLock;
         private CuVideoDecodeCreateInfo decodeInfo;
 
         private NalSourceReader sourceReader = null;

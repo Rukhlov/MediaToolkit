@@ -25,9 +25,9 @@ namespace MediaToolkit.Nvidia
 
     [StructLayout(LayoutKind.Sequential)]
     [DebuggerDisplay("{" + nameof(Handle) + "}")]
-    public struct CuVideoContextLock
+    public struct CuVideoContextLockPtr
     {
-        public static readonly CuVideoContextLock Empty = new CuVideoContextLock { Handle = IntPtr.Zero };
+        public static readonly CuVideoContextLockPtr Empty = new CuVideoContextLockPtr { Handle = IntPtr.Zero };
         public IntPtr Handle;
         public bool IsEmpty => Handle == IntPtr.Zero;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace MediaToolkit.Nvidia
 {
@@ -227,9 +228,12 @@ namespace MediaToolkit.Nvidia
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetName")]
         public static extern CuResult DeviceGetName(byte* name, int len, CuDevicePtr device);
 
-        /// <summary>CUresult cuDeviceGetNvSciSyncAttributes ( void* nvSciSyncAttrList, CUdevice dev, int  flags )
-        /// Return NvSciSync attributes that this device can support.</summary>
-        [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetNvSciSyncAttributes")]
+		[DllImport(nvCudaPath, EntryPoint = "cuDeviceGetName")]
+		public static extern CuResult DeviceGetName([MarshalAs(UnmanagedType.LPStr)] StringBuilder name, int len, CuDevicePtr device);
+
+		/// <summary>CUresult cuDeviceGetNvSciSyncAttributes ( void* nvSciSyncAttrList, CUdevice dev, int  flags )
+		/// Return NvSciSync attributes that this device can support.</summary>
+		[DllImport(nvCudaPath, EntryPoint = "cuDeviceGetNvSciSyncAttributes")]
         public static extern CuResult DeviceGetNvSciSyncAttributes(IntPtr nvSciSyncAttrList, CuDevicePtr device, int flags);
 
         /// <summary>CUresult cuDeviceGetUuid ( CUuuid* uuid, CUdevice dev )
@@ -520,34 +524,37 @@ namespace MediaToolkit.Nvidia
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetPCIBusId", CharSet = CharSet.Ansi)]
         public static extern CuResult DeviceGetPCIBusId(byte* pciBusId, int len, CuDevicePtr dev);
 
-        #region Peer access
-        /// <summary>Queries if a device may directly access a peer device's memory.
-        ///
-        /// Returns in *<paramref name="canAccessPeer"/> a value of 1 if contexts on <paramref name="dev"/> are capable of
-        /// directly accessing memory from contexts on <paramref name="peerDev"/> and 0 otherwise.
-        /// If direct access of <paramref name="peerDev"/> from <paramref name="dev"/> is possible, then access may be
-        /// enabled on two specific contexts by calling ::cuCtxEnablePeerAccess().</summary>
-        ///
-        /// <param name="canAccessPeer">Returned access capability</param>
-        /// <param name="dev">Device from which allocations on <paramref name="peerDev"/> are to
-        ///                        be directly accessed.</param>
-        /// <param name="peerDev">Device on which the allocations to be directly accessed
-        ///                        by <paramref name="dev"/> reside.</param>
-        ///
-        /// <returns>
-        /// ::CUDA_SUCCESS,
-        /// ::CUDA_ERROR_DEINITIALIZED,
-        /// ::CUDA_ERROR_NOT_INITIALIZED,
-        /// ::CUDA_ERROR_INVALID_DEVICE
-        /// </returns>
-        /// \notefnerr
-        ///
-        /// \sa
-        /// ::cuCtxEnablePeerAccess,
-        /// ::cuCtxDisablePeerAccess,
-        /// ::cudaDeviceCanAccessPeer
-        /// CUresult CUDAAPI cuDeviceCanAccessPeer(int *canAccessPeer, CUdevice dev, CUdevice peerDev);
-        [DllImport(nvCudaPath, EntryPoint = "cuDeviceCanAccessPeer")]
+		[DllImport(nvCudaPath, EntryPoint = "cuDeviceGetPCIBusId", CharSet = CharSet.Ansi)]
+		public static extern CuResult DeviceGetPCIBusId([MarshalAs(UnmanagedType.LPStr)] StringBuilder pciBusId, int len, CuDevicePtr dev);
+
+		#region Peer access
+		/// <summary>Queries if a device may directly access a peer device's memory.
+		///
+		/// Returns in *<paramref name="canAccessPeer"/> a value of 1 if contexts on <paramref name="dev"/> are capable of
+		/// directly accessing memory from contexts on <paramref name="peerDev"/> and 0 otherwise.
+		/// If direct access of <paramref name="peerDev"/> from <paramref name="dev"/> is possible, then access may be
+		/// enabled on two specific contexts by calling ::cuCtxEnablePeerAccess().</summary>
+		///
+		/// <param name="canAccessPeer">Returned access capability</param>
+		/// <param name="dev">Device from which allocations on <paramref name="peerDev"/> are to
+		///                        be directly accessed.</param>
+		/// <param name="peerDev">Device on which the allocations to be directly accessed
+		///                        by <paramref name="dev"/> reside.</param>
+		///
+		/// <returns>
+		/// ::CUDA_SUCCESS,
+		/// ::CUDA_ERROR_DEINITIALIZED,
+		/// ::CUDA_ERROR_NOT_INITIALIZED,
+		/// ::CUDA_ERROR_INVALID_DEVICE
+		/// </returns>
+		/// \notefnerr
+		///
+		/// \sa
+		/// ::cuCtxEnablePeerAccess,
+		/// ::cuCtxDisablePeerAccess,
+		/// ::cudaDeviceCanAccessPeer
+		/// CUresult CUDAAPI cuDeviceCanAccessPeer(int *canAccessPeer, CUdevice dev, CUdevice peerDev);
+		[DllImport(nvCudaPath, EntryPoint = "cuDeviceCanAccessPeer")]
         public static extern CuResult DeviceCanAccessPeer(out bool canAccessPeer, CuDevicePtr dev, CuDevicePtr peerDev);
 
         /// <summary>Enables direct access to memory allocations in a peer context.

@@ -83,6 +83,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Docs\CUDA_Driver_API.pdf" />
     <None Include="Docs\NVDEC_Application_Note.pdf" />
     <None Include="Docs\NVDEC_VideoDecoder_API_ProgGuide.pdf" />
     <None Include="Docs\NVENC_Application_Note.pdf" />
