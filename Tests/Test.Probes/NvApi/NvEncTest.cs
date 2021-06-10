@@ -134,9 +134,12 @@ namespace Test.Encoder
                 ResourceToRegister = texture.NativePointer,
                 Width = (uint)desc.Width,
                 Height = (uint)desc.Height,
-                Pitch = 0
+				Pitch = 0,
 
-            };
+				//Pitch = (uint)desc.Width
+				//ResourceType = NvEncInputResourceType.Directx,
+
+			};
 
             /*
              * For DirectX 11 interface, this buffer can be created using DirectX 11

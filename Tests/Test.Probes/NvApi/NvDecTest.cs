@@ -211,7 +211,7 @@ namespace Test.Probe.NvApi
 
             if (_decoder!=null && !_decoder.IsEmpty)
             {
-                _decoder.Reconfigure(ref format);
+                //_decoder.Reconfigure(ref format);
 
                 return 1;
             }

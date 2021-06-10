@@ -32,7 +32,23 @@ namespace Test.Probe
 		{
 			try
 			{
+				Console.WriteLine("Try to init CUDA environments...");
+
 				LibCuda.Initialize();
+
+				var driverVersion = LibCuda.DriverGetVersion();
+
+				Console.WriteLine("CUDA driver ver: " + driverVersion);
+				Console.WriteLine("CUDA API ver: " + LibCuda.ApiVerison);
+				if (driverVersion == 0)
+				{
+					throw new InvalidOperationException("CUDA driver not installed");
+				}
+				else if (driverVersion < LibCuda.ApiVerison)
+				{
+					Console.WriteLine("WARN: CUDA driver is incompatible with API (" + driverVersion + "<" + LibCuda.ApiVerison + ")");
+				}
+
 
 				AdapterDescription adapterDescr;
 				CuDevice device;
@@ -45,13 +61,13 @@ namespace Test.Probe
 					}
 				}
 
-				var id = device.GetId();
+			
 				var name = device.GetName();
 				var pciId = device.GetPciBusId();
 				var memory = device.GetTotalMemory();
+                var id = device.GetId();
 
-				Console.WriteLine("--------------------------");
-				Console.WriteLine("CUDA device info:\r\n" + string.Join("\r\n", id, name, pciId, memory));
+                Console.WriteLine("CUDA device info:\r\n" + string.Join("\r\n", id, name, pciId, memory));
 				Console.WriteLine("--------------------------");
 				cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
 
@@ -79,7 +95,6 @@ namespace Test.Probe
 					SequenceCallback = SequenceCallback,
 					DecodePicture = DecodePictureCallback,
 					DisplayPicture = VideoDisplayCallback,
-
 				};
 
 				CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
@@ -89,7 +104,6 @@ namespace Test.Probe
 					rgbProcessor = new RgbProcessor();
 					var size = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
 					rgbProcessor.Init(device3D11, size, MediaToolkit.Core.PixFormat.NV12, size, MediaToolkit.Core.PixFormat.RGB32);
-
 
 					while (sourceReader.IsFull)
 					//while (sourceReader.Count < 2)
@@ -145,6 +159,7 @@ namespace Test.Probe
 			{
 				Console.WriteLine(ex.Message);
 
+				running = false;
 			}
 			finally
 			{
@@ -199,12 +214,10 @@ namespace Test.Probe
 				cuVideoDecoder = NvDecodeApi.CreateDecoder(decodeInfo);
 			}
 
-			InitGraphicResources(decodeInfo.Width, decodeInfo.Height, decodeInfo.OutputFormat);
+			InitGraphicResources(decodeInfo);
 
 
 			return decodeInfo.NumDecodeSurfaces;
-			//return 1;
-
 
 		}
 
@@ -357,8 +370,14 @@ namespace Test.Probe
 			//TestTools.WriteFile(bytes, "nvdec_test_dxinterop_rgba" + width + "x" + height + ".yuv");
 		}
 
-		private void InitGraphicResources(int width, int height, CuVideoSurfaceFormat format)
+		private void InitGraphicResources(CuVideoDecodeCreateInfo decodeInfo)
 		{
+			Console.WriteLine("InitGraphicResources()");
+
+			int width = decodeInfo.Width;
+			int height = decodeInfo.Height;
+			var format = decodeInfo.OutputFormat;
+
 			if (format != CuVideoSurfaceFormat.Default)
 			{// only NV12 currently supported
 				throw new NotSupportedException("Invalid format: " + format);
@@ -377,12 +396,10 @@ namespace Test.Probe
 				BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource,
 				CpuAccessFlags = CpuAccessFlags.None,
 				OptionFlags = ResourceOptionFlags.None,
-
 			};
 
 			lumaTexture = new Texture2D(device3D11, texDescr);
 			lumaResource = CuGraphicsResource.Register(lumaTexture.NativePointer, CuGraphicsRegisters.None);
-
 
 			texDescr.Width = width / 2;
 			texDescr.Height = height / 2;
@@ -395,6 +412,8 @@ namespace Test.Probe
 
 		private void CloseGraphicsResources()
 		{
+			Console.WriteLine("CloseGraphicsResources()");
+
 			if (lumaResource!=null)
 			{
 				lumaResource.Dispose();
@@ -424,7 +443,6 @@ namespace Test.Probe
 		private void CloseCuda()
 		{
 			Console.WriteLine("CloseCuda()");
-
 
 			if (cuVideoDecoder != null)
 			{

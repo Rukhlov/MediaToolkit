@@ -65,7 +65,7 @@ namespace MediaToolkit.Nvidia
 				return false;
 			}
 
-			//TODO:
+			// TODO:
 			// Check supported output format
 			// Check if histogram is supported
 
@@ -179,18 +179,6 @@ namespace MediaToolkit.Nvidia
         {
             var result =NvCuVid.ReconfigureDecoder(decoderHandle, ref decReconfigParams);
             LibCuda.CheckResult(result);
-        }
-
-        public void Reconfigure(ref CuVideoFormat format)
-        {
-            // TODO
-            var info = new CuVideoReconfigureDecoderInfo
-            {
-                Width = format.CodedWidth,
-                Height = format.CodedHeight,
-            };
-
-            Reconfigure(ref info);
         }
 
         public void DecodePicture(ref CuVideoPicParams param)

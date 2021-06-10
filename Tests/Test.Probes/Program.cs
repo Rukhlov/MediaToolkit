@@ -52,6 +52,7 @@ namespace Test.Encoder
 
 			//IDRDecoder.Run();
 
+			//NvEncTest.Run();
 			//NvDecTest.Run();
 			VideoDecoderTest.Run();
 			//Probe.Utils.WindowHookTest.Run();
