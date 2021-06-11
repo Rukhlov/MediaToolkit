@@ -27,6 +27,7 @@ namespace Test.Probe
 		private CuGraphicsResource chromaResource;
 		private Texture2D chromaTexture = null;
 
+		private uint clockRate = 10_000_000;
 
 		private void NvDecDecoderTask(MfVideoArgs inputArgs)
 		{
@@ -94,7 +95,7 @@ namespace Test.Probe
 					UserData = IntPtr.Zero,
 					SequenceCallback = SequenceCallback,
 					DecodePicture = DecodePictureCallback,
-					DisplayPicture = VideoDisplayCallback,
+					DisplayPicture = VideoDisplayCallback,		
 				};
 
 				CuVideoParser parser = NvDecodeApi.CreateParser(parserParams);
@@ -115,6 +116,12 @@ namespace Test.Probe
 						}
 					}
 
+					clockRate = parserParams.ClockRate;
+					if(clockRate == 0)
+					{
+						clockRate = 10_000_000;
+					}
+
 					AutoResetEvent syncEvent = new AutoResetEvent(false);
 					while (running)
 					{
@@ -129,7 +136,7 @@ namespace Test.Probe
 							}
 							//Console.WriteLine("packet.data.Length == " + packet.data.Length);
 							var flags = CuVideoPacketFlags.Timestamp;
-							long timestamp = (long)(packet.time * 10_000_000);
+							long timestamp = (long)(packet.time * clockRate);
 							parser.ParseVideoData(packet.data, flags, timestamp);
 						}
 
@@ -361,7 +368,7 @@ namespace Test.Probe
 
 	
 			rgbProcessor.DrawTexture(new Texture2D[] { lumaTexture, chromaTexture }, destTexture, size);
-			var sec = (double)timestamp / 10_000_000;
+			var sec = (double)timestamp / clockRate;
 
 			OnSampleProcessed(destTexture, sec);
 

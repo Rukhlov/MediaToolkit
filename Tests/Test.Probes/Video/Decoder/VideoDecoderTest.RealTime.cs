@@ -155,7 +155,7 @@ namespace Test.Probe
 		}
 
 
-		class NalSourceReaderRealTime
+		class NalSourceReaderRealTime : INalSourceReader
 		{
 
 			CircularQueue<VideoPacket> videoPackets = null;

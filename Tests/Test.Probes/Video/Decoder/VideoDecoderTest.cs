@@ -32,7 +32,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.Cuda;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
 
 
 				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
@@ -48,23 +48,23 @@ namespace Test.Probe
 				//var height = 480;\
 
 
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
+				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
-				//var width = 1280;
-				//var height = 720;
-				//var fps = 30;
-
-
-				string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_1920x1080_5sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-				var width = 1920;
-				var height = 1080;
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
+				var width = 1280;
+				var height = 720;
 				var fps = 30;
+
+
+				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_1920x1080_5sec.h264";
+				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
+				//var width = 1920;
+				//var height = 1080;
+				//var fps = 30;
 
 				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
 				//var width = 2560;
@@ -118,14 +118,17 @@ namespace Test.Probe
 
         private PresentationClock presentationClock = new PresentationClock();
 
-       // private NalSourceReader sourceReader = null;
-        private NalSourceReaderRealTime sourceReader = null;
+
+        private INalSourceReader sourceReader = null;
+        //private NalSourceReaderRealTime sourceReader = null;
 
         private int videoBuffeSize = 3;
         private BlockingCollection<VideoFrame> videoFrames = null;
 
-        // private ConcurrentQueue<Frame> videoQueue = null;
-        //private Queue<Frame> frames = new Queue<Frame>(4);
+		// private ConcurrentQueue<Frame> videoQueue = null;
+		//private Queue<Frame> frames = new Queue<Frame>(4);
+
+		private bool realTime = true;
 
         private int VideoAdapterIndex = 0;
         private bool lowLatency = true;
@@ -283,16 +286,21 @@ namespace Test.Probe
 
             presenter = new D3D11Presenter(device3D11);
 
-            //var readerTask = new Task(() =>
-            //{
-            //    Console.WriteLine("SourceReaderTask BEGIN");
-            //    SourceReaderTask(fileName, inputArgs);
-            //    Console.WriteLine("SourceReaderTask END");
-            //});
+			//var readerTask = new Task(() =>
+			//{
+			//    Console.WriteLine("SourceReaderTask BEGIN");
+			//    SourceReaderTask(fileName, inputArgs);
+			//    Console.WriteLine("SourceReaderTask END");
+			//});
 
-            sourceReader = new NalSourceReaderRealTime();
-           // sourceReader = new NalSourceReader();
-
+			if (realTime)
+			{
+				sourceReader = new NalSourceReaderRealTime();
+			}
+			else
+			{
+				sourceReader = new NalSourceReader();
+			}
 
             //var readerTask = nalSource.Start(fileName, inputArgs);
 
@@ -316,10 +324,14 @@ namespace Test.Probe
             var presenterTask = new Task(() =>
             {
                 Console.WriteLine("PresenterTask BEGIN");
-
-                PresenterTaskRealTime(fps);
-
-                //PresenterTask(fps);
+				if (realTime)
+				{
+					PresenterTaskRealTime(fps);
+				}
+				else
+				{
+					PresenterTask(fps);
+				}
 
                 Console.WriteLine("PresenterTask END");
             });
@@ -1559,9 +1571,20 @@ namespace Test.Probe
             public double duration = 0;
         }
 
+		interface INalSourceReader
+		{
+			bool PacketsAvailable { get; }
+			bool IsFull { get; }
+			int Count { get; }
+			double PacketInterval{ get;}
+			bool TryGetPacket(out VideoPacket packet, int timeout);
+			Task Start(string fileName, MfVideoArgs inputArgs);
+			void Stop();
 
-        class NalSourceReader
-        {
+		}
+
+        class NalSourceReader : INalSourceReader
+		{
             private BlockingCollection<VideoPacket> videoPackets = null;
             private volatile bool running = false;
             public bool PacketsAvailable
