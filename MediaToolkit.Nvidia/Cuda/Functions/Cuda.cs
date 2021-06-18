@@ -99,7 +99,7 @@ namespace MediaToolkit.Nvidia
 
         /// CUresult CUDAAPI cuGetExportTable(const void **ppExportTable, const CUuuid *pExportTableId);
         [DllImport(nvCudaPath, EntryPoint = "cuGetExportTable")]
-        public static extern CuResult GetExportTable(IntPtr* ppExportTable, Guid* pExportTableId);
+        public static extern CuResult GetExportTable(out IntPtr ppExportTable, out CUuuid pExportTableId);
 
     }
 }

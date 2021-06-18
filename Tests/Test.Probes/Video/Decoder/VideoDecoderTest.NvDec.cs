@@ -370,12 +370,12 @@ namespace Test.Probe
 						{
 							SrcMemoryType = CuMemoryType.Device,
 							SrcDevice = cuFrame.DevicePtr,
-							SrcPitch = (IntPtr)pitch,
+							SrcPitch = pitch,
 							DstMemoryType = CuMemoryType.Array,
 							DstArray = lumaResource.GetMappedArray(),
-							DstPitch = (IntPtr)width,
-							WidthInBytes = (IntPtr)width,
-							Height = (IntPtr)height,
+							DstPitch = width,
+							WidthInBytes = width,
+							Height = height,
 						};
 
 						result = LibCuda.Memcpy2D(ref memcopy);
@@ -383,8 +383,8 @@ namespace Test.Probe
 
 						memcopy.SrcDevice = new CuDevicePtr(cuFrame.Handle + pitch * height);
 						memcopy.DstArray = chromaResource.GetMappedArray();
-						memcopy.DstPitch = (IntPtr)(width);
-						memcopy.Height = (IntPtr)(height / 2);
+						memcopy.DstPitch = (width);
+						memcopy.Height = (height / 2);
 
 						result = LibCuda.Memcpy2D(ref memcopy);
 						LibCuda.CheckResult(result);

@@ -194,41 +194,41 @@ namespace MediaToolkit.Nvidia
     public struct CuMemcopy2D
     {
         /// <summary>Source X in bytes</summary>
-        public IntPtr SrcXInBytes;
+        public SizeT SrcXInBytes;
         /// <summary>Source Y</summary>
-        public IntPtr SrcY;
+        public SizeT SrcY;
 
         /// <summary>Source memory type (host, device, array)</summary>
         public CuMemoryType SrcMemoryType;
         /// <summary>Source host pointer</summary>
-        public IntPtr SrcHost;
+        public SizeT SrcHost;
         /// <summary>Source device pointer</summary>
         public CuDevicePtr SrcDevice;
         /// <summary>Source array reference</summary>
         public CuArrayPtr SrcArray;
         /// <summary>Source pitch (ignored when src is array)</summary>
-        public IntPtr SrcPitch;
+        public SizeT SrcPitch;
 
         /// <summary>Destination X in bytes</summary>
-        public IntPtr DstXInBytes;
+        public SizeT DstXInBytes;
         /// <summary>Destination Y</summary>
-        public IntPtr DstY;
+        public SizeT DstY;
 
         /// <summary>Destination memory type (host, device, array)</summary>
         public CuMemoryType DstMemoryType;
         /// <summary>Destination host pointer</summary>
-        public IntPtr DstHost;
+        public SizeT DstHost;
         /// <summary>Destination device pointer</summary>
         public CuDevicePtr DstDevice;
         /// <summary>Destination array reference</summary>
         public CuArrayPtr DstArray;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
-        public IntPtr DstPitch;
+        public SizeT DstPitch;
 
         /// <summary>Width of 2D memory copy in bytes</summary>
-        public IntPtr WidthInBytes;
+        public SizeT WidthInBytes;
         /// <summary>Height of 2D memory copy</summary>
-        public IntPtr Height;
+        public SizeT Height;
 
     }
 
@@ -245,13 +245,13 @@ namespace MediaToolkit.Nvidia
 	public struct CuMemcpy3D
     {
         /// <summary>Source X in bytes</summary>
-        public uint SrcXInBytes;
+        public SizeT SrcXInBytes;
         /// <summary>Source Y</summary>
-        public uint SrcY;
+        public SizeT SrcY;
         /// <summary>Source Z</summary>
-        public uint SrcZ;
+        public SizeT SrcZ;
         /// <summary>Source LOD</summary>
-        public uint SrcLod;
+        public SizeT SrcLod;
         /// <summary>Source memory type (host, device, array)</summary>
         public CuMemoryType SrcMemoryType;
         /// <summary>Source host pointer</summary>
@@ -263,18 +263,18 @@ namespace MediaToolkit.Nvidia
         /// <summary>Must be NULL</summary>
         private IntPtr _reserved0;
         /// <summary>Source pitch (ignored when src is array)</summary>
-        public uint SrcPitch;
+        public SizeT SrcPitch;
         /// <summary>Source height (ignored when src is array; may be 0 if Depth==1)</summary>
-        public uint SrcHeight;
+        public SizeT SrcHeight;
 
         /// <summary>Destination X in bytes</summary>
-        public uint DstXInBytes;
+        public SizeT DstXInBytes;
         /// <summary>Destination Y</summary>
-        public uint DstY;
+        public SizeT DstY;
         /// <summary>Destination Z</summary>
-        public uint DstZ;
+        public SizeT DstZ;
         /// <summary>Destination LOD</summary>
-        public uint DstLod;
+        public SizeT DstLod;
         /// <summary>Destination memory type (host, device, array)</summary>
         public CuMemoryType DstMemoryType;
         /// <summary>Destination host pointer</summary>
@@ -286,28 +286,28 @@ namespace MediaToolkit.Nvidia
         /// <summary>Must be NULL</summary>
         public IntPtr Reserved1;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
-        public uint DstPitch;
+        public SizeT DstPitch;
         /// <summary>Destination height (ignored when dst is array; may be 0 if Depth==1)</summary>
-        public uint DstHeight;
+        public SizeT DstHeight;
 
         /// <summary>Width of 3D memory copy in bytes</summary>
-        public uint WidthInBytes;
+        public SizeT WidthInBytes;
         /// <summary>Height of 3D memory copy</summary>
-        public uint Height;
+        public SizeT Height;
         /// <summary>Depth of 3D memory copy</summary>
-        public uint Depth;
+        public SizeT Depth;
     }
 
     public struct CuMemcpy3DPeer
     {
         /// <summary>Source X in bytes</summary>
-        public IntPtr SrcXInBytes;
+        public SizeT SrcXInBytes;
         /// <summary>Source Y</summary>
-        public IntPtr SrcY;
+        public SizeT SrcY;
         /// <summary>Source Z</summary>
-        public IntPtr SrcZ;
+        public SizeT SrcZ;
         /// <summary>Source LOD</summary>
-        public IntPtr SrcLod;
+        public SizeT SrcLod;
         /// <summary>Source memory type (host, device, array)</summary>
         public CuMemoryType SrcMemoryType;
         /// <summary>Source host pointer</summary>
@@ -319,16 +319,16 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source context (ignored with srcMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
         public CuContextPtr SrcContext;
         /// <summary>Source pitch (ignored when src is array)</summary>
-        public IntPtr SrcPitch;
+        public SizeT SrcPitch;
         /// <summary>Source height (ignored when src is array; may be 0 if Depth==1)</summary>
-        public IntPtr SrcHeight;
+        public SizeT SrcHeight;
 
         /// <summary>Destination X in bytes</summary>
-        public IntPtr DstXInBytes;
+        public SizeT DstXInBytes;
         /// <summary>Destination Y</summary>
-        public IntPtr DstY;
+        public SizeT DstY;
         /// <summary>Destination Z</summary>
-        public IntPtr DstZ;
+        public SizeT DstZ;
         /// <summary>Destination LOD</summary>
         public IntPtr DstLod;
         /// <summary>Destination memory type (host, device, array)</summary>
@@ -342,24 +342,24 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination context (ignored with dstMemoryType is ::CU_MEMORYTYPE_ARRAY)</summary>
         public CuContextPtr DstContext;
         /// <summary>Destination pitch (ignored when dst is array)</summary>
-        public IntPtr DstPitch;
+        public SizeT DstPitch;
         /// <summary>Destination height (ignored when dst is array; may be 0 if Depth==1)</summary>
-        public IntPtr DstHeight;
+        public SizeT DstHeight;
 
         /// <summary>Width of 3D memory copy in bytes</summary>
-        public IntPtr WidthInBytes;
+        public SizeT WidthInBytes;
         /// <summary>Height of 3D memory copy</summary>
-        public IntPtr Height;
+        public SizeT Height;
         /// <summary>Depth of 3D memory copy</summary>
-        public IntPtr Depth;
+        public SizeT Depth;
     }
 
     public struct CuArrayDescription
     {
         /// <summary>Width of array</summary>
-        public int Width;
+        public SizeT Width;
         /// <summary>Height of array</summary>
-        public int Height;
+        public SizeT Height;
 
         /// <summary>Array format</summary>
         public CuArrayFormat Format;
@@ -370,11 +370,11 @@ namespace MediaToolkit.Nvidia
     public struct CuArray3DDescription
     {
         /// <summary>Width of 3D array</summary>
-        public int Width;
+        public SizeT Width;
         /// <summary>Height of 3D array</summary>
-        public int Height;
+        public SizeT Height;
         /// <summary>Depth of 3D array</summary>
-        public int Depth;
+        public SizeT Depth;
 
         /// <summary>Array format</summary>
         public CuArrayFormat Format;
@@ -570,4 +570,464 @@ namespace MediaToolkit.Nvidia
         /// <summary>Array of pointers to kernel parameters</summary>
         public IntPtr KernelParams;
     }
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct CUuuid
+	{
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16, ArraySubType = UnmanagedType.I1)]
+		public byte[] bytes;
+
+		public Guid ToGuid()
+		{
+			//TODO: uuid -> guid
+			return new Guid(bytes);
+		}
+	}
+
+	/// <summary>
+	///  ->> https://github.com/surban/managedCuda
+	/// </summary>
+	[StructLayout(LayoutKind.Sequential)]
+	public struct SizeT
+	{
+		private UIntPtr value;
+
+		public SizeT(int value)
+		{
+			this.value = new UIntPtr((uint)value);
+		}
+
+		public SizeT(uint value)
+		{
+			this.value = new UIntPtr(value);
+		}
+
+		public SizeT(long value)
+		{
+			this.value = new UIntPtr((ulong)value);
+		}
+
+		public SizeT(ulong value)
+		{
+			this.value = new UIntPtr(value);
+		}
+
+		public SizeT(UIntPtr value)
+		{
+			this.value = value;
+		}
+
+		public SizeT(IntPtr value)
+		{
+			this.value = new UIntPtr((ulong)value.ToInt64());
+		}
+
+		public static implicit operator int(SizeT t)
+		{
+			return (int)t.value.ToUInt32();
+		}
+
+		public static implicit operator uint(SizeT t)
+		{
+			return (t.value.ToUInt32());
+		}
+
+		public static implicit operator long(SizeT t)
+		{
+			return (long)t.value.ToUInt64();
+		}
+
+		public static implicit operator ulong(SizeT t)
+		{
+			return (t.value.ToUInt64());
+		}
+
+		public static implicit operator UIntPtr(SizeT t)
+		{
+			return t.value;
+		}
+
+		public static implicit operator IntPtr(SizeT t)
+		{
+			return new IntPtr((long)t.value.ToUInt64());
+		}
+
+		public static implicit operator SizeT(int value)
+		{
+			return new SizeT(value);
+		}
+
+		public static implicit operator SizeT(uint value)
+		{
+			return new SizeT(value);
+		}
+
+		public static implicit operator SizeT(long value)
+		{
+			return new SizeT(value);
+		}
+
+		public static implicit operator SizeT(ulong value)
+		{
+			return new SizeT(value);
+		}
+
+		public static implicit operator SizeT(IntPtr value)
+		{
+			return new SizeT(value);
+		}
+
+		public static implicit operator SizeT(UIntPtr value)
+		{
+			return new SizeT(value);
+		}
+
+		public static bool operator !=(SizeT val1, SizeT val2)
+		{
+			return (val1.value != val2.value);
+		}
+
+		public static bool operator ==(SizeT val1, SizeT val2)
+		{
+			return (val1.value == val2.value);
+		}
+
+		#region +
+		/// <summary>
+		/// Define operator + on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator +(SizeT val1, SizeT val2)
+		{
+			return new SizeT(val1.value.ToUInt64() + val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator + on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator +(SizeT val1, int val2)
+		{
+			return new SizeT(val1.value.ToUInt64() + (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator + on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator +(int val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 + val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator + on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator +(uint val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 + val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator + on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator +(SizeT val1, uint val2)
+		{
+			return new SizeT(val1.value.ToUInt64() + (ulong)val2);
+		}
+		#endregion
+
+		#region -
+		/// <summary>
+		/// Define operator - on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator -(SizeT val1, SizeT val2)
+		{
+			return new SizeT(val1.value.ToUInt64() - val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator - on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator -(SizeT val1, int val2)
+		{
+			return new SizeT(val1.value.ToUInt64() - (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator - on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator -(int val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 - val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator - on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator -(SizeT val1, uint val2)
+		{
+			return new SizeT(val1.value.ToUInt64() - (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator - on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator -(uint val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 - val2.value.ToUInt64());
+		}
+		#endregion
+
+		#region *
+		/// <summary>
+		/// Define operator * on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator *(SizeT val1, SizeT val2)
+		{
+			return new SizeT(val1.value.ToUInt64() * val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator * on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator *(SizeT val1, int val2)
+		{
+			return new SizeT(val1.value.ToUInt64() * (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator * on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator *(int val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 * val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator * on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator *(SizeT val1, uint val2)
+		{
+			return new SizeT(val1.value.ToUInt64() * (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator * on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator *(uint val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 * val2.value.ToUInt64());
+		}
+		#endregion
+
+		#region /
+		/// <summary>
+		/// Define operator / on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator /(SizeT val1, SizeT val2)
+		{
+			return new SizeT(val1.value.ToUInt64() / val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator / on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator /(SizeT val1, int val2)
+		{
+			return new SizeT(val1.value.ToUInt64() / (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator / on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator /(int val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 / val2.value.ToUInt64());
+		}
+		/// <summary>
+		/// Define operator / on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator /(SizeT val1, uint val2)
+		{
+			return new SizeT(val1.value.ToUInt64() / (ulong)val2);
+		}
+		/// <summary>
+		/// Define operator / on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static SizeT operator /(uint val1, SizeT val2)
+		{
+			return new SizeT((ulong)val1 / val2.value.ToUInt64());
+		}
+		#endregion
+
+		#region >
+		/// <summary>
+		/// Define operator &gt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator >(SizeT val1, SizeT val2)
+		{
+			return val1.value.ToUInt64() > val2.value.ToUInt64();
+		}
+		/// <summary>
+		/// Define operator &gt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator >(SizeT val1, int val2)
+		{
+			return val1.value.ToUInt64() > (ulong)val2;
+		}
+		/// <summary>
+		/// Define operator &gt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator >(int val1, SizeT val2)
+		{
+			return (ulong)val1 > val2.value.ToUInt64();
+		}
+		/// <summary>
+		/// Define operator &gt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator >(SizeT val1, uint val2)
+		{
+			return val1.value.ToUInt64() > (ulong)val2;
+		}
+		/// <summary>
+		/// Define operator &gt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator >(uint val1, SizeT val2)
+		{
+			return (ulong)val1 > val2.value.ToUInt64();
+		}
+		#endregion
+
+		#region <
+		/// <summary>
+		/// Define operator &lt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator <(SizeT val1, SizeT val2)
+		{
+			return val1.value.ToUInt64() < val2.value.ToUInt64();
+		}
+		/// <summary>
+		/// Define operator &lt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator <(SizeT val1, int val2)
+		{
+			return val1.value.ToUInt64() < (ulong)val2;
+		}
+		/// <summary>
+		/// Define operator &lt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator <(int val1, SizeT val2)
+		{
+			return (ulong)val1 < val2.value.ToUInt64();
+		}
+		/// <summary>
+		/// Define operator &lt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator <(SizeT val1, uint val2)
+		{
+			return val1.value.ToUInt64() < (ulong)val2;
+		}
+		/// <summary>
+		/// Define operator &lt; on converted to ulong values to avoid fall back to int
+		/// </summary>
+		/// <param name="val1"></param>
+		/// <param name="val2"></param>
+		/// <returns></returns>
+		public static bool operator <(uint val1, SizeT val2)
+		{
+			return (ulong)val1 < val2.value.ToUInt64();
+		}
+		#endregion
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is SizeT)) return false;
+			SizeT o = (SizeT)obj;
+			return this.value.Equals(o.value);
+		}
+
+		public override string ToString()
+		{
+			if (IntPtr.Size == 4)
+				return ((uint)this.value.ToUInt32()).ToString();
+			else
+				return ((ulong)this.value.ToUInt64()).ToString();
+		}
+
+		public override int GetHashCode()
+		{
+			return this.value.GetHashCode();
+		}
+	}
 }

@@ -482,6 +482,6 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemset2DAsync
         /// CUresult CUDAAPI cuMemsetD2D32Async(CUdeviceptr dstDevice, size_t dstPitch, unsigned int ui, size_t Width, size_t Height, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuMemsetD2D32Async")]
-        public static extern CuResult MemsetD2D32Async(CuDevicePtr dstDevice, IntPtr dstPitch, int ui, IntPtr width, IntPtr height, CuStreamPtr hStream);
+        public static extern CuResult MemsetD2D32Async(CuDevicePtr dstDevice, SizeT dstPitch, int ui, SizeT width, SizeT height, CuStreamPtr hStream);
     }
 }

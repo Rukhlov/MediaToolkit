@@ -238,15 +238,14 @@ namespace MediaToolkit.Nvidia
 
         /// <summary>CUresult cuDeviceGetUuid ( CUuuid* uuid, CUdevice dev )
         /// Return an UUID for the device.</summary>
-        // TODO: Does CUuuid == GUID?
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceGetUuid")]
-        public static extern CuResult DeviceGetUuid(out Guid uuid, CuDevicePtr device);
+        public static extern CuResult DeviceGetUuid(out CUuuid uuid, CuDevicePtr device);
 
         /// <summary>CUresult cuDeviceTotalMem ( size_t* bytes, CUdevice dev )
         /// Returns the total amount of memory on the device.</summary>
         [DllImport(nvCudaPath, EntryPoint = "cuDeviceTotalMem" + _ver)]
-		//public static extern CuResult DeviceTotalMemory(out IntPtr bytes, CuDevice device);
-		public static extern CuResult DeviceTotalMemory(out long bytes, CuDevicePtr device);
+		//public static extern CuResult DeviceTotalMemory(out UIntPtr bytes, CuDevice device);
+		public static extern CuResult DeviceTotalMemory(out SizeT bytes, CuDevicePtr device);
 
 		/// <summary>Retain the primary context on the GPU
 		///

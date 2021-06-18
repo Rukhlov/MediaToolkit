@@ -35,7 +35,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMemGetInfo
         /// CUresult CUDAAPI cuMemGetInfo(size_t *free, size_t *total);
         [DllImport(nvCudaPath, EntryPoint = "cuMemGetInfo" + _ver)]
-        public static extern CuResult MemGetInfo(out IntPtr free, out IntPtr total);
+        public static extern CuResult MemGetInfo(out SizeT free, out SizeT total);
 
         /// <summary>Allocates device memory
         ///
@@ -70,7 +70,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMalloc
         /// CUresult CUDAAPI cuMemAlloc(CUdeviceptr *dptr, size_t bytesize);
         [DllImport(nvCudaPath, EntryPoint = "cuMemAlloc" + _ver)]
-        public static extern CuResult MemAlloc(out CuDevicePtr dptr, IntPtr bytesize);
+        public static extern CuResult MemAlloc(out CuDevicePtr dptr, SizeT bytesize);
 
         /// <summary>Allocates pitched device memory
         ///
@@ -133,7 +133,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMallocPitch
         /// CUresult CUDAAPI cuMemAllocPitch(CUdeviceptr *dptr, size_t *pPitch, size_t WidthInBytes, size_t Height, unsigned int ElementSizeBytes);
         [DllImport(nvCudaPath, EntryPoint = "cuMemAllocPitch" + _ver)]
-        public static extern CuResult MemAllocPitch(out CuDevicePtr dptr, out IntPtr pitch, IntPtr widthInBytes, IntPtr height, uint elementSizeBytes);
+        public static extern CuResult MemAllocPitch(out CuDevicePtr dptr, out SizeT pitch, SizeT widthInBytes, SizeT height, uint elementSizeBytes);
 
         /// <summary>Frees device memory
         ///
@@ -285,7 +285,7 @@ namespace MediaToolkit.Nvidia
         /// ::cuMemsetD2D32, ::cuMemsetD8, ::cuMemsetD16, ::cuMemsetD32
         /// CUresult CUDAAPI cuMemGetAddressRange(CUdeviceptr *pbase, size_t *psize, CUdeviceptr dptr);
         [DllImport(nvCudaPath, EntryPoint = "cuMemGetAddressRange")]
-        public static extern CuResult MemGetAddressRange(out CuDevicePtr pbase, out IntPtr psize, CuDevicePtr dptr);
+        public static extern CuResult MemGetAddressRange(out CuDevicePtr pbase, out SizeT psize, CuDevicePtr dptr);
 
         /// <summary>Allocates page-locked host memory
         ///
@@ -333,7 +333,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMallocHost
         /// CUresult CUDAAPI cuMemAllocHost(void **pp, size_t bytesize);
         [DllImport(nvCudaPath, EntryPoint = "cuMemAllocHost")]
-        public static extern CuResult MemAllocHost(out CuHostMemoryPtr pp, IntPtr bytesize);
+        public static extern CuResult MemAllocHost(out CuHostMemoryPtr pp, SizeT bytesize);
 
         /// <summary>Frees page-locked host memory
         ///
@@ -447,7 +447,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostAlloc
         /// CUresult CUDAAPI cuMemHostAlloc(void **pp, size_t bytesize, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostAlloc")]
-        public static extern CuResult MemHostAlloc(out CuHostMemoryPtr pp, IntPtr bytesize, MemHostAllocFlags flags);
+        public static extern CuResult MemHostAlloc(out CuHostMemoryPtr pp, SizeT bytesize, MemHostAllocFlags flags);
 
         /// <summary>Passes back device pointer of mapped pinned memory
         ///
@@ -640,7 +640,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaMallocManaged
         /// CUresult CUDAAPI cuMemAllocManaged(CUdeviceptr *dptr, size_t bytesize, unsigned int flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemAllocManaged")]
-        public static extern CuResult MemAllocManaged(out CuDevicePtr dptr, IntPtr bytesize, MemoryAttachFlags flags);
+        public static extern CuResult MemAllocManaged(out CuDevicePtr dptr, SizeT bytesize, MemoryAttachFlags flags);
 
         /// <summary>Registers an existing host memory range for use by CUDA
         ///
@@ -724,7 +724,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaHostRegister
         /// CUresult CUDAAPI cuMemHostRegister(void *p, size_t bytesize, unsigned int Flags);
         [DllImport(nvCudaPath, EntryPoint = "cuMemHostRegister")]
-        public static extern CuResult MemHostRegister(CuHostMemoryPtr p, IntPtr bytesize, int Flags);
+        public static extern CuResult MemHostRegister(CuHostMemoryPtr p, SizeT bytesize, int Flags);
 
         /// <summary>Unregisters a memory range that was registered with cuMemHostRegister.
         ///

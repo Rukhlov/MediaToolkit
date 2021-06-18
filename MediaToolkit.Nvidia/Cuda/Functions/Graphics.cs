@@ -143,7 +143,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaGraphicsResourceGetMappedPointer
         /// CUresult CUDAAPI cuGraphicsResourceGetMappedPointer(CUdeviceptr *pDevPtr, size_t *pSize, CUgraphicsResource resource);
         [DllImport(nvCudaPath, EntryPoint = "cuGraphicsResourceGetMappedPointer")]
-        public static extern CuResult GraphicsResourceGetMappedPointer(out CuDevicePtr pDevPtr, out IntPtr pSize, CuGraphicsResourcePtr resource);
+        public static extern CuResult GraphicsResourceGetMappedPointer(out CuDevicePtr pDevPtr, out SizeT pSize, CuGraphicsResourcePtr resource);
 
         /// <summary>Set usage flags for mapping a graphics resource</summary>
         ///

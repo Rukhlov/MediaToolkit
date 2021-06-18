@@ -321,7 +321,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceSetLimit
         /// CUresult CUDAAPI cuCtxSetLimit(CUlimit limit, size_t value);
         [DllImport(nvCudaPath, EntryPoint = "cuCtxSetLimit")]
-        public static extern CuResult CtxSetLimit(CuLimit limit, IntPtr value);
+        public static extern CuResult CtxSetLimit(CuLimit limit, SizeT value);
 
         /// <summary>Returns resource limits
         ///
@@ -362,7 +362,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaDeviceGetLimit
         /// CUresult CUDAAPI cuCtxGetLimit(size_t *pvalue, CUlimit limit);
         [DllImport(nvCudaPath, EntryPoint = "cuCtxGetLimit")]
-        public static extern CuResult CtxGetLimit(out IntPtr pvalue, CuLimit limit);
+        public static extern CuResult CtxGetLimit(out SizeT pvalue, CuLimit limit);
 
         /// <summary>Returns the preferred cache configuration for the current context.
         ///

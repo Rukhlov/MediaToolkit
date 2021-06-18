@@ -341,7 +341,7 @@ namespace MediaToolkit.Nvidia
         /// ::cudaStreamAttachMemAsync
         /// CUresult CUDAAPI cuStreamAttachMemAsync(CUstream hStream, CUdeviceptr dptr, size_t length, unsigned int flags);
         [DllImport(nvCudaPath, EntryPoint = "cuStreamAttachMemAsync")]
-        public static extern CuResult StreamAttachMemAsync(CuStreamPtr hStream, CuDevicePtr dptr, IntPtr length, MemoryAttachFlags flags);
+        public static extern CuResult StreamAttachMemAsync(CuStreamPtr hStream, CuDevicePtr dptr, SizeT length, MemoryAttachFlags flags);
 
         /// <summary>Determine status of a compute stream
         ///

@@ -125,7 +125,8 @@ namespace MediaToolkit.Nvidia
 		{
 			var result = LibCuda.DeviceGetUuid(out var uuid, DevicePtr);
 			LibCuda.CheckResult(result);
-			return uuid;
+
+			return uuid.ToGuid();
 		}
 
 		public string GetName()
@@ -452,7 +453,7 @@ namespace MediaToolkit.Nvidia
 
 		public static CuHostMemoryPtr Allocate(long bytesize)
 		{
-			var result = LibCuda.MemAllocHost(out var mem, (IntPtr)bytesize);
+			var result = LibCuda.MemAllocHost(out var mem, bytesize);
 			LibCuda.CheckResult(result);
 			return mem;
 		}
@@ -460,7 +461,7 @@ namespace MediaToolkit.Nvidia
 		// TODO: Move?
 		public static CuDevicePtr AllocateManaged(long bytesize, MemoryAttachFlags flags)
 		{
-			var result = LibCuda.MemAllocManaged(out var mem, (IntPtr)bytesize, flags);
+			var result = LibCuda.MemAllocManaged(out var mem, bytesize, flags);
 			LibCuda.CheckResult(result);
 			return mem;
 		}
@@ -499,11 +500,12 @@ namespace MediaToolkit.Nvidia
 		}
 
 
-		public static CuDeviceMemoryObj AllocatePitch(out IntPtr pitch, IntPtr widthInBytes, IntPtr height, uint elementSizeBytes)
+		public static CuDeviceMemoryObj AllocatePitch(out uint pitch, uint widthInBytes, uint height, uint elementSizeBytes)
 		{
-			var result = LibCuda.MemAllocPitch(out var device, out pitch, widthInBytes, height, elementSizeBytes);
-
+			pitch = 0;
+			var result = LibCuda.MemAllocPitch(out var device, out var pitchPtr, widthInBytes, height, elementSizeBytes);
 			LibCuda.CheckResult(result);
+			pitch = pitchPtr;
 
 			return new CuDeviceMemoryObj(device);
 		}
@@ -522,7 +524,7 @@ namespace MediaToolkit.Nvidia
 
 		public unsafe void CopyToHost(byte* hostDestination, int size)
 		{
-			var result = LibCuda.MemcpyDtoH((IntPtr)hostDestination, DevicePtr, (IntPtr)size);
+			var result = LibCuda.MemcpyDtoH((IntPtr)hostDestination, DevicePtr, size);
 			LibCuda.CheckResult(result);
 		}
 

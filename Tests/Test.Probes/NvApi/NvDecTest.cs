@@ -326,12 +326,12 @@ namespace Test.Probe.NvApi
 				{
 					SrcMemoryType = CuMemoryType.Device,
 					SrcDevice = frame.DevicePtr,
-					SrcPitch = (IntPtr)pitch,
+					SrcPitch = pitch,
 					DstMemoryType = CuMemoryType.Array,
 					DstArray = lumaArray,//lumaResource.GetMappedArray(),
-					DstPitch = (IntPtr)width,
-					WidthInBytes = (IntPtr)width,
-					Height = (IntPtr)height,
+					DstPitch = width,
+					WidthInBytes = width,
+					Height = height,
 				};
                 LibCuda.Memcpy2D(ref memcopy);
 
@@ -342,8 +342,8 @@ namespace Test.Probe.NvApi
 
 				memcopy.SrcDevice = new CuDevicePtr(frame.Handle + pitch * height);
 				memcopy.DstArray = chromaArray;//chromaResource.GetMappedArray(); 
-				memcopy.DstPitch = (IntPtr)(width);
-				memcopy.Height = (IntPtr)(height / 2);
+				memcopy.DstPitch = width;
+				memcopy.Height = (height / 2);
 	
                 LibCuda.Memcpy2D(ref memcopy);
 
