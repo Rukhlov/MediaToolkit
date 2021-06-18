@@ -180,10 +180,16 @@ namespace MediaToolkit.Nvidia
 				this.context = ctx;
 			}
 
+			private bool disposed = false;
 			public void Dispose()
 			{
-				var result = LibCuda.CtxPopCurrent(out _);
-				LibCuda.CheckResult(result);
+				if (!disposed)
+				{
+					var result = LibCuda.CtxPopCurrent(out var pctx);
+					LibCuda.CheckResult(result);
+					disposed = true;
+				}
+
 			}
 		}
 
@@ -285,10 +291,13 @@ namespace MediaToolkit.Nvidia
 		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = LibCuda.CtxDestroy(ContextPtr);
-			LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = LibCuda.CtxDestroy(ContextPtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
 
-			disposed = true;
 		}
 	}
 
@@ -343,13 +352,19 @@ namespace MediaToolkit.Nvidia
 				this.stream = stream;
 			}
 
+			private bool disposed = false;
 			public unsafe void Dispose()
 			{
-				var copy = resource;
+				if (!disposed)
 				{
-					var result = LibCuda.GraphicsUnmapResources(1, &copy, stream);
-					LibCuda.CheckResult(result);
+					var copy = resource;
+					{
+						var result = LibCuda.GraphicsUnmapResources(1, &copy, stream);
+						LibCuda.CheckResult(result);
+					}
+					disposed = true;
 				}
+
 			}
 		}
 
@@ -360,15 +375,20 @@ namespace MediaToolkit.Nvidia
 
 			return array;
 		}
-
+		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = LibCuda.GraphicsUnregisterResource(ResourcePtr);
-			LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = LibCuda.GraphicsUnregisterResource(ResourcePtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
+
 		}
 	}
 
-	public struct CuStream : IDisposable
+	public class CuStream : IDisposable
 	{
 		public static readonly CuStream Empty = new CuStream(CuStreamPtr.Empty);
 
@@ -406,10 +426,16 @@ namespace MediaToolkit.Nvidia
 			LibCuda.CheckResult(result);
 		}
 
+		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = LibCuda.StreamDestroy(streamPtr);
-			LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = LibCuda.StreamDestroy(streamPtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
+
 		}
 	}
 

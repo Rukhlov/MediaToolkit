@@ -225,7 +225,7 @@ namespace Test.Probe.NvApi
                 DeinterlaceMode = format.ProgressiveSequence ? CuVideoDeinterlaceMode.Weave : CuVideoDeinterlaceMode.Adaptive,
                 NumOutputSurfaces = 2,
                 CreationFlags = CuVideoCreateFlags.PreferCUVID,
-                NumDecodeSurfaces = format.MinNumDecodeSurfaces,
+                MaxNumDecodeSurfaces = format.MinNumDecodeSurfaces,
                 VideoLock = _contextLock.NativePtr,
                 Width = format.CodedWidth,
                 Height = format.CodedHeight,

@@ -75,10 +75,10 @@ namespace MediaToolkit.Codecs
 
 
             while ((nextByte = stream.ReadByte()) != -1)
-            { //TODO: читать стрим не побайтно, в буфер 
-                three = (byte)nextByte;
-
-                if (one == 0x0 && two == 0x0 && three == 0x1)
+			{ //TODO: читать стрим побайтно ~2 раза медленнее, чем stream.Read(byte[]buffer...)
+				three = (byte)nextByte;
+				
+				if (one == 0x0 && two == 0x0 && three == 0x1)
                 {
                     if (startCodeReceived)
                     {

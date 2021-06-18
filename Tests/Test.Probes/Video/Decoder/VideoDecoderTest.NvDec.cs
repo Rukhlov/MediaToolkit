@@ -180,51 +180,73 @@ namespace Test.Probe
 		private int SequenceCallback(IntPtr userData, ref CuVideoFormat format)
 		{
 			Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
-
-			if (!NvDecodeApi.IsFormatSupportedByDecoder(format, out var error, out var caps))
+			/*
+			 *  Parser triggers this callback for initial sequence header or when it encounters a 
+			 *  video format change. Return value from sequence callback is interpreted by the driver as follows:
+			 *	0: fail
+			 *	1: succeeded, but driver should not override CUVIDPARSERPARAMS::ulMaxNumDecodeSurfaces
+			 *	>1: succeeded, and driver should override CUVIDPARSERPARAMS::ulMaxNumDecodeSurfaces with this return value
+			 */
+			int result = 1;
+			try
 			{
-				Console.WriteLine(error);
+				if (!NvDecodeApi.IsFormatSupportedByDecoder(format, out var error, out var caps))
+				{
+					throw new NotSupportedException(error);
+				}
 
-				return 0;
+				if (cuVideoDecoder != null)
+				{
+					// TODO:
+					//cuVideoDecoder.Reconfigure(ref format);
+					//...
+				}
+
+				int numDecodeSurfaces = 4;
+				if (format.MinNumDecodeSurfaces > 0)
+				{
+					numDecodeSurfaces = format.MinNumDecodeSurfaces;
+				}
+
+				decodeInfo = new CuVideoDecodeCreateInfo
+				{
+					CodecType = format.Codec,
+					ChromaFormat = format.ChromaFormat,
+					OutputFormat = format.GetSurfaceFormat(),
+					BitDepthMinus8 = format.BitDepthLumaMinus8,
+					DeinterlaceMode = format.ProgressiveSequence ? CuVideoDeinterlaceMode.Weave : CuVideoDeinterlaceMode.Adaptive,
+					NumOutputSurfaces = 2,
+					//CreationFlags = CuVideoCreateFlags.PreferCUDA,
+					CreationFlags = CuVideoCreateFlags.PreferCUVID,
+					MaxNumDecodeSurfaces = numDecodeSurfaces,
+				
+					VideoLock = videoContextLock.NativePtr,
+					Width = format.CodedWidth,
+					Height = format.CodedHeight,
+					MaxWidth = format.CodedWidth,
+					MaxHeight = format.CodedHeight,
+					TargetWidth = format.CodedWidth,
+					TargetHeight = format.CodedHeight,
+
+				};
+
+				using (var contextPush = cuContext.Push())
+				{
+					cuVideoDecoder = NvDecodeApi.CreateDecoder(decodeInfo);
+					result = cuVideoDecoder.DecodeInfo.MaxNumDecodeSurfaces;
+				}
+
+				InitGraphicResources(decodeInfo);
+
+			}
+			catch (Exception ex)
+			{
+				result = 0;
+
+				Console.WriteLine(ex.Message);
 			}
 
-			if (cuVideoDecoder != null)
-			{
-				// TODO:
-				//cuVideoDecoder.Reconfigure(ref format);
-				//...
-			}
-
-			decodeInfo = new CuVideoDecodeCreateInfo
-			{
-				CodecType = format.Codec,
-				ChromaFormat = format.ChromaFormat,
-				OutputFormat = format.GetSurfaceFormat(),
-				BitDepthMinus8 = format.BitDepthLumaMinus8,
-				DeinterlaceMode = format.ProgressiveSequence ? CuVideoDeinterlaceMode.Weave : CuVideoDeinterlaceMode.Adaptive,
-				NumOutputSurfaces = 2,
-				//CreationFlags = CuVideoCreateFlags.PreferCUDA,
-				CreationFlags = CuVideoCreateFlags.PreferCUVID,
-				NumDecodeSurfaces = format.MinNumDecodeSurfaces,
-				VideoLock = videoContextLock.NativePtr,
-				Width = format.CodedWidth,
-				Height = format.CodedHeight,
-				MaxWidth = format.CodedWidth,
-				MaxHeight = format.CodedHeight,
-				TargetWidth = format.CodedWidth,
-				TargetHeight = format.CodedHeight,
-
-			};
-
-			using (var contextPush = cuContext.Push())
-			{
-				cuVideoDecoder = NvDecodeApi.CreateDecoder(decodeInfo);
-			}
-
-			InitGraphicResources(decodeInfo);
-
-
-			return decodeInfo.NumDecodeSurfaces;
+			return result;
 
 		}
 
@@ -232,12 +254,30 @@ namespace Test.Probe
 		private int DecodePictureCallback(IntPtr userData, ref CuVideoPicParams param)
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>DecodePictureCallback(...)");
-			using (var contextPush = cuContext.Push())
+
+			/*
+			 *  Parser triggers this callback when bitstream data for one frame is 
+			 *  ready. In case of field pictures, there may be two decode calls per one display call since two 
+			 *  fields make up one frame. Return value from this callback is interpreted as:
+			 *	0: fail
+			 *	≥1: succeeded
+			 */
+
+			int result = 1;
+			try
 			{
-				cuVideoDecoder.DecodePicture(ref param);
+				using (var contextPush = cuContext.Push())
+				{
+					cuVideoDecoder.DecodePicture(ref param);
+				}
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				result = 0;
 			}
 
-			return 1;
+			return result;
 		}
 
 
@@ -245,23 +285,40 @@ namespace Test.Probe
 		{
 			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
 
+			/*
+			 *	Parser triggers this callback when a frame in display order is ready. 
+			 *	Return value from this callback is interpreted as:
+			 *	0: fail
+			 *	≥1: succeeded
+			 */
+
 			if (infoPtr == IntPtr.Zero)
 			{
 				//IsFinalFrame()
+				Console.WriteLine("LastFrame");
 				return 1;
 			}
 
-			CuVideoParseDisplayInfo displayInfo = Marshal.PtrToStructure<CuVideoParseDisplayInfo>(infoPtr);
-			
-			using (var contextPush = cuContext.Push())
+			int result = 1;
+			try
 			{
-				HandlePictureDisplay(displayInfo);
+				CuVideoParseDisplayInfo displayInfo = Marshal.PtrToStructure<CuVideoParseDisplayInfo>(infoPtr);
+
+				using (var contextPush = cuContext.Push())
+				{
+					HandlePictureDisplay(displayInfo);
+				}
+
+				var timestamp = displayInfo.Timestamp;
+				ProcessTextures(timestamp);
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+				result = 0;
 			}
 
-			var timestamp = displayInfo.Timestamp;
-			ProcessTextures(timestamp);
-
-			return 1;
+			return result;
 		}
 
 		private unsafe void HandlePictureDisplay(CuVideoParseDisplayInfo displayInfo)

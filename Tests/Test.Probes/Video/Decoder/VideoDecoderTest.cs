@@ -32,7 +32,7 @@ namespace Test.Probe
             Console.WriteLine("VideoDecoderTest::Run()");
             try
             {
-                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.D3D9;
+                MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.Cuda;
 
 
 				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";

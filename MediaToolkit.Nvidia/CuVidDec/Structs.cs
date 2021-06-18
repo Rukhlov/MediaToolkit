@@ -72,7 +72,7 @@ namespace MediaToolkit.Nvidia
 		/// <summary>IN: Coded sequence height in pixels</summary>
 		public int Height;
 		/// <summary>IN: Maximum number of internal decode surfaces</summary>
-		public int NumDecodeSurfaces;
+		public int MaxNumDecodeSurfaces;
 		/// <summary>IN: CuVideoCodec_XXX</summary>
 		public CuVideoCodec CodecType;
 		/// <summary>IN: CuVideoChromaFormat_XXX</summary>

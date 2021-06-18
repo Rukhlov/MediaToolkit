@@ -147,9 +147,12 @@ namespace MediaToolkit.Nvidia
 		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = NvCuVid.DestroyVideoParser(parserHandle);
-			LibCuda.CheckResult(result);
-			disposed = true;
+			if (!disposed)
+			{
+				var result = NvCuVid.DestroyVideoParser(parserHandle);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
 		}
 	}
 
@@ -204,9 +207,13 @@ namespace MediaToolkit.Nvidia
         private bool disposed = false;
         public void Dispose()
         {
-            var result = NvCuVid.DestroyDecoder(decoderHandle);
-            LibCuda.CheckResult(result);
-            disposed = true;
+			if (!disposed)
+			{
+				var result = NvCuVid.DestroyDecoder(decoderHandle);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
+
         }
     }
 
@@ -223,13 +230,19 @@ namespace MediaToolkit.Nvidia
             this.DecoderPtr = decoderPtr;
         }
 
+		private bool disposed = false;
         public void Dispose()
         {
-            var result = Environment.Is64BitProcess
-                ? NvCuVid.UnmapVideoFrame64(DecoderPtr, DevicePtr)
-                : NvCuVid.UnmapVideoFrame(DecoderPtr, DevicePtr);
+			if (!disposed)
+			{
+				var result = Environment.Is64BitProcess 
+					? NvCuVid.UnmapVideoFrame64(DecoderPtr, DevicePtr) 
+					: NvCuVid.UnmapVideoFrame(DecoderPtr, DevicePtr);
 
-            LibCuda.CheckResult(result);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
+
         }
     }
 
@@ -276,10 +289,15 @@ namespace MediaToolkit.Nvidia
             LibCuda.CheckResult(result);
         }
 
+		private bool disposed = false;
         public void Dispose()
         {
-            var result = NvCuVid.CtxLockDestroy(NativePtr);
-            LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = NvCuVid.CtxLockDestroy(NativePtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
         }
 
     }

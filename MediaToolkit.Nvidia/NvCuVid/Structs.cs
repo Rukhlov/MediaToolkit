@@ -167,19 +167,24 @@ namespace MediaToolkit.Nvidia
 
 		public CuVideoSurfaceFormat GetSurfaceFormat()
 		{
+			var surfFormat = CuVideoSurfaceFormat.Default;
+
 			switch (ChromaFormat)
 			{
 				case CuVideoChromaFormat.YUV420:
-					return BitDepthLumaMinus8 > 0
-						? CuVideoSurfaceFormat.P016
-						: CuVideoSurfaceFormat.NV12;
+					{// 8 bit
+						surfFormat = BitDepthLumaMinus8 > 0 ? CuVideoSurfaceFormat.P016 : CuVideoSurfaceFormat.NV12;
+						break;
+					}
+
 				case CuVideoChromaFormat.YUV444:
-					return BitDepthLumaMinus8 > 0
-						? CuVideoSurfaceFormat.YUV444_16Bit
-						: CuVideoSurfaceFormat.YUV444;
+					{ //16 bit
+						surfFormat = BitDepthLumaMinus8 > 0 ? CuVideoSurfaceFormat.YUV444_16Bit : CuVideoSurfaceFormat.YUV444;
+						break;
+					}
 			}
 
-			return CuVideoSurfaceFormat.Default;
+			return surfFormat;
 		}
 
 	}

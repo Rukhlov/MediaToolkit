@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.WebCam", "Tests\Test.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaToolkit.DeckLink", "MediaToolkit.DeckLink\MediaToolkit.DeckLink.csproj", "{707B5F56-5B9B-4453-9058-7F9B8195C3E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Decoder", "Tests\Test.Decoder\Test.Decoder.csproj", "{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,14 @@ Global
 		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|Any CPU.ActiveCfg = Release|x86
 		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.ActiveCfg = Release|x86
 		{707B5F56-5B9B-4453-9058-7F9B8195C3E4}.Release|x86.Build.0 = Release|x86
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,6 +188,7 @@ Global
 		{9065856D-B4D4-431F-8F8E-7FCC150A619F} = {DDED2E21-A305-44FF-8A5E-B08DD7495B78}
 		{FB9EA9CE-8052-4CAF-A85A-89A41B62C7A0} = {DDED2E21-A305-44FF-8A5E-B08DD7495B78}
 		{A05A73C9-27FF-45CF-BE8D-3838E2CE0D80} = {DDED2E21-A305-44FF-8A5E-B08DD7495B78}
+		{7C9322B1-D8B4-4A23-B7DF-1474742F02B7} = {DDED2E21-A305-44FF-8A5E-B08DD7495B78}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {691ACD75-ACCB-4862-BC19-0302DCE83B4A}
