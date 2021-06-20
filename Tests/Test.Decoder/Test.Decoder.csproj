@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -67,8 +68,15 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="H264SourceReader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VideoDecoder.cs" />
+    <Compile Include="VideoDecoder.RealTime.cs" />
+    <Compile Include="VidoeDecoder.NvDec.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -93,6 +101,22 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+      <Project>{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}</Project>
+      <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.FFmpeg\FFmpegWrapper.vcxproj">
+      <Project>{f83157fd-4e1f-4f55-bed8-f4f138824ffd}</Project>
+      <Name>MediaToolkit.FFmpeg</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
+      <Project>{4b001d0f-817d-4075-9714-9a192af5c0a0}</Project>
+      <Name>MediaToolkit.NativeAPIs</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\MediaToolkit.Nvidia\MediaToolkit.Nvidia.csproj">
+      <Project>{78b312e1-a492-46f2-98bb-6c841f4e553e}</Project>
+      <Name>MediaToolkit.Nvidia</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\MediaToolkit\MediaToolkit.csproj">
       <Project>{D93A9D01-3409-48BB-B1EB-860EFE0397F1}</Project>
       <Name>MediaToolkit</Name>

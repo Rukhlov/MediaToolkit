@@ -446,7 +446,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Channels per array element</summary>
         public int NumChannels;
         /// <summary>Size in bytes</summary>
-        public IntPtr SizeInBytes;
+        public SizeT SizeInBytes;
     }
 
     public struct CuResourceDescPitch2D
@@ -458,11 +458,11 @@ namespace MediaToolkit.Nvidia
         /// <summary>Channels per array element</summary>
         public int NumChannels;
         /// <summary>Width of the array in elements</summary>
-        public IntPtr Width;
+        public SizeT Width;
         /// <summary>Height of the array in elements</summary>
-        public IntPtr Height;
+        public SizeT Height;
         /// <summary>Pitch between two rows in bytes</summary>
-        public IntPtr PitchInBytes;
+        public SizeT PitchInBytes;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -529,11 +529,11 @@ namespace MediaToolkit.Nvidia
         /// <summary>Resource view format</summary>
         public CuResourceViewFormat Format;
         /// <summary>Width of the resource view</summary>
-        public IntPtr Width;
+        public SizeT Width;
         /// <summary>Height of the resource view</summary>
-        public IntPtr Height;
+        public SizeT Height;
         /// <summary>Depth of the resource view</summary>
-        public IntPtr Depth;
+        public SizeT Depth;
         /// <summary>First defined mipmap level</summary>
         public int FirstMipmapLevel;
         /// <summary>Last defined mipmap level</summary>

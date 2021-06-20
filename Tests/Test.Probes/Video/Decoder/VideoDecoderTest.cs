@@ -109,7 +109,7 @@ namespace Test.Probe
         private Texture2D sharedTexture = null;
         //private Device3D9.Surface destSurf = null;
         private SharpDX.Direct3D9.Texture sharedTex9 = null;
-        private MfH264Decoder decoder = null;
+        private MfH264DecoderEx decoder = null;
 
         private D3D11Presenter presenter = null;
 
@@ -612,7 +612,7 @@ namespace Test.Probe
                 var srcSize = new System.Drawing.Size(inputArgs.Width, inputArgs.Height);
                 rgbProcessor.Init(device3D11, srcSize, MediaToolkit.Core.PixFormat.NV12, srcSize, MediaToolkit.Core.PixFormat.RGB32);
 
-                decoder = new MfH264Decoder();
+                decoder = new MfH264DecoderEx();
                 decoder.Setup(inputArgs);
 
                 decoder.Start();

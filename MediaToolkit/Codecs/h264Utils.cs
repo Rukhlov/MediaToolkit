@@ -31,7 +31,70 @@ namespace MediaToolkit.Codecs
     public class NalUnitReader
     {
 
-        private readonly Stream stream;
+		public static MediaFoundation.MfVideoArgs Probe(string fileName, int maxReadCount = 42)
+		{
+			MediaFoundation.MfVideoArgs videoArgs = null;
+			FileStream stream = null;
+			try
+			{
+				stream = new FileStream(fileName, FileMode.Open);
+				var naluReader = new NalUnitReader(stream);
+
+				var dataAvailable = false;
+				do
+				{
+					dataAvailable = naluReader.ReadNext(out var nalu);
+
+					if (nalu != null && nalu.Length > 0)
+					{
+						var firstByte = nalu[0];
+						var nalUnitType = firstByte & 0x1F;
+
+						if (nalUnitType == (int)NalUnitType.SequenceParameterSet)
+						{
+							var rbsp = NalToRbsp(nalu, 1);
+
+							if (SequenceParameterSet.TryParse(rbsp, out var sps))
+							{
+								long frameRate = 0;
+								var fps = sps.MaxFps;
+								if (fps > 0)
+								{
+									frameRate = MediaFoundation.MfTool.PackToLong(new Tuple<int, int>((int)fps, 1));
+								}
+
+								videoArgs = new MediaFoundation.MfVideoArgs
+								{
+									
+									Width = sps.Width,
+									Height = sps.Height,
+									FrameRate = frameRate
+								};
+
+								break;
+							}
+						}
+					}
+
+				}
+				while (dataAvailable && maxReadCount--> 0);
+			}
+			finally
+			{
+				if (stream != null)
+				{
+					stream.Dispose();
+					stream = null;
+				}
+			}
+
+
+			return videoArgs;
+
+		}
+
+
+		private readonly Stream stream;
         public NalUnitReader(Stream stream)
         {
             this.stream = stream;

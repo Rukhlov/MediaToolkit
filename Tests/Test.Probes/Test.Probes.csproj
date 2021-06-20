@@ -85,7 +85,6 @@
     <Compile Include="Display\DisplayManager.cs" />
     <Compile Include="Display\DisplaySettingChanged.cs" />
     <Compile Include="Video\Decoder\IDRDecoder.cs" />
-    <Compile Include="Video\Decoder\MftH264Decoder.cs" />
     <Compile Include="Video\Decoder\VideoDecoderTest.NvDec.cs" />
     <Compile Include="Video\Decoder\VideoDecoderTest.RealTime.cs" />
     <Compile Include="Video\DxTextureTest.cs" />
