@@ -30,10 +30,12 @@
         {
 			this.videoPanel = new System.Windows.Forms.Panel();
 			this.panel2 = new System.Windows.Forms.Panel();
+			this.comboBoxDriverType = new System.Windows.Forms.ComboBox();
+			this.buttonSourceStop = new System.Windows.Forms.Button();
+			this.buttonSourceStart = new System.Windows.Forms.Button();
 			this.button1 = new System.Windows.Forms.Button();
 			this.buttonRun = new System.Windows.Forms.Button();
-			this.buttonSourceStart = new System.Windows.Forms.Button();
-			this.buttonSourceStop = new System.Windows.Forms.Button();
+			this.comboBoxVideoFiles = new System.Windows.Forms.ComboBox();
 			this.panel2.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -52,6 +54,8 @@
 			// 
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel2.Controls.Add(this.comboBoxVideoFiles);
+			this.panel2.Controls.Add(this.comboBoxDriverType);
 			this.panel2.Controls.Add(this.buttonSourceStop);
 			this.panel2.Controls.Add(this.buttonSourceStart);
 			this.panel2.Controls.Add(this.button1);
@@ -60,6 +64,37 @@
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(280, 565);
 			this.panel2.TabIndex = 1;
+			// 
+			// comboBoxDriverType
+			// 
+			this.comboBoxDriverType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxDriverType.FormattingEnabled = true;
+			this.comboBoxDriverType.Location = new System.Drawing.Point(123, 457);
+			this.comboBoxDriverType.Name = "comboBoxDriverType";
+			this.comboBoxDriverType.Size = new System.Drawing.Size(121, 24);
+			this.comboBoxDriverType.TabIndex = 4;
+			// 
+			// buttonSourceStop
+			// 
+			this.buttonSourceStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonSourceStop.Location = new System.Drawing.Point(139, 244);
+			this.buttonSourceStop.Name = "buttonSourceStop";
+			this.buttonSourceStop.Size = new System.Drawing.Size(81, 25);
+			this.buttonSourceStop.TabIndex = 3;
+			this.buttonSourceStop.Text = "Stop";
+			this.buttonSourceStop.UseVisualStyleBackColor = true;
+			this.buttonSourceStop.Click += new System.EventHandler(this.buttonSourceStop_Click);
+			// 
+			// buttonSourceStart
+			// 
+			this.buttonSourceStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.buttonSourceStart.Location = new System.Drawing.Point(25, 244);
+			this.buttonSourceStart.Name = "buttonSourceStart";
+			this.buttonSourceStart.Size = new System.Drawing.Size(81, 25);
+			this.buttonSourceStart.TabIndex = 2;
+			this.buttonSourceStart.Text = "Start";
+			this.buttonSourceStart.UseVisualStyleBackColor = true;
+			this.buttonSourceStart.Click += new System.EventHandler(this.buttonSourceStart_Click);
 			// 
 			// button1
 			// 
@@ -83,27 +118,14 @@
 			this.buttonRun.UseVisualStyleBackColor = true;
 			this.buttonRun.Click += new System.EventHandler(this.buttonRun_Click);
 			// 
-			// buttonSourceStart
+			// comboBoxVideoFiles
 			// 
-			this.buttonSourceStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonSourceStart.Location = new System.Drawing.Point(25, 244);
-			this.buttonSourceStart.Name = "buttonSourceStart";
-			this.buttonSourceStart.Size = new System.Drawing.Size(81, 25);
-			this.buttonSourceStart.TabIndex = 2;
-			this.buttonSourceStart.Text = "Start";
-			this.buttonSourceStart.UseVisualStyleBackColor = true;
-			this.buttonSourceStart.Click += new System.EventHandler(this.buttonSourceStart_Click);
-			// 
-			// buttonSourceStop
-			// 
-			this.buttonSourceStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.buttonSourceStop.Location = new System.Drawing.Point(139, 244);
-			this.buttonSourceStop.Name = "buttonSourceStop";
-			this.buttonSourceStop.Size = new System.Drawing.Size(81, 25);
-			this.buttonSourceStop.TabIndex = 3;
-			this.buttonSourceStop.Text = "Stop";
-			this.buttonSourceStop.UseVisualStyleBackColor = true;
-			this.buttonSourceStop.Click += new System.EventHandler(this.buttonSourceStop_Click);
+			this.comboBoxVideoFiles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxVideoFiles.FormattingEnabled = true;
+			this.comboBoxVideoFiles.Location = new System.Drawing.Point(25, 53);
+			this.comboBoxVideoFiles.Name = "comboBoxVideoFiles";
+			this.comboBoxVideoFiles.Size = new System.Drawing.Size(228, 24);
+			this.comboBoxVideoFiles.TabIndex = 5;
 			// 
 			// Form1
 			// 
@@ -127,6 +149,8 @@
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Button buttonSourceStop;
 		private System.Windows.Forms.Button buttonSourceStart;
+		private System.Windows.Forms.ComboBox comboBoxDriverType;
+		private System.Windows.Forms.ComboBox comboBoxVideoFiles;
 	}
 }
 

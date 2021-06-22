@@ -7,254 +7,259 @@ using System.Threading.Tasks;
 
 namespace MediaToolkit.Codecs
 {
-    /// <summary>
-    /// https://yumichan.net/video-processing/video-compression/introduction-to-h264-nal-unit/
-    /// </summary>
-    public enum NalUnitType
-    {
-        Unspecified = 0,
-        Slice = 1,
-        DataPartitionA = 2,
-        DataPartitionB = 3,
-        DataPartitionC = 4,
-        IDR = 5,
-        SupplentalEnhancementInfo = 6,
-        SequenceParameterSet = 7,
-        PictureParameterSet = 8,
-        AccessUnitDelimiter = 9,
-        EndOfSequence = 10,
-        EndOfStream = 11,
-        FillerData = 12
-    }
+	/// <summary>
+	/// https://yumichan.net/video-processing/video-compression/introduction-to-h264-nal-unit/
+	/// </summary>
+	public enum NalUnitType
+	{
+		Unspecified = 0,
+		Slice = 1,
+		DataPartitionA = 2,
+		DataPartitionB = 3,
+		DataPartitionC = 4,
+		IDR = 5,
+		SupplentalEnhancementInfo = 6,
+		SequenceParameterSet = 7,
+		PictureParameterSet = 8,
+		AccessUnitDelimiter = 9,
+		EndOfSequence = 10,
+		EndOfStream = 11,
+		FillerData = 12
+	}
 
 
-    public class NalUnitReader
-    {
-
-		public static MediaFoundation.MfVideoArgs Probe(string fileName, int maxReadCount = 42)
+	public class NalUnitReader
+	{
+		public static MediaFoundation.MfVideoArgs Probe(string fileName, int probeSize = 1024)
 		{
 			MediaFoundation.MfVideoArgs videoArgs = null;
-			FileStream stream = null;
-			try
+
+			var buffer = new byte[probeSize];
+			int bytesInBuffer = 0;
+
+			using (var stream = new FileStream(fileName, FileMode.Open))
 			{
-				stream = new FileStream(fileName, FileMode.Open);
-				var naluReader = new NalUnitReader(stream);
+				bytesInBuffer = stream.Read(buffer, 0, buffer.Length);
+			}
 
-				var dataAvailable = false;
-				do
+			if (bytesInBuffer > 0)
+			{
+				var naluSegments = HandleH264AnnexbFrames(buffer);
+				if (naluSegments != null && naluSegments.Count > 0)
 				{
-					dataAvailable = naluReader.ReadNext(out var nalu);
-
-					if (nalu != null && nalu.Length > 0)
+					foreach (var segment in naluSegments)
 					{
-						var firstByte = nalu[0];
-						var nalUnitType = firstByte & 0x1F;
+						var nalu = DumpSegemnt(segment);
 
-						if (nalUnitType == (int)NalUnitType.SequenceParameterSet)
+						if (nalu != null && nalu.Length > 0)
 						{
-							var rbsp = NalToRbsp(nalu, 1);
+							var firstByte = nalu[0];
+							var nalUnitType = firstByte & 0x1F;
 
-							if (SequenceParameterSet.TryParse(rbsp, out var sps))
+							if (nalUnitType == (int)NalUnitType.SequenceParameterSet)
 							{
-								long frameRate = 0;
-								var fps = sps.MaxFps;
-								if (fps > 0)
+								var rbsp = NalToRbsp(nalu, 1);
+
+								if (SequenceParameterSet.TryParse(rbsp, out var sps))
 								{
-									frameRate = MediaFoundation.MfTool.PackToLong(new Tuple<int, int>((int)fps, 1));
+									long frameRate = 0;
+									var fps = sps.MaxFps;
+									if (fps > 0)
+									{
+										frameRate = MediaFoundation.MfTool.PackToLong(new Tuple<int, int>((int)fps, 1));
+									}
+
+									videoArgs = new MediaFoundation.MfVideoArgs
+									{
+										Width = sps.Width,
+										Height = sps.Height,
+										FrameRate = frameRate
+									};
+
+									break;
 								}
-
-								videoArgs = new MediaFoundation.MfVideoArgs
-								{
-									
-									Width = sps.Width,
-									Height = sps.Height,
-									FrameRate = frameRate
-								};
-
-								break;
 							}
 						}
 					}
-
-				}
-				while (dataAvailable && maxReadCount--> 0);
-			}
-			finally
-			{
-				if (stream != null)
-				{
-					stream.Dispose();
-					stream = null;
 				}
 			}
-
 
 			return videoArgs;
 
 		}
 
+		private static byte[] DumpSegemnt(ArraySegment<byte> s)
+		{
+			var bytes = new byte[s.Count];
+			Array.Copy(s.Array, s.Offset, bytes, 0, bytes.Length);
+
+			return bytes;
+
+		}
+
 
 		private readonly Stream stream;
-        public NalUnitReader(Stream stream)
-        {
-            this.stream = stream;
-        }
 
-        private bool startCodeReceived = false;
-        public bool ReadNext(out byte[] nals)
-        {
-            nals = null;
+		public NalUnitReader(Stream stream)
+		{
+			this.stream = stream;
+		}
 
-            int nextByte = stream.ReadByte();
-            if (nextByte == -1)
-            {
-                return false;
-            }
+		private bool startCodeReceived = false;
+		public bool ReadNext(out byte[] nals)
+		{
+			nals = null;
 
-            byte one = 0;
-            byte two = 0;
-            byte three = 0;
-            // MemoryStream buffer = new MemoryStream(1024 * 1024);
-            List<byte> buffer = new List<byte>(1024);
-            one = (byte)nextByte;
-            if (startCodeReceived)
-            {
-                buffer.Add(one);
-                // buffer.WriteByte(one);
-            }
+			int nextByte = stream.ReadByte();
+			if (nextByte == -1)
+			{
+				return false;
+			}
 
-            nextByte = stream.ReadByte();
-            if (nextByte == -1)
-            {
-                return false;
-            }
+			byte one = 0;
+			byte two = 0;
+			byte three = 0;
+			// MemoryStream buffer = new MemoryStream(1024 * 1024);
+			List<byte> buffer = new List<byte>(1024);
+			one = (byte)nextByte;
+			if (startCodeReceived)
+			{
+				buffer.Add(one);
+				// buffer.WriteByte(one);
+			}
 
-            two = (byte)nextByte;
-            if (startCodeReceived)
-            {
-                buffer.Add(two);
-                //buffer.WriteByte(two);
-            }
+			nextByte = stream.ReadByte();
+			if (nextByte == -1)
+			{
+				return false;
+			}
+
+			two = (byte)nextByte;
+			if (startCodeReceived)
+			{
+				buffer.Add(two);
+				//buffer.WriteByte(two);
+			}
 
 
-            while ((nextByte = stream.ReadByte()) != -1)
+			while ((nextByte = stream.ReadByte()) != -1)
 			{ //TODO: читать стрим побайтно ~2 раза медленнее, чем stream.Read(byte[]buffer...)
 				three = (byte)nextByte;
-				
+
 				if (one == 0x0 && two == 0x0 && three == 0x1)
-                {
-                    if (startCodeReceived)
-                    {
-                        buffer.Add(three);
-                        //buffer.WriteByte(three);
+				{
+					if (startCodeReceived)
+					{
+						buffer.Add(three);
+						//buffer.WriteByte(three);
 
-                        // var array = new List<byte>(buffer.ToArray());
+						// var array = new List<byte>(buffer.ToArray());
 
-                        if (buffer.Count > 3)
-                        {// Trim end...
-                            var lastIndex = buffer.Count - 1;
-                            if (buffer[lastIndex] == 0x1 && buffer[lastIndex - 1] == 0x0 && buffer[lastIndex - 2] == 0x0 && buffer[lastIndex - 3] == 0x0)
-                            {
-                                nals = new byte[buffer.Count - 4];
-                                buffer.CopyTo(0, nals, 0, nals.Length);
+						if (buffer.Count > 3)
+						{// Trim end...
+							var lastIndex = buffer.Count - 1;
+							if (buffer[lastIndex] == 0x1 && buffer[lastIndex - 1] == 0x0 && buffer[lastIndex - 2] == 0x0 && buffer[lastIndex - 3] == 0x0)
+							{
+								nals = new byte[buffer.Count - 4];
+								buffer.CopyTo(0, nals, 0, nals.Length);
 
-                                //buffer.RemoveRange(lastIndex - 3, 4);
-                            }
-                            else if (buffer[lastIndex] == 0x1 && buffer[lastIndex - 1] == 0x0 && buffer[lastIndex - 2] == 0x0)
-                            {
-                                nals = new byte[buffer.Count - 3];
-                                buffer.CopyTo(0, nals, 0, nals.Length);
+								//buffer.RemoveRange(lastIndex - 3, 4);
+							}
+							else if (buffer[lastIndex] == 0x1 && buffer[lastIndex - 1] == 0x0 && buffer[lastIndex - 2] == 0x0)
+							{
+								nals = new byte[buffer.Count - 3];
+								buffer.CopyTo(0, nals, 0, nals.Length);
 
-                                //buffer.RemoveRange(lastIndex - 2, 3);
-                            }
-                        }
+								//buffer.RemoveRange(lastIndex - 2, 3);
+							}
+						}
 
-                        if (nals == null)
-                        {
-                            nals = buffer.ToArray();
-                        }
+						if (nals == null)
+						{
+							nals = buffer.ToArray();
+						}
 
-                        return true;
-                    }
+						return true;
+					}
 
-                    // first start code...
-                    startCodeReceived = true;
-                    continue;
-                }
+					// first start code...
+					startCodeReceived = true;
+					continue;
+				}
 
-                if (startCodeReceived)
-                {
-                    buffer.Add(three);
-                    //buffer.WriteByte(three);
-                }
+				if (startCodeReceived)
+				{
+					buffer.Add(three);
+					//buffer.WriteByte(three);
+				}
 
-                one = two;
-                two = three;
-            }
+				one = two;
+				two = three;
+			}
 
-            nals = buffer.ToArray();
-            return false;
-        }
+			nals = buffer.ToArray();
+			return false;
+		}
 
 
 
-        public static List<ArraySegment<byte>> HandleH264AnnexbFrames(byte[] frame)
-        {// получаем буфер который нужно порезать на NALUnit-ы
+		public static List<ArraySegment<byte>> HandleH264AnnexbFrames(byte[] frame)
+		{// получаем буфер который нужно порезать на NALUnit-ы
 
-            List<ArraySegment<byte>> nalUnits = new List<ArraySegment<byte>>();
+			List<ArraySegment<byte>> nalUnits = new List<ArraySegment<byte>>();
 
-            int offset = 0;
-            int pos1 = -1;
-            int pos2 = -1;
+			int offset = 0;
+			int pos1 = -1;
+			int pos2 = -1;
 
-            while (offset < frame.Length - 3)
-            {
-                if ((frame[offset] == 0 && frame[offset + 1] == 0 && frame[offset + 2] == 1))
-                {
-                    if (pos1 > 0)
-                    {
-                        pos2 = offset;
-                        if (offset > 0)
-                        {
-                            if (frame[offset - 1] == 0)
-                            {
-                                pos2--;
-                                //offset--;
-                            }
-                        }
-                        int nalSize = pos2 - pos1;
-                        nalUnits.Add(new ArraySegment<byte>(frame, pos1, nalSize));
-                        pos2 = -1;
-                    }
+			while (offset < frame.Length - 3)
+			{
+				if ((frame[offset] == 0 && frame[offset + 1] == 0 && frame[offset + 2] == 1))
+				{
+					if (pos1 > 0)
+					{
+						pos2 = offset;
+						if (offset > 0)
+						{
+							if (frame[offset - 1] == 0)
+							{
+								pos2--;
+								//offset--;
+							}
+						}
+						int nalSize = pos2 - pos1;
+						nalUnits.Add(new ArraySegment<byte>(frame, pos1, nalSize));
+						pos2 = -1;
+					}
 
-                    offset += 3;
-                    pos1 = offset;
-                    continue;
-                }
-                else
-                {
-                    //offset += 3;
-                    offset++;
-                }
-            }
+					offset += 3;
+					pos1 = offset;
+					continue;
+				}
+				else
+				{
+					//offset += 3;
+					offset++;
+				}
+			}
 
-            if (pos1 > 0 && pos2 == -1)
-            {
-                pos2 = frame.Length;
-                int nalSize = pos2 - pos1;
+			if (pos1 > 0 && pos2 == -1)
+			{
+				pos2 = frame.Length;
+				int nalSize = pos2 - pos1;
 
-                nalUnits.Add(new ArraySegment<byte>(frame, pos1, nalSize));
-            }
+				nalUnits.Add(new ArraySegment<byte>(frame, pos1, nalSize));
+			}
 
-            //logger.Debug("nalUnits.Count " + nalUnits.Count);
-            return nalUnits;
-        }
+			//logger.Debug("nalUnits.Count " + nalUnits.Count);
+			return nalUnits;
+		}
 
 
 		public static byte[] NalToRbsp(byte[] nal, int startIndex = 0)
 		{// https://yumichan.net/video-processing/video-compression/introduction-to-h264-nal-unit/
 		 //But there are chances that 0x000001 or 0x00000001 exists in the bitstream of a NAL unit.
-	     //So a emulation prevention bytes, 0x03, is presented when there is 0x000000, 0x000001, 0x000002 and 0x000003 to make them become 0x00000300, 0x00000301, 0x00000302 and 0x00000303 respectively. 
+		 //So a emulation prevention bytes, 0x03, is presented when there is 0x000000, 0x000001, 0x000002 and 0x000003 to make them become 0x00000300, 0x00000301, 0x00000302 and 0x00000303 respectively. 
 			List<byte> buf = new List<byte>();
 			uint zeroCount = 0;
 			uint numBytes = 0;
@@ -340,7 +345,7 @@ namespace MediaToolkit.Codecs
 		{
 			get
 			{ //The maximum possible frame rate is always equal to time_scale / (2 * num_units_in_tick),
-				//regardless of the value of fixed_frame_rate_flag.
+			  //regardless of the value of fixed_frame_rate_flag.
 				double fps = 0;
 				if (num_units_in_tick > 0 && time_scale > 0)
 				{
@@ -523,9 +528,9 @@ namespace MediaToolkit.Codecs
 
 			if (profile_idc == 100 || profile_idc == 110 ||
 				profile_idc == 122 || profile_idc == 244 || profile_idc == 44 ||
-				profile_idc == 83 || profile_idc == 86 || profile_idc == 118 || 
+				profile_idc == 83 || profile_idc == 86 || profile_idc == 118 ||
 				profile_idc == 128 || profile_idc == 138 || profile_idc == 139 ||
-			    profile_idc == 134)
+				profile_idc == 134)
 			{
 				chroma_format_idc = bs.ReadUE();
 
@@ -542,7 +547,7 @@ namespace MediaToolkit.Codecs
 				if (seq_scaling_matrix_present_flag != 0)
 				{// по другому ->> https://sourceforge.net/projects/h264streamanalysis/ (скорее всего не правильно...)
 
-					for (var i = 0; i < ( chroma_format_idc !=3 ? 8 : 12); i++)
+					for (var i = 0; i < (chroma_format_idc != 3 ? 8 : 12); i++)
 					{
 						seq_scaling_list_present_flag = bs.ReadBits(1);
 
@@ -610,7 +615,7 @@ namespace MediaToolkit.Codecs
 			}
 		}
 
-	
+
 
 		private void ParseScalingList(H264BitStream bs, int sizeOfScalingList)
 		{

@@ -249,9 +249,11 @@ namespace MediaToolkit.Core
 
 		Cuda,
 		OpenGL,
+
+		Unknown,
 	}
 
-    public interface IVideoFrame
+	public interface IVideoFrame
     {
         IFrameBuffer[] Buffer {get;}
 

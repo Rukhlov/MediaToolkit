@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,10 +18,108 @@ namespace Test.Decoder
         {
             InitializeComponent();
             videoPanel.Resize += VideoPanel_Resize;
-        }
 
- 
-        VideoDecoderPresenter test = null;
+			InitDriverTypes();
+			InitVideoFiles();
+		}
+
+		private List<ComboBoxItem> videoFiles= new List<ComboBoxItem>();
+		private void InitVideoFiles()
+		{
+			videoFiles.Clear();
+
+			var basePath = AppDomain.CurrentDomain.BaseDirectory;
+			var filesPath = Path.Combine(basePath, "Files");
+
+			var di = new DirectoryInfo(filesPath);
+			if (di.Exists)
+			{
+				var files = di.GetFiles("*.h264");
+
+				foreach(var file in files)
+				{
+					var fileName = file.Name;
+					var name = Path.GetFileNameWithoutExtension(fileName);
+
+					videoFiles.Add(new ComboBoxItem
+					{
+						Name = name,
+						Tag = file,
+					});
+				}
+			}
+
+
+			comboBoxVideoFiles.DataSource = videoFiles;
+			comboBoxVideoFiles.DisplayMember = "Name";
+			comboBoxVideoFiles.ValueMember = "Tag";
+
+		}
+
+		private FileInfo GetSourceFileInfo()
+		{
+
+			FileInfo fileName = null;
+
+			var item = comboBoxVideoFiles.SelectedItem as ComboBoxItem;
+			if (item != null)
+			{
+				fileName = (FileInfo)item.Tag;
+			}
+
+			return fileName;
+		}
+
+		private void InitDriverTypes()
+		{
+			driverTypes.Clear();
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "DXVA2",
+				Tag = MediaToolkit.Core.VideoDriverType.D3D9,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "DX11VA",
+				Tag = MediaToolkit.Core.VideoDriverType.D3D11,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "CPU",
+				Tag = MediaToolkit.Core.VideoDriverType.CPU,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "NVDec",
+				Tag = MediaToolkit.Core.VideoDriverType.Cuda,
+			});
+
+			comboBoxDriverType.DataSource = driverTypes;
+			comboBoxDriverType.DisplayMember = "Name";
+			comboBoxDriverType.ValueMember = "Tag";
+
+		}
+
+		private MediaToolkit.Core.VideoDriverType GetDriverType()
+		{
+			MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.Unknown;
+
+			var item = comboBoxDriverType.SelectedItem as ComboBoxItem;
+			if (item != null)
+			{
+				driverType = (MediaToolkit.Core.VideoDriverType)item.Tag;
+			}
+
+			return driverType;
+		}
+
+		private List<ComboBoxItem> driverTypes = new List<ComboBoxItem>();
+
+		VideoDecoderPresenter test = null;
 
         private INalSourceReader sourceReader = null;
 		string fileName = "";
@@ -36,61 +135,24 @@ namespace Test.Decoder
 			Console.WriteLine("VideoDecoderTest::Run()");
 			try
 			{
-				MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.Cuda;
+				MediaToolkit.Core.VideoDriverType driverType = GetDriverType();
 
+				var fi = GetSourceFileInfo();
+				if (fi.Exists)
+				{
+					//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+					fileName = fi.FullName;
+				}
+				else
+				{
+					throw new InvalidOperationException("File not found: " + fi.Name);
+				}
 
-				//// string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_1sec_bf0.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_1sec.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_30fps_60sec.h264";
-				////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_320x240_yuv420p_Iframe.h264";
-				//var width = 320;
-				//var height = 240;
-				//var fps = 30;
+			
 
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_640x480_yuv420p_4frame.h264";
-				//var width = 640;
-				//var height = 480;\
-
-
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv444p_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\smptebars_1280x720_nv12_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec.h264";
-				fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_nv12_30fps_30sec_bf0.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_Iframe.h264";
-				//string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_1fps_30sec_bf0.h264";
 				width = 1280;
 				height = 720;
 				fps = 30;
-
-
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_1920x1080_5sec.h264";
-                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1920x1080_yuv420p_30fps_30sec_bf0.h264";
-                //var width = 1920;
-                //var height = 1080;
-                //var fps = 30;
-
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_2560x1440_yuv420p_Iframe.h264";
-                //var width = 2560;
-                //var height = 1440;
-                //var fps = 30;
-
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_3840x2160_5sec.h264";
-                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_30fps_10sec_bf0.h264";
-                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
-                //var width = 3840;
-                //var height = 2160;
-                //var fps = 30;
-
-
-
-                //string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\test_mov_annexb_4096x2304_5sec.h264";
-                ////string fileName = @"..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_3840x2160_yuv420p_Iframe.h264";
-                //var width = 4096;
-                //var height = 2304;
-                //var fps = 30;
-
-
 
                 test = new VideoDecoderPresenter();
 				try
@@ -177,7 +239,18 @@ namespace Test.Decoder
 				}
 			}
 
-			fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+			//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+
+			var fi = GetSourceFileInfo();
+			if (fi.Exists)
+			{
+				//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+				fileName = fi.FullName;
+			}
+			else
+			{
+				throw new InvalidOperationException("File not found: " + fi.Name);
+			}
 
 			var inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
 
@@ -215,5 +288,11 @@ namespace Test.Decoder
 			}
 			
 		}
+	}
+
+	class ComboBoxItem
+	{
+		public string Name { get; set; }
+		public object Tag { get; set; }
 	}
 }
