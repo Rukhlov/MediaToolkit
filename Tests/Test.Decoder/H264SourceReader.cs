@@ -19,7 +19,7 @@ namespace Test.Decoder
         int Count { get; }
         double PacketInterval { get; }
         bool TryGetPacket(out VideoPacket packet, int timeout);
-        Task Start(string fileName, MfVideoArgs inputArgs);
+        Task Start(string fileName, double interval);
         void Stop();
 
     }
@@ -90,7 +90,8 @@ namespace Test.Decoder
 
         public int WaitDelay { get; set; } = 33;
         public double PacketInterval { get; set; }
-        public Task Start(string fileName, MfVideoArgs inputArgs)
+
+        public Task Start(string fileName, double packetInterval)
         {
             if (running)
             {
@@ -106,9 +107,10 @@ namespace Test.Decoder
                 Stream stream = null;
                 try
                 {
-                    var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-                    PacketInterval = (double)frameRate[1] / frameRate[0];
-                    WaitDelay = (int)(PacketInterval * 1000);
+					//var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+					PacketInterval = packetInterval;//(double)frameRate[1] / frameRate[0];
+
+					WaitDelay = (int)(PacketInterval * 1000);
 
                     long packetCount = 0;
                     double packetTime = 0;
@@ -357,7 +359,7 @@ namespace Test.Decoder
             return result;
         }
         public double PacketInterval { get; private set; }
-        public Task Start(string fileName, MfVideoArgs inputArgs)
+        public Task Start(string fileName, double interval)
         {
             if (running)
             {
@@ -372,9 +374,9 @@ namespace Test.Decoder
                 Stream stream = null;
                 try
                 {
-                    var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-                    PacketInterval = (double)frameRate[1] / frameRate[0];
-                    long packetCount = 0;
+					// var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+					PacketInterval = interval;//(double)frameRate[1] / frameRate[0];
+					long packetCount = 0;
                     double packetTime = 0;
 
                     stream = new FileStream(fileName, FileMode.Open);

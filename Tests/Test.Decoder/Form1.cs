@@ -23,7 +23,51 @@ namespace Test.Decoder
 			InitVideoFiles();
 		}
 
-		private List<ComboBoxItem> videoFiles= new List<ComboBoxItem>();
+		private List<ComboBoxItem> driverTypes = new List<ComboBoxItem>();
+		private List<ComboBoxItem> videoFiles = new List<ComboBoxItem>();
+
+		VideoDecoderPresenter test = null;
+
+		private INalSourceReader sourceReader = null;
+
+		bool realTime = true;
+		bool lowLatency = true;
+
+		private MfVideoArgs inputArgs = null;
+		private void InitDriverTypes()
+		{
+			driverTypes.Clear();
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "DXVA2",
+				Tag = MediaToolkit.Core.VideoDriverType.D3D9,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "DX11VA",
+				Tag = MediaToolkit.Core.VideoDriverType.D3D11,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "CPU",
+				Tag = MediaToolkit.Core.VideoDriverType.CPU,
+			});
+
+			driverTypes.Add(new ComboBoxItem
+			{
+				Name = "NVDec",
+				Tag = MediaToolkit.Core.VideoDriverType.Cuda,
+			});
+
+			comboBoxDriverType.DataSource = driverTypes;
+			comboBoxDriverType.DisplayMember = "Name";
+			comboBoxDriverType.ValueMember = "Tag";
+
+		}
+
 		private void InitVideoFiles()
 		{
 			videoFiles.Clear();
@@ -70,38 +114,20 @@ namespace Test.Decoder
 			return fileName;
 		}
 
-		private void InitDriverTypes()
+		private string GetVideoFile()
 		{
-			driverTypes.Clear();
-
-			driverTypes.Add(new ComboBoxItem
+			string fileName;
+			var fi = GetSourceFileInfo();
+			if (fi.Exists)
 			{
-				Name = "DXVA2",
-				Tag = MediaToolkit.Core.VideoDriverType.D3D9,
-			});
-
-			driverTypes.Add(new ComboBoxItem
+				fileName = fi.FullName;
+			}
+			else
 			{
-				Name = "DX11VA",
-				Tag = MediaToolkit.Core.VideoDriverType.D3D11,
-			});
+				throw new InvalidOperationException("File not found: " + fi.Name);
+			}
 
-			driverTypes.Add(new ComboBoxItem
-			{
-				Name = "CPU",
-				Tag = MediaToolkit.Core.VideoDriverType.CPU,
-			});
-
-			driverTypes.Add(new ComboBoxItem
-			{
-				Name = "NVDec",
-				Tag = MediaToolkit.Core.VideoDriverType.Cuda,
-			});
-
-			comboBoxDriverType.DataSource = driverTypes;
-			comboBoxDriverType.DisplayMember = "Name";
-			comboBoxDriverType.ValueMember = "Tag";
-
+			return fileName;
 		}
 
 		private MediaToolkit.Core.VideoDriverType GetDriverType()
@@ -117,47 +143,19 @@ namespace Test.Decoder
 			return driverType;
 		}
 
-		private List<ComboBoxItem> driverTypes = new List<ComboBoxItem>();
-
-		VideoDecoderPresenter test = null;
-
-        private INalSourceReader sourceReader = null;
-		string fileName = "";
-		int width = 1280;
-		int height = 720;
-		int fps = 30;
-		bool realTime = true;
-		bool lowLatency = true;
-
-
-		private void buttonRun_Click(object sender, EventArgs e)
+		private void buttonDecoderStart_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("VideoDecoderTest::Run()");
+			Console.WriteLine("buttonDecoderStart_Click()");
 			try
 			{
 				MediaToolkit.Core.VideoDriverType driverType = GetDriverType();
 
-				var fi = GetSourceFileInfo();
-				if (fi.Exists)
-				{
-					//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-					fileName = fi.FullName;
-				}
-				else
-				{
-					throw new InvalidOperationException("File not found: " + fi.Name);
-				}
+				var fileName = GetVideoFile();
 
-			
-
-				width = 1280;
-				height = 720;
-				fps = 30;
-
-                test = new VideoDecoderPresenter();
+				test = new VideoDecoderPresenter();
 				try
 				{
-					if(sourceReader == null)
+					if (sourceReader == null)
 					{
 						if (realTime)
 						{
@@ -170,29 +168,17 @@ namespace Test.Decoder
 					}
 
 
-                    test.sourceReader = sourceReader;
+					test.sourceReader = sourceReader;
 
-                    test.hWnd = this.videoPanel.Handle;
-
-                    var inputArgs = new MfVideoArgs
-                    {
-                        Width = width,
-                        Height = height,
-
-                        //Width = 320,
-                        //Height = 240,
-                        FrameRate = MfTool.PackToLong(fps, 1),
-                        LowLatency = lowLatency,
-                    };
-
-                    test.Start(inputArgs, driverType);
-                    test.Resize(videoPanel.ClientSize);
+					test.hWnd = this.videoPanel.Handle;
 
 
+					inputArgs.LowLatency = lowLatency;
 
-                  
+					test.Start(inputArgs, driverType);
+					//test.Resize(videoPanel.ClientSize);
 
-                }
+				}
 				finally
 				{
 
@@ -207,7 +193,8 @@ namespace Test.Decoder
 
 		}
 
-        private void VideoPanel_Resize(object sender, EventArgs e)
+
+		private void VideoPanel_Resize(object sender, EventArgs e)
         {
             if (test != null)
             {
@@ -216,18 +203,22 @@ namespace Test.Decoder
 
         }
 
-		private void button1_Click(object sender, EventArgs e)
+		private void buttonDecoderStop_Click(object sender, EventArgs e)
 		{
+            Console.WriteLine("buttonDecoderStop_Click(...)");
+
 			if (test != null)
 			{
 				test.Stop();
+
+				test.Close();
 			}
 		}
 
 		private void buttonSourceStart_Click(object sender, EventArgs e)
 		{
-
-			if (sourceReader == null)
+            Console.WriteLine("buttonSourceStart_Click(...)");
+            if (sourceReader == null)
 			{
 				if (realTime)
 				{
@@ -239,20 +230,9 @@ namespace Test.Decoder
 				}
 			}
 
-			//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
+			var fileName = GetVideoFile();
 
-			var fi = GetSourceFileInfo();
-			if (fi.Exists)
-			{
-				//fileName = @"..\..\..\..\Resources\Utils\FFmpegBatch\output\testsrc_1280x720_yuv420p_30fps_30sec_bf0.h264";
-				fileName = fi.FullName;
-			}
-			else
-			{
-				throw new InvalidOperationException("File not found: " + fi.Name);
-			}
-
-			var inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+			inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
 
 			if(inputArgs == null)
 			{
@@ -265,28 +245,54 @@ namespace Test.Decoder
 				inputArgs.FrameRate = MfTool.PackToLong(30, 1);
 			}
 
-			//width = 1280;
-			//height = 720;
-			//fps = 30;
+			var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+			var interval = (double)frameRate[1] / frameRate[0];
 
-			//var inputArgs = new MfVideoArgs
-			//{
-			//	Width = width,
-			//	Height = height,
-			//	FrameRate = MfTool.PackToLong(fps, 1),
-
-			//};
-
-			sourceReader.Start(fileName, inputArgs);
+			sourceReader.Start(fileName, interval);
 		}
 
 		private void buttonSourceStop_Click(object sender, EventArgs e)
 		{
-			if (sourceReader != null)
+            Console.WriteLine("buttonSourceStop_Click(...)");
+
+            if (sourceReader != null)
 			{
 				sourceReader.Stop();
 			}
 			
+		}
+
+		private void comboBoxVideoFiles_SelectedValueChanged(object sender, EventArgs e)
+		{
+            Console.WriteLine("comboBoxVideoFiles_SelectedValueChanged(...)");
+
+            try
+			{
+				var fileName = GetVideoFile();
+				inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+				if (inputArgs != null)
+				{
+					this.labelWidth.Text = inputArgs.Width.ToString();
+					this.labelHeight.Text = inputArgs.Height.ToString();
+
+					var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+					var fps = (double)frameRate[0] / frameRate[1];
+
+					this.labelFps.Text = !double.IsNaN(fps) ? fps.ToString("0.0"): "-";
+				}
+				else
+				{
+					this.labelWidth.Text = "-";
+					this.labelHeight.Text = "-";
+					this.labelFps.Text = "-";
+				}
+
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
 		}
 	}
 

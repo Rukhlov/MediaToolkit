@@ -38,13 +38,11 @@ namespace Test.Decoder
 		private D3D11Presenter presenter = null;
 
 		private MfVideoProcessor xvp = null;
-		//private RgbProcessor rgbProcessor = new RgbProcessor();
 
 		private PresentationClock presentationClock = new PresentationClock();
 
         internal INalSourceReader sourceReader { get; set; }
 
-		//private NalSourceReaderRealTime sourceReader = null;
 
 		private int videoBuffeSize = 3;
 		private BlockingCollection<VideoFrame> videoFrames = null;
@@ -60,7 +58,9 @@ namespace Test.Decoder
 
 		private bool running = false;
 		private bool dxgiNv12Supported = false;
-		public void Start(MfVideoArgs inputArgs, MediaToolkit.Core.VideoDriverType driverType)
+
+
+		public Task Start(MfVideoArgs inputArgs, MediaToolkit.Core.VideoDriverType driverType)
 		{
             //Console.WriteLine("Start(...) " + string.Join(" ", width, height, fps, driverType));
 
@@ -202,20 +202,8 @@ namespace Test.Decoder
 
 
 			inputArgs.DriverType = driverType;
+			var videoSize = new System.Drawing.Size(width, height);
 
-
-			presenter = new D3D11Presenter(device3D11);
-
-			//var readerTask = new Task(() =>
-			//{
-			//    Console.WriteLine("SourceReaderTask BEGIN");
-			//    SourceReaderTask(fileName, inputArgs);
-			//    Console.WriteLine("SourceReaderTask END");
-			//});
-
-
-
-			//var readerTask = nalSource.Start(fileName, inputArgs);
 
 			decoderTask = new Task(() =>
 			{
@@ -237,33 +225,52 @@ namespace Test.Decoder
 			presenterTask = new Task(() =>
 			{
 				Console.WriteLine("PresenterTask BEGIN");
-				if (realTime)
+				try
 				{
-					PresenterTaskRealTime(fps);
+
+					presenter = new D3D11Presenter(device3D11);
+					presenter.Setup(videoSize, videoSize, hWnd, VideoAdapterIndex);
+					presenter.AspectRatio = true;
+					presenter.FramePerSec = 60;
+					presenter.Start();
+
+
+					if (realTime)
+					{
+						PresenterTaskRealTime(fps);
+					}
+					else
+					{
+						PresenterTask(fps);
+					}	
 				}
-				else
+				catch(Exception ex)
 				{
-					PresenterTask(fps);
+					Console.WriteLine(ex);
+					throw;
+				}
+				finally
+				{
+					if (presenter != null)
+					{
+						presenter.Close();
+						presenter = null;
+					}
 				}
 
 				Console.WriteLine("PresenterTask END");
 			});
 
-			var videoSize = new System.Drawing.Size(width, height);
-
-			running = true;
-
-			presenter.Setup(videoSize, videoSize, hWnd, VideoAdapterIndex);
-			presenter.AspectRatio = true;
-			presenter.FramePerSec = 60;
-			presenter.Start();
-
 			decoderTask.Start();
 			presenterTask.Start();
 
+
+			running = true;
+
+			return Task.WhenAll(decoderTask, presenterTask);
 		}
 
-        public IntPtr hWnd { get; set; }
+		public IntPtr hWnd { get; set; }
         public void Resize(System.Drawing.Size clientSize)
         {
             if (presenter != null)
@@ -558,6 +565,8 @@ namespace Test.Decoder
 			{
 				Console.WriteLine(ex.Message);
 				running = false;
+				throw;
+
 			}
 			finally
 			{

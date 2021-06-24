@@ -361,28 +361,34 @@ namespace MediaToolkit.DirectX
 		public readonly static string vsProfile = "vs_" + profileLevel;
 		public readonly static string psProfile = "ps_" + profileLevel;
 
+		private static object syncObj = new object();
 		public static byte[] GetShaderBytes(string name, string entryPoint, string profile)
 		{
 			ShaderBytecode bytes = null;
+
 			string key = name + "_" + entryPoint + "_" + profile;
 
-			if (compilationResultDict.ContainsKey(key))
+			lock (syncObj)
 			{
-				var compResult = compilationResultDict[key];
-				if (compResult.HasErrors)
-				{//...
+				if (compilationResultDict.ContainsKey(key))
+				{
+					var compResult = compilationResultDict[key];
+					if (compResult.HasErrors)
+					{//...
+					}
+
+					bytes = compResult.Bytecode;
 				}
+				else
+				{
+					var resourceName = name + ".hlsl";
+					var compResult = CompileShaderFromResources(resourceName, entryPoint, profile, null);
+					bytes = compResult.Bytecode;
 
-				bytes = compResult.Bytecode;
+					compilationResultDict.Add(key, compResult);
+				}
 			}
-			else
-			{
-				var resourceName = name + ".hlsl";
-				var compResult = CompileShaderFromResources(resourceName, entryPoint, profile, null);
-				bytes = compResult.Bytecode;
 
-				compilationResultDict.Add(key, compResult);
-			}
 
 			return bytes;
 		}
@@ -411,14 +417,18 @@ namespace MediaToolkit.DirectX
 
 		public static void Shutdown()
 		{
-			foreach (var key in compilationResultDict.Keys)
+			lock (syncObj)
 			{
-				var shader = compilationResultDict[key];
-				if (!shader.IsDisposed)
+				foreach (var key in compilationResultDict.Keys)
 				{
-					shader.Dispose();
+					var shader = compilationResultDict[key];
+					if (!shader.IsDisposed)
+					{
+						shader.Dispose();
+					}
 				}
 			}
+
 		}
 
 		public static SharpDX.D3DCompiler.CompilationResult CompileShaderFromResources(string file, string entryPoint, string profile,
