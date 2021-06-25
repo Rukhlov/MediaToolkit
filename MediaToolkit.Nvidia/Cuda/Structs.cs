@@ -201,7 +201,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Source memory type (host, device, array)</summary>
         public CuMemoryType SrcMemoryType;
         /// <summary>Source host pointer</summary>
-        public SizeT SrcHost;
+        public IntPtr SrcHost;
         /// <summary>Source device pointer</summary>
         public CuDevicePtr SrcDevice;
         /// <summary>Source array reference</summary>
@@ -217,7 +217,7 @@ namespace MediaToolkit.Nvidia
         /// <summary>Destination memory type (host, device, array)</summary>
         public CuMemoryType DstMemoryType;
         /// <summary>Destination host pointer</summary>
-        public SizeT DstHost;
+        public IntPtr DstHost;
         /// <summary>Destination device pointer</summary>
         public CuDevicePtr DstDevice;
         /// <summary>Destination array reference</summary>

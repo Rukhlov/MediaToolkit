@@ -166,7 +166,7 @@ namespace MediaToolkit.Nvidia
 
 	public class CuContext : IDisposable
 	{
-		private readonly CuContextPtr ContextPtr;
+		public readonly CuContextPtr ContextPtr;
 		internal CuContext(CuContextPtr contextPtr)
 		{
 			this.ContextPtr = contextPtr;
@@ -475,7 +475,7 @@ namespace MediaToolkit.Nvidia
 
 	public class CuDeviceMemoryObj : IDisposable
 	{
-		private readonly CuDevicePtr DevicePtr;
+		public readonly CuDevicePtr DevicePtr;
 		private CuDeviceMemoryObj(CuDevicePtr devicePtr)
 		{
 			this.DevicePtr = devicePtr;
