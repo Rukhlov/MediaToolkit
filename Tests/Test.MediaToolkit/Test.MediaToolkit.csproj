@@ -68,6 +68,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MediaToolkit.Core\MediaToolkit.Core.csproj">
+      <Project>{53A308C8-F2AE-4DC2-A4B5-A51ECCD77CFE}</Project>
+      <Name>MediaToolkit.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\MediaToolkit.NativeAPIs\MediaToolkit.NativeAPIs.csproj">
       <Project>{4B001D0F-817D-4075-9714-9A192AF5C0A0}</Project>
       <Name>MediaToolkit.NativeAPIs</Name>

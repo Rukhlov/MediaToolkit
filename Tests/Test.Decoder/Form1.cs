@@ -19,21 +19,28 @@ namespace Test.Decoder
             InitializeComponent();
             videoPanel.Resize += VideoPanel_Resize;
 
-			InitDriverTypes();
+            DecoderPars = new DecoderParams
+            {
+
+            };
+
+            InitDriverTypes();
 			InitVideoFiles();
 		}
 
 		private List<ComboBoxItem> driverTypes = new List<ComboBoxItem>();
 		private List<ComboBoxItem> videoFiles = new List<ComboBoxItem>();
 
-		VideoDecoderPresenter test = null;
+		VideoDecoderPresenter decoder = null;
 
 		private INalSourceReader sourceReader = null;
 
-		bool realTime = true;
-		bool lowLatency = true;
+		//bool realTime = true;
+		//bool lowLatency = true;
 
-		private MfVideoArgs inputArgs = null;
+        private DecoderParams DecoderPars = null;
+
+        //private MfVideoArgs inputArgs = null;
 		private void InitDriverTypes()
 		{
 			driverTypes.Clear();
@@ -152,12 +159,12 @@ namespace Test.Decoder
 
 				var fileName = GetVideoFile();
 
-				test = new VideoDecoderPresenter();
+				decoder = new VideoDecoderPresenter();
 				try
 				{
 					if (sourceReader == null)
 					{
-						if (realTime)
+						if (DecoderPars.RealTimeMode)
 						{
 							sourceReader = new NalSourceReaderRealTime();
 						}
@@ -168,14 +175,11 @@ namespace Test.Decoder
 					}
 
 
-					test.sourceReader = sourceReader;
+					decoder.sourceReader = sourceReader;
 
-					test.hWnd = this.videoPanel.Handle;
+					decoder.hWnd = this.videoPanel.Handle;
 
-
-					inputArgs.LowLatency = lowLatency;
-
-					test.Start(inputArgs, driverType);
+					decoder.Start(DecoderPars);
 					//test.Resize(videoPanel.ClientSize);
 
 				}
@@ -196,9 +200,9 @@ namespace Test.Decoder
 
 		private void VideoPanel_Resize(object sender, EventArgs e)
         {
-            if (test != null)
+            if (decoder != null)
             {
-                test.Resize(videoPanel.ClientSize);
+                decoder.Resize(videoPanel.ClientSize);
             }
 
         }
@@ -207,11 +211,11 @@ namespace Test.Decoder
 		{
             Console.WriteLine("buttonDecoderStop_Click(...)");
 
-			if (test != null)
+			if (decoder != null)
 			{
-				test.Stop();
+				decoder.Stop();
 
-				test.Close();
+				decoder.Close();
 			}
 		}
 
@@ -220,7 +224,7 @@ namespace Test.Decoder
             Console.WriteLine("buttonSourceStart_Click(...)");
             if (sourceReader == null)
 			{
-				if (realTime)
+				if (DecoderPars.RealTimeMode)
 				{
 					sourceReader = new NalSourceReaderRealTime();
 				}
@@ -232,22 +236,24 @@ namespace Test.Decoder
 
 			var fileName = GetVideoFile();
 
-			inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+			var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
 
-			if(inputArgs == null)
+			if(sps == null)
 			{
-
 				throw new InvalidOperationException("Not supported h264 stream: " + fileName);
 			}
 
-			if(inputArgs.FrameRate == 0)
-			{
-				inputArgs.FrameRate = MfTool.PackToLong(30, 1);
-			}
+            var maxFps = (int)sps.MaxFps;
+            if(maxFps == 0)
+            {
+                maxFps = 30;
+            }
 
-			var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-			var interval = (double)frameRate[1] / frameRate[0];
+            DecoderPars.Width = sps.Width;
+            DecoderPars.Height = sps.Height;
+            DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
 
+            var interval = (double)1.0 / maxFps;
 			sourceReader.Start(fileName, interval);
 		}
 
@@ -269,16 +275,26 @@ namespace Test.Decoder
             try
 			{
 				var fileName = GetVideoFile();
-				inputArgs = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
-				if (inputArgs != null)
+				var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+				if (sps != null)
 				{
-					this.labelWidth.Text = inputArgs.Width.ToString();
-					this.labelHeight.Text = inputArgs.Height.ToString();
+					this.labelWidth.Text = sps.Width.ToString();
+					this.labelHeight.Text = sps.Height.ToString();
 
-					var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-					var fps = (double)frameRate[0] / frameRate[1];
+                    var fps = sps.MaxFps;
 
-					this.labelFps.Text = !double.IsNaN(fps) ? fps.ToString("0.0"): "-";
+
+                    var maxFps = (int)sps.MaxFps;
+                    if (maxFps == 0)
+                    {
+                        maxFps = 30;
+                    }
+
+                    DecoderPars.Width = sps.Width;
+                    DecoderPars.Height = sps.Height;
+                    DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
+
+                    this.labelFps.Text = !double.IsNaN(fps) ? fps.ToString("0.0"): "-";
 				}
 				else
 				{

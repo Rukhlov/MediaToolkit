@@ -333,10 +333,21 @@ namespace MediaToolkit.MediaFoundation
                  (int)(val >> 32),
                  (int)(val & uint.MaxValue),
             };
-
         }
 
-		public static Tuple<int, int> LongToInts(long val)
+        public static long PackToLong(Core.MediaRatio r)
+        {
+            return PackToLong(r.Num, r.Den);
+        }
+
+        public static Core.MediaRatio GetMediaRatio(long val)
+        {
+            var pars = UnPackLongToInts(val);
+
+            return new Core.MediaRatio(pars[0], pars[1]);
+        }
+
+        public static Tuple<int, int> LongToInts(long val)
 		{
 			var pars = UnPackLongToInts(val);
 

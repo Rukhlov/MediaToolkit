@@ -26,6 +26,23 @@ using Device3D9 = SharpDX.Direct3D9;
 
 namespace Test.Decoder
 {
+    public class DecoderParams
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+        public VideoDriverType DriverType { get; set; }
+
+        public int VideoAdapterIndex { get; set; } = 0;
+
+        public MediaRatio FrameRate { get; set; } = new MediaRatio(30,1);
+
+        public bool LowLatency { get; set; } = true;
+        public bool RealTimeMode { get; set; } = true;
+
+        public IntPtr hWnd { get; set; }
+    }
+
 	partial class VideoDecoderPresenter
 	{
 		private Device3D9.DeviceEx deviceEx = null;
@@ -47,34 +64,45 @@ namespace Test.Decoder
 		private int videoBuffeSize = 3;
 		private BlockingCollection<VideoFrame> videoFrames = null;
 
-		// private ConcurrentQueue<Frame> videoQueue = null;
-		//private Queue<Frame> frames = new Queue<Frame>(4);
+		private bool realTimeMode = true;
 
-		private bool realTime = true;
-
-		private int VideoAdapterIndex = 0;
+		//private int VideoAdapterIndex = 0;
 
 		private bool xvpMode = false;
 
 		private bool running = false;
 		private bool dxgiNv12Supported = false;
 
+        public DecoderParams DecoderPars { get; private set; }
 
-		public Task Start(MfVideoArgs inputArgs, MediaToolkit.Core.VideoDriverType driverType)
-		{
+        //public Task Start(MfVideoArgs inputArgs, MediaToolkit.Core.VideoDriverType driverType)
+        public Task Start(DecoderParams decoderParams)
+        {
             //Console.WriteLine("Start(...) " + string.Join(" ", width, height, fps, driverType));
+            this.DecoderPars = decoderParams;
+            var driverType = DecoderPars.DriverType;
 
-            int width = inputArgs.Width;
-            int height = inputArgs.Height;
+            int width = DecoderPars.Width;
+            int height = DecoderPars.Height;
 
-            var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-            int fps = frameRate[0];
+            //var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
+            //int fps = DecoderPars.Fps;
+            var frameRate = DecoderPars.FrameRate;
 
+            var inputArgs = new MfVideoArgs
+            {
+                Width = width,
+                Height = height,
+                DriverType = driverType,
+                FrameRate = MfTool.PackToLong(frameRate),
+            };
+
+            int videoAdapterIndex = decoderParams.VideoAdapterIndex;
             string adapterInfo = "";
 
 			using (var dxgiFactory = new SharpDX.DXGI.Factory1())
 			{
-				using (var adapter = dxgiFactory.GetAdapter1(VideoAdapterIndex))
+				using (var adapter = dxgiFactory.GetAdapter1(videoAdapterIndex))
 				{
 					adapterInfo = adapter.Description.Description;
 
@@ -169,14 +197,14 @@ namespace Test.Decoder
 				var sourceFormat = (Device3D9.Format)((int)nv12FourCC);
 				var targetFormat = Device3D9.Format.A8R8G8B8;
 
-				bool result = direct3D.CheckDeviceFormatConversion(VideoAdapterIndex, deviceType, sourceFormat, targetFormat);
+				bool result = direct3D.CheckDeviceFormatConversion(videoAdapterIndex, deviceType, sourceFormat, targetFormat);
 				Console.WriteLine("D3D9::CheckDeviceFormatConversion(...): " + sourceFormat + " " + targetFormat + " " + result);
 				if (!result)
 				{
 					throw new NotSupportedException("CheckDeviceFormatConversion(...) " + sourceFormat + " " + targetFormat);
 				}
 
-				deviceEx = new Device3D9.DeviceEx(direct3D, VideoAdapterIndex, deviceType, hWnd, flags, presentParams);
+				deviceEx = new Device3D9.DeviceEx(direct3D, videoAdapterIndex, deviceType, hWnd, flags, presentParams);
 				var caps = deviceEx.Capabilities;
 				var canStretchRectFromTextures = caps.DeviceCaps2.HasFlag(Device3D9.DeviceCaps2.CanStretchRectFromTextures);
 
@@ -229,13 +257,13 @@ namespace Test.Decoder
 				{
 
 					presenter = new D3D11Presenter(device3D11);
-					presenter.Setup(videoSize, videoSize, hWnd, VideoAdapterIndex);
+					presenter.Setup(videoSize, videoSize, hWnd, videoAdapterIndex);
 					presenter.AspectRatio = true;
 					presenter.FramePerSec = 60;
 					presenter.Start();
 
-
-					if (realTime)
+                    int fps = frameRate.Num / frameRate.Den;
+					if (realTimeMode)
 					{
 						PresenterTaskRealTime(fps);
 					}

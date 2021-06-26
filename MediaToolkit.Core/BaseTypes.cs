@@ -139,6 +139,13 @@ namespace MediaToolkit.Core
 
     }
 
+    public static class FrameRate
+    {
+        public static readonly MediaRatio _23_98 = new MediaRatio(24000, 1001);
+        public static readonly MediaRatio _29_97 = new MediaRatio(30000, 1001);
+        public static readonly MediaRatio _59_94 = new MediaRatio(60000, 1001);
+    }
+
     [Serializable]
 	public class MediaRatio
 	{

@@ -30,11 +30,11 @@ namespace MediaToolkit.Codecs
 
 	public class NalUnitReader
 	{
-		public static MediaFoundation.MfVideoArgs Probe(string fileName, int probeSize = 1024)
+		public static SequenceParameterSet Probe(string fileName, int probeSize = 1024)
 		{
-			MediaFoundation.MfVideoArgs videoArgs = null;
+            SequenceParameterSet sps = null;
 
-			var buffer = new byte[probeSize];
+            var buffer = new byte[probeSize];
 			int bytesInBuffer = 0;
 
 			using (var stream = new FileStream(fileName, FileMode.Open))
@@ -60,7 +60,7 @@ namespace MediaToolkit.Codecs
 							{
 								var rbsp = NalToRbsp(nalu, 1);
 
-								if (SequenceParameterSet.TryParse(rbsp, out var sps))
+								if (SequenceParameterSet.TryParse(rbsp, out sps))
 								{
 									long frameRate = 0;
 									var fps = sps.MaxFps;
@@ -69,12 +69,6 @@ namespace MediaToolkit.Codecs
 										frameRate = MediaFoundation.MfTool.PackToLong(new Tuple<int, int>((int)fps, 1));
 									}
 
-									videoArgs = new MediaFoundation.MfVideoArgs
-									{
-										Width = sps.Width,
-										Height = sps.Height,
-										FrameRate = frameRate
-									};
 
 									break;
 								}
@@ -84,7 +78,7 @@ namespace MediaToolkit.Codecs
 				}
 			}
 
-			return videoArgs;
+			return sps;
 
 		}
 

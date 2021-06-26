@@ -330,12 +330,64 @@ namespace MediaToolkit.Utils
             return new Rectangle((int)viewLeft, (int)viewTop, (int)viewWidth, (int)viewHeight);
         }
 
-        public static int Align(int val, int align)
-		{
-			return ((val + align - 1) & ~(align - 1));
-		}
 	}
 
+    public class MathTool
+    {
+        public static MediaRatio RealToRational(double value, double accuracy = 0.001)
+        {
+            if (accuracy <= 0.0 || accuracy >= 1.0)
+            {
+                throw new ArgumentOutOfRangeException("accuracy", "Must be > 0 and < 1.");
+            }
+
+            int sign = Math.Sign(value);
+
+            if (sign == -1)
+            {
+                value = Math.Abs(value);
+            }
+
+            // Accuracy is the maximum relative error; convert to absolute maxError
+            double maxError = sign == 0 ? accuracy : value * accuracy;
+
+            int n = (int)Math.Floor(value);
+            value -= n;
+
+            if (value < maxError)
+            {
+                return new MediaRatio(sign * n, 1);
+            }
+
+            if (1 - maxError < value)
+            {
+                return new MediaRatio(sign * (n + 1), 1);
+            }
+
+            double z = value;
+            int previousDenominator = 0;
+            int denominator = 1;
+            int numerator;
+
+            do
+            {
+                z = 1.0 / (z - (int)z);
+                int temp = denominator;
+                denominator = denominator * (int)z + previousDenominator;
+                previousDenominator = temp;
+                numerator = Convert.ToInt32(value * denominator);
+            }
+            while (Math.Abs(value - (double)numerator / denominator) > maxError && z != (int)z);
+
+            return new MediaRatio((n * denominator + numerator) * sign, denominator);
+        }
+
+
+        public static int Align(int val, int align)
+        {
+            return ((val + align - 1) & ~(align - 1));
+        }
+    }
 
     public class WcfDiscoveryAddressCustomEndpointBehavior : IEndpointBehavior, IDispatchMessageInspector
     {
