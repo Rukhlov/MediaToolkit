@@ -10,7 +10,17 @@ namespace MediaToolkit.Nvidia
     public class NvEncoder
     {
         private readonly NvEncoderPtr encoderPtr;
-        internal NvEncoder(NvEncoderPtr ptr) 
+
+		public readonly NvEncOpenEncodeSessionExParams SessionParams;
+		public NvEncInitializeParams InitializeParams { get; private set; }
+
+		internal NvEncoder(NvEncoderPtr ptr, NvEncOpenEncodeSessionExParams sessionParams)
+		{
+			this.encoderPtr = ptr;
+			this.SessionParams = sessionParams;
+		}
+
+		internal NvEncoder(NvEncoderPtr ptr) 
         {
             this.encoderPtr = ptr;
         }
@@ -206,11 +216,13 @@ namespace MediaToolkit.Nvidia
             return presetConfig;
         }
 
-        public void InitializeEncoder(ref NvEncInitializeParams createEncodeParams)
+		public void InitializeEncoder(NvEncInitializeParams createEncodeParams)
         {
             var status = NvEncApiFunc.InitializeEncoder(encoderPtr, ref createEncodeParams);
             CheckError(status);
-        }
+
+			this.InitializeParams = createEncodeParams;
+		}
 
       
         public void CreateInputBuffer(ref NvEncCreateInputBuffer createInputBufferParams)
@@ -412,32 +424,55 @@ namespace MediaToolkit.Nvidia
         }
 
 
-        public NvEncRegisteredResource RegisterResource(ref NvEncRegisterResource registerResParams)
+        public NvEncRegisteredResource RegisterResource(NvEncRegisterResource registerResParams)
         {
             var status = NvEncApiFunc.RegisterResource(encoderPtr, ref registerResParams);
 
             CheckError(status);
 
-            return new NvEncRegisteredResource(this, registerResParams.RegisteredResource);
+            return new NvEncRegisteredResource(this, registerResParams);
         }
 
         public class NvEncRegisteredResource : IDisposable
         {
-            private readonly NvEncoder _encoder;
-            private readonly NvEncRegisteredPtr _resource;
-            private int _disposed;
+            private readonly NvEncoder encoder;
+			public readonly NvEncRegisterResource RegisterResource;
 
-            public NvEncRegisteredResource(NvEncoder encoder, NvEncRegisteredPtr resource)
-            {
-                _encoder = encoder;
-                _resource = resource;
+			public NvEncRegisteredResource(NvEncoder encoder, NvEncRegisterResource registerResource)
+			{
+                this.encoder = encoder;
+				this.RegisterResource = registerResource;
             }
 
-            public void Dispose()
-            {
-                if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+			public NvEncRegisteredPtr RegisteredResourcePointer => RegisterResource.RegisteredResource;	
 
-                _encoder.UnregisterResource(_resource);
+
+			public NvEncInputPtr GetInputPointer()
+			{
+				return new NvEncInputPtr
+				{
+					Handle = RegisteredResourcePointer.Handle
+				};
+			}
+
+			public NvEncOutputPtr GetOutputPointer()
+			{
+				return new NvEncOutputPtr
+				{
+					Handle = RegisteredResourcePointer.Handle
+				};
+			}
+
+			private bool disposed = false;
+			public void Dispose()
+            {
+				if (!disposed)
+				{
+					var regPtr = RegisterResource.RegisteredResource;
+					encoder.UnregisterResource(regPtr);
+					disposed = true;
+				}
+             
             }
         }
 

@@ -87,22 +87,20 @@ namespace MediaToolkit.Nvidia
         }
 
 
-        public static NvEncoder OpenEncoder(ref NvEncOpenEncodeSessionExParams sessionParams)
+        public static NvEncoder OpenEncoder(NvEncOpenEncodeSessionExParams sessionParams)
         {
-            Initialize();
-
             var status = NvEncApiFunc.OpenEncodeSessionEx(ref sessionParams, out var encoderPtr);
             if (status != NvEncStatus.Success)
             {
                 throw new LibNvEncException("OpenEncodeSessionEx", "", status);
             }
 
-            return new NvEncoder(encoderPtr);
+            return new NvEncoder(encoderPtr, sessionParams);
         }
 
         public static NvEncoder OpenEncoderForDirectX(IntPtr deviceHandle)
         {
-            var ps = new NvEncOpenEncodeSessionExParams
+            var sessionParams = new NvEncOpenEncodeSessionExParams
             {
                 Version = NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER,
                 ApiVersion = NVENCAPI_VERSION,
@@ -110,7 +108,7 @@ namespace MediaToolkit.Nvidia
                 DeviceType = NvEncDeviceType.Directx
             };
 
-            return OpenEncoder(ref ps);
+            return OpenEncoder(sessionParams);
         }
 
 

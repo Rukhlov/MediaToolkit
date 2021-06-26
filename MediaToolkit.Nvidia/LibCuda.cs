@@ -482,6 +482,7 @@ namespace MediaToolkit.Nvidia
 			//Handle = devicePtr.Handle;
 		}
 
+		public IntPtr DeviceHandle => DevicePtr.Handle;
 		public static CuDeviceMemoryObj Allocate(IntPtr bytesize)
 		{
 			if (bytesize.ToInt64() < 0) throw new ArgumentOutOfRangeException(nameof(bytesize));

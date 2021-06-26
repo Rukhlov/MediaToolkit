@@ -269,5 +269,9 @@ namespace MediaToolkit.Nvidia
         /// CUresult CUDAAPI cuGraphicsUnmapResources(unsigned int count, CUgraphicsResource *resources, CUstream hStream);
         [DllImport(nvCudaPath, EntryPoint = "cuGraphicsUnmapResources")]
         public static extern CuResult GraphicsUnmapResources(int count, CuGraphicsResourcePtr* resources, CuStreamPtr hStream);
-    }
+
+
+		[DllImport(nvCudaPath, EntryPoint = "cuGraphicsUnmapResources")]
+		public static extern CuResult GraphicsUnmapResources(int count, IntPtr resources, CuStreamPtr hStream);
+	}
 }
