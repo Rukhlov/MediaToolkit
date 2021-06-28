@@ -298,7 +298,6 @@ namespace MediaToolkit.Nvidia
 				LibCuda.CheckResult(result);
 				disposed = true;
 			}
-
 		}
 	}
 
@@ -466,10 +465,15 @@ namespace MediaToolkit.Nvidia
 			return mem;
 		}
 
+		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = LibCuda.MemFreeHost(memoryPtr);
-			LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = LibCuda.MemFreeHost(memoryPtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
 		}
 	}
 
@@ -529,11 +533,16 @@ namespace MediaToolkit.Nvidia
 			LibCuda.CheckResult(result);
 		}
 
-		/// <inheritdoc cref="LibCuda.MemFree(CuDevicePtr)"/>
+		private bool disposed = false;
 		public void Dispose()
 		{
-			var result = LibCuda.MemFree(DevicePtr);
-			LibCuda.CheckResult(result);
+			if (!disposed)
+			{
+				var result = LibCuda.MemFree(DevicePtr);
+				LibCuda.CheckResult(result);
+				disposed = true;
+			}
+
 		}
 
 	}

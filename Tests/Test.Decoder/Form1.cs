@@ -1,4 +1,6 @@
-﻿using MediaToolkit.MediaFoundation;
+﻿using MediaToolkit.DirectX;
+using MediaToolkit.MediaFoundation;
+using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,23 +14,26 @@ using System.Windows.Forms;
 
 namespace Test.Decoder
 {
-    public partial class Form1 : Form
-    {
-        public Form1()
-        {
-            InitializeComponent();
-            videoPanel.Resize += VideoPanel_Resize;
+	public partial class Form1 : Form
+	{
+		public Form1()
+		{
+			InitializeComponent();
+			videoPanel.Resize += VideoPanel_Resize;
 
-            DecoderPars = new DecoderParams
-            {
+			DecoderPars = new DecoderParams
+			{
 
-            };
+			};
 
-            InitDriverTypes();
+			InitDriverTypes();
 			InitVideoFiles();
+            InitVideoAdapters();
+
+            UpdateControls();
 		}
 
-		private List<ComboBoxItem> driverTypes = new List<ComboBoxItem>();
+		private List<ComboBoxItem> decoderTypes = new List<ComboBoxItem>();
 		private List<ComboBoxItem> videoFiles = new List<ComboBoxItem>();
 
 		VideoDecoderPresenter decoder = null;
@@ -38,44 +43,82 @@ namespace Test.Decoder
 		//bool realTime = true;
 		//bool lowLatency = true;
 
-        private DecoderParams DecoderPars = null;
+		private DecoderParams DecoderPars = null;
 
-        //private MfVideoArgs inputArgs = null;
+		//private MfVideoArgs inputArgs = null;
 		private void InitDriverTypes()
 		{
-			driverTypes.Clear();
+			decoderTypes.Clear();
 
-			driverTypes.Add(new ComboBoxItem
-			{
-				Name = "DXVA2",
-				Tag = MediaToolkit.Core.VideoDriverType.D3D9,
-			});
-
-			driverTypes.Add(new ComboBoxItem
+			decoderTypes.Add(new ComboBoxItem
 			{
 				Name = "DX11VA",
-				Tag = MediaToolkit.Core.VideoDriverType.D3D11,
-			});
+				Tag = VideoDecoderType.D3D11VA,
+            });
 
-			driverTypes.Add(new ComboBoxItem
+            decoderTypes.Add(new ComboBoxItem
+            {
+                Name = "DXVA2",
+                Tag = VideoDecoderType.Dxva2,
+            });
+
+            decoderTypes.Add(new ComboBoxItem
 			{
-				Name = "CPU",
-				Tag = MediaToolkit.Core.VideoDriverType.CPU,
+				Name = "DXVA2(CPU)",
+				Tag = VideoDecoderType.Dxva2Software,
 			});
 
-			driverTypes.Add(new ComboBoxItem
+            decoderTypes.Add(new ComboBoxItem
+            {
+                Name = "FFmpeg",
+                Tag = VideoDecoderType.FFmpeg,
+            });
+
+            decoderTypes.Add(new ComboBoxItem
 			{
-				Name = "NVDec",
-				Tag = MediaToolkit.Core.VideoDriverType.Cuda,
-			});
+				Name = "NVDEC",
+				Tag = VideoDecoderType.NvDec,
+            });
 
-			comboBoxDriverType.DataSource = driverTypes;
-			comboBoxDriverType.DisplayMember = "Name";
-			comboBoxDriverType.ValueMember = "Tag";
+			comboBoxDecoderTypes.DataSource = decoderTypes;
+			comboBoxDecoderTypes.DisplayMember = "Name";
+			comboBoxDecoderTypes.ValueMember = "Tag";
 
 		}
 
-		private void InitVideoFiles()
+        private List<ComboBoxItem> videoAdapters = new List<ComboBoxItem>();
+        private void InitVideoAdapters()
+        {
+            using (var dxgiFactory = new SharpDX.DXGI.Factory1())
+            {
+                var adapters = dxgiFactory.Adapters1;
+                for(int adapterIndex= 0; adapterIndex < adapters.Length; adapterIndex++)
+                {
+                    var adapter = adapters[adapterIndex];
+                    var descr = adapter.Description1;
+                    if (!descr.Flags.HasFlag(AdapterFlags.Software))
+                    {
+                        videoAdapters.Add(new ComboBoxItem
+                        {
+                            Name = descr.Description,
+                            Tag = adapterIndex,
+                        });
+                    }
+                }
+
+                foreach (var a in adapters)
+                {
+                    DxTool.SafeDispose(a);
+                }
+            }
+
+
+            comboBoxVideoAdapters.DataSource = videoAdapters;
+            comboBoxVideoAdapters.DisplayMember = "Name";
+            comboBoxVideoAdapters.ValueMember = "Tag";
+        }
+
+        private void InitVideoFiles()
 		{
 			videoFiles.Clear();
 
@@ -87,7 +130,7 @@ namespace Test.Decoder
 			{
 				var files = di.GetFiles("*.h264");
 
-				foreach(var file in files)
+				foreach (var file in files)
 				{
 					var fileName = file.Name;
 					var name = Path.GetFileNameWithoutExtension(fileName);
@@ -107,7 +150,21 @@ namespace Test.Decoder
 
 		}
 
-		private FileInfo GetSourceFileInfo()
+
+        private int GetVideoAdapterIndex()
+        {
+            int index = 0;
+
+            var item = comboBoxVideoAdapters.SelectedItem as ComboBoxItem;
+            if (item != null)
+            {
+                index = (int)item.Tag;
+            }
+
+            return index;
+        }
+
+        private FileInfo GetSourceFileInfo()
 		{
 
 			FileInfo fileName = null;
@@ -137,80 +194,65 @@ namespace Test.Decoder
 			return fileName;
 		}
 
-		private MediaToolkit.Core.VideoDriverType GetDriverType()
+		private VideoDecoderType GetDecoderType()
 		{
-			MediaToolkit.Core.VideoDriverType driverType = MediaToolkit.Core.VideoDriverType.Unknown;
+            VideoDecoderType decoderType = VideoDecoderType.Dxva2;
 
-			var item = comboBoxDriverType.SelectedItem as ComboBoxItem;
+            var item = comboBoxDecoderTypes.SelectedItem as ComboBoxItem;
 			if (item != null)
 			{
-				driverType = (MediaToolkit.Core.VideoDriverType)item.Tag;
+				decoderType = (VideoDecoderType)item.Tag;
 			}
 
-			return driverType;
+			return decoderType;
 		}
+
+		private bool decoderStarted = false;
 
 		private void buttonDecoderStart_Click(object sender, EventArgs e)
 		{
 			Console.WriteLine("buttonDecoderStart_Click()");
 			try
 			{
-				MediaToolkit.Core.VideoDriverType driverType = GetDriverType();
-
-				var fileName = GetVideoFile();
-
-				decoder = new VideoDecoderPresenter();
-				try
+				if (!decoderStarted)
 				{
-					if (sourceReader == null)
-					{
-						if (DecoderPars.RealTimeMode)
-						{
-							sourceReader = new NalSourceReaderRealTime();
-						}
-						else
-						{
-							sourceReader = new NalSourceReader();
-						}
-					}
-
-
-					decoder.sourceReader = sourceReader;
-
-					decoder.hWnd = this.videoPanel.Handle;
-
-					decoder.Start(DecoderPars);
-					//test.Resize(videoPanel.ClientSize);
-
+					StartDecoder();
 				}
-				finally
+				else
 				{
-
-					//test.Close();
+					StopDecoder();
 				}
-
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
+				MessageBox.Show(ex.Message);
 			}
 
 		}
 
-
-		private void VideoPanel_Resize(object sender, EventArgs e)
-        {
-            if (decoder != null)
-            {
-                decoder.Resize(videoPanel.ClientSize);
-            }
-
-        }
-
-		private void buttonDecoderStop_Click(object sender, EventArgs e)
+		private void StartDecoder()
 		{
-            Console.WriteLine("buttonDecoderStop_Click(...)");
 
+			var fileName = GetVideoFile();
+
+			decoder = new VideoDecoderPresenter();
+			decoder.StateChanged += Decoder_StateChanged;
+			decoder.PresenterStateChanged += Decoder_PresenterStateChanged;
+
+			DecoderPars.DecoderType = GetDecoderType(); 
+            DecoderPars.VideoAdapterIndex = GetVideoAdapterIndex();
+
+			DecoderPars.hWnd = this.videoPanel.Handle;
+			var sourceReader = GetSourceReader();
+
+			decoder.Start(DecoderPars, sourceReader);
+
+		}
+
+
+		private void StopDecoder()
+		{
 			if (decoder != null)
 			{
 				decoder.Stop();
@@ -219,10 +261,173 @@ namespace Test.Decoder
 			}
 		}
 
+		private void Decoder_PresenterStateChanged(bool started)
+		{
+			if (started)
+			{
+				decoder.Resize(videoPanel.ClientSize);
+			}
+			else
+			{
+				videoPanel.Invalidate();
+
+				decoder.PresenterStateChanged -= Decoder_PresenterStateChanged;
+			}
+
+		}
+
+		private void Decoder_StateChanged(bool started)
+		{
+			this.decoderStarted = started;
+
+			if (!started)
+			{
+				decoder.Close();
+				decoder.StateChanged -= Decoder_StateChanged;
+			}
+			else
+			{
+
+			}
+
+			UpdateControls();
+		}
+
+		private void VideoPanel_Resize(object sender, EventArgs e)
+		{
+			if (decoder != null)
+			{
+				decoder.Resize(videoPanel.ClientSize);
+			}
+
+		}
+
+		private void buttonDecoderStop_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine("buttonDecoderStop_Click(...)");
+			StopDecoder();
+		}
+
+
+
 		private void buttonSourceStart_Click(object sender, EventArgs e)
 		{
-            Console.WriteLine("buttonSourceStart_Click(...)");
-            if (sourceReader == null)
+			Console.WriteLine("buttonSourceStart_Click(...)");
+			try
+			{
+				if (!isSourceStarted)
+				{
+					StartSource();
+
+				}
+				else
+				{
+					StopSource();
+				}
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex);
+				MessageBox.Show(ex.Message);
+			}
+
+		}
+
+		private void buttonSourceStop_Click(object sender, EventArgs e)
+		{
+			Console.WriteLine("buttonSourceStop_Click(...)");
+
+			StopSource();
+
+		}
+
+		private void StartSource()
+		{
+			var sourceReader = GetSourceReader();
+
+			var fileName = GetVideoFile();
+
+			var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+
+			if (sps == null)
+			{
+				throw new InvalidOperationException("Not supported h264 stream: " + fileName);
+			}
+
+			var maxFps = (int)sps.MaxFps;
+			if (maxFps == 0)
+			{
+				maxFps = 30;
+			}
+
+			DecoderPars.Width = sps.Width;
+			DecoderPars.Height = sps.Height;
+			DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
+
+			var interval = (double)1.0 / maxFps;
+			var readerTask = sourceReader.Start(fileName, interval);
+		}
+
+		private void StopSource()
+		{
+			if (sourceReader != null)
+			{
+				sourceReader.Stop();
+			}
+		}
+
+		private void comboBoxVideoFiles_SelectedValueChanged(object sender, EventArgs e)
+		{
+			Console.WriteLine("comboBoxVideoFiles_SelectedValueChanged(...)");
+
+			try
+			{
+				var fileName = GetVideoFile();
+				var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+				if (sps != null)
+				{
+					this.labelWidth.Text = sps.Width.ToString();
+					this.labelHeight.Text = sps.Height.ToString();
+
+					this.labelLevel.Text = (sps.Level / 10.0).ToString("0.0");
+					this.labelProfile.Text = sps.ProfileName;
+
+					var fps = sps.MaxFps;
+
+					var maxFps = (int)sps.MaxFps;
+					if (maxFps == 0)
+					{
+						maxFps = 30;
+					}
+
+					DecoderPars.Width = sps.Width;
+					DecoderPars.Height = sps.Height;
+					DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
+
+					this.labelFps.Text = !double.IsNaN(fps) ? fps.ToString("0.0") : "-";
+				}
+				else
+				{
+					this.labelWidth.Text = "-";
+					this.labelHeight.Text = "-";
+					this.labelFps.Text = "-";
+					this.labelLevel.Text = "-";
+					this.labelProfile.Text = "-";
+				}
+
+                UpdateControls();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+		}
+
+
+		private INalSourceReader GetSourceReader()
+		{
+			if (sourceReader == null)
 			{
 				if (DecoderPars.RealTimeMode)
 				{
@@ -232,87 +437,113 @@ namespace Test.Decoder
 				{
 					sourceReader = new NalSourceReader();
 				}
+
+				sourceReader.StateChanged += SourceReader_StateChanged;
 			}
 
-			var fileName = GetVideoFile();
 
-			var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
+			return sourceReader;
+		}
 
-			if(sps == null)
+		private bool isSourceStarted = false;
+		private void SourceReader_StateChanged(bool started)
+		{
+			Console.WriteLine("SourceReader_StateChanged(...) " + started);
+			this.isSourceStarted = started;
+
+			UpdateControls();
+		}
+
+
+		private void UpdateControls()
+		{
+			if (this.InvokeRequired)
 			{
-				throw new InvalidOperationException("Not supported h264 stream: " + fileName);
-			}
+				this.Invoke(new Action(() =>
+                {
+                    _updateControls();
 
-            var maxFps = (int)sps.MaxFps;
-            if(maxFps == 0)
-            {
-                maxFps = 30;
+                }));
+			}
+			else
+			{
+                _updateControls();
             }
 
-            DecoderPars.Width = sps.Width;
-            DecoderPars.Height = sps.Height;
-            DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
-
-            var interval = (double)1.0 / maxFps;
-			sourceReader.Start(fileName, interval);
 		}
 
-		private void buttonSourceStop_Click(object sender, EventArgs e)
-		{
-            Console.WriteLine("buttonSourceStop_Click(...)");
+        private void _updateControls()
+        {
+            //buttonSourceStart.Enabled = !isSourceStarted;
+            //buttonSourceStop.Enabled = isSourceStarted;
+            buttonSourceStart.Text = isSourceStarted ? "Stop Source" : "Start Source";
+            comboBoxVideoFiles.Enabled = !isSourceStarted;
 
+            buttonDecoderStart.Text = decoderStarted ? "Stop Decoder" : "Start Decoder";
+            comboBoxDecoderTypes.Enabled = !decoderStarted;
+
+            checkBoxDebugInfo.Enabled = decoderStarted;
+            checkBoxAspectRatio.Enabled = decoderStarted;
+
+            checkBoxAspectRatio.Checked = decoder?.AspectRatio ?? false;
+            checkBoxDebugInfo.Checked = decoder?.ShowLabel ?? false;
+
+            comboBoxVideoAdapters.Enabled = !decoderStarted;
+
+            numericFps.Enabled = isSourceStarted;
+
+            var fps = 30;
             if (sourceReader != null)
-			{
-				sourceReader.Stop();
-			}
-			
-		}
+            {
+                fps = (int)(1.0 / sourceReader.PacketInterval);
+            }
 
-		private void comboBoxVideoFiles_SelectedValueChanged(object sender, EventArgs e)
+            if (fps > numericFps.Maximum)
+            {
+                fps = (int)numericFps.Maximum;
+            }
+            if (fps < numericFps.Minimum)
+            {
+                fps = (int)numericFps.Minimum;
+            }
+            if (numericFps.Value != fps)
+            {
+                numericFps.Value = fps;
+            }
+
+            //buttonDecoderStart.Enabled = !decoderStarted;
+            //buttonDecoderStop.Enabled = decoderStarted;
+        }
+
+        private void checkBoxDebugInfo_CheckedChanged(object sender, EventArgs e)
 		{
-            Console.WriteLine("comboBoxVideoFiles_SelectedValueChanged(...)");
-
-            try
+			if (decoder != null)
 			{
-				var fileName = GetVideoFile();
-				var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
-				if (sps != null)
-				{
-					this.labelWidth.Text = sps.Width.ToString();
-					this.labelHeight.Text = sps.Height.ToString();
-
-                    var fps = sps.MaxFps;
-
-
-                    var maxFps = (int)sps.MaxFps;
-                    if (maxFps == 0)
-                    {
-                        maxFps = 30;
-                    }
-
-                    DecoderPars.Width = sps.Width;
-                    DecoderPars.Height = sps.Height;
-                    DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
-
-                    this.labelFps.Text = !double.IsNaN(fps) ? fps.ToString("0.0"): "-";
-				}
-				else
-				{
-					this.labelWidth.Text = "-";
-					this.labelHeight.Text = "-";
-					this.labelFps.Text = "-";
-				}
-
+				decoder.ShowLabel = checkBoxDebugInfo.Checked;
 			}
-			catch(Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
-
 		}
-	}
 
-	class ComboBoxItem
+		private void checkBoxAspectRatio_CheckedChanged(object sender, EventArgs e)
+		{
+			if (decoder != null)
+			{
+				decoder.AspectRatio = checkBoxAspectRatio.Checked;
+			}
+		}
+
+        private void numericFps_ValueChanged(object sender, EventArgs e)
+        {
+            var fps = (int)numericFps.Value;
+
+            var interval = (double)1.0 / fps;
+            if (sourceReader != null)
+            {
+                sourceReader.PacketInterval = interval;
+            }
+        }
+    }
+
+    class ComboBoxItem
 	{
 		public string Name { get; set; }
 		public object Tag { get; set; }

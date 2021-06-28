@@ -26,12 +26,24 @@ using Device3D9 = SharpDX.Direct3D9;
 
 namespace Test.Decoder
 {
+
+    public enum VideoDecoderType
+    {
+        Dxva2,
+        Dxva2Software,
+        D3D11VA,
+        FFmpeg,
+        NvDec
+    }
+
     public class DecoderParams
     {
         public int Width { get; set; }
         public int Height { get; set; }
 
-        public VideoDriverType DriverType { get; set; }
+        public VideoDecoderType DecoderType { get; set; }
+
+        //public VideoDriverType DriverType { get; set; }
 
         public int VideoAdapterIndex { get; set; } = 0;
 
@@ -58,7 +70,7 @@ namespace Test.Decoder
 
 		private PresentationClock presentationClock = new PresentationClock();
 
-        internal INalSourceReader sourceReader { get; set; }
+		private INalSourceReader sourceReader = null;
 
 
 		private int videoBuffeSize = 3;
@@ -74,13 +86,37 @@ namespace Test.Decoder
 		private bool dxgiNv12Supported = false;
 
         public DecoderParams DecoderPars { get; private set; }
+        public event Action<bool> StateChanged;
 
-        //public Task Start(MfVideoArgs inputArgs, MediaToolkit.Core.VideoDriverType driverType)
-        public Task Start(DecoderParams decoderParams)
+        public event Action<bool> PresenterStateChanged;
+        public event Action<bool> DecoderStateChanged;
+        internal void Start(DecoderParams decoderParams, INalSourceReader sourceReader)
         {
-            //Console.WriteLine("Start(...) " + string.Join(" ", width, height, fps, driverType));
+			//Console.WriteLine("Start(...) " + string.Join(" ", width, height, fps, driverType));
+			this.sourceReader = sourceReader;
+
             this.DecoderPars = decoderParams;
-            var driverType = DecoderPars.DriverType;
+            var driverType = VideoDriverType.Unknown;
+
+            var decoderType = DecoderPars.DecoderType;
+
+            if (decoderType == VideoDecoderType.D3D11VA)
+            {
+                driverType = VideoDriverType.D3D11;
+            }
+            else if(decoderType == VideoDecoderType.Dxva2)
+            {
+                driverType = VideoDriverType.D3D9;
+            }
+            else if (decoderType == VideoDecoderType.Dxva2Software 
+                || decoderType == VideoDecoderType.FFmpeg)
+            {
+                driverType = VideoDriverType.CPU;
+            }
+            else if (decoderType == VideoDecoderType.NvDec)
+            {
+                driverType = VideoDriverType.Cuda;
+            }
 
             int width = DecoderPars.Width;
             int height = DecoderPars.Height;
@@ -88,6 +124,7 @@ namespace Test.Decoder
             //var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
             //int fps = DecoderPars.Fps;
             var frameRate = DecoderPars.FrameRate;
+			this.hWnd = DecoderPars.hWnd;
 
             var inputArgs = new MfVideoArgs
             {
@@ -237,15 +274,18 @@ namespace Test.Decoder
 			{
 				Console.WriteLine("DecoderTask BEGIN");
 
-				if (driverType == VideoDriverType.Cuda)
-				{
-					NvDecDecoderTask(inputArgs);
-				}
-				else
-				{
-					DecoderTask(inputArgs);
-					//FFmpegDecoderTask(inputArgs);
-				}
+                if(decoderType == VideoDecoderType.NvDec)
+                {
+                    NvDecDecoderTask(inputArgs);
+                }
+                else if(decoderType == VideoDecoderType.FFmpeg)
+                {
+                    FFmpegDecoderTask(inputArgs);
+                }
+                else
+                {
+                    MfDecoderTask(inputArgs);
+                }
 
 				Console.WriteLine("DecoderTask END");
 			});
@@ -262,6 +302,7 @@ namespace Test.Decoder
 					presenter.FramePerSec = 60;
 					presenter.Start();
 
+                    PresenterStateChanged?.Invoke(true);
                     int fps = frameRate.Num / frameRate.Den;
 					if (realTimeMode)
 					{
@@ -284,7 +325,9 @@ namespace Test.Decoder
 						presenter.Close();
 						presenter = null;
 					}
-				}
+
+                    PresenterStateChanged?.Invoke(false);
+                }
 
 				Console.WriteLine("PresenterTask END");
 			});
@@ -295,10 +338,15 @@ namespace Test.Decoder
 
 			running = true;
 
-			return Task.WhenAll(decoderTask, presenterTask);
+            StateChanged.Invoke(true);
+            var task = Task.WhenAll(decoderTask, presenterTask);
+            task.ContinueWith(t=>
+            {
+                StateChanged.Invoke(false);
+            });
 		}
 
-		public IntPtr hWnd { get; set; }
+		public IntPtr hWnd { get; private set; }
         public void Resize(System.Drawing.Size clientSize)
         {
             if (presenter != null)
@@ -308,7 +356,41 @@ namespace Test.Decoder
             }
         }
 
-        private Task decoderTask = null;
+		public bool ShowLabel
+		{
+			get
+			{
+				return presenter?.ShowLabel ?? false;
+			}
+			set
+			{
+				if (presenter != null)
+				{
+					presenter.ShowLabel = value;
+				}
+				
+			}
+		}
+
+		public bool AspectRatio
+		{
+			get
+			{
+				return presenter?.AspectRatio ?? false;
+			}
+			set
+			{
+				if (presenter != null)
+				{
+					presenter.AspectRatio = value;
+				}
+
+			}
+		}
+
+
+
+		private Task decoderTask = null;
         private Task presenterTask = null;
 
         public void Stop()
@@ -492,7 +574,7 @@ namespace Test.Decoder
 
 
 		RgbProcessor rgbProcessor = null;
-		private void DecoderTask(MfVideoArgs inputArgs)
+		private void MfDecoderTask(MfVideoArgs inputArgs)
 		{
 
 			try

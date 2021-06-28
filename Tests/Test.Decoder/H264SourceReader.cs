@@ -14,15 +14,17 @@ namespace Test.Decoder
 {
     interface INalSourceReader
     {
+		bool IsStarted { get; }
         bool PacketsAvailable { get; }
         bool IsFull { get; }
         int Count { get; }
-        double PacketInterval { get; }
+        double PacketInterval { get; set; }
         bool TryGetPacket(out VideoPacket packet, int timeout);
         Task Start(string fileName, double interval);
         void Stop();
 
-    }
+		event Action<bool> StateChanged;
+	}
 
     class NalSourceReaderRealTime : INalSourceReader
     {
@@ -30,7 +32,10 @@ namespace Test.Decoder
         CircularQueue<VideoPacket> videoPackets = null;
         //private BlockingCollection<VideoPacket> videoPackets = null;
         private volatile bool running = false;
-        public bool PacketsAvailable
+
+		public bool IsStarted => running;
+
+		public bool PacketsAvailable
         {
             get
             {
@@ -43,7 +48,7 @@ namespace Test.Decoder
             }
         }
 
-        public int Count
+		public int Count
         {
             get
             {
@@ -87,9 +92,9 @@ namespace Test.Decoder
         }
 
 
-
-        public int WaitDelay { get; set; } = 33;
         public double PacketInterval { get; set; }
+
+		public event Action<bool> StateChanged;
 
         public Task Start(string fileName, double packetInterval)
         {
@@ -99,18 +104,20 @@ namespace Test.Decoder
             }
 
             running = true;
-            return Task.Run(() =>
+			return Task.Run(() =>
             {
-                //videoPackets = new Queue<VideoPacket>(4);
-                videoPackets = new CircularQueue<VideoPacket>(64);
 
                 Stream stream = null;
                 try
-                {
-					//var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
-					PacketInterval = packetInterval;//(double)frameRate[1] / frameRate[0];
+                {   
 
-					WaitDelay = (int)(PacketInterval * 1000);
+                    this.PacketInterval = packetInterval;
+
+                    StateChanged?.Invoke(true);
+
+					//videoPackets = new Queue<VideoPacket>(4);
+					videoPackets = new CircularQueue<VideoPacket>(64);
+
 
                     long packetCount = 0;
                     double packetTime = 0;
@@ -178,16 +185,15 @@ namespace Test.Decoder
 
                                     int delay = (int)(PacketInterval * 1000);
                                     //delay += rnd.Next(-15, 15);
-                                    Thread.Sleep(WaitDelay);
+                                    Thread.Sleep(delay);
 
                                     packetCount++;
                                 }
                                 else if (nalUnitType == (int)NalUnitType.SequenceParameterSet)
                                 {
-                                    var rbsp = NalUnitReader.NalToRbsp(nal, 1);
-
-                                    SequenceParameterSet.TryParse(rbsp, out var sps);
-                                    Console.WriteLine(sps.ToString());
+                                    //var rbsp = NalUnitReader.NalToRbsp(nal, 1);
+                                    //SequenceParameterSet.TryParse(rbsp, out var sps);
+                                    //Console.WriteLine(sps.ToString());
 
                                     //var startCodes = new byte[] { 0, 0, 0, 1 };
                                     //IEnumerable<byte> data = new List<byte>();
@@ -224,12 +230,14 @@ namespace Test.Decoder
                         stream = null;
                     }
 
-                    //if (videoPackets != null)
-                    //{
-                    //	videoPackets.Dispose();
-                    //	videoPackets = null;
-                    //}
-                }
+					StateChanged?.Invoke(false);
+
+					//if (videoPackets != null)
+					//{
+					//	videoPackets.Dispose();
+					//	videoPackets = null;
+					//}
+				}
             });
         }
 
@@ -307,8 +315,10 @@ namespace Test.Decoder
     class NalSourceReader : INalSourceReader
     {
         private BlockingCollection<VideoPacket> videoPackets = null;
-        private volatile bool running = false;
-        public bool PacketsAvailable
+        private volatile bool isStarted = false;
+		public bool IsStarted => isStarted;
+
+		public bool PacketsAvailable
         {
             get
             {
@@ -346,8 +356,9 @@ namespace Test.Decoder
             }
         }
 
+		public event Action<bool> StateChanged;
 
-        public bool TryGetPacket(out VideoPacket packet, int timeout)
+		public bool TryGetPacket(out VideoPacket packet, int timeout)
         {
             packet = null;
             bool result = false;
@@ -358,22 +369,27 @@ namespace Test.Decoder
 
             return result;
         }
-        public double PacketInterval { get; private set; }
+        public double PacketInterval { get; set; }
         public Task Start(string fileName, double interval)
         {
-            if (running)
+            if (isStarted)
             {
-                throw new InvalidOperationException("Invalid state " + running);
+                throw new InvalidOperationException("Invalid state " + isStarted);
             }
 
-            running = true;
+            isStarted = true;
             return Task.Run(() =>
             {
-                //videoPackets = new Queue<VideoPacket>(4);
-                videoPackets = new BlockingCollection<VideoPacket>(8);
+
                 Stream stream = null;
                 try
                 {
+					StateChanged.Invoke(true);
+
+					//videoPackets = new Queue<VideoPacket>(4);
+					videoPackets = new BlockingCollection<VideoPacket>(8);
+
+
 					// var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);
 					PacketInterval = interval;//(double)frameRate[1] / frameRate[0];
 					long packetCount = 0;
@@ -427,9 +443,9 @@ namespace Test.Decoder
                                 }
                             }
 
-                        } while (dataAvailable && running);
+                        } while (dataAvailable && isStarted);
 
-                        if (!running)
+                        if (!isStarted)
                         {
                             break;
                         }
@@ -440,7 +456,7 @@ namespace Test.Decoder
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    running = false;
+                    isStarted = false;
                 }
                 finally
                 {
@@ -455,13 +471,15 @@ namespace Test.Decoder
                         videoPackets.Dispose();
                         videoPackets = null;
                     }
-                }
+
+					StateChanged.Invoke(false);
+				}
             });
         }
 
         public void Stop()
         {
-            running = false;
+            isStarted = false;
         }
 
     }
