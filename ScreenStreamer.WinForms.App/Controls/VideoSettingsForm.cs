@@ -515,7 +515,7 @@ namespace ScreenStreamer.WinForms.App
 					videoSource.CaptureStarted += VideoSource_CaptureStarted;
                     videoSource.CaptureStopped += VideoSource_CaptureStopped;
 
-                    videoSource.BufferUpdated += VideoSource_BufferUpdated;
+                    //videoSource.BufferUpdated += VideoSource_BufferUpdated;
                 }
 
 
@@ -540,7 +540,7 @@ namespace ScreenStreamer.WinForms.App
 
                 if (videoSource != null)
                 {
-                    videoSource.BufferUpdated -= VideoSource_BufferUpdated;
+                    //videoSource.BufferUpdated -= VideoSource_BufferUpdated;
                     videoSource.CaptureStarted -= VideoSource_CaptureStarted;
                     videoSource.CaptureStopped -= VideoSource_CaptureStopped;
                     videoSource.Close(true);
@@ -703,7 +703,8 @@ namespace ScreenStreamer.WinForms.App
             videoSource.Close(true);
             videoSource.CaptureStarted -= VideoSource_CaptureStarted;
             videoSource.CaptureStopped -= VideoSource_CaptureStopped;
-            videoSource.BufferUpdated -= VideoSource_BufferUpdated;
+            //videoSource.BufferUpdated -= VideoSource_BufferUpdated;
+
             videoSource = null;
 
         }

@@ -1,5 +1,6 @@
 ﻿using MediaToolkit.DirectX;
 using MediaToolkit.MediaFoundation;
+using NLog;
 using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
@@ -16,15 +17,14 @@ namespace Test.Decoder
 {
 	public partial class Form1 : Form
 	{
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public Form1()
 		{
 			InitializeComponent();
 			videoPanel.Resize += VideoPanel_Resize;
 
-			DecoderPars = new DecoderParams
-			{
-
-			};
+			DecoderPars = new DecoderParams();
 
 			InitDriverTypes();
 			InitVideoFiles();
@@ -211,7 +211,7 @@ namespace Test.Decoder
 
 		private void buttonDecoderStart_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("buttonDecoderStart_Click()");
+            logger.Debug("buttonDecoderStart_Click(...)");
 			try
 			{
 				if (!decoderStarted)
@@ -304,7 +304,7 @@ namespace Test.Decoder
 
 		private void buttonDecoderStop_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("buttonDecoderStop_Click(...)");
+            logger.Debug("buttonDecoderStop_Click(...)");
 			StopDecoder();
 		}
 
@@ -312,7 +312,7 @@ namespace Test.Decoder
 
 		private void buttonSourceStart_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("buttonSourceStart_Click(...)");
+            logger.Debug("buttonSourceStart_Click(...)");
 			try
 			{
 				if (!isSourceStarted)
@@ -327,7 +327,7 @@ namespace Test.Decoder
 			}
 			catch(Exception ex)
 			{
-				Console.WriteLine(ex);
+                logger.Error(ex);
 				MessageBox.Show(ex.Message);
 			}
 
@@ -335,7 +335,7 @@ namespace Test.Decoder
 
 		private void buttonSourceStop_Click(object sender, EventArgs e)
 		{
-			Console.WriteLine("buttonSourceStop_Click(...)");
+            logger.Debug("buttonSourceStop_Click(...)");
 
 			StopSource();
 
@@ -378,7 +378,7 @@ namespace Test.Decoder
 
 		private void comboBoxVideoFiles_SelectedValueChanged(object sender, EventArgs e)
 		{
-			Console.WriteLine("comboBoxVideoFiles_SelectedValueChanged(...)");
+            logger.Debug("comboBoxVideoFiles_SelectedValueChanged(...)");
 
 			try
 			{
@@ -386,6 +386,7 @@ namespace Test.Decoder
 				var sps = MediaToolkit.Codecs.NalUnitReader.Probe(fileName);
 				if (sps != null)
 				{
+                    this.Text = fileName;
 					this.labelWidth.Text = sps.Width.ToString();
 					this.labelHeight.Text = sps.Height.ToString();
 
@@ -408,6 +409,7 @@ namespace Test.Decoder
 				}
 				else
 				{
+                    this.Text = "";
 					this.labelWidth.Text = "-";
 					this.labelHeight.Text = "-";
 					this.labelFps.Text = "-";
@@ -448,7 +450,7 @@ namespace Test.Decoder
 		private bool isSourceStarted = false;
 		private void SourceReader_StateChanged(bool started)
 		{
-			Console.WriteLine("SourceReader_StateChanged(...) " + started);
+            logger.Debug("SourceReader_StateChanged(...) " + started);
 			this.isSourceStarted = started;
 
 			UpdateControls();
@@ -517,7 +519,9 @@ namespace Test.Decoder
 
         private void checkBoxDebugInfo_CheckedChanged(object sender, EventArgs e)
 		{
-			if (decoder != null)
+            logger.Debug("checkBoxDebugInfo_CheckedChanged(...)");
+
+            if (decoder != null)
 			{
 				decoder.ShowLabel = checkBoxDebugInfo.Checked;
 			}
@@ -525,7 +529,9 @@ namespace Test.Decoder
 
 		private void checkBoxAspectRatio_CheckedChanged(object sender, EventArgs e)
 		{
-			if (decoder != null)
+            logger.Debug("checkBoxAspectRatio_CheckedChanged(...)");
+
+            if (decoder != null)
 			{
 				decoder.AspectRatio = checkBoxAspectRatio.Checked;
 			}
@@ -533,6 +539,8 @@ namespace Test.Decoder
 
         private void numericFps_ValueChanged(object sender, EventArgs e)
         {
+            //logger.Debug("numericFps_ValueChanged(...)");
+
             var fps = (int)numericFps.Value;
 
             var interval = (double)1.0 / fps;
@@ -541,7 +549,17 @@ namespace Test.Decoder
                 sourceReader.PacketInterval = interval;
             }
         }
-    }
+
+
+		protected override void OnClosed(EventArgs e)
+		{
+			logger.Debug("OnClosed(...)");
+			base.OnClosed(e);
+
+			StopDecoder();
+			StopSource();
+		}
+	}
 
     class ComboBoxItem
 	{

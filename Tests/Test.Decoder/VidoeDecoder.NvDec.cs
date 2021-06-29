@@ -33,21 +33,21 @@ namespace Test.Decoder
 		{
 			try
 			{
-				Console.WriteLine("Try to init CUDA environments...");
+                logger.Debug("Try to init CUDA environments...");
 
 				LibCuda.Initialize();
 
 				var driverVersion = LibCuda.DriverGetVersion();
 
-				Console.WriteLine("CUDA driver ver: " + driverVersion);
-				Console.WriteLine("CUDA API ver: " + LibCuda.ApiVerison);
+                logger.Debug("CUDA driver ver: " + driverVersion);
+                logger.Debug("CUDA API ver: " + LibCuda.ApiVerison);
 				if (driverVersion == 0)
 				{
 					throw new InvalidOperationException("CUDA driver not installed");
 				}
 				else if (driverVersion < LibCuda.ApiVerison)
 				{
-					Console.WriteLine("WARN: CUDA driver is incompatible with API (" + driverVersion + "<" + LibCuda.ApiVerison + ")");
+                    logger.Warn("WARN: CUDA driver is incompatible with API (" + driverVersion + "<" + LibCuda.ApiVerison + ")");
 				}
 
 
@@ -68,8 +68,8 @@ namespace Test.Decoder
 				var memory = device.GetTotalMemory();
 				var id = device.GetId();
 
-				Console.WriteLine("CUDA device info:\r\n" + string.Join("\r\n", id, name, pciId, memory));
-				Console.WriteLine("--------------------------");
+                logger.Debug("CUDA device info:\r\n" + string.Join("\r\n", id, name, pciId, memory));
+                logger.Debug("--------------------------");
 				cuContext = device.CreateContext(CuContextFlags.SchedBlockingSync);
 
 				var codecType = CuVideoCodec.H264;
@@ -82,7 +82,7 @@ namespace Test.Decoder
 				{
 					throw new NotSupportedException("Not supported codec: " + string.Join(", ", codecType, chromaFormat, bitDepthMinus8));
 				}
-				Console.WriteLine("Codec caps: " + decodeCaps);
+                logger.Debug("Codec caps: " + decodeCaps);
 
 				videoContextLock = cuContext.CreateLock();
 
@@ -131,7 +131,7 @@ namespace Test.Decoder
 							bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
 							if (!packetTaken)
 							{
-								Console.WriteLine("packet == false");
+                                logger.Debug("packet == false");
 								continue;
 							}
 							//Console.WriteLine("packet.data.Length == " + packet.data.Length);
@@ -164,7 +164,7 @@ namespace Test.Decoder
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 
 				running = false;
 			}
@@ -179,7 +179,7 @@ namespace Test.Decoder
 
 		private int SequenceCallback(IntPtr userData, ref CuVideoFormat format)
 		{
-			Console.WriteLine(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
+            logger.Debug(">>>>>>>>>>>>>>>>>>>> SequenceCallback(...)");
 			/*
 			 *  Parser triggers this callback for initial sequence header or when it encounters a 
 			 *  video format change. Return value from sequence callback is interpreted by the driver as follows:
@@ -243,7 +243,7 @@ namespace Test.Decoder
 			{
 				result = 0;
 
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 			}
 
 			return result;
@@ -253,9 +253,9 @@ namespace Test.Decoder
 
 		private int DecodePictureCallback(IntPtr userData, ref CuVideoPicParams param)
 		{
-			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>DecodePictureCallback(...)");
+            //logger.Debug(">>>>>>>>>>>>>>>>>>>>>DecodePictureCallback(...)");
 
-			/*
+            /*
 			 *  Parser triggers this callback when bitstream data for one frame is 
 			 *  ready. In case of field pictures, there may be two decode calls per one display call since two 
 			 *  fields make up one frame. Return value from this callback is interpreted as:
@@ -263,7 +263,7 @@ namespace Test.Decoder
 			 *	≥1: succeeded
 			 */
 
-			int result = 1;
+            int result = 1;
 			try
 			{
 				using (var contextPush = cuContext.Push())
@@ -273,7 +273,7 @@ namespace Test.Decoder
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				result = 0;
 			}
 
@@ -283,19 +283,19 @@ namespace Test.Decoder
 
 		private int VideoDisplayCallback(IntPtr userData, IntPtr infoPtr)
 		{
-			//Console.WriteLine(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
+            //logger.Debug(">>>>>>>>>>>>>>>>>>>>>>>VideoDisplayCallback(...)");
 
-			/*
+            /*
 			 *	Parser triggers this callback when a frame in display order is ready. 
 			 *	Return value from this callback is interpreted as:
 			 *	0: fail
 			 *	≥1: succeeded
 			 */
 
-			if (infoPtr == IntPtr.Zero)
+            if (infoPtr == IntPtr.Zero)
 			{
-				//IsFinalFrame()
-				Console.WriteLine("LastFrame");
+                //IsFinalFrame()
+                logger.Debug("LastFrame");
 				return 1;
 			}
 
@@ -314,7 +314,7 @@ namespace Test.Decoder
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				result = 0;
 			}
 
@@ -348,7 +348,7 @@ namespace Test.Decoder
 				var status = cuVideoDecoder.GetDecodeStatus(displayInfo.PictureIndex);
 				if (status != CuVideoDecodeStatus.Success)
 				{
-					Console.WriteLine("GetDecodeStatus(...) " + status);
+                    logger.Warn("GetDecodeStatus(...) " + status);
 					//...
 				}
 
@@ -436,7 +436,7 @@ namespace Test.Decoder
 
 		private void InitGraphicResources(CuVideoDecodeCreateInfo decodeInfo)
 		{
-			Console.WriteLine("InitGraphicResources()");
+            logger.Debug("InitGraphicResources()");
 
 			int width = decodeInfo.Width;
 			int height = decodeInfo.Height;
@@ -476,7 +476,7 @@ namespace Test.Decoder
 
 		private void CloseGraphicsResources()
 		{
-			Console.WriteLine("CloseGraphicsResources()");
+            logger.Debug("CloseGraphicsResources()");
 
 			if (lumaResource != null)
 			{
@@ -506,7 +506,7 @@ namespace Test.Decoder
 
 		private void CloseCuda()
 		{
-			Console.WriteLine("CloseCuda()");
+            logger.Debug("CloseCuda()");
 
 			if (cuVideoDecoder != null)
 			{

@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Device3D11 = SharpDX.Direct3D11;
 using Device3D9 = SharpDX.Direct3D9;
-
+using NLog;
 
 namespace Test.Decoder
 {
@@ -57,7 +57,9 @@ namespace Test.Decoder
 
 	partial class VideoDecoderPresenter
 	{
-		private Device3D9.DeviceEx deviceEx = null;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        private Device3D9.DeviceEx deviceEx = null;
 		private Device3D11.Device device3D11 = null;
 		private Texture2D sharedTexture = null;
 		//private Device3D9.Surface destSurf = null;
@@ -92,6 +94,8 @@ namespace Test.Decoder
         public event Action<bool> DecoderStateChanged;
         internal void Start(DecoderParams decoderParams, INalSourceReader sourceReader)
         {
+            logger.Debug("Start(...)");
+
 			//Console.WriteLine("Start(...) " + string.Join(" ", width, height, fps, driverType));
 			this.sourceReader = sourceReader;
 
@@ -163,7 +167,8 @@ namespace Test.Decoder
 					dxgiNv12Supported = formatSupport.HasFlag(FormatSupport.Texture2D);
 
 					var log = MfTool.LogEnumFlags(formatSupport);
-					Console.WriteLine("D3D11:: NV12 support: " + log);
+                    logger.Debug("D3D11:: NV12 support: " + log);
+                  
 
 					//formatSupport = device3D11.CheckFormatSupport(SharpDX.DXGI.Format.B8G8R8A8_UNorm);
 					//log = MfTool.LogEnumFlags(formatSupport);
@@ -233,9 +238,9 @@ namespace Test.Decoder
 				var nv12FourCC = new FourCC("NV12");
 				var sourceFormat = (Device3D9.Format)((int)nv12FourCC);
 				var targetFormat = Device3D9.Format.A8R8G8B8;
-
-				bool result = direct3D.CheckDeviceFormatConversion(videoAdapterIndex, deviceType, sourceFormat, targetFormat);
-				Console.WriteLine("D3D9::CheckDeviceFormatConversion(...): " + sourceFormat + " " + targetFormat + " " + result);
+               
+                bool result = direct3D.CheckDeviceFormatConversion(videoAdapterIndex, deviceType, sourceFormat, targetFormat);
+                logger.Debug("D3D9::CheckDeviceFormatConversion(...): " + sourceFormat + " " + targetFormat + " " + result);
 				if (!result)
 				{
 					throw new NotSupportedException("CheckDeviceFormatConversion(...) " + sourceFormat + " " + targetFormat);
@@ -272,7 +277,7 @@ namespace Test.Decoder
 
 			decoderTask = new Task(() =>
 			{
-				Console.WriteLine("DecoderTask BEGIN");
+                logger.Debug("DecoderTask BEGIN");
 
                 if(decoderType == VideoDecoderType.NvDec)
                 {
@@ -287,12 +292,12 @@ namespace Test.Decoder
                     MfDecoderTask(inputArgs);
                 }
 
-				Console.WriteLine("DecoderTask END");
+                logger.Debug("DecoderTask END");
 			});
 
 			presenterTask = new Task(() =>
 			{
-				Console.WriteLine("PresenterTask BEGIN");
+                logger.Debug("PresenterTask BEGIN");
 				try
 				{
 
@@ -315,7 +320,7 @@ namespace Test.Decoder
 				}
 				catch(Exception ex)
 				{
-					Console.WriteLine(ex);
+                    logger.Error(ex);
 					throw;
 				}
 				finally
@@ -329,7 +334,7 @@ namespace Test.Decoder
                     PresenterStateChanged?.Invoke(false);
                 }
 
-				Console.WriteLine("PresenterTask END");
+                logger.Debug("PresenterTask END");
 			});
 
 			decoderTask.Start();
@@ -426,7 +431,7 @@ namespace Test.Decoder
 					}
 				}
 
-				Console.WriteLine("videoQueue.IsAddingCompleted");
+                logger.Debug("videoQueue.IsAddingCompleted");
 				presentationClock.Reset();
 				AutoResetEvent syncEvent = new AutoResetEvent(false);
 				VideoFrame frame = null;
@@ -451,7 +456,7 @@ namespace Test.Decoder
 								bool frameTaken = videoFrames.TryTake(out frame, 10);
 								if (!frameTaken)
 								{
-									Console.WriteLine("frameTaken == false");
+                                    logger.Warn("frameTaken == false");
 									continue;
 								}
 
@@ -461,7 +466,7 @@ namespace Test.Decoder
 
 							if (frame.time < frameTime)
 							{
-								Console.WriteLine("Non monotonic time: " + frame.time + "<" + frameTime);
+                                logger.Warn("Non monotonic time: " + frame.time + "<" + frameTime);
 								if (frame != null)
 								{
 									frame.Dispose();
@@ -497,7 +502,7 @@ namespace Test.Decoder
 
 							if (delta < -perFrameInterval * 3)
 							{
-								Console.WriteLine("Sample is too late: " + delta);
+                                logger.Warn("Sample is too late: " + delta);
 								//if (frame != null)
 								//{
 								//	frame.Dispose();
@@ -544,7 +549,7 @@ namespace Test.Decoder
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				running = false;
 			}
 			finally
@@ -609,7 +614,7 @@ namespace Test.Decoder
 						bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
 						if (!packetTaken)
 						{
-							Console.WriteLine("packet == false");
+                            logger.Debug("packet == false");
 							continue;
 						}
 
@@ -635,7 +640,7 @@ namespace Test.Decoder
 								var res = decoder.ProcessSample(sample, OnSampleDecoded);
 								if (res == DecodeResult.Error)
 								{
-									Console.WriteLine("decoder.ProcessSample == " + res);
+                                    logger.Warn("decoder.ProcessSample == " + res);
 								}
 
 
@@ -649,7 +654,7 @@ namespace Test.Decoder
 							}
 							catch (Exception ex)
 							{
-								Console.WriteLine(ex.Message);
+                                logger.Error(ex.Message);
 							}
 						}
 					}
@@ -667,13 +672,13 @@ namespace Test.Decoder
 				} while (decodeResult == DecodeResult.Ok);
 
 				var totalMilliseconds = sw.ElapsedMilliseconds;
-				Console.WriteLine("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
+                logger.Debug("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
 
 				decoder.Stop();
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				running = false;
 				throw;
 
@@ -867,7 +872,7 @@ namespace Test.Decoder
 						bool packetTaken = sourceReader.TryGetPacket(out var packet, 10);
 						if (!packetTaken)
 						{
-							Console.WriteLine("packet == false");
+                            logger.Debug("packet == false");
 							continue;
 						}
 
@@ -880,7 +885,7 @@ namespace Test.Decoder
 						}
 						catch (Exception ex)
 						{
-							Console.WriteLine(ex.Message);
+                            logger.Error(ex.Message);
 						}
 
 					}
@@ -898,14 +903,14 @@ namespace Test.Decoder
 					} while (decodeResult == 0);
 
 					var totalMilliseconds = sw.ElapsedMilliseconds;
-					Console.WriteLine("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
+                    logger.Debug("TotalMilliseconds=" + totalMilliseconds + " MSecPerFrame=" + (totalMilliseconds / (double)decodedCount));
 
 				}
 
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				running = false;
 			}
 			finally
@@ -1515,7 +1520,7 @@ namespace Test.Decoder
 
 		public void Close()
 		{
-			Console.WriteLine("Close()");
+            logger.Debug("Close()");
 
 			DxTool.SafeDispose(sharedTexture);
 			DxTool.SafeDispose(device3D11);
@@ -1613,12 +1618,12 @@ namespace Test.Decoder
 
 		private void InitVideoProcessor(int width, int height)
 		{
-			Console.WriteLine("QueryInterface<VideoDevice>()");
+            logger.Debug("QueryInterface<VideoDevice>()");
 			videoDevice = device3D11.QueryInterface<VideoDevice>();
 
 			var deviceContext = device3D11.ImmediateContext;
 
-			Console.WriteLine("QueryInterface<VideoContext>()");
+            logger.Debug("QueryInterface<VideoContext>()");
 			videoContext = deviceContext.QueryInterface<VideoContext>();
 
 
@@ -1637,7 +1642,7 @@ namespace Test.Decoder
 
 			};
 
-			Console.WriteLine("CreateVideoProcessorEnumerator(...)");
+            logger.Debug("CreateVideoProcessorEnumerator(...)");
 			videoDevice.CreateVideoProcessorEnumerator(ref descr, out videoEnumerator);
 
 			var videoProcCaps = videoEnumerator.VideoProcessorCaps;
@@ -1648,7 +1653,7 @@ namespace Test.Decoder
 
 			}
 
-			Console.WriteLine("CreateVideoProcessor(...)");
+            logger.Debug("CreateVideoProcessor(...)");
 			videoDevice.CreateVideoProcessor(videoEnumerator, 0, out videoProcessor);
 
 			//using (var videoContext1 = deviceContext.QueryInterface<VideoContext1>())
@@ -1661,7 +1666,7 @@ namespace Test.Decoder
 				Dimension = VpovDimension.Texture2D,
 			};
 
-			Console.WriteLine("CreateVideoProcessorOutputView(...)");
+            logger.Debug("CreateVideoProcessorOutputView(...)");
 			videoDevice.CreateVideoProcessorOutputView(sharedTexture, videoEnumerator, outputViewDescr, out var _videoOutputView);
 			this.videoOutputView = _videoOutputView;
 
@@ -1693,7 +1698,7 @@ namespace Test.Decoder
 					ArraySlice = 0,
 				},
 			};
-			Console.WriteLine("CreateVideoProcessorInputView(...)");
+            logger.Debug("CreateVideoProcessorInputView(...)");
 			videoDevice.CreateVideoProcessorInputView(inputTexture, videoEnumerator, inputViewDescr, out var _videoInputView);
 			this.videoInputView = _videoInputView;
 		}

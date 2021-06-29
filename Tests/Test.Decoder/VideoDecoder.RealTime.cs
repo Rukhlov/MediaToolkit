@@ -33,7 +33,7 @@ namespace Test.Decoder
 					}
 				}
 
-				Console.WriteLine("videoQueue.IsAddingCompleted");
+                logger.Debug("videoQueue.IsAddingCompleted");
 				presentationClock.Reset();
 				//presentationClock.ClockRate = 0.997;
 				AutoResetEvent syncEvent = new AutoResetEvent(false);
@@ -51,7 +51,7 @@ namespace Test.Decoder
 							bool frameTaken = videoFrames.TryTake(out frame, 1);
 							if (!frameTaken)
 							{
-								Console.WriteLine("frameTaken == false");
+                                logger.Debug("frameTaken == false");
 								continue;
 							}
 
@@ -79,7 +79,7 @@ namespace Test.Decoder
 								{
 									if (delay > 3000)
 									{
-										Console.WriteLine(delay);
+                                        logger.Debug(delay);
 										delay = 3000;
 									}
 
@@ -106,7 +106,7 @@ namespace Test.Decoder
 							}
 							else
 							{
-								Console.WriteLine("Non monotonic time: " + frame.time + "<" + prevFrameTime);
+                                logger.Debug("Non monotonic time: " + frame.time + "<" + prevFrameTime);
 							}
 						}
 						finally
@@ -126,7 +126,7 @@ namespace Test.Decoder
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
 				running = false;
 			}
 			finally
