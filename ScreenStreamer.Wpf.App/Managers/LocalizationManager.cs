@@ -33,11 +33,13 @@ namespace ScreenStreamer.Wpf
 
             if (cultureName.Length > 2)
             {
-                if(cultureName.Equals("english", StringComparison.OrdinalIgnoreCase))
+                if(cultureName.Equals("english", StringComparison.OrdinalIgnoreCase) || 
+					cultureName.Equals("eng", StringComparison.OrdinalIgnoreCase))
                 {
                     cultureName = "en";
                 }
-                else if (cultureName.Equals("russian", StringComparison.OrdinalIgnoreCase))
+                else if (cultureName.Equals("russian", StringComparison.OrdinalIgnoreCase) || 
+					cultureName.Equals("rus", StringComparison.OrdinalIgnoreCase))
                 {
                     cultureName = "ru";
                 }
