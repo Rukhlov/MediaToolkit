@@ -20,7 +20,7 @@ namespace Test.Decoder
         int Count { get; }
         double PacketInterval { get; set; }
         bool TryGetPacket(out VideoPacket packet, int timeout);
-        Task Start(string fileName, double interval);
+        Task Start(string fileName, double interval, int bufferSize);
         void Stop();
 
 		event Action<bool> StateChanged;
@@ -96,7 +96,7 @@ namespace Test.Decoder
 
 		public event Action<bool> StateChanged;
 
-        public Task Start(string fileName, double packetInterval)
+        public Task Start(string fileName, double packetInterval, int bufferSize = 64)
         {
             if (running)
             {
@@ -116,7 +116,7 @@ namespace Test.Decoder
                     StateChanged?.Invoke(true);
 
 					//videoPackets = new Queue<VideoPacket>(4);
-					videoPackets = new CircularQueue<VideoPacket>(64);
+					videoPackets = new CircularQueue<VideoPacket>(bufferSize);
 
 
                     long packetCount = 0;
@@ -370,7 +370,7 @@ namespace Test.Decoder
             return result;
         }
         public double PacketInterval { get; set; }
-        public Task Start(string fileName, double interval)
+        public Task Start(string fileName, double interval, int bufferSize = 8)
         {
             if (isStarted)
             {
@@ -387,7 +387,7 @@ namespace Test.Decoder
 					StateChanged.Invoke(true);
 
 					//videoPackets = new Queue<VideoPacket>(4);
-					videoPackets = new BlockingCollection<VideoPacket>(8);
+					videoPackets = new BlockingCollection<VideoPacket>(bufferSize);
 
 
 					// var frameRate = MfTool.UnPackLongToInts(inputArgs.FrameRate);

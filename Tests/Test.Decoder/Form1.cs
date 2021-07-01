@@ -26,7 +26,7 @@ namespace Test.Decoder
 
 			DecoderPars = new DecoderParams();
 
-			InitDriverTypes();
+			InitDecoderTypes();
 			InitVideoFiles();
             InitVideoAdapters();
 
@@ -46,7 +46,7 @@ namespace Test.Decoder
 		private DecoderParams DecoderPars = null;
 
 		//private MfVideoArgs inputArgs = null;
-		private void InitDriverTypes()
+		private void InitDecoderTypes()
 		{
 			decoderTypes.Clear();
 
@@ -363,9 +363,10 @@ namespace Test.Decoder
 			DecoderPars.Width = sps.Width;
 			DecoderPars.Height = sps.Height;
 			DecoderPars.FrameRate = new MediaToolkit.Core.MediaRatio((int)maxFps, 1);
+			var bufferSize = (int)numericUpDownBufferSize.Value;
 
 			var interval = (double)1.0 / maxFps;
-			var readerTask = sourceReader.Start(fileName, interval);
+			var readerTask = sourceReader.Start(fileName, interval, bufferSize);
 		}
 
 		private void StopSource()
@@ -480,8 +481,9 @@ namespace Test.Decoder
             //buttonSourceStop.Enabled = isSourceStarted;
             buttonSourceStart.Text = isSourceStarted ? "Stop Source" : "Start Source";
             comboBoxVideoFiles.Enabled = !isSourceStarted;
+			numericUpDownBufferSize.Enabled = !isSourceStarted;
 
-            buttonDecoderStart.Text = decoderStarted ? "Stop Decoder" : "Start Decoder";
+			buttonDecoderStart.Text = decoderStarted ? "Stop Decoder" : "Start Decoder";
             comboBoxDecoderTypes.Enabled = !decoderStarted;
 
             checkBoxDebugInfo.Enabled = decoderStarted;
@@ -491,9 +493,10 @@ namespace Test.Decoder
             checkBoxDebugInfo.Checked = decoder?.ShowLabel ?? false;
 
             comboBoxVideoAdapters.Enabled = !decoderStarted;
+			
 
-            numericFps.Enabled = isSourceStarted;
-
+			numericFps.Enabled = isSourceStarted;
+			
             var fps = 30;
             if (sourceReader != null)
             {

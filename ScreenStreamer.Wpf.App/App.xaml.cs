@@ -34,6 +34,11 @@ namespace ScreenStreamer.Wpf
 			bool resetConfig = startupParams.ResetConfig;
 
 			var appModel = ConfigManager.GetConfig(resetConfig);
+			var activeCulture = startupParams.ActiveCulture;
+			if (!string.IsNullOrEmpty(activeCulture))
+			{
+				appModel.Culture = startupParams.ActiveCulture;
+			}
 
 			ServiceLocator.RegisterInstance(appModel);
 

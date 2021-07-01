@@ -27,6 +27,20 @@ namespace ScreenStreamer.Wpf
             {// 
                 var currentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
                 cultureName = currentCulture.TwoLetterISOLanguageName;
+
+				logger.Debug("Culture not set, apply default UI culture: " + cultureName);
+			}
+
+            if (cultureName.Length > 2)
+            {
+                if(cultureName.Equals("english", StringComparison.OrdinalIgnoreCase))
+                {
+                    cultureName = "en";
+                }
+                else if (cultureName.Equals("russian", StringComparison.OrdinalIgnoreCase))
+                {
+                    cultureName = "ru";
+                }
             }
 
             var defaultLang = new ResourceDictionary

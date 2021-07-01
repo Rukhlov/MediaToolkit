@@ -62,4 +62,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion(AppConsts.AssemblyVersion)]
 [assembly: AssemblyFileVersion(AppConsts.AssemblyVersion)]
-[assembly: AssemblyInformationalVersion(AppConsts.GitVersion)]
+[assembly: AssemblyInformationalVersion(AppConsts.AssemblyInformationalVersion)]

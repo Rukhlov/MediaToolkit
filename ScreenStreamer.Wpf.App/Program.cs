@@ -390,7 +390,19 @@ namespace ScreenStreamer.Wpf
 
         public class StartupParameters
         {
-            public string UserName { get; private set; } = "";
+			class CommandLineArgs
+			{
+				public const string NoRestart = "-norestart";
+				public const string System = "-system";
+				public const string Reset = "-reset";
+				public const string Test = "-test";
+				public const string AutoStream = "-autostream";
+				public const string Lang = "-lang=";
+				public const string Console = "-console";
+			}
+			
+
+			public string UserName { get; private set; } = "";
 
             public bool IsSystem { get; private set; } = false;
             public bool IsElevated { get; private set; } = false;
@@ -407,7 +419,9 @@ namespace ScreenStreamer.Wpf
             public bool IsRemotelyControlled { get; private set; } = false;
             public bool IsCompositionEnabled { get; private set; } = false;
 
-            public static StartupParameters Create(string[] args)
+			public string ActiveCulture { get; private set; } = "";
+
+			public static StartupParameters Create(string[] args)
             {
                 logger.Debug("CommandLine: " + string.Join(" ", args));
 
@@ -417,31 +431,40 @@ namespace ScreenStreamer.Wpf
                 {
                     var _arg = arg?.ToLower();
 
-                    if (_arg == "-norestart")
+                    if (_arg == CommandLineArgs.NoRestart)
                     {
                         startupParams.NoRestart = true;
                     }
-                    else if (_arg == "-system")
+                    else if (_arg == CommandLineArgs.System)
                     {
                         startupParams.RunAsSystem = true;
                     }
-					else if (_arg == "-reset")
+					else if (_arg == CommandLineArgs.Reset)
 					{
 						startupParams.ResetConfig = true;
 					}
-                    //else if (_arg == "-console")
-                    //{
-                    //    startupParams.AllocConsole = true;
-                    //}
-                    else if (_arg == "-test")
+					//else if (_arg == CommandLineArgs.Console)
+					//{
+					//    startupParams.AllocConsole = true;
+					//}
+					else if (_arg == CommandLineArgs.Test)
                     {
                         startupParams.TestMode = true;
                     }
-                    else if (_arg == "-autostream")
+					else if (_arg == CommandLineArgs.AutoStream)
                     {
                         startupParams.AutoStream = true;
                     }
-                    else
+					else if (_arg.StartsWith(CommandLineArgs.Lang))
+					{
+						var len = CommandLineArgs.Lang.Length;
+						if (_arg.Length > len)
+						{
+							startupParams.ActiveCulture= _arg.Substring(len);
+
+						}						
+					}
+					else
                     {
                         //...
                     }

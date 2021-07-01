@@ -36,10 +36,15 @@
 #define AppicationVersionFile Copy(AVF2,1, Pos(".", AVF2) - 1) ;+ "b" + Copy(AVF2, Pos(".",AVF2) + 1)
 
 ;Название выходного файла инсталлятора
-#define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion
+#define OutputBaseFilenameVervion "PolywallStreamer_v" + ProductVersion
 #ifdef DEBUG 
-  #define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion + "_Debug"
+  #define OutputBaseFilenameVervion "PolywallStreamer_v" + ProductVersion + "-debug"
 #endif
+
+;#define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion
+;#ifdef DEBUG 
+;  #define OutputBaseFilenameVervion "PolywallStreamer_v" + ApplicationVersion + "_Debug"
+;#endif
 
 [Setup]
 AppId={{2AD1EF0A-6962-466B-86B8-85C3BDE65049}
@@ -197,10 +202,11 @@ Root: HKLM; Subkey: "Software\Visiology\Polywall\Path"; ValueType: string; Value
 
 [Icons]
 ;Name: "{group}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"
-Name: "{group}\Polywall Streamer"; Filename: "{app}\ScreenStreamer.Wpf.App.exe"
+Name: "{group}\Polywall Streamer"; Filename: "{app}\ScreenStreamer.Wpf.App.exe"; Parameters: "-lang={language}"
 Name: "{group}\uninstall.exe"; Filename: "{uninstallexe}"
 
-Name: "{commondesktop}\Polywall Streamer"; Filename: "{app}\ScreenStreamer.Wpf.App.exe"; Tasks: desktopicon
+Name: "{commondesktop}\Polywall Streamer"; Filename: "{app}\ScreenStreamer.Wpf.App.exe"; Parameters: "-lang={language}"; Tasks: desktopicon
+
 ;Name: "{commondesktop}\{#ApplicationName}"; Filename: "{app}\{#ApplicationExeName}"; Tasks: desktopicon
 ;Name: "{commondesktop}\Test.PolywallClient.exe"; Filename: "{app}\Test.PolywallClient.exe"; Tasks: desktopicon
 
