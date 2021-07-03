@@ -6,12 +6,7 @@ extern "C" {
 #include <libavformat/avformat.h> 
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/opt.h>
-#include <libswscale/swscale.h>
-#include <libswresample/swresample.h>
 
-#include <libavutil/imgutils.h>
 }
 
 //#include <vcclr.h>

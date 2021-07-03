@@ -13,39 +13,44 @@ namespace MediaToolkit.ScreenCaptures
         private static TraceSource logger = TraceManager.GetTrace("MediaToolkit.ScreenCaptures");
 
         private Dictionary<int, Dictionary<int, DDAOutput>> OutputDict = new Dictionary<int, Dictionary<int, DDAOutput>>();
+        private object syncObj = new object();
 
         public DDAOutput GetOutput(int adapterIndex, int outputIndex)
         {
             logger.Debug("DDAOutputManager::GetOutput(...) " + adapterIndex + " " + outputIndex);
             DDAOutput output = null;
-            if (OutputDict.ContainsKey(adapterIndex))
+            lock (syncObj)
             {
-                var outputs = OutputDict[adapterIndex];
-                if (outputs.ContainsKey(outputIndex))
+                if (OutputDict.ContainsKey(adapterIndex))
                 {
-                    logger.Verb("Getting exist DDAOutput");
+                    var outputs = OutputDict[adapterIndex];
+                    if (outputs.ContainsKey(outputIndex))
+                    {
+                        logger.Verb("Getting exist DDAOutput");
 
-                    output = outputs[outputIndex];
+                        output = outputs[outputIndex];
+                    }
+                    else
+                    {
+                        logger.Verb("Create new DDAOutput");
+
+                        output = new DDAOutput();
+                        output.Init(adapterIndex, outputIndex);
+                        outputs[outputIndex] = output;
+                    }
                 }
                 else
                 {
-                    logger.Verb("Create new DDAOutput");
+                    logger.Verb("Create new outputs dict...");
 
+                    var outputs = new Dictionary<int, DDAOutput>();
                     output = new DDAOutput();
                     output.Init(adapterIndex, outputIndex);
                     outputs[outputIndex] = output;
+
+                    OutputDict[adapterIndex] = outputs;
                 }
-            }
-            else
-            {
-                logger.Verb("Create new outputs dict...");
 
-                var outputs = new Dictionary<int, DDAOutput>();
-                output = new DDAOutput();
-                output.Init(adapterIndex, outputIndex);
-                outputs[outputIndex] = output;
-
-                OutputDict[adapterIndex] = outputs;
             }
 
             return output;
@@ -63,42 +68,50 @@ namespace MediaToolkit.ScreenCaptures
 
         public void ReleaseOutput(int adapterIndex, int outputIndex)
         {
-            if (OutputDict.ContainsKey(adapterIndex))
+            lock (syncObj)
             {
-                var outputs = OutputDict[adapterIndex];
-                if (outputs.ContainsKey(outputIndex))
+                if (OutputDict.ContainsKey(adapterIndex))
                 {
-                    var output = outputs[outputIndex];
-                    if (output != null)
+                    var outputs = OutputDict[adapterIndex];
+                    if (outputs.ContainsKey(outputIndex))
                     {
-                        var activates = output.Deactivate();
-                        if(activates <= 0)
+                        var output = outputs[outputIndex];
+                        if (output != null)
                         {
-                            output.Close();
-                            output = null;
+                            var activates = output.Deactivate();
+                            if (activates <= 0)
+                            {
+                                output.Close();
+                                output = null;
 
-                            outputs.Remove(outputIndex);
+                                outputs.Remove(outputIndex);
+                            }
+
                         }
-
                     }
                 }
             }
+
         }
 
         public void Dispose()
         {
             logger.Debug("DDAOutputManager::Dispose()");
 
-            foreach (var adapter in OutputDict.Keys)
+            lock (syncObj)
             {
-                var outputs = OutputDict[adapter];
-                foreach (var output in outputs.Values)
+                foreach (var adapter in OutputDict.Keys)
                 {
-                    output.Close();
+                    var outputs = OutputDict[adapter];
+                    foreach (var output in outputs.Values)
+                    {
+                        output.Close();
+                    }
                 }
+
+                OutputDict.Clear();
             }
 
-            OutputDict.Clear();
         }
     }
 

@@ -144,9 +144,10 @@ namespace ScreenStreamer.Wpf
             logger.Trace("LogSystemInfo()");
 
             //var sysInfo = "OS: "  + Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
-            logger.Info("OS: " + Utils.SystemInfo.GetOSInfo());
-            logger.Info("CPU: " + Utils.SystemInfo.GetProcessorInfo());
-            logger.Info("RAM: " + Utils.SystemInfo.GetMemoryInfo());
+            logger.Info("OS: " + Utils.SystemInfo.LogOSInfo());
+            logger.Info("CPU: " + Utils.SystemInfo.LogProcessorInfo());
+            logger.Info("RAM: " + Utils.SystemInfo.LogMemoryInfo());
+            logger.Info("GPU:\r\n" + Utils.SystemInfo.LogGpuInfo());
 
             if (StartupParams.IsSystem)
             {
@@ -488,21 +489,24 @@ namespace ScreenStreamer.Wpf
 			{
 				StringBuilder sb = new StringBuilder();
 				sb.AppendLine("");
-                var sysInfo = "OS: " + Utils.SystemInfo.GetOSInfo();// + Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
+                var sysInfo = "OS: " + Utils.SystemInfo.LogOSInfo();// + Environment.OSVersion + " " + (Environment.Is64BitOperatingSystem ? "x64" : "x86");
 
 
                 sb.AppendLine(sysInfo);
 				// System.Runtime.InteropServices.RuntimeInformation.OSDescription
 
-				var processInfo = "CPU: " + Utils.SystemInfo.GetProcessorInfo();
+				var processInfo = "CPU: " + Utils.SystemInfo.LogProcessorInfo();
 				sb.AppendLine(processInfo);
 
-				var memoryInfo = "RAM: " + Utils.SystemInfo.GetMemoryInfo();
+				var memoryInfo = "RAM: " + Utils.SystemInfo.LogMemoryInfo();
 				sb.AppendLine(memoryInfo);
 
 
-				// run as system...
-				sb.AppendLine("Running as SYSTEM: " + StartupParams.IsSystem);
+                var gpuInfo = "GPU: " + Utils.SystemInfo.LogGpuInfo();
+                sb.AppendLine(gpuInfo);
+
+                // run as system...
+                sb.AppendLine("Running as SYSTEM: " + StartupParams.IsSystem);
 				// запущен с повышеными правами
 				sb.AppendLine("Running as Admin: " + StartupParams.IsElevated);
 

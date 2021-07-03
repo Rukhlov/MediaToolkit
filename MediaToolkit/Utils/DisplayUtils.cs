@@ -521,14 +521,14 @@ namespace MediaToolkit.Utils
 
     public class GpuHardwareInfo
     {
-        public string DriverDate { get; set; }
-        public string DriverVersion { get; set; }
-        public string AdapterString { get; set; }
-        public string BiosString { get; set; }
-        public string ChipType { get; set; }
-        public string DacType { get; set; }
-        public uint MemorySize { get; set; }
-        public string[] DriverDlls { get; set; }
+        public string DriverDate { get; private set; }
+        public string DriverVersion { get; private set; }
+        public string AdapterString { get; private set; }
+        public string BiosString { get; private set; }
+        public string ChipType { get; private set; }
+        public string DacType { get; private set; }
+        public uint MemorySize { get; private set; }
+        public string[] DriverDlls { get; private set; }
 
         public static IEnumerable<GpuHardwareInfo> GetHardwareInfos()
         {
@@ -602,7 +602,7 @@ namespace MediaToolkit.Utils
             return hardwareInfos;
         }
 
-        private unsafe static bool GetRegValue<T>(Microsoft.Win32.RegistryKey key, string valueName, out T t)
+        private static bool GetRegValue<T>(Microsoft.Win32.RegistryKey key, string valueName, out T t)
         {
             bool result = false;
             t = default(T);
@@ -629,7 +629,7 @@ namespace MediaToolkit.Utils
             }
             catch (Exception ex)
             {
-
+                Debug.WriteLine(ex.Message);
             }
 
             return result;

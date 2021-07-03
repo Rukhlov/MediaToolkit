@@ -1,4 +1,5 @@
 ﻿using MediaToolkit.NativeAPIs;
+using MediaToolkit.Utils;
 using Microsoft.Win32.SafeHandles;
 using System;
 using System.Collections.Generic;
@@ -99,7 +100,7 @@ namespace ScreenStreamer.Wpf.Utils
 
 	public class SystemInfo
 	{
-        public static string GetOSInfo()
+        public static string LogOSInfo()
         {
             Microsoft.Win32.RegistryKey localMachineKey = Microsoft.Win32.Registry.LocalMachine;
             if (Environment.Is64BitOperatingSystem)
@@ -135,7 +136,7 @@ namespace ScreenStreamer.Wpf.Utils
             return osInfo;
         }
 
-        public static string GetProcessorInfo()
+        public static string LogProcessorInfo()
 		{
 			string processInfo = "";
 			var regKey = @"HARDWARE\DESCRIPTION\System\CentralProcessor\0";
@@ -152,7 +153,7 @@ namespace ScreenStreamer.Wpf.Utils
 			return processInfo;
 		}
 
-		public static string GetMemoryInfo()
+		public static string LogMemoryInfo()
 		{
 			string memoryInfo = "";
 			//if(Kernel32.GetPhysicallyInstalledSystemMemory(out var totalMemory))
@@ -168,6 +169,41 @@ namespace ScreenStreamer.Wpf.Utils
 			}
 			return memoryInfo;
 		}
+
+        public static string LogGpuInfo()
+        {
+            var sb = new StringBuilder();
+            var gpuHardwareInfos = GpuHardwareInfo.GetHardwareInfos().ToArray();
+             
+            for(int i=0;i<gpuHardwareInfos.Length; i++)
+            {
+                var info = gpuHardwareInfos[i];
+
+                sb.AppendLine("---------------------------");
+                sb.AppendLine("GPU #" + i);
+                sb.AppendLine(info.AdapterString);
+                sb.AppendLine(info.BiosString);
+                sb.AppendLine(info.ChipType);
+                sb.AppendLine(info.DacType);
+                sb.AppendLine(info.DriverDate);
+                sb.AppendLine(info.DriverVersion);
+
+                sb.AppendLine(StringHelper.SizeSuffix(info.MemorySize));
+
+                var driverDlls = info.DriverDlls;
+                if(driverDlls!=null && driverDlls.Length > 0)
+                {
+                    var fileNames = new List<string>();
+                    foreach (var f in driverDlls)
+                    {
+                        fileNames.Add(Path.GetFileName(f));
+                    }
+                    sb.AppendLine(string.Join(";", fileNames));
+                }
+            }
+            
+            return sb.ToString();
+        }
 	}
 
 }
