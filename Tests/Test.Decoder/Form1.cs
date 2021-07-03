@@ -453,6 +453,11 @@ namespace Test.Decoder
 		{
             logger.Debug("SourceReader_StateChanged(...) " + started);
 			this.isSourceStarted = started;
+            if (!started)
+            {
+                StopDecoder();
+            }
+
 
 			UpdateControls();
 		}
